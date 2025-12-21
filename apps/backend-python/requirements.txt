@@ -1,0 +1,17 @@
+# BeamLab Structural Engine - Python Dependencies
+
+# Web Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+
+# Data Validation
+pydantic>=2.5.0
+
+# HTTP Client (for future AI integration)
+httpx>=0.25.0
+
+# Environment Variables
+python-dotenv>=1.0.0
+
+# Optional: Google Generative AI (for Gemini integration)
+# google-generativeai>=0.3.0

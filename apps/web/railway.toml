@@ -1,0 +1,16 @@
+# Railway.one Deployment Configuration
+# Web Frontend Service
+
+[build]
+builder = "NIXPACKS"
+buildCommand = "npm ci && npm run build"
+
+[deploy]
+startCommand = "npx serve dist -s -p $PORT"
+healthcheckPath = "/"
+healthcheckTimeout = 30
+
+[[services]]
+name = "web"
+internalPort = 3000
+protocol = "TCP"

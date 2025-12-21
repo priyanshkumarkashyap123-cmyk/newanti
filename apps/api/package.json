@@ -1,0 +1,35 @@
+{
+    "name": "@beamlab/api",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "tsx watch src/index.ts",
+        "build": "tsc",
+        "start": "node dist/index.js",
+        "lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 0",
+        "type-check": "tsc --noEmit",
+        "clean": "rm -rf dist"
+    },
+    "dependencies": {
+        "@clerk/express": "^1.7.58",
+        "@google/generative-ai": "^0.24.1",
+        "cors": "^2.8.5",
+        "express": "^4.21.1",
+        "mathjs": "^15.1.0",
+        "mongodb": "^6.10.0",
+        "mongoose": "^9.0.2",
+        "razorpay": "^2.9.6",
+        "socket.io": "^4.8.1",
+        "stripe": "^20.1.0",
+        "zod": "^3.23.8"
+    },
+    "devDependencies": {
+        "@types/cors": "^2.8.17",
+        "@types/express": "^5.0.0",
+        "@types/node": "^22.9.3",
+        "eslint": "^9.15.0",
+        "tsx": "^4.19.2",
+        "typescript": "^5.6.3"
+    }
+}
