@@ -2,8 +2,8 @@ import express, { type Request, type Response } from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import { clerkMiddleware, requireAuth, getAuth } from '@clerk/express';
-import { analyzeStructure } from './solver.js';
 import { SocketServer } from './SocketServer.js';
+import analysisRouter from './routes/analysis/index.js';
 
 const app = express();
 const PORT = process.env['PORT'] ?? 3001;
@@ -14,7 +14,13 @@ const httpServer = createServer(app);
 // Initialize Socket.IO server
 const socketServer = new SocketServer(httpServer);
 
-app.use(cors());
+const FRONTEND_URL = process.env['FRONTEND_URL'] || "http://localhost:5173";
+app.use(cors({
+    origin: FRONTEND_URL,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // Initialize Clerk middleware (optional auth check on all routes)
@@ -25,23 +31,10 @@ app.get('/health', (_req: Request, res: Response) => {
     res.json({ status: 'ok', service: 'BeamLab Ultimate API', websocket: true });
 });
 
-// Structural Analysis Endpoint (public for now)
-app.post('/api/analyze', (req: Request, res: Response) => {
-    try {
-        const { nodes, members, loads } = req.body;
-
-        if (!nodes || !members) {
-            res.status(400).json({ success: false, message: 'Missing nodes or members' });
-            return;
-        }
-
-        const result = analyzeStructure({ nodes, members, loads: loads || [] });
-        res.json(result);
-    } catch (error) {
-        const message = error instanceof Error ? error.message : 'Unknown error';
-        res.status(500).json({ success: false, message });
-    }
-});
+// Structural Analysis API (public for now)
+app.use('/api/analyze', analysisRouter);
+// Backwards/alternate path used by some UI flows
+app.use('/api/analysis', analysisRouter);
 
 // ============================================
 // PROTECTED ROUTES (require authentication)

@@ -39,6 +39,16 @@ coverage/
 # Turbo
 .turbo/
 
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+env/
+
 # Misc
 *.tsbuildinfo
 .cache/

@@ -9,9 +9,15 @@ import express, { Router, Request, Response } from 'express';
 import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs/promises';
+import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
+import { analyzeStructure } from '../../solver.js';
 
 const router: Router = express.Router();
+
+// Support __dirname in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ============================================
 // TYPES
@@ -73,10 +79,9 @@ const jobs = new Map<string, JobStatus>();
 // ============================================
 
 /**
- * POST /analyze
- * Run structural analysis (synchronous for small models)
+ * Core handler shared between / and /solve endpoints
  */
-router.post('/', async (req: Request, res: Response) => {
+async function handleAnalysisRequest(req: Request, res: Response): Promise<void> {
     const model = req.body as AnalyzeRequest;
 
     if (!model.nodes || !model.members) {
@@ -113,7 +118,7 @@ router.post('/', async (req: Request, res: Response) => {
 
     // Synchronous analysis for smaller models
     try {
-        const result = await runPythonSolver(model);
+        const result = await runSolver(model);
         res.json(result);
     } catch (error) {
         console.error('[Analysis] Solver error:', error);
@@ -122,7 +127,16 @@ router.post('/', async (req: Request, res: Response) => {
             error: error instanceof Error ? error.message : 'Solver failed'
         });
     }
-});
+}
+
+/**
+ * POST /analyze
+ * Run structural analysis (synchronous for small models)
+ */
+router.post('/', handleAnalysisRequest);
+
+// Compatibility alias for older clients calling /analysis/solve
+router.post('/solve', handleAnalysisRequest);
 
 /**
  * GET /analyze/job/:jobId
@@ -130,6 +144,12 @@ router.post('/', async (req: Request, res: Response) => {
  */
 router.get('/job/:jobId', (req: Request, res: Response) => {
     const { jobId } = req.params;
+
+    if (!jobId) {
+        res.status(400).json({ success: false, error: 'Missing jobId' });
+        return;
+    }
+
     const job = jobs.get(jobId);
 
     if (!job) {
@@ -212,10 +232,28 @@ router.post('/validate', (req: Request, res: Response) => {
 // PYTHON SOLVER
 // ============================================
 
-async function runPythonSolver(model: AnalyzeRequest): Promise<any> {
-    return new Promise((resolve, reject) => {
-        const solverPath = path.join(__dirname, '../../solver/solver.py');
+async function resolveSolverPath(): Promise<string> {
+    const candidates = [
+        path.join(__dirname, '../../solver/solver.py'),
+        path.join(process.cwd(), 'solver/solver.py')
+    ];
 
+    for (const candidate of candidates) {
+        try {
+            await fs.access(candidate);
+            return candidate;
+        } catch {
+            // continue searching
+        }
+    }
+
+    throw new Error(`solver.py not found. Searched: ${candidates.join(', ')}`);
+}
+
+async function runPythonSolver(model: AnalyzeRequest): Promise<any> {
+    const solverPath = await resolveSolverPath();
+
+    return new Promise((resolve, reject) => {
         // Spawn Python process
         const python = spawn('python3', [solverPath, '--stdin'], {
             stdio: ['pipe', 'pipe', 'pipe']
@@ -256,6 +294,66 @@ async function runPythonSolver(model: AnalyzeRequest): Promise<any> {
     });
 }
 
+/**
+ * Node.js fallback solver (uses existing TypeScript implementation)
+ * Keeps API responsive when Python or SciPy is unavailable.
+ */
+async function runNodeSolver(model: AnalyzeRequest): Promise<any> {
+    const normalizedNodes = (model.nodes || []).map(node => ({
+        id: node.id,
+        x: node.x,
+        y: node.y,
+        z: node.z,
+        restraints: {
+            fx: node.restraints?.fx ?? false,
+            fy: node.restraints?.fy ?? false,
+            fz: node.restraints?.fz ?? false,
+            mx: node.restraints?.mx ?? false,
+            my: node.restraints?.my ?? false,
+            mz: node.restraints?.mz ?? false
+        }
+    }));
+
+    const normalizedMembers = (model.members || []).map((member, idx) => ({
+        id: member.id || `member_${idx}`,
+        startNodeId: member.startNodeId,
+        endNodeId: member.endNodeId,
+        sectionId: 'default',
+        E: member.E ?? 200e6,
+        A: member.A ?? 0.01,
+        I: member.I ?? 1e-4
+    }));
+
+    const normalizedLoads = (model.loads || []).map((load, idx) => ({
+        id: `load_${idx}_${load.nodeId}`,
+        nodeId: load.nodeId,
+        fx: load.fx ?? 0,
+        fy: load.fy ?? 0,
+        fz: load.fz ?? 0,
+        mx: load.mx ?? 0,
+        my: load.my ?? 0,
+        mz: load.mz ?? 0
+    }));
+
+    return analyzeStructure({
+        nodes: normalizedNodes,
+        members: normalizedMembers,
+        loads: normalizedLoads
+    });
+}
+
+/**
+ * Prefer Python solver for performance; gracefully fall back to TS solver.
+ */
+async function runSolver(model: AnalyzeRequest): Promise<any> {
+    try {
+        return await runPythonSolver(model);
+    } catch (error) {
+        console.warn('[Analysis] Python solver unavailable, falling back to Node solver:', error);
+        return runNodeSolver(model);
+    }
+}
+
 async function runAnalysisAsync(jobId: string, model: AnalyzeRequest): Promise<void> {
     const job = jobs.get(jobId);
     if (!job) return;
@@ -264,7 +362,7 @@ async function runAnalysisAsync(jobId: string, model: AnalyzeRequest): Promise<v
     job.progress = 0;
 
     try {
-        const result = await runPythonSolver(model);
+        const result = await runSolver(model);
         job.status = 'completed';
         job.progress = 100;
         job.result = result;

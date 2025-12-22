@@ -7,6 +7,7 @@ REST API for structural model generation.
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, List
+import os
 
 from models import (
     StructuralModel, GenerateResponse,
@@ -31,20 +32,27 @@ app = FastAPI(
 # CORS CONFIGURATION
 # ============================================
 
-# Allow origins from env (comma-separated) or default
+# Allow origins from env
 allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
+frontend_url_env = os.getenv("FRONTEND_URL", "")
+
+allow_origins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:5173",
+    "http://localhost:8000",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+]
+
 if allowed_origins_env:
-    allow_origins = [origin.strip() for origin in allowed_origins_env.split(",")]
-else:
-    allow_origins = [
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://localhost:5173",
-        "http://localhost:8000",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:5173",
-        "https://beamlab-ultimate.vercel.app" # Example production URL
-    ]
+    allow_origins.extend([origin.strip() for origin in allowed_origins_env.split(",")])
+
+if frontend_url_env:
+    allow_origins.append(frontend_url_env.strip())
+
+# Deduplicate
+allow_origins = list(set(allow_origins))
 
 app.add_middleware(
     CORSMiddleware,
@@ -553,4 +561,4 @@ if __name__ == "__main__":
     print(f"\n🚀 Starting BeamLab Structural Engine")
     print(f"📋 USE_MOCK_AI: {USE_MOCK_AI}")
     print(f"🔑 GEMINI_API_KEY: {'SET' if GEMINI_API_KEY else 'NOT SET'}\n")
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    uvicorn.run(app, host="0.0.0.0", port=8081)

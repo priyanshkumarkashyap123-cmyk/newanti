@@ -13,7 +13,7 @@ import { useModelStore } from '../../store/model';
 // CONFIGURATION
 // ============================================
 
-const PYTHON_API = import.meta.env['VITE_PYTHON_API_URL'] || "http://localhost:8080";
+const PYTHON_API = import.meta.env['VITE_PYTHON_API_URL'] || "http://localhost:8081";
 
 // ============================================
 // TYPES
