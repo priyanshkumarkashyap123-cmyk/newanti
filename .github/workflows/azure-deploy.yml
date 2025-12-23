@@ -37,8 +37,7 @@ jobs:
           mkdir -p deploy-api
           cp -r apps/api/dist deploy-api/
           cp apps/api/package.json deploy-api/
-          cp package-lock.json deploy-api/
-          cd deploy-api && npm ci --omit=dev --ignore-scripts
+          cd deploy-api && npm install --omit=dev --ignore-scripts
           zip -r ../api-app.zip .
 
       - name: Deploy to Azure Web App
