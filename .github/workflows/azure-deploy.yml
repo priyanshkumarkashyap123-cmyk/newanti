@@ -36,8 +36,15 @@ jobs:
         run: |
           mkdir -p deploy-api
           cp -r apps/api/dist deploy-api/
-          cp apps/api/package.json deploy-api/
-          cp apps/api/.deployment deploy-api/
+          # Create a deployment-specific package.json without build script
+          node -e "
+            const pkg = require('./apps/api/package.json');
+            delete pkg.scripts.build;
+            delete pkg.devDependencies;
+            pkg.scripts.start = 'node dist/index.js';
+            pkg.main = 'dist/index.js';
+            console.log(JSON.stringify(pkg, null, 2));
+          " > deploy-api/package.json
           cd deploy-api && npm install --omit=dev --ignore-scripts
           zip -r ../api-app.zip .
 
