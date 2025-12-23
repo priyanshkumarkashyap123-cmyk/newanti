@@ -33,7 +33,7 @@
 ┌─────────────────────┐         ┌─────────────────────┐
 │  Azure App Service  │         │  Azure App Service  │
 │  (Node.js API)      │         │  (Python Engine)    │
-│  beamlab-api        │         │  beamlab-python     │
+│  api-beamlab        │         │  api-beamlab-python │
 └─────────┬───────────┘         └─────────────────────┘
           │
           ▼
@@ -86,8 +86,8 @@ az group create --name beamlab-rg --location centralindia
 ```bash
 az webapp create \
   --resource-group beamlab-rg \
-  --name beamlab-python \
-  --runtime "PYTHON:3.11" \
+  --name api-beamlab-python \
+  --runtime "PYTHON:3.12" \
   --sku B1
 ```
 
@@ -96,7 +96,7 @@ az webapp create \
 ```bash
 az webapp config appsettings set \
   --resource-group beamlab-rg \
-  --name beamlab-python \
+  --name api-beamlab-python \
   --settings \
     GEMINI_API_KEY="AIzaSyDFYavn0QKWTJ8OjQkoe8IalmQijA6BRhw" \
     USE_MOCK_AI="false" \
@@ -109,8 +109,8 @@ az webapp config appsettings set \
 ```bash
 az webapp config set \
   --resource-group beamlab-rg \
-  --name beamlab-python \
-  --startup-file "cd apps/backend-python && pip install -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port 8000"
+  --name api-beamlab-python \
+  --startup-file "uvicorn main:app --host 0.0.0.0 --port 8000"
 ```
 
 ### 3.4 Deploy from GitHub
@@ -118,13 +118,13 @@ az webapp config set \
 ```bash
 az webapp deployment source config \
   --resource-group beamlab-rg \
-  --name beamlab-python \
+  --name api-beamlab-python \
   --repo-url https://github.com/YOUR_USERNAME/beamlab-ultimate \
   --branch main \
   --manual-integration
 ```
 
-**Python URL:** `https://beamlab-python.azurewebsites.net`
+**Python URL:** `https://api-beamlab-python-acbfetbrhdd7hpgj.centralindia-01.azurewebsites.net`
 
 ---
 
@@ -135,7 +135,7 @@ az webapp deployment source config \
 ```bash
 az webapp create \
   --resource-group beamlab-rg \
-  --name beamlab-api \
+  --name api-beamlab \
   --runtime "NODE:18-lts" \
   --sku B1
 ```
@@ -145,7 +145,7 @@ az webapp create \
 ```bash
 az webapp config appsettings set \
   --resource-group beamlab-rg \
-  --name beamlab-api \
+  --name api-beamlab \
   --settings \
     PORT="8080" \
     NODE_ENV="production" \
@@ -159,8 +159,8 @@ az webapp config appsettings set \
 ```bash
 az webapp config set \
   --resource-group beamlab-rg \
-  --name beamlab-api \
-  --startup-file "cd apps/api && npm install && npm run build && npm run start"
+  --name api-beamlab \
+  --startup-file "npm run start"
 ```
 
 ### 4.4 Deploy from GitHub
@@ -168,13 +168,41 @@ az webapp config set \
 ```bash
 az webapp deployment source config \
   --resource-group beamlab-rg \
-  --name beamlab-api \
+  --name api-beamlab \
   --repo-url https://github.com/YOUR_USERNAME/beamlab-ultimate \
   --branch main \
   --manual-integration
 ```
 
-**Node.js URL:** `https://beamlab-api.azurewebsites.net`
+**Node.js URL:** `https://api-beamlab.azurewebsites.net`
+
+---
+
+## Step 4A: GitHub Actions CI/CD (Recommended)
+
+### 4A.1 Get Publish Profiles
+
+1. In Azure Portal → App Services → **api-beamlab** → **Download publish profile**
+2. In Azure Portal → App Services → **api-beamlab-python** → **Download publish profile**
+
+### 4A.2 Add GitHub Secrets
+
+1. Go to your GitHub repo → **Settings** → **Secrets and variables** → **Actions**
+2. Add **repository secrets**:
+
+| Secret Name | Value |
+|-------------|-------|
+| `AZURE_WEBAPP_PUBLISH_PROFILE_API` | Contents of `api-beamlab.PublishSettings` file |
+| `AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON` | Contents of `api-beamlab-python.PublishSettings` file |
+
+> **How to get the contents:** Open the downloaded `.PublishSettings` file in a text editor, copy the **entire** XML content, and paste it as the secret value.
+
+### 4A.3 Trigger Deployment
+
+Every push to `main` branch triggers automatic deployment of both backends:
+- `.github/workflows/azure-deploy.yml` handles the CI/CD pipeline
+- Node.js API deploys to `api-beamlab`
+- Python Engine deploys to `api-beamlab-python`
 
 ---
 
@@ -307,10 +335,10 @@ Ensure domain is added in Clerk Dashboard and `VITE_CLERK_PUBLISHABLE_KEY` is se
 
 ```bash
 # View logs
-az webapp log tail --resource-group beamlab-rg --name beamlab-python
+az webapp log tail --resource-group beamlab-rg --name api-beamlab-python
 
 # Restart app
-az webapp restart --resource-group beamlab-rg --name beamlab-python
+az webapp restart --resource-group beamlab-rg --name api-beamlab-python
 
 # Delete everything
 az group delete --name beamlab-rg --yes

@@ -619,6 +619,298 @@ export class ReportGenerator {
         this.addFooter();
         return this.doc.output('dataurlstring');
     }
+
+    // ============================================
+    // INPUT DATA TABLES
+    // ============================================
+
+    /**
+     * Add node coordinates table
+     */
+    addNodesTable(nodes: Array<{ id: string; x: number; y: number; z: number }>): void {
+        this.tableCount++;
+        this.addResultsTable(
+            `Table ${this.tableCount}: Node Coordinates`,
+            ['Node ID', 'X (m)', 'Y (m)', 'Z (m)'],
+            nodes.map(node => [
+                node.id.slice(0, 10),
+                node.x.toFixed(3),
+                node.y.toFixed(3),
+                node.z.toFixed(3),
+            ])
+        );
+    }
+
+    /**
+     * Add members table
+     */
+    addMembersTable(members: Array<{ id: string; startNodeId: string; endNodeId: string; sectionId: string }>): void {
+        this.tableCount++;
+        this.addResultsTable(
+            `Table ${this.tableCount}: Member Properties`,
+            ['Member ID', 'Start Node', 'End Node', 'Section'],
+            members.map(member => [
+                member.id.slice(0, 10),
+                member.startNodeId.slice(0, 10),
+                member.endNodeId.slice(0, 10),
+                member.sectionId,
+            ])
+        );
+    }
+
+    // ============================================
+    // HAND CALCULATION STEPS
+    // ============================================
+
+    /**
+     * Add hand calculation steps from backend analysis
+     */
+    addHandCalcSteps(steps: string[], title?: string): void {
+        // Get starting Y position
+        let startY = 60;
+        try {
+            startY = (this.doc as any).lastAutoTable?.finalY + 15 || startY;
+        } catch {
+            // Use default
+        }
+
+        // Check if we need a new page
+        if (startY > this.pageHeight - 80) {
+            this.doc.addPage();
+            this.addHeader('Analysis Calculations');
+            startY = this.contentTop + 5;
+        }
+
+        // Section Title
+        this.doc.setFontSize(12);
+        this.doc.setFont('helvetica', 'bold');
+        this.doc.setTextColor(59, 130, 246);
+        this.doc.text(title || 'Hand Calculation Steps', this.margin, startY);
+        this.doc.setTextColor(0, 0, 0);
+
+        let y = startY + 8;
+
+        // Add each step
+        for (const step of steps) {
+            // Check for page break
+            if (y > this.pageHeight - 30) {
+                this.doc.addPage();
+                this.addHeader('Analysis Calculations (continued)');
+                y = this.contentTop + 5;
+            }
+
+            // Format step text
+            this.doc.setFontSize(9);
+            this.doc.setFont('helvetica', 'normal');
+
+            // Check if it's a step number line
+            if (step.startsWith('Step')) {
+                this.doc.setFont('helvetica', 'bold');
+                this.doc.setTextColor(75, 85, 99);
+            } else {
+                this.doc.setTextColor(60, 60, 60);
+            }
+
+            // Wrap long lines
+            const lines = this.doc.splitTextToSize(step, this.pageWidth - 2 * this.margin - 5);
+            this.doc.text(lines, this.margin + 3, y);
+
+            y += lines.length * 4 + 2;
+            this.doc.setTextColor(0, 0, 0);
+        }
+    }
+
+    // ============================================
+    // COMPLETE REPORT GENERATION
+    // ============================================
+
+    /**
+     * Generate a complete 4-page analysis report
+     */
+    generateFullReport(options: {
+        project: ProjectData;
+        canvasImage?: string;
+        nodes: Array<{ id: string; x: number; y: number; z: number }>;
+        members: Array<{ id: string; startNodeId: string; endNodeId: string; sectionId: string }>;
+        handCalcSteps?: string[];
+        reactions?: ReactionRow[];
+        memberForces?: MemberForceRow[];
+        designResults?: DesignResult[];
+    }): void {
+        const {
+            project,
+            canvasImage,
+            nodes,
+            members,
+            handCalcSteps,
+            reactions,
+            memberForces,
+            designResults
+        } = options;
+
+        // ========== PAGE 1: Title & Model ==========
+        this.addHeader('Structural Analysis Report');
+        this.addProjectInfo(project);
+
+        if (canvasImage) {
+            this.add3DSnapshot(canvasImage, 'Figure 1: 3D Structural Model View');
+        }
+
+        // ========== PAGE 2: Input Data ==========
+        this.addPage('Input Data');
+
+        // Add model summary
+        this.doc.setFontSize(10);
+        this.doc.setFont('helvetica', 'normal');
+        this.doc.text(`Total Nodes: ${nodes.length}`, this.margin, this.contentTop + 5);
+        this.doc.text(`Total Members: ${members.length}`, this.margin + 50, this.contentTop + 5);
+
+        // Nodes table
+        if (nodes.length > 0) {
+            this.addNodesTable(nodes);
+        }
+
+        // Members table
+        if (members.length > 0) {
+            this.addMembersTable(members);
+        }
+
+        // ========== PAGE 3: Analysis Results ==========
+        this.addPage('Analysis Results');
+
+        // Hand calculation steps
+        if (handCalcSteps && handCalcSteps.length > 0) {
+            this.addHandCalcSteps(handCalcSteps, 'Hand Calculation Steps');
+        }
+
+        // Reactions table
+        if (reactions && reactions.length > 0) {
+            this.addReactionsTable(reactions, 'Support Reactions');
+        }
+
+        // Member forces (optional on same or new page)
+        if (memberForces && memberForces.length > 0) {
+            this.addMemberForcesTable(memberForces, 'Member Internal Forces');
+        }
+
+        // ========== PAGE 4: Pass/Fail Checks ==========
+        if (designResults && designResults.length > 0) {
+            this.addPage('Design Checks');
+            this.addDesignSection(designResults);
+        }
+    }
+
+    // ============================================
+    // WATERMARK
+    // ============================================
+
+    /**
+     * Add watermark to all pages
+     */
+    addWatermark(): void {
+        const totalPages = this.doc.getNumberOfPages();
+
+        for (let i = 1; i <= totalPages; i++) {
+            this.doc.setPage(i);
+
+            // Watermark at top right
+            this.doc.setFontSize(10);
+            this.doc.setFont('helvetica', 'bold');
+            this.doc.setTextColor(200, 200, 200);
+
+            // Diagonal watermark
+            this.doc.text(
+                'BeamLab Ultimate',
+                this.pageWidth - this.margin - 5,
+                this.margin + 5,
+                { align: 'right', angle: 0 }
+            );
+        }
+
+        this.doc.setTextColor(0, 0, 0);
+    }
+
+    // ============================================
+    // ENHANCED SAVE WITH WATERMARK
+    // ============================================
+
+    /**
+     * Save the PDF report with watermark
+     */
+    saveWithWatermark(filename: string): void {
+        // Add watermark to all pages
+        this.addWatermark();
+
+        // Add footers to all pages
+        this.addFooter();
+
+        // Generate filename
+        const cleanFilename = filename.replace(/[^a-zA-Z0-9]/g, '_');
+        const timestamp = format(new Date(), 'yyyyMMdd_HHmm');
+        const fullFilename = `${cleanFilename}_Report_${timestamp}.pdf`;
+
+        // Save
+        this.doc.save(fullFilename);
+    }
+}
+
+// ============================================
+// CONVENIENCE FUNCTION
+// ============================================
+
+/**
+ * Quick function to generate a complete report
+ */
+export async function generateAnalysisReport(options: {
+    projectName: string;
+    clientName?: string;
+    engineerName?: string;
+    canvasElement?: HTMLCanvasElement;
+    nodes: Array<{ id: string; x: number; y: number; z: number }>;
+    members: Array<{ id: string; startNodeId: string; endNodeId: string; sectionId: string }>;
+    handCalcSteps?: string[];
+    reactions?: ReactionRow[];
+    designResults?: DesignResult[];
+}): Promise<void> {
+    const {
+        projectName,
+        clientName,
+        engineerName,
+        canvasElement,
+        nodes,
+        members,
+        handCalcSteps,
+        reactions,
+        designResults
+    } = options;
+
+    // Get canvas screenshot if available
+    let canvasImage: string | undefined;
+    if (canvasElement) {
+        canvasImage = canvasElement.toDataURL('image/png');
+    }
+
+    // Create report generator
+    const report = new ReportGenerator();
+
+    // Generate full report
+    report.generateFullReport({
+        project: {
+            projectName,
+            clientName,
+            engineerName,
+            description: 'Structural Analysis Report generated by BeamLab Ultimate'
+        },
+        canvasImage,
+        nodes,
+        members,
+        handCalcSteps,
+        reactions,
+        designResults
+    });
+
+    // Save with watermark
+    report.saveWithWatermark(projectName);
 }
 
 export default ReportGenerator;

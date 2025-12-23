@@ -1,0 +1,298 @@
+{
+    "databases": {
+        "european": {
+            "name": "European (HE/IPE)",
+            "sections": {
+                "IPE 200": {
+                    "type": "I-BEAM",
+                    "height": 200,
+                    "width": 100,
+                    "webThickness": 5.6,
+                    "flangeThickness": 8.5,
+                    "area": 2850,
+                    "Iy": 19430000,
+                    "Iz": 1420000,
+                    "weight": 22.4
+                },
+                "IPE 220": {
+                    "type": "I-BEAM",
+                    "height": 220,
+                    "width": 110,
+                    "webThickness": 5.9,
+                    "flangeThickness": 9.2,
+                    "area": 3340,
+                    "Iy": 27720000,
+                    "Iz": 2050000,
+                    "weight": 26.2
+                },
+                "IPE 240": {
+                    "type": "I-BEAM",
+                    "height": 240,
+                    "width": 120,
+                    "webThickness": 6.2,
+                    "flangeThickness": 9.8,
+                    "area": 3910,
+                    "Iy": 38920000,
+                    "Iz": 2840000,
+                    "weight": 30.7
+                },
+                "HEA 200": {
+                    "type": "I-BEAM",
+                    "height": 190,
+                    "width": 200,
+                    "webThickness": 6.5,
+                    "flangeThickness": 10,
+                    "area": 5380,
+                    "Iy": 36920000,
+                    "Iz": 13360000,
+                    "weight": 42.3
+                },
+                "HEB 200": {
+                    "type": "I-BEAM",
+                    "height": 200,
+                    "width": 200,
+                    "webThickness": 9,
+                    "flangeThickness": 15,
+                    "area": 7810,
+                    "Iy": 56960000,
+                    "Iz": 20000000,
+                    "weight": 61.3
+                }
+            }
+        },
+        "us": {
+            "name": "US (W-Shapes)",
+            "sections": {
+                "W8x31": {
+                    "type": "I-BEAM",
+                    "height": 203,
+                    "width": 203,
+                    "webThickness": 7.2,
+                    "flangeThickness": 11,
+                    "area": 5870,
+                    "Iy": 47300000,
+                    "Iz": 15700000,
+                    "weight": 46.1
+                },
+                "W10x33": {
+                    "type": "I-BEAM",
+                    "height": 247,
+                    "width": 202,
+                    "webThickness": 7.4,
+                    "flangeThickness": 11.2,
+                    "area": 6260,
+                    "Iy": 72000000,
+                    "Iz": 15800000,
+                    "weight": 49.1
+                },
+                "W12x26": {
+                    "type": "I-BEAM",
+                    "height": 310,
+                    "width": 165,
+                    "webThickness": 5.8,
+                    "flangeThickness": 9.7,
+                    "area": 4940,
+                    "Iy": 85600000,
+                    "Iz": 8600000,
+                    "weight": 38.7
+                },
+                "W14x30": {
+                    "type": "I-BEAM",
+                    "height": 352,
+                    "width": 171,
+                    "webThickness": 6.9,
+                    "flangeThickness": 9.8,
+                    "area": 5685,
+                    "Iy": 127800000,
+                    "Iz": 10400000,
+                    "weight": 44.6
+                },
+                "W16x36": {
+                    "type": "I-BEAM",
+                    "height": 403,
+                    "width": 178,
+                    "webThickness": 7.5,
+                    "flangeThickness": 10.9,
+                    "area": 6840,
+                    "Iy": 186400000,
+                    "Iz": 13100000,
+                    "weight": 53.6
+                }
+            }
+        },
+        "uk": {
+            "name": "UK (UB/UC)",
+            "sections": {
+                "UB 203x133x25": {
+                    "type": "I-BEAM",
+                    "height": 203,
+                    "width": 133,
+                    "webThickness": 5.7,
+                    "flangeThickness": 7.8,
+                    "area": 3200,
+                    "Iy": 23400000,
+                    "Iz": 3085000,
+                    "weight": 25.1
+                },
+                "UB 254x146x31": {
+                    "type": "I-BEAM",
+                    "height": 251,
+                    "width": 146,
+                    "webThickness": 6,
+                    "flangeThickness": 8.6,
+                    "area": 3970,
+                    "Iy": 44100000,
+                    "Iz": 4400000,
+                    "weight": 31.1
+                },
+                "UB 305x165x40": {
+                    "type": "I-BEAM",
+                    "height": 303,
+                    "width": 165,
+                    "webThickness": 6,
+                    "flangeThickness": 10.2,
+                    "area": 5130,
+                    "Iy": 85000000,
+                    "Iz": 7640000,
+                    "weight": 40.3
+                },
+                "UC 152x152x23": {
+                    "type": "I-BEAM",
+                    "height": 152.4,
+                    "width": 152.2,
+                    "webThickness": 5.8,
+                    "flangeThickness": 6.8,
+                    "area": 2940,
+                    "Iy": 12500000,
+                    "Iz": 4000000,
+                    "weight": 23.0
+                },
+                "UC 203x203x46": {
+                    "type": "I-BEAM",
+                    "height": 203.2,
+                    "width": 203.6,
+                    "webThickness": 7.2,
+                    "flangeThickness": 11,
+                    "area": 5870,
+                    "Iy": 45700000,
+                    "Iz": 15400000,
+                    "weight": 46.1
+                }
+            }
+        },
+        "tubes": {
+            "name": "Hollow Sections",
+            "sections": {
+                "SHS 100x100x5": {
+                    "type": "TUBE",
+                    "outerWidth": 100,
+                    "outerHeight": 100,
+                    "thickness": 5,
+                    "area": 1890,
+                    "Iy": 2850000,
+                    "Iz": 2850000,
+                    "weight": 14.8
+                },
+                "RHS 150x100x6": {
+                    "type": "TUBE",
+                    "outerWidth": 150,
+                    "outerHeight": 100,
+                    "thickness": 6,
+                    "area": 2860,
+                    "Iy": 4200000,
+                    "Iz": 7300000,
+                    "weight": 22.4
+                },
+                "CHS 114.3x5": {
+                    "type": "CIRCLE",
+                    "diameter": 114.3,
+                    "thickness": 5,
+                    "area": 1716,
+                    "Iy": 2200000,
+                    "Iz": 2200000,
+                    "weight": 13.5
+                }
+            }
+        },
+        "angles": {
+            "name": "Angles & Channels",
+            "sections": {
+                "L 75x75x8": {
+                    "type": "L-ANGLE",
+                    "legA": 75,
+                    "legB": 75,
+                    "thickness": 8,
+                    "area": 1150,
+                    "Iy": 590000,
+                    "Iz": 590000,
+                    "weight": 9.0
+                },
+                "L 100x100x10": {
+                    "type": "L-ANGLE",
+                    "legA": 100,
+                    "legB": 100,
+                    "thickness": 10,
+                    "area": 1920,
+                    "Iy": 1760000,
+                    "Iz": 1760000,
+                    "weight": 15.1
+                },
+                "C 150x75": {
+                    "type": "C-CHANNEL",
+                    "height": 150,
+                    "width": 75,
+                    "webThickness": 6.5,
+                    "flangeThickness": 10,
+                    "area": 2210,
+                    "Iy": 6600000,
+                    "Iz": 900000,
+                    "weight": 17.4
+                }
+            }
+        }
+    },
+    "materials": {
+        "S275": {
+            "name": "Steel S275",
+            "E": 210000,
+            "Fy": 275,
+            "density": 7850,
+            "poisson": 0.3
+        },
+        "S355": {
+            "name": "Steel S355",
+            "E": 210000,
+            "Fy": 355,
+            "density": 7850,
+            "poisson": 0.3
+        },
+        "S460": {
+            "name": "Steel S460 (High Strength)",
+            "E": 210000,
+            "Fy": 460,
+            "density": 7850,
+            "poisson": 0.3
+        },
+        "A36": {
+            "name": "ASTM A36",
+            "E": 200000,
+            "Fy": 250,
+            "density": 7850,
+            "poisson": 0.3
+        },
+        "A992": {
+            "name": "ASTM A992",
+            "E": 200000,
+            "Fy": 345,
+            "density": 7850,
+            "poisson": 0.3
+        },
+        "Aluminium6061": {
+            "name": "Aluminium 6061-T6",
+            "E": 69000,
+            "Fy": 276,
+            "density": 2700,
+            "poisson": 0.33
+        }
+    }
+}

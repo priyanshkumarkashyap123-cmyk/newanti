@@ -16,3 +16,6 @@ export { Button, buttonVariants } from './button';
 
 // Data Display
 export { DataTable, createNumberColumn, createIdColumn } from './data-table';
+
+// Property Inspector
+export { PropertyInspector } from './PropertyInspector';

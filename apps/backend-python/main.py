@@ -90,6 +90,225 @@ async def health_check():
 
 
 # ============================================
+# BEAM ANALYSIS ENDPOINT (with hand calculations)
+# ============================================
+
+from pydantic import BaseModel
+from typing import List as ListType, Dict, Any
+
+class BeamLoadInput(BaseModel):
+    type: str  # "point", "udl", "uvl"
+    magnitude: float
+    position: float
+    end_position: Optional[float] = None
+    end_magnitude: Optional[float] = None
+
+class BeamAnalysisRequest(BaseModel):
+    length: float
+    loads: ListType[BeamLoadInput]
+    E: Optional[float] = 200e6
+    I: Optional[float] = 1e-4
+
+@app.post("/analyze/beam", tags=["Analysis"])
+async def analyze_beam(request: BeamAnalysisRequest):
+    """
+    Analyze a simply supported beam with various loads.
+    
+    Returns:
+    - Hand calculation steps (for educational display)
+    - 100 data points for SFD/BMD diagrams
+    - Maximum values and their locations
+    """
+    try:
+        from analysis.solver import (
+            BeamSolver, BeamAnalysisInput, Load, LoadType, Support
+        )
+        
+        # Convert request loads to solver format
+        loads = []
+        for load in request.loads:
+            load_type = {
+                "point": LoadType.POINT,
+                "udl": LoadType.UDL,
+                "uvl": LoadType.UVL
+            }.get(load.type.lower(), LoadType.POINT)
+            
+            loads.append(Load(
+                type=load_type,
+                magnitude=load.magnitude,
+                position=load.position,
+                end_position=load.end_position,
+                end_magnitude=load.end_magnitude
+            ))
+        
+        # Create beam input
+        beam_input = BeamAnalysisInput(
+            length=request.length,
+            loads=loads,
+            supports=[
+                Support(position=0, type="pinned"),
+                Support(position=request.length, type="roller")
+            ],
+            E=request.E or 200e6,
+            I=request.I or 1e-4
+        )
+        
+        # Solve
+        solver = BeamSolver(beam_input)
+        result = solver.solve()
+        
+        return {
+            "success": result.success,
+            "result": {
+                "max_moment": result.max_moment,
+                "max_shear": result.max_shear,
+                "max_deflection": result.max_deflection,
+                "max_moment_location": result.max_moment_location,
+                "max_shear_location": result.max_shear_location,
+                "reactions": result.reactions
+            },
+            "steps": result.steps,
+            "diagram": {
+                "x_values": result.diagram.x_values,
+                "shear_values": result.diagram.shear_values,
+                "moment_values": result.diagram.moment_values,
+                "deflection_values": result.diagram.deflection_values
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================
+# 3D FRAME ANALYSIS ENDPOINT (PyNite FEA)
+# ============================================
+
+class FrameNodeInput(BaseModel):
+    id: str
+    x: float
+    y: float
+    z: float
+    support: Optional[str] = "none"
+
+class FrameMemberInput(BaseModel):
+    id: str
+    startNodeId: str
+    endNodeId: str
+    E: Optional[float] = 200e6
+    G: Optional[float] = 77e6
+    Iy: Optional[float] = 1e-4
+    Iz: Optional[float] = 1e-4
+    J: Optional[float] = 1e-5
+    A: Optional[float] = 0.01
+
+class NodeLoadInput(BaseModel):
+    nodeId: str
+    fx: Optional[float] = 0
+    fy: Optional[float] = 0
+    fz: Optional[float] = 0
+    mx: Optional[float] = 0
+    my: Optional[float] = 0
+    mz: Optional[float] = 0
+
+class MemberDistLoadInput(BaseModel):
+    memberId: str
+    direction: Optional[str] = "Fy"
+    w1: float
+    w2: Optional[float] = None  # If None, uses w1 (UDL)
+    startPos: Optional[float] = 0
+    endPos: Optional[float] = 1
+    isRatio: Optional[bool] = True
+
+class FrameAnalysisRequest(BaseModel):
+    nodes: ListType[FrameNodeInput]
+    members: ListType[FrameMemberInput]
+    node_loads: Optional[ListType[NodeLoadInput]] = []
+    distributed_loads: Optional[ListType[MemberDistLoadInput]] = []
+
+@app.post("/analyze/frame", tags=["Analysis"])
+async def analyze_3d_frame(request: FrameAnalysisRequest):
+    """
+    Analyze a 3D frame structure using PyNite FEA.
+    
+    Returns:
+    - Node displacements and reactions
+    - Member forces at 100 points (shear, moment, axial, torsion)
+    - Deflection arrays
+    """
+    try:
+        from analysis.fea_engine import analyze_frame
+        
+        # Convert to dict format
+        model_dict = {
+            "nodes": [
+                {
+                    "id": n.id,
+                    "x": n.x,
+                    "y": n.y,
+                    "z": n.z,
+                    "support": n.support or "none"
+                }
+                for n in request.nodes
+            ],
+            "members": [
+                {
+                    "id": m.id,
+                    "startNodeId": m.startNodeId,
+                    "endNodeId": m.endNodeId,
+                    "E": m.E or 200e6,
+                    "G": m.G or 77e6,
+                    "Iy": m.Iy or 1e-4,
+                    "Iz": m.Iz or 1e-4,
+                    "J": m.J or 1e-5,
+                    "A": m.A or 0.01
+                }
+                for m in request.members
+            ],
+            "node_loads": [
+                {
+                    "nodeId": l.nodeId,
+                    "fx": l.fx or 0,
+                    "fy": l.fy or 0,
+                    "fz": l.fz or 0,
+                    "mx": l.mx or 0,
+                    "my": l.my or 0,
+                    "mz": l.mz or 0
+                }
+                for l in (request.node_loads or [])
+            ],
+            "distributed_loads": [
+                {
+                    "memberId": l.memberId,
+                    "direction": l.direction or "Fy",
+                    "w1": l.w1,
+                    "w2": l.w2 if l.w2 is not None else l.w1,
+                    "startPos": l.startPos or 0,
+                    "endPos": l.endPos or 1,
+                    "isRatio": l.isRatio if l.isRatio is not None else True
+                }
+                for l in (request.distributed_loads or [])
+            ]
+        }
+        
+        # Run analysis
+        result = analyze_frame(model_dict)
+        
+        if not result['success']:
+            raise HTTPException(status_code=400, detail=result.get('error', 'Analysis failed'))
+        
+        return result
+        
+    except ImportError as e:
+        raise HTTPException(
+            status_code=500,
+            detail="PyNiteFEA not installed. Run: pip install PyNiteFEA"
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================
 # TEMPLATE GENERATION ENDPOINT
 # ============================================
 

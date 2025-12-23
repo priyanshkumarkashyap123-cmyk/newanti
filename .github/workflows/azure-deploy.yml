@@ -6,10 +6,10 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME_API: beamlab-api
-  AZURE_WEBAPP_NAME_PYTHON: beamlab-python
+  AZURE_WEBAPP_NAME_API: api-beamlab
+  AZURE_WEBAPP_NAME_PYTHON: api-beamlab-python
   NODE_VERSION: '18.x'
-  PYTHON_VERSION: '3.11'
+  PYTHON_VERSION: '3.12'
 
 jobs:
   # Build and deploy Node.js API
