@@ -104,8 +104,8 @@ jobs:
       - name: Build Frontend
         working-directory: apps/web
         env:
-          VITE_API_URL: https://api-beamlab.azurewebsites.net
-          VITE_PYTHON_API_URL: https://api-beamlab-python.azurewebsites.net
+          VITE_API_URL: https://api-beamlab-bgbzdvbah3bgegd9.centralindia-01.azurewebsites.net
+          VITE_PYTHON_API_URL: https://api-beamlab-python-acbfetbrhdd7hpgj.centralindia-01.azurewebsites.net
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
         run: npm run build
 
