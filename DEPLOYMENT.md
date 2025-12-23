@@ -190,19 +190,42 @@ az webapp deployment source config \
 1. Go to your GitHub repo → **Settings** → **Secrets and variables** → **Actions**
 2. Add **repository secrets**:
 
-| Secret Name | Value |
-|-------------|-------|
-| `AZURE_WEBAPP_PUBLISH_PROFILE_API` | Contents of `api-beamlab.PublishSettings` file |
-| `AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON` | Contents of `api-beamlab-python.PublishSettings` file |
+| Secret Name | Value | Notes |
+|-------------|-------|-------|
+| `AZURE_WEBAPP_PUBLISH_PROFILE_API` | Contents of `api-beamlab.PublishSettings` | Download from Azure Portal |
+| `AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON` | Contents of `api-beamlab-python.PublishSettings` | Download from Azure Portal |
+| `AZURE_STATIC_WEB_APPS_API_TOKEN` | Deployment token from Static Web App | Click "Manage deployment token" |
+| `VITE_CLERK_PUBLISHABLE_KEY` | `pk_test_Y2FwYWJsZS1vd2wtNjYuY2xlcmsuYWNjb3VudHMuZGV2JA` | From Clerk Dashboard |
 
-> **How to get the contents:** Open the downloaded `.PublishSettings` file in a text editor, copy the **entire** XML content, and paste it as the secret value.
+> **How to get publish profiles:** Azure Portal → App Service → Download publish profile → Copy entire XML content
 
-### 4A.3 Trigger Deployment
+### 4A.3 Azure App Settings (Environment Variables)
 
-Every push to `main` branch triggers automatic deployment of both backends:
-- `.github/workflows/azure-deploy.yml` handles the CI/CD pipeline
-- Node.js API deploys to `api-beamlab`
-- Python Engine deploys to `api-beamlab-python`
+Configure these in **Azure Portal → App Service → Configuration → Application settings**:
+
+**Node.js API (api-beamlab):**
+| Setting | Value |
+|---------|-------|
+| `MONGODB_URI` | `mongodb+srv://beamlab_admin:yLCaEABYdoy5yKYd@cluster0.qiu5szt.mongodb.net/beamlab` |
+| `GEMINI_API_KEY` | `AIzaSyDFYavn0QKWTJ8OjQkoe8IalmQijA6BRhw` |
+| `CLERK_SECRET_KEY` | `sk_test_7MqXdNmcEp22DKExdwWXDDjn7QzMimENVg5GHo3Q3f` |
+| `FRONTEND_URL` | `https://beamlabultimate.tech` |
+| `NODE_ENV` | `production` |
+
+**Python Engine (api-beamlab-python):**
+| Setting | Value |
+|---------|-------|
+| `GEMINI_API_KEY` | `AIzaSyDFYavn0QKWTJ8OjQkoe8IalmQijA6BRhw` |
+| `FRONTEND_URL` | `https://beamlabultimate.tech` |
+| `ALLOWED_ORIGINS` | `https://beamlabultimate.tech,https://www.beamlabultimate.tech` |
+
+### 4A.4 Trigger Deployment
+
+Every push to `main` branch triggers automatic deployment:
+- `.github/workflows/azure-deploy.yml` handles the CI/CD
+- **deploy-api**: Node.js API → `api-beamlab`
+- **deploy-python**: Python Engine → `api-beamlab-python`
+- **deploy-web**: React Frontend → Azure Static Web Apps
 
 ---
 
