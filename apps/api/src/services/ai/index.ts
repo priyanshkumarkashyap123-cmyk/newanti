@@ -10,6 +10,6 @@ export {
     type GeneratedMember,
     type GenerationRequest,
     type GenerationResult
-} from './ModelGeneratorService';
+} from './ModelGeneratorService.js';
 
-export { AIArchitectService } from './AIArchitectService';
+export { AIArchitectService } from './AIArchitectService.js';

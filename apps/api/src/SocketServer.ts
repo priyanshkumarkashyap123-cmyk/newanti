@@ -487,7 +487,7 @@ export class SocketServer {
      * Get next user color (cycles through palette)
      */
     private getNextColor(): string {
-        const color = USER_COLORS[this.colorIndex % USER_COLORS.length];
+        const color = USER_COLORS[this.colorIndex % USER_COLORS.length] ?? '#3B82F6';
         this.colorIndex++;
         return color;
     }

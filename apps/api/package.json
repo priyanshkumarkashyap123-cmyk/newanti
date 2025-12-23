@@ -20,6 +20,7 @@
         "mathjs": "^15.1.0",
         "mongodb": "^6.10.0",
         "mongoose": "^9.0.2",
+        "openai": "^6.15.0",
         "razorpay": "^2.9.6",
         "socket.io": "^4.8.1",
         "stripe": "^20.1.0",

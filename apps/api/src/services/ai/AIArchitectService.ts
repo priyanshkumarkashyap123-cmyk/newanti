@@ -7,7 +7,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Initialize Gemini AI
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+const genAI = new GoogleGenerativeAI(process.env['GEMINI_API_KEY'] || '');
 
 // ============================================
 // TYPES
@@ -108,7 +108,7 @@ export class AIArchitectService {
     static async generateStructure(userPrompt: string): Promise<GenerationResult> {
         try {
             // Check for API key
-            if (!process.env.GEMINI_API_KEY) {
+            if (!process.env['GEMINI_API_KEY']) {
                 console.warn('[AIArchitect] No GEMINI_API_KEY, using fallback');
                 return this.generateFallback(userPrompt);
             }

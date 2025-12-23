@@ -89,7 +89,7 @@ export class ModelGeneratorService {
     private model: string = 'gpt-4-turbo-preview';
 
     constructor() {
-        const apiKey = process.env.OPENAI_API_KEY;
+        const apiKey = process.env['OPENAI_API_KEY'];
         if (apiKey) {
             this.openai = new OpenAI({ apiKey });
         }
@@ -173,7 +173,7 @@ export class ModelGeneratorService {
             let jsonStr = content.trim();
             if (jsonStr.startsWith('```')) {
                 const match = jsonStr.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-                if (match) {
+                if (match?.[1]) {
                     jsonStr = match[1];
                 }
             }

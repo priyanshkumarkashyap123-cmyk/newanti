@@ -138,8 +138,9 @@ export function analyzeStructure(request: AnalysisRequest): AnalysisResult {
 
         if (startIdx === undefined || endIdx === undefined) continue;
 
-        const startNode = nodes[startIdx]!;
-        const endNode = nodes[endIdx]!;
+        const startNode = nodes[startIdx];
+        const endNode = nodes[endIdx];
+        if (!startNode || !endNode) continue;
 
         // Calculate member geometry
         const dx = endNode.x - startNode.x;
@@ -173,7 +174,16 @@ export function analyzeStructure(request: AnalysisRequest): AnalysisResult {
         // Assemble into global matrix
         for (let i = 0; i < 6; i++) {
             for (let j = 0; j < 6; j++) {
-                K[dofs[i]!]![dofs[j]!] += kGlobal[i]![j]!;
+                const di = dofs[i];
+                const dj = dofs[j];
+                const kRow = kGlobal[i];
+                if (di !== undefined && dj !== undefined && kRow !== undefined) {
+                    const KRow = K[di];
+                    const kVal = kRow[j];
+                    if (KRow !== undefined && kVal !== undefined) {
+                        KRow[dj] = (KRow[dj] ?? 0) + kVal;
+                    }
+                }
             }
         }
     }
