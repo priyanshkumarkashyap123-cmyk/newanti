@@ -23,13 +23,14 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: apps/api/package-lock.json
+          cache-dependency-path: package-lock.json
 
-      - name: Install and Build
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build API
         working-directory: apps/api
-        run: |
-          npm install
-          npm run build
+        run: npm run build
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
@@ -48,6 +49,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: apps/backend-python/requirements.txt
 
       - name: Install dependencies
         working-directory: apps/backend-python
@@ -55,9 +58,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Create zip package
+        working-directory: apps/backend-python
+        run: zip -r ../../python-app.zip .
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME_PYTHON }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON }}
-          package: apps/backend-python
+          package: python-app.zip
