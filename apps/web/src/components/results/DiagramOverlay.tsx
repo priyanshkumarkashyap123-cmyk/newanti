@@ -10,7 +10,7 @@
  */
 
 import { FC, useMemo, useState, useCallback, useRef } from 'react';
-import { useThree, useFrame, ThreeEvent } from '@react-three/fiber';
+import { ThreeEvent } from '@react-three/fiber';
 import { Html, Line } from '@react-three/drei';
 import * as THREE from 'three';
 
@@ -114,13 +114,14 @@ const createDiagramGeometry = (
 
     // Create vertices for each point (two per point: base and top)
     for (let i = 0; i < numPoints; i++) {
-        const t = xValues[i] / beamLength; // 0 to 1 along beam
-        const value = values[i];
+        const xVal = xValues[i];
+        if (xVal === undefined) continue;
+        const value = values[i] ?? 0;
         const scaledValue = value * scale;
 
         // Base point (on beam line)
         const basePoint = new THREE.Vector3()
-            .addVectors(startPos, beamDirection.clone().multiplyScalar(xValues[i]))
+            .addVectors(startPos, beamDirection.clone().multiplyScalar(xVal))
             .add(perpendicular.clone().multiplyScalar(offset));
 
         // Top point (offset by diagram value in Y direction)
@@ -254,7 +255,7 @@ export const DiagramOverlay: FC<DiagramOverlayProps> = ({
         position: THREE.Vector3;
     } | null>(null);
 
-    const { raycaster, pointer, camera } = useThree();
+    // useThree not needed for current implementation
 
     // Get values based on diagram type
     const values = useMemo(() => {
@@ -300,11 +301,13 @@ export const DiagramOverlay: FC<DiagramOverlayProps> = ({
 
         // Find closest data point
         const closestIndex = data.x_values.reduce((closest, xVal, i) => {
-            return Math.abs(xVal - x) < Math.abs(data.x_values[closest] - x) ? i : closest;
+            const closestVal = data.x_values[closest];
+            if (closestVal === undefined) return i;
+            return Math.abs(xVal - x) < Math.abs(closestVal - x) ? i : closest;
         }, 0);
 
-        const value = values[closestIndex];
-        const xValue = data.x_values[closestIndex];
+        const value = values[closestIndex] ?? 0;
+        const xValue = data.x_values[closestIndex] ?? 0;
 
         // Position for tooltip/scanner
         const scannerPos = startPos.clone().add(beamDirection.clone().multiplyScalar(xValue));
@@ -312,7 +315,7 @@ export const DiagramOverlay: FC<DiagramOverlayProps> = ({
 
         setHoverInfo({
             x: xValue,
-            value,
+            value: value,
             position: scannerPos
         });
     }, [startPos, endPos, data.x_values, values, scale]);

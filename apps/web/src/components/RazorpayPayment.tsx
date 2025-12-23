@@ -182,7 +182,7 @@ export const RazorpayPaymentModal: FC<PaymentModalProps> = ({
                     }
                 },
                 prefill: {
-                    name: userName,
+                    ...(userName ? { name: userName } : {}),
                     email: email
                 },
                 theme: {
@@ -310,9 +310,9 @@ export function useRazorpayPayment() {
 // STYLES
 // ============================================
 
-const styles: Record<string, React.CSSProperties> = {
+const styles = {
     container: {
-        position: 'fixed',
+        position: 'fixed' as const,
         top: 0,
         left: 0,
         right: 0,
@@ -357,7 +357,7 @@ const styles: Record<string, React.CSSProperties> = {
         marginTop: '4px'
     },
     features: {
-        listStyle: 'none',
+        listStyle: 'none' as const,
         padding: 0,
         margin: '24px 0',
         textAlign: 'left' as const,

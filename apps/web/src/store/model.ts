@@ -117,6 +117,9 @@ interface ModelState {
     setAnalysisResults: (results: AnalysisResults | null) => void;
     setIsAnalyzing: (analyzing: boolean) => void;
     select: (id: string, multi: boolean) => void;
+    selectNode: (id: string | null) => void;
+    selectMember: (id: string | null) => void;
+    updateNode: (id: string, updates: Partial<Node>) => void;
     clearSelection: () => void;
 
     // Tools
@@ -265,6 +268,27 @@ export const useModelStore = create<ModelState>()(
                     }),
 
                 clearSelection: () => set({ selectedIds: new Set() }),
+
+                selectNode: (id) =>
+                    set((state) => {
+                        if (id === null) return { selectedIds: new Set() };
+                        return { selectedIds: new Set([id]) };
+                    }),
+
+                selectMember: (id) =>
+                    set((state) => {
+                        if (id === null) return { selectedIds: new Set() };
+                        return { selectedIds: new Set([id]) };
+                    }),
+
+                updateNode: (id, updates) =>
+                    set((state) => {
+                        const node = state.nodes.get(id);
+                        if (!node) return state;
+                        const newNodes = new Map(state.nodes);
+                        newNodes.set(id, { ...node, ...updates });
+                        return { nodes: newNodes };
+                    }),
 
                 activeTool: 'select',
                 setTool: (tool) => set({ activeTool: tool }),

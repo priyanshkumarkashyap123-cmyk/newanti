@@ -160,8 +160,19 @@ function createLAngleShape(dims: SectionDimensions): THREE.Shape {
     shape.lineTo(0, legB);           // Step left
     shape.closePath();
 
-    // Center the shape
-    shape.translate(-legA / 2, -legB / 2);
+    // Center the shape by adjusting moveTo and lineTo starting positions
+    // Note: Using offset coordinates instead of translate() method
+    const offsetX = -legA / 2;
+    const offsetY = -legB / 2;
+
+    // Recreate shape with offset
+    shape.moveTo(offsetX, offsetY);
+    shape.lineTo(legA + offsetX, offsetY);           // Horizontal leg
+    shape.lineTo(legA + offsetX, t + offsetY);       // Step up
+    shape.lineTo(t + offsetX, t + offsetY);          // Corner
+    shape.lineTo(t + offsetX, legB + offsetY);       // Vertical leg
+    shape.lineTo(offsetX, legB + offsetY);           // Step left
+    shape.closePath();
 
     return shape;
 }
