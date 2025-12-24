@@ -1,10 +1,14 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
+import { ClerkProvider } from '@clerk/clerk-react';
 import './index.css';
 
 // Debug log
 console.log('🚀 main.tsx starting...');
+
+// Clerk publishable key from environment
+const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 // Lazy load App to catch import errors
 const initializeApp = async () => {
@@ -19,13 +23,29 @@ const initializeApp = async () => {
         }
 
         console.log('🎨 Rendering App...');
-        createRoot(rootElement).render(
-            <StrictMode>
-                <BrowserRouter>
-                    <App />
-                </BrowserRouter>
-            </StrictMode>
-        );
+        console.log('🔐 Clerk Key:', CLERK_PUBLISHABLE_KEY ? 'Present' : 'Missing');
+
+        // Conditionally wrap with ClerkProvider if key is available
+        if (CLERK_PUBLISHABLE_KEY) {
+            createRoot(rootElement).render(
+                <StrictMode>
+                    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
+                        <BrowserRouter>
+                            <App />
+                        </BrowserRouter>
+                    </ClerkProvider>
+                </StrictMode>
+            );
+        } else {
+            console.warn('⚠️ VITE_CLERK_PUBLISHABLE_KEY not set - running without authentication');
+            createRoot(rootElement).render(
+                <StrictMode>
+                    <BrowserRouter>
+                        <App />
+                    </BrowserRouter>
+                </StrictMode>
+            );
+        }
         console.log('✅ App rendered');
     } catch (error) {
         console.error('❌ Failed to initialize app:', error);
