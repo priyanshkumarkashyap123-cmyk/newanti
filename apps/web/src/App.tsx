@@ -13,6 +13,7 @@ import { Capabilities } from './pages/Capabilities';
 import { SignInPage } from './pages/SignInPage';
 import { SignUpPage } from './pages/SignUpPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { PricingPage } from './pages/PricingPage';
 
 // Layouts
 import { WorkspaceLayout } from './layouts/WorkspaceLayout';
@@ -290,6 +291,9 @@ function App() {
 
                 {/* Settings Page */}
                 <Route path="/settings" element={<SettingsPage />} />
+
+                {/* Pricing Page */}
+                <Route path="/pricing" element={<PricingPage />} />
 
                 {/* Main App - Modern Modeler with integrated sidebar */}
                 <Route path="/app" element={<ModernModeler />} />
