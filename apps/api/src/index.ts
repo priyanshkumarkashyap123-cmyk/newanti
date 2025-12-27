@@ -4,6 +4,8 @@ import { createServer } from 'http';
 import { clerkMiddleware, requireAuth, getAuth } from '@clerk/express';
 import { SocketServer } from './SocketServer.js';
 import analysisRouter from './routes/analysis/index.js';
+import userRoutes from './routes/userRoutes.js';
+import { connectDB } from './models.js';
 
 const app = express();
 const PORT = process.env['PORT'] ?? 3001;
@@ -35,6 +37,9 @@ app.get('/health', (_req: Request, res: Response) => {
 app.use('/api/analyze', analysisRouter);
 // Backwards/alternate path used by some UI flows
 app.use('/api/analysis', analysisRouter);
+
+// User Activity API (protected)
+app.use('/api/user', userRoutes);
 
 // ============================================
 // PROTECTED ROUTES (require authentication)
@@ -126,9 +131,17 @@ app.get('/api/project/:id/users', (req: Request, res: Response) => {
     });
 });
 
-// Use HTTP server instead of app.listen for socket.io
-httpServer.listen(PORT, () => {
-    console.log(`🚀 BeamLab Ultimate API running on http://localhost:${PORT}`);
-    console.log(`🔌 WebSocket server ready for real-time collaboration`);
+// Connect to MongoDB and start server
+connectDB().then(() => {
+    httpServer.listen(PORT, () => {
+        console.log(`🚀 BeamLab Ultimate API running on http://localhost:${PORT}`);
+        console.log(`🔌 WebSocket server ready for real-time collaboration`);
+    });
+}).catch(err => {
+    console.error('Failed to connect to MongoDB:', err);
+    // Start anyway for development
+    httpServer.listen(PORT, () => {
+        console.log(`🚀 BeamLab Ultimate API running on http://localhost:${PORT} (no DB)`);
+    });
 });
 
