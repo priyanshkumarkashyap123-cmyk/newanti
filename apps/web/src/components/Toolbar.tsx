@@ -3,8 +3,10 @@ import { FC, useState } from 'react';
 import { useModelStore } from '../store/model';
 import { runLocalAnalysis } from '../api/localAnalysis';
 import { ReportGenerator } from '../utils/ReportGenerator';
+import { useAuth } from '@clerk/clerk-react';
 
 export const Toolbar: FC = () => {
+    const { isSignedIn } = useAuth();
     const activeTool = useModelStore((state) => state.activeTool);
     const setTool = useModelStore((state) => state.setTool);
     const isAnalyzing = useModelStore((state) => state.isAnalyzing);
@@ -21,6 +23,17 @@ export const Toolbar: FC = () => {
     const [message, setMessage] = useState<string | null>(null);
 
     const handleAnalyze = () => {
+        // Security: Require login before analysis
+        if (!isSignedIn) {
+            const shouldLogin = window.confirm(
+                '🔒 Sign in required\n\nPlease sign in to run structural analysis.\n\nClick OK to go to login page.'
+            );
+            if (shouldLogin) {
+                window.location.href = '/sign-in';
+            }
+            return;
+        }
+
         setMessage(null);
         const result = runLocalAnalysis();
         setMessage(result.message);

@@ -36,6 +36,7 @@ import { AnalysisProgressModal, type AnalysisStage } from './AnalysisProgressMod
 import { QuickStartModal } from './QuickStartModal';
 import { ResultsToolbar } from './results/ResultsToolbar';
 import { AICommandCenter } from './ai';
+import { LoadInputDialog } from './ui/LoadInputDialog';
 
 // Analysis service
 import { analysisService } from '../services/AnalysisService';
@@ -233,6 +234,24 @@ export const ModernModeler: FC = () => {
 
     // Quick start modal
     const [showQuickStart, setShowQuickStart] = useState(false);
+
+    // UDL Load Dialog state
+    const [showLoadDialog, setShowLoadDialog] = useState(false);
+    const [loadDialogMemberId, setLoadDialogMemberId] = useState<string | undefined>();
+    const selectedIds = useModelStore((state) => state.selectedIds);
+    const activeTool = useModelStore((state) => state.activeTool);
+
+    // Watch for member selection when memberLoad tool is active
+    useEffect(() => {
+        if (activeTool === 'memberLoad' && selectedIds.size === 1) {
+            const selectedId = Array.from(selectedIds)[0];
+            // Check if it's a member (not a node)
+            if (selectedId && members.has(selectedId)) {
+                setLoadDialogMemberId(selectedId);
+                setShowLoadDialog(true);
+            }
+        }
+    }, [selectedIds, activeTool, members]);
 
     // Show quick start on first load if model is empty
     useEffect(() => {
@@ -504,6 +523,16 @@ export const ModernModeler: FC = () => {
             <QuickStartModal
                 isOpen={showQuickStart}
                 onClose={() => setShowQuickStart(false)}
+            />
+
+            {/* UDL Load Dialog - opens when memberLoad tool is active and member is selected */}
+            <LoadInputDialog
+                isOpen={showLoadDialog}
+                onClose={() => {
+                    setShowLoadDialog(false);
+                    setLoadDialogMemberId(undefined);
+                }}
+                targetMemberId={loadDialogMemberId}
             />
         </div>
     );
