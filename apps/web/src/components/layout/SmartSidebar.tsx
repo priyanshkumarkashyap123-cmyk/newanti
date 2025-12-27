@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { useUIStore, Category } from '../../store/uiStore';
 import { useModelStore } from '../../store/model';
+import { TEMPLATE_BANK } from '../../data/templates';
 
 // ============================================
 // TYPES
@@ -84,88 +85,141 @@ const AccordionItem: FC<AccordionItemProps> = ({
 
 const TemplateBankPanel: FC = () => {
     const [loading, setLoading] = useState<string | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const clearModel = useModelStore((state) => state.clearModel);
     const addNode = useModelStore((state) => state.addNode);
     const addMember = useModelStore((state) => state.addMember);
+    const updateNode = useModelStore((state) => state.updateNode);
 
-    const templates = [
-        { id: 'beam', label: 'Beam (SS)', endpoint: '/template/beam?span=6' },
-        { id: 'truss', label: 'Truss (Pratt)', endpoint: '/template/truss?span=12&height=3&bays=6' },
-        { id: 'frame', label: 'Frame (Warehouse)', endpoint: '/template/portal?width=15&height=6' },
-        { id: '3d-frame', label: '3D Building', endpoint: '/template/frame?width=12&length=12&height=3.5&stories=3' },
-    ];
+    // Get unique categories from TEMPLATE_BANK
+    const categories = ['all', ...new Set(Object.values(TEMPLATE_BANK).map(t => t.category))];
 
-    const handleTemplateClick = useCallback(async (template: typeof templates[0]) => {
-        setLoading(template.id);
+    // Filter templates by category
+    const filteredTemplates = Object.entries(TEMPLATE_BANK).filter(
+        ([, template]) => selectedCategory === 'all' || template.category === selectedCategory
+    ).slice(0, 8); // Show max 8 templates
+
+    const handleTemplateClick = useCallback(async (templateKey: string, template: typeof TEMPLATE_BANK[keyof typeof TEMPLATE_BANK]) => {
+        setLoading(templateKey);
         try {
-            const response = await fetch(`http://localhost:8080${template.endpoint}`, {
-                method: 'POST'
-            });
-            const data = await response.json();
+            // Clear existing model
+            clearModel();
 
-            if (data.success && data.model) {
-                clearModel();
+            // Add nodes with staggered animation
+            for (const node of template.nodes) {
+                addNode({
+                    id: node.id,
+                    x: node.x,
+                    y: node.y,
+                    z: node.z
+                });
 
-                // Add nodes
-                for (const node of data.model.nodes) {
-                    addNode({
-                        id: node.id,
-                        x: node.x,
-                        y: node.y,
-                        z: node.z
-                    });
+                // Set support if defined
+                if (node.support && node.support !== 'NONE') {
+                    const restraints = {
+                        fx: node.support === 'FIXED' || node.support === 'PINNED',
+                        fy: true, // All supports restrain Y
+                        fz: node.support === 'FIXED' || node.support === 'PINNED',
+                        mx: node.support === 'FIXED',
+                        my: node.support === 'FIXED',
+                        mz: node.support === 'FIXED'
+                    };
+                    updateNode(node.id, { restraints });
                 }
 
-                // Add members
-                for (const member of data.model.members) {
-                    addMember({
-                        id: member.id,
-                        startNodeId: member.start_node,
-                        endNodeId: member.end_node,
-                        sectionId: member.section_profile || 'ISMB300'
-                    });
-                }
+                await new Promise(r => setTimeout(r, 20)); // Stagger
             }
+
+            // Add members
+            for (const member of template.members) {
+                addMember({
+                    id: member.id,
+                    startNodeId: member.startNode,
+                    endNodeId: member.endNode,
+                    sectionId: member.section || 'ISMB300'
+                });
+                await new Promise(r => setTimeout(r, 15)); // Stagger
+            }
+
+            console.log(`✓ Loaded template: ${template.name}`);
         } catch (error) {
-            console.error('Template fetch error:', error);
+            console.error('Template load error:', error);
         } finally {
             setLoading(null);
         }
-    }, [clearModel, addNode, addMember]);
+    }, [clearModel, addNode, addMember, updateNode]);
+
+    // Icon mapping for categories
+    const getCategoryIcon = (category: string) => {
+        switch (category.toLowerCase()) {
+            case 'industrial': return <Building2 className="w-4 h-4" />;
+            case 'buildings': return <Building2 className="w-4 h-4" />;
+            case 'trusses': return <Triangle className="w-4 h-4" />;
+            case 'bridges': return <Box className="w-4 h-4" />;
+            case 'beams': return <Box className="w-4 h-4" />;
+            case 'towers': return <Triangle className="w-4 h-4" />;
+            default: return <Box className="w-4 h-4" />;
+        }
+    };
 
     return (
-        <div className="space-y-1.5">
-            {templates.map((template) => (
-                <button
-                    key={template.id}
-                    onClick={() => handleTemplateClick(template)}
-                    disabled={loading !== null}
-                    className={`
-                        w-full flex items-center justify-between gap-2 px-3 py-2
-                        text-sm text-left rounded-lg transition-all
-                        ${loading === template.id
-                            ? 'bg-blue-600/20 text-blue-400'
-                            : 'text-zinc-300 bg-zinc-800/50 hover:bg-zinc-700/50'
-                        }
-                    `}
-                >
-                    <span className="flex items-center gap-2">
-                        {template.id === 'beam' && <Box className="w-4 h-4" />}
-                        {template.id === 'truss' && <Triangle className="w-4 h-4" />}
-                        {template.id === 'frame' && <Building2 className="w-4 h-4" />}
-                        {template.id === '3d-frame' && <Building2 className="w-4 h-4" />}
-                        {template.label}
-                    </span>
-                    {loading === template.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                        <ArrowRight className="w-4 h-4 text-zinc-500" />
-                    )}
-                </button>
-            ))}
+        <div className="space-y-3">
+            {/* Category Filter */}
+            <div className="flex flex-wrap gap-1">
+                {categories.slice(0, 5).map((cat) => (
+                    <button
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        className={`
+                            px-2 py-1 text-xs rounded-md transition-colors capitalize
+                            ${selectedCategory === cat
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                            }
+                        `}
+                    >
+                        {cat}
+                    </button>
+                ))}
+            </div>
+
+            {/* Templates List */}
+            <div className="space-y-1.5">
+                {filteredTemplates.map(([key, template]) => (
+                    <button
+                        key={key}
+                        onClick={() => handleTemplateClick(key, template)}
+                        disabled={loading !== null}
+                        className={`
+                            w-full flex items-center justify-between gap-2 px-3 py-2.5
+                            text-sm text-left rounded-lg transition-all
+                            ${loading === key
+                                ? 'bg-blue-600/20 text-blue-400'
+                                : 'text-zinc-300 bg-zinc-800/50 hover:bg-zinc-700/50'
+                            }
+                        `}
+                    >
+                        <span className="flex items-center gap-2">
+                            {getCategoryIcon(template.category)}
+                            <span className="truncate">{template.name}</span>
+                        </span>
+                        {loading === key ? (
+                            <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+                        ) : (
+                            <ArrowRight className="w-4 h-4 text-zinc-500 flex-shrink-0" />
+                        )}
+                    </button>
+                ))}
+            </div>
+
+            {/* Template count */}
+            <p className="text-[10px] text-zinc-500 text-center">
+                {filteredTemplates.length} templates available
+            </p>
         </div>
     );
 };
+
 
 const DrawToolsPanel: FC = () => {
     const { activeTool, setActiveTool } = useUIStore();

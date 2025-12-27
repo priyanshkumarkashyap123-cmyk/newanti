@@ -35,6 +35,7 @@ import { AnalysisWorkflow } from './AnalysisWorkflow';
 import { AnalysisProgressModal, type AnalysisStage } from './AnalysisProgressModal';
 import { QuickStartModal } from './QuickStartModal';
 import { ResultsToolbar } from './results/ResultsToolbar';
+import { AICommandCenter } from './ai';
 
 // Analysis service
 import { analysisService } from '../services/AnalysisService';
@@ -456,8 +457,12 @@ export const ModernModeler: FC = () => {
                                 <PanelLeftClose className="w-4 h-4" />
                             </button>
                         </div>
-                        <div className="flex-1 overflow-hidden">
+                        <div className="flex-1 overflow-y-auto">
                             <SmartSidebar />
+                        </div>
+                        {/* AI Command Center */}
+                        <div className="border-t border-zinc-800">
+                            <AICommandCenter />
                         </div>
                     </div>
                 )}
