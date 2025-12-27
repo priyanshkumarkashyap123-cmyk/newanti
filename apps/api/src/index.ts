@@ -7,6 +7,14 @@ import analysisRouter from './routes/analysis/index.js';
 import userRoutes from './routes/userRoutes.js';
 import { razorpayRouter } from './razorpay.js';
 import { connectDB } from './models.js';
+import {
+    securityHeaders,
+    generalRateLimit,
+    analysisRateLimit,
+    billingRateLimit,
+    requestLogger,
+    secureErrorHandler
+} from './middleware/security.js';
 
 const app = express();
 const PORT = process.env['PORT'] ?? 3001;
@@ -17,6 +25,23 @@ const httpServer = createServer(app);
 // Initialize Socket.IO server
 const socketServer = new SocketServer(httpServer);
 
+// ============================================
+// SECURITY MIDDLEWARE
+// ============================================
+
+// HTTP security headers (helmet)
+app.use(securityHeaders);
+
+// Request logging
+app.use(requestLogger);
+
+// General rate limiting
+app.use(generalRateLimit);
+
+// ============================================
+// CORS & PARSING
+// ============================================
+
 const FRONTEND_URL = process.env['FRONTEND_URL'] || "http://localhost:5173";
 app.use(cors({
     origin: FRONTEND_URL,
@@ -24,7 +49,7 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));  // Limit payload size
 
 // Initialize Clerk middleware (optional auth check on all routes)
 app.use(clerkMiddleware());
@@ -34,16 +59,15 @@ app.get('/health', (_req: Request, res: Response) => {
     res.json({ status: 'ok', service: 'BeamLab Ultimate API', websocket: true });
 });
 
-// Structural Analysis API (public for now)
-app.use('/api/analyze', analysisRouter);
-// Backwards/alternate path used by some UI flows
-app.use('/api/analysis', analysisRouter);
+// Structural Analysis API (rate limited: 10/min)
+app.use('/api/analyze', analysisRateLimit, analysisRouter);
+app.use('/api/analysis', analysisRateLimit, analysisRouter);
 
 // User Activity API (protected)
 app.use('/api/user', userRoutes);
 
-// Razorpay Billing API (Pro subscriptions)
-app.use('/api/billing', razorpayRouter);
+// Razorpay Billing API (rate limited: 5/min)
+app.use('/api/billing', billingRateLimit, razorpayRouter);
 
 // ============================================
 // PROTECTED ROUTES (require authentication)
@@ -140,6 +164,7 @@ connectDB().then(() => {
     httpServer.listen(PORT, () => {
         console.log(`🚀 BeamLab Ultimate API running on http://localhost:${PORT}`);
         console.log(`🔌 WebSocket server ready for real-time collaboration`);
+        console.log(`🔒 Security middleware active: helmet, rate limiting, logging`);
     });
 }).catch(err => {
     console.error('Failed to connect to MongoDB:', err);
@@ -149,3 +174,5 @@ connectDB().then(() => {
     });
 });
 
+// Error handler (must be last middleware)
+app.use(secureErrorHandler);
