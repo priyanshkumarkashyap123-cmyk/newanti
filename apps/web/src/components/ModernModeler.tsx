@@ -5,10 +5,11 @@
  * - Flex-based layout with collapsible panels
  * - SmartSidebar for context-aware tools
  * - 3D visualization via ViewportManager
- * - uiStore for category/tool state
+ * - Analysis Workflow with guided steps
+ * - Quick Start modal for new users
  */
 
-import { FC, useState } from 'react';
+import { FC, useState, useEffect, useCallback } from 'react';
 import {
     Box,
     Layers,
@@ -18,7 +19,8 @@ import {
     ChevronLeft,
     ChevronRight,
     PanelLeftClose,
-    PanelLeftOpen
+    PanelLeftOpen,
+    HelpCircle
 } from 'lucide-react';
 import { useUIStore, Category } from '../store/uiStore';
 import { useModelStore } from '../store/model';
@@ -27,6 +29,15 @@ import { ViewportManager } from './ViewportManager';
 import { Toolbar } from './Toolbar';
 import { PropertiesPanel } from './PropertiesPanel';
 import { ResultsTable } from './ResultsTable';
+
+// New workflow components
+import { AnalysisWorkflow } from './AnalysisWorkflow';
+import { AnalysisProgressModal, type AnalysisStage } from './AnalysisProgressModal';
+import { QuickStartModal } from './QuickStartModal';
+import { ResultsToolbar } from './results/ResultsToolbar';
+
+// Analysis service
+import { analysisService } from '../services/AnalysisService';
 
 // ============================================
 // TYPES
@@ -49,6 +60,9 @@ const CATEGORY_TABS: TabConfig[] = [
     { id: 'ANALYSIS', label: 'Analysis', icon: <BarChart3 className="w-4 h-4" /> },
     { id: 'DESIGN', label: 'Design', icon: <Ruler className="w-4 h-4" /> }
 ];
+
+// Map workflow steps to categories
+const STEP_TO_CATEGORY: Category[] = ['MODELING', 'MODELING', 'LOADING', 'ANALYSIS', 'ANALYSIS'];
 
 // ============================================
 // CATEGORY SWITCHER
@@ -159,17 +173,18 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = ({ coll
 // STATUS BAR
 // ============================================
 
-const StatusBar: FC = () => {
+const StatusBar: FC<{ isAnalyzing: boolean }> = ({ isAnalyzing }) => {
     const nodes = useModelStore((state) => state.nodes);
     const members = useModelStore((state) => state.members);
+    const analysisResults = useModelStore((state) => state.analysisResults);
     const { activeCategory, activeTool } = useUIStore();
 
     return (
         <div className="h-7 bg-zinc-950 border-t border-zinc-800 flex items-center justify-between px-4 text-xs text-zinc-500 flex-shrink-0">
             <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                    Ready
+                    <span className={`w-2 h-2 rounded-full ${isAnalyzing ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`} />
+                    {isAnalyzing ? 'Analyzing...' : 'Ready'}
                 </span>
                 <span>Mode: {activeCategory}</span>
                 <span>Tool: {activeTool || 'None'}</span>
@@ -178,6 +193,9 @@ const StatusBar: FC = () => {
                 <span>Nodes: {nodes.size}</span>
                 <span>Members: {members.size}</span>
                 <span>Units: kN, m</span>
+                {analysisResults && (
+                    <span className="text-green-400">✓ Results Available</span>
+                )}
             </div>
         </div>
     );
@@ -192,9 +210,180 @@ export const ModernModeler: FC = () => {
     const nodes = useModelStore((state) => state.nodes);
     const members = useModelStore((state) => state.members);
     const loads = useModelStore((state) => state.loads);
+    const memberLoads = useModelStore((state) => state.memberLoads);
+    const analysisResults = useModelStore((state) => state.analysisResults);
+    const setAnalysisResults = useModelStore((state) => state.setAnalysisResults);
+    const setIsAnalyzing = useModelStore((state) => state.setIsAnalyzing);
+    const { setCategory } = useUIStore();
 
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [inspectorCollapsed, setInspectorCollapsed] = useState(false);
+
+    // Workflow state
+    const [activeStep, setActiveStep] = useState(0);
+
+    // Analysis state
+    const [isAnalyzing, setIsAnalyzingLocal] = useState(false);
+    const [analysisProgress, setAnalysisProgress] = useState(0);
+    const [analysisStage, setAnalysisStage] = useState<AnalysisStage>('validating');
+    const [analysisError, setAnalysisError] = useState<string | undefined>();
+    const [showProgressModal, setShowProgressModal] = useState(false);
+    const [analysisStats, setAnalysisStats] = useState<{ nodes: number; members: number; dof: number; timeMs: number } | undefined>();
+
+    // Quick start modal
+    const [showQuickStart, setShowQuickStart] = useState(false);
+
+    // Show quick start on first load if model is empty
+    useEffect(() => {
+        if (nodes.size === 0 && members.size === 0) {
+            const timer = setTimeout(() => setShowQuickStart(true), 500);
+            return () => clearTimeout(timer);
+        }
+        return undefined;
+    }, [nodes.size, members.size]);
+
+    // Handle step click
+    const handleStepClick = useCallback((step: number) => {
+        setActiveStep(step);
+        // Switch to appropriate category
+        const category = STEP_TO_CATEGORY[step];
+        if (category) {
+            setCategory(category);
+        }
+    }, [setCategory]);
+
+    // Run analysis
+    const handleRunAnalysis = useCallback(async () => {
+        setIsAnalyzingLocal(true);
+        setIsAnalyzing(true);
+        setShowProgressModal(true);
+        setAnalysisStage('validating');
+        setAnalysisProgress(10);
+        setAnalysisError(undefined);
+
+        try {
+            // Build model data for analysis
+            const modelData = {
+                nodes: Array.from(nodes.values()).map(n => ({
+                    id: n.id,
+                    x: n.x,
+                    y: n.y,
+                    z: n.z,
+                    restraints: n.restraints
+                })),
+                members: Array.from(members.values()).map(m => ({
+                    id: m.id,
+                    startNodeId: m.startNodeId,
+                    endNodeId: m.endNodeId,
+                    E: m.E ?? 200e9,
+                    A: m.A ?? 0.01,
+                    I: m.I ?? 1e-4
+                })),
+                loads: loads.map(l => ({
+                    nodeId: l.nodeId,
+                    fx: l.fx,
+                    fy: l.fy,
+                    fz: l.fz
+                })),
+                dofPerNode: 3 as const
+            };
+
+            const startTime = Date.now();
+
+            // Run analysis with progress callback
+            const result = await analysisService.analyze(modelData, (stage, progress) => {
+                setAnalysisStage(stage as AnalysisStage);
+                setAnalysisProgress(progress);
+            });
+
+            const endTime = Date.now();
+
+            if (result.success) {
+                // Convert results to store format
+                const displacements = new Map<string, { dx: number; dy: number; dz: number; rx: number; ry: number; rz: number }>();
+                const reactions = new Map<string, { fx: number; fy: number; fz: number; mx: number; my: number; mz: number }>();
+                const memberForces = new Map<string, { axial: number; shearY: number; shearZ: number; momentY: number; momentZ: number; torsion: number }>();
+
+                // Parse displacements
+                if (result.displacements) {
+                    Object.entries(result.displacements).forEach(([nodeId, disp]) => {
+                        const d = disp as number[];
+                        displacements.set(nodeId, {
+                            dx: d[0] ?? 0,
+                            dy: d[1] ?? 0,
+                            dz: d[2] ?? 0,
+                            rx: d[3] ?? 0,
+                            ry: d[4] ?? 0,
+                            rz: d[5] ?? 0
+                        });
+                    });
+                }
+
+                // Parse reactions
+                if (result.reactions) {
+                    Object.entries(result.reactions).forEach(([nodeId, react]) => {
+                        const r = react as number[];
+                        reactions.set(nodeId, {
+                            fx: r[0] ?? 0,
+                            fy: r[1] ?? 0,
+                            fz: r[2] ?? 0,
+                            mx: r[3] ?? 0,
+                            my: r[4] ?? 0,
+                            mz: r[5] ?? 0
+                        });
+                    });
+                }
+
+                // Parse member forces
+                if (result.memberForces) {
+                    Object.entries(result.memberForces).forEach(([memberId, forces]) => {
+                        const f = forces as { axial?: number };
+                        memberForces.set(memberId, {
+                            axial: f.axial ?? 0,
+                            shearY: 0,
+                            shearZ: 0,
+                            momentY: 0,
+                            momentZ: 0,
+                            torsion: 0
+                        });
+                    });
+                }
+
+                setAnalysisResults({
+                    displacements,
+                    reactions,
+                    memberForces
+                });
+
+                setAnalysisStage('complete');
+                setAnalysisProgress(100);
+                setAnalysisStats({
+                    nodes: nodes.size,
+                    members: members.size,
+                    dof: result.stats?.totalDof ?? nodes.size * 3,
+                    timeMs: endTime - startTime
+                });
+                setActiveStep(4); // Move to results step
+            } else {
+                setAnalysisStage('error');
+                setAnalysisError(result.error || 'Analysis failed');
+            }
+        } catch (err) {
+            setAnalysisStage('error');
+            setAnalysisError(err instanceof Error ? err.message : 'Unknown error');
+        } finally {
+            setIsAnalyzingLocal(false);
+            setIsAnalyzing(false);
+        }
+    }, [nodes, members, loads, setAnalysisResults, setIsAnalyzing]);
+
+    // Close progress modal and show results
+    const handleCloseProgressModal = useCallback(() => {
+        setShowProgressModal(false);
+        if (analysisStage === 'complete') {
+            setCategory('ANALYSIS');
+        }
+    }, [analysisStage, setCategory]);
 
     return (
         <div className="h-screen w-screen flex flex-col bg-zinc-950 text-white overflow-hidden">
@@ -219,13 +408,28 @@ export const ModernModeler: FC = () => {
                     <div className="flex items-center gap-3 text-xs text-zinc-500">
                         <span>● {nodes.size} nodes</span>
                         <span>━ {members.size} members</span>
-                        <span>↓ {loads.length} loads</span>
+                        <span>↓ {loads.length + memberLoads.length} loads</span>
                     </div>
+                    <button
+                        onClick={() => setShowQuickStart(true)}
+                        className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
+                        title="Quick Start"
+                    >
+                        <HelpCircle className="w-4 h-4" />
+                    </button>
                     <button className="px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-500 rounded text-white transition-colors">
                         ⚡ Upgrade
                     </button>
                 </div>
             </header>
+
+            {/* Workflow Stepper */}
+            <AnalysisWorkflow
+                activeStep={activeStep}
+                onStepClick={handleStepClick}
+                onRunAnalysis={handleRunAnalysis}
+                isAnalyzing={isAnalyzing}
+            />
 
             {/* Main Content Area */}
             <div className="flex-1 flex overflow-hidden">
@@ -274,10 +478,31 @@ export const ModernModeler: FC = () => {
             {/* Results Table - conditional */}
             {showResults && <ResultsTable />}
 
+            {/* Results Toolbar - show after analysis */}
+            {analysisResults && (
+                <ResultsToolbar />
+            )}
+
             {/* Bottom Bar - Status */}
-            <StatusBar />
+            <StatusBar isAnalyzing={isAnalyzing} />
+
+            {/* Modals */}
+            <AnalysisProgressModal
+                isOpen={showProgressModal}
+                stage={analysisStage}
+                progress={analysisProgress}
+                error={analysisError}
+                onClose={handleCloseProgressModal}
+                stats={analysisStats}
+            />
+
+            <QuickStartModal
+                isOpen={showQuickStart}
+                onClose={() => setShowQuickStart(false)}
+            />
         </div>
     );
 };
 
 export default ModernModeler;
+
