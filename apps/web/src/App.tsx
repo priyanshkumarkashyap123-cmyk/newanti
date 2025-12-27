@@ -300,10 +300,12 @@ function App() {
     );
 }
 
-// Helper to extract moduleType param
+// Helper to extract moduleType param - Now uses ModernModeler
 function WorkspacePageWrapper() {
     const moduleType = window.location.pathname.split('/').pop() || 'structural-3d';
-    return <WorkspacePage moduleType={moduleType} />;
+    console.log('WorkspacePageWrapper loading ModernModeler for:', moduleType);
+    // All workspace routes now use ModernModeler with all new UI improvements
+    return <ModernModeler />;
 }
 
 export default App;
