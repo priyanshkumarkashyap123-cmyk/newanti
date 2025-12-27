@@ -15,9 +15,26 @@ interface MemberLoadVisualizerProps {
     load: MemberLoad;
 }
 
+// Reference constants for scaling
+const REFERENCE_LOAD = 100;  // 100 kN reference
+
 const MemberLoadVisualizer: FC<MemberLoadVisualizerProps> = ({ load }) => {
     const nodes = useModelStore((state) => state.nodes);
     const members = useModelStore((state) => state.members);
+    const memberLoads = useModelStore((state) => state.memberLoads);
+
+    // Calculate max load magnitude for scaling
+    const maxLoadMagnitude = useMemo(() => {
+        let maxMag = REFERENCE_LOAD;
+        memberLoads.forEach((ml) => {
+            const w1 = Math.abs(ml.w1 ?? 0);
+            const w2 = Math.abs(ml.w2 ?? ml.w1 ?? 0);
+            const P = Math.abs(ml.P ?? 0);
+            const maxIntensity = Math.max(w1, w2, P);
+            if (maxIntensity > maxMag) maxMag = maxIntensity;
+        });
+        return maxMag;
+    }, [memberLoads]);
 
     const geometry = useMemo(() => {
         const member = members.get(load.memberId);
@@ -31,6 +48,9 @@ const MemberLoadVisualizer: FC<MemberLoadVisualizerProps> = ({ load }) => {
         const end = new THREE.Vector3(endNode.x, endNode.y, endNode.z);
         const length = start.distanceTo(end);
         const direction = new THREE.Vector3().subVectors(end, start).normalize();
+
+        // Dynamic scale based on member length: max load = 50% of member length
+        const dynamicScale = (length * 0.5) / maxLoadMagnitude;
 
         // Calculate local axes
         const memberDir = direction.clone();
@@ -48,7 +68,7 @@ const MemberLoadVisualizer: FC<MemberLoadVisualizerProps> = ({ load }) => {
         let loadDir: THREE.Vector3;
         switch (load.direction) {
             case 'local_y':
-                loadDir = localY.clone().negate(); // Downward in local coords
+                loadDir = localY.clone().negate();
                 break;
             case 'local_z':
                 loadDir = localZ.clone();
@@ -57,7 +77,7 @@ const MemberLoadVisualizer: FC<MemberLoadVisualizerProps> = ({ load }) => {
                 loadDir = new THREE.Vector3(1, 0, 0);
                 break;
             case 'global_y':
-                loadDir = new THREE.Vector3(0, -1, 0); // Gravity direction
+                loadDir = new THREE.Vector3(0, -1, 0);
                 break;
             case 'global_z':
                 loadDir = new THREE.Vector3(0, 0, 1);
@@ -76,12 +96,14 @@ const MemberLoadVisualizer: FC<MemberLoadVisualizerProps> = ({ load }) => {
             return createDistributedLoadGeometry(
                 start, end, length, loadDir,
                 load.w1 ?? 0, load.w2 ?? load.w1 ?? 0,
-                startPos, endPos
+                startPos, endPos,
+                dynamicScale
             );
         } else if (load.type === 'point') {
             return createPointLoadGeometry(
                 start, direction, length, loadDir,
-                load.P ?? 0, load.a ?? 0.5
+                load.P ?? 0, load.a ?? 0.5,
+                dynamicScale
             );
         } else if (load.type === 'moment') {
             return createMomentGeometry(
@@ -91,7 +113,7 @@ const MemberLoadVisualizer: FC<MemberLoadVisualizerProps> = ({ load }) => {
         }
 
         return null;
-    }, [load, nodes, members]);
+    }, [load, nodes, members, maxLoadMagnitude]);
 
     if (!geometry) return null;
 
@@ -123,7 +145,7 @@ const MemberLoadVisualizer: FC<MemberLoadVisualizerProps> = ({ load }) => {
     );
 };
 
-// Helper: Create distributed load visualization
+// Helper: Create distributed load visualization with dynamic scale
 function createDistributedLoadGeometry(
     start: THREE.Vector3,
     end: THREE.Vector3,
@@ -132,10 +154,10 @@ function createDistributedLoadGeometry(
     w1: number,
     w2: number,
     startRatio: number,
-    endRatio: number
+    endRatio: number,
+    scale: number = 0.1
 ) {
     const numArrows = 5;
-    const scale = 0.1; // Scale factor for visualization
     const arrows: Array<{
         line: THREE.Vector3[];
         headPos: THREE.Vector3;
@@ -183,16 +205,16 @@ function createDistributedLoadGeometry(
     return { outline, arrows };
 }
 
-// Helper: Create point load visualization
+// Helper: Create point load visualization with dynamic scale
 function createPointLoadGeometry(
     start: THREE.Vector3,
     direction: THREE.Vector3,
     length: number,
     loadDir: THREE.Vector3,
     P: number,
-    aRatio: number
+    aRatio: number,
+    scale: number = 0.15
 ) {
-    const scale = 0.15;
     const arrowLength = Math.abs(P) * scale;
     const pos = start.clone().add(direction.clone().multiplyScalar(length * aRatio));
     const tipPos = pos.clone().add(loadDir.clone().multiplyScalar(arrowLength));
