@@ -5,6 +5,7 @@ import { clerkMiddleware, requireAuth, getAuth } from '@clerk/express';
 import { SocketServer } from './SocketServer.js';
 import analysisRouter from './routes/analysis/index.js';
 import userRoutes from './routes/userRoutes.js';
+import { razorpayRouter } from './razorpay.js';
 import { connectDB } from './models.js';
 
 const app = express();
@@ -40,6 +41,9 @@ app.use('/api/analysis', analysisRouter);
 
 // User Activity API (protected)
 app.use('/api/user', userRoutes);
+
+// Razorpay Billing API (Pro subscriptions)
+app.use('/api/billing', razorpayRouter);
 
 // ============================================
 // PROTECTED ROUTES (require authentication)

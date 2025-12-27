@@ -12,6 +12,7 @@ export interface ReportConfig {
     projectNumber?: string;
     engineer?: string;
     company?: string;
+    isProUser?: boolean;  // Pro users get clean PDFs, free users get watermark
     includeScreenshot?: boolean;
     includeSummary?: boolean;
     includeDisplacements?: boolean;
@@ -24,6 +25,7 @@ const DEFAULT_CONFIG: ReportConfig = {
     projectNumber: '',
     engineer: '',
     company: 'BeamLab Ultimate',
+    isProUser: false,  // Default to free tier (with watermark)
     includeScreenshot: true,
     includeSummary: true,
     includeDisplacements: true,
@@ -394,6 +396,11 @@ export class ReportGenerator {
             this.addScreenshot(canvasScreenshot);
         }
 
+        // Add watermark for free tier users
+        if (!this.config.isProUser) {
+            this.addWatermark();
+        }
+
         // Add footer to all pages
         this.addFooter();
 
@@ -402,6 +409,46 @@ export class ReportGenerator {
         const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
         const filename = `BeamLab_Ultimate_${cleanName}_${timestamp}.pdf`;
         this.doc.save(filename);
+    }
+
+    /**
+     * Add FREE TRIAL watermark diagonal across all pages (for free tier)
+     */
+    private addWatermark(): void {
+        const pageCount = this.doc.getNumberOfPages();
+
+        for (let i = 1; i <= pageCount; i++) {
+            this.doc.setPage(i);
+
+            // Save current state
+            this.doc.saveGraphicsState();
+
+            // Watermark settings
+            this.doc.setFontSize(60);
+            this.doc.setTextColor(200, 200, 200);  // Light gray
+            this.doc.setFont('helvetica', 'bold');
+
+            // Calculate center of page
+            const centerX = this.pageWidth / 2;
+            const centerY = this.pageHeight / 2;
+
+            // Rotate and draw watermark text diagonally
+            // jsPDF text with rotation using transformation
+            const text = 'FREE TRIAL';
+            const textWidth = this.doc.getTextWidth(text);
+
+            // Draw at 45 degree angle using text with angle parameter
+            this.doc.text(text, centerX - textWidth / 2, centerY, {
+                angle: 45
+            });
+
+            // Add smaller "Upgrade to Pro" text below
+            this.doc.setFontSize(16);
+            this.doc.setTextColor(180, 180, 180);
+            this.doc.text('Upgrade to Pro for clean reports', centerX, centerY + 30, { align: 'center' });
+
+            this.doc.restoreGraphicsState();
+        }
     }
 }
 
