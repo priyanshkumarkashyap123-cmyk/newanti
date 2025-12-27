@@ -55,6 +55,52 @@ const api = {
 };
 
 // ============================================
+// TEMPLATE ALIASES - Better keyword matching
+// ============================================
+
+const TEMPLATE_ALIASES: Record<string, string[]> = {
+    'WAREHOUSE_SIMPLE': ['warehouse', 'portal', 'shed', 'portal frame', 'industrial'],
+    'WAREHOUSE_MULTI_BAY': ['multi bay', 'multi-bay', 'large warehouse'],
+    'SIMPLY_SUPPORTED_BEAM': ['beam', 'simple beam', 'ss beam', 'simply supported'],
+    'CANTILEVER_BEAM': ['cantilever', 'cantilevered', 'fixed free'],
+    'CONTINUOUS_BEAM': ['continuous', 'multi-span', 'continuous beam'],
+    'OVERHANGING_BEAM': ['overhang', 'overhanging'],
+    'PRATT_TRUSS_12M': ['truss', 'pratt', 'roof truss', 'pratt truss'],
+    'HOWE_TRUSS': ['howe', 'howe truss'],
+    'WARREN_TRUSS': ['warren', 'warren truss'],
+    'FINK_TRUSS': ['fink', 'fink truss', 'roof'],
+    'G_PLUS_1_FRAME': ['2-story', 'two story', 'g+1', '2 story', 'residential'],
+    'G_PLUS_3_FRAME': ['4-story', 'four story', 'g+3', 'commercial'],
+    'G_PLUS_5_FRAME': ['6-story', 'office', 'g+5', 'office tower'],
+    'SIMPLE_BRIDGE': ['bridge', 'simple bridge', 'deck'],
+    'TRANSMISSION_TOWER': ['tower', 'transmission', 'power tower', 'lattice'],
+    'CIRCULAR_TANK_SUPPORT': ['tank', 'water tank', 'circular']
+};
+
+/**
+ * Find matching template from user prompt
+ */
+const findMatchingTemplate = (prompt: string): string | null => {
+    const lowerPrompt = prompt.toLowerCase();
+
+    // First check aliases (most specific)
+    for (const [templateKey, aliases] of Object.entries(TEMPLATE_ALIASES)) {
+        for (const alias of aliases) {
+            if (lowerPrompt.includes(alias)) {
+                return templateKey;
+            }
+        }
+    }
+
+    // Fallback to original key matching
+    const matchedKey = Object.keys(TEMPLATE_BANK).find(k =>
+        lowerPrompt.includes(k.toLowerCase().replace(/_/g, ' '))
+    );
+
+    return matchedKey || null;
+};
+
+// ============================================
 // TOAST HELPER (simple implementation)
 // ============================================
 
@@ -171,24 +217,30 @@ export const AICommandCenter: FC = () => {
         setLastResult(null);
 
         try {
-            // 1. Check if prompt matches a template first (Server-Smooth logic)
-            const matchedKey = Object.keys(TEMPLATE_BANK).find(k =>
-                prompt.toLowerCase().includes(k.toLowerCase().replace(/_/g, ' '))
-            );
+            // 1. Check if prompt matches a template first (using aliases)
+            const matchedKey = findMatchingTemplate(prompt);
 
             let model: GeneratedModel | typeof TEMPLATE_BANK[keyof typeof TEMPLATE_BANK];
             let source: string;
 
-            if (matchedKey) {
+            if (matchedKey && TEMPLATE_BANK[matchedKey as keyof typeof TEMPLATE_BANK]) {
                 // Use pre-defined template (instant, no API call)
                 model = TEMPLATE_BANK[matchedKey as keyof typeof TEMPLATE_BANK];
-                source = `Template: ${matchedKey}`;
-                console.log(`[AICommandCenter] Matched template: ${matchedKey}`);
+                source = `Template: ${TEMPLATE_BANK[matchedKey as keyof typeof TEMPLATE_BANK].name}`;
+                console.log(`[AICommandCenter] ✓ Matched template: ${matchedKey}`);
             } else {
                 // Fallback to LLM for custom geometry
-                model = await api.post('/ai/generate', { prompt });
-                source = 'AI Generated';
-                console.log('[AICommandCenter] Generated via LLM');
+                console.log('[AICommandCenter] No template match, trying LLM...');
+                try {
+                    model = await api.post('/ai/generate', { prompt });
+                    source = 'AI Generated';
+                    console.log('[AICommandCenter] ✓ Generated via LLM');
+                } catch (err) {
+                    // If LLM fails, use a sensible default
+                    console.warn('[AICommandCenter] LLM failed, using default beam');
+                    model = TEMPLATE_BANK['SIMPLY_SUPPORTED_BEAM'];
+                    source = 'Default: Simply Supported Beam';
+                }
             }
 
             // 2. Import the model

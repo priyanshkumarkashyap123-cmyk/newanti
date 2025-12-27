@@ -16,6 +16,8 @@ const ViewportContainer: FC<{ className?: string; layout: ViewportLayout }> = ({
         enableRotate: false,
         enableZoom: true,
         enablePan: true,
+        zoomToCursor: true,
+        panSpeed: 1.5,
         mouseButtons: { LEFT: 2, MIDDLE: 2, RIGHT: 2 }
     };
 
@@ -66,7 +68,14 @@ const ViewportContainer: FC<{ className?: string; layout: ViewportLayout }> = ({
                 <View track={mainRef as MutableRefObject<HTMLElement>}>
                     <color attach="background" args={['#1a1a1a']} />
                     <PerspectiveCamera makeDefault position={[15, 15, 15]} fov={50} />
-                    <OrbitControls makeDefault enableDamping dampingFactor={0.1} />
+                    <OrbitControls
+                        makeDefault
+                        enableDamping
+                        dampingFactor={0.1}
+                        zoomToCursor={true}
+                        enablePan={true}
+                        panSpeed={1.5}
+                    />
                     <SharedScene />
                 </View>
 

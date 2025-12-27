@@ -28,6 +28,18 @@ export const Toolbar: FC = () => {
     };
 
     const handleExportPDF = () => {
+        // Check if analysis has been run
+        if (!analysisResults) {
+            if (!window.confirm('No analysis results found. Run analysis before exporting for a complete report.\n\nExport anyway?')) {
+                return;
+            }
+        } else {
+            // Prompt to save before export
+            if (!window.confirm('Export PDF Report?\n\nThis will generate a BeamLab Ultimate report with your analysis results.')) {
+                return;
+            }
+        }
+
         // Find canvas element
         const canvas = document.querySelector('canvas') as HTMLCanvasElement;
         const screenshot = ReportGenerator.captureCanvas(canvas);
@@ -37,8 +49,8 @@ export const Toolbar: FC = () => {
             company: 'BeamLab Ultimate',
         });
         report.generateReport(screenshot);
-        setMessage('PDF Report generated ✓');
-        setTimeout(() => setMessage(null), 3000);
+        setMessage('✅ PDF Report exported: BeamLab_Ultimate_Report.pdf');
+        setTimeout(() => setMessage(null), 4000);
     };
 
     const getBtnStyle = (isActive: boolean) => ({
