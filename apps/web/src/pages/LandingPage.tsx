@@ -267,22 +267,6 @@ export const LandingPage: FC = () => {
                 </div>
             </section>
 
-            {/* ================================================
-                TRUST SECTION
-                ================================================ */}
-            <section className="border-y border-gray-100 bg-white py-10">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-                    <p className="mb-6 text-sm font-bold uppercase tracking-widest text-steel-blue/50">Trusted by Engineering Students at</p>
-                    <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-60 grayscale transition-all hover:grayscale-0 hover:opacity-100">
-                        {['MIT', 'Stanford', 'Berkeley', 'Georgia Tech', 'IIT Delhi'].map((school) => (
-                            <div key={school} className="flex items-center gap-2 text-xl font-bold text-steel-blue">
-                                <span className="material-symbols-outlined">school</span>
-                                {school}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
 
             {/* ================================================
                 FEATURES SECTION
@@ -347,8 +331,8 @@ export const LandingPage: FC = () => {
                             <div
                                 key={tier.name}
                                 className={`relative flex flex-col gap-6 rounded-2xl p-8 ${tier.popular
-                                        ? 'border-2 border-accent bg-white shadow-xl transform md:-translate-y-4 z-10'
-                                        : 'border border-border-light bg-white hover:shadow-lg transition-shadow'
+                                    ? 'border-2 border-accent bg-white shadow-xl transform md:-translate-y-4 z-10'
+                                    : 'border border-border-light bg-white hover:shadow-lg transition-shadow'
                                     }`}
                             >
                                 {tier.popular && (
@@ -367,8 +351,8 @@ export const LandingPage: FC = () => {
                                 <button
                                     onClick={handleGetStarted}
                                     className={`w-full py-3 rounded-lg font-bold transition-all ${tier.popular
-                                            ? 'bg-accent hover:bg-accent-dark text-steel-blue shadow-md hover:shadow-lg'
-                                            : 'bg-steel-blue hover:bg-steel-blue/90 text-white'
+                                        ? 'bg-accent hover:bg-accent-dark text-steel-blue shadow-md hover:shadow-lg'
+                                        : 'bg-steel-blue hover:bg-steel-blue/90 text-white'
                                         }`}
                                 >
                                     {tier.cta}
