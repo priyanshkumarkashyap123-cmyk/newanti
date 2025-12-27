@@ -10,6 +10,8 @@ import { Component, ReactNode, ErrorInfo } from 'react';
 import { LandingPage } from './pages/LandingPage';
 import { Dashboard } from './pages/Dashboard';
 import { Capabilities } from './pages/Capabilities';
+import { SignInPage } from './pages/SignInPage';
+import { SignUpPage } from './pages/SignUpPage';
 
 // Layouts
 import { WorkspaceLayout } from './layouts/WorkspaceLayout';
@@ -280,6 +282,10 @@ function App() {
 
                 {/* Capabilities Page */}
                 <Route path="/capabilities" element={<Capabilities />} />
+
+                {/* Custom Auth Pages */}
+                <Route path="/sign-in/*" element={<SignInPage />} />
+                <Route path="/sign-up/*" element={<SignUpPage />} />
 
                 {/* Main App - Modern Modeler with integrated sidebar */}
                 <Route path="/app" element={<ModernModeler />} />
