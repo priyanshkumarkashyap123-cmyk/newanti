@@ -1,25 +1,12 @@
 /**
- * Dashboard - Module Hub Dashboard
- * The first screen after login with module launchers
+ * Dashboard - BeamLab Ultimate Projects Dashboard
+ * Modern project hub with BeamLab branding
  */
 
 import { FC, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import {
-    Home,
-    FolderOpen,
-    User,
-    Settings,
-    Plus,
-    Upload,
-    Box,
-    Columns,
-    Hammer,
-    Link2,
-    MoreHorizontal,
-    Search
-} from 'lucide-react';
+import { useAuth, UserButton } from '@clerk/clerk-react';
 
 // ============================================
 // TYPES
@@ -29,12 +16,14 @@ interface DashboardProps {
     onLaunchModule?: (module: string) => void;
 }
 
-interface RecentFile {
+interface Project {
     id: string;
     name: string;
-    type: '3D' | 'Truss' | 'Frame' | 'RC';
+    type: 'Frame' | 'Truss' | 'Beam' | 'Slab';
     lastModified: string;
-    status: 'Draft' | 'Final';
+    nodeCount: number;
+    memberCount: number;
+    status: 'Analyzed' | 'Draft' | 'Final';
 }
 
 // ============================================
@@ -43,7 +32,21 @@ interface RecentFile {
 
 export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
     const navigate = useNavigate();
-    const [activeNav, setActiveNav] = useState('home');
+    const [activeNav, setActiveNav] = useState('projects');
+    const [searchQuery, setSearchQuery] = useState('');
+
+    // Handle Clerk auth gracefully
+    let userName = 'Engineer';
+    let hasClerk = false;
+    try {
+        const auth = useAuth();
+        hasClerk = true;
+        if (auth.isSignedIn) {
+            userName = 'Engineer';
+        }
+    } catch {
+        // Demo mode - Clerk not available
+    }
 
     const handleLaunchModule = (moduleId: string) => {
         if (onLaunchModule) onLaunchModule(moduleId);
@@ -51,7 +54,11 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
     };
 
     const handleNewProject = () => {
-        navigate('/workspace/structural-3d');
+        navigate('/demo');
+    };
+
+    const handleOpenProject = (projectId: string) => {
+        navigate(`/demo?project=${projectId}`);
     };
 
     // Get greeting based on time
@@ -62,167 +69,206 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
         return 'Good Evening';
     };
 
+    const filteredProjects = RECENT_PROJECTS.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const getTypeIcon = (type: Project['type']) => {
+        switch (type) {
+            case 'Frame': return 'apartment';
+            case 'Truss': return 'grid_on';
+            case 'Beam': return 'straighten';
+            case 'Slab': return 'layers';
+            default: return 'deployed_code';
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-gray-100 flex">
+        <div className="min-h-screen bg-background-dark flex font-display">
             {/* ================================================
-                SIDEBAR (Thin Icon Rail)
+                SIDEBAR
                 ================================================ */}
-            <aside className="w-16 bg-slate-900 flex flex-col items-center py-6 gap-4">
+            <aside className="w-64 bg-surface-dark border-r border-border-dark flex flex-col">
                 {/* Logo */}
-                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mb-4">
-                    <span className="text-white font-bold text-lg">B</span>
+                <div className="h-16 flex items-center px-6 border-b border-border-dark">
+                    <Link to="/" className="flex items-center gap-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded bg-accent text-steel-blue">
+                            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>architecture</span>
+                        </div>
+                        <span className="text-lg font-bold text-white">BeamLab</span>
+                    </Link>
                 </div>
 
                 {/* Nav Items */}
-                {SIDEBAR_NAV.map((item) => (
-                    <button
-                        key={item.id}
-                        onClick={() => setActiveNav(item.id)}
-                        className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${activeNav === item.id
-                                ? 'bg-blue-600 text-white'
-                                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                            }`}
-                        title={item.label}
-                    >
-                        <item.icon className="w-5 h-5" />
-                    </button>
-                ))}
+                <nav className="flex-1 px-3 py-4 space-y-1">
+                    {SIDEBAR_NAV.map((item) => (
+                        <button
+                            key={item.id}
+                            onClick={() => setActiveNav(item.id)}
+                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${activeNav === item.id
+                                ? 'bg-primary text-white'
+                                : 'text-text-muted hover:bg-white/5 hover:text-white'
+                                }`}
+                        >
+                            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>{item.icon}</span>
+                            {item.label}
+                        </button>
+                    ))}
+                </nav>
 
-                {/* Spacer */}
-                <div className="flex-1" />
-
-                {/* Settings at bottom */}
-                <button
-                    className="w-10 h-10 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-white transition-all"
-                    title="Settings"
-                >
-                    <Settings className="w-5 h-5" />
-                </button>
+                {/* User Section */}
+                <div className="p-4 border-t border-border-dark">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                            <span className="material-symbols-outlined text-primary" style={{ fontSize: '20px' }}>person</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-white truncate">{userName}</p>
+                            <p className="text-xs text-text-muted">Free Plan</p>
+                        </div>
+                        {hasClerk && <UserButton afterSignOutUrl="/" />}
+                    </div>
+                </div>
             </aside>
 
             {/* ================================================
                 MAIN CONTENT
                 ================================================ */}
-            <main className="flex-1 p-8 overflow-auto">
-                {/* Welcome Section */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-8"
-                >
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                        {getGreeting()}, Engineer.
-                    </h1>
-                    <p className="text-gray-500">Welcome back to BeamLab. What would you like to work on today?</p>
-                </motion.div>
+            <main className="flex-1 flex flex-col overflow-hidden">
+                {/* Top Bar */}
+                <header className="h-16 bg-surface-dark border-b border-border-dark flex items-center justify-between px-6">
+                    <div className="flex items-center gap-4 flex-1">
+                        {/* Search */}
+                        <div className="relative max-w-md flex-1">
+                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" style={{ fontSize: '20px' }}>search</span>
+                            <input
+                                type="text"
+                                placeholder="Search projects..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full h-10 pl-10 pr-4 bg-background-dark border border-border-dark rounded-lg text-sm text-white placeholder-text-muted focus:outline-none focus:border-primary"
+                            />
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <button className="h-10 px-4 bg-background-dark border border-border-dark rounded-lg text-sm text-text-muted hover:text-white hover:border-text-muted transition-colors flex items-center gap-2">
+                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>upload</span>
+                            Import
+                        </button>
+                        <button
+                            onClick={handleNewProject}
+                            className="h-10 px-5 bg-accent hover:bg-accent-dark text-steel-blue rounded-lg text-sm font-bold transition-all flex items-center gap-2 shadow-lg shadow-accent/20"
+                        >
+                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
+                            New Project
+                        </button>
+                    </div>
+                </header>
 
-                {/* Action Bar */}
-                <div className="flex items-center gap-4 mb-8">
-                    <button
-                        onClick={handleNewProject}
-                        className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all shadow-lg shadow-blue-600/25"
+                {/* Content Area */}
+                <div className="flex-1 overflow-auto p-6">
+                    {/* Welcome */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-8"
                     >
-                        <Plus className="w-5 h-5" />
-                        New Project
-                    </button>
-                    <button className="flex items-center gap-2 px-6 py-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg font-medium text-gray-700 transition-all">
-                        <Upload className="w-5 h-5" />
-                        Open File
-                    </button>
-                    <div className="flex-1" />
-                    <div className="relative">
-                        <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Search projects..."
-                            className="pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
-                        />
-                    </div>
-                </div>
+                        <h1 className="text-2xl font-bold text-white mb-1">
+                            {getGreeting()}, {userName}
+                        </h1>
+                        <p className="text-text-muted">Welcome back. Continue working on your structural projects.</p>
+                    </motion.div>
 
-                {/* Launch Module Grid */}
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.1 }}
-                    className="mb-12"
-                >
-                    <h2 className="text-lg font-semibold text-gray-900 mb-4">Launch Module</h2>
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                        {MODULE_LAUNCHERS.map((module) => (
-                            <button
-                                key={module.id}
-                                onClick={() => handleLaunchModule(module.id)}
-                                className="group bg-white rounded-xl p-6 border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all text-left"
-                            >
-                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${module.bgColor}`}>
-                                    <module.icon className={`w-6 h-6 ${module.iconColor}`} />
+                    {/* Quick Actions (Module Launchers) */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.1 }}
+                        className="mb-10"
+                    >
+                        <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Quick Start</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {MODULE_LAUNCHERS.map((module) => (
+                                <button
+                                    key={module.id}
+                                    onClick={() => handleLaunchModule(module.id)}
+                                    className="group bg-surface-dark border border-border-dark rounded-xl p-5 text-left hover:border-primary hover:shadow-lg hover:shadow-primary/10 transition-all"
+                                >
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${module.bgColor} group-hover:bg-accent group-hover:text-steel-blue transition-colors`}>
+                                        <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>{module.icon}</span>
+                                    </div>
+                                    <h3 className="font-bold text-white mb-1 group-hover:text-primary transition-colors">
+                                        {module.title}
+                                    </h3>
+                                    <p className="text-sm text-text-muted">{module.subtitle}</p>
+                                </button>
+                            ))}
+                        </div>
+                    </motion.div>
+
+                    {/* Projects Grid */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.2 }}
+                    >
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-sm font-bold text-white uppercase tracking-wider">Recent Projects</h2>
+                            <button className="text-sm text-primary hover:underline">View All</button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            {filteredProjects.map((project) => (
+                                <div
+                                    key={project.id}
+                                    onClick={() => handleOpenProject(project.id)}
+                                    className="group bg-surface-dark border border-border-dark rounded-xl overflow-hidden cursor-pointer hover:border-primary hover:shadow-lg hover:shadow-primary/10 transition-all"
+                                >
+                                    {/* Project Preview */}
+                                    <div className="aspect-[4/3] bg-background-dark relative grid-pattern flex items-center justify-center">
+                                        <span className="material-symbols-outlined text-5xl text-border-dark group-hover:text-primary/40 transition-colors">
+                                            {getTypeIcon(project.type)}
+                                        </span>
+                                        {/* Status Badge */}
+                                        <div className={`absolute top-3 right-3 px-2 py-1 rounded-md text-xs font-bold ${project.status === 'Analyzed' ? 'bg-green-500/20 text-green-400' :
+                                            project.status === 'Final' ? 'bg-primary/20 text-primary' :
+                                                'bg-accent/20 text-accent'
+                                            }`}>
+                                            {project.status}
+                                        </div>
+                                    </div>
+
+                                    {/* Project Info */}
+                                    <div className="p-4">
+                                        <h3 className="font-bold text-white truncate mb-1 group-hover:text-primary transition-colors">{project.name}</h3>
+                                        <div className="flex items-center gap-3 text-xs text-text-muted">
+                                            <span className="flex items-center gap-1">
+                                                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>circle</span>
+                                                {project.nodeCount} Nodes
+                                            </span>
+                                            <span className="flex items-center gap-1">
+                                                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>horizontal_rule</span>
+                                                {project.memberCount} Members
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-text-muted mt-2">{project.lastModified}</p>
+                                    </div>
                                 </div>
-                                <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
-                                    {module.title}
-                                </h3>
-                                <p className="text-sm text-gray-500">{module.subtitle}</p>
-                            </button>
-                        ))}
-                    </div>
-                </motion.div>
+                            ))}
 
-                {/* Recent Files Table */}
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                >
-                    <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Files</h2>
-                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                        <table className="w-full">
-                            <thead className="bg-gray-50 border-b border-gray-200">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Modified</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                                {RECENT_FILES.map((file) => (
-                                    <tr key={file.id} className="hover:bg-gray-50 transition-colors cursor-pointer">
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                                    <Box className="w-4 h-4 text-blue-600" />
-                                                </div>
-                                                <span className="font-medium text-gray-900">{file.name}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded">
-                                                {file.type}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {file.lastModified}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`px-2 py-1 text-xs font-medium rounded ${file.status === 'Final'
-                                                    ? 'bg-green-100 text-green-700'
-                                                    : 'bg-yellow-100 text-yellow-700'
-                                                }`}>
-                                                {file.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                                            <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
-                                                <MoreHorizontal className="w-4 h-4" />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </motion.div>
+                            {/* Empty State / New Project Card */}
+                            <button
+                                onClick={handleNewProject}
+                                className="group border-2 border-dashed border-border-dark rounded-xl flex flex-col items-center justify-center gap-3 p-8 hover:border-primary hover:bg-primary/5 transition-all min-h-[240px]"
+                            >
+                                <div className="w-12 h-12 rounded-full bg-border-dark flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                                    <span className="material-symbols-outlined text-text-muted group-hover:text-primary" style={{ fontSize: '24px' }}>add</span>
+                                </div>
+                                <span className="text-sm font-medium text-text-muted group-hover:text-primary">Create New Project</span>
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
             </main>
         </div>
     );
@@ -233,23 +279,23 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
 // ============================================
 
 const SIDEBAR_NAV = [
-    { id: 'home', label: 'Home', icon: Home },
-    { id: 'projects', label: 'Projects', icon: FolderOpen },
-    { id: 'account', label: 'Account', icon: User },
+    { id: 'projects', label: 'My Projects', icon: 'folder_open' },
+    { id: 'templates', label: 'Templates', icon: 'dashboard' },
+    { id: 'shared', label: 'Shared With Me', icon: 'group' },
+    { id: 'settings', label: 'Settings', icon: 'settings' },
 ];
 
 const MODULE_LAUNCHERS = [
-    { id: 'structural-3d', title: 'Structural 3D', subtitle: '3D Frame Analysis', icon: Box, bgColor: 'bg-blue-100', iconColor: 'text-blue-600' },
-    { id: 'rc-design', title: 'RC Design', subtitle: 'Beam & Column Design', icon: Columns, bgColor: 'bg-green-100', iconColor: 'text-green-600' },
-    { id: 'steel-design', title: 'Steel Design', subtitle: 'IS 800 / AISC 360', icon: Hammer, bgColor: 'bg-orange-100', iconColor: 'text-orange-600' },
-    { id: 'connection', title: 'Connection', subtitle: 'Joint & Base Plate', icon: Link2, bgColor: 'bg-purple-100', iconColor: 'text-purple-600' },
+    { id: 'structural-3d', title: 'Structural 3D', subtitle: 'Full 3D Frame Analysis', icon: 'deployed_code', bgColor: 'bg-primary/20 text-primary' },
+    { id: 'beam', title: 'Beam Tool', subtitle: 'Quick Beam Analysis', icon: 'straighten', bgColor: 'bg-orange-500/20 text-orange-400' },
+    { id: 'rc-design', title: 'RC Design', subtitle: 'Concrete Design', icon: 'apartment', bgColor: 'bg-green-500/20 text-green-400' },
+    { id: 'steel-design', title: 'Steel Design', subtitle: 'Steel Member Checks', icon: 'construction', bgColor: 'bg-purple-500/20 text-purple-400' },
 ];
 
-const RECENT_FILES: RecentFile[] = [
-    { id: '1', name: 'Office Building - Phase 1', type: '3D', lastModified: '2 hours ago', status: 'Draft' },
-    { id: '2', name: 'Warehouse Truss System', type: 'Truss', lastModified: 'Yesterday', status: 'Final' },
-    { id: '3', name: 'Residential Frame Analysis', type: 'Frame', lastModified: '3 days ago', status: 'Final' },
-    { id: '4', name: 'Bridge Pier Design', type: 'RC', lastModified: '1 week ago', status: 'Draft' },
+const RECENT_PROJECTS: Project[] = [
+    { id: '1', name: 'Office Building Phase 1', type: 'Frame', lastModified: '2 hours ago', nodeCount: 48, memberCount: 82, status: 'Draft' },
+    { id: '2', name: 'Warehouse Roof Truss', type: 'Truss', lastModified: 'Yesterday', nodeCount: 24, memberCount: 45, status: 'Analyzed' },
+    { id: '3', name: 'Residential Foundation', type: 'Slab', lastModified: '3 days ago', nodeCount: 12, memberCount: 20, status: 'Final' },
 ];
 
 export default Dashboard;

@@ -12,6 +12,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Capabilities } from './pages/Capabilities';
 import { SignInPage } from './pages/SignInPage';
 import { SignUpPage } from './pages/SignUpPage';
+import { SettingsPage } from './pages/SettingsPage';
 
 // Layouts
 import { WorkspaceLayout } from './layouts/WorkspaceLayout';
@@ -286,6 +287,9 @@ function App() {
                 {/* Custom Auth Pages */}
                 <Route path="/sign-in/*" element={<SignInPage />} />
                 <Route path="/sign-up/*" element={<SignUpPage />} />
+
+                {/* Settings Page */}
+                <Route path="/settings" element={<SettingsPage />} />
 
                 {/* Main App - Modern Modeler with integrated sidebar */}
                 <Route path="/app" element={<ModernModeler />} />

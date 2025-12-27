@@ -1,24 +1,11 @@
 /**
- * LandingPage - SkyCiv-Style Landing Page
- * Professional SaaS homepage with clean design
+ * LandingPage - BeamLab Ultimate Landing Page
+ * Professional SaaS homepage with construction yellow accent
  */
 
 import { FC, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import {
-    ChevronDown,
-    Box,
-    Ruler,
-    Layers,
-    Columns3,
-    Hammer,
-    ArrowRight,
-    Play,
-    Menu,
-    X,
-    Puzzle
-} from 'lucide-react';
 import { useAuth, SignInButton, SignUpButton, UserButton } from '@clerk/clerk-react';
 
 // ============================================
@@ -45,7 +32,6 @@ const staggerContainer = {
 export const LandingPage: FC = () => {
     const navigate = useNavigate();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [productsOpen, setProductsOpen] = useState(false);
 
     // Handle Clerk auth gracefully
     let isSignedIn = false;
@@ -62,335 +48,236 @@ export const LandingPage: FC = () => {
     }
 
     const handleGetStarted = () => {
-        navigate('/dashboard');
+        if (isSignedIn) {
+            navigate('/app');
+        } else {
+            navigate('/sign-up');
+        }
     };
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-background-light font-display">
             {/* ================================================
-                SECTION 1: NAVBAR (Sticky & Clean)
+                NAVBAR
                 ================================================ */}
-            <nav className="sticky top-0 z-50 flex flex-row justify-between items-center h-16 bg-white shadow-sm px-4 lg:px-8">
-                {/* Left: Logo */}
-                <a href="/" className="font-bold text-2xl text-blue-600">
-                    BeamLab
-                </a>
+            <header className="sticky top-0 z-50 w-full border-b border-border-light bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+                <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+                    {/* Logo */}
+                    <Link to="/" className="flex items-center gap-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded bg-accent text-steel-blue">
+                            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>architecture</span>
+                        </div>
+                        <span className="text-xl font-bold tracking-tight text-steel-blue">BeamLab Ultimate</span>
+                    </Link>
 
-                {/* Center Links (Desktop) */}
-                <div className="hidden lg:flex items-center gap-8">
-                    {/* Products Dropdown */}
-                    <div className="relative">
-                        <button
-                            onClick={() => setProductsOpen(!productsOpen)}
-                            className="flex items-center gap-1 text-gray-600 hover:text-gray-900 font-medium transition-colors"
-                        >
-                            Products
-                            <ChevronDown className={`w-4 h-4 transition-transform ${productsOpen ? 'rotate-180' : ''}`} />
-                        </button>
+                    {/* Desktop Nav */}
+                    <nav className="hidden md:flex items-center gap-8">
+                        <a href="#features" className="text-sm font-medium text-steel-blue/80 hover:text-steel-blue transition-colors">Features</a>
+                        <a href="#pricing" className="text-sm font-medium text-steel-blue/80 hover:text-steel-blue transition-colors">Pricing</a>
+                        <Link to="/capabilities" className="text-sm font-medium text-steel-blue/80 hover:text-steel-blue transition-colors">Docs</Link>
+                    </nav>
 
-                        {productsOpen && (
-                            <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-100 py-2 z-50">
-                                <a href="/demo" className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50">
-                                    <Box className="w-5 h-5 text-blue-600" />
-                                    <div>
-                                        <div className="font-medium text-gray-900">Structural 3D</div>
-                                        <div className="text-sm text-gray-500">Full 3D frame analysis</div>
-                                    </div>
-                                </a>
-                                <a href="/demo" className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50">
-                                    <Ruler className="w-5 h-5 text-green-600" />
-                                    <div>
-                                        <div className="font-medium text-gray-900">Beam Tool</div>
-                                        <div className="text-sm text-gray-500">Quick beam analysis</div>
-                                    </div>
-                                </a>
-                                <a href="/demo" className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50">
-                                    <Layers className="w-5 h-5 text-orange-600" />
-                                    <div>
-                                        <div className="font-medium text-gray-900">Section Builder</div>
-                                        <div className="text-sm text-gray-500">Custom cross-sections</div>
-                                    </div>
-                                </a>
-                            </div>
-                        )}
-                    </div>
-
-                    <a href="#" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
-                        Enterprise
-                    </a>
-                    <a href="#pricing" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
-                        Pricing
-                    </a>
-                    <a href="#" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
-                        Resources
-                    </a>
-                </div>
-
-                {/* Right Actions */}
-                <div className="hidden lg:flex items-center gap-4">
-                    {hasClerk && isLoaded && !isSignedIn ? (
-                        <>
-                            <SignInButton mode="modal">
-                                <button className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
-                                    Login
-                                </button>
-                            </SignInButton>
-                            <SignUpButton mode="modal">
-                                <button className="bg-blue-600 text-white rounded-md px-4 py-2 hover:bg-blue-700 font-medium transition-colors">
-                                    Sign Up Free
-                                </button>
-                            </SignUpButton>
-                        </>
-                    ) : hasClerk && isLoaded && isSignedIn ? (
-                        <>
-                            <button
-                                onClick={handleGetStarted}
-                                className="bg-blue-600 text-white rounded-md px-4 py-2 hover:bg-blue-700 font-medium transition-colors"
-                            >
-                                Open Dashboard
-                            </button>
-                            <UserButton afterSignOutUrl="/" />
-                        </>
-                    ) : !hasClerk ? (
-                        <button
-                            onClick={handleGetStarted}
-                            className="bg-blue-600 text-white rounded-md px-4 py-2 hover:bg-blue-700 font-medium transition-colors"
-                        >
-                            Try Demo →
-                        </button>
-                    ) : (
-                        <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                    )}
-                </div>
-
-                {/* Mobile Menu Button */}
-                <button
-                    className="lg:hidden p-2"
-                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                >
-                    {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                </button>
-            </nav>
-
-            {/* Mobile Menu */}
-            {mobileMenuOpen && (
-                <div className="lg:hidden bg-white border-b border-gray-200 py-4 px-4">
-                    <div className="flex flex-col gap-4">
-                        <a href="#" className="text-gray-600 font-medium">Products</a>
-                        <a href="#" className="text-gray-600 font-medium">Enterprise</a>
-                        <a href="#pricing" className="text-gray-600 font-medium">Pricing</a>
-                        <a href="#" className="text-gray-600 font-medium">Resources</a>
-                        <hr className="border-gray-200" />
+                    {/* Auth Buttons */}
+                    <div className="hidden md:flex items-center gap-4">
                         {hasClerk && isLoaded && !isSignedIn ? (
                             <>
                                 <SignInButton mode="modal">
-                                    <button className="text-gray-600 font-medium text-left">Login</button>
+                                    <button className="text-sm font-bold text-steel-blue hover:underline">Log in</button>
                                 </SignInButton>
                                 <SignUpButton mode="modal">
-                                    <button className="bg-blue-600 text-white rounded-md px-4 py-2 font-medium w-full">
-                                        Sign Up Free
+                                    <button className="flex h-10 items-center justify-center rounded-lg bg-steel-blue px-4 text-sm font-bold text-white transition-all hover:bg-steel-blue/90 hover:shadow-md">
+                                        Get Started
                                     </button>
                                 </SignUpButton>
                             </>
-                        ) : hasClerk && isSignedIn ? (
-                            <>
+                        ) : hasClerk && isLoaded && isSignedIn ? (
+                            <div className="flex items-center gap-3">
                                 <button
-                                    onClick={handleGetStarted}
-                                    className="bg-blue-600 text-white rounded-md px-4 py-2 font-medium w-full"
+                                    onClick={() => navigate('/app')}
+                                    className="flex h-10 items-center justify-center rounded-lg bg-steel-blue px-4 text-sm font-bold text-white transition-all hover:bg-steel-blue/90"
                                 >
-                                    Open Dashboard
+                                    Open App
                                 </button>
-                                <div className="flex justify-center">
-                                    <UserButton afterSignOutUrl="/" />
-                                </div>
-                            </>
+                                <UserButton afterSignOutUrl="/" />
+                            </div>
                         ) : (
                             <button
                                 onClick={handleGetStarted}
-                                className="bg-blue-600 text-white rounded-md px-4 py-2 font-medium w-full"
+                                className="flex h-10 items-center justify-center rounded-lg bg-steel-blue px-4 text-sm font-bold text-white transition-all hover:bg-steel-blue/90"
                             >
-                                Try Demo →
+                                Try Demo
                             </button>
                         )}
                     </div>
-                </div>
-            )}
 
-            {/* ================================================
-                SECTION 2: HERO (Split Screen)
-                ================================================ */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                    {/* Left Column (Text) */}
-                    <motion.div
-                        initial="hidden"
-                        animate="visible"
-                        variants={staggerContainer}
+                    {/* Mobile Menu */}
+                    <button
+                        className="md:hidden p-2"
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                     >
-                        <motion.h1
-                            variants={fadeInUp}
-                            className="text-5xl font-extrabold text-gray-900 leading-tight"
-                        >
-                            Structural Analysis & Design Software{' '}
-                            <span className="text-blue-600">on the Cloud.</span>
-                        </motion.h1>
+                        <span className="material-symbols-outlined">{mobileMenuOpen ? 'close' : 'menu'}</span>
+                    </button>
+                </div>
 
-                        <motion.p
-                            variants={fadeInUp}
-                            className="text-xl text-gray-500 mt-4"
-                        >
-                            Powerful, easy to use, and accessible from anywhere. No installation required.
-                        </motion.p>
-
-                        <motion.div
-                            variants={fadeInUp}
-                            className="flex flex-wrap gap-4 mt-8"
-                        >
+                {/* Mobile Menu Dropdown */}
+                {mobileMenuOpen && (
+                    <div className="md:hidden bg-white border-t border-border-light py-4 px-4">
+                        <div className="flex flex-col gap-4">
+                            <a href="#features" className="text-steel-blue font-medium">Features</a>
+                            <a href="#pricing" className="text-steel-blue font-medium">Pricing</a>
+                            <Link to="/capabilities" className="text-steel-blue font-medium">Docs</Link>
+                            <hr className="border-border-light" />
                             <button
                                 onClick={handleGetStarted}
-                                className="flex items-center gap-2 bg-blue-600 text-white rounded-lg px-6 py-3 hover:bg-blue-700 font-semibold transition-all shadow-lg shadow-blue-600/25"
+                                className="bg-steel-blue text-white rounded-lg px-4 py-2 font-bold w-full"
                             >
-                                Start Free Trial
-                                <ArrowRight className="w-5 h-5" />
+                                Get Started
                             </button>
-                            <button className="flex items-center gap-2 border-2 border-gray-300 text-gray-700 rounded-lg px-6 py-3 hover:border-gray-400 font-semibold transition-all">
-                                <Play className="w-5 h-5" />
-                                Book a Demo
-                            </button>
-                        </motion.div>
+                        </div>
+                    </div>
+                )}
+            </header>
+
+            {/* ================================================
+                HERO SECTION
+                ================================================ */}
+            <section className="relative flex min-h-[600px] flex-col justify-center overflow-hidden bg-background-light pt-16 pb-20 lg:pt-24 lg:pb-32">
+                {/* Grid Background */}
+                <div className="absolute inset-0 grid-pattern opacity-50" />
+
+                {/* Yellow Gradient */}
+                <div className="absolute right-0 top-0 -z-10 h-full w-1/2 translate-x-1/4 opacity-10 blur-3xl">
+                    <div className="h-full w-full bg-gradient-to-bl from-accent to-transparent" />
+                </div>
+
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center relative z-10">
+                    {/* Badge */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="inline-flex items-center gap-2 rounded-full border border-steel-blue/10 bg-white px-3 py-1 mb-8 shadow-sm"
+                    >
+                        <span className="flex h-2 w-2 rounded-full bg-green-500" />
+                        <span className="text-xs font-semibold text-steel-blue/70 uppercase tracking-wider">v2.0 Now Available</span>
                     </motion.div>
 
-                    {/* Right Column (Visual Placeholder) */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.6, delay: 0.2 }}
+                    {/* Headline */}
+                    <motion.h1
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="mx-auto max-w-4xl text-5xl font-bold leading-tight tracking-tight text-steel-blue sm:text-6xl lg:text-7xl"
                     >
-                        <div className="bg-gray-100 rounded-xl shadow-2xl h-96 flex items-center justify-center overflow-hidden">
-                            {/* Placeholder for React-Three-Fiber auto-rotating truss */}
-                            <div className="text-center">
-                                <svg viewBox="0 0 200 150" className="w-64 h-48 mx-auto">
-                                    <defs>
-                                        <linearGradient id="heroGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                            <stop offset="0%" stopColor="#3B82F6" />
-                                            <stop offset="100%" stopColor="#60A5FA" />
-                                        </linearGradient>
-                                    </defs>
+                        Structural Analysis{' '}
+                        <span className="relative whitespace-nowrap text-steel-blue">
+                            <svg aria-hidden="true" className="absolute left-0 top-2/3 h-[0.58em] w-full fill-accent/40" preserveAspectRatio="none" viewBox="0 0 418 42">
+                                <path d="M203.371.916c-26.013-2.078-76.686 1.963-124.73 9.946L67.3 12.749C61.16 13.643 45.698 15.696 20.916 20.457c-13.437 2.61-3.696.536-12.261 2.308-4.303.882-8.586 1.763-12.869 2.646L0 27.63c21.841-3.837 83.189-13.313 184.073-19.167 122.42-7.1 233.15 1.166 306.924 10.375 19.336 2.416 34.405 4.544 45.214 6.386 10.809 1.842 17.202 3.09 19.181 3.743l-4.223 9.172c-1.979-.653-8.372-1.901-19.181-3.743-10.809-1.842-25.878-3.97-45.214-6.386-73.774-9.209-184.504-17.475-306.924-10.375-100.884 5.854-162.232 15.33-184.073 19.167l-4.223-2.22c4.283-.883 8.566-1.764 12.869-2.646 8.565-1.772 -1.176.302 12.261-2.308 24.782-4.761 40.244-6.814 46.384-7.708l11.341-1.887c48.044-7.983 98.717-12.024 124.73-9.946l2.126-10.59z"></path>
+                            </svg>
+                            <span className="relative">in Your Browser</span>
+                        </span>
+                    </motion.h1>
 
-                                    {/* Grid Background */}
-                                    {[...Array(8)].map((_, i) => (
-                                        <line key={`h${i}`} x1="0" y1={i * 20} x2="200" y2={i * 20} stroke="#E5E7EB" strokeWidth="0.5" />
-                                    ))}
-                                    {[...Array(10)].map((_, i) => (
-                                        <line key={`v${i}`} x1={i * 20} y1="0" x2={i * 20} y2="150" stroke="#E5E7EB" strokeWidth="0.5" />
-                                    ))}
+                    {/* Subheadline */}
+                    <motion.p
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="mx-auto mt-6 max-w-2xl text-lg text-steel-blue/70 sm:text-xl"
+                    >
+                        Free, instant, and professional grade. Perform complex structural calculations without the heavy software downloads.
+                    </motion.p>
 
-                                    {/* Truss Structure */}
-                                    <g stroke="url(#heroGrad)" strokeWidth="3" strokeLinecap="round">
-                                        <line x1="20" y1="120" x2="180" y2="120" />
-                                        <line x1="40" y1="60" x2="160" y2="60" />
-                                        <line x1="20" y1="120" x2="40" y2="60" />
-                                        <line x1="60" y1="120" x2="60" y2="60" />
-                                        <line x1="100" y1="120" x2="100" y2="60" />
-                                        <line x1="140" y1="120" x2="140" y2="60" />
-                                        <line x1="180" y1="120" x2="160" y2="60" />
-                                        <line x1="40" y1="60" x2="60" y2="120" opacity="0.6" />
-                                        <line x1="60" y1="60" x2="100" y2="120" opacity="0.6" />
-                                        <line x1="100" y1="60" x2="140" y2="120" opacity="0.6" />
-                                    </g>
+                    {/* CTA Buttons */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
+                    >
+                        <button
+                            onClick={handleGetStarted}
+                            className="group flex h-12 min-w-[200px] items-center justify-center gap-2 rounded-lg bg-accent px-8 text-base font-bold text-steel-blue transition-all hover:bg-accent-dark hover:scale-105 shadow-lg shadow-accent/20"
+                        >
+                            Start Analyzing for Free
+                            <span className="material-symbols-outlined transition-transform group-hover:translate-x-1" style={{ fontSize: '20px' }}>arrow_forward</span>
+                        </button>
+                        <button className="flex h-12 min-w-[200px] items-center justify-center gap-2 rounded-lg border-2 border-steel-blue/10 bg-white px-8 text-base font-bold text-steel-blue transition-all hover:bg-gray-50">
+                            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>play_circle</span>
+                            Watch Demo
+                        </button>
+                    </motion.div>
 
-                                    {/* Nodes */}
-                                    <g fill="#22C55E">
-                                        <circle cx="20" cy="120" r="5" />
-                                        <circle cx="180" cy="120" r="5" />
-                                        {[60, 100, 140].map(x => (
-                                            <circle key={x} cx={x} cy="120" r="4" />
-                                        ))}
-                                        {[40, 60, 100, 140, 160].map(x => (
-                                            <circle key={x} cx={x} cy="60" r="4" />
-                                        ))}
-                                    </g>
+                    {/* Browser Mockup */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4, duration: 0.6 }}
+                        className="relative mx-auto mt-16 max-w-5xl lg:mt-24"
+                    >
+                        <div className="relative overflow-hidden rounded-xl border border-steel-blue/10 bg-white shadow-2xl">
+                            {/* Browser Header */}
+                            <div className="flex items-center gap-1.5 border-b border-gray-100 bg-gray-50 px-4 py-3">
+                                <div className="h-3 w-3 rounded-full bg-red-400" />
+                                <div className="h-3 w-3 rounded-full bg-yellow-400" />
+                                <div className="h-3 w-3 rounded-full bg-green-400" />
+                                <div className="ml-4 h-6 w-full max-w-lg rounded-md bg-white shadow-sm border border-gray-100" />
+                            </div>
 
-                                    {/* Supports */}
-                                    <polygon points="20,120 12,135 28,135" fill="#FACC15" />
-                                    <polygon points="180,120 172,135 188,135" fill="#FACC15" />
-                                </svg>
-                                <p className="text-gray-400 text-sm mt-4">Interactive 3D Viewer Coming Soon</p>
+                            {/* Screenshot Area */}
+                            <div className="aspect-[16/9] w-full bg-gradient-to-br from-background-dark to-surface-dark relative group overflow-hidden">
+                                {/* Placeholder Grid Pattern */}
+                                <div className="absolute inset-0 grid-pattern opacity-30" />
+
+                                {/* Mock UI Elements */}
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="text-center">
+                                        <span className="material-symbols-outlined text-6xl text-primary/60">deployed_code</span>
+                                        <p className="text-white/60 text-lg mt-4 font-medium">3D Structural Analysis</p>
+                                        <p className="text-white/40 text-sm mt-2">Click "Start Analyzing" to begin</p>
+                                    </div>
+                                </div>
+
+                                {/* Floating Property Panel Mock */}
+                                <div className="absolute right-4 top-4 w-48 bg-surface-dark/90 backdrop-blur rounded-lg shadow-lg p-4 hidden sm:block border border-border-dark">
+                                    <div className="h-2 w-20 bg-primary/40 rounded mb-3" />
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-xs">
+                                            <span className="text-text-muted">Material</span>
+                                            <span className="text-white font-mono">Steel S355</span>
+                                        </div>
+                                        <div className="flex justify-between text-xs">
+                                            <span className="text-text-muted">Section</span>
+                                            <span className="text-white font-mono">IPE 300</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Floating Status */}
+                                <div className="absolute bottom-4 right-4 bg-primary text-white p-3 rounded-lg shadow-lg flex items-center gap-3">
+                                    <span className="material-symbols-outlined animate-spin" style={{ fontSize: '20px' }}>sync</span>
+                                    <span className="text-sm font-medium">Ready to Analyze</span>
+                                </div>
                             </div>
                         </div>
+
+                        {/* Decorative Blurs */}
+                        <div className="absolute -top-12 -left-12 -z-10 h-[300px] w-[300px] rounded-full bg-accent/20 blur-3xl filter" />
+                        <div className="absolute -bottom-12 -right-12 -z-10 h-[300px] w-[300px] rounded-full bg-primary/20 blur-3xl filter" />
                     </motion.div>
                 </div>
             </section>
 
             {/* ================================================
-                SECTION 3: MODULE GRID (SkyCiv Signature)
+                TRUST SECTION
                 ================================================ */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-                {/* Header */}
-                <div className="text-center mb-12">
-                    <h2 className="text-3xl font-bold text-gray-900">
-                        Everything you need in one platform.
-                    </h2>
-                    <p className="text-gray-500 mt-4 max-w-2xl mx-auto">
-                        Integrated tools for structural analysis, design, and documentation
-                    </p>
-                </div>
-
-                {/* Grid */}
-                <motion.div
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true }}
-                    variants={staggerContainer}
-                    className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12"
-                >
-                    {MODULES.map((module) => (
-                        <motion.div
-                            key={module.id}
-                            variants={fadeInUp}
-                            onClick={() => navigate(`/workspace/${module.id}`)}
-                            className="bg-white rounded-xl border border-gray-100 p-6 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-                        >
-                            {/* Icon */}
-                            <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${module.bgColor}`}>
-                                <module.icon className={`w-6 h-6 ${module.iconColor}`} />
-                            </div>
-
-                            {/* Title */}
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">{module.title}</h3>
-
-                            {/* Description */}
-                            <p className="text-gray-500 mb-4">{module.description}</p>
-
-                            {/* Learn More Link */}
-                            <a
-                                href="#"
-                                className="inline-flex items-center gap-1 text-blue-600 font-medium hover:gap-2 transition-all"
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                Learn More <ArrowRight className="w-4 h-4" />
-                            </a>
-                        </motion.div>
-                    ))}
-                </motion.div>
-            </section>
-
-            {/* ================================================
-                SECTION 4: TRUST SIGNALS
-                ================================================ */}
-            <section className="bg-gray-50 py-12">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <p className="text-center text-gray-500 font-medium mb-8">
-                        Trusted by 500+ Engineers
-                    </p>
-
-                    <div className="flex flex-wrap justify-center items-center gap-8 lg:gap-16">
-                        {TRUST_LOGOS.map((logo) => (
-                            <div
-                                key={logo}
-                                className="text-2xl font-bold text-gray-400 opacity-50"
-                            >
-                                {logo}
+            <section className="border-y border-gray-100 bg-white py-10">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+                    <p className="mb-6 text-sm font-bold uppercase tracking-widest text-steel-blue/50">Trusted by Engineering Students at</p>
+                    <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-60 grayscale transition-all hover:grayscale-0 hover:opacity-100">
+                        {['MIT', 'Stanford', 'Berkeley', 'Georgia Tech', 'IIT Delhi'].map((school) => (
+                            <div key={school} className="flex items-center gap-2 text-xl font-bold text-steel-blue">
+                                <span className="material-symbols-outlined">school</span>
+                                {school}
                             </div>
                         ))}
                     </div>
@@ -398,106 +285,152 @@ export const LandingPage: FC = () => {
             </section>
 
             {/* ================================================
-                SECTION 5: PRICING (Optional)
+                FEATURES SECTION
                 ================================================ */}
-            <section id="pricing" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-                <div className="text-center mb-12">
-                    <h2 className="text-3xl font-bold text-gray-900">
-                        Simple, Transparent Pricing
-                    </h2>
-                    <p className="text-gray-500 mt-4">
-                        Start free, upgrade when you need more
-                    </p>
-                </div>
+            <section id="features" className="bg-background-light py-24 sm:py-32">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div className="mx-auto max-w-2xl text-center">
+                        <h2 className="text-3xl font-bold tracking-tight text-steel-blue sm:text-4xl">Powerful Features for Modern Engineers</h2>
+                        <p className="mt-4 text-lg text-steel-blue/70">Everything you need to design, analyze, and verify your structures, right from your web browser.</p>
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                    {PRICING_TIERS.map((tier) => (
-                        <div
-                            key={tier.name}
-                            className={`rounded-2xl p-8 ${tier.popular ? 'bg-blue-600 text-white ring-4 ring-blue-600 ring-offset-4' : 'bg-white border border-gray-200'}`}
-                        >
-                            {tier.popular && (
-                                <span className="text-sm font-medium text-blue-200 mb-2 block">Most Popular</span>
-                            )}
-                            <h3 className="text-xl font-bold mb-2">{tier.name}</h3>
-                            <p className={`text-sm mb-6 ${tier.popular ? 'text-blue-200' : 'text-gray-500'}`}>
-                                {tier.description}
-                            </p>
-                            <div className="mb-6">
-                                <span className="text-4xl font-bold">{tier.price}</span>
-                                {tier.period && (
-                                    <span className={tier.popular ? 'text-blue-200' : 'text-gray-500'}>/{tier.period}</span>
-                                )}
-                            </div>
-                            <ul className="space-y-3 mb-8">
-                                {tier.features.map((feature) => (
-                                    <li key={feature} className="flex items-center gap-2 text-sm">
-                                        <svg className={`w-5 h-5 ${tier.popular ? 'text-blue-300' : 'text-green-500'}`} fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                        {feature}
-                                    </li>
-                                ))}
-                            </ul>
-                            <button
-                                onClick={handleGetStarted}
-                                className={`w-full py-3 rounded-lg font-semibold transition-all ${tier.popular ? 'bg-white text-blue-600 hover:bg-gray-100' : 'bg-gray-900 text-white hover:bg-gray-800'}`}
-                            >
-                                {tier.cta}
-                            </button>
+                    <motion.div
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true }}
+                        variants={staggerContainer}
+                        className="mx-auto mt-16 max-w-7xl"
+                    >
+                        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+                            {FEATURES.map((feature) => (
+                                <motion.div
+                                    key={feature.title}
+                                    variants={fadeInUp}
+                                    className="group relative rounded-2xl border border-steel-blue/10 bg-white p-8 transition-all hover:-translate-y-1 hover:shadow-xl"
+                                >
+                                    <div className={`mb-6 inline-flex h-14 w-14 items-center justify-center rounded-xl ${feature.bgColor} group-hover:bg-accent group-hover:text-steel-blue transition-colors`}>
+                                        <span className="material-symbols-outlined text-[32px]">{feature.icon}</span>
+                                    </div>
+                                    <h3 className="text-xl font-bold text-steel-blue">{feature.title}</h3>
+                                    <p className="mt-4 text-steel-blue/70">{feature.description}</p>
+                                    <ul className="mt-6 space-y-2">
+                                        {feature.bullets.map((bullet) => (
+                                            <li key={bullet} className="flex items-center gap-2 text-sm text-steel-blue/80">
+                                                <span className="material-symbols-outlined text-green-500" style={{ fontSize: '18px' }}>check_circle</span>
+                                                {bullet}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </motion.div>
+                            ))}
                         </div>
-                    ))}
+                    </motion.div>
+                </div>
+            </section>
+
+            {/* ================================================
+                PRICING SECTION
+                ================================================ */}
+            <section id="pricing" className="py-24 bg-white">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl font-bold tracking-tight text-steel-blue sm:text-4xl">
+                            Engineering-grade precision, priced for scale.
+                        </h2>
+                        <p className="mt-4 text-lg text-steel-blue/70">
+                            Choose the right plan for your structural analysis needs.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                        {PRICING_TIERS.map((tier) => (
+                            <div
+                                key={tier.name}
+                                className={`relative flex flex-col gap-6 rounded-2xl p-8 ${tier.popular
+                                        ? 'border-2 border-accent bg-white shadow-xl transform md:-translate-y-4 z-10'
+                                        : 'border border-border-light bg-white hover:shadow-lg transition-shadow'
+                                    }`}
+                            >
+                                {tier.popular && (
+                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-accent text-steel-blue text-xs font-bold px-4 py-1.5 rounded-full shadow-sm uppercase tracking-wide">
+                                        Most Popular
+                                    </div>
+                                )}
+                                <div>
+                                    <h3 className="text-xl font-bold text-steel-blue">{tier.name}</h3>
+                                    <p className="text-steel-blue/60 text-sm mt-1">{tier.description}</p>
+                                    <div className="mt-4 flex items-baseline gap-1 text-steel-blue">
+                                        <span className="text-4xl font-black tracking-tight">{tier.price}</span>
+                                        {tier.period && <span className="text-base font-bold text-steel-blue/60">/{tier.period}</span>}
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={handleGetStarted}
+                                    className={`w-full py-3 rounded-lg font-bold transition-all ${tier.popular
+                                            ? 'bg-accent hover:bg-accent-dark text-steel-blue shadow-md hover:shadow-lg'
+                                            : 'bg-steel-blue hover:bg-steel-blue/90 text-white'
+                                        }`}
+                                >
+                                    {tier.cta}
+                                </button>
+                                <ul className="space-y-3">
+                                    {tier.features.map((feature) => (
+                                        <li key={feature} className="flex items-start gap-3 text-sm text-steel-blue/80">
+                                            <span className="material-symbols-outlined text-accent" style={{ fontSize: '20px' }}>check_circle</span>
+                                            {feature}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </section>
 
             {/* ================================================
                 FOOTER
                 ================================================ */}
-            <footer className="bg-gray-900 text-white py-16">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-                        <div>
-                            <h4 className="font-bold text-lg mb-4">BeamLab</h4>
-                            <p className="text-gray-400 text-sm">
-                                Professional structural engineering software for the cloud.
+            <footer className="border-t border-gray-100 bg-steel-blue text-white">
+                <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+                        {/* Brand */}
+                        <div className="flex flex-col gap-4">
+                            <div className="flex items-center gap-2">
+                                <div className="flex h-8 w-8 items-center justify-center rounded bg-accent text-steel-blue">
+                                    <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>architecture</span>
+                                </div>
+                                <span className="text-xl font-bold tracking-tight">BeamLab Ultimate</span>
+                            </div>
+                            <p className="text-sm leading-6 text-slate-300 max-w-xs">
+                                Empowering civil and structural engineers with cloud-native analysis tools.
                             </p>
                         </div>
-                        <div>
-                            <h4 className="font-semibold mb-4">Product</h4>
-                            <ul className="space-y-2 text-gray-400 text-sm">
-                                <li><a href="#" className="hover:text-white transition-colors">Structural 3D</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Beam Tool</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Section Builder</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">RC Design</a></li>
-                            </ul>
+
+                        {/* Links */}
+                        <div className="flex flex-col md:items-center">
+                            <div className="flex gap-8">
+                                <a href="#features" className="text-sm font-semibold text-white hover:text-accent transition-colors">Features</a>
+                                <a href="#pricing" className="text-sm font-semibold text-white hover:text-accent transition-colors">Pricing</a>
+                                <Link to="/capabilities" className="text-sm font-semibold text-white hover:text-accent transition-colors">Docs</Link>
+                                <a href="#" className="text-sm font-semibold text-white hover:text-accent transition-colors">Support</a>
+                            </div>
                         </div>
-                        <div>
-                            <h4 className="font-semibold mb-4">Company</h4>
-                            <ul className="space-y-2 text-gray-400 text-sm">
-                                <li><a href="#" className="hover:text-white transition-colors">About</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="font-semibold mb-4">Resources</h4>
-                            <ul className="space-y-2 text-gray-400 text-sm">
-                                <li><a href="#" className="hover:text-white transition-colors">Documentation</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">API Reference</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Tutorials</a></li>
-                            </ul>
+
+                        {/* Socials */}
+                        <div className="flex flex-col md:items-end gap-4">
+                            <div className="flex space-x-6">
+                                <a href="#" className="text-slate-400 hover:text-white transition-colors">
+                                    <span className="material-symbols-outlined">mail</span>
+                                </a>
+                                <a href="#" className="text-slate-400 hover:text-white transition-colors">
+                                    <span className="material-symbols-outlined">public</span>
+                                </a>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
-                        <p className="text-gray-400 text-sm">
-                            © 2025 BeamLab. All rights reserved.
-                        </p>
-                        <div className="flex gap-6 text-gray-400 text-sm">
-                            <a href="#" className="hover:text-white transition-colors">Terms</a>
-                            <a href="#" className="hover:text-white transition-colors">Privacy</a>
-                            <a href="#" className="hover:text-white transition-colors">Cookies</a>
-                        </div>
+                    <div className="mt-8 border-t border-white/10 pt-8 flex justify-center md:justify-end">
+                        <p className="text-xs leading-5 text-slate-400">© 2025 BeamLab Ultimate. All rights reserved.</p>
                     </div>
                 </div>
             </footer>
@@ -509,90 +442,55 @@ export const LandingPage: FC = () => {
 // DATA
 // ============================================
 
-const MODULES = [
+const FEATURES = [
     {
-        id: 'structural-3d',
-        title: 'Structural 3D',
-        description: 'Full 3D frame and truss analysis with advanced FEM solvers.',
-        icon: Box,
-        bgColor: 'bg-blue-100',
-        iconColor: 'text-blue-500',
+        title: 'True 3D Visualization',
+        description: 'Realistic I-beams, channels, and custom sections rendered in real-time. Visualize actual steel and timber members in 3D space.',
+        icon: 'view_in_ar',
+        bgColor: 'bg-primary/20 text-primary',
+        bullets: ['Real-time deformation', 'Stress heatmaps'],
     },
     {
-        id: 'beam',
-        title: 'Beam Tool',
-        description: 'Quick beam analysis for simple span calculations.',
-        icon: Ruler,
-        bgColor: 'bg-orange-100',
-        iconColor: 'text-orange-500',
+        title: 'Transparent Math',
+        description: 'No black boxes here. See the formulas, logic, and intermediate steps for every calculation, just like hand calcs.',
+        icon: 'calculate',
+        bgColor: 'bg-orange-100 text-orange-600',
+        bullets: ['Step-by-step calcs', 'Moment distribution'],
     },
     {
-        id: 'section-builder',
-        title: 'Section Builder',
-        description: 'Create custom cross-sections and calculate properties.',
-        icon: Layers,
-        bgColor: 'bg-cyan-100',
-        iconColor: 'text-cyan-500',
+        title: 'Instant Reports',
+        description: 'Export professional, branded PDF engineering reports in one click with diagrams, load cases, and calculation steps.',
+        icon: 'picture_as_pdf',
+        bgColor: 'bg-green-100 text-green-600',
+        bullets: ['Customizable headers', 'Vector quality diagrams'],
     },
-    {
-        id: 'rc-design',
-        title: 'RC Design',
-        description: 'Concrete beam and column design per IS 456 / ACI 318.',
-        icon: Columns3,
-        bgColor: 'bg-green-100',
-        iconColor: 'text-green-500',
-    },
-    {
-        id: 'steel-design',
-        title: 'Steel Design',
-        description: 'Steel member checks per IS 800 / AISC 360.',
-        icon: Hammer,
-        bgColor: 'bg-red-100',
-        iconColor: 'text-red-500',
-    },
-    {
-        id: 'connection',
-        title: 'Connection',
-        description: 'Steel connection design and verification.',
-        icon: Puzzle,
-        bgColor: 'bg-purple-100',
-        iconColor: 'text-purple-500',
-    },
-];
-
-const TRUST_LOGOS = [
-    'BuildCorp',
-    'CivilEng',
-    'StructPro',
-    'DesignWorks',
-    'EngiTech'
 ];
 
 const PRICING_TIERS = [
     {
         name: 'Free',
-        description: 'For students and learning',
+        description: 'Perfect for students and quick checks.',
         price: '$0',
-        period: 'month',
-        features: ['3 Projects', '100 Nodes', '2D Analysis', 'Community Support'],
-        cta: 'Get Started',
+        period: 'mo',
+        features: ['Basic beam calculations', '2D Frame analysis', 'Community support forums'],
+        cta: 'Sign Up Free',
         popular: false,
     },
     {
-        name: 'Professional',
-        description: 'For freelancers and small teams',
-        price: '$29',
-        period: 'month',
-        features: ['Unlimited Projects', 'Unlimited Nodes', '3D Analysis', 'All Design Codes', 'Priority Support'],
-        cta: 'Start Free Trial',
+        name: 'Pro',
+        description: 'For professional engineers & firms.',
+        price: '$49',
+        period: 'mo',
+        features: ['Everything in Free, plus:', 'Advanced 3D analysis engine', 'Customizable PDF reports', 'Priority email support', 'Unlimited project storage'],
+        cta: 'Start Pro Trial',
         popular: true,
     },
     {
         name: 'Enterprise',
-        description: 'For large organizations',
+        description: 'Maximum power and control.',
         price: 'Custom',
         period: null,
-        features: ['Everything in Pro', 'API Access', 'SSO Integration', 'Dedicated Support', 'On-premise Option'],
+        features: ['Everything in Pro, plus:', 'API Access & Integrations', 'Multi-user management (SSO)', 'Dedicated account manager'],
         cta: 'Contact Sales',
         popular: false,
     },

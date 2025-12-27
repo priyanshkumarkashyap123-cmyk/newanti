@@ -1,28 +1,49 @@
 @import "tailwindcss";
 
+/* ============================================
+   BeamLab Ultimate Design System
+   ============================================ */
+
 /* Custom Theme Extensions for Tailwind v4 */
 @theme {
+  /* Primary Blue */
+  --color-primary: #2b7cee;
   --color-primary-50: #eff6ff;
   --color-primary-100: #dbeafe;
   --color-primary-200: #bfdbfe;
   --color-primary-300: #93c5fd;
   --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
+  --color-primary-500: #2b7cee;
   --color-primary-600: #2563eb;
   --color-primary-700: #1d4ed8;
   --color-primary-800: #1e40af;
   --color-primary-900: #1e3a8a;
-  --color-primary-950: #172554;
 
-  --color-dark-50: #f8fafc;
-  --color-dark-100: #f1f5f9;
-  --color-dark-200: #e2e8f0;
-  --color-dark-800: #1e1e2d;
-  --color-dark-900: #0f0f1a;
-  --color-dark-950: #0a0a12;
+  /* Accent Yellow (Construction) */
+  --color-accent: #f4e225;
+  --color-accent-light: #fac533;
+  --color-accent-dark: #dcb900;
 
-  --font-family-sans: 'Inter', system-ui, sans-serif;
+  /* Dark Theme */
+  --color-background-dark: #101822;
+  --color-surface-dark: #192433;
+  --color-border-dark: #324867;
+  --color-text-muted: #92a9c9;
+
+  /* Light Theme */
+  --color-background-light: #f6f7f8;
+  --color-surface-light: #ffffff;
+  --color-border-light: #e9e2ce;
+  --color-steel-blue: #2C3E50;
+
+  /* Fonts */
+  --font-family-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-family-body: 'Noto Sans', 'Inter', system-ui, sans-serif;
 }
+
+/* ============================================
+   Base Styles
+   ============================================ */
 
 * {
   margin: 0;
@@ -35,11 +56,21 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Space Grotesk', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #0D0D12;
+}
+
+/* Dark mode default */
+html.dark body {
+  background-color: #101822;
   color: #fff;
+}
+
+/* Light mode */
+html.light body {
+  background-color: #f6f7f8;
+  color: #2C3E50;
 }
 
 #root {
@@ -48,28 +79,59 @@ body {
   overflow: hidden;
 }
 
-/* Scrollbar styling */
+/* ============================================
+   Custom Scrollbar (Dark Theme)
+   ============================================ */
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #13131A;
+  background: #111822;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3B3B4F;
+  background: #324867;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4F4F6F;
+  background: #4a6fa5;
 }
 
-/* Button hover states */
+/* ============================================
+   Grid Pattern Background
+   ============================================ */
+
+.grid-pattern {
+  background-size: 40px 40px;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+/* ============================================
+   Material Symbols Icons
+   ============================================ */
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.material-symbols-outlined.filled {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
+
 button {
   font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 button:hover {
@@ -85,44 +147,60 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* Links */
+/* ============================================
+   Links
+   ============================================ */
+
 a {
-  color: #3B82F6;
+  color: #2b7cee;
   text-decoration: none;
+  transition: color 0.2s ease;
 }
 
 a:hover {
   text-decoration: underline;
 }
 
-/* Focus states */
+/* ============================================
+   Focus States
+   ============================================ */
+
 button:focus-visible,
-input:focus-visible {
-  outline: 2px solid #3B82F6;
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid #2b7cee;
   outline-offset: 2px;
 }
 
-/* Input styling */
+/* ============================================
+   Inputs
+   ============================================ */
+
 input,
 textarea,
 select {
   font-family: inherit;
-  background: #1E1E2E;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
+  background: #111822;
+  border: 1px solid #324867;
+  border-radius: 0.25rem;
   padding: 0.5rem 0.75rem;
   color: #fff;
   font-size: 0.875rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 input:focus,
 textarea:focus,
 select:focus {
-  border-color: #3B82F6;
+  border-color: #2b7cee;
+  box-shadow: 0 0 0 2px rgba(43, 124, 238, 0.2);
   outline: none;
 }
 
-/* Animations */
+/* ============================================
+   Animations
+   ============================================ */
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -163,64 +241,109 @@ select:focus {
   }
 }
 
-/* Utility classes */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+
 .fade-in {
   animation: fadeIn 0.3s ease-out;
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease-out;
 }
 
 .loading-spinner {
   width: 24px;
   height: 24px;
-  border: 3px solid rgba(59, 130, 246, 0.2);
-  border-top-color: #3B82F6;
+  border: 3px solid rgba(43, 124, 238, 0.2);
+  border-top-color: #2b7cee;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
 
 /* Selection */
 ::selection {
-  background: rgba(59, 130, 246, 0.3);
+  background: rgba(43, 124, 238, 0.3);
   color: #fff;
 }
 
-/* Tooltips */
-[title] {
-  position: relative;
+/* ============================================
+   Glass Effect (Glassmorphism)
+   ============================================ */
+
+.glass {
+  background: rgba(16, 24, 34, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Professional shadows */
+.glass-light {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* ============================================
+   Shadows
+   ============================================ */
+
 .shadow-soft {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .shadow-glow {
-  box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 30px rgba(43, 124, 238, 0.2);
 }
 
-/* Glass effect */
-.glass {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.shadow-glow-accent {
+  box-shadow: 0 0 30px rgba(244, 226, 37, 0.2);
 }
 
-/* Card styles */
+/* ============================================
+   Cards
+   ============================================ */
+
 .card {
-  background: #1A1A24;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  background: #192433;
+  border: 1px solid #324867;
+  border-radius: 0.5rem;
   padding: 1.5rem;
 }
 
-/* Badge styles */
+.card-light {
+  background: #ffffff;
+  border: 1px solid #e9e2ce;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+}
+
+/* ============================================
+   Badges
+   ============================================ */
+
 .badge {
   display: inline-block;
   padding: 0.25rem 0.75rem;
   font-size: 0.75rem;
   font-weight: 600;
   border-radius: 12px;
-  background: rgba(59, 130, 246, 0.1);
-  color: #3B82F6;
+  background: rgba(43, 124, 238, 0.1);
+  color: #2b7cee;
 }
 
 .badge-success {
@@ -229,11 +352,45 @@ select:focus {
 }
 
 .badge-warning {
-  background: rgba(245, 158, 11, 0.1);
-  color: #F59E0B;
+  background: rgba(244, 226, 37, 0.1);
+  color: #dcb900;
 }
 
 .badge-error {
   background: rgba(239, 68, 68, 0.1);
   color: #EF4444;
+}
+
+/* ============================================
+   Toggle Switch
+   ============================================ */
+
+.toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: #324867;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.toggle-switch.active {
+  background: #2b7cee;
+}
+
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+
+.toggle-switch.active::after {
+  transform: translateX(20px);
 }
