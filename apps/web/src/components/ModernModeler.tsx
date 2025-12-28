@@ -10,6 +10,7 @@
  */
 
 import { FC, useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
     Box,
     Layers,
@@ -279,6 +280,51 @@ export const ModernModeler: FC = () => {
         }
         return undefined;
     }, [nodes.size, members.size]);
+
+    // URL Parameter Handling - Connect Capabilities page to dialogs
+    const [searchParams] = useSearchParams();
+
+    useEffect(() => {
+        const mode = searchParams.get('mode');
+        const tool = searchParams.get('tool');
+        const code = searchParams.get('code');
+        const panel = searchParams.get('panel');
+        const exportType = searchParams.get('export');
+        const type = searchParams.get('type');
+
+        // Handle tool-specific dialogs
+        if (tool === 'foundation') {
+            setShowFoundationDesign(true);
+            return;
+        }
+        if (mode === 'loading' || tool === 'wind' || tool === 'seismic' || tool === 'combinations') {
+            setShowIS875Load(true);
+            return;
+        }
+        if (panel === 'templates' || tool === 'architect') {
+            setShowStructureWizard(true);
+            return;
+        }
+
+        // Handle analysis types - run analysis
+        if (mode === 'analysis' && type) {
+            // Trigger analysis workflow
+            setShowProgressModal(true);
+            handleRunAnalysis();
+        }
+
+        // Handle AI mode
+        if (mode === 'ai') {
+            // Would open AI Command Center
+            setShowQuickStart(true);
+        }
+
+        // Handle design codes
+        if (mode === 'design' && code) {
+            // Open design panel with specific code
+            setShowQuickStart(true);
+        }
+    }, [searchParams]);
 
     // Handle step click
     const handleStepClick = useCallback((step: number) => {
