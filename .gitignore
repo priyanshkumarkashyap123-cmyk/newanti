@@ -8,10 +8,29 @@ build/
 .next/
 out/
 
-# Environment variables
+# Environment variables - NEVER COMMIT!
 .env
 .env.local
 .env.*.local
+.env.development
+.env.production
+.env.staging
+*.env
+
+# Secrets and credentials
+*.pem
+*.key
+*.crt
+*.pfx
+*.p12
+secrets/
+credentials/
+*.secret
+*.credentials
+
+# Azure publish profiles
+*.PublishSettings
+*.publishsettings
 
 # IDE
 .vscode/

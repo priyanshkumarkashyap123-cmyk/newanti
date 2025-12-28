@@ -18,6 +18,23 @@
 
 ---
 
+## 🔐 IMPORTANT: Credentials Setup
+
+> ⚠️ **NEVER commit credentials to Git!** Store them securely and set as environment variables.
+
+### Required Environment Variables
+
+Create these in your deployment platform (Azure Portal, GitHub Secrets, etc.):
+
+| Variable | Description | Where to Get |
+|----------|-------------|--------------|
+| `CLERK_PUBLISHABLE_KEY` | Clerk public key | [Clerk Dashboard](https://dashboard.clerk.com) → API Keys |
+| `CLERK_SECRET_KEY` | Clerk secret key | [Clerk Dashboard](https://dashboard.clerk.com) → API Keys |
+| `MONGODB_URI` | MongoDB connection string | [MongoDB Atlas](https://cloud.mongodb.com) → Connect |
+| `GEMINI_API_KEY` | Google AI API key | [AI Studio](https://aistudio.google.com) → API Keys |
+
+---
+
 ## 🏗️ Architecture
 
 ```
@@ -51,15 +68,6 @@ Ensure you have:
 - [x] GitHub account with repo pushed
 - [x] Azure account (get $100 via GitHub Student Pack)
 - [x] Azure CLI installed: `brew install azure-cli`
-
-### Your Credentials
-
-| Service | Key |
-|---------|-----|
-| Clerk Publishable | `pk_test_Y2FwYWJsZS1vd2wtNjYuY2xlcmsuYWNjb3VudHMuZGV2JA` |
-| Clerk Secret | `sk_test_7MqXdNmcEp22DKExdwWXDDjn7QzMimENVg5GHo3Q3f` |
-| MongoDB URI | `mongodb+srv://beamlab_admin:yLCaEABYdoy5yKYd@cluster0.qiu5szt.mongodb.net/beamlab` |
-| Gemini API | `AIzaSyDFYavn0QKWTJ8OjQkoe8IalmQijA6BRhw` |
 
 ---
 
@@ -98,7 +106,7 @@ az webapp config appsettings set \
   --resource-group beamlab-rg \
   --name api-beamlab-python \
   --settings \
-    GEMINI_API_KEY="AIzaSyDFYavn0QKWTJ8OjQkoe8IalmQijA6BRhw" \
+    GEMINI_API_KEY="<YOUR_GEMINI_API_KEY>" \
     USE_MOCK_AI="false" \
     FRONTEND_URL="https://beamlabultimate.tech" \
     ALLOWED_ORIGINS="https://beamlabultimate.tech,https://www.beamlabultimate.tech"
@@ -149,8 +157,8 @@ az webapp config appsettings set \
   --settings \
     PORT="8080" \
     NODE_ENV="production" \
-    CLERK_SECRET_KEY="sk_test_7MqXdNmcEp22DKExdwWXDDjn7QzMimENVg5GHo3Q3f" \
-    MONGODB_URI="mongodb+srv://beamlab_admin:yLCaEABYdoy5yKYd@cluster0.qiu5szt.mongodb.net/beamlab" \
+    CLERK_SECRET_KEY="<YOUR_CLERK_SECRET_KEY>" \
+    MONGODB_URI="<YOUR_MONGODB_URI>" \
     FRONTEND_URL="https://beamlabultimate.tech"
 ```
 
@@ -195,7 +203,10 @@ az webapp deployment source config \
 | `AZURE_WEBAPP_PUBLISH_PROFILE_API` | Contents of `api-beamlab.PublishSettings` | Download from Azure Portal |
 | `AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON` | Contents of `api-beamlab-python.PublishSettings` | Download from Azure Portal |
 | `AZURE_STATIC_WEB_APPS_API_TOKEN` | Deployment token from Static Web App | Click "Manage deployment token" |
-| `VITE_CLERK_PUBLISHABLE_KEY` | `pk_test_Y2FwYWJsZS1vd2wtNjYuY2xlcmsuYWNjb3VudHMuZGV2JA` | From Clerk Dashboard |
+| `VITE_CLERK_PUBLISHABLE_KEY` | Your Clerk publishable key | From Clerk Dashboard |
+| `CLERK_SECRET_KEY` | Your Clerk secret key | From Clerk Dashboard |
+| `MONGODB_URI` | Your MongoDB connection string | From MongoDB Atlas |
+| `GEMINI_API_KEY` | Your Gemini API key | From Google AI Studio |
 
 > **How to get publish profiles:** Azure Portal → App Service → Download publish profile → Copy entire XML content
 
@@ -206,16 +217,16 @@ Configure these in **Azure Portal → App Service → Configuration → Applicat
 **Node.js API (api-beamlab):**
 | Setting | Value |
 |---------|-------|
-| `MONGODB_URI` | `mongodb+srv://beamlab_admin:yLCaEABYdoy5yKYd@cluster0.qiu5szt.mongodb.net/beamlab` |
-| `GEMINI_API_KEY` | `AIzaSyDFYavn0QKWTJ8OjQkoe8IalmQijA6BRhw` |
-| `CLERK_SECRET_KEY` | `sk_test_7MqXdNmcEp22DKExdwWXDDjn7QzMimENVg5GHo3Q3f` |
+| `MONGODB_URI` | `<YOUR_MONGODB_URI>` |
+| `GEMINI_API_KEY` | `<YOUR_GEMINI_API_KEY>` |
+| `CLERK_SECRET_KEY` | `<YOUR_CLERK_SECRET_KEY>` |
 | `FRONTEND_URL` | `https://beamlabultimate.tech` |
 | `NODE_ENV` | `production` |
 
 **Python Engine (api-beamlab-python):**
 | Setting | Value |
 |---------|-------|
-| `GEMINI_API_KEY` | `AIzaSyDFYavn0QKWTJ8OjQkoe8IalmQijA6BRhw` |
+| `GEMINI_API_KEY` | `<YOUR_GEMINI_API_KEY>` |
 | `FRONTEND_URL` | `https://beamlabultimate.tech` |
 | `ALLOWED_ORIGINS` | `https://beamlabultimate.tech,https://www.beamlabultimate.tech` |
 
@@ -251,7 +262,7 @@ In Azure Portal → Static Web Apps → beamlab-frontend → Configuration:
 
 | Name | Value |
 |------|-------|
-| `VITE_CLERK_PUBLISHABLE_KEY` | `pk_test_Y2FwYWJsZS1vd2wtNjYuY2xlcmsuYWNjb3VudHMuZGV2JA` |
+| `VITE_CLERK_PUBLISHABLE_KEY` | `<YOUR_CLERK_PUBLISHABLE_KEY>` |
 | `VITE_PYTHON_API_URL` | `https://beamlab-python.azurewebsites.net` |
 | `VITE_API_URL` | `https://beamlab-api.azurewebsites.net` |
 
