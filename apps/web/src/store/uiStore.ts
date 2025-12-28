@@ -101,6 +101,8 @@ interface UIState {
         interoperability: boolean;
         foundationDesign: boolean;
         is875Load: boolean;
+        railwayBridge: boolean;
+        meshing: boolean;
     };
 
     // Actions
@@ -173,6 +175,8 @@ export const useUIStore = create<UIState>()(
                 interoperability: false,
                 foundationDesign: false,
                 is875Load: false,
+                railwayBridge: false,
+                meshing: false,
             },
 
             // ========================================
@@ -350,6 +354,8 @@ export const useUIStore = create<UIState>()(
                     interoperability: false,
                     foundationDesign: false,
                     is875Load: false,
+                    railwayBridge: false,
+                    meshing: false,
                 }
             })
         }),

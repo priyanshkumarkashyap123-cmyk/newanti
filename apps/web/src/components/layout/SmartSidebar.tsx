@@ -266,29 +266,45 @@ const AdvancedToolsPanel: FC = () => {
     const openModal = useUIStore((s) => s.openModal);
 
     const tools = [
-        { 
-            id: 'structureWizard', 
-            label: 'Structure Wizard', 
+        {
+            id: 'structureWizard',
+            label: 'Structure Wizard',
             description: 'Generate trusses, frames, shells',
             color: 'text-purple-400',
             bgColor: 'bg-purple-500/10',
             borderColor: 'border-purple-500/30'
         },
-        { 
-            id: 'geometryTools', 
-            label: 'Geometry Tools', 
+        {
+            id: 'railwayBridge',
+            label: 'Railway Bridge',
+            description: 'IRS/MBG bridge design',
+            color: 'text-orange-400',
+            bgColor: 'bg-orange-500/10',
+            borderColor: 'border-orange-500/30'
+        },
+        {
+            id: 'geometryTools',
+            label: 'Geometry Tools',
             description: 'Extrude, rotate, mirror',
             color: 'text-cyan-400',
             bgColor: 'bg-cyan-500/10',
             borderColor: 'border-cyan-500/30'
         },
-        { 
-            id: 'interoperability', 
-            label: 'Import / Export', 
+        {
+            id: 'interoperability',
+            label: 'Import / Export',
             description: 'DXF, IFC, JSON formats',
-            color: 'text-orange-400',
-            bgColor: 'bg-orange-500/10',
-            borderColor: 'border-orange-500/30'
+            color: 'text-green-400',
+            bgColor: 'bg-green-500/10',
+            borderColor: 'border-green-500/30'
+        },
+        {
+            id: 'meshing',
+            label: 'FEA Meshing',
+            description: 'Plate & surface mesh generation',
+            color: 'text-violet-400',
+            bgColor: 'bg-violet-500/10',
+            borderColor: 'border-violet-500/30'
         },
     ];
 
@@ -297,7 +313,7 @@ const AdvancedToolsPanel: FC = () => {
             {tools.map((tool) => (
                 <button
                     key={tool.id}
-                    onClick={() => openModal(tool.id as 'structureWizard' | 'geometryTools' | 'interoperability')}
+                    onClick={() => openModal(tool.id as 'structureWizard' | 'geometryTools' | 'interoperability' | 'railwayBridge')}
                     className={`
                         w-full flex flex-col items-start gap-1 px-3 py-2.5 text-sm rounded-lg transition-all
                         ${tool.bgColor} ${tool.color} border ${tool.borderColor}

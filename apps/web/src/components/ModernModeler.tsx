@@ -44,6 +44,8 @@ import { FoundationDesignDialog } from './FoundationDesignDialog';
 import { IS875LoadDialog } from './IS875LoadDialog';
 import { GeometryToolsPanel } from './GeometryToolsPanel';
 import { InteroperabilityDialog } from './InteroperabilityDialog';
+import { RailwayBridgeDialog } from './RailwayBridgeDialog';
+import { MeshingPanel } from './MeshingPanel';
 import type { Node, Member } from '../store/model';
 
 // Analysis service
@@ -257,6 +259,7 @@ export const ModernModeler: FC = () => {
     const showIS875Load = modals.is875Load;
     const showGeometryTools = modals.geometryTools;
     const showInterop = modals.interoperability;
+    const showRailwayBridge = modals.railwayBridge;
 
     const loadStructure = useModelStore((state) => state.loadStructure);
 
@@ -669,6 +672,18 @@ export const ModernModeler: FC = () => {
             <InteroperabilityDialog
                 isOpen={showInterop}
                 onClose={() => closeModal('interoperability')}
+            />
+
+            {/* Railway Bridge Design Dialog */}
+            <RailwayBridgeDialog
+                isOpen={showRailwayBridge}
+                onClose={() => closeModal('railwayBridge')}
+            />
+
+            {/* FEA Meshing Panel */}
+            <MeshingPanel
+                isOpen={modals.meshing}
+                onClose={() => closeModal('meshing')}
             />
         </div>
     );
