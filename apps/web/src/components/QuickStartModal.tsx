@@ -8,7 +8,7 @@
  */
 
 import { FC, useState } from 'react';
-import { X, Plus, FileText, Bookmark, Play } from 'lucide-react';
+import { X, Plus, FileText, Bookmark, Play, Building2 } from 'lucide-react';
 import { ALL_SAMPLES, type SampleStructure } from '../data/SampleStructures';
 import { useModelStore } from '../store/model';
 
@@ -19,13 +19,14 @@ import { useModelStore } from '../store/model';
 interface QuickStartModalProps {
     isOpen: boolean;
     onClose: () => void;
+    onOpenWizard?: () => void;
 }
 
 // ============================================
 // COMPONENT
 // ============================================
 
-export const QuickStartModal: FC<QuickStartModalProps> = ({ isOpen, onClose }) => {
+export const QuickStartModal: FC<QuickStartModalProps> = ({ isOpen, onClose, onOpenWizard }) => {
     const [selectedSample, setSelectedSample] = useState<SampleStructure | null>(null);
 
     // Model store actions
@@ -115,6 +116,19 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({ isOpen, onClose }) =
                                 <Play className="w-5 h-5 text-zinc-500 group-hover:text-purple-600" />
                             </div>
                             <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Tutorial</span>
+                        </button>
+
+                        <button
+                            onClick={() => {
+                                onClose();
+                                onOpenWizard?.();
+                            }}
+                            className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 hover:border-orange-500 dark:hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all group"
+                        >
+                            <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:bg-orange-100 dark:group-hover:bg-orange-900/50 transition-colors">
+                                <Building2 className="w-5 h-5 text-zinc-500 group-hover:text-orange-600" />
+                            </div>
+                            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Structure Wizard</span>
                         </button>
                     </div>
 

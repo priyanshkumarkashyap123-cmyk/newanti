@@ -38,6 +38,8 @@ import { ResultsToolbar } from './results/ResultsToolbar';
 import { AICommandCenter } from './ai';
 import { LoadInputDialog } from './ui/LoadInputDialog';
 import { TutorialOverlay } from './TutorialOverlay';
+import { StructureWizard } from './StructureWizard';
+import type { Node, Member } from '../store/model';
 
 // Analysis service
 import { analysisService } from '../services/AnalysisService';
@@ -238,6 +240,10 @@ export const ModernModeler: FC = () => {
 
     // Tutorial overlay for first-time users
     const [showTutorial, setShowTutorial] = useState(false);
+
+    // Structure Wizard
+    const [showStructureWizard, setShowStructureWizard] = useState(false);
+    const loadStructure = useModelStore((state) => state.loadStructure);
 
     // UDL Load Dialog state
     const [showLoadDialog, setShowLoadDialog] = useState(false);
@@ -527,6 +533,7 @@ export const ModernModeler: FC = () => {
             <QuickStartModal
                 isOpen={showQuickStart}
                 onClose={() => setShowQuickStart(false)}
+                onOpenWizard={() => setShowStructureWizard(true)}
             />
 
             {/* UDL Load Dialog - opens when memberLoad tool is active and member is selected */}
@@ -544,6 +551,30 @@ export const ModernModeler: FC = () => {
                 isOpen={showTutorial}
                 onClose={() => setShowTutorial(false)}
                 onComplete={() => setShowTutorial(false)}
+            />
+
+            {/* Structure Wizard for generating parametric structures */}
+            <StructureWizard
+                isOpen={showStructureWizard}
+                onClose={() => setShowStructureWizard(false)}
+                onGenerate={(structure) => {
+                    // Convert generated structure to model format
+                    const nodes: Node[] = structure.nodes.map(n => ({
+                        id: n.id,
+                        x: n.x,
+                        y: n.y,
+                        z: n.z,
+                        restraints: n.restraints
+                    }));
+                    const members: Member[] = structure.members.map(m => ({
+                        id: m.id,
+                        startNodeId: m.startNodeId,
+                        endNodeId: m.endNodeId,
+                        sectionId: 'ISMB300'
+                    }));
+                    loadStructure(nodes, members);
+                    setShowStructureWizard(false);
+                }}
             />
         </div>
     );

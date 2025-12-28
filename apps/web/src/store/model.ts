@@ -138,6 +138,7 @@ interface ModelState {
 
     // Model Management
     clearModel: () => void;  // Clears entire model for fresh start
+    loadStructure: (nodes: Node[], members: Member[]) => void;  // Loads generated structure
 }
 
 // Helper to convert Map to Record for DevTools display
@@ -319,6 +320,42 @@ export const useModelStore = create<ModelState>()(
                     activeModeIndex: 0,
                     modeAmplitude: 1.0,
                     isAnimating: false
+                }),
+
+                loadStructure: (newNodes, newMembers) => set(() => {
+                    const nodesMap = new Map<string, Node>();
+                    const membersMap = new Map<string, Member>();
+
+                    for (const node of newNodes) {
+                        nodesMap.set(node.id, node);
+                    }
+
+                    for (const member of newMembers) {
+                        // Apply default material properties
+                        membersMap.set(member.id, {
+                            ...member,
+                            E: member.E ?? 200e6,
+                            A: member.A ?? 0.01,
+                            I: member.I ?? 1e-4
+                        });
+                    }
+
+                    return {
+                        nodes: nodesMap,
+                        members: membersMap,
+                        loads: [],
+                        memberLoads: [],
+                        selectedIds: new Set(),
+                        analysisResults: null,
+                        isAnalyzing: false,
+                        showSFD: false,
+                        showBMD: false,
+                        showResults: false,
+                        modalResults: null,
+                        activeModeIndex: 0,
+                        modeAmplitude: 1.0,
+                        isAnimating: false
+                    };
                 })
             })
         ),
