@@ -8,7 +8,7 @@
  */
 
 import { FC, useState } from 'react';
-import { X, Plus, FileText, Bookmark, Play, Building2, Layers } from 'lucide-react';
+import { X, Plus, FileText, Bookmark, Play, Building2, Layers, Weight } from 'lucide-react';
 import { ALL_SAMPLES, type SampleStructure } from '../data/SampleStructures';
 import { useModelStore } from '../store/model';
 
@@ -21,13 +21,14 @@ interface QuickStartModalProps {
     onClose: () => void;
     onOpenWizard?: () => void;
     onOpenFoundation?: () => void;
+    onOpenLoads?: () => void;
 }
 
 // ============================================
 // COMPONENT
 // ============================================
 
-export const QuickStartModal: FC<QuickStartModalProps> = ({ isOpen, onClose, onOpenWizard, onOpenFoundation }) => {
+export const QuickStartModal: FC<QuickStartModalProps> = ({ isOpen, onClose, onOpenWizard, onOpenFoundation, onOpenLoads }) => {
     const [selectedSample, setSelectedSample] = useState<SampleStructure | null>(null);
 
     // Model store actions
@@ -143,6 +144,19 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({ isOpen, onClose, onO
                                 <Layers className="w-5 h-5 text-zinc-500 group-hover:text-amber-600" />
                             </div>
                             <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Foundation Design</span>
+                        </button>
+
+                        <button
+                            onClick={() => {
+                                onClose();
+                                onOpenLoads?.();
+                            }}
+                            className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 hover:border-cyan-500 dark:hover:border-cyan-500 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-all group"
+                        >
+                            <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:bg-cyan-100 dark:group-hover:bg-cyan-900/50 transition-colors">
+                                <Weight className="w-5 h-5 text-zinc-500 group-hover:text-cyan-600" />
+                            </div>
+                            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">IS 875 Loads</span>
                         </button>
                     </div>
 

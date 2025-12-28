@@ -40,6 +40,7 @@ import { LoadInputDialog } from './ui/LoadInputDialog';
 import { TutorialOverlay } from './TutorialOverlay';
 import { StructureWizard } from './StructureWizard';
 import { FoundationDesignDialog } from './FoundationDesignDialog';
+import { IS875LoadDialog } from './IS875LoadDialog';
 import type { Node, Member } from '../store/model';
 
 // Analysis service
@@ -248,6 +249,9 @@ export const ModernModeler: FC = () => {
 
     // Foundation Design Dialog
     const [showFoundationDesign, setShowFoundationDesign] = useState(false);
+
+    // IS 875 Load Dialog
+    const [showIS875Load, setShowIS875Load] = useState(false);
 
     // UDL Load Dialog state
     const [showLoadDialog, setShowLoadDialog] = useState(false);
@@ -539,6 +543,7 @@ export const ModernModeler: FC = () => {
                 onClose={() => setShowQuickStart(false)}
                 onOpenWizard={() => setShowStructureWizard(true)}
                 onOpenFoundation={() => setShowFoundationDesign(true)}
+                onOpenLoads={() => setShowIS875Load(true)}
             />
 
             {/* UDL Load Dialog - opens when memberLoad tool is active and member is selected */}
@@ -586,6 +591,12 @@ export const ModernModeler: FC = () => {
             <FoundationDesignDialog
                 isOpen={showFoundationDesign}
                 onClose={() => setShowFoundationDesign(false)}
+            />
+
+            {/* IS 875 Load Generator Dialog */}
+            <IS875LoadDialog
+                isOpen={showIS875Load}
+                onClose={() => setShowIS875Load(false)}
             />
         </div>
     );
