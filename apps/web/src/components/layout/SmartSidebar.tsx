@@ -275,6 +275,30 @@ const AdvancedToolsPanel: FC = () => {
             borderColor: 'border-blue-500/30'
         },
         {
+            id: 'windLoadDialog',
+            label: 'Wind Load Generator',
+            description: 'IS 875 Part 3 wind analysis',
+            color: 'text-cyan-400',
+            bgColor: 'bg-cyan-500/10',
+            borderColor: 'border-cyan-500/30'
+        },
+        {
+            id: 'seismicLoadDialog',
+            label: 'Seismic Load Generator',
+            description: 'IS 1893 earthquake analysis',
+            color: 'text-red-400',
+            bgColor: 'bg-red-500/10',
+            borderColor: 'border-red-500/30'
+        },
+        {
+            id: 'movingLoadDialog',
+            label: 'Moving Load Analysis',
+            description: 'IRC 6 / AASHTO bridge loads',
+            color: 'text-amber-400',
+            bgColor: 'bg-amber-500/10',
+            borderColor: 'border-amber-500/30'
+        },
+        {
             id: 'structureWizard',
             label: 'Structure Wizard',
             description: 'Generate trusses, frames, shells',
@@ -294,9 +318,9 @@ const AdvancedToolsPanel: FC = () => {
             id: 'geometryTools',
             label: 'Geometry Tools',
             description: 'Extrude, rotate, mirror',
-            color: 'text-cyan-400',
-            bgColor: 'bg-cyan-500/10',
-            borderColor: 'border-cyan-500/30'
+            color: 'text-teal-400',
+            bgColor: 'bg-teal-500/10',
+            borderColor: 'border-teal-500/30'
         },
         {
             id: 'interoperability',
@@ -321,7 +345,7 @@ const AdvancedToolsPanel: FC = () => {
             {tools.map((tool) => (
                 <button
                     key={tool.id}
-                    onClick={() => openModal(tool.id as 'structureWizard' | 'geometryTools' | 'interoperability' | 'railwayBridge' | 'loadDialog' | 'meshing')}
+                    onClick={() => openModal(tool.id as 'structureWizard' | 'geometryTools' | 'interoperability' | 'railwayBridge' | 'loadDialog' | 'meshing' | 'windLoadDialog' | 'seismicLoadDialog' | 'movingLoadDialog')}
                     className={`
                         w-full flex flex-col items-start gap-1 px-3 py-2.5 text-sm rounded-lg transition-all
                         ${tool.bgColor} ${tool.color} border ${tool.borderColor}

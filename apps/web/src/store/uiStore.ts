@@ -104,6 +104,10 @@ interface UIState {
         railwayBridge: boolean;
         meshing: boolean;
         loadDialog: boolean;
+        windLoadDialog: boolean;
+        seismicLoadDialog: boolean;
+        movingLoadDialog: boolean;
+        boundaryDialog: boolean;
     };
 
     // Actions
@@ -128,6 +132,7 @@ interface UIState {
     openModal: (modal: keyof UIState['modals']) => void;
     closeModal: (modal: keyof UIState['modals']) => void;
     toggleModal: (modal: keyof UIState['modals']) => void;
+    setModal: (modal: keyof UIState['modals'], isOpen: boolean) => void;
 
     // Validation
     validateModel: () => ValidationResult;
@@ -179,6 +184,10 @@ export const useUIStore = create<UIState>()(
                 railwayBridge: false,
                 meshing: false,
                 loadDialog: false,
+                windLoadDialog: false,
+                seismicLoadDialog: false,
+                movingLoadDialog: false,
+                boundaryDialog: false,
             },
 
             // ========================================
@@ -329,6 +338,10 @@ export const useUIStore = create<UIState>()(
                 modals: { ...state.modals, [modal]: !state.modals[modal] }
             })),
 
+            setModal: (modal, isOpen) => set((state) => ({
+                modals: { ...state.modals, [modal]: isOpen }
+            })),
+
             // ========================================
             // VALIDATION
             // ========================================
@@ -359,6 +372,10 @@ export const useUIStore = create<UIState>()(
                     railwayBridge: false,
                     meshing: false,
                     loadDialog: false,
+                    windLoadDialog: false,
+                    seismicLoadDialog: false,
+                    movingLoadDialog: false,
+                    boundaryDialog: false,
                 }
             })
         }),

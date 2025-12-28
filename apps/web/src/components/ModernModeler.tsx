@@ -47,6 +47,9 @@ import { InteroperabilityDialog } from './InteroperabilityDialog';
 import { RailwayBridgeDialog } from './RailwayBridgeDialog';
 import { MeshingPanel } from './MeshingPanel';
 import { LoadDialog } from './LoadDialog';
+import WindLoadDialog from './WindLoadDialog';
+import SeismicLoadDialog from './SeismicLoadDialog';
+import MovingLoadDialog from './MovingLoadDialog';
 import type { Node, Member } from '../store/model';
 
 // Analysis service
@@ -693,6 +696,15 @@ export const ModernModeler: FC = () => {
                 isOpen={showLoadingManager}
                 onClose={() => closeModal('loadDialog')}
             />
+
+            {/* Wind Load Generator (IS 875) */}
+            <WindLoadDialog />
+
+            {/* Seismic Load Generator (IS 1893) */}
+            <SeismicLoadDialog />
+
+            {/* Moving Load Analysis (IRC 6 / AASHTO) */}
+            <MovingLoadDialog />
         </div>
     );
 };

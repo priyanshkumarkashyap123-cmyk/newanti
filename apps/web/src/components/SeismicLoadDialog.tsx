@@ -11,21 +11,21 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from './ui/dialog';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+} from './ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Switch } from './ui/switch';
+import { Badge } from './ui/badge';
+import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Activity, MapPin, Building2, Calculator, Info, AlertTriangle, Layers } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
 
@@ -259,7 +259,7 @@ const SeismicLoadDialog: React.FC = () => {
     const zoneColor = SEISMIC_ZONES.find(z => z.value === params.zone)?.color || 'gray';
     
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => setModal('seismicLoadDialog', open)}>
+        <Dialog open={isOpen} onOpenChange={(open: boolean) => setModal('seismicLoadDialog', open)}>
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
@@ -328,7 +328,7 @@ const SeismicLoadDialog: React.FC = () => {
                                 <Label>Soil Type</Label>
                                 <RadioGroup
                                     value={params.soilType}
-                                    onValueChange={(v) => setParams(prev => ({ ...prev, soilType: v }))}
+                                    onValueChange={(v: string) => setParams(prev => ({ ...prev, soilType: v }))}
                                     className="space-y-2"
                                 >
                                     {SOIL_TYPES.map(soil => (
@@ -349,7 +349,7 @@ const SeismicLoadDialog: React.FC = () => {
                                 <Label>Importance Factor (I)</Label>
                                 <Select
                                     value={params.I.toString()}
-                                    onValueChange={(v) => setParams(prev => ({ ...prev, I: parseFloat(v) }))}
+                                    onValueChange={(v: string) => setParams(prev => ({ ...prev, I: parseFloat(v) }))}
                                 >
                                     <SelectTrigger>
                                         <SelectValue />
@@ -501,7 +501,7 @@ const SeismicLoadDialog: React.FC = () => {
                                     <span className="text-sm">Soft Storey</span>
                                     <Switch
                                         checked={params.isSoftStorey}
-                                        onCheckedChange={(checked) => setParams(prev => ({
+                                        onCheckedChange={(checked: boolean) => setParams(prev => ({
                                             ...prev,
                                             isSoftStorey: checked
                                         }))}
@@ -511,7 +511,7 @@ const SeismicLoadDialog: React.FC = () => {
                                     <span className="text-sm">Plan Irregular</span>
                                     <Switch
                                         checked={params.isIrregular}
-                                        onCheckedChange={(checked) => setParams(prev => ({
+                                        onCheckedChange={(checked: boolean) => setParams(prev => ({
                                             ...prev,
                                             isIrregular: checked
                                         }))}
@@ -521,7 +521,7 @@ const SeismicLoadDialog: React.FC = () => {
                                     <span className="text-sm">Torsional</span>
                                     <Switch
                                         checked={params.torsionallyIrregular}
-                                        onCheckedChange={(checked) => setParams(prev => ({
+                                        onCheckedChange={(checked: boolean) => setParams(prev => ({
                                             ...prev,
                                             torsionallyIrregular: checked
                                         }))}
