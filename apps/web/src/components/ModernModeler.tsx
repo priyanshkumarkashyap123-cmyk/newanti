@@ -43,6 +43,7 @@ import { StructureWizard } from './StructureWizard';
 import { FoundationDesignDialog } from './FoundationDesignDialog';
 import { IS875LoadDialog } from './IS875LoadDialog';
 import { GeometryToolsPanel } from './GeometryToolsPanel';
+import { InteroperabilityDialog } from './InteroperabilityDialog';
 import type { Node, Member } from '../store/model';
 
 // Analysis service
@@ -258,6 +259,9 @@ export const ModernModeler: FC = () => {
     // Geometry Tools Panel
     const [showGeometryTools, setShowGeometryTools] = useState(false);
 
+    // Import/Export Dialog
+    const [showInterop, setShowInterop] = useState(false);
+
     // UDL Load Dialog state
     const [showLoadDialog, setShowLoadDialog] = useState(false);
     const [loadDialogMemberId, setLoadDialogMemberId] = useState<string | undefined>();
@@ -311,6 +315,10 @@ export const ModernModeler: FC = () => {
         }
         if (tool === 'geometry' || mode === 'geometry') {
             setShowGeometryTools(true);
+            return;
+        }
+        if (exportType || tool === 'import' || tool === 'export') {
+            setShowInterop(true);
             return;
         }
 
@@ -657,6 +665,12 @@ export const ModernModeler: FC = () => {
             <GeometryToolsPanel
                 isOpen={showGeometryTools}
                 onClose={() => setShowGeometryTools(false)}
+            />
+
+            {/* Import/Export Dialog */}
+            <InteroperabilityDialog
+                isOpen={showInterop}
+                onClose={() => setShowInterop(false)}
             />
         </div>
     );
