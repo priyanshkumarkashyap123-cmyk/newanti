@@ -14,6 +14,10 @@ import { SignInPage } from './pages/SignInPage';
 import { SignUpPage } from './pages/SignUpPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { PricingPage } from './pages/PricingPage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
+import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
+import { HelpPage } from './pages/HelpPage';
+import { ReportsPage } from './pages/ReportsPage';
 
 // Layouts
 import { WorkspaceLayout } from './layouts/WorkspaceLayout';
@@ -294,6 +298,18 @@ function App() {
 
                 {/* Pricing Page */}
                 <Route path="/pricing" element={<PricingPage />} />
+
+                {/* Reset Password */}
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+                {/* Privacy Policy */}
+                <Route path="/privacy" element={<PrivacyPolicyPage />} />
+
+                {/* Help & Tutorials */}
+                <Route path="/help" element={<HelpPage />} />
+
+                {/* Reports */}
+                <Route path="/reports" element={<ReportsPage />} />
 
                 {/* Main App - Modern Modeler with integrated sidebar */}
                 <Route path="/app" element={<ModernModeler />} />

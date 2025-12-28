@@ -27,11 +27,15 @@ import {
     Square,
     Settings,
     Loader2,
-    ArrowRight
+    ArrowRight,
+    Lock,
+    Crown
 } from 'lucide-react';
 import { useUIStore, Category } from '../../store/uiStore';
 import { useModelStore } from '../../store/model';
 import { TEMPLATE_BANK } from '../../data/templates';
+import { useSubscription } from '../../hooks/useSubscription';
+import { useNavigate } from 'react-router-dom';
 
 // ============================================
 // TYPES
@@ -260,11 +264,15 @@ const DrawToolsPanel: FC = () => {
 const SectionPickerPanel: FC = () => {
     const [selectedCode, setSelectedCode] = useState('IS808');
     const [selectedSection, setSelectedSection] = useState('ISMB300');
+    const { subscription, canAccess } = useSubscription();
+    const navigate = useNavigate();
+
+    const isPro = subscription.tier === 'pro' || subscription.tier === 'enterprise';
 
     const codes = [
-        { id: 'IS808', label: 'IS 808 (Indian)' },
-        { id: 'AISC', label: 'AISC (American)' },
-        { id: 'EN', label: 'EN 10034 (European)' },
+        { id: 'IS808', label: 'IS 808 (Indian)', isPro: false },
+        { id: 'AISC', label: 'AISC (American)', isPro: true },
+        { id: 'EN', label: 'EN 10034 (European)', isPro: true },
     ];
 
     const sections: Record<string, string[]> = {
@@ -273,21 +281,70 @@ const SectionPickerPanel: FC = () => {
         EN: ['IPE 200', 'IPE 240', 'IPE 270', 'IPE 300', 'IPE 330', 'IPE 360'],
     };
 
+    const handleCodeChange = (codeId: string) => {
+        const code = codes.find(c => c.id === codeId);
+        if (code?.isPro && !isPro) {
+            // Show upgrade prompt
+            return;
+        }
+        setSelectedCode(codeId);
+    };
+
     return (
         <div className="space-y-3">
             {/* Code Selector */}
             <div>
                 <label className="block text-xs text-zinc-500 mb-1">Design Code</label>
-                <select
-                    value={selectedCode}
-                    onChange={(e) => setSelectedCode(e.target.value)}
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:border-blue-500 focus:outline-none"
-                >
-                    {codes.map((code) => (
-                        <option key={code.id} value={code.id}>{code.label}</option>
-                    ))}
-                </select>
+                <div className="space-y-1">
+                    {codes.map((code) => {
+                        const isLocked = code.isPro && !isPro;
+                        return (
+                            <button
+                                key={code.id}
+                                onClick={() => handleCodeChange(code.id)}
+                                className={`
+                                    w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors
+                                    ${selectedCode === code.id && !isLocked
+                                        ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
+                                        : isLocked
+                                            ? 'bg-zinc-800/30 text-zinc-500 cursor-not-allowed'
+                                            : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                                    }
+                                `}
+                            >
+                                <span>{code.label}</span>
+                                {isLocked ? (
+                                    <span className="flex items-center gap-1 text-xs text-yellow-500">
+                                        <Lock className="w-3 h-3" />
+                                        PRO
+                                    </span>
+                                ) : selectedCode === code.id ? (
+                                    <span className="text-xs text-blue-400">✓</span>
+                                ) : null}
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
+
+            {/* Pro Upgrade Banner (shown for free users) */}
+            {!isPro && (
+                <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-lg p-3 border border-purple-500/20">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Crown className="w-4 h-4 text-yellow-500" />
+                        <span className="text-xs font-medium text-white">Unlock All Design Codes</span>
+                    </div>
+                    <p className="text-xs text-zinc-400 mb-2">
+                        Get access to AISC 360, Eurocode 3, and more international standards.
+                    </p>
+                    <button
+                        onClick={() => navigate('/pricing')}
+                        className="w-full py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs font-medium rounded-md hover:opacity-90 transition-opacity"
+                    >
+                        Upgrade to Pro
+                    </button>
+                </div>
+            )}
 
             {/* Section List */}
             <div>

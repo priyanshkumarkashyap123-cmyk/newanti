@@ -110,11 +110,31 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
         }
 
         try {
-            // For now, return free tier - replace with actual API call when backend is ready
-            // const response = await fetch(`/api/subscription/${userId}`);
-            // const data = await response.json();
+            // Fetch from backend API
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+            const response = await fetch(`${apiUrl}/api/user/subscription`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include'
+            });
 
-            // Mock: Check localStorage for demo purposes
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success && result.data) {
+                    const { tier, features, expiresAt } = result.data;
+                    setSubscription({
+                        tier: tier as SubscriptionTier,
+                        isLoading: false,
+                        expiresAt: expiresAt ? new Date(expiresAt) : null,
+                        features: features || TIER_FEATURES[tier as SubscriptionTier]
+                    });
+                    return;
+                }
+            }
+
+            // Fallback to localStorage for demo mode
             const savedTier = localStorage.getItem('beamlab_subscription_tier') as SubscriptionTier | null;
             const tier = savedTier || 'free';
 
@@ -126,7 +146,15 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
             });
         } catch (error) {
             console.error('Failed to fetch subscription:', error);
-            setSubscription(prev => ({ ...prev, isLoading: false }));
+            // Fallback to localStorage
+            const savedTier = localStorage.getItem('beamlab_subscription_tier') as SubscriptionTier | null;
+            const tier = savedTier || 'free';
+            setSubscription({
+                tier,
+                isLoading: false,
+                expiresAt: null,
+                features: TIER_FEATURES[tier]
+            });
         }
     };
 

@@ -4,6 +4,7 @@ import { useModelStore } from '../store/model';
 import { runLocalAnalysis } from '../api/localAnalysis';
 import { ReportGenerator } from '../utils/ReportGenerator';
 import { useAuth } from '@clerk/clerk-react';
+import { useSubscription } from '../hooks/useSubscription';
 
 export const Toolbar: FC = () => {
     const { isSignedIn } = useAuth();
@@ -21,6 +22,10 @@ export const Toolbar: FC = () => {
     const setShowResults = useModelStore((state) => state.setShowResults);
     const { undo, redo, pastStates, futureStates } = useModelStore.temporal.getState();
     const [message, setMessage] = useState<string | null>(null);
+    const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
+
+    // Subscription for feature gating
+    const { subscription, canAccess } = useSubscription();
 
     const handleAnalyze = () => {
         // Security: Require login before analysis
@@ -41,6 +46,21 @@ export const Toolbar: FC = () => {
     };
 
     const handleExportPDF = () => {
+        // Feature gate: PDF export requires Pro subscription
+        if (!canAccess('pdfExport')) {
+            // Show limited export for free users
+            const shouldUpgrade = window.confirm(
+                '📄 PDF Export - Pro Feature\n\n' +
+                'Full PDF reports with calculations require a Pro subscription.\n\n' +
+                'Free tier users can view results on screen.\n\n' +
+                'Click OK to view pricing, or Cancel to continue.'
+            );
+            if (shouldUpgrade) {
+                window.location.href = '/pricing';
+            }
+            return;
+        }
+
         // Check if analysis has been run
         if (!analysisResults) {
             if (!window.confirm('No analysis results found. Run analysis before exporting for a complete report.\n\nExport anyway?')) {

@@ -7,7 +7,7 @@
 import { Router, Request, Response } from 'express';
 import { requireAuth, getAuth } from '@clerk/express';
 import { UserActivityService, TIER_LIMITS } from '../services/UserActivityService.js';
-import { User } from '../models.js';
+import { User, Subscription } from '../models.js';
 
 const router = Router();
 
@@ -88,6 +88,62 @@ router.get('/limits', requireAuth(), async (req: Request, res: Response) => {
         });
     } catch (error) {
         console.error('[UserRoutes] /limits error:', error);
+        return res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+// ============================================
+// GET /user/subscription - Get complete subscription status
+// ============================================
+
+router.get('/subscription', requireAuth(), async (req: Request, res: Response) => {
+    try {
+        const { userId } = getAuth(req);
+        if (!userId) {
+            return res.status(401).json({ success: false, error: 'Unauthorized' });
+        }
+
+        const user = await User.findOne({ clerkId: userId });
+        const tier = user?.tier || 'free';
+        const limits = TIER_LIMITS[tier];
+
+        // Get subscription details if exists
+        let subscriptionData = null;
+        if (user?.subscription) {
+            const subscription = await Subscription.findById(user.subscription);
+            if (subscription) {
+                subscriptionData = {
+                    status: subscription.status,
+                    currentPeriodEnd: subscription.currentPeriodEnd,
+                    cancelAtPeriodEnd: subscription.cancelAtPeriodEnd
+                };
+            }
+        }
+
+        // Feature access based on tier
+        const features = {
+            maxProjects: tier === 'free' ? 3 : -1,
+            pdfExport: tier !== 'free',
+            aiAssistant: tier !== 'free',
+            advancedDesignCodes: tier !== 'free',
+            teamMembers: tier === 'free' ? 1 : tier === 'pro' ? 5 : -1,
+            prioritySupport: tier !== 'free',
+            apiAccess: tier === 'enterprise'
+        };
+
+        return res.json({
+            success: true,
+            data: {
+                tier,
+                isLoading: false,
+                expiresAt: subscriptionData?.currentPeriodEnd || null,
+                subscription: subscriptionData,
+                features,
+                limits
+            }
+        });
+    } catch (error) {
+        console.error('[UserRoutes] /subscription error:', error);
         return res.status(500).json({ success: false, error: 'Server error' });
     }
 });

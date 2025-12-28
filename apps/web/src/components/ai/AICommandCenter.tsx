@@ -7,11 +7,12 @@
  * - Auto-analysis after generation
  */
 
-import { FC, useState } from 'react';
+import { FC, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Loader2, Zap, CheckCircle } from 'lucide-react';
+import { Sparkles, Loader2, Zap, CheckCircle, Lock } from 'lucide-react';
 import { TEMPLATE_BANK } from '../../data/templates';
 import { useModelStore } from '../../store/model';
+import { useSubscription } from '../../hooks/useSubscription';
 
 // ============================================
 // TYPES
@@ -130,6 +131,37 @@ export const AICommandCenter: FC = () => {
     const addMember = useModelStore((state) => state.addMember);
     const updateNode = useModelStore((state) => state.updateNode);
 
+    // Subscription for feature gating
+    const { subscription, canAccess } = useSubscription();
+
+    // Free tier usage tracking (3 per day)
+    const FREE_TIER_DAILY_LIMIT = 3;
+    const [dailyUsageCount, setDailyUsageCount] = useState(0);
+
+    useEffect(() => {
+        // Check and reset daily usage counter
+        const today = new Date().toDateString();
+        const lastUsageDate = localStorage.getItem('beamlab_ai_usage_date');
+        const savedCount = parseInt(localStorage.getItem('beamlab_ai_usage_count') || '0');
+
+        if (lastUsageDate !== today) {
+            localStorage.setItem('beamlab_ai_usage_date', today);
+            localStorage.setItem('beamlab_ai_usage_count', '0');
+            setDailyUsageCount(0);
+        } else {
+            setDailyUsageCount(savedCount);
+        }
+    }, []);
+
+    const incrementUsage = () => {
+        const newCount = dailyUsageCount + 1;
+        setDailyUsageCount(newCount);
+        localStorage.setItem('beamlab_ai_usage_count', String(newCount));
+    };
+
+    const canUseAI = canAccess('aiAssistant') || dailyUsageCount < FREE_TIER_DAILY_LIMIT;
+    const remainingUses = FREE_TIER_DAILY_LIMIT - dailyUsageCount;
+
     /**
      * Import a model into the store
      */
@@ -211,6 +243,25 @@ export const AICommandCenter: FC = () => {
      */
     const handleAIDesign = async () => {
         if (!prompt.trim()) return;
+
+        // Feature gate: Check AI usage limits
+        if (!canAccess('aiAssistant') && dailyUsageCount >= FREE_TIER_DAILY_LIMIT) {
+            const shouldUpgrade = window.confirm(
+                '🤖 AI Assistant - Daily Limit Reached\n\n' +
+                'Free tier users get 3 AI generations per day.\n\n' +
+                'Upgrade to Pro for unlimited AI access.\n\n' +
+                'Click OK to view pricing.'
+            );
+            if (shouldUpgrade) {
+                window.location.href = '/pricing';
+            }
+            return;
+        }
+
+        // Increment usage for free tier users
+        if (!canAccess('aiAssistant')) {
+            incrementUsage();
+        }
 
         setIsLoading(true);
         setStatus('generating');

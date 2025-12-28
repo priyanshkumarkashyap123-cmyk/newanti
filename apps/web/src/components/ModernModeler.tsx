@@ -37,6 +37,7 @@ import { QuickStartModal } from './QuickStartModal';
 import { ResultsToolbar } from './results/ResultsToolbar';
 import { AICommandCenter } from './ai';
 import { LoadInputDialog } from './ui/LoadInputDialog';
+import { TutorialOverlay } from './TutorialOverlay';
 
 // Analysis service
 import { analysisService } from '../services/AnalysisService';
@@ -234,6 +235,9 @@ export const ModernModeler: FC = () => {
 
     // Quick start modal
     const [showQuickStart, setShowQuickStart] = useState(false);
+
+    // Tutorial overlay for first-time users
+    const [showTutorial, setShowTutorial] = useState(false);
 
     // UDL Load Dialog state
     const [showLoadDialog, setShowLoadDialog] = useState(false);
@@ -533,6 +537,13 @@ export const ModernModeler: FC = () => {
                     setLoadDialogMemberId(undefined);
                 }}
                 targetMemberId={loadDialogMemberId}
+            />
+
+            {/* Tutorial Overlay for first-time users */}
+            <TutorialOverlay
+                isOpen={showTutorial}
+                onClose={() => setShowTutorial(false)}
+                onComplete={() => setShowTutorial(false)}
             />
         </div>
     );
