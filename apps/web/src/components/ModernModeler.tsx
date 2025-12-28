@@ -39,6 +39,7 @@ import { AICommandCenter } from './ai';
 import { LoadInputDialog } from './ui/LoadInputDialog';
 import { TutorialOverlay } from './TutorialOverlay';
 import { StructureWizard } from './StructureWizard';
+import { FoundationDesignDialog } from './FoundationDesignDialog';
 import type { Node, Member } from '../store/model';
 
 // Analysis service
@@ -244,6 +245,9 @@ export const ModernModeler: FC = () => {
     // Structure Wizard
     const [showStructureWizard, setShowStructureWizard] = useState(false);
     const loadStructure = useModelStore((state) => state.loadStructure);
+
+    // Foundation Design Dialog
+    const [showFoundationDesign, setShowFoundationDesign] = useState(false);
 
     // UDL Load Dialog state
     const [showLoadDialog, setShowLoadDialog] = useState(false);
@@ -534,6 +538,7 @@ export const ModernModeler: FC = () => {
                 isOpen={showQuickStart}
                 onClose={() => setShowQuickStart(false)}
                 onOpenWizard={() => setShowStructureWizard(true)}
+                onOpenFoundation={() => setShowFoundationDesign(true)}
             />
 
             {/* UDL Load Dialog - opens when memberLoad tool is active and member is selected */}
@@ -575,6 +580,12 @@ export const ModernModeler: FC = () => {
                     loadStructure(nodes, members);
                     setShowStructureWizard(false);
                 }}
+            />
+
+            {/* Foundation Design Dialog */}
+            <FoundationDesignDialog
+                isOpen={showFoundationDesign}
+                onClose={() => setShowFoundationDesign(false)}
             />
         </div>
     );
