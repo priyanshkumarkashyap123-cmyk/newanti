@@ -7,6 +7,7 @@ import { FC, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth, UserButton } from '@clerk/clerk-react';
+import { useUserRegistration } from '../hooks/useUserRegistration';
 
 // ============================================
 // TYPES
@@ -34,6 +35,9 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
     const navigate = useNavigate();
     const [activeNav, setActiveNav] = useState('projects');
     const [searchQuery, setSearchQuery] = useState('');
+
+    // Register user in MongoDB when signed in
+    useUserRegistration();
 
     // Handle Clerk auth gracefully
     let userName = 'Engineer';

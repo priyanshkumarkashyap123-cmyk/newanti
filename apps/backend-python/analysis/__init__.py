@@ -44,6 +44,46 @@ from .load_engine import (
     create_self_weight_loads
 )
 
+# Advanced Solvers
+from .solvers import (
+    PDeltaAnalyzer,
+    GeometricStiffnessMatrix,
+    ModalAnalyzer,
+    ResponseSpectrumAnalyzer,
+    BucklingAnalyzer,
+    CableAnalyzer,
+    NonLinearMemberAnalyzer
+)
+
+# Post-Processor
+from .post_processor import (
+    PostProcessor,
+    ResultType,
+    ForceComponent,
+    EnvelopeType,
+    NodeResult,
+    ReactionResult,
+    MemberForceResult,
+    StressResult,
+    EnvelopeResult,
+    DesignSummary,
+    AnimationFrame
+)
+
+# Interoperability
+from .interop import (
+    STAADImporter,
+    STAADExporter,
+    JSONModelIO,
+    ExcelExporter,
+    DXFImporter,
+    OpenBeamAPI,
+    ReportDataGenerator,
+    StructuralModel,
+    Node,
+    Member
+)
+
 __all__ = [
     # Beam Solver
     "BeamSolver",
@@ -80,5 +120,36 @@ __all__ = [
     "TemperatureLoad",
     "PrestressLoad",
     "LoadDirection",
-    "create_self_weight_loads"
+    "create_self_weight_loads",
+    # Advanced Solvers
+    "PDeltaAnalyzer",
+    "GeometricStiffnessMatrix",
+    "ModalAnalyzer",
+    "ResponseSpectrumAnalyzer",
+    "BucklingAnalyzer",
+    "CableAnalyzer",
+    "NonLinearMemberAnalyzer",
+    # Post-Processor
+    "PostProcessor",
+    "ResultType",
+    "ForceComponent",
+    "EnvelopeType",
+    "NodeResult",
+    "ReactionResult",
+    "MemberForceResult",
+    "StressResult",
+    "EnvelopeResult",
+    "DesignSummary",
+    "AnimationFrame",
+    # Interoperability
+    "STAADImporter",
+    "STAADExporter",
+    "JSONModelIO",
+    "ExcelExporter",
+    "DXFImporter",
+    "OpenBeamAPI",
+    "ReportDataGenerator",
+    "StructuralModel",
+    "Node",
+    "Member"
 ]
