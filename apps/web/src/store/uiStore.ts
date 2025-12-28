@@ -103,6 +103,7 @@ interface UIState {
         is875Load: boolean;
         railwayBridge: boolean;
         meshing: boolean;
+        loadDialog: boolean;
     };
 
     // Actions
@@ -177,6 +178,7 @@ export const useUIStore = create<UIState>()(
                 is875Load: false,
                 railwayBridge: false,
                 meshing: false,
+                loadDialog: false,
             },
 
             // ========================================
@@ -356,6 +358,7 @@ export const useUIStore = create<UIState>()(
                     is875Load: false,
                     railwayBridge: false,
                     meshing: false,
+                    loadDialog: false,
                 }
             })
         }),

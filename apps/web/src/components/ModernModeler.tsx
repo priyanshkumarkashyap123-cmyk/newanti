@@ -46,6 +46,7 @@ import { GeometryToolsPanel } from './GeometryToolsPanel';
 import { InteroperabilityDialog } from './InteroperabilityDialog';
 import { RailwayBridgeDialog } from './RailwayBridgeDialog';
 import { MeshingPanel } from './MeshingPanel';
+import { LoadDialog } from './LoadDialog';
 import type { Node, Member } from '../store/model';
 
 // Analysis service
@@ -260,6 +261,7 @@ export const ModernModeler: FC = () => {
     const showGeometryTools = modals.geometryTools;
     const showInterop = modals.interoperability;
     const showRailwayBridge = modals.railwayBridge;
+    const showLoadingManager = modals.loadDialog;
 
     const loadStructure = useModelStore((state) => state.loadStructure);
 
@@ -684,6 +686,12 @@ export const ModernModeler: FC = () => {
             <MeshingPanel
                 isOpen={modals.meshing}
                 onClose={() => closeModal('meshing')}
+            />
+
+            {/* Comprehensive Loading Manager */}
+            <LoadDialog
+                isOpen={showLoadingManager}
+                onClose={() => closeModal('loadDialog')}
             />
         </div>
     );

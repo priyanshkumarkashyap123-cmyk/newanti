@@ -267,6 +267,14 @@ const AdvancedToolsPanel: FC = () => {
 
     const tools = [
         {
+            id: 'loadDialog',
+            label: 'Loading Manager',
+            description: 'Nodal, member, floor, thermal loads',
+            color: 'text-blue-400',
+            bgColor: 'bg-blue-500/10',
+            borderColor: 'border-blue-500/30'
+        },
+        {
             id: 'structureWizard',
             label: 'Structure Wizard',
             description: 'Generate trusses, frames, shells',
@@ -313,7 +321,7 @@ const AdvancedToolsPanel: FC = () => {
             {tools.map((tool) => (
                 <button
                     key={tool.id}
-                    onClick={() => openModal(tool.id as 'structureWizard' | 'geometryTools' | 'interoperability' | 'railwayBridge')}
+                    onClick={() => openModal(tool.id as 'structureWizard' | 'geometryTools' | 'interoperability' | 'railwayBridge' | 'loadDialog' | 'meshing')}
                     className={`
                         w-full flex flex-col items-start gap-1 px-3 py-2.5 text-sm rounded-lg transition-all
                         ${tool.bgColor} ${tool.color} border ${tool.borderColor}
