@@ -42,6 +42,7 @@ import { TutorialOverlay } from './TutorialOverlay';
 import { StructureWizard } from './StructureWizard';
 import { FoundationDesignDialog } from './FoundationDesignDialog';
 import { IS875LoadDialog } from './IS875LoadDialog';
+import { GeometryToolsPanel } from './GeometryToolsPanel';
 import type { Node, Member } from '../store/model';
 
 // Analysis service
@@ -254,6 +255,9 @@ export const ModernModeler: FC = () => {
     // IS 875 Load Dialog
     const [showIS875Load, setShowIS875Load] = useState(false);
 
+    // Geometry Tools Panel
+    const [showGeometryTools, setShowGeometryTools] = useState(false);
+
     // UDL Load Dialog state
     const [showLoadDialog, setShowLoadDialog] = useState(false);
     const [loadDialogMemberId, setLoadDialogMemberId] = useState<string | undefined>();
@@ -303,6 +307,10 @@ export const ModernModeler: FC = () => {
         }
         if (panel === 'templates' || tool === 'architect') {
             setShowStructureWizard(true);
+            return;
+        }
+        if (tool === 'geometry' || mode === 'geometry') {
+            setShowGeometryTools(true);
             return;
         }
 
@@ -643,6 +651,12 @@ export const ModernModeler: FC = () => {
             <IS875LoadDialog
                 isOpen={showIS875Load}
                 onClose={() => setShowIS875Load(false)}
+            />
+
+            {/* Geometry Tools Panel */}
+            <GeometryToolsPanel
+                isOpen={showGeometryTools}
+                onClose={() => setShowGeometryTools(false)}
             />
         </div>
     );

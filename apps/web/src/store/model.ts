@@ -58,6 +58,9 @@ export interface Member {
         startMoment: boolean; // Release moment at start
         endMoment: boolean;   // Release moment at end
     };
+    // Rigid zone offsets (for beam-column connections)
+    startOffset?: { x: number; y: number; z: number };
+    endOffset?: { x: number; y: number; z: number };
 }
 
 // Analysis Results
@@ -139,6 +142,12 @@ interface ModelState {
     // Model Management
     clearModel: () => void;  // Clears entire model for fresh start
     loadStructure: (nodes: Node[], members: Member[]) => void;  // Loads generated structure
+
+    // Geometry Operations
+    removeMember: (id: string) => void;
+    addNodes: (nodes: Node[]) => void;      // Bulk add nodes
+    addMembers: (members: Member[]) => void; // Bulk add members
+    splitMemberById: (memberId: string, ratio: number) => void; // Insert node in member
 }
 
 // Helper to convert Map to Record for DevTools display
@@ -356,7 +365,104 @@ export const useModelStore = create<ModelState>()(
                         modeAmplitude: 1.0,
                         isAnimating: false
                     };
-                })
+                }),
+
+                // Geometry Operations
+                removeMember: (id) =>
+                    set((state) => {
+                        const newMembers = new Map(state.members);
+                        newMembers.delete(id);
+                        // Also remove any member loads for this member
+                        const newMemberLoads = state.memberLoads.filter(ml => ml.memberId !== id);
+                        return { members: newMembers, memberLoads: newMemberLoads };
+                    }),
+
+                addNodes: (nodes) =>
+                    set((state) => {
+                        const newNodes = new Map(state.nodes);
+                        nodes.forEach(node => newNodes.set(node.id, node));
+                        return { nodes: newNodes };
+                    }),
+
+                addMembers: (members) =>
+                    set((state) => {
+                        const newMembers = new Map(state.members);
+                        members.forEach(member => {
+                            newMembers.set(member.id, {
+                                ...member,
+                                E: member.E ?? 200e6,
+                                A: member.A ?? 0.01,
+                                I: member.I ?? 1e-4
+                            });
+                        });
+                        return { members: newMembers };
+                    }),
+
+                splitMemberById: (memberId, ratio) =>
+                    set((state) => {
+                        const member = state.members.get(memberId);
+                        if (!member) return state;
+
+                        const startNode = state.nodes.get(member.startNodeId);
+                        const endNode = state.nodes.get(member.endNodeId);
+                        if (!startNode || !endNode) return state;
+
+                        // Calculate new node position
+                        const dx = endNode.x - startNode.x;
+                        const dy = endNode.y - startNode.y;
+                        const dz = endNode.z - startNode.z;
+                        const clampedRatio = Math.max(0.01, Math.min(0.99, ratio));
+
+                        const newNodeId = `${memberId}_split`;
+                        const newNode: Node = {
+                            id: newNodeId,
+                            x: startNode.x + dx * clampedRatio,
+                            y: startNode.y + dy * clampedRatio,
+                            z: startNode.z + dz * clampedRatio
+                        };
+
+                        // Create two new members
+                        const member1: Member = {
+                            id: `${memberId}_a`,
+                            startNodeId: member.startNodeId,
+                            endNodeId: newNodeId,
+                            sectionId: member.sectionId,
+                            E: member.E,
+                            A: member.A,
+                            I: member.I,
+                            releases: member.releases
+                        };
+
+                        const member2: Member = {
+                            id: `${memberId}_b`,
+                            startNodeId: newNodeId,
+                            endNodeId: member.endNodeId,
+                            sectionId: member.sectionId,
+                            E: member.E,
+                            A: member.A,
+                            I: member.I,
+                            releases: member.releases
+                        };
+
+                        // Update state
+                        const newNodes = new Map(state.nodes);
+                        newNodes.set(newNodeId, newNode);
+
+                        const newMembers = new Map(state.members);
+                        newMembers.delete(memberId);
+                        newMembers.set(member1.id, member1);
+                        newMembers.set(member2.id, member2);
+
+                        // Remove old member loads (user needs to reapply)
+                        const newMemberLoads = state.memberLoads.filter(ml => ml.memberId !== memberId);
+
+                        return {
+                            nodes: newNodes,
+                            members: newMembers,
+                            memberLoads: newMemberLoads,
+                            analysisResults: null // Clear results
+                        };
+                    })
             })
         ),
         {
