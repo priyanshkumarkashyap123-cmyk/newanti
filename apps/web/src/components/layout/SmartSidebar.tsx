@@ -29,7 +29,8 @@ import {
     Loader2,
     ArrowRight,
     Lock,
-    Crown
+    Crown,
+    Wand2
 } from 'lucide-react';
 import { useUIStore, Category } from '../../store/uiStore';
 import { useModelStore } from '../../store/model';
@@ -251,6 +252,60 @@ const DrawToolsPanel: FC = () => {
                 >
                     {tool.icon}
                     {tool.label}
+                </button>
+            ))}
+        </div>
+    );
+};
+
+// ============================================
+// ADVANCED TOOLS PANEL
+// ============================================
+
+const AdvancedToolsPanel: FC = () => {
+    const openModal = useUIStore((s) => s.openModal);
+
+    const tools = [
+        { 
+            id: 'structureWizard', 
+            label: 'Structure Wizard', 
+            description: 'Generate trusses, frames, shells',
+            color: 'text-purple-400',
+            bgColor: 'bg-purple-500/10',
+            borderColor: 'border-purple-500/30'
+        },
+        { 
+            id: 'geometryTools', 
+            label: 'Geometry Tools', 
+            description: 'Extrude, rotate, mirror',
+            color: 'text-cyan-400',
+            bgColor: 'bg-cyan-500/10',
+            borderColor: 'border-cyan-500/30'
+        },
+        { 
+            id: 'interoperability', 
+            label: 'Import / Export', 
+            description: 'DXF, IFC, JSON formats',
+            color: 'text-orange-400',
+            bgColor: 'bg-orange-500/10',
+            borderColor: 'border-orange-500/30'
+        },
+    ];
+
+    return (
+        <div className="space-y-2">
+            {tools.map((tool) => (
+                <button
+                    key={tool.id}
+                    onClick={() => openModal(tool.id as 'structureWizard' | 'geometryTools' | 'interoperability')}
+                    className={`
+                        w-full flex flex-col items-start gap-1 px-3 py-2.5 text-sm rounded-lg transition-all
+                        ${tool.bgColor} ${tool.color} border ${tool.borderColor}
+                        hover:brightness-110
+                    `}
+                >
+                    <span className="font-medium">{tool.label}</span>
+                    <span className="text-xs opacity-70">{tool.description}</span>
                 </button>
             ))}
         </div>
@@ -652,6 +707,9 @@ export const SmartSidebar: FC = () => {
                         </AccordionItem>
                         <AccordionItem title="Draw Tools" icon={<Plus className="w-4 h-4" />}>
                             <DrawToolsPanel />
+                        </AccordionItem>
+                        <AccordionItem title="Advanced Tools" icon={<Wand2 className="w-4 h-4" />} defaultOpen={false}>
+                            <AdvancedToolsPanel />
                         </AccordionItem>
                     </>
                 )}

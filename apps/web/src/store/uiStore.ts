@@ -94,6 +94,15 @@ interface UIState {
     propertiesPanelOpen: boolean;
     dataPanelOpen: boolean;
 
+    // Modal states (for cross-component access)
+    modals: {
+        structureWizard: boolean;
+        geometryTools: boolean;
+        interoperability: boolean;
+        foundationDesign: boolean;
+        is875Load: boolean;
+    };
+
     // Actions
     setCategory: (cat: Category) => void;
     setActiveTool: (tool: string | null) => void;
@@ -111,6 +120,11 @@ interface UIState {
     // Panel actions
     togglePropertiesPanel: () => void;
     toggleDataPanel: () => void;
+
+    // Modal actions
+    openModal: (modal: keyof UIState['modals']) => void;
+    closeModal: (modal: keyof UIState['modals']) => void;
+    toggleModal: (modal: keyof UIState['modals']) => void;
 
     // Validation
     validateModel: () => ValidationResult;
@@ -153,6 +167,13 @@ export const useUIStore = create<UIState>()(
             notification: null,
             propertiesPanelOpen: true,
             dataPanelOpen: true,
+            modals: {
+                structureWizard: false,
+                geometryTools: false,
+                interoperability: false,
+                foundationDesign: false,
+                is875Load: false,
+            },
 
             // ========================================
             // SET CATEGORY - THE "ONE-BY-ONE" LOGIC
@@ -288,6 +309,21 @@ export const useUIStore = create<UIState>()(
             })),
 
             // ========================================
+            // MODAL ACTIONS
+            // ========================================
+            openModal: (modal) => set((state) => ({
+                modals: { ...state.modals, [modal]: true }
+            })),
+
+            closeModal: (modal) => set((state) => ({
+                modals: { ...state.modals, [modal]: false }
+            })),
+
+            toggleModal: (modal) => set((state) => ({
+                modals: { ...state.modals, [modal]: !state.modals[modal] }
+            })),
+
+            // ========================================
             // VALIDATION
             // ========================================
             validateModel: () => {
@@ -307,7 +343,14 @@ export const useUIStore = create<UIState>()(
                 lastValidation: null,
                 notification: null,
                 propertiesPanelOpen: true,
-                dataPanelOpen: true
+                dataPanelOpen: true,
+                modals: {
+                    structureWizard: false,
+                    geometryTools: false,
+                    interoperability: false,
+                    foundationDesign: false,
+                    is875Load: false,
+                }
             })
         }),
         {

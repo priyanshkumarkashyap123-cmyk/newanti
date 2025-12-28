@@ -246,21 +246,19 @@ export const ModernModeler: FC = () => {
     // Tutorial overlay for first-time users
     const [showTutorial, setShowTutorial] = useState(false);
 
-    // Structure Wizard
-    const [showStructureWizard, setShowStructureWizard] = useState(false);
+    // Modal states from uiStore (for cross-component access)
+    const modals = useUIStore((s) => s.modals);
+    const openModal = useUIStore((s) => s.openModal);
+    const closeModal = useUIStore((s) => s.closeModal);
+
+    // Alias modal states for cleaner code
+    const showStructureWizard = modals.structureWizard;
+    const showFoundationDesign = modals.foundationDesign;
+    const showIS875Load = modals.is875Load;
+    const showGeometryTools = modals.geometryTools;
+    const showInterop = modals.interoperability;
+
     const loadStructure = useModelStore((state) => state.loadStructure);
-
-    // Foundation Design Dialog
-    const [showFoundationDesign, setShowFoundationDesign] = useState(false);
-
-    // IS 875 Load Dialog
-    const [showIS875Load, setShowIS875Load] = useState(false);
-
-    // Geometry Tools Panel
-    const [showGeometryTools, setShowGeometryTools] = useState(false);
-
-    // Import/Export Dialog
-    const [showInterop, setShowInterop] = useState(false);
 
     // UDL Load Dialog state
     const [showLoadDialog, setShowLoadDialog] = useState(false);
@@ -302,23 +300,23 @@ export const ModernModeler: FC = () => {
 
         // Handle tool-specific dialogs
         if (tool === 'foundation') {
-            setShowFoundationDesign(true);
+            openModal('foundationDesign');
             return;
         }
         if (mode === 'loading' || tool === 'wind' || tool === 'seismic' || tool === 'combinations') {
-            setShowIS875Load(true);
+            openModal('is875Load');
             return;
         }
         if (panel === 'templates' || tool === 'architect') {
-            setShowStructureWizard(true);
+            openModal('structureWizard');
             return;
         }
         if (tool === 'geometry' || mode === 'geometry') {
-            setShowGeometryTools(true);
+            openModal('geometryTools');
             return;
         }
         if (exportType || tool === 'import' || tool === 'export') {
-            setShowInterop(true);
+            openModal('interoperability');
             return;
         }
 
@@ -603,9 +601,9 @@ export const ModernModeler: FC = () => {
             <QuickStartModal
                 isOpen={showQuickStart}
                 onClose={() => setShowQuickStart(false)}
-                onOpenWizard={() => setShowStructureWizard(true)}
-                onOpenFoundation={() => setShowFoundationDesign(true)}
-                onOpenLoads={() => setShowIS875Load(true)}
+                onOpenWizard={() => openModal('structureWizard')}
+                onOpenFoundation={() => openModal('foundationDesign')}
+                onOpenLoads={() => openModal('is875Load')}
             />
 
             {/* UDL Load Dialog - opens when memberLoad tool is active and member is selected */}
@@ -628,7 +626,7 @@ export const ModernModeler: FC = () => {
             {/* Structure Wizard for generating parametric structures */}
             <StructureWizard
                 isOpen={showStructureWizard}
-                onClose={() => setShowStructureWizard(false)}
+                onClose={() => closeModal('structureWizard')}
                 onGenerate={(structure) => {
                     // Convert generated structure to model format
                     const nodes: Node[] = structure.nodes.map(n => ({
@@ -645,32 +643,32 @@ export const ModernModeler: FC = () => {
                         sectionId: 'ISMB300'
                     }));
                     loadStructure(nodes, members);
-                    setShowStructureWizard(false);
+                    closeModal('structureWizard');
                 }}
             />
 
             {/* Foundation Design Dialog */}
             <FoundationDesignDialog
                 isOpen={showFoundationDesign}
-                onClose={() => setShowFoundationDesign(false)}
+                onClose={() => closeModal('foundationDesign')}
             />
 
             {/* IS 875 Load Generator Dialog */}
             <IS875LoadDialog
                 isOpen={showIS875Load}
-                onClose={() => setShowIS875Load(false)}
+                onClose={() => closeModal('is875Load')}
             />
 
             {/* Geometry Tools Panel */}
             <GeometryToolsPanel
                 isOpen={showGeometryTools}
-                onClose={() => setShowGeometryTools(false)}
+                onClose={() => closeModal('geometryTools')}
             />
 
             {/* Import/Export Dialog */}
             <InteroperabilityDialog
                 isOpen={showInterop}
-                onClose={() => setShowInterop(false)}
+                onClose={() => closeModal('interoperability')}
             />
         </div>
     );
