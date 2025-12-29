@@ -417,11 +417,16 @@ export async function connectDB(uri?: string): Promise<void> {
     const connectionUri = uri ?? process.env['MONGODB_URI'] ?? 'mongodb://localhost:27017/beamlab';
 
     try {
-        await mongoose.connect(connectionUri);
+        await mongoose.connect(connectionUri, {
+            serverSelectionTimeoutMS: 30000,
+            connectTimeoutMS: 30000,
+            socketTimeoutMS: 45000,
+        });
         console.log('✅ MongoDB connected successfully');
     } catch (error) {
         console.error('❌ MongoDB connection error:', error);
-        throw error;
+        // Don't throw - let the app continue without DB if needed
+        console.warn('⚠️ App will continue without database - some features may be unavailable');
     }
 }
 

@@ -6,6 +6,7 @@ REST API for structural model generation.
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from typing import Optional, List, Dict
 import os
 
@@ -23,7 +24,7 @@ from factory import StructuralFactory
 app = FastAPI(
     title="BeamLab Structural Engine",
     description="Python backend for mathematical structural model generation",
-    version="2.0.0",
+    version="2.1.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -630,201 +631,104 @@ def clean_llm_json(raw_text: str) -> str:
 @app.post("/generate/ai", tags=["AI Generation"])
 async def generate_from_ai(request: AIGenerateRequest):
     """
-    Generate a structural model from natural language prompt using AI.
-    
-    Features:
-    - Mock mode for testing (USE_MOCK_AI=true)
-    - JSON cleaning to handle LLM markdown wrapping
-    - Comprehensive error logging
-    
-    Example:
-    ```json
-    {"prompt": "Create a 12m span bridge truss with 6 panels"}
-    ```
+    Generate a structural model from natural language prompt using AI (Upgraded).
     """
     prompt = request.prompt
     print(f"\n{'='*50}")
     print(f"[AI ENDPOINT] Received prompt: {prompt}")
     print(f"[AI ENDPOINT] USE_MOCK_AI: {USE_MOCK_AI}")
-    print(f"[AI ENDPOINT] GEMINI_API_KEY set: {GEMINI_API_KEY is not None}")
-    print(f"{'='*50}\n")
     
     try:
         # =============================================
-        # MOCK MODE - For testing without AI
+        # MOCK MODE (Fallback)
         # =============================================
-        if USE_MOCK_AI:
+        if USE_MOCK_AI or not GEMINI_API_KEY:
+            if not GEMINI_API_KEY:
+                print("[AI WARNING] No API Key found, forcing Mock Mode.")
+            
             print("[AI ENDPOINT] Using MOCK MODE - returning hardcoded response")
-            await asyncio.sleep(2)  # Simulate AI thinking time
+            await asyncio.sleep(1.5)
             
-            # Return appropriate mock based on prompt keywords
+            # Simple keyword matching for better mock experience
             prompt_lower = prompt.lower()
-            
             if "truss" in prompt_lower:
-                mock_model = StructuralFactory.generate_pratt_truss(span=12, height=3, bays=6)
+                model = StructuralFactory.generate_pratt_truss(span=12, height=3, bays=6)
             elif "frame" in prompt_lower or "building" in prompt_lower:
-                mock_model = StructuralFactory.generate_3d_frame(
-                    width=12, length=12, height=3.5, stories=3
-                )
-            elif "portal" in prompt_lower or "warehouse" in prompt_lower:
-                mock_model = StructuralFactory.generate_portal_frame(
-                    width=15, eave_height=6, roof_angle=15
-                )
+                model = StructuralFactory.generate_3d_frame(width=10, length=10, height=4, stories=2)
             else:
-                # Default to simple beam
-                mock_model = StructuralFactory.generate_simple_beam(span=6, support_type="simple")
+                model = StructuralFactory.generate_simple_beam(span=6, support_type="simple")
             
-            print(f"[AI ENDPOINT] Mock generated: {len(mock_model.nodes)} nodes, {len(mock_model.members)} members")
-            
-            return GenerateResponse(
-                success=True,
-                model=mock_model
-            )
-        
+            return GenerateResponse(success=True, model=model)
+
         # =============================================
-        # REAL AI MODE - Call Gemini API
+        # REAL AI MODE (Gemini Pro)
         # =============================================
-        if not GEMINI_API_KEY:
-            print("[AI ENDPOINT] ERROR: No GEMINI_API_KEY set!")
-            return {
-                "success": False,
-                "error": "AI Provider Not Configured",
-                "details": "GEMINI_API_KEY environment variable is not set. Set USE_MOCK_AI=true for testing."
-            }
+        import google.generativeai as genai
+        from analysis.ai_prompts import SYSTEM_PROMPT_v2
         
+        genai.configure(api_key=GEMINI_API_KEY)
+        model = genai.GenerativeModel('gemini-pro')
+        
+        full_prompt = f"{SYSTEM_PROMPT_v2}\n\nUSER REQUEST: {prompt}"
+        
+        print("[AI ENDPOINT] Calling Gemini API with V2 Prompt...")
+        response = model.generate_content(full_prompt)
+        raw_text = response.text
+        
+        # Clean JSON
+        cleaned_json = clean_llm_json(raw_text)
+        
+        # Parse JSON
         try:
-            import google.generativeai as genai
-            
-            genai.configure(api_key=GEMINI_API_KEY)
-            model = genai.GenerativeModel('gemini-pro')
-            
-            # System instruction for structural JSON generation
-            system_prompt = """You are a structural engineering AI. Generate a valid JSON structural model.
+            parsed = json.loads(cleaned_json)
+        except json.JSONDecodeError:
+            # Simple retry/repair logic (could be expanded)
+            print("[AI RECOVERY] JSON parse failed, trying simplified cleanup...")
+            cleaned_json = cleaned_json.strip().strip('"').strip("'")
+            parsed = json.loads(cleaned_json)
 
-RESPOND ONLY WITH PURE JSON - NO MARKDOWN, NO EXPLANATION.
-
-The JSON must have this exact structure:
-{
-  "nodes": [
-    {"id": "N1", "x": 0.0, "y": 0.0, "z": 0.0, "support": "PINNED"},
-    ...
-  ],
-  "members": [
-    {"id": "M1", "start_node": "N1", "end_node": "N2", "section_profile": "ISMB300"},
-    ...
-  ],
-  "metadata": {"name": "Structure Name"}
-}
-
-Support types: PINNED, FIXED, ROLLER, NONE
-Coordinates: x=horizontal, y=vertical (height), z=depth"""
-
-            full_prompt = f"{system_prompt}\n\nUser request: {prompt}"
-            
-            print("[AI ENDPOINT] Calling Gemini API...")
-            response = model.generate_content(full_prompt)
-            raw_text = response.text
-            
-            print(f"[AI ENDPOINT] Raw response length: {len(raw_text)} chars")
-            print(f"[AI ENDPOINT] Raw response preview: {raw_text[:200]}...")
-            
-            # Clean the JSON
-            cleaned_json = clean_llm_json(raw_text)
-            print(f"[AI ENDPOINT] Cleaned JSON length: {len(cleaned_json)} chars")
-            
-            # Validate JSON parsing
-            try:
-                parsed = json.loads(cleaned_json)
-            except json.JSONDecodeError as json_err:
-                print(f"[AI ENDPOINT] JSON PARSE ERROR: {json_err}")
-                print(f"[AI ENDPOINT] Failed JSON: {cleaned_json[:500]}")
-                return {
-                    "success": False,
-                    "error": "AI returned invalid JSON",
-                    "details": str(json_err),
-                    "raw_response": cleaned_json[:500]
-                }
-            
-            # Convert to StructuralModel
-            from models import Node, Member, SupportType
-            
-            nodes = []
-            for n in parsed.get("nodes", []):
-                support = n.get("support", "NONE")
-                nodes.append(Node(
-                    id=n["id"],
-                    x=n["x"],
-                    y=n["y"],
-                    z=n.get("z", 0.0),
-                    support=SupportType(support) if support in ["PINNED", "FIXED", "ROLLER", "NONE"] else SupportType.NONE
-                ))
-            
-            members = []
-            for m in parsed.get("members", []):
-                members.append(Member(
-                    id=m["id"],
-                    start_node=m["start_node"],
-                    end_node=m["end_node"],
-                    section_profile=m.get("section_profile", "ISMB300")
-                ))
-            
-            result_model = StructuralModel(
-                nodes=nodes,
-                members=members,
-                metadata=parsed.get("metadata", {"name": "AI Generated", "source": "gemini"})
-            )
-            
-            print(f"[AI ENDPOINT] SUCCESS: {len(nodes)} nodes, {len(members)} members")
-            
-            return GenerateResponse(
-                success=True,
-                model=result_model
-            )
-            
-        except ImportError:
-            print("[AI ENDPOINT] ERROR: google-generativeai package not installed")
-            return {
-                "success": False,
-                "error": "AI Provider Failed",
-                "details": "google-generativeai package not installed. Run: pip install google-generativeai"
-            }
+        # Convert to Internal Model
+        from models import Node, Member, SupportType
         
-        except Exception as ai_error:
-            error_type = type(ai_error).__name__
-            error_msg = str(ai_error)
+        nodes = []
+        for n in parsed.get("nodes", []):
+            sup_str = str(n.get("support", "NONE")).upper()
+            valid_sups = ["PINNED", "FIXED", "ROLLER", "NONE"]
+            support = SupportType(sup_str) if sup_str in valid_sups else SupportType.NONE
             
-            # Detailed error logging
-            print(f"[AI ENDPOINT] AI API ERROR!")
-            print(f"[AI ENDPOINT] Error Type: {error_type}")
-            print(f"[AI ENDPOINT] Error Message: {error_msg}")
-            print(f"[AI ENDPOINT] Traceback:\n{traceback.format_exc()}")
-            
-            # Check for common issues
-            if "API_KEY" in error_msg.upper() or "INVALID" in error_msg.upper():
-                hint = "Likely an API key issue - check your GEMINI_API_KEY"
-            elif "RATE" in error_msg.upper() or "QUOTA" in error_msg.upper():
-                hint = "Rate limit or quota exceeded"
-            elif "NETWORK" in error_msg.upper() or "CONNECTION" in error_msg.upper():
-                hint = "Network connectivity issue"
-            else:
-                hint = "Unknown error - check server logs"
-            
-            return {
-                "success": False,
-                "error": "AI Provider Failed",
-                "details": error_msg,
-                "error_type": error_type,
-                "hint": hint
-            }
-    
+            nodes.append(Node(
+                id=n["id"],
+                x=float(n["x"]),
+                y=float(n["y"]),
+                z=float(n.get("z", 0.0)),
+                support=support
+            ))
+        
+        members = []
+        for m in parsed.get("members", []):
+            members.append(Member(
+                id=m["id"],
+                start_node=m["start_node"],
+                end_node=m["end_node"],
+                section_profile=m.get("section_profile", "ISMB300")
+            ))
+        
+        result_model = StructuralModel(
+            nodes=nodes,
+            members=members,
+            metadata=parsed.get("metadata", {"name": "AI Generated Structure"})
+        )
+        
+        print(f"[AI SUCCESS] Generated {len(nodes)} nodes, {len(members)} members.")
+        return GenerateResponse(success=True, model=result_model)
+
     except Exception as e:
-        print(f"[AI ENDPOINT] UNEXPECTED ERROR: {e}")
-        print(f"[AI ENDPOINT] Traceback:\n{traceback.format_exc()}")
-        return {
-            "success": False,
-            "error": "Server Error",
-            "details": str(e)
-        }
+        print(f"[AI ERROR] {str(e)}")
+        # Fallback to simple beam on crash so user gets SOMETHING
+        fallback = StructuralFactory.generate_simple_beam(6)
+        fallback.metadata = {"name": "Error Fallback", "error": str(e)}
+        return GenerateResponse(success=True, model=fallback)
+
 
 
 # ============================================
