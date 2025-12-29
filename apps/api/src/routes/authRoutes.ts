@@ -151,7 +151,7 @@ const sanitizeUser = (user: any) => {
 /**
  * POST /api/auth/signup - Register new user
  */
-router.post('/signup', async (req: Request, res: Response) => {
+router.post('/signup', async (req: Request, res: Response): Promise<void> => {
     try {
         const { email, password, firstName, lastName, company, phone }: SignUpBody = req.body;
 
@@ -413,8 +413,8 @@ router.post('/refresh', async (req: Request, res: Response) => {
         const newRefreshToken = generateRefreshToken({ id: user._id.toString() });
         await RefreshTokenModel.updateOne(
             { _id: storedToken._id },
-            { 
-                $set: { 
+            {
+                $set: {
                     token: newRefreshToken,
                     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
                 }
@@ -449,7 +449,7 @@ router.get('/me', async (req: Request, res: Response) => {
         }
 
         const token = authHeader.split(' ')[1];
-        
+
         let decoded: JWTPayload;
         try {
             decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
@@ -490,7 +490,7 @@ router.post('/verify-email', async (req: Request, res: Response) => {
 
         const token = authHeader.split(' ')[1];
         const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
-        
+
         const { code } = req.body;
         if (!code) {
             return res.status(400).json({
@@ -551,7 +551,7 @@ router.post('/forgot-password', async (req: Request, res: Response) => {
         }
 
         const user = await UserModel.findOne({ email: email.toLowerCase() });
-        
+
         // Always return success to prevent email enumeration
         if (!user) {
             return res.json({
