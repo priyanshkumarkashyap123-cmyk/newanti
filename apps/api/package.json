@@ -15,10 +15,12 @@
         "@clerk/express": "^1.7.58",
         "@google/generative-ai": "^0.24.1",
         "@types/uuid": "^11.0.0",
+        "bcryptjs": "^2.4.3",
         "cors": "^2.8.5",
         "express": "^4.21.1",
         "express-rate-limit": "^8.2.1",
         "helmet": "^8.1.0",
+        "jsonwebtoken": "^9.0.2",
         "mathjs": "^15.1.0",
         "mongodb": "^6.10.0",
         "mongoose": "^9.0.2",
@@ -30,8 +32,10 @@
         "zod": "^3.23.8"
     },
     "devDependencies": {
+        "@types/bcryptjs": "^2.4.6",
         "@types/cors": "^2.8.17",
         "@types/express": "^5.0.0",
+        "@types/jsonwebtoken": "^9.0.6",
         "@types/node": "^22.9.3",
         "eslint": "^9.15.0",
         "tsx": "^4.19.2",
