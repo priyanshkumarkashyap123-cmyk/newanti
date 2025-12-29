@@ -249,6 +249,167 @@ SubscriptionSchema.index({ currentPeriodEnd: 1 });
 export const Subscription = mongoose.model<ISubscription>('Subscription', SubscriptionSchema);
 
 // ============================================
+// IN-HOUSE AUTH: USER MODEL
+// ============================================
+
+export interface IUserModel extends Document {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+    avatarUrl?: string;
+    emailVerified: boolean;
+    role: 'user' | 'admin' | 'enterprise';
+    subscriptionTier: 'free' | 'pro' | 'enterprise';
+    company?: string;
+    phone?: string;
+    lastLoginAt?: Date;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const UserModelSchema = new Schema<IUserModel>({
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true,
+        trim: true,
+        index: true
+    },
+    password: {
+        type: String,
+        required: true
+    },
+    firstName: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    lastName: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    avatarUrl: {
+        type: String,
+        default: null
+    },
+    emailVerified: {
+        type: Boolean,
+        default: false
+    },
+    role: {
+        type: String,
+        enum: ['user', 'admin', 'enterprise'],
+        default: 'user'
+    },
+    subscriptionTier: {
+        type: String,
+        enum: ['free', 'pro', 'enterprise'],
+        default: 'free'
+    },
+    company: {
+        type: String,
+        trim: true,
+        default: null
+    },
+    phone: {
+        type: String,
+        trim: true,
+        default: null
+    },
+    lastLoginAt: {
+        type: Date,
+        default: null
+    }
+}, {
+    timestamps: true
+});
+
+export const UserModel = mongoose.model<IUserModel>('UserModel', UserModelSchema);
+
+// ============================================
+// IN-HOUSE AUTH: REFRESH TOKEN MODEL
+// ============================================
+
+export interface IRefreshToken extends Document {
+    userId: Types.ObjectId;
+    token: string;
+    expiresAt: Date;
+    createdAt: Date;
+}
+
+const RefreshTokenSchema = new Schema<IRefreshToken>({
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: 'UserModel',
+        required: true,
+        index: true
+    },
+    token: {
+        type: String,
+        required: true,
+        unique: true,
+        index: true
+    },
+    expiresAt: {
+        type: Date,
+        required: true,
+        index: true
+    }
+}, {
+    timestamps: true
+});
+
+// Auto-delete expired tokens
+RefreshTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+
+export const RefreshTokenModel = mongoose.model<IRefreshToken>('RefreshToken', RefreshTokenSchema);
+
+// ============================================
+// IN-HOUSE AUTH: VERIFICATION CODE MODEL
+// ============================================
+
+export interface IVerificationCode extends Document {
+    userId: Types.ObjectId;
+    code: string;
+    type: 'email' | 'password_reset' | 'two_factor';
+    expiresAt: Date;
+    createdAt: Date;
+}
+
+const VerificationCodeSchema = new Schema<IVerificationCode>({
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: 'UserModel',
+        required: true,
+        index: true
+    },
+    code: {
+        type: String,
+        required: true
+    },
+    type: {
+        type: String,
+        enum: ['email', 'password_reset', 'two_factor'],
+        required: true
+    },
+    expiresAt: {
+        type: Date,
+        required: true,
+        index: true
+    }
+}, {
+    timestamps: true
+});
+
+// Auto-delete expired codes
+VerificationCodeSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+
+export const VerificationCodeModel = mongoose.model<IVerificationCode>('VerificationCode', VerificationCodeSchema);
+
+// ============================================
 // DATABASE CONNECTION
 // ============================================
 
@@ -269,4 +430,4 @@ export async function disconnectDB(): Promise<void> {
     console.log('📤 MongoDB disconnected');
 }
 
-export default { User, Project, Subscription, connectDB, disconnectDB };
+export default { User, Project, Subscription, UserModel, RefreshTokenModel, VerificationCodeModel, connectDB, disconnectDB };

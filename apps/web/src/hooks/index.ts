@@ -22,3 +22,26 @@ export { useWasmSolver } from './useWasmSolver';
 
 // AI Workflow
 export { useAIWorkflow } from './useAIWorkflow';
+
+// Advanced Analysis (P-Delta, Modal, Buckling, Cable)
+export { 
+    useAdvancedAnalysis, 
+    useSeismicAnalysis, 
+    useStabilityAnalysis,
+    IS1893_ZONE_FACTORS,
+    IS1893_SOIL_TYPES,
+} from './useAdvancedAnalysis';
+
+// Design Code Compliance (Steel, Concrete, Connections, Foundations)
+export {
+    useDesign,
+    useRCDesign,
+    useFoundationDesign,
+    STEEL_GRADES,
+    CONCRETE_GRADES,
+    REBAR_GRADES,
+    BOLT_GRADES,
+} from './useDesign';
+
+// User Registration
+export { useUserRegistration } from './useUserRegistration';

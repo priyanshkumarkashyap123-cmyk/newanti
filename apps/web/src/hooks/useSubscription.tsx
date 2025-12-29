@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth, isUsingClerk } from '../providers/AuthProvider';
 
 // ============================================
 // SUBSCRIPTION TYPES
@@ -87,16 +87,8 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
         features: TIER_FEATURES.free
     });
 
-    // Handle Clerk auth gracefully
-    let isSignedIn = false;
-    let userId: string | null = null;
-    try {
-        const auth = useAuth();
-        isSignedIn = auth.isSignedIn ?? false;
-        userId = auth.userId ?? null;
-    } catch {
-        // Not in ClerkProvider
-    }
+    // Use unified auth hook
+    const { isSignedIn, userId, getToken } = useAuth();
 
     const fetchSubscription = async () => {
         if (!isSignedIn || !userId) {
@@ -110,13 +102,22 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
         }
 
         try {
+            // Get auth token for API call
+            const token = await getToken();
+            
             // Fetch from backend API
             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+            const headers: Record<string, string> = {
+                'Content-Type': 'application/json',
+            };
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
             const response = await fetch(`${apiUrl}/api/user/subscription`, {
                 method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers,
                 credentials: 'include'
             });
 

@@ -6,7 +6,8 @@
 import { FC, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useAuth, UserButton } from '@clerk/clerk-react';
+import { UserButton } from '@clerk/clerk-react';
+import { useAuth, isUsingClerk } from '../providers/AuthProvider';
 import { useUserRegistration } from '../hooks/useUserRegistration';
 
 // ============================================
@@ -39,18 +40,10 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
     // Register user in MongoDB when signed in
     useUserRegistration();
 
-    // Handle Clerk auth gracefully
-    let userName = 'Engineer';
-    let hasClerk = false;
-    try {
-        const auth = useAuth();
-        hasClerk = true;
-        if (auth.isSignedIn) {
-            userName = 'Engineer';
-        }
-    } catch {
-        // Demo mode - Clerk not available
-    }
+    // Use unified auth hook
+    const { isSignedIn, user, signOut } = useAuth();
+    const useClerk = isUsingClerk();
+    const userName = isSignedIn && user?.firstName ? user.firstName : 'Engineer';
 
     const handleLaunchModule = (moduleId: string) => {
         if (onLaunchModule) onLaunchModule(moduleId);
@@ -130,7 +123,16 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                             <p className="text-sm font-medium text-white truncate">{userName}</p>
                             <p className="text-xs text-text-muted">Free Plan</p>
                         </div>
-                        {hasClerk && <UserButton afterSignOutUrl="/" />}
+                        {isSignedIn && useClerk ? (
+                            <UserButton afterSignOutUrl="/" />
+                        ) : isSignedIn ? (
+                            <button
+                                onClick={() => signOut()}
+                                className="text-xs text-text-muted hover:text-white"
+                            >
+                                Sign Out
+                            </button>
+                        ) : null}
                     </div>
                 </div>
             </aside>

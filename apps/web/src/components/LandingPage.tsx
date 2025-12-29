@@ -4,7 +4,9 @@
  */
 
 import { FC, useState } from 'react';
-import { useAuth, SignInButton, SignUpButton, UserButton } from '@clerk/clerk-react';
+import { Link } from 'react-router-dom';
+import { SignInButton, SignUpButton, UserButton } from '@clerk/clerk-react';
+import { useAuth, isUsingClerk } from '../providers/AuthProvider';
 import './LandingPage.css';
 
 interface LandingPageProps {
@@ -12,21 +14,55 @@ interface LandingPageProps {
 }
 
 export const LandingPage: FC<LandingPageProps> = ({ onEnterApp }) => {
-    // Handle Clerk auth gracefully
-    let isSignedIn = false;
-    let isLoaded = true;
-    let hasClerk = false;
-
-    try {
-        const auth = useAuth();
-        isSignedIn = auth.isSignedIn ?? false;
-        isLoaded = auth.isLoaded;
-        hasClerk = true;
-    } catch {
-        // Not in ClerkProvider
-    }
+    // Use unified auth hook
+    const { isSignedIn, isLoaded, signOut } = useAuth();
+    const useClerk = isUsingClerk();
 
     const [hoveredFeature, setHoveredFeature] = useState<number | null>(null);
+
+    // Render auth buttons based on auth provider
+    const renderAuthButtons = () => {
+        if (!isLoaded) return null;
+
+        if (isSignedIn) {
+            return (
+                <>
+                    <button className="btn-primary" onClick={onEnterApp}>
+                        Open App
+                    </button>
+                    {useClerk ? (
+                        <UserButton afterSignOutUrl="/" />
+                    ) : (
+                        <button className="btn-secondary" onClick={() => signOut()}>
+                            Sign Out
+                        </button>
+                    )}
+                </>
+            );
+        }
+
+        // Not signed in
+        if (useClerk) {
+            return (
+                <>
+                    <SignInButton mode="modal">
+                        <button className="btn-secondary">Sign In</button>
+                    </SignInButton>
+                    <SignUpButton mode="modal">
+                        <button className="btn-primary">Get Started Free</button>
+                    </SignUpButton>
+                </>
+            );
+        }
+
+        // In-house auth
+        return (
+            <>
+                <Link to="/sign-in" className="btn-secondary">Sign In</Link>
+                <Link to="/sign-up" className="btn-primary">Get Started Free</Link>
+            </>
+        );
+    };
 
     return (
         <div className="landing-container">
@@ -43,29 +79,7 @@ export const LandingPage: FC<LandingPageProps> = ({ onEnterApp }) => {
                     <a href="#about" className="nav-link">About</a>
                 </div>
                 <div className="nav-auth">
-                    {hasClerk && isLoaded && !isSignedIn ? (
-                        <>
-                            <SignInButton mode="modal">
-                                <button className="btn-secondary">Sign In</button>
-                            </SignInButton>
-                            <SignUpButton mode="modal">
-                                <button className="btn-primary">Get Started Free</button>
-                            </SignUpButton>
-                        </>
-                    ) : hasClerk && isLoaded && isSignedIn ? (
-                        <>
-                            <button className="btn-primary" onClick={onEnterApp}>
-                                Open App
-                            </button>
-                            <UserButton afterSignOutUrl="/" />
-                        </>
-                    ) : !hasClerk ? (
-                        <button className="btn-primary" onClick={onEnterApp}>
-                            Try Demo →
-                        </button>
-                    ) : (
-                        <div className="loading-dot" />
-                    )}
+                    {renderAuthButtons()}
                 </div>
             </nav>
 
@@ -86,11 +100,11 @@ export const LandingPage: FC<LandingPageProps> = ({ onEnterApp }) => {
                         all in your browser.
                     </p>
                     <div className="hero-cta">
-                        {hasClerk && isSignedIn ? (
+                        {isSignedIn ? (
                             <button className="btn-large" onClick={onEnterApp}>
                                 Launch BeamLab →
                             </button>
-                        ) : hasClerk ? (
+                        ) : useClerk ? (
                             <SignUpButton mode="modal">
                                 <button className="btn-large">
                                     Start Free Trial →

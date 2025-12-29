@@ -6,7 +6,8 @@
 import { FC, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useAuth, SignInButton, SignUpButton, UserButton } from '@clerk/clerk-react';
+import { SignInButton, SignUpButton, UserButton } from '@clerk/clerk-react';
+import { useAuth, isUsingClerk } from '../providers/AuthProvider';
 
 // ============================================
 // ANIMATION VARIANTS
@@ -33,19 +34,9 @@ export const LandingPage: FC = () => {
     const navigate = useNavigate();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    // Handle Clerk auth gracefully
-    let isSignedIn = false;
-    let isLoaded = true;
-    let hasClerk = false;
-
-    try {
-        const auth = useAuth();
-        isSignedIn = auth.isSignedIn ?? false;
-        isLoaded = auth.isLoaded;
-        hasClerk = true;
-    } catch {
-        // Not in ClerkProvider - run in demo mode
-    }
+    // Use unified auth hook
+    const { isSignedIn, isLoaded, signOut } = useAuth();
+    const useClerk = isUsingClerk();
 
     const handleGetStarted = () => {
         if (isSignedIn) {
@@ -53,6 +44,63 @@ export const LandingPage: FC = () => {
         } else {
             navigate('/sign-up');
         }
+    };
+
+    // Render auth buttons based on auth provider
+    const renderAuthButtons = () => {
+        if (!isLoaded) return null;
+
+        if (isSignedIn) {
+            return (
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => navigate('/app')}
+                        className="flex h-10 items-center justify-center rounded-lg bg-steel-blue px-4 text-sm font-bold text-white transition-all hover:bg-steel-blue/90"
+                    >
+                        Open App
+                    </button>
+                    {useClerk ? (
+                        <UserButton afterSignOutUrl="/" />
+                    ) : (
+                        <button
+                            onClick={() => signOut()}
+                            className="text-sm font-medium text-steel-blue/80 hover:text-steel-blue"
+                        >
+                            Sign Out
+                        </button>
+                    )}
+                </div>
+            );
+        }
+
+        // Not signed in
+        if (useClerk) {
+            return (
+                <>
+                    <SignInButton mode="modal">
+                        <button className="text-sm font-bold text-steel-blue hover:underline">Log in</button>
+                    </SignInButton>
+                    <SignUpButton mode="modal">
+                        <button className="flex h-10 items-center justify-center rounded-lg bg-steel-blue px-4 text-sm font-bold text-white transition-all hover:bg-steel-blue/90 hover:shadow-md">
+                            Get Started
+                        </button>
+                    </SignUpButton>
+                </>
+            );
+        }
+
+        // In-house auth buttons
+        return (
+            <>
+                <Link to="/sign-in" className="text-sm font-bold text-steel-blue hover:underline">Log in</Link>
+                <Link
+                    to="/sign-up"
+                    className="flex h-10 items-center justify-center rounded-lg bg-steel-blue px-4 text-sm font-bold text-white transition-all hover:bg-steel-blue/90 hover:shadow-md"
+                >
+                    Get Started
+                </Link>
+            </>
+        );
     };
 
     return (
@@ -79,35 +127,7 @@ export const LandingPage: FC = () => {
 
                     {/* Auth Buttons */}
                     <div className="hidden md:flex items-center gap-4">
-                        {hasClerk && isLoaded && !isSignedIn ? (
-                            <>
-                                <SignInButton mode="modal">
-                                    <button className="text-sm font-bold text-steel-blue hover:underline">Log in</button>
-                                </SignInButton>
-                                <SignUpButton mode="modal">
-                                    <button className="flex h-10 items-center justify-center rounded-lg bg-steel-blue px-4 text-sm font-bold text-white transition-all hover:bg-steel-blue/90 hover:shadow-md">
-                                        Get Started
-                                    </button>
-                                </SignUpButton>
-                            </>
-                        ) : hasClerk && isLoaded && isSignedIn ? (
-                            <div className="flex items-center gap-3">
-                                <button
-                                    onClick={() => navigate('/app')}
-                                    className="flex h-10 items-center justify-center rounded-lg bg-steel-blue px-4 text-sm font-bold text-white transition-all hover:bg-steel-blue/90"
-                                >
-                                    Open App
-                                </button>
-                                <UserButton afterSignOutUrl="/" />
-                            </div>
-                        ) : (
-                            <button
-                                onClick={handleGetStarted}
-                                className="flex h-10 items-center justify-center rounded-lg bg-steel-blue px-4 text-sm font-bold text-white transition-all hover:bg-steel-blue/90"
-                            >
-                                Try Demo
-                            </button>
-                        )}
+                        {renderAuthButtons()}
                     </div>
 
                     {/* Mobile Menu */}

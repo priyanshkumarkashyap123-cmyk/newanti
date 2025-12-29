@@ -1,10 +1,13 @@
 /**
- * ProtectedLayout - Clerk authentication guard component
+ * ProtectedLayout - Authentication guard component
  * Wraps protected routes and redirects unauthenticated users
+ * Supports both Clerk and in-house authentication
  */
 
 import { FC, ReactNode } from 'react';
-import { useAuth, SignIn, RedirectToSignIn } from '@clerk/clerk-react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { SignIn, RedirectToSignIn } from '@clerk/clerk-react';
+import { useAuth, isUsingClerk } from '../providers/AuthProvider';
 
 interface ProtectedLayoutProps {
     children: ReactNode;
@@ -48,16 +51,22 @@ const LoadingSpinner: FC = () => (
  * Shows spinner while loading, redirects to sign-in if not authenticated
  */
 export const ProtectedLayout: FC<ProtectedLayoutProps> = ({ children }) => {
-    const { isLoaded, userId, isSignedIn } = useAuth();
+    const { isLoaded, isSignedIn, userId } = useAuth();
+    const location = useLocation();
+    const useClerk = isUsingClerk();
 
-    // Show loading spinner while Clerk is initializing
+    // Show loading spinner while auth is initializing
     if (!isLoaded) {
         return <LoadingSpinner />;
     }
 
     // Redirect to sign-in if not authenticated
     if (!isSignedIn || !userId) {
-        return <RedirectToSignIn />;
+        if (useClerk) {
+            return <RedirectToSignIn />;
+        }
+        // For in-house auth, redirect to sign-in page
+        return <Navigate to="/sign-in" state={{ from: location }} replace />;
     }
 
     // User is authenticated, render children
@@ -65,9 +74,9 @@ export const ProtectedLayout: FC<ProtectedLayoutProps> = ({ children }) => {
 };
 
 /**
- * SignInPage component for the /sign-in route
+ * SignInPage component for the /sign-in route (legacy Clerk version)
  */
-export const SignInPage: FC = () => (
+export const SignInPageProtected: FC = () => (
     <div style={{
         display: 'flex',
         alignItems: 'center',

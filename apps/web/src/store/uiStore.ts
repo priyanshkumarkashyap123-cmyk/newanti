@@ -108,6 +108,15 @@ interface UIState {
         seismicLoadDialog: boolean;
         movingLoadDialog: boolean;
         boundaryDialog: boolean;
+        // Advanced Analysis & Design dialogs
+        advancedAnalysis: boolean;
+        designCodes: boolean;
+        connectionDesign: boolean;
+        steelDesign: boolean;
+        concreteDesign: boolean;
+        pDeltaAnalysis: boolean;
+        modalAnalysis: boolean;
+        bucklingAnalysis: boolean;
     };
 
     // Actions
@@ -188,6 +197,15 @@ export const useUIStore = create<UIState>()(
                 seismicLoadDialog: false,
                 movingLoadDialog: false,
                 boundaryDialog: false,
+                // Advanced Analysis & Design dialogs
+                advancedAnalysis: false,
+                designCodes: false,
+                connectionDesign: false,
+                steelDesign: false,
+                concreteDesign: false,
+                pDeltaAnalysis: false,
+                modalAnalysis: false,
+                bucklingAnalysis: false,
             },
 
             // ========================================
@@ -376,6 +394,14 @@ export const useUIStore = create<UIState>()(
                     seismicLoadDialog: false,
                     movingLoadDialog: false,
                     boundaryDialog: false,
+                    advancedAnalysis: false,
+                    designCodes: false,
+                    connectionDesign: false,
+                    steelDesign: false,
+                    concreteDesign: false,
+                    pDeltaAnalysis: false,
+                    modalAnalysis: false,
+                    bucklingAnalysis: false,
                 }
             })
         }),

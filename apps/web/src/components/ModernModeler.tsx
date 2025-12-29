@@ -50,6 +50,8 @@ import { LoadDialog } from './LoadDialog';
 import WindLoadDialog from './WindLoadDialog';
 import SeismicLoadDialog from './SeismicLoadDialog';
 import MovingLoadDialog from './MovingLoadDialog';
+import { AdvancedAnalysisDialog } from './AdvancedAnalysisDialog';
+import { DesignCodesDialog } from './DesignCodesDialog';
 import type { Node, Member } from '../store/model';
 
 // Analysis service
@@ -705,6 +707,18 @@ export const ModernModeler: FC = () => {
 
             {/* Moving Load Analysis (IRC 6 / AASHTO) */}
             <MovingLoadDialog />
+
+            {/* Advanced Analysis Dialog (P-Delta, Modal, Buckling, Spectrum) */}
+            <AdvancedAnalysisDialog
+                isOpen={modals.advancedAnalysis}
+                onClose={() => closeModal('advancedAnalysis')}
+            />
+
+            {/* Design Codes Dialog (Steel, Concrete, Connections, Foundations) */}
+            <DesignCodesDialog
+                isOpen={modals.designCodes}
+                onClose={() => closeModal('designCodes')}
+            />
         </div>
     );
 };

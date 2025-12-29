@@ -602,6 +602,7 @@ const ManualLoadsPanel: FC = () => {
 const SolverControlsPanel: FC = () => {
     const [isRunning, setIsRunning] = useState(false);
     const setAnalysisResults = useUIStore((state) => state.setAnalysisResults);
+    const openModal = useUIStore((state) => state.openModal);
 
     const handleRunSolver = async () => {
         setIsRunning(true);
@@ -642,6 +643,19 @@ const SolverControlsPanel: FC = () => {
                     </>
                 )}
             </button>
+
+            {/* Advanced Analysis Button */}
+            <button
+                onClick={() => openModal('advancedAnalysis')}
+                className="w-full flex items-center justify-between px-3 py-3 bg-purple-600/20 rounded-lg text-purple-300 hover:bg-purple-600/30 border border-purple-500/30 transition-colors"
+            >
+                <span className="flex items-center gap-2">
+                    <Zap className="w-4 h-4" />
+                    Advanced Analysis
+                </span>
+                <ArrowRight className="w-4 h-4 text-purple-400" />
+            </button>
+
             <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="bg-zinc-800/50 rounded p-2">
                     <span className="text-zinc-500">Solver:</span>
@@ -651,6 +665,32 @@ const SolverControlsPanel: FC = () => {
                     <span className="text-zinc-500">DOF:</span>
                     <span className="text-zinc-300 ml-1">6 per node</span>
                 </div>
+            </div>
+
+            {/* Advanced Analysis Options */}
+            <div className="space-y-2 pt-2 border-t border-zinc-700">
+                <p className="text-xs text-zinc-500 font-medium uppercase">Advanced Solvers</p>
+                <button
+                    onClick={() => openModal('pDeltaAnalysis')}
+                    className="w-full flex items-center justify-between px-3 py-2 bg-zinc-800/50 rounded-lg text-zinc-300 hover:bg-zinc-700/50 transition-colors text-sm"
+                >
+                    <span>P-Delta (Geometric)</span>
+                    <ArrowRight className="w-3 h-3 text-zinc-500" />
+                </button>
+                <button
+                    onClick={() => openModal('modalAnalysis')}
+                    className="w-full flex items-center justify-between px-3 py-2 bg-zinc-800/50 rounded-lg text-zinc-300 hover:bg-zinc-700/50 transition-colors text-sm"
+                >
+                    <span>Modal / Eigenvalue</span>
+                    <ArrowRight className="w-3 h-3 text-zinc-500" />
+                </button>
+                <button
+                    onClick={() => openModal('bucklingAnalysis')}
+                    className="w-full flex items-center justify-between px-3 py-2 bg-zinc-800/50 rounded-lg text-zinc-300 hover:bg-zinc-700/50 transition-colors text-sm"
+                >
+                    <span>Buckling Analysis</span>
+                    <ArrowRight className="w-3 h-3 text-zinc-500" />
+                </button>
             </div>
         </div>
     );
@@ -698,29 +738,76 @@ const ResultTogglesPanel: FC = () => {
 // ============================================
 
 const DesignChecksPanel: FC = () => {
+    const openModal = useUIStore((state) => state.openModal);
+
     return (
         <div className="space-y-3">
-            <button className="w-full flex items-center justify-between px-3 py-3 bg-zinc-800/50 rounded-lg text-zinc-300 hover:bg-zinc-700/50 transition-colors">
+            {/* Main Design Dialog Button */}
+            <button 
+                onClick={() => openModal('designCodes')}
+                className="w-full flex items-center justify-between px-3 py-3 bg-blue-600/20 rounded-lg text-blue-300 hover:bg-blue-600/30 border border-blue-500/30 transition-colors"
+            >
                 <span className="flex items-center gap-2">
-                    <Settings className="w-4 h-4 text-blue-400" />
-                    Steel Code Check (IS 800)
+                    <Settings className="w-4 h-4" />
+                    Design Code Checks
                 </span>
-                <ArrowRight className="w-4 h-4 text-zinc-500" />
+                <ArrowRight className="w-4 h-4 text-blue-400" />
             </button>
-            <button className="w-full flex items-center justify-between px-3 py-3 bg-zinc-800/50 rounded-lg text-zinc-300 hover:bg-zinc-700/50 transition-colors">
-                <span className="flex items-center gap-2">
-                    <Settings className="w-4 h-4 text-orange-400" />
-                    Concrete Rebar Calc
-                </span>
-                <ArrowRight className="w-4 h-4 text-zinc-500" />
-            </button>
-            <button className="w-full flex items-center justify-between px-3 py-3 bg-zinc-800/50 rounded-lg text-zinc-300 hover:bg-zinc-700/50 transition-colors">
-                <span className="flex items-center gap-2">
-                    <Settings className="w-4 h-4 text-green-400" />
-                    Generate Report
-                </span>
-                <ArrowRight className="w-4 h-4 text-zinc-500" />
-            </button>
+
+            {/* Individual Design Buttons */}
+            <div className="space-y-2 pt-2">
+                <button 
+                    onClick={() => openModal('steelDesign')}
+                    className="w-full flex items-center justify-between px-3 py-3 bg-zinc-800/50 rounded-lg text-zinc-300 hover:bg-zinc-700/50 transition-colors"
+                >
+                    <span className="flex items-center gap-2">
+                        <Settings className="w-4 h-4 text-blue-400" />
+                        Steel Code Check (IS 800)
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-zinc-500" />
+                </button>
+                <button 
+                    onClick={() => openModal('concreteDesign')}
+                    className="w-full flex items-center justify-between px-3 py-3 bg-zinc-800/50 rounded-lg text-zinc-300 hover:bg-zinc-700/50 transition-colors"
+                >
+                    <span className="flex items-center gap-2">
+                        <Settings className="w-4 h-4 text-orange-400" />
+                        Concrete Design (IS 456)
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-zinc-500" />
+                </button>
+                <button 
+                    onClick={() => openModal('connectionDesign')}
+                    className="w-full flex items-center justify-between px-3 py-3 bg-zinc-800/50 rounded-lg text-zinc-300 hover:bg-zinc-700/50 transition-colors"
+                >
+                    <span className="flex items-center gap-2">
+                        <Settings className="w-4 h-4 text-purple-400" />
+                        Connection Design
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-zinc-500" />
+                </button>
+                <button 
+                    onClick={() => openModal('foundationDesign')}
+                    className="w-full flex items-center justify-between px-3 py-3 bg-zinc-800/50 rounded-lg text-zinc-300 hover:bg-zinc-700/50 transition-colors"
+                >
+                    <span className="flex items-center gap-2">
+                        <Settings className="w-4 h-4 text-green-400" />
+                        Foundation Design
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-zinc-500" />
+                </button>
+            </div>
+
+            {/* Generate Report */}
+            <div className="pt-2 border-t border-zinc-700">
+                <button className="w-full flex items-center justify-between px-3 py-3 bg-green-600/20 rounded-lg text-green-300 hover:bg-green-600/30 border border-green-500/30 transition-colors">
+                    <span className="flex items-center gap-2">
+                        <Download className="w-4 h-4" />
+                        Generate Design Report
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-green-400" />
+                </button>
+            </div>
         </div>
     );
 };

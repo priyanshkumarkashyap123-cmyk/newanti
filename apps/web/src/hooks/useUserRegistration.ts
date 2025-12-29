@@ -6,13 +6,13 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { useAuth, useUser } from '@clerk/clerk-react';
+import { useAuth, useUser } from '../providers/AuthProvider';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export function useUserRegistration() {
     const { isSignedIn, getToken } = useAuth();
-    const { user } = useUser();
+    const user = useUser();
     const hasRegistered = useRef(false);
 
     useEffect(() => {
@@ -36,7 +36,7 @@ export function useUserRegistration() {
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
-                        email: user.primaryEmailAddress?.emailAddress || 'unknown@beamlab.com'
+                        email: user.email || 'unknown@beamlab.com'
                     })
                 });
 

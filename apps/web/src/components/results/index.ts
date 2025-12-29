@@ -13,3 +13,9 @@ export {
     type NodePosition,
     type MemberGeometry
 } from './StressOverlay';
+export {
+    ModeShapeRenderer,
+    ModeShapeControls,
+    type ModeShapeData
+} from './ModeShapeRenderer';
+export { default as ResultsToolbar } from './ResultsToolbar';

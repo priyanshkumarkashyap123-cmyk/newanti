@@ -15,6 +15,7 @@ import { SignUpPage } from './pages/SignUpPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { PricingPage } from './pages/PricingPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { HelpPage } from './pages/HelpPage';
 import { ReportsPage } from './pages/ReportsPage';
@@ -298,6 +299,9 @@ function App() {
 
                 {/* Pricing Page */}
                 <Route path="/pricing" element={<PricingPage />} />
+
+                {/* Forgot Password */}
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
                 {/* Reset Password */}
                 <Route path="/reset-password" element={<ResetPasswordPage />} />

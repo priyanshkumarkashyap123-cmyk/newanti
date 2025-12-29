@@ -3,11 +3,11 @@ import { FC, useState } from 'react';
 import { useModelStore } from '../store/model';
 import { runLocalAnalysis } from '../api/localAnalysis';
 import { ReportGenerator } from '../utils/ReportGenerator';
-import { useAuth } from '@clerk/clerk-react';
+import { useIsSignedIn } from '../providers/AuthProvider';
 import { useSubscription } from '../hooks/useSubscription';
 
 export const Toolbar: FC = () => {
-    const { isSignedIn } = useAuth();
+    const isSignedIn = useIsSignedIn();
     const activeTool = useModelStore((state) => state.activeTool);
     const setTool = useModelStore((state) => state.setTool);
     const isAnalyzing = useModelStore((state) => state.isAnalyzing);

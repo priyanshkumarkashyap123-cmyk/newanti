@@ -5,6 +5,7 @@
  * - Toggle buttons for Deflected Shape, BMD, SFD, Reactions
  * - Scale slider for diagram visualization
  * - Animation controls for deflected shape
+ * - Quick access to Advanced Analysis and Design
  */
 
 import { FC, useState } from 'react';
@@ -19,9 +20,13 @@ import {
     SlidersHorizontal,
     X,
     Maximize2,
-    Minimize2
+    Minimize2,
+    Zap,
+    Settings,
+    FileCheck
 } from 'lucide-react';
 import { useModelStore, type AnalysisResults } from '../../store/model';
+import { useUIStore } from '../../store/uiStore';
 
 // ============================================
 // TYPES
@@ -40,6 +45,7 @@ type DiagramType = 'deflection' | 'bmd' | 'sfd' | 'reactions' | 'axial';
 export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
     const analysisResults = useModelStore((s) => s.analysisResults) as AnalysisResults | null;
     const displacementScale = useModelStore((s) => s.displacementScale) as number;
+    const openModal = useUIStore((s) => s.openModal);
 
     // Local state
     const [isExpanded, setIsExpanded] = useState(true);
@@ -234,7 +240,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
             </div>
 
             {/* Quick Stats */}
-            <div className="px-4 py-3">
+            <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
                 <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
                     Max Values
                 </h4>
@@ -251,6 +257,29 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                             {getMaxReaction()}
                         </div>
                     </div>
+                </div>
+            </div>
+
+            {/* Advanced Tools - Quick Access */}
+            <div className="px-4 py-3">
+                <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
+                    Next Steps
+                </h4>
+                <div className="flex flex-col gap-2">
+                    <button
+                        onClick={() => openModal('advancedAnalysis')}
+                        className="flex items-center gap-2 px-3 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-800/40 transition-colors text-sm"
+                    >
+                        <Zap className="w-4 h-4" />
+                        <span className="font-medium">Advanced Analysis</span>
+                    </button>
+                    <button
+                        onClick={() => openModal('designCodes')}
+                        className="flex items-center gap-2 px-3 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800/40 transition-colors text-sm"
+                    >
+                        <FileCheck className="w-4 h-4" />
+                        <span className="font-medium">Design Code Check</span>
+                    </button>
                 </div>
             </div>
         </div>

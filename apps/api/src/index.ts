@@ -4,9 +4,14 @@ import { createServer } from 'http';
 import { clerkMiddleware, requireAuth, getAuth } from '@clerk/express';
 import { SocketServer } from './SocketServer.js';
 import analysisRouter from './routes/analysis/index.js';
+import designRouter from './routes/design/index.js';
+import advancedRouter from './routes/advanced/index.js';
+import interopRouter from './routes/interop/index.js';
+import authRouter from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import { razorpayRouter } from './razorpay.js';
 import { connectDB } from './models.js';
+import { authMiddleware as inHouseAuthMiddleware, isUsingClerk } from './middleware/authMiddleware.js';
 import {
     securityHeaders,
     generalRateLimit,
@@ -51,17 +56,45 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));  // Limit payload size
 
-// Initialize Clerk middleware (optional auth check on all routes)
-app.use(clerkMiddleware());
+// Initialize authentication middleware based on provider
+// USE_CLERK=true -> Clerk, otherwise -> in-house JWT
+if (isUsingClerk()) {
+    console.log('🔐 Using Clerk authentication');
+    app.use(clerkMiddleware());
+} else {
+    console.log('🔐 Using in-house JWT authentication');
+    app.use(inHouseAuthMiddleware);
+}
+
+// ============================================
+// IN-HOUSE AUTH ROUTES (always available)
+// ============================================
+
+// Auth routes (signup, signin, signout, etc.)
+app.use('/api/auth', authRouter);
 
 // Health check (public)
 app.get('/health', (_req: Request, res: Response) => {
-    res.json({ status: 'ok', service: 'BeamLab Ultimate API', websocket: true });
+    res.json({ 
+        status: 'ok', 
+        service: 'BeamLab Ultimate API', 
+        websocket: true,
+        authProvider: isUsingClerk() ? 'clerk' : 'inhouse'
+    });
 });
 
 // Structural Analysis API (rate limited: 10/min)
 app.use('/api/analyze', analysisRateLimit, analysisRouter);
 app.use('/api/analysis', analysisRateLimit, analysisRouter);
+
+// Structural Design API (rate limited: 10/min)
+app.use('/api/design', analysisRateLimit, designRouter);
+
+// Advanced Analysis API (P-Delta, Modal, Buckling)
+app.use('/api/advanced', analysisRateLimit, advancedRouter);
+
+// Interoperability API (STAAD, DXF import/export)
+app.use('/api/interop', analysisRateLimit, interopRouter);
 
 // User Activity API (protected)
 app.use('/api/user', userRoutes);

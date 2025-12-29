@@ -20,7 +20,7 @@ import {
     TrendingUp,
     FileText
 } from 'lucide-react';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth } from '../providers/AuthProvider';
 
 // ============================================
 // TYPES
