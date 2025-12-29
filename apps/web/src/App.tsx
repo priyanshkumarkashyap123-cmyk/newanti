@@ -277,7 +277,13 @@ function WorkspacePage({ moduleType }: { moduleType: string }) {
 // MAIN APP WITH ROUTING
 // ============================================
 
+// Hooks
+import { useUserRegistration } from './hooks/useUserRegistration';
+
 function App() {
+    // Ensure user is registered in MongoDB upon login/load
+    useUserRegistration();
+
     return (
         <ErrorBoundary>
             <Routes>
