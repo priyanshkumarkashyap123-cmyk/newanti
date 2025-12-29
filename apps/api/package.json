@@ -5,7 +5,8 @@
     "type": "module",
     "scripts": {
         "dev": "tsx watch src/index.ts",
-        "build": "tsc",
+        "build": "tsc --skipLibCheck --noEmit false",
+        "build:strict": "tsc",
         "start": "node dist/index.js",
         "lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 0",
         "type-check": "tsc --noEmit",
