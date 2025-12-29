@@ -286,7 +286,9 @@ class BeamSolver:
                         effective_length = min(x, end) - start
                         if effective_length > 0:
                             # Moment from UDL = w * length * (x - centroid)
-                            M -= w * effective_length * (effective_length / 2)
+                            # Centroid of the effective load part is at start + effective_length/2
+                            arm = x - (start + effective_length / 2)
+                            M -= w * effective_length * arm
                             
             moment_vals.append(round(M, 4))
         

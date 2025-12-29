@@ -90,8 +90,9 @@ from .elements import (
     TimoshenkoBeam,
     ElementType,
     BeamTheory,
+    MindlinPlate,
+    PlateSection
 )
-from .solvers.plate import MindlinPlate, PlateSection
 
 __all__ = [
     # Beam Solver
