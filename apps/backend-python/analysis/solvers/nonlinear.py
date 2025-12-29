@@ -44,7 +44,12 @@ class Node:
 
 @dataclass
 class Member:
-    """Beam-column member with 12 DOF (6 per node)"""
+    """
+    Beam-column member with 12 DOF (6 per node)
+    
+    Supports both Euler-Bernoulli (default) and Timoshenko beam theory.
+    For Timoshenko, provide shear areas Asy and Asz.
+    """
     id: str
     start_node_id: str
     end_node_id: str
@@ -56,8 +61,28 @@ class Member:
     Iy: float = 1e-4      # Moment of inertia about local y (m⁴)
     Iz: float = 1e-4      # Moment of inertia about local z (m⁴)
     J: float = 1e-5       # Torsional constant (m⁴)
+    # Shear areas for Timoshenko beam theory (optional)
+    # If None, Euler-Bernoulli (no shear deformation) is used
+    Asy: Optional[float] = None  # Shear area in y-direction (m²)
+    Asz: Optional[float] = None  # Shear area in z-direction (m²)
     # Current axial force (updated during P-Delta iteration)
     axial_force: float = 0.0  # Compression positive
+    
+    # Shear correction factors (default for rectangles ≈ 5/6)
+    kappa_y: float = 5.0/6.0  # Shear correction factor y
+    kappa_z: float = 5.0/6.0  # Shear correction factor z
+    
+    def get_effective_shear_area_y(self) -> float:
+        """Get effective shear area for y-direction, with correction factor"""
+        if self.Asy is not None:
+            return self.kappa_y * self.Asy
+        return None
+    
+    def get_effective_shear_area_z(self) -> float:
+        """Get effective shear area for z-direction, with correction factor"""
+        if self.Asz is not None:
+            return self.kappa_z * self.Asz
+        return None
 
 
 @dataclass
@@ -339,7 +364,16 @@ class PDeltaAnalyzer:
         return K
     
     def _get_member_Ke_local(self, member: Member) -> np.ndarray:
-        """Build 12x12 elastic stiffness matrix in local coordinates"""
+        """
+        Build 12x12 elastic stiffness matrix in local coordinates.
+        
+        Supports:
+        - Euler-Bernoulli beam theory (default, no shear deformation)
+        - Timoshenko beam theory (with shear deformation)
+        
+        For Timoshenko, shear areas Asy/Asz must be provided.
+        The shear deformation parameter φ modifies the bending stiffness.
+        """
         E = member.E
         G = member.G
         A = member.A
@@ -351,17 +385,57 @@ class PDeltaAnalyzer:
         if L < 1e-10:
             return np.zeros((12, 12))
         
-        # Standard beam stiffness coefficients
+        # ============================================
+        # Calculate shear deformation factors
+        # φ = 12*E*I / (G*As*L²)
+        # When φ = 0, this reduces to Euler-Bernoulli
+        # ============================================
+        
+        # Shear deformation parameter for bending about z (shear in y)
+        Asy = member.get_effective_shear_area_y() if hasattr(member, 'get_effective_shear_area_y') else None
+        if Asy is None:
+            Asy = member.Asy
+        
+        if Asy is not None and Asy > 0 and G > 0:
+            phi_z = 12 * E * Iz / (G * Asy * L**2)
+        else:
+            phi_z = 0.0  # Euler-Bernoulli (no shear deformation)
+        
+        # Shear deformation parameter for bending about y (shear in z)
+        Asz = member.get_effective_shear_area_z() if hasattr(member, 'get_effective_shear_area_z') else None
+        if Asz is None:
+            Asz = member.Asz
+            
+        if Asz is not None and Asz > 0 and G > 0:
+            phi_y = 12 * E * Iy / (G * Asz * L**2)
+        else:
+            phi_y = 0.0  # Euler-Bernoulli (no shear deformation)
+        
+        # ============================================
+        # Stiffness coefficients (Timoshenko beam)
+        # Reference: Przemieniecki, Theory of Matrix Structural Analysis
+        # ============================================
+        
+        # Axial
         k1 = E * A / L
-        k2 = 12 * E * Iz / (L**3)
-        k3 = 6 * E * Iz / (L**2)
-        k4 = 4 * E * Iz / L
-        k5 = 2 * E * Iz / L
-        k6 = 12 * E * Iy / (L**3)
-        k7 = 6 * E * Iy / (L**2)
-        k8 = 4 * E * Iy / L
-        k9 = 2 * E * Iy / L
+        
+        # Torsion
         k10 = G * J / L
+        
+        # Bending about z-axis (shear in y-direction)
+        # Modified for shear deformation with factor (1 + φ_z)
+        denom_z = (1 + phi_z)
+        k2 = 12 * E * Iz / (L**3 * denom_z)   # Shear
+        k3 = 6 * E * Iz / (L**2 * denom_z)    # Shear-rotation coupling
+        k4 = (4 + phi_z) * E * Iz / (L * denom_z)  # Rotation
+        k5 = (2 - phi_z) * E * Iz / (L * denom_z)  # Cross-rotation
+        
+        # Bending about y-axis (shear in z-direction)
+        denom_y = (1 + phi_y)
+        k6 = 12 * E * Iy / (L**3 * denom_y)   # Shear
+        k7 = 6 * E * Iy / (L**2 * denom_y)    # Shear-rotation coupling
+        k8 = (4 + phi_y) * E * Iy / (L * denom_y)  # Rotation
+        k9 = (2 - phi_y) * E * Iy / (L * denom_y)  # Cross-rotation
         
         Ke = np.zeros((12, 12))
         
@@ -371,7 +445,7 @@ class PDeltaAnalyzer:
         Ke[6, 0] = -k1
         Ke[6, 6] = k1
         
-        # Bending about z (in y direction)
+        # Bending about z (in y direction) - with Timoshenko modification
         Ke[1, 1] = k2
         Ke[1, 5] = k3
         Ke[1, 7] = -k2
@@ -392,7 +466,7 @@ class PDeltaAnalyzer:
         Ke[11, 7] = -k3
         Ke[11, 11] = k4
         
-        # Bending about y (in z direction)
+        # Bending about y (in z direction) - with Timoshenko modification
         Ke[2, 2] = k6
         Ke[2, 4] = -k7
         Ke[2, 8] = -k6

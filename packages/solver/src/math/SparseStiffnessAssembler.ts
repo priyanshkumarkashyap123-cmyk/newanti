@@ -6,6 +6,12 @@
 
 import { SparseMatrix, CSRMatrix } from './SparseMatrix';
 import { sparseSolve, CGResult, SparseSolverOptions } from './ConjugateGradient';
+import { reverseCuthillMcKee, computeBandwidth } from './MatrixReordering';
+
+// Export extended options locally since we don't modify ConjugateGradient yet
+export interface AssemblerSolverOptions extends SparseSolverOptions {
+    useRCM?: boolean;
+}
 
 // ============================================
 // TYPES
@@ -160,7 +166,10 @@ export class SparseStiffnessAssembler {
     /**
      * Solve the system Ku = F
      */
-    solve(options?: SparseSolverOptions): AnalysisResult {
+    solve(options?: AssemblerSolverOptions): AnalysisResult {
+        const startTime = performance.now();
+        console.log(`[SparseAssembler] Starting assembly...`);
+
         // Assemble
         const K = this.assembleStiffnessMatrix();
         const F = this.assembleForceVector();
@@ -169,18 +178,45 @@ export class SparseStiffnessAssembler {
         this.applyBoundaryConditions(K, F);
 
         console.log(`[SparseAssembler] Matrix size: ${this.totalDof}, nnz: ${K.nnz}`);
-        console.log(`[SparseAssembler] Sparsity: ${(1 - K.getStats().density) * 100}%`);
+
+        // RCM Optimization
+        let finalK = K;
+        let finalF = F;
+        let permutation: number[] | null = null;
+
+        if (options?.useRCM) {
+            const bwBefore = computeBandwidth(K);
+            console.log(`[SparseAssembler] Computing RCM reordering...`);
+
+            const rcmResult = reverseCuthillMcKee(K);
+            permutation = rcmResult.permutation;
+
+            finalK = K.permute(permutation);
+            finalF = SparseMatrix.permuteVector(F, permutation);
+
+            const bwAfter = computeBandwidth(finalK);
+            console.log(`[SparseAssembler] Bandwidth reduced: ${bwBefore} -> ${bwAfter}`);
+        } else {
+            const stats = K.getStats();
+            console.log(`[SparseAssembler] Sparsity: ${(1 - stats.density) * 100}%`);
+        }
 
         // Solve using iterative solver
-        const solverResult = sparseSolve(K, F, {
+        const solverResult = sparseSolve(finalK, finalF, {
             tolerance: 1e-8,
             maxIterations: this.totalDof * 3,
             precondition: true,
             ...options
         });
 
+        // Map solution back to original ordering if needed
+        if (permutation) {
+            solverResult.x = SparseMatrix.inversePermuteVector(solverResult.x, permutation);
+        }
+
         console.log(`[SparseAssembler] Solved in ${solverResult.iterations} iterations`);
         console.log(`[SparseAssembler] Residual: ${solverResult.residual.toExponential(3)}`);
+        console.log(`[SparseAssembler] Total time: ${(performance.now() - startTime).toFixed(2)}ms`);
 
         // Extract results
         return this.extractResults(solverResult);

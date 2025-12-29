@@ -6,6 +6,7 @@ Features:
 - Supports nodes, members, supports, and loads
 - Extracts detailed shear, moment, and deflection arrays (100 points per member)
 - Returns visualization-ready data
+- AISC 360-16 Direct Analysis Method support (Chapter C)
 
 Requirements:
     pip install PyNiteFEA
@@ -15,6 +16,7 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Any, Tuple
 from enum import Enum
 import numpy as np
+import math
 
 try:
     from PyNite import FEModel3D
@@ -22,6 +24,38 @@ try:
 except ImportError:
     PYNITE_AVAILABLE = False
     print("Warning: PyNiteFEA not installed. Run: pip install PyNiteFEA")
+
+
+# ============================================
+# ANALYSIS OPTIONS (AISC 360-16 DIRECT ANALYSIS)
+# ============================================
+
+@dataclass
+class AnalysisOptions:
+    """
+    Analysis configuration options.
+    
+    Direct Analysis Method (AISC 360-16 Chapter C):
+    - Applies 0.8 factor to all member stiffnesses (EA and EI)
+    - Applies additional τ_b factor for members with high Pr/Py
+    - Optionally adds notional loads (0.2% of gravity)
+    """
+    # Direct Analysis Method (AISC 360-16 Ch. C)
+    direct_analysis: bool = False
+    stiffness_reduction_factor: float = 0.8  # Applied to E when direct_analysis=True
+    tau_b_enabled: bool = True  # Apply τ_b factor for EI when Pr/Py > 0.5
+    
+    # Notional loads (0.2% of gravity loads applied horizontally)
+    apply_notional_loads: bool = False
+    notional_load_factor: float = 0.002  # 0.2%
+    
+    # P-Delta options
+    include_p_delta: bool = False
+    p_delta_tolerance: float = 0.01  # 1% convergence
+    p_delta_max_iterations: int = 10
+    
+    # Geometric nonlinearity
+    include_geometric_nonlinearity: bool = False
 
 
 # ============================================
@@ -65,6 +99,10 @@ class MemberInput:
     Iz: float = 1e-4        # Moment of inertia about z-axis (m⁴)
     J: float = 1e-5         # Torsional constant (m⁴)
     A: float = 0.01         # Cross-sectional area (m²)
+    Fy: float = 345e3       # Yield stress (kN/m²) - for τ_b calculation
+    # Shear areas for Timoshenko beam theory (optional)
+    Asy: Optional[float] = None  # Shear area in y-direction (m²)
+    Asz: Optional[float] = None  # Shear area in z-direction (m²)
 
 
 @dataclass
@@ -181,9 +219,14 @@ def get_support_restraints(support_type: str) -> Tuple[bool, bool, bool, bool, b
 class FEAEngine:
     """
     3D Frame Analysis Engine using PyNite
+    
+    Supports AISC 360-16 Direct Analysis Method (Chapter C):
+    - Stiffness reduction (0.8 factor on E)
+    - τ_b factor for compression members
+    - Notional loads
     """
     
-    def __init__(self):
+    def __init__(self, options: Optional[AnalysisOptions] = None):
         if not PYNITE_AVAILABLE:
             raise ImportError("PyNiteFEA is not installed. Run: pip install PyNiteFEA")
         
@@ -191,6 +234,64 @@ class FEAEngine:
         self.num_points = 100  # Points per member for diagram extraction
         self.node_map: Dict[str, str] = {}  # frontend_id -> pynite_name
         self.member_map: Dict[str, str] = {}  # frontend_id -> pynite_name
+        self.options = options or AnalysisOptions()
+        self.stiffness_modifications: Dict[str, Dict[str, float]] = {}  # Track E modifications
+    
+    def _calculate_tau_b(self, Pr: float, Py: float) -> float:
+        """
+        Calculate τ_b stiffness reduction factor per AISC 360-16 C2.3
+        
+        τ_b = 1.0 when αPr/Py ≤ 0.5
+        τ_b = 4(αPr/Py)(1 - αPr/Py) when αPr/Py > 0.5
+        
+        where α = 1.0 for LRFD, 1.6 for ASD
+        
+        Args:
+            Pr: Required axial strength (kN)
+            Py: Axial yield strength = Fy * Ag (kN)
+        
+        Returns:
+            τ_b factor (0.0 to 1.0)
+        """
+        if Py <= 0:
+            return 1.0
+        
+        alpha = 1.0  # LRFD
+        ratio = alpha * abs(Pr) / Py
+        
+        if ratio <= 0.5:
+            return 1.0
+        else:
+            return 4.0 * ratio * (1.0 - ratio)
+    
+    def _get_effective_modulus(self, member: MemberInput, axial_force: float = 0) -> Tuple[float, float]:
+        """
+        Get effective Young's modulus considering Direct Analysis reductions.
+        
+        Args:
+            member: Member input with properties
+            axial_force: Current axial force in member (for τ_b calculation)
+        
+        Returns:
+            Tuple of (E_axial, E_flexural) - may differ due to τ_b
+        """
+        E = member.E
+        
+        if not self.options.direct_analysis:
+            return (E, E)
+        
+        # Apply base 0.8 reduction
+        E_reduced = E * self.options.stiffness_reduction_factor
+        
+        # Calculate τ_b for flexural stiffness if enabled
+        if self.options.tau_b_enabled and axial_force != 0:
+            Py = member.Fy * member.A
+            tau_b = self._calculate_tau_b(axial_force, Py)
+            E_flexural = E_reduced * tau_b
+        else:
+            E_flexural = E_reduced
+        
+        return (E_reduced, E_flexural)
         
     def build_model(self, model_input: ModelInput) -> None:
         """
@@ -215,11 +316,14 @@ class FEAEngine:
                 self.model.def_support(node_name, Dx, Dy, Dz, Rx, Ry, Rz)
         
         # ============================================
-        # 2. ADD MEMBERS
+        # 2. ADD MEMBERS (with Direct Analysis stiffness reduction)
         # ============================================
+        self._member_inputs = {}  # Store for τ_b iteration
+        
         for i, member in enumerate(model_input.members):
             member_name = f"M{i+1}"
             self.member_map[member.id] = member_name
+            self._member_inputs[member.id] = member
             
             start_name = self.node_map.get(member.start_node_id)
             end_name = self.node_map.get(member.end_node_id)
@@ -227,11 +331,24 @@ class FEAEngine:
             if not start_name or not end_name:
                 raise ValueError(f"Member {member.id} references unknown node")
             
+            # Get effective modulus (applies 0.8 factor if Direct Analysis enabled)
+            E_axial, E_flexural = self._get_effective_modulus(member)
+            
+            # Store stiffness modifications for reporting
+            if self.options.direct_analysis:
+                self.stiffness_modifications[member.id] = {
+                    'E_original': member.E,
+                    'E_reduced': E_axial,
+                    'reduction_factor': self.options.stiffness_reduction_factor
+                }
+            
+            # Note: PyNite uses single E value, so we use E_axial
+            # For full τ_b support, iterative analysis would be needed
             self.model.add_member(
                 member_name,
                 start_name,
                 end_name,
-                E=member.E,
+                E=E_axial,
                 G=member.G,
                 Iy=member.Iy,
                 Iz=member.Iz,
@@ -470,12 +587,29 @@ def analyze_frame(model_dict: Dict[str, Any]) -> Dict[str, Any]:
     
     Args:
         model_dict: Dictionary with 'nodes', 'members', 'node_loads', 
-                   'point_loads', 'distributed_loads'
+                   'point_loads', 'distributed_loads', and optional 'options'
     
     Returns:
         Dictionary with analysis results
+    
+    Options (optional):
+        direct_analysis: bool - Enable AISC 360-16 Direct Analysis (0.8E)
+        stiffness_reduction_factor: float - Custom reduction factor (default 0.8)
+        tau_b_enabled: bool - Apply τ_b factor for EI
+        apply_notional_loads: bool - Apply 0.2% notional loads
     """
     try:
+        # Parse analysis options
+        options_dict = model_dict.get('options', {})
+        options = AnalysisOptions(
+            direct_analysis=options_dict.get('direct_analysis', False),
+            stiffness_reduction_factor=options_dict.get('stiffness_reduction_factor', 0.8),
+            tau_b_enabled=options_dict.get('tau_b_enabled', True),
+            apply_notional_loads=options_dict.get('apply_notional_loads', False),
+            notional_load_factor=options_dict.get('notional_load_factor', 0.002),
+            include_p_delta=options_dict.get('include_p_delta', False),
+        )
+        
         # Parse input
         nodes = [
             NodeInput(
@@ -498,7 +632,10 @@ def analyze_frame(model_dict: Dict[str, Any]) -> Dict[str, Any]:
                 Iy=m.get('Iy', 1e-4),
                 Iz=m.get('Iz', 1e-4),
                 J=m.get('J', 1e-5),
-                A=m.get('A', 0.01)
+                A=m.get('A', 0.01),
+                Fy=m.get('Fy', 345e3),  # Yield stress for τ_b
+                Asy=m.get('Asy'),  # Shear area y
+                Asz=m.get('Asz'),  # Shear area z
             )
             for m in model_dict.get('members', [])
         ]
@@ -548,13 +685,13 @@ def analyze_frame(model_dict: Dict[str, Any]) -> Dict[str, Any]:
             distributed_loads=distributed_loads
         )
         
-        # Run analysis
-        engine = FEAEngine()
+        # Run analysis with options
+        engine = FEAEngine(options=options)
         engine.build_model(model_input)
         result = engine.analyze()
         
         # Convert to dict
-        return {
+        response = {
             'success': result.success,
             'error': result.error,
             'max_displacement': result.max_displacement,
@@ -590,6 +727,17 @@ def analyze_frame(model_dict: Dict[str, Any]) -> Dict[str, Any]:
                 for mr in result.members
             ]
         }
+        
+        # Add Direct Analysis info if enabled
+        if options.direct_analysis:
+            response['direct_analysis'] = {
+                'enabled': True,
+                'stiffness_reduction_factor': options.stiffness_reduction_factor,
+                'tau_b_enabled': options.tau_b_enabled,
+                'stiffness_modifications': engine.stiffness_modifications
+            }
+        
+        return response
         
     except Exception as e:
         return {

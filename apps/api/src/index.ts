@@ -75,9 +75,9 @@ app.use('/api/auth', authRouter);
 
 // Health check (public)
 app.get('/health', (_req: Request, res: Response) => {
-    res.json({ 
-        status: 'ok', 
-        service: 'BeamLab Ultimate API', 
+    res.json({
+        status: 'ok',
+        service: 'BeamLab Ultimate API',
         websocket: true,
         authProvider: isUsingClerk() ? 'clerk' : 'inhouse'
     });
@@ -192,18 +192,17 @@ app.get('/api/project/:id/users', (req: Request, res: Response) => {
     });
 });
 
-// Connect to MongoDB and start server
-connectDB().then(() => {
-    httpServer.listen(PORT, () => {
-        console.log(`🚀 BeamLab Ultimate API running on http://localhost:${PORT}`);
-        console.log(`🔌 WebSocket server ready for real-time collaboration`);
-        console.log(`🔒 Security middleware active: helmet, rate limiting, logging`);
-    });
-}).catch(err => {
-    console.error('Failed to connect to MongoDB:', err);
-    // Start anyway for development
-    httpServer.listen(PORT, () => {
-        console.log(`🚀 BeamLab Ultimate API running on http://localhost:${PORT} (no DB)`);
+// Start server immediately to satisfy startup probes
+httpServer.listen(PORT, () => {
+    console.log(`🚀 BeamLab Ultimate API running on http://localhost:${PORT}`);
+    console.log(`🔌 WebSocket server ready for real-time collaboration`);
+    console.log(`🔒 Security middleware active: helmet, rate limiting, logging`);
+
+    // Connect to MongoDB in background
+    connectDB().then(() => {
+        console.log('✅ MongoDB connected successfully');
+    }).catch(err => {
+        console.error('❌ Failed to connect to MongoDB:', err);
     });
 });
 

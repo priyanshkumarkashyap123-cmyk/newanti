@@ -6,8 +6,10 @@
 import * as crypto from 'crypto';
 import { Request, Response, Router } from 'express';
 import { User, Subscription } from './models.js';
+import { createRequire } from 'module';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+// ESM-compatible require for razorpay CommonJS module
+const require = createRequire(import.meta.url);
 const Razorpay = require('razorpay');
 
 // ============================================
@@ -18,14 +20,18 @@ const RAZORPAY_KEY_ID = process.env['RAZORPAY_KEY_ID'] ?? '';
 const RAZORPAY_KEY_SECRET = process.env['RAZORPAY_KEY_SECRET'] ?? '';
 const RAZORPAY_WEBHOOK_SECRET = process.env['RAZORPAY_WEBHOOK_SECRET'] ?? '';
 
-if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
-    console.warn('⚠️ Missing Razorpay credentials');
-}
+// Initialize Razorpay only if credentials are available
+let razorpay: InstanceType<typeof Razorpay> | null = null;
 
-const razorpay = new Razorpay({
-    key_id: RAZORPAY_KEY_ID,
-    key_secret: RAZORPAY_KEY_SECRET
-});
+if (RAZORPAY_KEY_ID && RAZORPAY_KEY_SECRET) {
+    razorpay = new Razorpay({
+        key_id: RAZORPAY_KEY_ID,
+        key_secret: RAZORPAY_KEY_SECRET
+    });
+    console.log('✅ Razorpay initialized');
+} else {
+    console.warn('⚠️ Missing Razorpay credentials - payment features disabled');
+}
 
 // ============================================
 // PLAN CONFIGURATION
@@ -64,6 +70,11 @@ export class RazorpayBillingService {
 
         // Select plan
         const selectedPlanId = planId ?? (planType === 'yearly' ? PLANS.PRO_YEARLY : PLANS.PRO_MONTHLY);
+
+        // Check if Razorpay is configured
+        if (!razorpay) {
+            throw new Error('Razorpay is not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET environment variables.');
+        }
 
         // Create Razorpay subscription
         const subscription = await razorpay.subscriptions.create({

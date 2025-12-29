@@ -10,8 +10,13 @@
 import { Router, Request, Response } from 'express';
 import { spawn } from 'child_process';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 const router = Router();
+
+// ESM-compatible __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Path to Python backend
 const PYTHON_PATH = path.join(__dirname, '..', '..', '..', 'backend-python');

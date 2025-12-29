@@ -279,6 +279,59 @@ export class SparseMatrix {
     }
 
     // ========================================
+    // REORDERING SUPPORT
+    // ========================================
+
+    /**
+     * Permute matrix rows and columns: B = P * A * P^T
+     * @param permutation Array where permutation[i] is the old index for new position i
+     */
+    permute(permutation: number[]): SparseMatrix {
+        const n = this._rows;
+        const result = new SparseMatrix(n, n);
+
+        // Map old index -> new index
+        const oldToNew = new Int32Array(n);
+        for (let i = 0; i < n; i++) oldToNew[permutation[i]] = i;
+
+        for (const [key, value] of this.data) {
+            const [row, col] = key.split(',').map(Number);
+            const newRow = oldToNew[row];
+            const newCol = oldToNew[col];
+
+            result.set(newRow, newCol, value);
+        }
+
+        return result;
+    }
+
+    /**
+     * Permute vector: v_new = P * v_old
+     * v_new[i] = v_old[permutation[i]]
+     */
+    static permuteVector(v: Float64Array, permutation: number[]): Float64Array {
+        const n = v.length;
+        const result = new Float64Array(n);
+        for (let i = 0; i < n; i++) {
+            result[i] = v[permutation[i]];
+        }
+        return result;
+    }
+
+    /**
+     * Inverse permute vector: v_old = P^T * v_new
+     * v_old[permutation[i]] = v_new[i]
+     */
+    static inversePermuteVector(v: Float64Array, permutation: number[]): Float64Array {
+        const n = v.length;
+        const result = new Float64Array(n);
+        for (let i = 0; i < n; i++) {
+            result[permutation[i]] = v[i];
+        }
+        return result;
+    }
+
+    // ========================================
     // UTILITY
     // ========================================
 

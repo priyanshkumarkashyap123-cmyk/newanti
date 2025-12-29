@@ -25,7 +25,8 @@ from .fea_engine import (
     DistributedLoadInput,
     AnalysisOutput,
     MemberResults,
-    NodeResults
+    NodeResults,
+    AnalysisOptions  # AISC 360-16 Direct Analysis support
 )
 
 from .load_engine import (
@@ -84,6 +85,14 @@ from .interop import (
     Member
 )
 
+# Advanced Element Formulations
+from .elements import (
+    TimoshenkoBeam,
+    ElementType,
+    BeamTheory,
+)
+from .solvers.plate import MindlinPlate, PlateSection
+
 __all__ = [
     # Beam Solver
     "BeamSolver",
@@ -107,6 +116,7 @@ __all__ = [
     "AnalysisOutput",
     "MemberResults",
     "NodeResults",
+    "AnalysisOptions",  # AISC 360-16 Direct Analysis
     # Load Engine
     "LoadEngine",
     "LoadCase",
@@ -151,5 +161,12 @@ __all__ = [
     "ReportDataGenerator",
     "StructuralModel",
     "Node",
-    "Member"
+    "Member",
+    # Advanced Element Formulations
+    "TimoshenkoBeam",
+    "ElementType",
+    "BeamTheory",
+    "MindlinPlate",
+    "PlateSection",
 ]
+
