@@ -69,8 +69,17 @@ const InHouseSignUpForm = () => {
         setIsLoading(true);
 
         try {
-            await signUp(formData.email, formData.password, formData.firstName, formData.lastName);
-            navigate('/app');
+            const result = await signUp({
+                email: formData.email,
+                password: formData.password,
+                firstName: formData.firstName,
+                lastName: formData.lastName
+            });
+            if (result.success) {
+                navigate('/app');
+            } else {
+                setError(result.error || 'Failed to create account');
+            }
         } catch (err: any) {
             setError(err.message || 'Failed to create account');
         } finally {

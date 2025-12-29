@@ -27,8 +27,12 @@ const InHouseSignInForm = () => {
         setIsLoading(true);
 
         try {
-            await signIn(email, password, rememberMe);
-            navigate('/app');
+            const result = await signIn(email, password);
+            if (result.success) {
+                navigate('/app');
+            } else {
+                setError(result.error || 'Failed to sign in');
+            }
         } catch (err: any) {
             setError(err.message || 'Failed to sign in');
         } finally {
