@@ -547,9 +547,45 @@ const ManualLoadsPanel: FC = () => {
     const [fy, setFy] = useState('-10');
     const [fz, setFz] = useState('0');
     const [moment, setMoment] = useState('0');
+    const setTool = useModelStore((state) => state.setTool);
+    const activeTool = useModelStore((state) => state.activeTool);
 
     return (
         <div className="space-y-3">
+            {/* Interactive Load Placement */}
+            <div className="bg-gradient-to-r from-orange-600/20 to-red-600/20 border border-orange-500/30 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-2">
+                    <span className="text-lg">🎯</span>
+                    <span className="text-sm font-medium text-orange-300">Interactive Placement</span>
+                </div>
+                <p className="text-xs text-zinc-400 mb-3">
+                    Click and drag on members to place UDL loads visually
+                </p>
+                <button
+                    onClick={() => setTool(activeTool === 'memberLoad' ? 'select' : 'memberLoad')}
+                    className={`
+                        w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-all
+                        ${activeTool === 'memberLoad'
+                            ? 'bg-orange-600 text-white ring-2 ring-orange-400 ring-offset-2 ring-offset-zinc-900'
+                            : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                        }
+                    `}
+                >
+                    {activeTool === 'memberLoad' ? (
+                        <>
+                            <span className="animate-pulse">●</span>
+                            Drawing Loads... (ESC to exit)
+                        </>
+                    ) : (
+                        <>
+                            〰️ Draw UDL/Point Loads
+                        </>
+                    )}
+                </button>
+            </div>
+            
+            {/* Manual Node Loads */}
+            <div className="text-xs text-zinc-500 uppercase tracking-wide pt-2">Node Loads</div>
             <div className="grid grid-cols-3 gap-2">
                 <div>
                     <label className="block text-xs text-zinc-500">Fx (kN)</label>

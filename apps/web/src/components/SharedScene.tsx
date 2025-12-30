@@ -7,6 +7,7 @@ import { SupportRenderer } from './SupportRenderer';
 import { LoadRenderer } from './LoadRenderer';
 import { MemberLoadRenderer } from './MemberLoadRenderer';
 import { AllMemberDiagrams } from './DiagramRenderer';
+import { LoadPlacementLayer } from './viewer/LoadPlacementLayer';
 import { useModelStore } from '../store/model';
 
 export const SharedScene: FC = () => {
@@ -69,6 +70,9 @@ export const SharedScene: FC = () => {
             {/* Tools */}
             <SelectionTransform />
             <InteractionManager />
+            
+            {/* Interactive Load Placement */}
+            <LoadPlacementLayer />
         </>
     );
 };
