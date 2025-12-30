@@ -19,3 +19,13 @@ export { DataTable, createNumberColumn, createIdColumn } from './data-table';
 
 // Property Inspector
 export { PropertyInspector } from './PropertyInspector';
+
+// Advanced UI Components (Template-based)
+export { AdvancedToggle } from './AdvancedToggle';
+export type { AdvancedToggleProps } from './AdvancedToggle';
+
+export { RangeSlider } from './RangeSlider';
+export type { RangeSliderProps } from './RangeSlider';
+
+export { StatusBadge } from './StatusBadge';
+export type { StatusBadgeProps, BadgeVariant } from './StatusBadge';

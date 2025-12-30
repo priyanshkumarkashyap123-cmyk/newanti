@@ -9,6 +9,7 @@ import { Component, ReactNode, ErrorInfo } from 'react';
 // Pages
 import { LandingPage } from './pages/LandingPage';
 import { Dashboard } from './pages/Dashboard';
+import { StreamDashboard } from './pages/StreamDashboard';
 import { Capabilities } from './pages/Capabilities';
 import { SignInPage } from './pages/SignInPage';
 import { SignUpPage } from './pages/SignUpPage';
@@ -19,6 +20,7 @@ import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { HelpPage } from './pages/HelpPage';
 import { ReportsPage } from './pages/ReportsPage';
+import { WorkspaceDemo } from './pages/WorkspaceDemo';
 
 // Layouts
 import { WorkspaceLayout } from './layouts/WorkspaceLayout';
@@ -290,7 +292,10 @@ function App() {
                 {/* Landing Page */}
                 <Route path="/" element={<LandingPage />} />
 
-                {/* Dashboard */}
+                {/* Stream Dashboard - Main Entry Point */}
+                <Route path="/stream" element={<StreamDashboard />} />
+
+                {/* Legacy Dashboard */}
                 <Route path="/dashboard" element={<Dashboard />} />
 
                 {/* Capabilities Page */}
@@ -320,6 +325,9 @@ function App() {
 
                 {/* Reports */}
                 <Route path="/reports" element={<ReportsPage />} />
+
+                {/* Workspace Demo - NEW Advanced UI Templates */}
+                <Route path="/workspace-demo" element={<WorkspaceDemo />} />
 
                 {/* Main App - Modern Modeler with integrated sidebar */}
                 <Route path="/app" element={<ModernModeler />} />

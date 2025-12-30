@@ -40,7 +40,7 @@ export const LandingPage: FC = () => {
 
     const handleGetStarted = () => {
         if (isSignedIn) {
-            navigate('/app');
+            navigate('/stream');  // Go to Stream Dashboard
         } else {
             navigate('/sign-up');
         }
