@@ -125,6 +125,9 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
                 const result = await response.json();
                 if (result.success && result.data) {
                     const { tier, features, expiresAt } = result.data;
+                    // Cache tier in localStorage for quick access on next load
+                    localStorage.setItem('beamlab_subscription_tier', tier);
+                    console.log('[Subscription] Fetched tier from API:', tier, features);
                     setSubscription({
                         tier: tier as SubscriptionTier,
                         isLoading: false,
@@ -133,6 +136,8 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
                     });
                     return;
                 }
+            } else {
+                console.warn('[Subscription] API returned non-OK status:', response.status);
             }
 
             // Fallback to localStorage for demo mode
@@ -164,6 +169,18 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
     }, [isSignedIn, userId]);
 
     const canAccess = (feature: keyof SubscriptionStatus['features']): boolean => {
+        // If still loading and we have a cached tier, use that
+        if (subscription.isLoading) {
+            const cachedTier = localStorage.getItem('beamlab_subscription_tier') as SubscriptionTier | null;
+            if (cachedTier && cachedTier !== 'free') {
+                const cachedFeatures = TIER_FEATURES[cachedTier];
+                const cachedValue = cachedFeatures[feature];
+                if (typeof cachedValue === 'boolean') return cachedValue;
+                if (typeof cachedValue === 'number') return cachedValue !== 0;
+            }
+            // During loading, default to allowing access to prevent flashing
+            return false;
+        }
         const value = subscription.features[feature];
         if (typeof value === 'boolean') return value;
         if (typeof value === 'number') return value !== 0;

@@ -120,10 +120,21 @@ interface ModelState {
     setAnalysisResults: (results: AnalysisResults | null) => void;
     setIsAnalyzing: (analyzing: boolean) => void;
     select: (id: string, multi: boolean) => void;
-    selectNode: (id: string | null) => void;
-    selectMember: (id: string | null) => void;
+    selectNode: (id: string | null, multi?: boolean) => void;
+    selectMember: (id: string | null, multi?: boolean) => void;
     updateNode: (id: string, updates: Partial<Node>) => void;
     clearSelection: () => void;
+    selectAll: () => void;                          // Select all nodes and members
+    selectMultiple: (ids: string[]) => void;        // Select multiple elements
+    boxSelect: (minX: number, minZ: number, maxX: number, maxZ: number) => void; // Box selection
+
+    // Clipboard Operations (like STAAD)
+    clipboard: { nodes: Node[]; members: Member[] } | null;
+    copySelection: () => void;                      // Copy selected to clipboard
+    pasteClipboard: (offset?: { x: number; y: number; z: number }) => void; // Paste with offset
+    duplicateSelection: (offset?: { x: number; y: number; z: number }) => void; // Duplicate in place
+    moveSelection: (dx: number, dy: number, dz: number) => void; // Move selected elements
+    deleteSelection: () => void;                    // Delete all selected
 
     // Tools
     activeTool: 'select' | 'node' | 'member' | 'support' | 'load' | 'memberLoad';
@@ -158,7 +169,7 @@ const serializeMap = (map: Map<any, any>) => {
 export const useModelStore = create<ModelState>()(
     devtools(
         temporal(
-            (set) => ({
+            (set, get) => ({
                 nodes: new Map(),
                 members: new Map(),
                 loads: [],
@@ -170,6 +181,7 @@ export const useModelStore = create<ModelState>()(
                 showSFD: false,
                 showBMD: false,
                 showResults: false,
+                clipboard: null, // Clipboard for copy/paste
 
                 // Modal Analysis state
                 modalResults: null,
@@ -279,15 +291,35 @@ export const useModelStore = create<ModelState>()(
 
                 clearSelection: () => set({ selectedIds: new Set() }),
 
-                selectNode: (id) =>
+                selectNode: (id, multi = false) =>
                     set((state) => {
                         if (id === null) return { selectedIds: new Set() };
+                        if (multi) {
+                            // Toggle selection with existing items
+                            const newSelected = new Set(state.selectedIds);
+                            if (newSelected.has(id)) {
+                                newSelected.delete(id);
+                            } else {
+                                newSelected.add(id);
+                            }
+                            return { selectedIds: newSelected };
+                        }
                         return { selectedIds: new Set([id]) };
                     }),
 
-                selectMember: (id) =>
+                selectMember: (id, multi = false) =>
                     set((state) => {
                         if (id === null) return { selectedIds: new Set() };
+                        if (multi) {
+                            // Toggle selection with existing items
+                            const newSelected = new Set(state.selectedIds);
+                            if (newSelected.has(id)) {
+                                newSelected.delete(id);
+                            } else {
+                                newSelected.add(id);
+                            }
+                            return { selectedIds: newSelected };
+                        }
                         return { selectedIds: new Set([id]) };
                     }),
 
@@ -298,6 +330,217 @@ export const useModelStore = create<ModelState>()(
                         const newNodes = new Map(state.nodes);
                         newNodes.set(id, { ...node, ...updates });
                         return { nodes: newNodes };
+                    }),
+
+                // ============================================
+                // ADVANCED SELECTION (Like STAAD)
+                // ============================================
+                
+                selectAll: () =>
+                    set((state) => {
+                        const allIds = new Set<string>();
+                        state.nodes.forEach((_, id) => allIds.add(id));
+                        state.members.forEach((_, id) => allIds.add(id));
+                        return { selectedIds: allIds };
+                    }),
+
+                selectMultiple: (ids) =>
+                    set((state) => {
+                        const newSelected = new Set(state.selectedIds);
+                        ids.forEach(id => newSelected.add(id));
+                        return { selectedIds: newSelected };
+                    }),
+
+                boxSelect: (minX, minZ, maxX, maxZ) =>
+                    set((state) => {
+                        const newSelected = new Set(state.selectedIds);
+                        
+                        // Select nodes within box
+                        state.nodes.forEach((node, id) => {
+                            if (node.x >= minX && node.x <= maxX && 
+                                node.z >= minZ && node.z <= maxZ) {
+                                newSelected.add(id);
+                            }
+                        });
+                        
+                        // Select members if both nodes are in selection
+                        state.members.forEach((member, id) => {
+                            if (newSelected.has(member.startNodeId) && newSelected.has(member.endNodeId)) {
+                                newSelected.add(id);
+                            }
+                        });
+                        
+                        return { selectedIds: newSelected };
+                    }),
+
+                // ============================================
+                // CLIPBOARD OPERATIONS
+                // ============================================
+
+                copySelection: () =>
+                    set((state) => {
+                        const selectedNodes: Node[] = [];
+                        const selectedMembers: Member[] = [];
+                        
+                        state.selectedIds.forEach(id => {
+                            const node = state.nodes.get(id);
+                            if (node) selectedNodes.push({ ...node });
+                            
+                            const member = state.members.get(id);
+                            if (member) selectedMembers.push({ ...member });
+                        });
+                        
+                        return { clipboard: { nodes: selectedNodes, members: selectedMembers } };
+                    }),
+
+                pasteClipboard: (offset = { x: 2, y: 0, z: 0 }) =>
+                    set((state) => {
+                        if (!state.clipboard) return state;
+                        
+                        const newNodes = new Map(state.nodes);
+                        const newMembers = new Map(state.members);
+                        const idMap = new Map<string, string>(); // old ID -> new ID
+                        const newSelected = new Set<string>();
+                        
+                        // Clone nodes with offset
+                        state.clipboard.nodes.forEach(node => {
+                            const newId = crypto.randomUUID();
+                            idMap.set(node.id, newId);
+                            newNodes.set(newId, {
+                                ...node,
+                                id: newId,
+                                x: node.x + offset.x,
+                                y: node.y + offset.y,
+                                z: node.z + offset.z
+                            });
+                            newSelected.add(newId);
+                        });
+                        
+                        // Clone members with updated node references
+                        state.clipboard.members.forEach(member => {
+                            const newStartId = idMap.get(member.startNodeId);
+                            const newEndId = idMap.get(member.endNodeId);
+                            if (newStartId && newEndId) {
+                                const newId = crypto.randomUUID();
+                                newMembers.set(newId, {
+                                    ...member,
+                                    id: newId,
+                                    startNodeId: newStartId,
+                                    endNodeId: newEndId
+                                });
+                                newSelected.add(newId);
+                            }
+                        });
+                        
+                        return { nodes: newNodes, members: newMembers, selectedIds: newSelected };
+                    }),
+
+                duplicateSelection: (offset = { x: 2, y: 0, z: 0 }) => {
+                    const state = get();
+                    // First copy, then paste
+                    const selectedNodes: Node[] = [];
+                    const selectedMembers: Member[] = [];
+                    
+                    state.selectedIds.forEach(id => {
+                        const node = state.nodes.get(id);
+                        if (node) selectedNodes.push({ ...node });
+                        
+                        const member = state.members.get(id);
+                        if (member) selectedMembers.push({ ...member });
+                    });
+                    
+                    const newNodes = new Map(state.nodes);
+                    const newMembers = new Map(state.members);
+                    const idMap = new Map<string, string>();
+                    const newSelected = new Set<string>();
+                    
+                    selectedNodes.forEach(node => {
+                        const newId = crypto.randomUUID();
+                        idMap.set(node.id, newId);
+                        newNodes.set(newId, {
+                            ...node,
+                            id: newId,
+                            x: node.x + offset.x,
+                            y: node.y + offset.y,
+                            z: node.z + offset.z
+                        });
+                        newSelected.add(newId);
+                    });
+                    
+                    selectedMembers.forEach(member => {
+                        const newStartId = idMap.get(member.startNodeId);
+                        const newEndId = idMap.get(member.endNodeId);
+                        if (newStartId && newEndId) {
+                            const newId = crypto.randomUUID();
+                            newMembers.set(newId, {
+                                ...member,
+                                id: newId,
+                                startNodeId: newStartId,
+                                endNodeId: newEndId
+                            });
+                            newSelected.add(newId);
+                        }
+                    });
+                    
+                    set({ nodes: newNodes, members: newMembers, selectedIds: newSelected });
+                },
+
+                moveSelection: (dx, dy, dz) =>
+                    set((state) => {
+                        const newNodes = new Map(state.nodes);
+                        
+                        // Move all selected nodes
+                        state.selectedIds.forEach(id => {
+                            const node = state.nodes.get(id);
+                            if (node) {
+                                newNodes.set(id, {
+                                    ...node,
+                                    x: node.x + dx,
+                                    y: node.y + dy,
+                                    z: node.z + dz
+                                });
+                            }
+                        });
+                        
+                        return { nodes: newNodes };
+                    }),
+
+                deleteSelection: () =>
+                    set((state) => {
+                        const newNodes = new Map(state.nodes);
+                        const newMembers = new Map(state.members);
+                        let newLoads = [...state.loads];
+                        let newMemberLoads = [...state.memberLoads];
+                        
+                        state.selectedIds.forEach(id => {
+                            // Delete node
+                            if (state.nodes.has(id)) {
+                                newNodes.delete(id);
+                                // Also delete members connected to this node
+                                newMembers.forEach((member, memberId) => {
+                                    if (member.startNodeId === id || member.endNodeId === id) {
+                                        newMembers.delete(memberId);
+                                        newMemberLoads = newMemberLoads.filter(ml => ml.memberId !== memberId);
+                                    }
+                                });
+                                // Delete loads on this node
+                                newLoads = newLoads.filter(l => l.nodeId !== id);
+                            }
+                            
+                            // Delete member
+                            if (state.members.has(id)) {
+                                newMembers.delete(id);
+                                newMemberLoads = newMemberLoads.filter(ml => ml.memberId !== id);
+                            }
+                        });
+                        
+                        return { 
+                            nodes: newNodes, 
+                            members: newMembers, 
+                            loads: newLoads, 
+                            memberLoads: newMemberLoads,
+                            selectedIds: new Set() 
+                        };
                     }),
 
                 activeTool: 'select',

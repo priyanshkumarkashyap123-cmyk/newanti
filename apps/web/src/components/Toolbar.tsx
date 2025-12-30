@@ -47,7 +47,8 @@ export const Toolbar: FC = () => {
 
     const handleExportPDF = () => {
         // Feature gate: PDF export requires Pro subscription
-        if (!canAccess('pdfExport')) {
+        // Skip check if still loading subscription status
+        if (!subscription.isLoading && !canAccess('pdfExport')) {
             // Show limited export for free users
             const shouldUpgrade = window.confirm(
                 '📄 PDF Export - Pro Feature\n\n' +

@@ -19,6 +19,7 @@ export function runLocalAnalysis(): { success: boolean; message: string } {
     const nodes = Array.from(state.nodes.values());
     const members = Array.from(state.members.values());
     const loads = state.loads;
+    const memberLoads = state.memberLoads; // UDL, UVL, point loads on members
 
     // Validation
     if (nodes.length < 2) {
@@ -33,8 +34,10 @@ export function runLocalAnalysis(): { success: boolean; message: string } {
         return { success: false, message: 'Structure needs at least one support' };
     }
 
-    if (loads.length === 0) {
-        return { success: false, message: 'Structure needs at least one load' };
+    // Check for any loads (nodal OR member loads like UDL/UVL)
+    const hasLoads = loads.length > 0 || memberLoads.length > 0;
+    if (!hasLoads) {
+        return { success: false, message: 'Structure needs at least one load (nodal or distributed)' };
     }
 
     state.setIsAnalyzing(true);

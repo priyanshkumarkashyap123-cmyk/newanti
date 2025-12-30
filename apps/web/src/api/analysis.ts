@@ -13,6 +13,7 @@ export async function runAnalysis(): Promise<{ success: boolean; message: string
     const nodes: Node[] = Array.from(state.nodes.values());
     const members: Member[] = Array.from(state.members.values());
     const loads: NodeLoad[] = state.loads;
+    const memberLoads = state.memberLoads; // UDL, UVL, point loads on members
 
     // Validate
     if (nodes.length < 2) {
@@ -28,9 +29,10 @@ export async function runAnalysis(): Promise<{ success: boolean; message: string
         return { success: false, message: 'Structure needs at least one support (restrained node)' };
     }
 
-    // Check for loads
-    if (loads.length === 0) {
-        return { success: false, message: 'Structure needs at least one load' };
+    // Check for any loads (nodal OR member loads like UDL/UVL)
+    const hasLoads = loads.length > 0 || memberLoads.length > 0;
+    if (!hasLoads) {
+        return { success: false, message: 'Structure needs at least one load (nodal or distributed)' };
     }
 
     state.setIsAnalyzing(true);

@@ -409,8 +409,8 @@ export const ModernModeler: FC = () => {
                 id: m.id,
                 startNodeId: m.startNodeId,
                 endNodeId: m.endNodeId,
-                E: m.E ?? 200e9,
-                G: (m.E ?? 200e9) / 2.6,  // Approximate shear modulus
+                E: m.E ?? 200e6,  // 200 GPa in kN/m²
+                G: (m.E ?? 200e6) / 2.6,  // Approximate shear modulus
                 A: m.A ?? 0.01,
                 Iy: m.I ?? 1e-4,
                 Iz: m.I ?? 1e-4,

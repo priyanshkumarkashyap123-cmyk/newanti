@@ -1,0 +1,427 @@
+/**
+ * ReportViewerEnhanced - Professional Calculation Report Viewer
+ * A4-like document layout with breadcrumbs, floating action bar, and print-ready styling
+ */
+
+import { FC, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { StatusBadge, DataTable } from '../components/ui';
+
+// Sample report data
+const SAMPLE_REPORT = {
+    id: 'RPT-2024-001',
+    projectName: 'Office Building Phase 1',
+    analysisType: 'Linear Static Analysis',
+    date: 'December 30, 2024',
+    engineer: 'John Engineer, P.E.',
+    version: '1.0',
+    status: 'Final' as const,
+};
+
+const REACTIONS_DATA = [
+    { node: 'N1', fx: 0.0, fy: -125.4, fz: 0.0, mx: 0.0, my: 0.0, mz: 0.0 },
+    { node: 'N2', fx: 0.0, fy: -98.7, fz: 0.0, mx: 0.0, my: 0.0, mz: 0.0 },
+    { node: 'N3', fx: -15.2, fy: -203.1, fz: 0.0, mx: 0.0, my: 0.0, mz: 0.0 },
+    { node: 'N4', fx: 15.2, fy: -189.5, fz: 0.0, mx: 0.0, my: 0.0, mz: 0.0 },
+];
+
+const MEMBER_FORCES = [
+    { member: 'M1', axial: -145.2, shear: 23.1, moment: 45.8, utilization: 0.65, status: 'pass' as const },
+    { member: 'M2', axial: -132.6, shear: -18.4, moment: -38.2, utilization: 0.58, status: 'pass' as const },
+    { member: 'M3', axial: -98.4, shear: 42.7, moment: 89.3, utilization: 0.92, status: 'warning' as const },
+    { member: 'M4', axial: -156.8, shear: -31.5, moment: -52.3, utilization: 0.72, status: 'pass' as const },
+];
+
+export const ReportViewerEnhanced: FC = () => {
+    const navigate = useNavigate();
+    const { reportId } = useParams();
+    const [showFloatingBar, setShowFloatingBar] = useState(true);
+
+    const handlePrint = () => {
+        window.print();
+    };
+
+    const handleDownloadPDF = () => {
+        alert('PDF download functionality would be implemented here');
+    };
+
+    const handleShare = () => {
+        alert('Share functionality would be implemented here');
+    };
+
+    return (
+        <div className="min-h-screen bg-zinc-100 font-display">
+            {/* Header with Breadcrumbs - Hide on print */}
+            <header className="bg-white border-b border-gray-200 print:hidden sticky top-0 z-40 shadow-sm">
+                <div className="max-w-7xl mx-auto px-6 py-4">
+                    {/* Breadcrumbs */}
+                    <nav className="flex items-center gap-2 text-sm mb-3">
+                        <button
+                            onClick={() => navigate('/dashboard')}
+                            className="text-steel-blue/60 hover:text-steel-blue transition-colors"
+                        >
+                            Dashboard
+                        </button>
+                        <span className="material-symbols-outlined text-steel-blue/40 text-[16px]">chevron_right</span>
+                        <button
+                            onClick={() => navigate('/reports')}
+                            className="text-steel-blue/60 hover:text-steel-blue transition-colors"
+                        >
+                            Reports
+                        </button>
+                        <span className="material-symbols-outlined text-steel-blue/40 text-[16px]">chevron_right</span>
+                        <span className="text-steel-blue font-medium">{SAMPLE_REPORT.id}</span>
+                    </nav>
+
+                    {/* Title and Actions */}
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-2xl font-bold text-steel-blue">{SAMPLE_REPORT.projectName}</h1>
+                            <p className="text-sm text-steel-blue/60 mt-1">
+                                {SAMPLE_REPORT.analysisType} • {SAMPLE_REPORT.date}
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <StatusBadge variant={SAMPLE_REPORT.status === 'Final' ? 'ok' : 'draft'}>
+                                {SAMPLE_REPORT.status}
+                            </StatusBadge>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            {/* Main Content - A4 Document Style */}
+            <main className="max-w-[210mm] mx-auto p-6 print:p-0">
+                {/* A4 Paper Container */}
+                <div className="bg-white shadow-lg print:shadow-none mb-8" style={{ minHeight: '297mm' }}>
+                    {/* Document Content */}
+                    <div className="p-12 print:p-16">
+                        {/* Report Header */}
+                        <div className="border-b-4 border-primary pb-6 mb-8">
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className="w-12 h-12 bg-accent rounded flex items-center justify-center">
+                                            <span className="material-symbols-outlined text-steel-blue text-[28px]">description</span>
+                                        </div>
+                                        <div>
+                                            <h1 className="text-3xl font-bold text-steel-blue">Structural Analysis Report</h1>
+                                            <p className="text-sm text-steel-blue/60 font-mono">{SAMPLE_REPORT.id}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="text-right text-sm">
+                                    <p className="text-steel-blue/60">Report Date</p>
+                                    <p className="font-bold text-steel-blue">{SAMPLE_REPORT.date}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Project Information */}
+                        <section className="mb-8">
+                            <h2 className="text-xl font-bold text-steel-blue mb-4 flex items-center gap-2">
+                                <span className="material-symbols-outlined text-primary">info</span>
+                                Project Information
+                            </h2>
+                            <div className="grid grid-cols-2 gap-4 bg-gray-50 p-6 rounded-lg">
+                                <div>
+                                    <p className="text-xs text-steel-blue/60 font-semibold uppercase mb-1">Project Name</p>
+                                    <p className="text-steel-blue font-medium">{SAMPLE_REPORT.projectName}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-steel-blue/60 font-semibold uppercase mb-1">Analysis Type</p>
+                                    <p className="text-steel-blue font-medium">{SAMPLE_REPORT.analysisType}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-steel-blue/60 font-semibold uppercase mb-1">Prepared By</p>
+                                    <p className="text-steel-blue font-medium">{SAMPLE_REPORT.engineer}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-steel-blue/60 font-semibold uppercase mb-1">Report Version</p>
+                                    <p className="text-steel-blue font-medium">{SAMPLE_REPORT.version}</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Model Summary */}
+                        <section className="mb-8">
+                            <h2 className="text-xl font-bold text-steel-blue mb-4 flex items-center gap-2">
+                                <span className="material-symbols-outlined text-primary">deployed_code</span>
+                                Model Summary
+                            </h2>
+                            <div className="grid grid-cols-3 gap-4">
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                                    <p className="text-3xl font-bold text-primary mb-1">48</p>
+                                    <p className="text-xs text-steel-blue/70 font-semibold uppercase">Nodes</p>
+                                </div>
+                                <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                                    <p className="text-3xl font-bold text-green-600 mb-1">82</p>
+                                    <p className="text-xs text-steel-blue/70 font-semibold uppercase">Members</p>
+                                </div>
+                                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-center">
+                                    <p className="text-3xl font-bold text-orange-600 mb-1">3</p>
+                                    <p className="text-xs text-steel-blue/70 font-semibold uppercase">Load Cases</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Support Reactions */}
+                        <section className="mb-8 page-break">
+                            <h2 className="text-xl font-bold text-steel-blue mb-4 flex items-center gap-2">
+                                <span className="material-symbols-outlined text-primary">support</span>
+                                Support Reactions
+                            </h2>
+                            <div className="border border-gray-200 rounded-lg overflow-hidden">
+                                <DataTable
+                                    columns={[
+                                        { key: 'node', header: 'Node', align: 'left', width: '15%' },
+                                        {
+                                            key: 'fx',
+                                            header: 'FX (kN)',
+                                            align: 'right',
+                                            width: '14%',
+                                            render: (row) => <span className="font-mono">{row.fx.toFixed(2)}</span>
+                                        },
+                                        {
+                                            key: 'fy',
+                                            header: 'FY (kN)',
+                                            align: 'right',
+                                            width: '14%',
+                                            render: (row) => <span className="font-mono font-semibold">{row.fy.toFixed(2)}</span>
+                                        },
+                                        {
+                                            key: 'fz',
+                                            header: 'FZ (kN)',
+                                            align: 'right',
+                                            width: '14%',
+                                            render: (row) => <span className="font-mono">{row.fz.toFixed(2)}</span>
+                                        },
+                                        {
+                                            key: 'mx',
+                                            header: 'MX (kN·m)',
+                                            align: 'right',
+                                            width: '14%',
+                                            render: (row) => <span className="font-mono">{row.mx.toFixed(2)}</span>
+                                        },
+                                        {
+                                            key: 'my',
+                                            header: 'MY (kN·m)',
+                                            align: 'right',
+                                            width: '14%',
+                                            render: (row) => <span className="font-mono">{row.my.toFixed(2)}</span>
+                                        },
+                                        {
+                                            key: 'mz',
+                                            header: 'MZ (kN·m)',
+                                            align: 'right',
+                                            width: '14%',
+                                            render: (row) => <span className="font-mono">{row.mz.toFixed(2)}</span>
+                                        },
+                                    ]}
+                                    data={REACTIONS_DATA}
+                                    compact
+                                />
+                            </div>
+                        </section>
+
+                        {/* Member Forces */}
+                        <section className="mb-8">
+                            <h2 className="text-xl font-bold text-steel-blue mb-4 flex items-center gap-2">
+                                <span className="material-symbols-outlined text-primary">analytics</span>
+                                Member Forces (Maximum)
+                            </h2>
+                            <div className="border border-gray-200 rounded-lg overflow-hidden">
+                                <DataTable
+                                    columns={[
+                                        { key: 'member', header: 'Member', align: 'left', width: '15%' },
+                                        {
+                                            key: 'axial',
+                                            header: 'Axial (kN)',
+                                            align: 'right',
+                                            width: '20%',
+                                            render: (row) => (
+                                                <span className={`font-mono font-semibold ${row.axial < 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                                                    {row.axial.toFixed(1)}
+                                                </span>
+                                            )
+                                        },
+                                        {
+                                            key: 'shear',
+                                            header: 'Shear (kN)',
+                                            align: 'right',
+                                            width: '20%',
+                                            render: (row) => <span className="font-mono">{row.shear.toFixed(1)}</span>
+                                        },
+                                        {
+                                            key: 'moment',
+                                            header: 'Moment (kN·m)',
+                                            align: 'right',
+                                            width: '20%',
+                                            render: (row) => <span className="font-mono">{row.moment.toFixed(1)}</span>
+                                        },
+                                        {
+                                            key: 'utilization',
+                                            header: 'Utilization',
+                                            align: 'right',
+                                            width: '15%',
+                                            render: (row) => (
+                                                <span className={`font-mono font-bold ${row.utilization > 0.9 ? 'text-orange-600' :
+                                                    row.utilization > 0.7 ? 'text-yellow-600' :
+                                                        'text-green-600'
+                                                    }`}>
+                                                    {(row.utilization * 100).toFixed(0)}%
+                                                </span>
+                                            )
+                                        },
+                                        {
+                                            key: 'status',
+                                            header: 'Status',
+                                            align: 'center',
+                                            width: '10%',
+                                            render: (row) => (
+                                                <StatusBadge variant={row.status} size="sm">
+                                                    {row.status === 'pass' ? '✓' : '!'}
+                                                </StatusBadge>
+                                            )
+                                        },
+                                    ]}
+                                    data={MEMBER_FORCES}
+                                    highlightRow={(row) => row.status === 'warning' ? 'bg-yellow-50' : false}
+                                    compact
+                                />
+                            </div>
+                        </section>
+
+                        {/* Design Summary */}
+                        <section className="mb-8">
+                            <h2 className="text-xl font-bold text-steel-blue mb-4 flex items-center gap-2">
+                                <span className="material-symbols-outlined text-primary">check_circle</span>
+                                Design Summary
+                            </h2>
+                            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                                <div className="flex items-start gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center shrink-0">
+                                        <span className="material-symbols-outlined text-white text-[28px]">done</span>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-green-800 mb-2">All Design Checks PASSED</h3>
+                                        <p className="text-green-700 text-sm mb-3">
+                                            All structural members meet the design requirements per AISC 360-16.
+                                            Maximum utilization ratio: 92%.
+                                        </p>
+                                        <div className="flex gap-4 text-sm">
+                                            <div>
+                                                <p className="text-green-600 font-semibold">Tension: PASS</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-green-600 font-semibold">Compression: PASS</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-green-600 font-semibold">Flexure: PASS</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-green-600 font-semibold">Combined: PASS</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Certification */}
+                        <section className="mt-16 pt-8 border-t border-gray-300">
+                            <div className="flex justify-between items-end">
+                                <div>
+                                    <p className="text-sm text-steel-blue/60 mb-2">Prepared by</p>
+                                    <div className="border-b-2 border-steel-blue/30 pb-1 mb-2 w-64">
+                                        <p className="font-bold text-steel-blue">{SAMPLE_REPORT.engineer}</p>
+                                    </div>
+                                    <p className="text-xs text-steel-blue/50">Professional Engineer</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-xs text-steel-blue/60 mb-1">Generated by</p>
+                                    <p className="font-bold text-primary">BeamLab Ultimate v4.2.0</p>
+                                    <p className="text-xs text-steel-blue/50">© 2025 BeamLab</p>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </main>
+
+            {/* Floating Action Bar - Hide on print */}
+            {showFloatingBar && (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-steel-blue shadow-2xl rounded-full px-6 py-3 flex items-center gap-4 z-50 print:hidden">
+                    <button
+                        onClick={handlePrint}
+                        className="flex items-center gap-2 text-white hover:text-accent transition-colors"
+                    >
+                        <span className="material-symbols-outlined text-[20px]">print</span>
+                        <span className="text-sm font-medium">Print</span>
+                    </button>
+                    <div className="w-px h-6 bg-white/20"></div>
+                    <button
+                        onClick={handleDownloadPDF}
+                        className="flex items-center gap-2 text-white hover:text-accent transition-colors"
+                    >
+                        <span className="material-symbols-outlined text-[20px]">download</span>
+                        <span className="text-sm font-medium">Download PDF</span>
+                    </button>
+                    <div className="w-px h-6 bg-white/20"></div>
+                    <button
+                        onClick={handleShare}
+                        className="flex items-center gap-2 text-white hover:text-accent transition-colors"
+                    >
+                        <span className="material-symbols-outlined text-[20px]">share</span>
+                        <span className="text-sm font-medium">Share</span>
+                    </button>
+                    <div className="w-px h-6 bg-white/20"></div>
+                    <button
+                        onClick={() => setShowFloatingBar(false)}
+                        className="flex items-center justify-center w-8 h-8 text-white/60 hover:text-white transition-colors"
+                    >
+                        <span className="material-symbols-outlined text-[20px]">close</span>
+                    </button>
+                </div>
+            )}
+
+            {/* Print Styles */}
+            <style>{`
+                @media print {
+                    @page {
+                        size: A4;
+                        margin: 0;
+                    }
+                    
+                    body {
+                        background: white;
+                        print-color-adjust: exact;
+                        -webkit-print-color-adjust: exact;
+                    }
+                    
+                    .page-break {
+                        page-break-before: always;
+                    }
+                    
+                    .print\\:hidden {
+                        display: none !important;
+                    }
+                    
+                    .print\\:shadow-none {
+                        box-shadow: none !important;
+                    }
+                    
+                    .print\\:p-0 {
+                        padding: 0 !important;
+                    }
+                    
+                    .print\\:p-16 {
+                        padding: 4rem !important;
+                    }
+                }
+            `}</style>
+        </div>
+    );
+};
+
+export default ReportViewerEnhanced;

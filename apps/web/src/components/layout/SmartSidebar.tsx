@@ -30,7 +30,12 @@ import {
     ArrowRight,
     Lock,
     Crown,
-    Wand2
+    Wand2,
+    Copy,
+    Clipboard,
+    Move,
+    Scissors,
+    CheckCircle
 } from 'lucide-react';
 import { useUIStore, Category } from '../../store/uiStore';
 import { useModelStore } from '../../store/model';
@@ -254,6 +259,226 @@ const DrawToolsPanel: FC = () => {
                     {tool.label}
                 </button>
             ))}
+        </div>
+    );
+};
+
+// ============================================
+// EDIT TOOLS PANEL (Like STAAD)
+// ============================================
+
+const EditToolsPanel: FC = () => {
+    const selectedIds = useModelStore((s) => s.selectedIds);
+    const selectAll = useModelStore((s) => s.selectAll);
+    const copySelection = useModelStore((s) => s.copySelection);
+    const pasteClipboard = useModelStore((s) => s.pasteClipboard);
+    const duplicateSelection = useModelStore((s) => s.duplicateSelection);
+    const moveSelection = useModelStore((s) => s.moveSelection);
+    const deleteSelection = useModelStore((s) => s.deleteSelection);
+    const clipboard = useModelStore((s) => s.clipboard);
+    const members = useModelStore((s) => s.members);
+    const splitMemberById = useModelStore((s) => s.splitMemberById);
+
+    const [moveOffset, setMoveOffset] = useState({ x: 0, y: 0, z: 0 });
+    const [splitRatio, setSplitRatio] = useState(0.5);
+    const [showMoveDialog, setShowMoveDialog] = useState(false);
+    const [showSplitDialog, setShowSplitDialog] = useState(false);
+
+    const hasSelection = selectedIds.size > 0;
+    const selectedMemberId = hasSelection ? 
+        [...selectedIds].find(id => members.has(id)) : null;
+
+    return (
+        <div className="space-y-3">
+            {/* Selection Tools */}
+            <div>
+                <div className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+                    Selection
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                    <button
+                        onClick={() => selectAll()}
+                        className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg text-zinc-300 bg-zinc-800/50 hover:bg-zinc-700/50"
+                    >
+                        <CheckCircle className="w-4 h-4" />
+                        Select All
+                    </button>
+                    <button
+                        onClick={() => deleteSelection()}
+                        disabled={!hasSelection}
+                        className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${
+                            hasSelection 
+                                ? 'text-red-400 bg-red-500/10 hover:bg-red-500/20' 
+                                : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
+                        }`}
+                    >
+                        <Trash2 className="w-4 h-4" />
+                        Delete
+                    </button>
+                </div>
+            </div>
+
+            {/* Clipboard Tools */}
+            <div>
+                <div className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+                    Clipboard
+                </div>
+                <div className="grid grid-cols-3 gap-1.5">
+                    <button
+                        onClick={() => copySelection()}
+                        disabled={!hasSelection}
+                        className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${
+                            hasSelection 
+                                ? 'text-blue-400 bg-blue-500/10 hover:bg-blue-500/20' 
+                                : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
+                        }`}
+                    >
+                        <Copy className="w-4 h-4" />
+                        Copy
+                    </button>
+                    <button
+                        onClick={() => pasteClipboard()}
+                        disabled={!clipboard}
+                        className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${
+                            clipboard 
+                                ? 'text-green-400 bg-green-500/10 hover:bg-green-500/20' 
+                                : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
+                        }`}
+                    >
+                        <Clipboard className="w-4 h-4" />
+                        Paste
+                    </button>
+                    <button
+                        onClick={() => duplicateSelection()}
+                        disabled={!hasSelection}
+                        className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${
+                            hasSelection 
+                                ? 'text-purple-400 bg-purple-500/10 hover:bg-purple-500/20' 
+                                : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
+                        }`}
+                    >
+                        <Plus className="w-4 h-4" />
+                        Duplicate
+                    </button>
+                </div>
+            </div>
+
+            {/* Transform Tools */}
+            <div>
+                <div className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+                    Transform
+                </div>
+                <button
+                    onClick={() => setShowMoveDialog(!showMoveDialog)}
+                    disabled={!hasSelection}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${
+                        hasSelection 
+                            ? 'text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20' 
+                            : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
+                    }`}
+                >
+                    <Move className="w-4 h-4" />
+                    Move Selection
+                </button>
+                
+                {showMoveDialog && hasSelection && (
+                    <div className="mt-2 p-3 bg-zinc-800/80 rounded-lg space-y-2">
+                        <div className="grid grid-cols-3 gap-2">
+                            <div>
+                                <label className="text-[10px] text-zinc-500">X (m)</label>
+                                <input
+                                    type="number"
+                                    step="0.5"
+                                    value={moveOffset.x}
+                                    onChange={(e) => setMoveOffset({ ...moveOffset, x: parseFloat(e.target.value) || 0 })}
+                                    className="w-full px-2 py-1 text-sm bg-zinc-900 border border-zinc-700 rounded text-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[10px] text-zinc-500">Y (m)</label>
+                                <input
+                                    type="number"
+                                    step="0.5"
+                                    value={moveOffset.y}
+                                    onChange={(e) => setMoveOffset({ ...moveOffset, y: parseFloat(e.target.value) || 0 })}
+                                    className="w-full px-2 py-1 text-sm bg-zinc-900 border border-zinc-700 rounded text-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[10px] text-zinc-500">Z (m)</label>
+                                <input
+                                    type="number"
+                                    step="0.5"
+                                    value={moveOffset.z}
+                                    onChange={(e) => setMoveOffset({ ...moveOffset, z: parseFloat(e.target.value) || 0 })}
+                                    className="w-full px-2 py-1 text-sm bg-zinc-900 border border-zinc-700 rounded text-white"
+                                />
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => {
+                                moveSelection(moveOffset.x, moveOffset.y, moveOffset.z);
+                                setShowMoveDialog(false);
+                            }}
+                            className="w-full px-3 py-1.5 text-sm bg-cyan-600 hover:bg-cyan-500 text-white rounded"
+                        >
+                            Apply Move
+                        </button>
+                    </div>
+                )}
+            </div>
+
+            {/* Split Member Tool */}
+            <div>
+                <div className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+                    Member Operations
+                </div>
+                <button
+                    onClick={() => setShowSplitDialog(!showSplitDialog)}
+                    disabled={!selectedMemberId}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${
+                        selectedMemberId 
+                            ? 'text-orange-400 bg-orange-500/10 hover:bg-orange-500/20' 
+                            : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
+                    }`}
+                >
+                    <Scissors className="w-4 h-4" />
+                    Split Member
+                </button>
+                
+                {showSplitDialog && selectedMemberId && (
+                    <div className="mt-2 p-3 bg-zinc-800/80 rounded-lg space-y-2">
+                        <div>
+                            <label className="text-[10px] text-zinc-500">Split Position (0-1)</label>
+                            <input
+                                type="range"
+                                min="0.1"
+                                max="0.9"
+                                step="0.05"
+                                value={splitRatio}
+                                onChange={(e) => setSplitRatio(parseFloat(e.target.value))}
+                                className="w-full"
+                            />
+                            <div className="text-xs text-center text-zinc-400">{(splitRatio * 100).toFixed(0)}% from start</div>
+                        </div>
+                        <button
+                            onClick={() => {
+                                splitMemberById(selectedMemberId, splitRatio);
+                                setShowSplitDialog(false);
+                            }}
+                            className="w-full px-3 py-1.5 text-sm bg-orange-600 hover:bg-orange-500 text-white rounded"
+                        >
+                            Insert Node & Split
+                        </button>
+                    </div>
+                )}
+            </div>
+
+            {/* Status */}
+            <div className="text-[10px] text-zinc-500 text-center pt-2 border-t border-zinc-800">
+                {selectedIds.size} items selected
+                {clipboard && ` • ${clipboard.nodes.length + clipboard.members.length} in clipboard`}
+            </div>
         </div>
     );
 };
@@ -878,6 +1103,9 @@ export const SmartSidebar: FC = () => {
                         </AccordionItem>
                         <AccordionItem title="Draw Tools" icon={<Plus className="w-4 h-4" />}>
                             <DrawToolsPanel />
+                        </AccordionItem>
+                        <AccordionItem title="Edit Tools" icon={<Copy className="w-4 h-4" />} defaultOpen={false}>
+                            <EditToolsPanel />
                         </AccordionItem>
                         <AccordionItem title="Advanced Tools" icon={<Wand2 className="w-4 h-4" />} defaultOpen={false}>
                             <AdvancedToolsPanel />

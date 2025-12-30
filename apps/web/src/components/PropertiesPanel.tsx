@@ -62,12 +62,28 @@ const NumberInput: FC<NumberInputProps> = ({ value, onChange, step = 0.1, disabl
 // SECTION OPTIONS
 // ============================================
 const SECTION_OPTIONS = [
-    { id: 'default', label: 'Default' },
-    { id: 'W12x26', label: 'W12x26' },
-    { id: 'W14x30', label: 'W14x30' },
-    { id: 'W16x40', label: 'W16x40' },
-    { id: 'HSS6x6x1/4', label: 'HSS6x6x1/4' },
-    { id: 'HSS8x8x3/8', label: 'HSS8x8x3/8' },
+    { id: 'default', label: 'Default', A: 0.01, I: 1e-4 },
+    { id: 'W12x26', label: 'W12x26', A: 0.00495, I: 2.04e-4 },
+    { id: 'W14x30', label: 'W14x30', A: 0.00568, I: 2.91e-4 },
+    { id: 'W16x40', label: 'W16x40', A: 0.00756, I: 4.93e-4 },
+    { id: 'ISMB200', label: 'ISMB 200', A: 0.00325, I: 2.24e-4 },
+    { id: 'ISMB250', label: 'ISMB 250', A: 0.00475, I: 5.13e-4 },
+    { id: 'ISMB300', label: 'ISMB 300', A: 0.00563, I: 8.6e-4 },
+    { id: 'ISMB400', label: 'ISMB 400', A: 0.00783, I: 2.04e-3 },
+    { id: 'HSS6x6x1/4', label: 'HSS6x6x1/4', A: 0.00355, I: 1.12e-4 },
+    { id: 'HSS8x8x3/8', label: 'HSS8x8x3/8', A: 0.00684, I: 3.32e-4 },
+    { id: 'custom', label: '+ Custom Section...', A: 0, I: 0 },
+];
+
+// Material presets
+const MATERIAL_OPTIONS = [
+    { id: 'steel_e250', label: 'Steel Fe250 (E=200 GPa)', E: 200e6, fy: 250 },
+    { id: 'steel_e350', label: 'Steel Fe350 (E=200 GPa)', E: 200e6, fy: 350 },
+    { id: 'steel_e410', label: 'Steel Fe410 (E=200 GPa)', E: 200e6, fy: 410 },
+    { id: 'concrete_m25', label: 'Concrete M25 (E=25 GPa)', E: 25e6, fy: 25 },
+    { id: 'concrete_m30', label: 'Concrete M30 (E=27 GPa)', E: 27e6, fy: 30 },
+    { id: 'aluminum', label: 'Aluminum (E=70 GPa)', E: 70e6, fy: 250 },
+    { id: 'custom', label: '+ Custom Material...', E: 0, fy: 0 },
 ];
 
 // ============================================
@@ -263,8 +279,49 @@ export const PropertiesPanel: FC = () => {
         const forces = analysisResults?.memberForces.get(id);
         const releases = member.releases ?? { startMoment: false, endMoment: false };
 
+        // State for custom section/material dialogs
+        const [showCustomSection, setShowCustomSection] = useState(false);
+        const [showCustomMaterial, setShowCustomMaterial] = useState(false);
+        const [customA, setCustomA] = useState((member.A ?? 0.01) * 1e4); // Convert to cm²
+        const [customI, setCustomI] = useState((member.I ?? 1e-4) * 1e8); // Convert to cm⁴
+        const [customE, setCustomE] = useState((member.E ?? 200e6) / 1e6); // Convert to GPa
+
         const handleSectionChange = (sectionId: string) => {
-            updateMember(id, { sectionId });
+            if (sectionId === 'custom') {
+                setShowCustomSection(true);
+                return;
+            }
+            const section = SECTION_OPTIONS.find(s => s.id === sectionId);
+            if (section && section.A > 0) {
+                updateMember(id, { sectionId, A: section.A, I: section.I });
+            } else {
+                updateMember(id, { sectionId });
+            }
+        };
+
+        const handleMaterialChange = (materialId: string) => {
+            if (materialId === 'custom') {
+                setShowCustomMaterial(true);
+                return;
+            }
+            const material = MATERIAL_OPTIONS.find(m => m.id === materialId);
+            if (material && material.E > 0) {
+                updateMember(id, { E: material.E });
+            }
+        };
+
+        const handleApplyCustomSection = () => {
+            updateMember(id, {
+                sectionId: 'custom',
+                A: customA / 1e4,  // Convert cm² to m²
+                I: customI / 1e8  // Convert cm⁴ to m⁴
+            });
+            setShowCustomSection(false);
+        };
+
+        const handleApplyCustomMaterial = () => {
+            updateMember(id, { E: customE * 1e6 }); // Convert GPa to kN/m²
+            setShowCustomMaterial(false);
         };
 
         const handleReleaseChange = (key: 'startMoment' | 'endMoment', value: boolean) => {
@@ -301,6 +358,62 @@ export const PropertiesPanel: FC = () => {
                             <option key={opt.id} value={opt.id}>{opt.label}</option>
                         ))}
                     </select>
+                    
+                    {/* Custom Section Dialog */}
+                    {showCustomSection && (
+                        <div style={{ background: 'rgba(0,0,0,0.8)', padding: 12, borderRadius: 8, marginTop: 8, border: '1px solid #555' }}>
+                            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 8, color: '#4caf50' }}>✏️ Custom Section Properties</div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <label style={{ fontSize: 11, width: 80 }}>Area (cm²)</label>
+                                    <NumberInput value={customA} onChange={setCustomA} style={{ flex: 1 }} />
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <label style={{ fontSize: 11, width: 80 }}>Iy (cm⁴)</label>
+                                    <NumberInput value={customI} onChange={setCustomI} style={{ flex: 1 }} />
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                                <button onClick={handleApplyCustomSection} style={{ ...addButtonStyle, background: '#4caf50', flex: 1 }}>Apply</button>
+                                <button onClick={() => setShowCustomSection(false)} style={{ ...addButtonStyle, flex: 1 }}>Cancel</button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                <hr style={dividerStyle} />
+
+                {/* Material Dropdown */}
+                <div style={sectionStyle}>
+                    <label style={labelStyle}>🧱 Material</label>
+                    <select
+                        onChange={(e) => handleMaterialChange(e.target.value)}
+                        style={selectStyle}
+                    >
+                        {MATERIAL_OPTIONS.map(opt => (
+                            <option key={opt.id} value={opt.id}>{opt.label}</option>
+                        ))}
+                    </select>
+                    
+                    {/* Custom Material Dialog */}
+                    {showCustomMaterial && (
+                        <div style={{ background: 'rgba(0,0,0,0.8)', padding: 12, borderRadius: 8, marginTop: 8, border: '1px solid #555' }}>
+                            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 8, color: '#2196f3' }}>✏️ Custom Material Properties</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <label style={{ fontSize: 11, width: 80 }}>E (GPa)</label>
+                                <NumberInput value={customE} onChange={setCustomE} style={{ flex: 1 }} />
+                            </div>
+                            <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                                <button onClick={handleApplyCustomMaterial} style={{ ...addButtonStyle, background: '#2196f3', flex: 1 }}>Apply</button>
+                                <button onClick={() => setShowCustomMaterial(false)} style={{ ...addButtonStyle, flex: 1 }}>Cancel</button>
+                            </div>
+                        </div>
+                    )}
+                    
+                    {/* Show current E value */}
+                    <div style={{ fontSize: 10, color: '#888', marginTop: 4 }}>
+                        E = {((member.E ?? 200e6) / 1e6).toFixed(0)} GPa
+                    </div>
                 </div>
 
                 <hr style={dividerStyle} />

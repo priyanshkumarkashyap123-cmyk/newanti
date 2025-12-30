@@ -6,6 +6,7 @@
  * - Scale slider for diagram visualization
  * - Animation controls for deflected shape
  * - Quick access to Advanced Analysis and Design
+ * - Heat map visualization for stress/displacement
  */
 
 import { FC, useState } from 'react';
@@ -22,8 +23,8 @@ import {
     Maximize2,
     Minimize2,
     Zap,
-    Settings,
-    FileCheck
+    FileCheck,
+    Flame
 } from 'lucide-react';
 import { useModelStore, type AnalysisResults } from '../../store/model';
 import { useUIStore } from '../../store/uiStore';
@@ -36,7 +37,7 @@ interface ResultsToolbarProps {
     onClose?: () => void;
 }
 
-type DiagramType = 'deflection' | 'bmd' | 'sfd' | 'reactions' | 'axial';
+type DiagramType = 'deflection' | 'bmd' | 'sfd' | 'reactions' | 'axial' | 'heatmap';
 
 // ============================================
 // COMPONENT
@@ -52,6 +53,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
     const [isAnimating, setIsAnimating] = useState(false);
     const [activeDiagram, setActiveDiagram] = useState<DiagramType | null>('deflection');
     const [scale, setScale] = useState(displacementScale ?? 50);
+    const [heatmapType, setHeatmapType] = useState<'displacement' | 'stress' | 'utilization'>('displacement');
 
     // Store doesn't have these - we'll use local state
     const [_showReactions, _setShowReactions] = useState(true);
@@ -64,7 +66,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
         { id: 'bmd', label: 'BMD', icon: BarChart2, color: 'text-green-500' },
         { id: 'sfd', label: 'SFD', icon: Activity, color: 'text-orange-500' },
         { id: 'reactions', label: 'Reactions', icon: ArrowDownToLine, color: 'text-purple-500' },
-        { id: 'axial', label: 'Axial', icon: SlidersHorizontal, color: 'text-red-500' }
+        { id: 'axial', label: 'Axial', icon: SlidersHorizontal, color: 'text-red-500' },
+        { id: 'heatmap', label: 'Heat Map', icon: Flame, color: 'text-yellow-500' }
     ];
 
     const handleDiagramToggle = (type: DiagramType) => {
@@ -148,7 +151,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                 <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
                     Diagrams
                 </h4>
-                <div className="grid grid-cols-5 gap-1">
+                <div className="grid grid-cols-6 gap-1">
                     {diagrams.map((diagram) => {
                         const Icon = diagram.icon;
                         const isActive = activeDiagram === diagram.id;
@@ -174,6 +177,46 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                         );
                     })}
                 </div>
+                
+                {/* Heat Map Type Selector - Show when heatmap is active */}
+                {activeDiagram === 'heatmap' && (
+                    <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700">
+                        <h5 className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase">
+                            Heat Map Type
+                        </h5>
+                        <div className="flex gap-1">
+                            {[
+                                { id: 'displacement', label: 'Displacement', gradient: 'from-blue-500 to-red-500' },
+                                { id: 'stress', label: 'Stress', gradient: 'from-green-500 to-red-500' },
+                                { id: 'utilization', label: 'Utilization', gradient: 'from-green-500 via-yellow-500 to-red-500' }
+                            ].map(type => (
+                                <button
+                                    key={type.id}
+                                    onClick={() => setHeatmapType(type.id as any)}
+                                    className={`
+                                        flex-1 px-2 py-1.5 text-[10px] font-medium rounded transition-all
+                                        ${heatmapType === type.id
+                                            ? 'bg-gradient-to-r ' + type.gradient + ' text-white shadow-md'
+                                            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                                        }
+                                    `}
+                                >
+                                    {type.label}
+                                </button>
+                            ))}
+                        </div>
+                        {/* Color Scale Legend */}
+                        <div className="mt-2 flex items-center gap-2">
+                            <span className="text-[9px] text-zinc-500">Low</span>
+                            <div className={`flex-1 h-2 rounded bg-gradient-to-r ${
+                                heatmapType === 'displacement' ? 'from-blue-500 to-red-500' :
+                                heatmapType === 'stress' ? 'from-green-500 to-red-500' :
+                                'from-green-500 via-yellow-500 to-red-500'
+                            }`} />
+                            <span className="text-[9px] text-zinc-500">High</span>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Scale Slider */}

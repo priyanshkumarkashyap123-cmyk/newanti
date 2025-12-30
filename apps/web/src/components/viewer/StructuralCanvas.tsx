@@ -38,7 +38,7 @@ interface MemberMeshProps {
     isSelected: boolean;
     isHovered: boolean;
     onHover: (id: string | null) => void;
-    onClick: (id: string) => void;
+    onClick: (id: string, event: ThreeEvent<MouseEvent>) => void;
 }
 
 interface NodeMeshProps {
@@ -48,7 +48,7 @@ interface NodeMeshProps {
     isHovered: boolean;
     hasSupport: boolean;
     onHover: (id: string | null) => void;
-    onClick: (id: string) => void;
+    onClick: (id: string, event: ThreeEvent<MouseEvent>) => void;
 }
 
 // ============================================
@@ -124,7 +124,7 @@ const MemberMesh: FC<MemberMeshProps> = ({
             }}
             onClick={(e) => {
                 e.stopPropagation();
-                onClick(id);
+                onClick(id, e);
             }}
         >
             <cylinderGeometry args={[0.05, 0.05, length, 8]} />
@@ -177,7 +177,7 @@ const NodeMesh: FC<NodeMeshProps> = ({
             }}
             onClick={(e) => {
                 e.stopPropagation();
-                onClick(id);
+                onClick(id, e);
             }}
         >
             <sphereGeometry args={[0.12, 16, 16]} />
@@ -206,14 +206,16 @@ const StructureRenderer: FC = () => {
     const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
     const [hoveredMemberId, setHoveredMemberId] = useState<string | null>(null);
 
-    // Handle node click
-    const handleNodeClick = useCallback((id: string) => {
-        selectNode(id);
+    // Handle node click with multi-select support
+    const handleNodeClick = useCallback((id: string, event?: ThreeEvent<MouseEvent>) => {
+        const multi = event?.shiftKey || event?.ctrlKey || event?.metaKey || false;
+        selectNode(id, multi);
     }, [selectNode]);
 
-    // Handle member click
-    const handleMemberClick = useCallback((id: string) => {
-        selectMember(id);
+    // Handle member click with multi-select support
+    const handleMemberClick = useCallback((id: string, event?: ThreeEvent<MouseEvent>) => {
+        const multi = event?.shiftKey || event?.ctrlKey || event?.metaKey || false;
+        selectMember(id, multi);
     }, [selectMember]);
 
     // Build node positions map

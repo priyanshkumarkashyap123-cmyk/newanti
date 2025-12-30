@@ -8,18 +8,22 @@ import { Component, ReactNode, ErrorInfo } from 'react';
 
 // Pages
 import { LandingPage } from './pages/LandingPage';
+import LandingPageEnhanced from './pages/LandingPageEnhanced';
 import { Dashboard } from './pages/Dashboard';
+import DashboardEnhanced from './pages/DashboardEnhanced';
 import { StreamDashboard } from './pages/StreamDashboard';
 import { Capabilities } from './pages/Capabilities';
 import { SignInPage } from './pages/SignInPage';
 import { SignUpPage } from './pages/SignUpPage';
 import { SettingsPage } from './pages/SettingsPage';
+import SettingsPageEnhanced from './pages/SettingsPageEnhanced';
 import { PricingPage } from './pages/PricingPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { HelpPage } from './pages/HelpPage';
 import { ReportsPage } from './pages/ReportsPage';
+import ReportViewerEnhanced from './pages/ReportViewerEnhanced';
 import { WorkspaceDemo } from './pages/WorkspaceDemo';
 
 // Layouts
@@ -292,11 +296,17 @@ function App() {
                 {/* Landing Page */}
                 <Route path="/" element={<LandingPage />} />
 
+                {/* Enhanced Landing Page - NEW Advanced Template */}
+                <Route path="/landing-enhanced" element={<LandingPageEnhanced />} />
+
                 {/* Stream Dashboard - Main Entry Point */}
                 <Route path="/stream" element={<StreamDashboard />} />
 
                 {/* Legacy Dashboard */}
                 <Route path="/dashboard" element={<Dashboard />} />
+
+                {/* Enhanced Dashboard - NEW Advanced Template */}
+                <Route path="/dashboard-enhanced" element={<DashboardEnhanced />} />
 
                 {/* Capabilities Page */}
                 <Route path="/capabilities" element={<Capabilities />} />
@@ -307,6 +317,9 @@ function App() {
 
                 {/* Settings Page */}
                 <Route path="/settings" element={<SettingsPage />} />
+
+                {/* Enhanced Settings - NEW Advanced Template */}
+                <Route path="/settings-enhanced" element={<SettingsPageEnhanced />} />
 
                 {/* Pricing Page */}
                 <Route path="/pricing" element={<PricingPage />} />
@@ -325,6 +338,9 @@ function App() {
 
                 {/* Reports */}
                 <Route path="/reports" element={<ReportsPage />} />
+
+                {/* Report Viewer - NEW Advanced Template */}
+                <Route path="/report/:reportId" element={<ReportViewerEnhanced />} />
 
                 {/* Workspace Demo - NEW Advanced UI Templates */}
                 <Route path="/workspace-demo" element={<WorkspaceDemo />} />

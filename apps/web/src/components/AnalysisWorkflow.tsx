@@ -91,6 +91,7 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
     const nodes = useModelStore((s) => s.nodes);
     const members = useModelStore((s) => s.members);
     const loads = useModelStore((s) => s.loads);
+    const memberLoads = useModelStore((s) => s.memberLoads); // UDL, UVL, point loads on members
     const analysisResults = useModelStore((s) => s.analysisResults);
 
     // Check completion status of each step
@@ -100,7 +101,8 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
         const hasSupports = Array.from(nodes.values()).some(
             (n) => n.restraints && Object.values(n.restraints).some(Boolean)
         );
-        const hasLoads = loads.length > 0;
+        // Check for any loads: nodal OR member loads (UDL/UVL)
+        const hasLoads = loads.length > 0 || memberLoads.length > 0;
         const hasResults = analysisResults !== null;
 
         return {
@@ -110,7 +112,7 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
             analyze: hasNodes && hasMembers && hasSupports && hasLoads,
             results: hasResults
         };
-    }, [nodes, members, loads, analysisResults]);
+    }, [nodes, members, loads, memberLoads, analysisResults]);
 
     // Validation messages for current step
     const getValidationMessage = (stepIndex: number): string | null => {
@@ -123,7 +125,7 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
                 if (!stepStatus.supports) return 'Add at least one support';
                 return null;
             case 2:
-                if (!stepStatus.loads) return 'Add at least one load';
+                if (!stepStatus.loads) return 'Add at least one load (nodal or distributed)';
                 return null;
             case 3:
                 if (!stepStatus.analyze) return 'Complete previous steps first';
