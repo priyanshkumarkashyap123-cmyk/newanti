@@ -4,7 +4,7 @@
 
 import { useModelStore, type Node, type Member, type NodeLoad, type AnalysisResults } from '../store/model';
 
-const API_BASE = 'http://localhost:3001';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export async function runAnalysis(): Promise<{ success: boolean; message: string }> {
     const state = useModelStore.getState();

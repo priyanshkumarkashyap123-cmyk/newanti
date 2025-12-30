@@ -6,6 +6,36 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
 
 // ============================================
+// MASTER USER CONFIGURATION
+// ============================================
+
+/**
+ * Master users have unrestricted access to all features
+ * regardless of tier or subscription status.
+ */
+export const MASTER_EMAILS: ReadonlyArray<string> = [
+    'rakshittiwari048@gmail.com',
+];
+
+/**
+ * Check if an email belongs to a master user
+ */
+export function isMasterUser(email: string | null | undefined): boolean {
+    if (!email) return false;
+    return MASTER_EMAILS.includes(email.toLowerCase().trim());
+}
+
+/**
+ * Get effective tier for a user (master users get 'enterprise')
+ */
+export function getEffectiveTier(email: string | null | undefined, actualTier: 'free' | 'pro' | 'enterprise'): 'free' | 'pro' | 'enterprise' {
+    if (isMasterUser(email)) {
+        return 'enterprise';
+    }
+    return actualTier;
+}
+
+// ============================================
 // USER SCHEMA
 // ============================================
 

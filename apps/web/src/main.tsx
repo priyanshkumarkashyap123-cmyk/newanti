@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './providers/AuthProvider';
+import { SubscriptionProvider } from './hooks/useSubscription';
 import './index.css';
 
 // Debug log
@@ -22,17 +23,20 @@ const initializeApp = async () => {
         console.log('🎨 Rendering App...');
         
         // Use unified AuthProvider which handles both Clerk and in-house auth
+        // SubscriptionProvider provides subscription/tier context for feature gating
         createRoot(rootElement).render(
             <StrictMode>
                 <BrowserRouter>
                     <AuthProvider>
-                        <App />
+                        <SubscriptionProvider>
+                            <App />
+                        </SubscriptionProvider>
                     </AuthProvider>
                 </BrowserRouter>
             </StrictMode>
         );
         
-        console.log('✅ App rendered with AuthProvider');
+        console.log('✅ App rendered with AuthProvider and SubscriptionProvider');
     } catch (error) {
         console.error('❌ Failed to initialize app:', error);
 

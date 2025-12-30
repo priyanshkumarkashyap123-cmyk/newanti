@@ -8,7 +8,7 @@
  * - Get user activity history
  */
 
-import { User, IUser } from '../models.js';
+import { User, IUser, isMasterUser } from '../models.js';
 
 // ============================================
 // TIER LIMITS
@@ -85,6 +85,11 @@ export class UserActivityService {
             const user = await User.findOne({ clerkId });
             if (!user) {
                 return { allowed: false, reason: 'User not found' };
+            }
+
+            // Master users bypass all limits
+            if (isMasterUser(user.email)) {
+                return { allowed: true, remaining: Infinity };
             }
 
             const limits = TIER_LIMITS[user.tier];
@@ -199,7 +204,9 @@ export class UserActivityService {
             const user = await User.findOne({ clerkId }).populate('projects');
             if (!user) return null;
 
-            const limits = TIER_LIMITS[user.tier];
+            // Use enterprise limits for master users
+            const effectiveTier = isMasterUser(user.email) ? 'enterprise' : user.tier;
+            const limits = TIER_LIMITS[effectiveTier];
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
@@ -242,6 +249,11 @@ export class UserActivityService {
                 return { allowed: true }; // Allow if no user (demo mode)
             }
 
+            // Master users bypass all limits
+            if (isMasterUser(user.email)) {
+                return { allowed: true };
+            }
+
             const limits = TIER_LIMITS[user.tier];
 
             if (nodeCount > limits.maxNodes) {
@@ -271,15 +283,24 @@ export class UserActivityService {
     static async getOrCreateUser(clerkId: string, email: string): Promise<IUser | null> {
         try {
             let user = await User.findOne({ clerkId });
+            const isMaster = isMasterUser(email);
+
             if (!user) {
+                // Create new user - master users get enterprise tier
                 user = await User.create({
                     clerkId,
                     email,
-                    tier: 'free',
+                    tier: isMaster ? 'enterprise' : 'free',
                     lastLogin: new Date()
                 });
-                console.log(`[UserActivityService] Created new user: ${email}`);
+                console.log(`[UserActivityService] Created new user: ${email}${isMaster ? ' (MASTER USER)' : ''}`);
+            } else if (isMaster && user.tier !== 'enterprise') {
+                // Upgrade existing master user to enterprise if not already
+                user.tier = 'enterprise';
+                await user.save();
+                console.log(`[UserActivityService] Upgraded master user to enterprise: ${email}`);
             }
+
             return user;
         } catch (error) {
             console.error('[UserActivityService] getOrCreateUser error:', error);
