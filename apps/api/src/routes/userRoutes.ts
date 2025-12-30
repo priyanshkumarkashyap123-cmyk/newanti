@@ -5,9 +5,12 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { requireAuth, getAuth } from '@clerk/express';
+import { requireAuth, getAuth } from '../middleware/authMiddleware.js';
 import { UserActivityService, TIER_LIMITS } from '../services/UserActivityService.js';
-import { User, Subscription } from '../models.js';
+import { User, Subscription, getEffectiveTier, UserModel, isMasterUser } from '../models.js';
+
+// Check which auth mode is active
+const USE_CLERK = process.env['USE_CLERK'] === 'true';
 
 const router = Router();
 
@@ -70,13 +73,25 @@ router.post('/login', requireAuth(), async (req: Request, res: Response) => {
 
 router.get('/limits', requireAuth(), async (req: Request, res: Response) => {
     try {
-        const { userId } = getAuth(req);
+        const { userId, email: authEmail } = getAuth(req);
         if (!userId) {
             return res.status(401).json({ success: false, error: 'Unauthorized' });
         }
 
-        const user = await User.findOne({ clerkId: userId });
-        const tier = user?.tier || 'free';
+        let userEmail: string = '';
+        let dbTier: 'free' | 'pro' | 'enterprise' = 'free';
+
+        if (USE_CLERK) {
+            const user = await User.findOne({ clerkId: userId });
+            userEmail = user?.email || '';
+            dbTier = user?.tier || 'free';
+        } else {
+            const user = await UserModel.findById(userId);
+            userEmail = user?.email || authEmail || '';
+            dbTier = user?.subscriptionTier || 'free';
+        }
+        
+        const tier = getEffectiveTier(userEmail, dbTier);
         const limits = TIER_LIMITS[tier];
 
         return res.json({
@@ -98,27 +113,44 @@ router.get('/limits', requireAuth(), async (req: Request, res: Response) => {
 
 router.get('/subscription', requireAuth(), async (req: Request, res: Response) => {
     try {
-        const { userId } = getAuth(req);
+        const { userId, email: authEmail } = getAuth(req);
         if (!userId) {
             return res.status(401).json({ success: false, error: 'Unauthorized' });
         }
 
-        const user = await User.findOne({ clerkId: userId });
-        const tier = user?.tier || 'free';
-        const limits = TIER_LIMITS[tier];
-
-        // Get subscription details if exists
+        let userEmail: string = '';
+        let dbTier: 'free' | 'pro' | 'enterprise' = 'free';
         let subscriptionData = null;
-        if (user?.subscription) {
-            const subscription = await Subscription.findById(user.subscription);
-            if (subscription) {
-                subscriptionData = {
-                    status: subscription.status,
-                    currentPeriodEnd: subscription.currentPeriodEnd,
-                    cancelAtPeriodEnd: subscription.cancelAtPeriodEnd
-                };
+
+        if (USE_CLERK) {
+            // Clerk auth: lookup by clerkId
+            const user = await User.findOne({ clerkId: userId });
+            userEmail = user?.email || '';
+            dbTier = user?.tier || 'free';
+            
+            // Get subscription details if exists
+            if (user?.subscription) {
+                const subscription = await Subscription.findById(user.subscription);
+                if (subscription) {
+                    subscriptionData = {
+                        status: subscription.status,
+                        currentPeriodEnd: subscription.currentPeriodEnd,
+                        cancelAtPeriodEnd: subscription.cancelAtPeriodEnd
+                    };
+                }
             }
+        } else {
+            // In-house auth: lookup by _id
+            const user = await UserModel.findById(userId);
+            userEmail = user?.email || authEmail || '';
+            dbTier = user?.subscriptionTier || 'free';
         }
+        
+        // Use getEffectiveTier to check for master user elevation
+        const tier = getEffectiveTier(userEmail, dbTier);
+        console.log(`[Subscription] User: ${userEmail}, DB Tier: ${dbTier}, Effective Tier: ${tier}, Master: ${isMasterUser(userEmail)}`);
+        
+        const limits = TIER_LIMITS[tier];
 
         // Feature access based on tier
         const features = {
@@ -246,20 +278,37 @@ router.get('/activity', requireAuth(), async (req: Request, res: Response) => {
             return res.status(401).json({ success: false, error: 'Unauthorized' });
         }
 
-        const user = await User.findOne({ clerkId: userId });
-        if (!user) {
-            return res.status(404).json({ success: false, error: 'User not found' });
-        }
-
-        return res.json({
-            success: true,
-            data: {
-                recentActivity: user.activityLog.slice(-20).reverse(),
-                totalAnalysisRuns: user.totalAnalysisRuns,
-                totalExports: user.totalExports,
-                lastLogin: user.lastLogin
+        if (USE_CLERK) {
+            const user = await User.findOne({ clerkId: userId });
+            if (!user) {
+                return res.status(404).json({ success: false, error: 'User not found' });
             }
-        });
+
+            return res.json({
+                success: true,
+                data: {
+                    recentActivity: user.activityLog.slice(-20).reverse(),
+                    totalAnalysisRuns: user.totalAnalysisRuns,
+                    totalExports: user.totalExports,
+                    lastLogin: user.lastLogin
+                }
+            });
+        } else {
+            const user = await UserModel.findById(userId);
+            if (!user) {
+                return res.status(404).json({ success: false, error: 'User not found' });
+            }
+
+            return res.json({
+                success: true,
+                data: {
+                    recentActivity: [],
+                    totalAnalysisRuns: 0,
+                    totalExports: 0,
+                    lastLogin: user.lastLoginAt
+                }
+            });
+        }
     } catch (error) {
         console.error('[UserRoutes] /activity error:', error);
         return res.status(500).json({ success: false, error: 'Server error' });
