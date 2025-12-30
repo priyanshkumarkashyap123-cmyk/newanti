@@ -73,3 +73,12 @@ env/
 .cache/
 temp/
 tmp/
+
+# Azure deployment logs (downloaded for debugging)
+azure_logs/
+python_logs/
+
+# Deployment temp files
+*.zip
+deploy-api/
+deploy-pkg/

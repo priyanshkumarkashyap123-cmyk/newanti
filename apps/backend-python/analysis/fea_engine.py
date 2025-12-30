@@ -20,9 +20,13 @@ import math
 
 try:
     from PyNite import FEModel3D
+    import PyNite
     PYNITE_AVAILABLE = True
+    # Check PyNite version - v2.0+ has different API
+    PYNITE_V2 = hasattr(FEModel3D, 'add_material')
 except ImportError:
     PYNITE_AVAILABLE = False
+    PYNITE_V2 = False
     print("Warning: PyNiteFEA not installed. Run: pip install PyNiteFEA")
 
 
@@ -320,6 +324,11 @@ class FEAEngine:
         # ============================================
         self._member_inputs = {}  # Store for τ_b iteration
         
+        # For PyNite v2.0+: pre-define materials and sections
+        if PYNITE_V2:
+            self._defined_materials = set()
+            self._defined_sections = set()
+        
         for i, member in enumerate(model_input.members):
             member_name = f"M{i+1}"
             self.member_map[member.id] = member_name
@@ -342,19 +351,41 @@ class FEAEngine:
                     'reduction_factor': self.options.stiffness_reduction_factor
                 }
             
-            # Note: PyNite uses single E value, so we use E_axial
-            # For full τ_b support, iterative analysis would be needed
-            self.model.add_member(
-                member_name,
-                start_name,
-                end_name,
-                E=E_axial,
-                G=member.G,
-                Iy=member.Iy,
-                Iz=member.Iz,
-                J=member.J,
-                A=member.A
-            )
+            # PyNite v2.0+ uses material/section names instead of direct properties
+            if PYNITE_V2:
+                # Create unique material name based on E and G
+                mat_name = f"Mat_{i+1}"
+                # Define material: E, G, nu (Poisson's ratio), rho (density)
+                nu = 0.3  # Typical for steel
+                rho = 7850 / 1e9  # Steel density in kg/mm³ (or appropriate units)
+                self.model.add_material(mat_name, E_axial, member.G, nu, rho)
+                
+                # Create unique section name
+                sec_name = f"Sec_{i+1}"
+                # Define section: A, Iy, Iz, J
+                self.model.add_section(sec_name, member.A, member.Iy, member.Iz, member.J)
+                
+                # Add member with material and section names
+                self.model.add_member(
+                    member_name,
+                    start_name,
+                    end_name,
+                    mat_name,
+                    sec_name
+                )
+            else:
+                # PyNite v0.x API - direct property specification
+                self.model.add_member(
+                    member_name,
+                    start_name,
+                    end_name,
+                    E=E_axial,
+                    G=member.G,
+                    Iy=member.Iy,
+                    Iz=member.Iz,
+                    J=member.J,
+                    A=member.A
+                )
         
         # ============================================
         # 3. ADD LOAD CASE
