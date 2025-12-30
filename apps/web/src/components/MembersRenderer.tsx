@@ -1,12 +1,15 @@
 import { FC, useLayoutEffect, useRef, useMemo } from 'react';
 import * as THREE from 'three';
+import { Line } from '@react-three/drei';
 import { useModelStore } from '../store/model';
 
 export type ColorMode = 'DEFAULT' | 'UTILIZATION';
+export type DisplayMode = 'AUTO' | 'LINE' | 'SECTION';
 
 interface MembersRendererProps {
     colorMode?: ColorMode;
     utilizationMap?: Map<string, number>;  // memberId -> utilization ratio (0-1+)
+    displayMode?: DisplayMode;  // How to display members: AUTO (line if no section), LINE (always lines), SECTION (always cylinders)
 }
 
 /**
@@ -36,7 +39,8 @@ function getUtilizationColor(ratio: number): THREE.Color {
 
 export const MembersRenderer: FC<MembersRendererProps> = ({
     colorMode = 'DEFAULT',
-    utilizationMap
+    utilizationMap,
+    displayMode = 'AUTO'
 }) => {
     const members = useModelStore((state) => state.members);
     const nodes = useModelStore((state) => state.nodes);
@@ -59,11 +63,49 @@ export const MembersRenderer: FC<MembersRendererProps> = ({
         return colors;
     }, [colorMode, utilizationMap]);
 
+    // Separate members into line-display and section-display groups
+    const { lineMembers, sectionMembers } = useMemo(() => {
+        const lines: { id: string; startPos: THREE.Vector3; endPos: THREE.Vector3; color: string }[] = [];
+        const sections: string[] = [];
+
+        for (const member of members.values()) {
+            const startNode = nodes.get(member.startNodeId);
+            const endNode = nodes.get(member.endNodeId);
+            if (!startNode || !endNode) continue;
+
+            const shouldRenderAsLine = displayMode === 'LINE' || 
+                (displayMode === 'AUTO' && (!member.sectionId || member.sectionId === '' || member.sectionId === 'default'));
+
+            if (shouldRenderAsLine) {
+                let color = '#00aaff'; // Default: Cyan
+                if (selectedIds.has(member.id)) {
+                    color = '#ff00ff'; // Selected: Hot Pink
+                } else if (colorMode === 'UTILIZATION' && utilizationMap?.has(member.id)) {
+                    const ratio = utilizationMap.get(member.id)!;
+                    color = getUtilizationColor(ratio).getHexString();
+                    color = '#' + color;
+                }
+
+                lines.push({
+                    id: member.id,
+                    startPos: new THREE.Vector3(startNode.x, startNode.y, startNode.z),
+                    endPos: new THREE.Vector3(endNode.x, endNode.y, endNode.z),
+                    color
+                });
+            } else {
+                sections.push(member.id);
+            }
+        }
+
+        return { lineMembers: lines, sectionMembers: sections };
+    }, [members, nodes, selectedIds, displayMode, colorMode, utilizationMap]);
+
+    // Update instanced mesh for section members only
     useLayoutEffect(() => {
-        if (!meshRef.current) return;
+        if (!meshRef.current || sectionMembers.length === 0) return;
 
         // Resize mapping array
-        idsRef.current = new Array(members.size);
+        idsRef.current = new Array(sectionMembers.length);
 
         const dummy = new THREE.Object3D();
         const startPos = new THREE.Vector3();
@@ -75,7 +117,10 @@ export const MembersRenderer: FC<MembersRendererProps> = ({
 
         let index = 0;
 
-        for (const member of members.values()) {
+        for (const memberId of sectionMembers) {
+            const member = members.get(memberId);
+            if (!member) continue;
+
             const startNode = nodes.get(member.startNodeId);
             const endNode = nodes.get(member.endNodeId);
 
@@ -123,35 +168,61 @@ export const MembersRenderer: FC<MembersRendererProps> = ({
         meshRef.current.instanceMatrix.needsUpdate = true;
         if (meshRef.current.instanceColor) meshRef.current.instanceColor.needsUpdate = true;
 
-    }, [members, nodes, selectedIds, colorMode, memberColors, utilizationMap]);
+    }, [members, nodes, selectedIds, colorMode, memberColors, utilizationMap, sectionMembers]);
 
     if (members.size === 0) return null;
 
     return (
-        <instancedMesh
-            ref={meshRef}
-            args={[undefined, undefined, members.size]}
-            onClick={(e) => {
-                e.stopPropagation();
-                const instanceId = e.instanceId;
-                if (instanceId !== undefined) {
-                    const id = idsRef.current[instanceId];
-                    if (id) {
+        <group>
+            {/* Render line members as simple 3D lines */}
+            {lineMembers.map(({ id, startPos, endPos, color }) => (
+                <Line
+                    key={id}
+                    points={[startPos, endPos]}
+                    color={color}
+                    lineWidth={3}
+                    onClick={(e) => {
+                        e.stopPropagation();
                         select(id, e.shiftKey || e.metaKey);
-                    }
-                }
-            }}
-            onPointerOver={(e) => {
-                e.stopPropagation();
-                document.body.style.cursor = 'pointer';
-            }}
-            onPointerOut={() => {
-                document.body.style.cursor = 'auto';
-            }}
-        >
-            <cylinderGeometry args={[0.1, 0.1, 1, 8]} /> {/* Height 1, scaled dynamically */}
-            <meshStandardMaterial vertexColors />
-        </instancedMesh>
+                    }}
+                    onPointerOver={(e) => {
+                        e.stopPropagation();
+                        document.body.style.cursor = 'pointer';
+                    }}
+                    onPointerOut={() => {
+                        document.body.style.cursor = 'auto';
+                    }}
+                />
+            ))}
+
+            {/* Render section members as 3D cylinders */}
+            {sectionMembers.length > 0 && (
+                <instancedMesh
+                    ref={meshRef}
+                    args={[undefined, undefined, sectionMembers.length]}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        const instanceId = e.instanceId;
+                        if (instanceId !== undefined) {
+                            const id = idsRef.current[instanceId];
+                            if (id) {
+                                select(id, e.shiftKey || e.metaKey);
+                            }
+                        }
+                    }}
+                    onPointerOver={(e) => {
+                        e.stopPropagation();
+                        document.body.style.cursor = 'pointer';
+                    }}
+                    onPointerOut={() => {
+                        document.body.style.cursor = 'auto';
+                    }}
+                >
+                    <cylinderGeometry args={[0.1, 0.1, 1, 8]} /> {/* Height 1, scaled dynamically */}
+                    <meshStandardMaterial vertexColors />
+                </instancedMesh>
+            )}
+        </group>
     );
 };
 

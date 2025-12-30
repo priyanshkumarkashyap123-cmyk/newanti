@@ -7,11 +7,16 @@ Implements reinforced concrete design codes:
 """
 
 from .is456 import IS456Designer, ConcreteGrade, RebarGrade, BeamDesignResult, ColumnDesignResult
+from .slab import SlabDesigner, SlabDesignResult, SlabPanel, SlabLoading
 
 __all__ = [
     'IS456Designer',
     'ConcreteGrade',
     'RebarGrade',
     'BeamDesignResult',
-    'ColumnDesignResult'
+    'ColumnDesignResult',
+    'SlabDesigner',
+    'SlabDesignResult',
+    'SlabPanel',
+    'SlabLoading'
 ]

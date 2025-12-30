@@ -730,6 +730,208 @@ async def generate_from_ai(request: AIGenerateRequest):
         return GenerateResponse(success=True, model=fallback)
 
 
+# ============================================
+# CONCRETE DESIGN ENDPOINTS
+# ============================================
+
+class BeamDesignRequest(BaseModel):
+    """Request model for beam design"""
+    width: float            # mm
+    depth: float            # mm
+    cover: float = 40       # mm
+    Mu: float               # kNm - Design moment
+    Vu: float               # kN - Design shear
+    fck: float = 25         # MPa - Concrete grade
+    fy: float = 500         # MPa - Steel grade
+
+
+class ColumnDesignRequest(BaseModel):
+    """Request model for column design"""
+    width: float            # mm
+    depth: float            # mm
+    cover: float = 40       # mm
+    Pu: float               # kN - Axial load
+    Mux: float = 0          # kNm - Moment about x-axis
+    Muy: float = 0          # kNm - Moment about y-axis
+    unsupported_length: float  # mm
+    effective_length_factor: float = 1.0
+    fck: float = 25
+    fy: float = 500
+
+
+class SlabDesignRequest(BaseModel):
+    """Request model for slab design"""
+    lx: float               # m - Shorter span
+    ly: float = 0           # m - Longer span (0 for one-way)
+    live_load: float        # kN/m²
+    floor_finish: float = 1.0  # kN/m²
+    support_type: str = 'simple'  # simple, continuous, cantilever
+    edge_conditions: str = 'all_simple'  # For two-way slabs
+    fck: float = 25
+    fy: float = 500
+
+
+@app.post("/design/beam", tags=["Design"])
+async def design_beam(request: BeamDesignRequest):
+    """
+    Design RC beam per IS 456:2000
+    
+    Returns reinforcement details for flexure and shear
+    """
+    try:
+        from design.concrete.is456 import IS456Designer, BeamSection
+        
+        designer = IS456Designer(fck=request.fck, fy=request.fy)
+        section = BeamSection(
+            width=request.width,
+            depth=request.depth,
+            effective_depth=request.depth - request.cover - 10,
+            cover=request.cover
+        )
+        
+        result = designer.design_beam(section, request.Mu, request.Vu)
+        
+        return {
+            "success": True,
+            "tension_steel": {
+                "diameter": result.tension_steel.diameter,
+                "count": result.tension_steel.count,
+                "area": round(result.tension_steel.area, 1)
+            },
+            "compression_steel": {
+                "diameter": result.compression_steel.diameter,
+                "count": result.compression_steel.count,
+                "area": round(result.compression_steel.area, 1)
+            } if result.compression_steel else None,
+            "stirrups": {
+                "diameter": result.stirrups.diameter,
+                "legs": result.stirrups.count,
+                "spacing": result.stirrups.spacing
+            },
+            "Mu_capacity": round(result.Mu_capacity, 2),
+            "Vu_capacity": round(result.Vu_capacity, 2),
+            "status": result.status,
+            "checks": result.checks
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/design/column", tags=["Design"])
+async def design_column(request: ColumnDesignRequest):
+    """
+    Design RC column per IS 456:2000
+    
+    Handles axial load with biaxial bending
+    """
+    try:
+        from design.concrete.is456 import IS456Designer, ColumnSection
+        
+        designer = IS456Designer(fck=request.fck, fy=request.fy)
+        section = ColumnSection(
+            width=request.width,
+            depth=request.depth,
+            cover=request.cover
+        )
+        
+        result = designer.design_column(
+            section,
+            Pu=request.Pu,
+            Mux=request.Mux,
+            Muy=request.Muy,
+            unsupported_length=request.unsupported_length,
+            effective_length_factor=request.effective_length_factor
+        )
+        
+        return {
+            "success": True,
+            "longitudinal_steel": [
+                {
+                    "diameter": bar.diameter,
+                    "count": bar.count,
+                    "area": round(bar.area, 1)
+                }
+                for bar in result.longitudinal_steel
+            ],
+            "ties": {
+                "diameter": result.ties.diameter,
+                "spacing": result.ties.spacing
+            },
+            "Pu_capacity": round(result.Pu_capacity, 2),
+            "Mux_capacity": round(result.Mux_capacity, 2),
+            "Muy_capacity": round(result.Muy_capacity, 2),
+            "interaction_ratio": round(result.interaction_ratio, 3),
+            "status": result.status,
+            "checks": result.checks
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/design/slab", tags=["Design"])
+async def design_slab(request: SlabDesignRequest):
+    """
+    Design RC slab per IS 456:2000
+    
+    Supports one-way and two-way slabs
+    """
+    try:
+        from design.concrete.slab import (
+            SlabDesigner, SlabLoading, SlabPanel, EdgeCondition,
+            design_simply_supported_slab, design_two_way_floor_slab
+        )
+        
+        # Determine slab type
+        if request.ly == 0 or request.ly / request.lx > 2:
+            # One-way slab
+            result = design_simply_supported_slab(
+                span=request.lx,
+                live_load=request.live_load,
+                fck=request.fck,
+                fy=request.fy,
+                floor_finish=request.floor_finish
+            )
+        else:
+            # Two-way slab
+            result = design_two_way_floor_slab(
+                lx=request.lx,
+                ly=request.ly,
+                live_load=request.live_load,
+                edge_conditions=request.edge_conditions,
+                fck=request.fck,
+                fy=request.fy
+            )
+        
+        return {
+            "success": True,
+            "thickness": result.thickness,
+            "main_reinforcement": {
+                "diameter": result.main_reinforcement.diameter,
+                "spacing": result.main_reinforcement.spacing,
+                "area_per_m": round(result.main_reinforcement.area_per_m, 1),
+                "direction": result.main_reinforcement.direction
+            },
+            "distribution_reinforcement": {
+                "diameter": result.distribution_reinforcement.diameter,
+                "spacing": result.distribution_reinforcement.spacing,
+                "area_per_m": round(result.distribution_reinforcement.area_per_m, 1),
+                "direction": result.distribution_reinforcement.direction
+            },
+            "top_reinforcement": {
+                "diameter": result.top_reinforcement.diameter,
+                "spacing": result.top_reinforcement.spacing,
+                "area_per_m": round(result.top_reinforcement.area_per_m, 1)
+            } if result.top_reinforcement else None,
+            "Mu_capacity": round(result.Mu_capacity, 2),
+            "Mu_demand": round(result.Mu_demand, 2),
+            "deflection_check": round(result.deflection_check, 1),
+            "deflection_limit": round(result.deflection_limit, 1),
+            "status": result.status,
+            "checks": result.checks
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 
 # ============================================
 # MAIN ENTRY POINT

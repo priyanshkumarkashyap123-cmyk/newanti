@@ -369,40 +369,167 @@ export const ModernModeler: FC = () => {
         setAnalysisProgress(10);
         setAnalysisError(undefined);
 
+        const startTime = Date.now();
+
         try {
+            // Check if we have member loads (UDL, point loads on members)
+            const hasMemberLoads = memberLoads.length > 0;
+            
             // Build model data for analysis
-            const modelData = {
-                nodes: Array.from(nodes.values()).map(n => ({
-                    id: n.id,
-                    x: n.x,
-                    y: n.y,
-                    z: n.z,
-                    restraints: n.restraints
-                })),
-                members: Array.from(members.values()).map(m => ({
-                    id: m.id,
-                    startNodeId: m.startNodeId,
-                    endNodeId: m.endNodeId,
-                    E: m.E ?? 200e9,
-                    A: m.A ?? 0.01,
-                    I: m.I ?? 1e-4
-                })),
-                loads: loads.map(l => ({
+            const nodesArray = Array.from(nodes.values()).map(n => ({
+                id: n.id,
+                x: n.x,
+                y: n.y,
+                z: n.z,
+                restraints: n.restraints,
+                // Convert restraints to support type for Python API
+                support: n.restraints ? (
+                    n.restraints.fx && n.restraints.fy && n.restraints.fz && n.restraints.mx && n.restraints.my && n.restraints.mz
+                        ? 'fixed'
+                        : n.restraints.fx && n.restraints.fy && n.restraints.fz
+                            ? 'pinned'
+                            : n.restraints.fy
+                                ? 'roller_x'
+                                : 'none'
+                ) : 'none'
+            }));
+            
+            const membersArray = Array.from(members.values()).map(m => ({
+                id: m.id,
+                startNodeId: m.startNodeId,
+                endNodeId: m.endNodeId,
+                E: m.E ?? 200e9,
+                G: (m.E ?? 200e9) / 2.6,  // Approximate shear modulus
+                A: m.A ?? 0.01,
+                Iy: m.I ?? 1e-4,
+                Iz: m.I ?? 1e-4,
+                J: (m.I ?? 1e-4) * 2,  // Approximate torsion constant
+                I: m.I ?? 1e-4
+            }));
+
+            let result: { success: boolean; displacements?: Record<string, number[]>; reactions?: Record<string, number[]>; memberForces?: Record<string, any>; stats?: any; error?: string };
+
+            // Use Python API for frame analysis with member loads
+            if (hasMemberLoads) {
+                setAnalysisStage('assembling');
+                setAnalysisProgress(30);
+
+                // Convert direction format: local_y -> Fy, global_y -> FY
+                const convertDirection = (dir: string): string => {
+                    switch (dir) {
+                        case 'local_y': return 'Fy';
+                        case 'local_z': return 'Fz';
+                        case 'global_x': return 'FX';
+                        case 'global_y': return 'FY';
+                        case 'global_z': return 'FZ';
+                        case 'axial': return 'Fx';
+                        default: return 'Fy';
+                    }
+                };
+
+                // Build distributed_loads from memberLoads
+                const distributed_loads = memberLoads
+                    .filter(ml => ml.type === 'UDL' || ml.type === 'UVL')
+                    .map(ml => ({
+                        memberId: ml.memberId,
+                        direction: convertDirection(ml.direction),
+                        w1: ml.w1 ?? 0,
+                        w2: ml.type === 'UDL' ? (ml.w1 ?? 0) : (ml.w2 ?? ml.w1 ?? 0),
+                        startPos: ml.startPos ?? 0,
+                        endPos: ml.endPos ?? 1,
+                        isRatio: true
+                    }));
+
+                // Build node_loads from nodal loads
+                const node_loads = loads.map(l => ({
                     nodeId: l.nodeId,
-                    fx: l.fx,
-                    fy: l.fy,
-                    fz: l.fz
-                })),
-                dofPerNode: 3 as const
-            };
+                    fx: l.fx ?? 0,
+                    fy: l.fy ?? 0,
+                    fz: l.fz ?? 0,
+                    mx: l.mx ?? 0,
+                    my: l.my ?? 0,
+                    mz: l.mz ?? 0
+                }));
 
-            const startTime = Date.now();
+                // Call Python API for frame analysis
+                const PYTHON_API = import.meta.env['VITE_PYTHON_API_URL'] || 'http://localhost:8081';
+                
+                try {
+                    setAnalysisStage('solving');
+                    setAnalysisProgress(50);
 
-            // Run analysis with progress callback
-            const result = await analysisService.analyze(modelData, (stage, progress) => {
-                setAnalysisStage(stage as AnalysisStage);
-                setAnalysisProgress(progress);
-            });
+                    const response = await fetch(`${PYTHON_API}/analyze/frame`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            nodes: nodesArray,
+                            members: membersArray,
+                            node_loads,
+                            distributed_loads
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ detail: 'Analysis server error' }));
+                        throw new Error(errorData.detail || `Server error: ${response.status}`);
+                    }
+
+                    const pythonResult = await response.json();
+                    
+                    if (pythonResult.success) {
+                        result = {
+                            success: true,
+                            displacements: pythonResult.nodes || {},
+                            reactions: {},
+                            memberForces: pythonResult.members || {},
+                            stats: { ...pythonResult.metadata, usedPythonApi: true }
+                        };
+
+                        // Extract reactions from nodes with restraints
+                        if (pythonResult.nodes) {
+                            Object.entries(pythonResult.nodes).forEach(([nodeId, data]: [string, any]) => {
+                                const node = nodes.get(nodeId);
+                                if (node?.restraints && (node.restraints.fx || node.restraints.fy || node.restraints.fz)) {
+                                    result.reactions![nodeId] = [
+                                        data.RxnFX ?? 0,
+                                        data.RxnFY ?? 0,
+                                        data.RxnFZ ?? 0,
+                                        data.RxnMX ?? 0,
+                                        data.RxnMY ?? 0,
+                                        data.RxnMZ ?? 0
+                                    ];
+                                }
+                            });
+                        }
+                    } else {
+                        result = { success: false, error: pythonResult.error || 'Python analysis failed' };
+                    }
+                } catch (err) {
+                    result = { 
+                        success: false, 
+                        error: err instanceof Error ? err.message : 'Failed to connect to analysis server'
+                    };
+                }
+            } else {
+                // Use local solver for simple models without member loads
+                const modelData = {
+                    nodes: nodesArray,
+                    members: membersArray,
+                    loads: loads.map(l => ({
+                        nodeId: l.nodeId,
+                        fx: l.fx,
+                        fy: l.fy,
+                        fz: l.fz
+                    })),
+                    dofPerNode: 3 as const
+                };
+
+                // Run analysis with progress callback
+                result = await analysisService.analyze(modelData, (stage, progress) => {
+                    setAnalysisStage(stage as AnalysisStage);
+                    setAnalysisProgress(progress);
+                });
+            }
 
             const endTime = Date.now();
 
@@ -483,7 +610,7 @@ export const ModernModeler: FC = () => {
             setIsAnalyzingLocal(false);
             setIsAnalyzing(false);
         }
-    }, [nodes, members, loads, setAnalysisResults, setIsAnalyzing]);
+    }, [nodes, members, loads, memberLoads, setAnalysisResults, setIsAnalyzing]);
 
     // Close progress modal and show results
     const handleCloseProgressModal = useCallback(() => {

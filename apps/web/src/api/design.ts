@@ -416,3 +416,233 @@ export const BOLT_GRADES = {
     '10.9': { fub: 1000, fyb: 900 },
     '12.9': { fub: 1200, fyb: 1080 },
 };
+
+// ============================================
+// PYTHON API DESIGN FUNCTIONS (IS 456:2000)
+// ============================================
+
+const PYTHON_API = import.meta.env.VITE_PYTHON_API_URL || 'http://localhost:8081';
+
+/**
+ * Design RC beam per IS 456:2000 using Python backend
+ */
+export async function designBeamIS456(params: {
+    width: number;          // mm
+    depth: number;          // mm
+    cover?: number;         // mm (default 40)
+    Mu: number;             // kNm - Design moment
+    Vu: number;             // kN - Design shear
+    fck?: number;           // MPa (default 25)
+    fy?: number;            // MPa (default 500)
+}): Promise<{
+    success: boolean;
+    tension_steel: { diameter: number; count: number; area: number };
+    compression_steel?: { diameter: number; count: number; area: number } | null;
+    stirrups: { diameter: number; legs: number; spacing: number };
+    Mu_capacity: number;
+    Vu_capacity: number;
+    status: string;
+    checks: string[];
+}> {
+    const response = await fetch(`${PYTHON_API}/design/beam`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            width: params.width,
+            depth: params.depth,
+            cover: params.cover ?? 40,
+            Mu: params.Mu,
+            Vu: params.Vu,
+            fck: params.fck ?? 25,
+            fy: params.fy ?? 500
+        })
+    });
+    
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ detail: 'Design failed' }));
+        throw new Error(error.detail || 'Beam design failed');
+    }
+    
+    return response.json();
+}
+
+/**
+ * Design RC column per IS 456:2000 using Python backend
+ */
+export async function designColumnIS456(params: {
+    width: number;          // mm
+    depth: number;          // mm
+    cover?: number;         // mm (default 40)
+    Pu: number;             // kN - Axial load
+    Mux?: number;           // kNm - Moment about x-axis
+    Muy?: number;           // kNm - Moment about y-axis
+    unsupported_length: number;  // mm
+    effective_length_factor?: number;
+    fck?: number;
+    fy?: number;
+}): Promise<{
+    success: boolean;
+    longitudinal_steel: Array<{ diameter: number; count: number; area: number }>;
+    ties: { diameter: number; spacing: number };
+    Pu_capacity: number;
+    Mux_capacity: number;
+    Muy_capacity: number;
+    interaction_ratio: number;
+    status: string;
+    checks: string[];
+}> {
+    const response = await fetch(`${PYTHON_API}/design/column`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            width: params.width,
+            depth: params.depth,
+            cover: params.cover ?? 40,
+            Pu: params.Pu,
+            Mux: params.Mux ?? 0,
+            Muy: params.Muy ?? 0,
+            unsupported_length: params.unsupported_length,
+            effective_length_factor: params.effective_length_factor ?? 1.0,
+            fck: params.fck ?? 25,
+            fy: params.fy ?? 500
+        })
+    });
+    
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ detail: 'Design failed' }));
+        throw new Error(error.detail || 'Column design failed');
+    }
+    
+    return response.json();
+}
+
+/**
+ * Design RC slab per IS 456:2000 using Python backend
+ */
+export async function designSlabIS456(params: {
+    lx: number;             // m - Shorter span
+    ly?: number;            // m - Longer span (0 or omit for one-way)
+    live_load: number;      // kN/m²
+    floor_finish?: number;  // kN/m² (default 1.0)
+    support_type?: string;  // 'simple', 'continuous', 'cantilever'
+    edge_conditions?: string; // 'all_simple', 'all_continuous', 'interior', 'corner'
+    fck?: number;
+    fy?: number;
+}): Promise<{
+    success: boolean;
+    thickness: number;
+    main_reinforcement: { diameter: number; spacing: number; area_per_m: number; direction: string };
+    distribution_reinforcement: { diameter: number; spacing: number; area_per_m: number; direction: string };
+    top_reinforcement?: { diameter: number; spacing: number; area_per_m: number } | null;
+    Mu_capacity: number;
+    Mu_demand: number;
+    deflection_check: number;
+    deflection_limit: number;
+    status: string;
+    checks: string[];
+}> {
+    const response = await fetch(`${PYTHON_API}/design/slab`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            lx: params.lx,
+            ly: params.ly ?? 0,
+            live_load: params.live_load,
+            floor_finish: params.floor_finish ?? 1.0,
+            support_type: params.support_type ?? 'simple',
+            edge_conditions: params.edge_conditions ?? 'all_simple',
+            fck: params.fck ?? 25,
+            fy: params.fy ?? 500
+        })
+    });
+    
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ detail: 'Design failed' }));
+        throw new Error(error.detail || 'Slab design failed');
+    }
+    
+    return response.json();
+}
+
+/**
+ * Auto-design member based on analysis results
+ * Takes max moment and shear from analysis and designs appropriate section
+ */
+export async function autoDesignMember(
+    memberId: string,
+    memberType: 'beam' | 'column' | 'slab',
+    forces: {
+        maxMoment: number;  // kNm
+        maxShear: number;   // kN
+        axialLoad?: number; // kN (for columns)
+        length: number;     // mm
+    },
+    section?: {
+        width: number;      // mm
+        depth: number;      // mm
+    },
+    material?: {
+        fck: number;
+        fy: number;
+    }
+): Promise<{
+    memberId: string;
+    memberType: string;
+    design: unknown;
+    status: string;
+}> {
+    const fck = material?.fck ?? 25;
+    const fy = material?.fy ?? 500;
+    
+    // Default section sizes based on member type
+    const width = section?.width ?? (memberType === 'column' ? 400 : 300);
+    const depth = section?.depth ?? (memberType === 'column' ? 400 : 500);
+    
+    try {
+        let design;
+        
+        if (memberType === 'beam') {
+            design = await designBeamIS456({
+                width,
+                depth,
+                Mu: forces.maxMoment,
+                Vu: forces.maxShear,
+                fck,
+                fy
+            });
+        } else if (memberType === 'column') {
+            design = await designColumnIS456({
+                width,
+                depth,
+                Pu: forces.axialLoad ?? 0,
+                Mux: forces.maxMoment,
+                unsupported_length: forces.length,
+                fck,
+                fy
+            });
+        } else {
+            // Slab - convert forces to per-meter basis
+            const span = forces.length / 1000; // Convert to m
+            design = await designSlabIS456({
+                lx: span,
+                live_load: 3,  // Assume 3 kN/m² live load
+                fck,
+                fy
+            });
+        }
+        
+        return {
+            memberId,
+            memberType,
+            design,
+            status: (design as { status: string }).status
+        };
+    } catch (error) {
+        return {
+            memberId,
+            memberType,
+            design: null,
+            status: 'ERROR: ' + (error instanceof Error ? error.message : 'Unknown error')
+        };
+    }
+}
