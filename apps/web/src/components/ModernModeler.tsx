@@ -52,6 +52,7 @@ import SeismicLoadDialog from './SeismicLoadDialog';
 import MovingLoadDialog from './MovingLoadDialog';
 import { AdvancedAnalysisDialog } from './AdvancedAnalysisDialog';
 import { DesignCodesDialog } from './DesignCodesDialog';
+import { LegalConsentModal, useCheckLegalConsent } from './LegalConsentModal';
 import type { Node, Member } from '../store/model';
 
 // Analysis service
@@ -254,6 +255,10 @@ export const ModernModeler: FC = () => {
     // Tutorial overlay for first-time users
     const [showTutorial, setShowTutorial] = useState(false);
 
+    // Legal consent state
+    const { hasConsent } = useCheckLegalConsent();
+    const [showLegalConsent, setShowLegalConsent] = useState(false);
+
     // Modal states from uiStore (for cross-component access)
     const modals = useUIStore((s) => s.modals);
     const openModal = useUIStore((s) => s.openModal);
@@ -362,6 +367,12 @@ export const ModernModeler: FC = () => {
 
     // Run analysis
     const handleRunAnalysis = useCallback(async () => {
+        // Check legal consent first
+        if (hasConsent === false) {
+            setShowLegalConsent(true);
+            return;
+        }
+
         setIsAnalyzingLocal(true);
         setIsAnalyzing(true);
         setShowProgressModal(true);
@@ -374,7 +385,7 @@ export const ModernModeler: FC = () => {
         try {
             // Check if we have member loads (UDL, point loads on members)
             const hasMemberLoads = memberLoads.length > 0;
-            
+
             // Build model data for analysis
             const nodesArray = Array.from(nodes.values()).map(n => ({
                 id: n.id,
@@ -393,7 +404,7 @@ export const ModernModeler: FC = () => {
                                 : 'none'
                 ) : 'none'
             }));
-            
+
             const membersArray = Array.from(members.values()).map(m => ({
                 id: m.id,
                 startNodeId: m.startNodeId,
@@ -453,7 +464,7 @@ export const ModernModeler: FC = () => {
 
                 // Call Python API for frame analysis
                 const PYTHON_API = import.meta.env['VITE_PYTHON_API_URL'] || 'http://localhost:8081';
-                
+
                 try {
                     setAnalysisStage('solving');
                     setAnalysisProgress(50);
@@ -475,7 +486,7 @@ export const ModernModeler: FC = () => {
                     }
 
                     const pythonResult = await response.json();
-                    
+
                     if (pythonResult.success) {
                         result = {
                             success: true,
@@ -505,8 +516,8 @@ export const ModernModeler: FC = () => {
                         result = { success: false, error: pythonResult.error || 'Python analysis failed' };
                     }
                 } catch (err) {
-                    result = { 
-                        success: false, 
+                    result = {
+                        success: false,
                         error: err instanceof Error ? err.message : 'Failed to connect to analysis server'
                     };
                 }
@@ -841,14 +852,24 @@ export const ModernModeler: FC = () => {
                 onClose={() => closeModal('advancedAnalysis')}
             />
 
-            {/* Design Codes Dialog (Steel, Concrete, Connections, Foundations) */}
+            {/* Design Codes Dialog */}
             <DesignCodesDialog
                 isOpen={modals.designCodes}
                 onClose={() => closeModal('designCodes')}
+            />
+
+            {/* Legal Consent Modal - Required before analysis */}
+            <LegalConsentModal
+                open={showLegalConsent}
+                onAccept={() => {
+                    setShowLegalConsent(false);
+                    // Re-run analysis after consent is given
+                    setTimeout(() => handleRunAnalysis(), 100);
+                }}
+                canClose={false}
             />
         </div>
     );
 };
 
 export default ModernModeler;
-
