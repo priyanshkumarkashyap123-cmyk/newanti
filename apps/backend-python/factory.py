@@ -493,3 +493,321 @@ class StructuralFactory:
                 "units": "kN, m"
             }
         )
+
+    # ============================================
+    # WARREN TRUSS GENERATOR
+    # ============================================
+
+    @staticmethod
+    def generate_warren_truss(
+        span: float,
+        height: float,
+        bays: int
+    ) -> StructuralModel:
+        """
+        Generate a Warren truss (triangular pattern without verticals).
+        
+        Warren truss characteristics:
+        - Equilateral or isosceles triangles
+        - No vertical members
+        - Alternating tension/compression in diagonals
+        """
+        nodes: List[Node] = []
+        members: List[Member] = []
+        
+        bay_width = span / bays
+        node_counter = 1
+        member_counter = 1
+        
+        bottom_nodes: List[str] = []
+        top_nodes: List[str] = []
+        
+        # Generate bottom chord nodes
+        for i in range(bays + 1):
+            x = i * bay_width
+            node_id = f"N{node_counter}"
+            
+            support = SupportType.NONE
+            if i == 0:
+                support = SupportType.PINNED
+            elif i == bays:
+                support = SupportType.ROLLER
+            
+            nodes.append(Node(id=node_id, x=round(x, 4), y=0, z=0, support=support))
+            bottom_nodes.append(node_id)
+            node_counter += 1
+        
+        # Generate top chord nodes (offset by half bay width)
+        for i in range(bays):
+            x = (i + 0.5) * bay_width
+            node_id = f"N{node_counter}"
+            nodes.append(Node(id=node_id, x=round(x, 4), y=height, z=0, support=SupportType.NONE))
+            top_nodes.append(node_id)
+            node_counter += 1
+        
+        # Bottom chord members
+        for i in range(bays):
+            members.append(Member(
+                id=f"M{member_counter}",
+                start_node=bottom_nodes[i],
+                end_node=bottom_nodes[i + 1],
+                section_profile="ISA100x100x10",
+                member_type=MemberType.CHORD
+            ))
+            member_counter += 1
+        
+        # Top chord members
+        for i in range(bays - 1):
+            members.append(Member(
+                id=f"M{member_counter}",
+                start_node=top_nodes[i],
+                end_node=top_nodes[i + 1],
+                section_profile="ISA100x100x10",
+                member_type=MemberType.CHORD
+            ))
+            member_counter += 1
+        
+        # Diagonal members (zigzag pattern)
+        for i in range(bays):
+            # Rising diagonal (bottom left to top)
+            members.append(Member(
+                id=f"M{member_counter}",
+                start_node=bottom_nodes[i],
+                end_node=top_nodes[i],
+                section_profile="ISA75x75x8",
+                member_type=MemberType.DIAGONAL
+            ))
+            member_counter += 1
+            
+            # Falling diagonal (top to bottom right)
+            members.append(Member(
+                id=f"M{member_counter}",
+                start_node=top_nodes[i],
+                end_node=bottom_nodes[i + 1],
+                section_profile="ISA75x75x8",
+                member_type=MemberType.DIAGONAL
+            ))
+            member_counter += 1
+        
+        return StructuralModel(
+            nodes=nodes,
+            members=members,
+            metadata={
+                "name": f"Warren Truss ({span}m span, {bays} bays)",
+                "span": str(span),
+                "height": str(height),
+                "bays": str(bays),
+                "units": "kN, m"
+            }
+        )
+
+    # ============================================
+    # HOWE TRUSS GENERATOR
+    # ============================================
+
+    @staticmethod
+    def generate_howe_truss(
+        span: float,
+        height: float,
+        bays: int
+    ) -> StructuralModel:
+        """
+        Generate a Howe truss (opposite of Pratt).
+        
+        Howe truss characteristics:
+        - Verticals in tension
+        - Diagonals in compression (sloping away from center)
+        """
+        nodes: List[Node] = []
+        members: List[Member] = []
+        
+        bay_width = span / bays
+        node_counter = 1
+        member_counter = 1
+        
+        bottom_nodes: List[str] = []
+        top_nodes: List[str] = []
+        
+        # Generate nodes (same as Pratt)
+        for i in range(bays + 1):
+            x = i * bay_width
+            
+            bottom_id = f"N{node_counter}"
+            support = SupportType.PINNED if i == 0 else (SupportType.ROLLER if i == bays else SupportType.NONE)
+            nodes.append(Node(id=bottom_id, x=round(x, 4), y=0, z=0, support=support))
+            bottom_nodes.append(bottom_id)
+            node_counter += 1
+            
+            top_id = f"N{node_counter}"
+            nodes.append(Node(id=top_id, x=round(x, 4), y=height, z=0, support=SupportType.NONE))
+            top_nodes.append(top_id)
+            node_counter += 1
+        
+        # Chords
+        for i in range(bays):
+            members.append(Member(id=f"M{member_counter}", start_node=bottom_nodes[i], end_node=bottom_nodes[i + 1], section_profile="ISA100x100x10", member_type=MemberType.CHORD))
+            member_counter += 1
+            members.append(Member(id=f"M{member_counter}", start_node=top_nodes[i], end_node=top_nodes[i + 1], section_profile="ISA100x100x10", member_type=MemberType.CHORD))
+            member_counter += 1
+        
+        # Verticals
+        for i in range(bays + 1):
+            members.append(Member(id=f"M{member_counter}", start_node=bottom_nodes[i], end_node=top_nodes[i], section_profile="ISA75x75x8", member_type=MemberType.VERTICAL))
+            member_counter += 1
+        
+        # Diagonals (opposite of Pratt - slope away from center)
+        mid_bay = bays // 2
+        for i in range(bays):
+            if i < mid_bay:
+                members.append(Member(id=f"M{member_counter}", start_node=top_nodes[i], end_node=bottom_nodes[i + 1], section_profile="ISA75x75x8", member_type=MemberType.DIAGONAL))
+            else:
+                members.append(Member(id=f"M{member_counter}", start_node=top_nodes[i + 1], end_node=bottom_nodes[i], section_profile="ISA75x75x8", member_type=MemberType.DIAGONAL))
+            member_counter += 1
+        
+        return StructuralModel(nodes=nodes, members=members, metadata={"name": f"Howe Truss ({span}m)", "span": str(span), "height": str(height), "bays": str(bays), "units": "kN, m"})
+
+    # ============================================
+    # TRANSMISSION TOWER GENERATOR
+    # ============================================
+
+    @staticmethod
+    def generate_tower(
+        base_width: float,
+        top_width: float,
+        height: float,
+        levels: int = 4
+    ) -> StructuralModel:
+        """Generate a tapered lattice tower (like transmission towers)."""
+        import math
+        
+        nodes: List[Node] = []
+        members: List[Member] = []
+        
+        node_counter = 1
+        member_counter = 1
+        
+        level_nodes: List[List[str]] = []
+        level_height = height / levels
+        
+        # Generate nodes at each level (4 corners)
+        for level in range(levels + 1):
+            y = level * level_height
+            t = level / levels
+            current_width = base_width * (1 - t) + top_width * t
+            half_w = current_width / 2
+            
+            level_node_ids = []
+            corners = [(-half_w, -half_w), (half_w, -half_w), (half_w, half_w), (-half_w, half_w)]
+            
+            for x, z in corners:
+                node_id = f"N{node_counter}"
+                support = SupportType.FIXED if level == 0 else SupportType.NONE
+                nodes.append(Node(id=node_id, x=round(x, 4), y=round(y, 4), z=round(z, 4), support=support))
+                level_node_ids.append(node_id)
+                node_counter += 1
+            
+            level_nodes.append(level_node_ids)
+        
+        # Horizontal bracing at each level
+        for level in range(levels + 1):
+            ln = level_nodes[level]
+            for i in range(4):
+                members.append(Member(id=f"M{member_counter}", start_node=ln[i], end_node=ln[(i + 1) % 4], section_profile="ISA50x50x6", member_type=MemberType.BRACE))
+                member_counter += 1
+            # Cross bracing on each face
+            members.append(Member(id=f"M{member_counter}", start_node=ln[0], end_node=ln[2], section_profile="ISA50x50x6", member_type=MemberType.BRACE))
+            member_counter += 1
+            members.append(Member(id=f"M{member_counter}", start_node=ln[1], end_node=ln[3], section_profile="ISA50x50x6", member_type=MemberType.BRACE))
+            member_counter += 1
+        
+        # Vertical legs and X-bracing between levels
+        for level in range(levels):
+            lower = level_nodes[level]
+            upper = level_nodes[level + 1]
+            
+            for i in range(4):
+                # Vertical leg
+                members.append(Member(id=f"M{member_counter}", start_node=lower[i], end_node=upper[i], section_profile="ISA75x75x8", member_type=MemberType.COLUMN))
+                member_counter += 1
+                # X-bracing on face
+                members.append(Member(id=f"M{member_counter}", start_node=lower[i], end_node=upper[(i + 1) % 4], section_profile="ISA50x50x6", member_type=MemberType.DIAGONAL))
+                member_counter += 1
+        
+        return StructuralModel(nodes=nodes, members=members, metadata={"name": f"Lattice Tower ({height}m)", "height": str(height), "base_width": str(base_width), "top_width": str(top_width), "units": "kN, m"})
+
+    # ============================================
+    # BRIDGE TRUSS GENERATOR (Deck Bridge)
+    # ============================================
+
+    @staticmethod
+    def generate_bridge(
+        span: float,
+        deck_width: float,
+        truss_height: float,
+        panels: int = 6
+    ) -> StructuralModel:
+        """Generate a deck-type truss bridge with two parallel trusses."""
+        nodes: List[Node] = []
+        members: List[Member] = []
+        
+        panel_length = span / panels
+        node_counter = 1
+        member_counter = 1
+        
+        # Two parallel trusses at z=0 and z=deck_width
+        for z_pos in [0, deck_width]:
+            bottom_nodes = []
+            top_nodes = []
+            
+            # Create nodes for this truss
+            for i in range(panels + 1):
+                x = i * panel_length
+                
+                # Bottom node (deck level)
+                bot_id = f"N{node_counter}"
+                support = SupportType.PINNED if i == 0 and z_pos == 0 else (SupportType.ROLLER if i in [0, panels] else SupportType.NONE)
+                if i == panels and z_pos == 0:
+                    support = SupportType.ROLLER
+                nodes.append(Node(id=bot_id, x=round(x, 4), y=0, z=round(z_pos, 4), support=support))
+                bottom_nodes.append(bot_id)
+                node_counter += 1
+                
+                # Top node
+                top_id = f"N{node_counter}"
+                nodes.append(Node(id=top_id, x=round(x, 4), y=truss_height, z=round(z_pos, 4), support=SupportType.NONE))
+                top_nodes.append(top_id)
+                node_counter += 1
+            
+            # Bottom chord
+            for i in range(panels):
+                members.append(Member(id=f"M{member_counter}", start_node=bottom_nodes[i], end_node=bottom_nodes[i + 1], section_profile="ISMB400", member_type=MemberType.CHORD))
+                member_counter += 1
+            
+            # Top chord
+            for i in range(panels):
+                members.append(Member(id=f"M{member_counter}", start_node=top_nodes[i], end_node=top_nodes[i + 1], section_profile="ISMB400", member_type=MemberType.CHORD))
+                member_counter += 1
+            
+            # Verticals
+            for i in range(panels + 1):
+                members.append(Member(id=f"M{member_counter}", start_node=bottom_nodes[i], end_node=top_nodes[i], section_profile="ISMB300", member_type=MemberType.VERTICAL))
+                member_counter += 1
+            
+            # Diagonals (Pratt pattern)
+            mid_panel = panels // 2
+            for i in range(panels):
+                if i < mid_panel:
+                    members.append(Member(id=f"M{member_counter}", start_node=bottom_nodes[i], end_node=top_nodes[i + 1], section_profile="ISMB300", member_type=MemberType.DIAGONAL))
+                else:
+                    members.append(Member(id=f"M{member_counter}", start_node=bottom_nodes[i + 1], end_node=top_nodes[i], section_profile="ISMB300", member_type=MemberType.DIAGONAL))
+                member_counter += 1
+        
+        # Cross bracing between trusses (floor beams at bottom chord)
+        for i in range(panels + 1):
+            bot_left = f"N{1 + i * 2}"
+            bot_right = f"N{1 + i * 2 + (panels + 1) * 2}"
+            members.append(Member(id=f"M{member_counter}", start_node=bot_left, end_node=bot_right, section_profile="ISMB350", member_type=MemberType.BEAM))
+            member_counter += 1
+        
+        return StructuralModel(nodes=nodes, members=members, metadata={"name": f"Bridge ({span}m span)", "span": str(span), "deck_width": str(deck_width), "truss_height": str(truss_height), "panels": str(panels), "units": "kN, m"})
+

@@ -628,71 +628,48 @@ def clean_llm_json(raw_text: str) -> str:
     return cleaned.strip()
 
 
+
 @app.post("/generate/ai", tags=["AI Generation"])
 async def generate_from_ai(request: AIGenerateRequest):
     """
-    Generate a structural model from natural language prompt using AI (Upgraded).
+    Generate a structural model from natural language prompt using Enhanced AI Architect.
+    
+    The Enhanced AI Architect uses a hybrid approach:
+    1. Parameter extraction from natural language
+    2. Deterministic factory generation for known structure types
+    3. LLM fallback for complex or unusual requests
     """
     prompt = request.prompt
-    print(f"\n{'='*50}")
-    print(f"[AI ENDPOINT] Received prompt: {prompt}")
-    print(f"[AI ENDPOINT] USE_MOCK_AI: {USE_MOCK_AI}")
+    print(f"\n{'='*60}")
+    print(f"[AI ARCHITECT] Received prompt: {prompt}")
+    print(f"[AI ARCHITECT] USE_MOCK_AI: {USE_MOCK_AI}")
+    print(f"[AI ARCHITECT] API Key Present: {bool(GEMINI_API_KEY)}")
     
     try:
-        # =============================================
-        # MOCK MODE (Fallback)
-        # =============================================
-        if USE_MOCK_AI or not GEMINI_API_KEY:
-            if not GEMINI_API_KEY:
-                print("[AI WARNING] No API Key found, forcing Mock Mode.")
-            
-            print("[AI ENDPOINT] Using MOCK MODE - returning hardcoded response")
-            await asyncio.sleep(1.5)
-            
-            # Simple keyword matching for better mock experience
-            prompt_lower = prompt.lower()
-            if "truss" in prompt_lower:
-                model = StructuralFactory.generate_pratt_truss(span=12, height=3, bays=6)
-            elif "frame" in prompt_lower or "building" in prompt_lower:
-                model = StructuralFactory.generate_3d_frame(width=10, length=10, height=4, stories=2)
-            else:
-                model = StructuralFactory.generate_simple_beam(span=6, support_type="simple")
-            
-            return GenerateResponse(success=True, model=model)
-
-        # =============================================
-        # REAL AI MODE (Gemini Pro)
-        # =============================================
-        import google.generativeai as genai
-        from analysis.ai_prompts import SYSTEM_PROMPT_v2
+        from ai_architect import EnhancedAIArchitect, PromptAnalyzer
         
-        genai.configure(api_key=GEMINI_API_KEY)
-        model = genai.GenerativeModel('gemini-pro')
+        # Step 1: Analyze the prompt
+        params = PromptAnalyzer.analyze(prompt)
+        print(f"[AI ARCHITECT] Detected structure type: {params.structure_type.value}")
+        print(f"[AI ARCHITECT] Extracted params: span={params.span}, height={params.height}, bays={params.bays}, stories={params.stories}")
         
-        full_prompt = f"{SYSTEM_PROMPT_v2}\n\nUSER REQUEST: {prompt}"
+        # Step 2: Initialize architect (with or without API key)
+        api_key = None if USE_MOCK_AI else GEMINI_API_KEY
+        architect = EnhancedAIArchitect(gemini_api_key=api_key)
         
-        print("[AI ENDPOINT] Calling Gemini API with V2 Prompt...")
-        response = model.generate_content(full_prompt)
-        raw_text = response.text
+        # Step 3: Generate the model
+        await asyncio.sleep(0.5)  # Small delay for UX
+        model_dict, generation_method = architect.generate(prompt)
         
-        # Clean JSON
-        cleaned_json = clean_llm_json(raw_text)
+        print(f"[AI ARCHITECT] Generation method: {generation_method}")
+        print(f"[AI ARCHITECT] Generated {len(model_dict.get('nodes', []))} nodes, {len(model_dict.get('members', []))} members")
         
-        # Parse JSON
-        try:
-            parsed = json.loads(cleaned_json)
-        except json.JSONDecodeError:
-            # Simple retry/repair logic (could be expanded)
-            print("[AI RECOVERY] JSON parse failed, trying simplified cleanup...")
-            cleaned_json = cleaned_json.strip().strip('"').strip("'")
-            parsed = json.loads(cleaned_json)
-
-        # Convert to Internal Model
+        # Step 4: Convert to StructuralModel
         from models import Node, Member, SupportType
         
         nodes = []
-        for n in parsed.get("nodes", []):
-            sup_str = str(n.get("support", "NONE")).upper()
+        for n in model_dict.get("nodes", []):
+            sup_str = str(n.get("support", "NONE")).upper().replace("SUPPORTTYPE.", "")
             valid_sups = ["PINNED", "FIXED", "ROLLER", "NONE"]
             support = SupportType(sup_str) if sup_str in valid_sups else SupportType.NONE
             
@@ -705,7 +682,7 @@ async def generate_from_ai(request: AIGenerateRequest):
             ))
         
         members = []
-        for m in parsed.get("members", []):
+        for m in model_dict.get("members", []):
             members.append(Member(
                 id=m["id"],
                 start_node=m["start_node"],
@@ -713,21 +690,58 @@ async def generate_from_ai(request: AIGenerateRequest):
                 section_profile=m.get("section_profile", "ISMB300")
             ))
         
+        metadata = model_dict.get("metadata", {})
+        metadata["generation_method"] = generation_method
+        metadata["original_prompt"] = prompt[:100]
+        
         result_model = StructuralModel(
             nodes=nodes,
             members=members,
-            metadata=parsed.get("metadata", {"name": "AI Generated Structure"})
+            metadata=metadata
         )
         
-        print(f"[AI SUCCESS] Generated {len(nodes)} nodes, {len(members)} members.")
+        print(f"[AI ARCHITECT] ✅ SUCCESS - Returning model: {metadata.get('name', 'unnamed')}")
         return GenerateResponse(success=True, model=result_model)
 
     except Exception as e:
-        print(f"[AI ERROR] {str(e)}")
-        # Fallback to simple beam on crash so user gets SOMETHING
-        fallback = StructuralFactory.generate_simple_beam(6)
-        fallback.metadata = {"name": "Error Fallback", "error": str(e)}
+        import traceback
+        print(f"[AI ARCHITECT] ❌ ERROR: {str(e)}")
+        traceback.print_exc()
+        
+        # Enhanced fallback - try factory based on keywords
+        prompt_lower = prompt.lower()
+        try:
+            if "truss" in prompt_lower:
+                if "warren" in prompt_lower:
+                    fallback = StructuralFactory.generate_warren_truss(span=12, height=3, bays=6)
+                elif "howe" in prompt_lower:
+                    fallback = StructuralFactory.generate_howe_truss(span=12, height=3, bays=6)
+                else:
+                    fallback = StructuralFactory.generate_pratt_truss(span=12, height=3, bays=6)
+            elif "bridge" in prompt_lower:
+                fallback = StructuralFactory.generate_bridge(span=24, deck_width=6, truss_height=4, panels=6)
+            elif "tower" in prompt_lower:
+                fallback = StructuralFactory.generate_tower(base_width=8, top_width=2, height=30, levels=5)
+            elif "portal" in prompt_lower or "shed" in prompt_lower or "warehouse" in prompt_lower:
+                fallback = StructuralFactory.generate_portal_frame(width=20, eave_height=8, roof_angle=15)
+            elif "frame" in prompt_lower or "building" in prompt_lower:
+                fallback = StructuralFactory.generate_3d_frame(width=12, length=12, height=3.5, stories=3)
+            elif "cantilever" in prompt_lower:
+                fallback = StructuralFactory.generate_simple_beam(span=5, support_type="cantilever")
+            elif "continuous" in prompt_lower:
+                fallback = StructuralFactory.generate_continuous_beam(spans=[5, 6, 5])
+            else:
+                fallback = StructuralFactory.generate_simple_beam(span=6, support_type="simple")
+        except Exception:
+            fallback = StructuralFactory.generate_simple_beam(span=6, support_type="simple")
+        
+        fallback.metadata = {
+            "name": "AI Fallback Structure", 
+            "error": str(e),
+            "original_prompt": prompt[:50]
+        }
         return GenerateResponse(success=True, model=fallback)
+
 
 
 # ============================================
