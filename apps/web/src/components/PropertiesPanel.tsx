@@ -105,6 +105,29 @@ export const PropertiesPanel: FC = () => {
     // Local state for new load input
     const [newLoadFy, setNewLoadFy] = useState(-10);
 
+    // State for custom section/material dialogs (must be at top level - React rules of hooks)
+    const [showCustomSection, setShowCustomSection] = useState(false);
+    const [showCustomMaterial, setShowCustomMaterial] = useState(false);
+    const [customA, setCustomA] = useState(100); // Default 100 cm²
+    const [customI, setCustomI] = useState(1000); // Default 1000 cm⁴
+    const [customE, setCustomE] = useState(200); // Default 200 GPa
+
+    // Get current selection for useEffect dependency
+    const selectedId = selectedIds.size === 1 ? Array.from(selectedIds)[0] : null;
+    const selectedMember = selectedId ? members.get(selectedId) : null;
+
+    // Sync custom values when member selection changes
+    useEffect(() => {
+        if (selectedMember) {
+            setCustomA((selectedMember.A ?? 0.01) * 1e4); // Convert to cm²
+            setCustomI((selectedMember.I ?? 1e-4) * 1e8); // Convert to cm⁴
+            setCustomE((selectedMember.E ?? 200e6) / 1e6); // Convert to GPa
+        }
+        // Reset dialogs when selection changes
+        setShowCustomSection(false);
+        setShowCustomMaterial(false);
+    }, [selectedId, selectedMember]);
+
     // 2. Conditional Render: No selection
     if (selectedIds.size === 0) {
         return (
@@ -279,13 +302,6 @@ export const PropertiesPanel: FC = () => {
         const forces = analysisResults?.memberForces.get(id);
         const releases = member.releases ?? { startMoment: false, endMoment: false };
 
-        // State for custom section/material dialogs
-        const [showCustomSection, setShowCustomSection] = useState(false);
-        const [showCustomMaterial, setShowCustomMaterial] = useState(false);
-        const [customA, setCustomA] = useState((member.A ?? 0.01) * 1e4); // Convert to cm²
-        const [customI, setCustomI] = useState((member.I ?? 1e-4) * 1e8); // Convert to cm⁴
-        const [customE, setCustomE] = useState((member.E ?? 200e6) / 1e6); // Convert to GPa
-
         const handleSectionChange = (sectionId: string) => {
             if (sectionId === 'custom') {
                 setShowCustomSection(true);
@@ -358,7 +374,7 @@ export const PropertiesPanel: FC = () => {
                             <option key={opt.id} value={opt.id}>{opt.label}</option>
                         ))}
                     </select>
-                    
+
                     {/* Custom Section Dialog */}
                     {showCustomSection && (
                         <div style={{ background: 'rgba(0,0,0,0.8)', padding: 12, borderRadius: 8, marginTop: 8, border: '1px solid #555' }}>
@@ -394,7 +410,7 @@ export const PropertiesPanel: FC = () => {
                             <option key={opt.id} value={opt.id}>{opt.label}</option>
                         ))}
                     </select>
-                    
+
                     {/* Custom Material Dialog */}
                     {showCustomMaterial && (
                         <div style={{ background: 'rgba(0,0,0,0.8)', padding: 12, borderRadius: 8, marginTop: 8, border: '1px solid #555' }}>
@@ -409,7 +425,7 @@ export const PropertiesPanel: FC = () => {
                             </div>
                         </div>
                     )}
-                    
+
                     {/* Show current E value */}
                     <div style={{ fontSize: 10, color: '#888', marginTop: 4 }}>
                         E = {((member.E ?? 200e6) / 1e6).toFixed(0)} GPa
