@@ -94,7 +94,6 @@ interface UIState {
     propertiesPanelOpen: boolean;
     dataPanelOpen: boolean;
 
-    // Modal states (for cross-component access)
     modals: {
         structureWizard: boolean;
         geometryTools: boolean;
@@ -108,6 +107,9 @@ interface UIState {
         seismicLoadDialog: boolean;
         movingLoadDialog: boolean;
         boundaryDialog: boolean;
+        // ASCE 7 Load Generation
+        asce7SeismicDialog: boolean;
+        loadCombinationsDialog: boolean;
         // Advanced Analysis & Design dialogs
         advancedAnalysis: boolean;
         designCodes: boolean;
@@ -197,6 +199,9 @@ export const useUIStore = create<UIState>()(
                 seismicLoadDialog: false,
                 movingLoadDialog: false,
                 boundaryDialog: false,
+                // ASCE 7 Load Generation
+                asce7SeismicDialog: false,
+                loadCombinationsDialog: false,
                 // Advanced Analysis & Design dialogs
                 advancedAnalysis: false,
                 designCodes: false,
@@ -394,6 +399,8 @@ export const useUIStore = create<UIState>()(
                     seismicLoadDialog: false,
                     movingLoadDialog: false,
                     boundaryDialog: false,
+                    asce7SeismicDialog: false,
+                    loadCombinationsDialog: false,
                     advancedAnalysis: false,
                     designCodes: false,
                     connectionDesign: false,

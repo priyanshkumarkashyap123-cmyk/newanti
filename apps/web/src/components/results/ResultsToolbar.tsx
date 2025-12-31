@@ -86,12 +86,17 @@ const convertToAnalysisResultsData = (results: AnalysisResults): AnalysisResults
         });
     }
 
-    // Convert member forces
+    // Convert member forces - use actual shear/moment data from PyNite analysis
     if (results.memberForces) {
         results.memberForces.forEach((forces, memberId) => {
-            // Generate diagram data points
+            // Forces are already in kN/kNm from PyNite (no need to divide by 1000)
+            const shear = Math.max(Math.abs(forces.shearY), Math.abs(forces.shearZ));
+            const moment = Math.max(Math.abs(forces.momentY), Math.abs(forces.momentZ));
+            const axial = Math.abs(forces.axial);
+            
+            // Generate diagram data points (uniform for now - would need array data for real diagrams)
             const numPoints = 20;
-            const memberLength = 5; // Default length
+            const memberLength = 5; // Default length - would need actual from store
 
             const x_values: number[] = [];
             const shear_values: number[] = [];
@@ -102,21 +107,19 @@ const convertToAnalysisResultsData = (results: AnalysisResults): AnalysisResults
             for (let i = 0; i <= numPoints; i++) {
                 const x = (i / numPoints) * memberLength;
                 x_values.push(x);
-                shear_values.push(forces.shearY / 1000); // kN
-                moment_values.push(forces.momentZ / 1000); // kNm
-                axial_values.push(forces.axial / 1000); // kN
+                // Simple linear interpolation for now
+                shear_values.push(forces.shearY);
+                moment_values.push(forces.momentZ);
+                axial_values.push(forces.axial);
                 deflection_values.push(0);
             }
-
-            const shear = forces.shearY / 1000;
-            const moment = forces.momentZ / 1000;
-            const axial = forces.axial / 1000;
             
-            // Estimate stress (simplified)
-            const estimatedStress = Math.abs(moment) * 10; // Rough MPa
-            const util = Math.min(estimatedStress / 250, 1);
+            // Estimate stress from bending (sigma = M*c/I, simplified)
+            // Assuming typical beam: c ≈ 0.15m, I ≈ 1e-4 m^4
+            const estimatedStress = moment > 0 ? (moment * 0.15) / 1e-4 / 1000 : axial / 0.01 / 1000; // MPa
+            const util = Math.min(Math.abs(estimatedStress) / 250, 1.5); // 250 MPa yield
             
-            maxStress = Math.max(maxStress, estimatedStress);
+            maxStress = Math.max(maxStress, Math.abs(estimatedStress));
             maxUtil = Math.max(maxUtil, util);
 
             members.push({
@@ -130,8 +133,8 @@ const convertToAnalysisResultsData = (results: AnalysisResults): AnalysisResults
                 minMoment: -moment,
                 maxAxial: axial,
                 minAxial: -axial,
-                maxDeflection: 0.005,
-                stress: estimatedStress,
+                maxDeflection: Math.abs(maxDisp * 1000), // Convert to mm
+                stress: Math.abs(estimatedStress),
                 utilization: util,
                 diagramData: {
                     x_values,

@@ -50,6 +50,8 @@ import { LoadDialog } from './LoadDialog';
 import WindLoadDialog from './WindLoadDialog';
 import SeismicLoadDialog from './SeismicLoadDialog';
 import MovingLoadDialog from './MovingLoadDialog';
+import ASCE7SeismicLoadDialog from './ASCE7SeismicLoadDialog';
+import LoadCombinationsDialog from './LoadCombinationsDialog';
 import { AdvancedAnalysisDialog } from './AdvancedAnalysisDialog';
 import { DesignCodesDialog } from './DesignCodesDialog';
 import { LegalConsentModal, useCheckLegalConsent } from './LegalConsentModal';
@@ -299,7 +301,7 @@ export const ModernModeler: FC = () => {
             // Reset previous selection when tool changes or selection is cleared
             previousSelectionRef.current = undefined;
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedIds, activeTool]); // Don't depend on members - it only changes when members are added/removed
 
     // Show quick start on first load if model is empty
@@ -497,27 +499,53 @@ export const ModernModeler: FC = () => {
                     const pythonResult = await response.json();
 
                     if (pythonResult.success) {
+                        // Convert members array to dictionary keyed by memberId
+                        const membersDict: Record<string, any> = {};
+                        if (Array.isArray(pythonResult.members)) {
+                            for (const member of pythonResult.members) {
+                                if (member.memberId) {
+                                    membersDict[member.memberId] = member;
+                                }
+                            }
+                        }
+
+                        // Convert nodes array to dictionary keyed by nodeId
+                        const nodesDict: Record<string, any> = {};
+                        if (Array.isArray(pythonResult.nodes)) {
+                            for (const node of pythonResult.nodes) {
+                                if (node.nodeId) {
+                                    nodesDict[node.nodeId] = node;
+                                }
+                            }
+                        }
+
                         result = {
                             success: true,
-                            displacements: pythonResult.nodes || {},
+                            displacements: nodesDict,
                             reactions: {},
-                            memberForces: pythonResult.members || {},
+                            memberForces: membersDict,
                             stats: { ...pythonResult.metadata, usedPythonApi: true }
                         };
 
                         // Extract reactions from nodes with restraints
                         if (pythonResult.nodes) {
-                            Object.entries(pythonResult.nodes).forEach(([nodeId, data]: [string, any]) => {
+                            const nodesList = Array.isArray(pythonResult.nodes) ? pythonResult.nodes : Object.values(pythonResult.nodes);
+                            nodesList.forEach((data: any) => {
+                                const nodeId = data.nodeId || data.node_id;
                                 const node = nodes.get(nodeId);
                                 if (node?.restraints && (node.restraints.fx || node.restraints.fy || node.restraints.fz)) {
-                                    result.reactions![nodeId] = [
-                                        data.RxnFX ?? 0,
-                                        data.RxnFY ?? 0,
-                                        data.RxnFZ ?? 0,
-                                        data.RxnMX ?? 0,
-                                        data.RxnMY ?? 0,
-                                        data.RxnMZ ?? 0
-                                    ];
+                                    // Check if there's reaction data
+                                    const hasReaction = data.reaction || data.RxnFX !== undefined;
+                                    if (hasReaction) {
+                                        result.reactions![nodeId] = [
+                                            data.reaction?.fx ?? data.RxnFX ?? 0,
+                                            data.reaction?.fy ?? data.RxnFY ?? 0,
+                                            data.reaction?.fz ?? data.RxnFZ ?? 0,
+                                            data.reaction?.mx ?? data.RxnMX ?? 0,
+                                            data.reaction?.my ?? data.RxnMY ?? 0,
+                                            data.reaction?.mz ?? data.RxnMZ ?? 0
+                                        ];
+                                    }
                                 }
                             });
                         }
@@ -559,18 +587,32 @@ export const ModernModeler: FC = () => {
                 const reactions = new Map<string, { fx: number; fy: number; fz: number; mx: number; my: number; mz: number }>();
                 const memberForces = new Map<string, { axial: number; shearY: number; shearZ: number; momentY: number; momentZ: number; torsion: number }>();
 
-                // Parse displacements
+                // Parse displacements - handle both PyNite object format and array format
                 if (result.displacements) {
                     Object.entries(result.displacements).forEach(([nodeId, disp]) => {
-                        const d = disp as number[];
-                        displacements.set(nodeId, {
-                            dx: d[0] ?? 0,
-                            dy: d[1] ?? 0,
-                            dz: d[2] ?? 0,
-                            rx: d[3] ?? 0,
-                            ry: d[4] ?? 0,
-                            rz: d[5] ?? 0
-                        });
+                        // PyNite returns {displacement: {dx, dy, dz, rx, ry, rz}}, simple solver returns [dx, dy, dz, rx, ry, rz]
+                        if (Array.isArray(disp)) {
+                            displacements.set(nodeId, {
+                                dx: disp[0] ?? 0,
+                                dy: disp[1] ?? 0,
+                                dz: disp[2] ?? 0,
+                                rx: disp[3] ?? 0,
+                                ry: disp[4] ?? 0,
+                                rz: disp[5] ?? 0
+                            });
+                        } else if (typeof disp === 'object' && disp !== null) {
+                            const d = disp as Record<string, any>;
+                            // Check if it has nested displacement object (PyNite format) or direct values
+                            const displacement = d.displacement ?? d;
+                            displacements.set(nodeId, {
+                                dx: displacement.dx ?? displacement.DX ?? 0,
+                                dy: displacement.dy ?? displacement.DY ?? 0,
+                                dz: displacement.dz ?? displacement.DZ ?? 0,
+                                rx: displacement.rx ?? displacement.RX ?? 0,
+                                ry: displacement.ry ?? displacement.RY ?? 0,
+                                rz: displacement.rz ?? displacement.RZ ?? 0
+                            });
+                        }
                     });
                 }
 
@@ -589,17 +631,45 @@ export const ModernModeler: FC = () => {
                     });
                 }
 
-                // Parse member forces
+                // Parse member forces - extract from rich PyNite data
                 if (result.memberForces) {
                     Object.entries(result.memberForces).forEach(([memberId, forces]) => {
-                        const f = forces as { axial?: number };
+                        const f = forces as {
+                            axial?: number | number[];
+                            shear_y?: number[];
+                            shear_z?: number[];
+                            moment_y?: number[];
+                            moment_z?: number[];
+                            torsion?: number[];
+                            max_shear_y?: number;
+                            max_shear_z?: number;
+                            max_moment_y?: number;
+                            max_moment_z?: number;
+                        };
+
+                        // Handle both array (PyNite) and scalar (simple solver) formats
+                        const getMaxAbs = (arr: number[] | undefined): number => {
+                            if (!arr || arr.length === 0) return 0;
+                            return Math.max(Math.abs(Math.min(...arr)), Math.abs(Math.max(...arr)));
+                        };
+
+                        // Use max values if available, otherwise calculate from arrays
+                        const axial = f.max_shear_y !== undefined
+                            ? (Array.isArray(f.axial) ? getMaxAbs(f.axial) : (f.axial ?? 0))
+                            : (typeof f.axial === 'number' ? f.axial : 0);
+                        const shearY = f.max_shear_y ?? getMaxAbs(f.shear_y);
+                        const shearZ = f.max_shear_z ?? getMaxAbs(f.shear_z);
+                        const momentY = f.max_moment_y ?? getMaxAbs(f.moment_y);
+                        const momentZ = f.max_moment_z ?? getMaxAbs(f.moment_z);
+                        const torsion = getMaxAbs(f.torsion);
+
                         memberForces.set(memberId, {
-                            axial: f.axial ?? 0,
-                            shearY: 0,
-                            shearZ: 0,
-                            momentY: 0,
-                            momentZ: 0,
-                            torsion: 0
+                            axial,
+                            shearY,
+                            shearZ,
+                            momentY,
+                            momentZ,
+                            torsion
                         });
                     });
                 }
@@ -866,6 +936,12 @@ export const ModernModeler: FC = () => {
                 isOpen={modals.designCodes}
                 onClose={() => closeModal('designCodes')}
             />
+
+            {/* ASCE 7 Seismic Load Generator */}
+            <ASCE7SeismicLoadDialog />
+
+            {/* Load Combinations Dialog */}
+            <LoadCombinationsDialog />
 
             {/* Legal Consent Modal - Required before analysis */}
             <LegalConsentModal

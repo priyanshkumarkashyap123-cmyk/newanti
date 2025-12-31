@@ -285,7 +285,7 @@ const EditToolsPanel: FC = () => {
     const [showSplitDialog, setShowSplitDialog] = useState(false);
 
     const hasSelection = selectedIds.size > 0;
-    const selectedMemberId = hasSelection ? 
+    const selectedMemberId = hasSelection ?
         [...selectedIds].find(id => members.has(id)) : null;
 
     return (
@@ -306,11 +306,10 @@ const EditToolsPanel: FC = () => {
                     <button
                         onClick={() => deleteSelection()}
                         disabled={!hasSelection}
-                        className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${
-                            hasSelection 
-                                ? 'text-red-400 bg-red-500/10 hover:bg-red-500/20' 
+                        className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${hasSelection
+                                ? 'text-red-400 bg-red-500/10 hover:bg-red-500/20'
                                 : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
-                        }`}
+                            }`}
                     >
                         <Trash2 className="w-4 h-4" />
                         Delete
@@ -327,11 +326,10 @@ const EditToolsPanel: FC = () => {
                     <button
                         onClick={() => copySelection()}
                         disabled={!hasSelection}
-                        className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${
-                            hasSelection 
-                                ? 'text-blue-400 bg-blue-500/10 hover:bg-blue-500/20' 
+                        className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${hasSelection
+                                ? 'text-blue-400 bg-blue-500/10 hover:bg-blue-500/20'
                                 : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
-                        }`}
+                            }`}
                     >
                         <Copy className="w-4 h-4" />
                         Copy
@@ -339,11 +337,10 @@ const EditToolsPanel: FC = () => {
                     <button
                         onClick={() => pasteClipboard()}
                         disabled={!clipboard}
-                        className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${
-                            clipboard 
-                                ? 'text-green-400 bg-green-500/10 hover:bg-green-500/20' 
+                        className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${clipboard
+                                ? 'text-green-400 bg-green-500/10 hover:bg-green-500/20'
                                 : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
-                        }`}
+                            }`}
                     >
                         <Clipboard className="w-4 h-4" />
                         Paste
@@ -351,11 +348,10 @@ const EditToolsPanel: FC = () => {
                     <button
                         onClick={() => duplicateSelection()}
                         disabled={!hasSelection}
-                        className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${
-                            hasSelection 
-                                ? 'text-purple-400 bg-purple-500/10 hover:bg-purple-500/20' 
+                        className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${hasSelection
+                                ? 'text-purple-400 bg-purple-500/10 hover:bg-purple-500/20'
                                 : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
-                        }`}
+                            }`}
                     >
                         <Plus className="w-4 h-4" />
                         Duplicate
@@ -371,16 +367,15 @@ const EditToolsPanel: FC = () => {
                 <button
                     onClick={() => setShowMoveDialog(!showMoveDialog)}
                     disabled={!hasSelection}
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${
-                        hasSelection 
-                            ? 'text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20' 
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${hasSelection
+                            ? 'text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20'
                             : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
-                    }`}
+                        }`}
                 >
                     <Move className="w-4 h-4" />
                     Move Selection
                 </button>
-                
+
                 {showMoveDialog && hasSelection && (
                     <div className="mt-2 p-3 bg-zinc-800/80 rounded-lg space-y-2">
                         <div className="grid grid-cols-3 gap-2">
@@ -436,16 +431,15 @@ const EditToolsPanel: FC = () => {
                 <button
                     onClick={() => setShowSplitDialog(!showSplitDialog)}
                     disabled={!selectedMemberId}
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${
-                        selectedMemberId 
-                            ? 'text-orange-400 bg-orange-500/10 hover:bg-orange-500/20' 
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${selectedMemberId
+                            ? 'text-orange-400 bg-orange-500/10 hover:bg-orange-500/20'
                             : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
-                    }`}
+                        }`}
                 >
                     <Scissors className="w-4 h-4" />
                     Split Member
                 </button>
-                
+
                 {showSplitDialog && selectedMemberId && (
                     <div className="mt-2 p-3 bg-zinc-800/80 rounded-lg space-y-2">
                         <div>
@@ -514,6 +508,22 @@ const AdvancedToolsPanel: FC = () => {
             color: 'text-red-400',
             bgColor: 'bg-red-500/10',
             borderColor: 'border-red-500/30'
+        },
+        {
+            id: 'asce7SeismicDialog',
+            label: 'ASCE 7 Seismic Load',
+            description: 'ASCE 7-22 ELF procedure (US)',
+            color: 'text-blue-400',
+            bgColor: 'bg-blue-500/10',
+            borderColor: 'border-blue-500/30'
+        },
+        {
+            id: 'loadCombinationsDialog',
+            label: 'Load Combinations',
+            description: 'ASCE 7 / IS 456 combinations',
+            color: 'text-purple-400',
+            bgColor: 'bg-purple-500/10',
+            borderColor: 'border-purple-500/30'
         },
         {
             id: 'movingLoadDialog',
@@ -808,7 +818,7 @@ const ManualLoadsPanel: FC = () => {
                     )}
                 </button>
             </div>
-            
+
             {/* Manual Node Loads */}
             <div className="text-xs text-zinc-500 uppercase tracking-wide pt-2">Node Loads</div>
             <div className="grid grid-cols-3 gap-2">
@@ -1004,7 +1014,7 @@ const DesignChecksPanel: FC = () => {
     return (
         <div className="space-y-3">
             {/* Main Design Dialog Button */}
-            <button 
+            <button
                 onClick={() => openModal('designCodes')}
                 className="w-full flex items-center justify-between px-3 py-3 bg-blue-600/20 rounded-lg text-blue-300 hover:bg-blue-600/30 border border-blue-500/30 transition-colors"
             >
@@ -1017,7 +1027,7 @@ const DesignChecksPanel: FC = () => {
 
             {/* Individual Design Buttons */}
             <div className="space-y-2 pt-2">
-                <button 
+                <button
                     onClick={() => openModal('steelDesign')}
                     className="w-full flex items-center justify-between px-3 py-3 bg-zinc-800/50 rounded-lg text-zinc-300 hover:bg-zinc-700/50 transition-colors"
                 >
@@ -1027,7 +1037,7 @@ const DesignChecksPanel: FC = () => {
                     </span>
                     <ArrowRight className="w-4 h-4 text-zinc-500" />
                 </button>
-                <button 
+                <button
                     onClick={() => openModal('concreteDesign')}
                     className="w-full flex items-center justify-between px-3 py-3 bg-zinc-800/50 rounded-lg text-zinc-300 hover:bg-zinc-700/50 transition-colors"
                 >
@@ -1037,7 +1047,7 @@ const DesignChecksPanel: FC = () => {
                     </span>
                     <ArrowRight className="w-4 h-4 text-zinc-500" />
                 </button>
-                <button 
+                <button
                     onClick={() => openModal('connectionDesign')}
                     className="w-full flex items-center justify-between px-3 py-3 bg-zinc-800/50 rounded-lg text-zinc-300 hover:bg-zinc-700/50 transition-colors"
                 >
@@ -1047,7 +1057,7 @@ const DesignChecksPanel: FC = () => {
                     </span>
                     <ArrowRight className="w-4 h-4 text-zinc-500" />
                 </button>
-                <button 
+                <button
                     onClick={() => openModal('foundationDesign')}
                     className="w-full flex items-center justify-between px-3 py-3 bg-zinc-800/50 rounded-lg text-zinc-300 hover:bg-zinc-700/50 transition-colors"
                 >
