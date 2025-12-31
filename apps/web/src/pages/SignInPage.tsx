@@ -23,21 +23,13 @@ const InHouseSignInForm = () => {
     const { signIn } = useAuth();
     const { socialSignIn } = useAuthStore();
 
-    const handleSocialLogin = async (provider: 'google' | 'github') => {
+    const handleSocialLogin = (provider: 'google' | 'github') => {
         setIsLoading(true);
         setError('');
-        try {
-            const success = await socialSignIn(provider);
-            if (success) {
-                navigate('/app');
-            } else {
-                setError('Failed to sign in with ' + provider);
-            }
-        } catch (err) {
-            setError('An error occurred');
-        } finally {
-            setIsLoading(false);
-        }
+
+        // Redirect to backend OAuth initiation endpoint
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+        window.location.href = `${API_URL}/api/auth/${provider}/login`;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {

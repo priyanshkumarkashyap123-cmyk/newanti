@@ -45,21 +45,13 @@ const InHouseSignUpForm = () => {
 
     const passwordStrength = checkPasswordStrength(formData.password);
 
-    const handleSocialLogin = async (provider: 'google' | 'github') => {
+    const handleSocialLogin = (provider: 'google' | 'github') => {
         setIsLoading(true);
         setError('');
-        try {
-            const success = await socialSignIn(provider);
-            if (success) {
-                navigate('/app');
-            } else {
-                setError('Failed to sign up with ' + provider);
-            }
-        } catch (err) {
-            setError('An error occurred');
-        } finally {
-            setIsLoading(false);
-        }
+
+        // Redirect to backend OAuth initiation endpoint
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+        window.location.href = `${API_URL}/api/auth/${provider}/login`;
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

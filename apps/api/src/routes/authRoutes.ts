@@ -19,6 +19,8 @@ import { Router, Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import axios from 'axios';
+import queryString from 'query-string';
 import { UserModel, RefreshTokenModel, VerificationCodeModel } from '../models.js';
 
 const router = Router();
@@ -32,6 +34,19 @@ const JWT_REFRESH_SECRET = process.env['JWT_REFRESH_SECRET'] || 'beamlab-refresh
 const ACCESS_TOKEN_EXPIRY = '15m'; // 15 minutes
 const REFRESH_TOKEN_EXPIRY = '7d'; // 7 days
 const SALT_ROUNDS = 12;
+
+// OAuth Configurations (From .env)
+const GOOGLE_CLIENT_ID = process.env['GOOGLE_CLIENT_ID'];
+const GOOGLE_CLIENT_SECRET = process.env['GOOGLE_CLIENT_SECRET'];
+const GOOGLE_CALLBACK_URL = process.env['GOOGLE_CALLBACK_URL'] || 'http://localhost:5173/auth/callback/google';
+
+const GITHUB_CLIENT_ID = process.env['GITHUB_CLIENT_ID'];
+const GITHUB_CLIENT_SECRET = process.env['GITHUB_CLIENT_SECRET'];
+const GITHUB_CALLBACK_URL = process.env['GITHUB_CALLBACK_URL'] || 'http://localhost:5173/auth/callback/github';
+
+const LINKEDIN_CLIENT_ID = process.env['LINKEDIN_CLIENT_ID'];
+const LINKEDIN_CLIENT_SECRET = process.env['LINKEDIN_CLIENT_SECRET'];
+const LINKEDIN_CALLBACK_URL = process.env['LINKEDIN_CALLBACK_URL'] || 'http://localhost:5173/auth/callback/linkedin';
 
 // ============================================
 // TYPES
@@ -143,6 +158,274 @@ const sanitizeUser = (user: any) => {
         phone: user.phone
     };
 };
+
+// ============================================
+// OAUTH HELPER FUNCTIONS
+// ============================================
+
+/**
+ * Handle OAuth User Login/Signup
+ */
+const handleOAuthUser = async (email: string, firstName: string, lastName: string, avatarUrl: string) => {
+    let user = await UserModel.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+        // Create new user
+        // Generate random password for OAuth users
+        const randomPassword = crypto.randomBytes(16).toString('hex');
+        const hashedPassword = await bcrypt.hash(randomPassword, SALT_ROUNDS);
+
+        user = await UserModel.create({
+            email: email.toLowerCase(),
+            password: hashedPassword,
+            firstName,
+            lastName,
+            avatarUrl,
+            role: 'user',
+            subscriptionTier: 'free',
+            emailVerified: true, // Trusted provider
+            createdAt: new Date(),
+            updatedAt: new Date()
+        });
+    } else {
+        // Update existing user info
+        await UserModel.updateOne(
+            { _id: user._id },
+            {
+                $set: {
+                    firstName,
+                    lastName,
+                    avatarUrl: user.avatarUrl || avatarUrl,
+                    lastLoginAt: new Date(),
+                    emailVerified: true
+                }
+            }
+        );
+    }
+
+    // Generate tokens
+    const accessToken = generateAccessToken({
+        id: user._id.toString(),
+        email: user.email,
+        role: user.role
+    });
+    const refreshToken = generateRefreshToken({ id: user._id.toString() });
+
+    // Store refresh token
+    await RefreshTokenModel.create({
+        userId: user._id,
+        token: refreshToken,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    });
+
+    return { user, accessToken, refreshToken };
+};
+
+// ============================================
+// OAUTH LOGIN REDIRECTS (Initiate Flow)
+// ============================================
+
+router.get('/google/login', (req, res) => {
+    if (!GOOGLE_CLIENT_ID) return res.status(503).json({ message: 'Google OAuth not configured' });
+
+    const params = queryString.stringify({
+        client_id: GOOGLE_CLIENT_ID,
+        redirect_uri: GOOGLE_CALLBACK_URL,
+        response_type: 'code',
+        scope: 'openid email profile',
+        access_type: 'offline',
+        prompt: 'consent'
+    });
+
+    res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);
+});
+
+router.get('/github/login', (req, res) => {
+    if (!GITHUB_CLIENT_ID) return res.status(503).json({ message: 'GitHub OAuth not configured' });
+
+    const params = queryString.stringify({
+        client_id: GITHUB_CLIENT_ID,
+        redirect_uri: GITHUB_CALLBACK_URL,
+        scope: 'read:user user:email',
+    });
+
+    res.redirect(`https://github.com/login/oauth/authorize?${params}`);
+});
+
+router.get('/linkedin/login', (req, res) => {
+    if (!LINKEDIN_CLIENT_ID) return res.status(503).json({ message: 'LinkedIn OAuth not configured' });
+
+    const params = queryString.stringify({
+        response_type: 'code',
+        client_id: LINKEDIN_CLIENT_ID,
+        redirect_uri: LINKEDIN_CALLBACK_URL,
+        scope: 'openid profile email',
+    });
+
+    res.redirect(`https://www.linkedin.com/oauth/v2/authorization?${params}`);
+});
+
+// ============================================
+// ROUTES
+// ============================================
+
+/**
+ * POST /api/auth/google - Google OAuth
+ */
+router.post('/google', async (req: Request, res: Response) => {
+    try {
+        const { code } = req.body;
+        if (!code) return res.status(400).json({ message: 'Authorization code required' });
+
+        if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
+            return res.status(503).json({ message: 'Google OAuth not configured' });
+        }
+
+        // Exchange code for tokens
+        const { data: { access_token } } = await axios.post('https://oauth2.googleapis.com/token', {
+            client_id: GOOGLE_CLIENT_ID,
+            client_secret: GOOGLE_CLIENT_SECRET,
+            code,
+            grant_type: 'authorization_code',
+            redirect_uri: GOOGLE_CALLBACK_URL,
+        });
+
+        // Get user info
+        const { data: profile } = await axios.get('https://www.googleapis.com/oauth2/v2/userinfo', {
+            headers: { Authorization: `Bearer ${access_token}` },
+        });
+
+        const result = await handleOAuthUser(
+            profile.email,
+            profile.given_name,
+            profile.family_name || '',
+            profile.picture
+        );
+
+        res.json({
+            success: true,
+            user: sanitizeUser(result.user),
+            accessToken: result.accessToken,
+            refreshToken: result.refreshToken
+        });
+    } catch (error: any) {
+        console.error('Google OAuth error:', error.response?.data || error.message);
+        res.status(500).json({ success: false, message: 'Google authentication failed' });
+    }
+});
+
+/**
+ * POST /api/auth/github - GitHub OAuth
+ */
+router.post('/github', async (req: Request, res: Response) => {
+    try {
+        const { code } = req.body;
+        if (!code) return res.status(400).json({ message: 'Authorization code required' });
+
+        if (!GITHUB_CLIENT_ID || !GITHUB_CLIENT_SECRET) {
+            return res.status(503).json({ message: 'GitHub OAuth not configured' });
+        }
+
+        // Exchange code for tokens
+        const { data: tokenData } = await axios.post('https://github.com/login/oauth/access_token', {
+            client_id: GITHUB_CLIENT_ID,
+            client_secret: GITHUB_CLIENT_SECRET,
+            code,
+            redirect_uri: GITHUB_CALLBACK_URL
+        }, {
+            headers: { Accept: 'application/json' }
+        });
+
+        if (tokenData.error) throw new Error(tokenData.error_description);
+
+        // Get user info
+        const { data: profile } = await axios.get('https://api.github.com/user', {
+            headers: { Authorization: `Bearer ${tokenData.access_token}` },
+        });
+
+        // Get user email (might be private)
+        let email = profile.email;
+        if (!email) {
+            const { data: emails } = await axios.get('https://api.github.com/user/emails', {
+                headers: { Authorization: `Bearer ${tokenData.access_token}` },
+            });
+            const primary = emails.find((e: any) => e.primary && e.verified);
+            email = primary ? primary.email : emails[0].email;
+        }
+
+        const [firstName, ...lastNameParts] = (profile.name || profile.login).split(' ');
+        const lastName = lastNameParts.join(' ');
+
+        const result = await handleOAuthUser(
+            email,
+            firstName,
+            lastName || '',
+            profile.avatar_url
+        );
+
+        res.json({
+            success: true,
+            user: sanitizeUser(result.user),
+            accessToken: result.accessToken,
+            refreshToken: result.refreshToken
+        });
+
+    } catch (error: any) {
+        console.error('GitHub OAuth error:', error.response?.data || error.message);
+        res.status(500).json({ success: false, message: 'GitHub authentication failed' });
+    }
+});
+
+/**
+ * POST /api/auth/linkedin - LinkedIn OAuth
+ */
+router.post('/linkedin', async (req: Request, res: Response) => {
+    try {
+        const { code } = req.body;
+        if (!code) return res.status(400).json({ message: 'Authorization code required' });
+
+        if (!LINKEDIN_CLIENT_ID || !LINKEDIN_CLIENT_SECRET) {
+            return res.status(503).json({ message: 'LinkedIn OAuth not configured' });
+        }
+
+        // Exchange code for tokens
+        const tokenParams = new URLSearchParams({
+            grant_type: 'authorization_code',
+            code,
+            redirect_uri: LINKEDIN_CALLBACK_URL,
+            client_id: LINKEDIN_CLIENT_ID,
+            client_secret: LINKEDIN_CLIENT_SECRET,
+        });
+
+        const { data: tokenData } = await axios.post('https://www.linkedin.com/oauth/v2/accessToken',
+            tokenParams.toString(),
+            { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+        );
+
+        // Get user info
+        const { data: profile } = await axios.get('https://api.linkedin.com/v2/userinfo', {
+            headers: { Authorization: `Bearer ${tokenData.access_token}` },
+        });
+
+        const result = await handleOAuthUser(
+            profile.email,
+            profile.given_name,
+            profile.family_name,
+            profile.picture
+        );
+
+        res.json({
+            success: true,
+            user: sanitizeUser(result.user),
+            accessToken: result.accessToken,
+            refreshToken: result.refreshToken
+        });
+
+    } catch (error: any) {
+        console.error('LinkedIn OAuth error:', error.response?.data || error.message);
+        res.status(500).json({ success: false, message: 'LinkedIn authentication failed' });
+    }
+});
 
 // ============================================
 // ROUTES

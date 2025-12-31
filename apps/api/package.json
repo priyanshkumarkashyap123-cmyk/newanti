@@ -15,7 +15,9 @@
     "dependencies": {
         "@clerk/express": "^1.7.58",
         "@google/generative-ai": "^0.24.1",
+        "@types/query-string": "^6.3.0",
         "@types/uuid": "^11.0.0",
+        "axios": "^1.13.2",
         "bcryptjs": "^2.4.3",
         "cors": "^2.8.5",
         "express": "^4.21.1",
@@ -26,6 +28,7 @@
         "mongodb": "^6.10.0",
         "mongoose": "^9.0.2",
         "openai": "^6.15.0",
+        "query-string": "^9.3.1",
         "razorpay": "^2.9.6",
         "socket.io": "^4.8.1",
         "stripe": "^20.1.0",
