@@ -361,6 +361,101 @@ export const LandingPage: FC = () => {
             </section>
 
             {/* ================================================
+                WHY ENGINEERS TRUST US SECTION
+                ================================================ */}
+            <section className="py-20 bg-gradient-to-b from-background-light to-white">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl font-bold tracking-tight text-steel-blue sm:text-4xl">
+                            Why Engineers Trust BeamLab
+                        </h2>
+                        <p className="mt-4 text-lg text-steel-blue/70">
+                            Built by engineers, for engineers. We understand what matters.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {/* Verified Accuracy */}
+                        <div className="bg-white rounded-xl p-8 border border-steel-blue/10 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="p-3 rounded-full bg-green-100">
+                                    <span className="material-symbols-outlined text-green-600" style={{ fontSize: '28px' }}>verified</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-steel-blue">Verified Accuracy</h3>
+                            </div>
+                            <p className="text-steel-blue/70 mb-4">
+                                Our solver is validated against standard textbook problems and NAFEMS benchmarks.
+                                We publish our verification results openly.
+                            </p>
+                            <ul className="space-y-2 text-sm text-steel-blue/80">
+                                <li className="flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-green-500" style={{ fontSize: '16px' }}>check</span>
+                                    Cantilever beam ✓
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-green-500" style={{ fontSize: '16px' }}>check</span>
+                                    Simply supported ✓
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-green-500" style={{ fontSize: '16px' }}>check</span>
+                                    Portal frame ✓
+                                </li>
+                            </ul>
+                        </div>
+
+                        {/* Code Compliance */}
+                        <div className="bg-white rounded-xl p-8 border border-steel-blue/10 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="p-3 rounded-full bg-blue-100">
+                                    <span className="material-symbols-outlined text-blue-600" style={{ fontSize: '28px' }}>gavel</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-steel-blue">Code Compliance</h3>
+                            </div>
+                            <p className="text-steel-blue/70 mb-4">
+                                Design checks per international standards. Each check shows the clause reference
+                                so you can verify independently.
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                <span className="px-3 py-1 bg-slate-100 rounded-full text-sm font-medium text-steel-blue">IS 456</span>
+                                <span className="px-3 py-1 bg-slate-100 rounded-full text-sm font-medium text-steel-blue">IS 800</span>
+                                <span className="px-3 py-1 bg-slate-100 rounded-full text-sm font-medium text-steel-blue">AISC 360</span>
+                                <span className="px-3 py-1 bg-slate-100 rounded-full text-sm font-medium text-steel-blue">Eurocode</span>
+                                <span className="px-3 py-1 bg-slate-100 rounded-full text-sm font-medium text-steel-blue">ACI 318</span>
+                            </div>
+                        </div>
+
+                        {/* No Lock-in */}
+                        <div className="bg-white rounded-xl p-8 border border-steel-blue/10 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="p-3 rounded-full bg-purple-100">
+                                    <span className="material-symbols-outlined text-purple-600" style={{ fontSize: '28px' }}>open_in_new</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-steel-blue">No Data Lock-in</h3>
+                            </div>
+                            <p className="text-steel-blue/70 mb-4">
+                                Your models, your data. Export anytime to standard formats.
+                                Import from other software seamlessly.
+                            </p>
+                            <ul className="space-y-2 text-sm text-steel-blue/80">
+                                <li className="flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-purple-500" style={{ fontSize: '16px' }}>download</span>
+                                    Export to DXF (AutoCAD)
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-purple-500" style={{ fontSize: '16px' }}>download</span>
+                                    Export to PDF reports
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-purple-500" style={{ fontSize: '16px' }}>upload</span>
+                                    Import from STAAD
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* ================================================
                 PRICING SECTION
                 ================================================ */}
             <section id="pricing" className="py-24 bg-white">
@@ -481,11 +576,25 @@ export const LandingPage: FC = () => {
 
 const FEATURES = [
     {
+        title: 'Professional Results Display',
+        description: 'Interactive SFD, BMD & deflection diagrams. Click any member to see forces, stresses, and utilization ratios instantly.',
+        icon: 'query_stats',
+        bgColor: 'bg-blue-100 text-blue-600',
+        bullets: ['Force diagrams (SFD/BMD)', 'Stress contours & heatmaps'],
+    },
+    {
+        title: 'Code-Verified Accuracy',
+        description: 'Solver validated against textbook problems and industry benchmarks. IS 456, IS 800, AISC 360, and Eurocode compliant.',
+        icon: 'verified',
+        bgColor: 'bg-emerald-100 text-emerald-600',
+        bullets: ['Benchmark validated', 'Design code checks'],
+    },
+    {
         title: 'True 3D Visualization',
         description: 'Realistic I-beams, channels, and custom sections rendered in real-time. Visualize actual steel and timber members in 3D space.',
         icon: 'view_in_ar',
         bgColor: 'bg-primary/20 text-primary',
-        bullets: ['Real-time deformation', 'Stress heatmaps'],
+        bullets: ['Real-time deformation', 'Mode shape animation'],
     },
     {
         title: 'Transparent Math',
@@ -500,6 +609,13 @@ const FEATURES = [
         icon: 'picture_as_pdf',
         bgColor: 'bg-green-100 text-green-600',
         bullets: ['Customizable headers', 'Vector quality diagrams'],
+    },
+    {
+        title: 'Works Everywhere',
+        description: 'Browser-based means no installation. Works on Windows, Mac, Linux, even tablets. Auto-saves your work to the cloud.',
+        icon: 'devices',
+        bgColor: 'bg-purple-100 text-purple-600',
+        bullets: ['No downloads needed', 'Auto-save & cloud sync'],
     },
 ];
 

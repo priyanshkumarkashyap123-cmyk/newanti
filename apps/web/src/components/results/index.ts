@@ -18,4 +18,14 @@ export {
     ModeShapeControls,
     type ModeShapeData
 } from './ModeShapeRenderer';
-export { default as ResultsToolbar } from './ResultsToolbar';
+export { ResultsToolbar } from './ResultsToolbar';
+
+// New Enhanced Visualization Components
+export { EnhancedDiagramViewer, type DiagramPoint as EnhancedDiagramPoint } from './EnhancedDiagramViewer';
+export { EnhancedHeatMap, type MemberData as HeatMapMemberData, type HeatMapType } from './EnhancedHeatMap';
+export { 
+    AnalysisResultsDashboard, 
+    type AnalysisResultsData,
+    type NodeResult,
+    type MemberResult 
+} from './AnalysisResultsDashboard';
