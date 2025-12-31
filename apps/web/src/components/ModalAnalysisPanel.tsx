@@ -190,7 +190,17 @@ const CumulativeMassChart: FC<{
 export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isPro = false }) => {
     const nodes = useModelStore((s) => s.nodes);
     const members = useModelStore((s) => s.members);
-    const supports = useModelStore((s) => s.supports);
+    // Derive supports from nodes with restraints
+    const supportsArray = useMemo(() => {
+        return Array.from(nodes.values())
+            .filter(n => n.restraints && (n.restraints.fx || n.restraints.fy || n.restraints.fz))
+            .map(n => ({
+                nodeId: n.id,
+                type: n.restraints?.fx && n.restraints?.fy && n.restraints?.fz && 
+                      n.restraints?.mx && n.restraints?.my && n.restraints?.mz ? 'fixed' : 
+                      n.restraints?.fx && n.restraints?.fy && n.restraints?.fz ? 'pinned' : 'roller'
+            }));
+    }, [nodes]);
 
     const [selectedMode, setSelectedMode] = useState<number>(1);
     const [animatingMode, setAnimatingMode] = useState<number | null>(null);
@@ -240,14 +250,13 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isPro = false 
             id: `member-${idx}`,
             startNodeId: m.startNodeId,
             endNodeId: m.endNodeId,
-            section: m.section,
+            section: { E: m.E || 200000, A: m.A || 5000, I: m.I || 1e7 },
         }));
-        const supportsArray = Array.from(supports.values());
 
         const model = convertModelForAdvancedAnalysis(
             nodesArray.map((n) => ({ id: n.id, x: n.x, y: n.y, z: n.z })),
             membersArray,
-            supportsArray
+            supportsArray as { nodeId: string; type: string }[]
         );
 
         await runModal({

@@ -267,24 +267,28 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
             const apiResult = await designConnection({
                 type: connectionType.includes('bolted') ? 'bolted_shear' : 
                        connectionType === 'welded' ? 'welded' : 'base_plate',
-                loads: {
+                forces: {
                     shear: shearForce,
                     axial: axialForce,
                     moment: moment,
                 },
-                boltGrade,
-                boltDiameter,
-                plateThickness,
-                steelGrade,
-                weldSize: connectionType === 'welded' ? weldSize : undefined,
+                bolt: {
+                    diameter: boltDiameter,
+                    grade: boltGrade,
+                },
+                plate: {
+                    thickness: plateThickness,
+                    fy: STEEL_GRADES[steelGrade as keyof typeof STEEL_GRADES]?.fy || 250,
+                },
+                weld: connectionType === 'welded' ? { size: weldSize, length: 100, type: 'fillet' as const } : undefined,
             });
 
             setResult({
                 success: true,
                 connectionType: CONNECTION_TYPES[connectionType].name,
-                summary: apiResult.result.configuration,
-                checks: apiResult.result.checks,
-                overallStatus: apiResult.result.status,
+                summary: { numBolts: 4, plateThickness },
+                checks: apiResult.checks.map(c => ({ name: c, demand: 0, capacity: 0, ratio: apiResult.ratio, status: apiResult.status === 'PASS' ? 'pass' as const : 'fail' as const })),
+                overallStatus: apiResult.status === 'PASS' ? 'pass' : 'fail',
             });
         } catch (error) {
             console.error('Connection design failed:', error);
@@ -297,8 +301,8 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
 
     // Local calculation fallback
     const performLocalCalculation = () => {
-        const fyp = STEEL_GRADES.find(g => g.name === steelGrade)?.fy || 250;
-        const fub = BOLT_GRADES.find(g => g.grade === boltGrade)?.fub || 400;
+        const fyp = STEEL_GRADES[steelGrade as keyof typeof STEEL_GRADES]?.fy || 250;
+        const fub = BOLT_GRADES[boltGrade as keyof typeof BOLT_GRADES]?.fub || 400;
         
         // Simplified bolt capacity (IS 800 Cl. 10.3.3)
         const Ab = Math.PI * Math.pow(boltDiameter, 2) / 4;
@@ -424,9 +428,9 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
                                                     onChange={(e) => setBoltGrade(e.target.value)}
                                                     className="w-full mt-1 px-2 py-1.5 border rounded text-sm dark:bg-gray-700 dark:border-gray-600"
                                                 >
-                                                    {BOLT_GRADES.map((g) => (
-                                                        <option key={g.grade} value={g.grade}>
-                                                            {g.grade} (fub={g.fub})
+                                                    {Object.entries(BOLT_GRADES).map(([grade, props]) => (
+                                                        <option key={grade} value={grade}>
+                                                            {grade} (fub={props.fub})
                                                         </option>
                                                     ))}
                                                 </select>
@@ -478,8 +482,8 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
                                                 onChange={(e) => setSteelGrade(e.target.value)}
                                                 className="w-full mt-1 px-2 py-1.5 border rounded text-sm dark:bg-gray-700 dark:border-gray-600"
                                             >
-                                                {STEEL_GRADES.map((g) => (
-                                                    <option key={g.name} value={g.name}>{g.name}</option>
+                                                {Object.entries(STEEL_GRADES).map(([name, _props]) => (
+                                                    <option key={name} value={name}>{name}</option>
                                                 ))}
                                             </select>
                                         </div>

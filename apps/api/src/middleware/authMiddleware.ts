@@ -9,7 +9,7 @@
  * - JWT_SECRET: Secret key for JWT verification (in-house auth)
  */
 
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, RequestHandler } from 'express';
 import jwt from 'jsonwebtoken';
 import { clerkMiddleware, requireAuth as clerkRequireAuth, getAuth as clerkGetAuth } from '@clerk/express';
 import { UserModel } from '../models.js';
@@ -206,13 +206,13 @@ const clerkGetAuthWrapper = (req: Request) => {
  * Unified auth middleware (optional auth)
  * Use this for routes that can work with or without auth
  */
-export const authMiddleware = USE_CLERK ? clerkAuthWrapper() : inHouseAuthMiddleware;
+export const authMiddleware: RequestHandler = USE_CLERK ? clerkAuthWrapper() as RequestHandler : inHouseAuthMiddleware;
 
 /**
  * Unified require auth middleware
  * Use this for routes that require authentication
  */
-export const requireAuth = USE_CLERK ? clerkRequireAuthWrapper : inHouseRequireAuth;
+export const requireAuth: () => RequestHandler = USE_CLERK ? clerkRequireAuthWrapper : inHouseRequireAuth;
 
 /**
  * Unified get auth helper
@@ -291,7 +291,18 @@ export const isUsingClerk = (): boolean => USE_CLERK;
  */
 export const isUsingInHouseAuth = (): boolean => !USE_CLERK;
 
-export default {
+interface AuthMiddlewareExports {
+    authMiddleware: RequestHandler;
+    requireAuth: () => RequestHandler;
+    getAuth: (req: Request) => { userId: string | null; email: string | null; role: string | null };
+    getUserId: (req: Request) => string | null;
+    isAuthenticated: (req: Request) => boolean;
+    requireRole: (roles: string[]) => RequestHandler;
+    isUsingClerk: () => boolean;
+    isUsingInHouseAuth: () => boolean;
+}
+
+const exports: AuthMiddlewareExports = {
     authMiddleware,
     requireAuth,
     getAuth,
@@ -301,3 +312,5 @@ export default {
     isUsingClerk,
     isUsingInHouseAuth
 };
+
+export default exports;

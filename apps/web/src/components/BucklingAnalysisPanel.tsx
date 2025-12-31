@@ -230,8 +230,18 @@ const EulerCalculator: FC = () => {
 export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = false }) => {
     const nodes = useModelStore((s) => s.nodes);
     const members = useModelStore((s) => s.members);
-    const supports = useModelStore((s) => s.supports);
     const analysisResults = useModelStore((s) => s.analysisResults);
+    // Derive supports from nodes with restraints
+    const supportsArray = useMemo(() => {
+        return Array.from(nodes.values())
+            .filter(n => n.restraints && (n.restraints.fx || n.restraints.fy || n.restraints.fz))
+            .map(n => ({
+                nodeId: n.id,
+                type: n.restraints?.fx && n.restraints?.fy && n.restraints?.fz && 
+                      n.restraints?.mx && n.restraints?.my && n.restraints?.mz ? 'fixed' : 
+                      n.restraints?.fx && n.restraints?.fy && n.restraints?.fz ? 'pinned' : 'roller'
+            }));
+    }, [nodes]);
 
     const [selectedMode, setSelectedMode] = useState<number>(1);
     const [showCalculator, setShowCalculator] = useState(false);
@@ -270,19 +280,18 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
             id: `member-${idx}`,
             startNodeId: m.startNodeId,
             endNodeId: m.endNodeId,
-            section: m.section,
+            section: { E: m.E || 200000, A: m.A || 5000, I: m.I || 1e7 },
         }));
-        const supportsArray = Array.from(supports.values());
 
         const model = convertModelForAdvancedAnalysis(
             nodesArray.map((n) => ({ id: n.id, x: n.x, y: n.y, z: n.z })),
             membersArray,
-            supportsArray
+            supportsArray as { nodeId: string; type: string }[]
         );
 
         // Get loads from analysis results (simplified)
         const loads = nodesArray
-            .filter((n) => !supportsArray.some((s) => s.nodeId === n.id))
+            .filter((n) => !supportsArray.some((s: { nodeId: string; type: string }) => s.nodeId === n.id))
             .slice(0, 1)
             .map((n, i) => ({
                 nodeId: i + 1,
