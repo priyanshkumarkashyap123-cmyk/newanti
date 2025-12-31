@@ -307,8 +307,8 @@ const EditToolsPanel: FC = () => {
                         onClick={() => deleteSelection()}
                         disabled={!hasSelection}
                         className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${hasSelection
-                                ? 'text-red-400 bg-red-500/10 hover:bg-red-500/20'
-                                : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
+                            ? 'text-red-400 bg-red-500/10 hover:bg-red-500/20'
+                            : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
                             }`}
                     >
                         <Trash2 className="w-4 h-4" />
@@ -327,8 +327,8 @@ const EditToolsPanel: FC = () => {
                         onClick={() => copySelection()}
                         disabled={!hasSelection}
                         className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${hasSelection
-                                ? 'text-blue-400 bg-blue-500/10 hover:bg-blue-500/20'
-                                : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
+                            ? 'text-blue-400 bg-blue-500/10 hover:bg-blue-500/20'
+                            : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
                             }`}
                     >
                         <Copy className="w-4 h-4" />
@@ -338,8 +338,8 @@ const EditToolsPanel: FC = () => {
                         onClick={() => pasteClipboard()}
                         disabled={!clipboard}
                         className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${clipboard
-                                ? 'text-green-400 bg-green-500/10 hover:bg-green-500/20'
-                                : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
+                            ? 'text-green-400 bg-green-500/10 hover:bg-green-500/20'
+                            : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
                             }`}
                     >
                         <Clipboard className="w-4 h-4" />
@@ -349,8 +349,8 @@ const EditToolsPanel: FC = () => {
                         onClick={() => duplicateSelection()}
                         disabled={!hasSelection}
                         className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${hasSelection
-                                ? 'text-purple-400 bg-purple-500/10 hover:bg-purple-500/20'
-                                : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
+                            ? 'text-purple-400 bg-purple-500/10 hover:bg-purple-500/20'
+                            : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
                             }`}
                     >
                         <Plus className="w-4 h-4" />
@@ -368,8 +368,8 @@ const EditToolsPanel: FC = () => {
                     onClick={() => setShowMoveDialog(!showMoveDialog)}
                     disabled={!hasSelection}
                     className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${hasSelection
-                            ? 'text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20'
-                            : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
+                        ? 'text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20'
+                        : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
                         }`}
                 >
                     <Move className="w-4 h-4" />
@@ -432,8 +432,8 @@ const EditToolsPanel: FC = () => {
                     onClick={() => setShowSplitDialog(!showSplitDialog)}
                     disabled={!selectedMemberId}
                     className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${selectedMemberId
-                            ? 'text-orange-400 bg-orange-500/10 hover:bg-orange-500/20'
-                            : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
+                        ? 'text-orange-400 bg-orange-500/10 hover:bg-orange-500/20'
+                        : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
                         }`}
                 >
                     <Scissors className="w-4 h-4" />
@@ -580,7 +580,7 @@ const AdvancedToolsPanel: FC = () => {
             {tools.map((tool) => (
                 <button
                     key={tool.id}
-                    onClick={() => openModal(tool.id as 'structureWizard' | 'geometryTools' | 'interoperability' | 'railwayBridge' | 'loadDialog' | 'meshing' | 'windLoadDialog' | 'seismicLoadDialog' | 'movingLoadDialog')}
+                    onClick={() => openModal(tool.id as 'structureWizard' | 'geometryTools' | 'interoperability' | 'railwayBridge' | 'loadDialog' | 'meshing' | 'windLoadDialog' | 'seismicLoadDialog' | 'movingLoadDialog' | 'asce7SeismicDialog' | 'loadCombinationsDialog')}
                     className={`
                         w-full flex flex-col items-start gap-1 px-3 py-2.5 text-sm rounded-lg transition-all
                         ${tool.bgColor} ${tool.color} border ${tool.borderColor}
