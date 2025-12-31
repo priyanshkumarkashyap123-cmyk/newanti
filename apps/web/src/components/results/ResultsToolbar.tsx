@@ -227,6 +227,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
 
     if (!isExpanded) {
         return (
+            <>
             <div className="fixed bottom-4 right-4 z-40">
                 <button
                     onClick={() => setIsExpanded(true)}
@@ -237,10 +238,23 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                     <Maximize2 className="w-3 h-3" />
                 </button>
             </div>
+            {/* Full Results Dashboard Modal - accessible even when collapsed */}
+            {showDashboard && analysisResults && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+                    <div className="w-[95vw] h-[90vh] max-w-[1800px] bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden">
+                        <AnalysisResultsDashboard
+                            results={convertToAnalysisResultsData(analysisResults)}
+                            onClose={() => setShowDashboard(false)}
+                        />
+                    </div>
+                </div>
+            )}
+            </>
         );
     }
 
     return (
+        <>
         <div className="fixed bottom-4 right-4 z-40 w-80 bg-white dark:bg-zinc-900 rounded-xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
@@ -431,6 +445,14 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                     Next Steps
                 </h4>
                 <div className="flex flex-col gap-2">
+                    {/* Full Dashboard Button - Premium feature */}
+                    <button
+                        onClick={() => setShowDashboard(true)}
+                        className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all shadow-lg text-sm"
+                    >
+                        <LayoutDashboard className="w-4 h-4" />
+                        <span className="font-medium">Full Results Dashboard</span>
+                    </button>
                     <button
                         onClick={() => openModal('advancedAnalysis')}
                         className="flex items-center gap-2 px-3 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-800/40 transition-colors text-sm"
@@ -448,6 +470,19 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                 </div>
             </div>
         </div>
+
+        {/* Full Results Dashboard Modal */}
+        {showDashboard && analysisResults && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+                <div className="w-[95vw] h-[90vh] max-w-[1800px] bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden">
+                    <AnalysisResultsDashboard
+                        results={convertToAnalysisResultsData(analysisResults)}
+                        onClose={() => setShowDashboard(false)}
+                    />
+                </div>
+            </div>
+        )}
+        </>
     );
 };
 
