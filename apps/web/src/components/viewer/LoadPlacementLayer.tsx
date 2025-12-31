@@ -356,6 +356,7 @@ export const LoadPlacementLayer: FC<LoadPlacementLayerProps> = ({
     const hoveredMemberIdRef = useRef<string | null>(null);
     const cursorRatioRef = useRef<number>(0.5);
     const showPreviewRef = useRef<boolean>(false);
+    const dragEndRef = useRef<number>(1);
     
     useFrame(() => {
         if (!isLoadToolActive) return;
@@ -377,7 +378,9 @@ export const LoadPlacementLayer: FC<LoadPlacementLayerProps> = ({
                 setShowPreview(true);
             }
             
-            if (isDragging) {
+            // Only update dragEnd if value actually changed (avoid re-renders every frame)
+            if (isDragging && Math.abs(dragEndRef.current - result.ratio) > 0.01) {
+                dragEndRef.current = result.ratio;
                 setDragEnd(result.ratio);
             }
         } else {
@@ -403,6 +406,7 @@ export const LoadPlacementLayer: FC<LoadPlacementLayerProps> = ({
                 setIsDragging(true);
                 setDragStart(cursorRatio);
                 setDragEnd(cursorRatio);
+                dragEndRef.current = cursorRatio; // Reset ref when starting drag
                 gl.domElement.style.cursor = 'grabbing';
             }
         };
