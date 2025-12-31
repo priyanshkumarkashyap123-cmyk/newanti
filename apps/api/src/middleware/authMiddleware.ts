@@ -1,259 +1,89 @@
 /**
- * authMiddleware.ts - Unified Authentication Middleware
+ * authMiddleware.ts - Clerk Authentication Middleware
  * 
- * Supports both Clerk and in-house JWT authentication.
- * Switches based on USE_CLERK environment variable.
+ * Uses Clerk for API authentication.
+ * All protected routes require valid Clerk JWT tokens.
  * 
  * Environment Variables:
- * - USE_CLERK: 'true' | 'false' - Switch between auth providers
- * - JWT_SECRET: Secret key for JWT verification (in-house auth)
+ * - CLERK_SECRET_KEY: Required for Clerk backend verification
  */
 
 import { Request, Response, NextFunction, RequestHandler } from 'express';
-import jwt from 'jsonwebtoken';
 import { clerkMiddleware, requireAuth as clerkRequireAuth, getAuth as clerkGetAuth } from '@clerk/express';
-import { UserModel } from '../models.js';
 
 // ============================================
 // CONFIGURATION
 // ============================================
 
-const USE_CLERK = process.env['USE_CLERK'] === 'true';
-const JWT_SECRET = process.env['JWT_SECRET'] || 'beamlab-secret-key-change-in-production';
-
-console.log(`🔐 API Auth Mode: ${USE_CLERK ? 'Clerk' : 'In-House JWT'}`);
+console.log('🔐 API Auth Mode: Clerk');
 
 // ============================================
 // TYPES
 // ============================================
 
-export interface JWTPayload {
-    userId: string;
-    email: string;
-    role: string;
-    iat?: number;
-    exp?: number;
-}
-
 export interface AuthenticatedRequest extends Request {
     auth?: {
         userId: string;
         email?: string;
-        role?: string;
         sessionId?: string;
     };
 }
 
 // ============================================
-// IN-HOUSE JWT VERIFICATION
+// CLERK MIDDLEWARE
 // ============================================
 
 /**
- * Verify JWT token and extract payload
+ * Clerk authentication middleware
+ * Validates JWT tokens and attaches auth info to request
  */
-const verifyJWT = (token: string): JWTPayload | null => {
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
-        return decoded;
-    } catch {
-        return null;
-    }
-};
+export const authMiddleware: RequestHandler = clerkMiddleware();
 
 /**
- * Extract token from Authorization header
+ * Require authentication middleware
+ * Returns 401 if user is not authenticated
  */
-const extractToken = (req: Request): string | null => {
-    const authHeader = req.headers.authorization;
-    
-    if (!authHeader) {
-        return null;
-    }
-    
-    if (authHeader.startsWith('Bearer ')) {
-        return authHeader.slice(7);
-    }
-    
-    return authHeader;
-};
-
-// ============================================
-// IN-HOUSE MIDDLEWARE
-// ============================================
-
-/**
- * In-house JWT authentication middleware (optional auth)
- * Attaches auth info to request if valid token is present
- */
-const inHouseAuthMiddleware = async (
-    req: AuthenticatedRequest,
-    _res: Response,
-    next: NextFunction
-): Promise<void> => {
-    const token = extractToken(req);
-    
-    if (token) {
-        const payload = verifyJWT(token);
-        
-        if (payload) {
-            req.auth = {
-                userId: payload.userId,
-                email: payload.email,
-                role: payload.role
-            };
-        }
-    }
-    
-    next();
-};
-
-/**
- * In-house JWT require auth middleware
- * Returns 401 if no valid token is present
- */
-const inHouseRequireAuth = () => {
-    return async (
-        req: AuthenticatedRequest,
-        res: Response,
-        next: NextFunction
-    ): Promise<void> => {
-        const token = extractToken(req);
-        
-        if (!token) {
-            res.status(401).json({
-                success: false,
-                message: 'Authentication required'
-            });
-            return;
-        }
-        
-        const payload = verifyJWT(token);
-        
-        if (!payload) {
-            res.status(401).json({
-                success: false,
-                message: 'Invalid or expired token'
-            });
-            return;
-        }
-        
-        // Verify user still exists
-        const user = await UserModel.findById(payload.userId);
-        if (!user) {
-            res.status(401).json({
-                success: false,
-                message: 'User not found'
-            });
-            return;
-        }
-        
-        req.auth = {
-            userId: payload.userId,
-            email: payload.email,
-            role: payload.role
-        };
-        
-        next();
-    };
-};
-
-/**
- * In-house get auth helper
- */
-const inHouseGetAuth = (req: AuthenticatedRequest) => {
-    return {
-        userId: req.auth?.userId ?? null,
-        email: req.auth?.email ?? null,
-        role: req.auth?.role ?? null
-    };
-};
-
-// ============================================
-// CLERK WRAPPER
-// ============================================
-
-/**
- * Clerk auth middleware wrapper
- */
-const clerkAuthWrapper = () => {
-    return clerkMiddleware();
-};
-
-/**
- * Clerk require auth wrapper
- */
-const clerkRequireAuthWrapper = () => {
+export const requireAuth = (): RequestHandler => {
     return clerkRequireAuth();
 };
 
 /**
- * Clerk get auth wrapper
+ * Get authentication info from request
  */
-const clerkGetAuthWrapper = (req: Request) => {
+export const getAuth = (req: Request) => {
     const auth = clerkGetAuth(req);
     return {
         userId: auth.userId ?? null,
-        email: null, // Clerk doesn't provide email directly
-        role: null
+        sessionId: auth.sessionId ?? null
     };
 };
 
-// ============================================
-// UNIFIED EXPORTS
-// ============================================
-
 /**
- * Unified auth middleware (optional auth)
- * Use this for routes that can work with or without auth
- */
-export const authMiddleware: RequestHandler = USE_CLERK ? clerkAuthWrapper() as RequestHandler : inHouseAuthMiddleware;
-
-/**
- * Unified require auth middleware
- * Use this for routes that require authentication
- */
-export const requireAuth: () => RequestHandler = USE_CLERK ? clerkRequireAuthWrapper : inHouseRequireAuth;
-
-/**
- * Unified get auth helper
- * Returns the current user's auth info
- */
-export const getAuth = (req: Request) => {
-    if (USE_CLERK) {
-        return clerkGetAuthWrapper(req);
-    }
-    return inHouseGetAuth(req as AuthenticatedRequest);
-};
-
-/**
- * Get user ID from request
- * Works with both Clerk and in-house auth
+ * Get user ID from request (convenience helper)
  */
 export const getUserId = (req: Request): string | null => {
-    if (USE_CLERK) {
-        const auth = clerkGetAuth(req);
-        return auth.userId ?? null;
-    }
-    return (req as AuthenticatedRequest).auth?.userId ?? null;
+    const auth = clerkGetAuth(req);
+    return auth.userId ?? null;
 };
 
 /**
- * Check if user is authenticated
+ * Check if request is authenticated
  */
 export const isAuthenticated = (req: Request): boolean => {
-    return getUserId(req) !== null;
+    const auth = clerkGetAuth(req);
+    return !!auth.userId;
 };
 
+// ============================================
+// ROLE-BASED ACCESS CONTROL (Optional)
+// ============================================
+
 /**
- * Require specific role middleware
+ * Require specific roles (can be extended based on Clerk metadata)
  */
-export const requireRole = (roles: string[]) => {
-    return async (
-        req: AuthenticatedRequest,
-        res: Response,
-        next: NextFunction
-    ): Promise<void> => {
-        const auth = getAuth(req);
+export const requireRole = (roles: string[]): RequestHandler => {
+    return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        const auth = clerkGetAuth(req);
         
         if (!auth.userId) {
             res.status(401).json({
@@ -262,55 +92,32 @@ export const requireRole = (roles: string[]) => {
             });
             return;
         }
-        
-        // For in-house auth, check role
-        if (!USE_CLERK) {
-            if (!auth.role || !roles.includes(auth.role)) {
-                res.status(403).json({
-                    success: false,
-                    message: 'Insufficient permissions'
-                });
-                return;
-            }
-        }
-        
-        // For Clerk, you might check user metadata
-        // This is a simplified version
-        
+
+        // For now, all authenticated users pass
+        // Can be extended to check Clerk user metadata for roles
+        // const user = await clerkClient.users.getUser(auth.userId);
+        // const userRole = user.publicMetadata.role as string;
+        // if (!roles.includes(userRole)) { ... }
+
         next();
     };
 };
 
-/**
- * Check if using Clerk
- */
-export const isUsingClerk = (): boolean => USE_CLERK;
+// ============================================
+// ERROR HANDLERS
+// ============================================
 
 /**
- * Check if using in-house auth
+ * Handle authentication errors
  */
-export const isUsingInHouseAuth = (): boolean => !USE_CLERK;
-
-interface AuthMiddlewareExports {
-    authMiddleware: RequestHandler;
-    requireAuth: () => RequestHandler;
-    getAuth: (req: Request) => { userId: string | null; email: string | null; role: string | null };
-    getUserId: (req: Request) => string | null;
-    isAuthenticated: (req: Request) => boolean;
-    requireRole: (roles: string[]) => RequestHandler;
-    isUsingClerk: () => boolean;
-    isUsingInHouseAuth: () => boolean;
-}
-
-const exports: AuthMiddlewareExports = {
-    authMiddleware,
-    requireAuth,
-    getAuth,
-    getUserId,
-    isAuthenticated,
-    requireRole,
-    isUsingClerk,
-    isUsingInHouseAuth
+export const handleAuthError = (err: Error, req: Request, res: Response, next: NextFunction): void => {
+    if (err.name === 'ClerkError' || err.message.includes('Unauthenticated')) {
+        res.status(401).json({
+            success: false,
+            message: 'Authentication failed',
+            error: err.message
+        });
+        return;
+    }
+    next(err);
 };
-
-export default exports;

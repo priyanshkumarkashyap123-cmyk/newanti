@@ -26,9 +26,6 @@ import { HelpPage } from './pages/HelpPage';
 import { ReportsPage } from './pages/ReportsPage';
 import ReportViewerEnhanced from './pages/ReportViewerEnhanced';
 import { WorkspaceDemo } from './pages/WorkspaceDemo';
-// OAuth Callback Page
-import OAuthCallbackPage from './pages/OAuthCallbackPage';
-
 // Layouts
 import { WorkspaceLayout } from './layouts/WorkspaceLayout';
 
@@ -329,7 +326,6 @@ function App() {
                 {/* Custom Auth Pages */}
                 <Route path="/sign-in/*" element={<SignInPage />} />
                 <Route path="/sign-up/*" element={<SignUpPage />} />
-                <Route path="/auth/callback/:provider" element={<OAuthCallbackPage />} />
 
                 {/* Settings Page */}
                 <Route path="/settings" element={<SettingsPage />} />

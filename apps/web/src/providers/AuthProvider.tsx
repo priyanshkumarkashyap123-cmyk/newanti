@@ -1,34 +1,39 @@
 /**
- * AuthProvider.tsx - Unified Authentication Provider
+ * AuthProvider.tsx - Clerk Authentication Provider
  * 
- * Provides a single authentication context that can switch between:
- * - Clerk (third-party) - when VITE_USE_CLERK=true
- * - In-house JWT auth - when VITE_USE_CLERK=false or not set
+ * Uses Clerk for all authentication.
+ * Provides unified context for auth state across the app.
  * 
  * Environment Variables:
- * - VITE_USE_CLERK: 'true' | 'false' - Switch between auth providers
- * - VITE_CLERK_PUBLISHABLE_KEY: Required when using Clerk
- * - VITE_API_URL: Backend API URL for in-house auth
+ * - VITE_CLERK_PUBLISHABLE_KEY: Required Clerk publishable key
+ * - VITE_API_URL: Backend API URL
  */
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useMemo, ReactNode } from 'react';
-import { ClerkProvider, useAuth as useClerkAuth, useUser as useClerkUser } from '@clerk/clerk-react';
-import { useAuthStore, type User, type SignUpData } from '../store/authStore';
+import React, { createContext, useContext, useCallback, useMemo, ReactNode } from 'react';
+import { ClerkProvider, useAuth as useClerkAuth, useUser as useClerkUser, SignIn, SignUp } from '@clerk/clerk-react';
 
 // ============================================
 // CONFIGURATION
 // ============================================
 
-// Check which auth system to use
-const USE_CLERK = import.meta.env.VITE_USE_CLERK === 'true';
 const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
-// Log auth mode on startup
-console.log(`🔐 Auth Mode: ${USE_CLERK && CLERK_KEY ? 'Clerk' : 'In-House JWT'}`);
+if (!CLERK_KEY) {
+    console.error('❌ VITE_CLERK_PUBLISHABLE_KEY is required!');
+}
+
+console.log('🔐 Auth Mode: Clerk');
 
 // ============================================
 // UNIFIED AUTH CONTEXT TYPE
 // ============================================
+
+export interface SignUpData {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+}
 
 export interface UnifiedAuthContext {
     // State
@@ -47,7 +52,7 @@ export interface UnifiedAuthContext {
     getToken: () => Promise<string | null>;
 
     // Provider info
-    authProvider: 'clerk' | 'inhouse';
+    authProvider: 'clerk';
 }
 
 export interface UnifiedUser {
@@ -62,99 +67,6 @@ export interface UnifiedUser {
 }
 
 const AuthContext = createContext<UnifiedAuthContext | null>(null);
-
-// ============================================
-// IN-HOUSE AUTH PROVIDER
-// ============================================
-
-const InHouseAuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const store = useAuthStore();
-    const [isLoaded, setIsLoaded] = useState(false);
-
-    // Initialize auth state on mount
-    useEffect(() => {
-        const initAuth = async () => {
-            await store.checkSession();
-            setIsLoaded(true);
-        };
-        initAuth();
-    }, []);
-
-    // Memoize unified user to prevent unnecessary re-renders
-    const unifiedUser: UnifiedUser | null = useMemo(() => {
-        if (!store.user) return null;
-        return {
-            id: store.user.id,
-            email: store.user.email,
-            firstName: store.user.firstName,
-            lastName: store.user.lastName,
-            fullName: `${store.user.firstName} ${store.user.lastName}`.trim() || null,
-            avatarUrl: store.user.avatarUrl || null,
-            emailVerified: store.user.emailVerified,
-            createdAt: store.user.createdAt ? new Date(store.user.createdAt) : null
-        };
-    }, [store.user?.id, store.user?.email, store.user?.firstName, store.user?.lastName, store.user?.avatarUrl, store.user?.emailVerified, store.user?.createdAt]);
-
-    const signIn = useCallback(async (email: string, password: string) => {
-        const success = await store.signIn(email, password);
-        return {
-            success,
-            error: success ? undefined : store.error || 'Sign in failed'
-        };
-    }, [store]);
-
-    const signUp = useCallback(async (data: SignUpData) => {
-        const success = await store.signUp(data);
-        return {
-            success,
-            error: success ? undefined : store.error || 'Sign up failed'
-        };
-    }, [store]);
-
-    const signOut = useCallback(async () => {
-        store.signOut();
-    }, [store]);
-
-    const forgotPassword = useCallback(async (email: string) => {
-        const success = await store.forgotPassword(email);
-        return {
-            success,
-            error: success ? undefined : 'Failed to send reset email'
-        };
-    }, [store]);
-
-    const getToken = useCallback(async () => {
-        // Auto-refresh if needed
-        const token = store.getAccessToken();
-        if (!token && store.tokens?.refreshToken) {
-            const refreshed = await store.refreshSession();
-            if (refreshed) {
-                return store.getAccessToken();
-            }
-        }
-        return token;
-    }, [store]);
-
-    // Memoize context value to prevent unnecessary re-renders
-    const contextValue: UnifiedAuthContext = useMemo(() => ({
-        isLoaded,
-        isSignedIn: !!store.user && !!store.tokens,
-        user: unifiedUser,
-        userId: store.user?.id ?? null,
-        signIn,
-        signUp,
-        signOut,
-        forgotPassword,
-        getToken,
-        authProvider: 'inhouse'
-    }), [isLoaded, store.user, store.tokens, unifiedUser, signIn, signUp, signOut, forgotPassword, getToken]);
-
-    return (
-        <AuthContext.Provider value={contextValue}>
-            {children}
-        </AuthContext.Provider>
-    );
-};
 
 // ============================================
 // CLERK AUTH BRIDGE
@@ -179,11 +91,10 @@ const ClerkAuthBridge: React.FC<{ children: ReactNode }> = ({ children }) => {
         };
     }, [clerkUser?.id, clerkUser?.primaryEmailAddress?.emailAddress, clerkUser?.firstName, clerkUser?.lastName, clerkUser?.fullName, clerkUser?.imageUrl, clerkUser?.createdAt]);
 
-    // Sign in is handled by Clerk components - return guidance
+    // Sign in is handled by Clerk components
     const signIn = useCallback(async (_email: string, _password: string) => {
         // Clerk uses its own UI components for sign in
-        // This is a fallback that suggests using Clerk's SignIn component
-        console.warn('Clerk sign in should use <SignIn /> component');
+        console.warn('Use <SignIn /> component for Clerk authentication');
         return {
             success: false,
             error: 'Please use the Clerk SignIn component'
@@ -192,7 +103,7 @@ const ClerkAuthBridge: React.FC<{ children: ReactNode }> = ({ children }) => {
 
     const signUp = useCallback(async (_data: SignUpData) => {
         // Clerk uses its own UI components for sign up
-        console.warn('Clerk sign up should use <SignUp /> component');
+        console.warn('Use <SignUp /> component for Clerk authentication');
         return {
             success: false,
             error: 'Please use the Clerk SignUp component'
@@ -204,15 +115,8 @@ const ClerkAuthBridge: React.FC<{ children: ReactNode }> = ({ children }) => {
     }, [clerkAuth]);
 
     const forgotPassword = useCallback(async (_email: string) => {
-        console.warn('Clerk handles forgot password via its UI components. This function is a placeholder.');
-        // In a Clerk application, password reset is typically initiated through Clerk's UI components
-        // (e.g., a "Forgot password?" link on the SignIn component).
-        // This unified function can return success: true to indicate the "request" was acknowledged,
-        // or you might trigger a Clerk-specific flow if possible/desired.
-        return {
-            success: true,
-            error: undefined
-        };
+        // Clerk handles password reset via its UI
+        return { success: true, error: undefined };
     }, []);
 
     const getToken = useCallback(async () => {
@@ -253,22 +157,28 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-    // Use Clerk if enabled and key is available
-    if (USE_CLERK && CLERK_KEY) {
+    if (!CLERK_KEY) {
         return (
-            <ClerkProvider publishableKey={CLERK_KEY}>
-                <ClerkAuthBridge>
-                    {children}
-                </ClerkAuthBridge>
-            </ClerkProvider>
+            <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white p-8">
+                <div className="max-w-md text-center">
+                    <h1 className="text-2xl font-bold text-red-400 mb-4">Configuration Error</h1>
+                    <p className="text-slate-300 mb-4">
+                        Missing VITE_CLERK_PUBLISHABLE_KEY environment variable.
+                    </p>
+                    <p className="text-sm text-slate-500">
+                        Please add your Clerk publishable key to your environment configuration.
+                    </p>
+                </div>
+            </div>
         );
     }
 
-    // Otherwise use in-house auth
     return (
-        <InHouseAuthProvider>
-            {children}
-        </InHouseAuthProvider>
+        <ClerkProvider publishableKey={CLERK_KEY}>
+            <ClerkAuthBridge>
+                {children}
+            </ClerkAuthBridge>
+        </ClerkProvider>
     );
 };
 
@@ -277,13 +187,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 // ============================================
 
 /**
- * Main auth hook - works with both Clerk and in-house auth
+ * Main auth hook - works with Clerk
  */
 export const useAuth = (): UnifiedAuthContext => {
     const context = useContext(AuthContext);
 
     if (!context) {
-        // Return a safe default if not in provider (e.g., during SSR or tests)
         return {
             isLoaded: false,
             isSignedIn: false,
@@ -294,7 +203,7 @@ export const useAuth = (): UnifiedAuthContext => {
             signOut: async () => { },
             forgotPassword: async () => ({ success: false, error: 'Auth not initialized' }),
             getToken: async () => null,
-            authProvider: 'inhouse'
+            authProvider: 'clerk'
         };
     }
 
@@ -320,9 +229,8 @@ export const useIsSignedIn = (): boolean => {
 /**
  * Check which auth provider is being used
  */
-export const useAuthProvider = (): 'clerk' | 'inhouse' => {
-    const { authProvider } = useAuth();
-    return authProvider;
+export const useAuthProvider = (): 'clerk' => {
+    return 'clerk';
 };
 
 /**
@@ -338,17 +246,20 @@ export const useAuthLoading = (): boolean => {
 // ============================================
 
 /**
- * Check if Clerk is being used
+ * Always using Clerk
  */
 export const isUsingClerk = (): boolean => {
-    return USE_CLERK && !!CLERK_KEY;
+    return true;
 };
 
 /**
- * Check if in-house auth is being used
+ * Not using in-house auth
  */
 export const isUsingInHouseAuth = (): boolean => {
-    return !USE_CLERK || !CLERK_KEY;
+    return false;
 };
+
+// Re-export Clerk components for convenience
+export { SignIn, SignUp };
 
 export default AuthProvider;
