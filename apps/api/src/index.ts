@@ -47,9 +47,30 @@ app.use(generalRateLimit);
 // CORS & PARSING
 // ============================================
 
-const FRONTEND_URL = process.env['FRONTEND_URL'] || "http://localhost:5173";
+// Allowed origins for CORS
+const ALLOWED_ORIGINS = [
+    process.env['FRONTEND_URL'] || "http://localhost:5173",
+    "https://beamlabultimate.tech",
+    "https://www.beamlabultimate.tech",
+    "https://brave-mushroom-0eae8ec00.4.azurestaticapps.net",
+    "http://localhost:5173",
+    "http://localhost:3000"
+].filter(Boolean);
+
 app.use(cors({
-    origin: FRONTEND_URL,
+    origin: (origin, callback) => {
+        // Allow requests with no origin (mobile apps, curl, etc.)
+        if (!origin) {
+            return callback(null, true);
+        }
+        // Check if origin is in allowed list
+        if (ALLOWED_ORIGINS.includes(origin)) {
+            return callback(null, true);
+        }
+        // Log blocked origins for debugging
+        console.warn(`CORS blocked origin: ${origin}`);
+        return callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']

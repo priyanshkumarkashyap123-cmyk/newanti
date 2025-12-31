@@ -111,7 +111,13 @@ export class SocketServer {
     constructor(httpServer: HTTPServer) {
         this.io = new SocketIOServer(httpServer, {
             cors: {
-                origin: ['http://localhost:5173', 'http://localhost:3000'],
+                origin: [
+                    'http://localhost:5173',
+                    'http://localhost:3000',
+                    'https://beamlabultimate.tech',
+                    'https://www.beamlabultimate.tech',
+                    'https://brave-mushroom-0eae8ec00.4.azurestaticapps.net'
+                ],
                 methods: ['GET', 'POST'],
                 credentials: true
             },

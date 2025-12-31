@@ -1,4 +1,4 @@
-import { FC, useRef, useState, useCallback, useMemo } from 'react';
+import { FC, useRef, useState, useCallback, useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import { useFrame, useThree, ThreeEvent } from '@react-three/fiber';
 import { Line } from '@react-three/drei';
@@ -275,10 +275,10 @@ export const InteractionManager: FC<InteractionManagerProps> = ({
     }, [startPoint]);
 
     // Add keyboard listener
-    useState(() => {
+    useEffect(() => {
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    });
+    }, [handleKeyDown]);
 
     return (
         <>
