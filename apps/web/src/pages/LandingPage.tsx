@@ -37,7 +37,7 @@ export const LandingPage: FC = () => {
 
     // Use unified auth hook
     const { isSignedIn, isLoaded, signOut } = useAuth();
-    const useClerk = isUsingClerk();
+    const isClerkEnabled = isUsingClerk();
 
     // Get user tier for tier-aware UI
     const { isPro, isEnterprise, isFree } = useTierAccess();
@@ -63,7 +63,7 @@ export const LandingPage: FC = () => {
                     >
                         Open App
                     </button>
-                    {useClerk ? (
+                    {isClerkEnabled ? (
                         <UserButton afterSignOutUrl="/" />
                     ) : (
                         <button
@@ -78,7 +78,7 @@ export const LandingPage: FC = () => {
         }
 
         // Not signed in
-        if (useClerk) {
+        if (isClerkEnabled) {
             return (
                 <>
                     <SignInButton mode="modal">

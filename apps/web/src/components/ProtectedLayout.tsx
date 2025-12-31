@@ -53,7 +53,7 @@ const LoadingSpinner: FC = () => (
 export const ProtectedLayout: FC<ProtectedLayoutProps> = ({ children }) => {
     const { isLoaded, isSignedIn, userId } = useAuth();
     const location = useLocation();
-    const useClerk = isUsingClerk();
+    const isClerkEnabled = isUsingClerk();
 
     // Show loading spinner while auth is initializing
     if (!isLoaded) {
@@ -62,7 +62,7 @@ export const ProtectedLayout: FC<ProtectedLayoutProps> = ({ children }) => {
 
     // Redirect to sign-in if not authenticated
     if (!isSignedIn || !userId) {
-        if (useClerk) {
+        if (isClerkEnabled) {
             return <RedirectToSignIn />;
         }
         // For in-house auth, redirect to sign-in page

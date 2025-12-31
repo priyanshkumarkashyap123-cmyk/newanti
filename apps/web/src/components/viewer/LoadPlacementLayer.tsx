@@ -228,19 +228,24 @@ interface MemberHighlightProps {
 }
 
 const MemberHighlight: FC<MemberHighlightProps> = ({ start, end, color, isHovered }) => {
-    const [pulse, setPulse] = useState(1);
+    const lineRef = useRef<any>(null);
     
     useFrame(() => {
-        if (isHovered) {
-            setPulse(1 + Math.sin(Date.now() * 0.006) * 0.15);
+        if (isHovered && lineRef.current) {
+            const pulse = 1 + Math.sin(Date.now() * 0.006) * 0.15;
+            // Directly mutate line width - avoid setState in useFrame
+            if (lineRef.current.material) {
+                lineRef.current.material.linewidth = 6 * pulse;
+            }
         }
     });
 
     return (
         <Line
+            ref={lineRef}
             points={[start, end]}
             color={color}
-            lineWidth={isHovered ? 6 * pulse : 4}
+            lineWidth={isHovered ? 6 : 4}
             transparent
             opacity={0.8}
         />

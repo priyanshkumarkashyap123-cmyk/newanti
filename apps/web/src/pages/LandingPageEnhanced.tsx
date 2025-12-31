@@ -27,7 +27,7 @@ export const LandingPageEnhanced: FC = () => {
     const navigate = useNavigate();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { isSignedIn, isLoaded, signOut } = useAuth();
-    const useClerk = isUsingClerk();
+    const isClerkEnabled = isUsingClerk();
 
     const handleGetStarted = () => {
         if (isSignedIn) {
@@ -49,7 +49,7 @@ export const LandingPageEnhanced: FC = () => {
                     >
                         Open App
                     </button>
-                    {useClerk ? (
+                    {isClerkEnabled ? (
                         <UserButton afterSignOutUrl="/" />
                     ) : (
                         <button
@@ -63,7 +63,7 @@ export const LandingPageEnhanced: FC = () => {
             );
         }
 
-        if (useClerk) {
+        if (isClerkEnabled) {
             return (
                 <>
                     <SignInButton mode="modal">

@@ -291,7 +291,7 @@ const InHouseSignUpForm = () => {
 };
 
 export const SignUpPage = () => {
-    const useClerk = isUsingClerk();
+    const isClerkEnabled = isUsingClerk();
     
     return (
         <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 flex">
@@ -390,7 +390,7 @@ export const SignUpPage = () => {
                     </div>
 
                     {/* Conditional: Clerk or In-House Form */}
-                    {useClerk ? (
+                    {isClerkEnabled ? (
                         <div className="clerk-signup-container">
                             <SignUp
                                 appearance={{
@@ -441,7 +441,7 @@ export const SignUpPage = () => {
                     </div>
 
                     {/* Terms - Only show for Clerk since in-house has its own */}
-                    {useClerk && (
+                    {isClerkEnabled && (
                         <p className="text-xs text-zinc-500 text-center">
                             By signing up, you agree to our{' '}
                             <a href="/terms" className="text-zinc-400 hover:text-zinc-300">Terms of Service</a>

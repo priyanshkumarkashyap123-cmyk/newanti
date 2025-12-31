@@ -52,7 +52,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
 
     // Use unified auth hook
     const { isSignedIn, user, signOut } = useAuth();
-    const useClerk = isUsingClerk();
+    const isClerkEnabled = isUsingClerk();
     const userName = isSignedIn && user?.firstName ? user.firstName : 'Engineer';
 
     const handleLaunchModule = (moduleId: string) => {
@@ -143,7 +143,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                             <p className="text-sm font-medium text-white truncate">{userName}</p>
                             <p className="text-xs text-text-muted">Free Plan</p>
                         </div>
-                        {isSignedIn && useClerk ? (
+                        {isSignedIn && isClerkEnabled ? (
                             <UserButton afterSignOutUrl="/" />
                         ) : isSignedIn ? (
                             <button

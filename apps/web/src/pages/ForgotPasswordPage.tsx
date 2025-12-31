@@ -15,10 +15,10 @@ export const ForgotPasswordPage = () => {
     const [success, setSuccess] = useState(false);
     const navigate = useNavigate();
     const { forgotPassword } = useAuth();
-    const useClerk = isUsingClerk();
+    const isClerkEnabled = isUsingClerk();
 
     // If using Clerk, redirect to Clerk's forgot password
-    if (useClerk) {
+    if (isClerkEnabled) {
         // Clerk handles this through its own UI
         window.location.href = '/sign-in#/forgot-password';
         return null;

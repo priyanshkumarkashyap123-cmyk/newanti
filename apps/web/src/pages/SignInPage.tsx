@@ -160,7 +160,7 @@ const InHouseSignInForm = () => {
 };
 
 export const SignInPage = () => {
-    const useClerk = isUsingClerk();
+    const isClerkEnabled = isUsingClerk();
     
     return (
         <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 flex">
@@ -266,7 +266,7 @@ export const SignInPage = () => {
                     </div>
 
                     {/* Conditional: Clerk or In-House Form */}
-                    {useClerk ? (
+                    {isClerkEnabled ? (
                         <div className="clerk-signin-container">
                             <SignIn
                                 appearance={{

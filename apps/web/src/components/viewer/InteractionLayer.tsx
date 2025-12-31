@@ -10,7 +10,7 @@
  * - Visual feedback with snap indicators
  */
 
-import { FC, useState, useCallback, useEffect, useMemo } from 'react';
+import { FC, useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
 import { Line, Sphere, Ring } from '@react-three/drei';
 import * as THREE from 'three';
@@ -135,19 +135,21 @@ interface SnapIndicatorProps {
 }
 
 const SnapIndicator: FC<SnapIndicatorProps> = ({ position }) => {
-    const [scale, setScale] = useState(1);
+    const groupRef = useRef<THREE.Group>(null);
 
-    useFrame((_, delta) => {
-        // Pulsing animation
-        setScale((prev) => 1 + Math.sin(Date.now() * 0.005) * 0.2);
+    useFrame(() => {
+        // Pulsing animation - mutate scale directly, no setState
+        if (groupRef.current) {
+            const scale = 1 + Math.sin(Date.now() * 0.005) * 0.2;
+            groupRef.current.scale.set(scale, scale, scale);
+        }
     });
 
     return (
-        <group position={[position.x, position.y, position.z]}>
+        <group ref={groupRef} position={[position.x, position.y, position.z]}>
             <Ring
                 args={[0.12, 0.18, 32]}
                 rotation={[-Math.PI / 2, 0, 0]}
-                scale={[scale, scale, scale]}
             >
                 <meshBasicMaterial
                     color={SNAP_INDICATOR_COLOR}
@@ -261,14 +263,28 @@ export const InteractionLayer: FC<InteractionLayerProps> = ({
         };
     }, [isPenToolActive, raycaster, pointer, camera, groundPlane, nodes, gridPlaneY]);
 
+    // ---- Refs to track previous values and avoid unnecessary setState ----
+    const prevCursorRef = useRef<{ x: number; y: number; z: number; snappedToNode?: string } | null>(null);
+    
     // ---- Update cursor position on every frame ----
     useFrame(() => {
         if (!isPenToolActive) return;
 
         const newCursorPoint = calculateCursorPosition();
         if (newCursorPoint) {
-            setCursorPoint(newCursorPoint);
-            setHoveredNodeId(newCursorPoint.snappedToNode || null);
+            // Only update state if position actually changed (avoid infinite re-renders)
+            const prev = prevCursorRef.current;
+            const posChanged = !prev || 
+                Math.abs(prev.x - newCursorPoint.x) > 0.001 ||
+                Math.abs(prev.y - newCursorPoint.y) > 0.001 ||
+                Math.abs(prev.z - newCursorPoint.z) > 0.001;
+            const nodeChanged = prev?.snappedToNode !== newCursorPoint.snappedToNode;
+            
+            if (posChanged || nodeChanged) {
+                prevCursorRef.current = newCursorPoint;
+                setCursorPoint(newCursorPoint);
+                setHoveredNodeId(newCursorPoint.snappedToNode || null);
+            }
         }
     });
 
