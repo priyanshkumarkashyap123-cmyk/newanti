@@ -141,7 +141,7 @@ export const EngineeringRibbon: FC<RibbonProps> = ({ activeCategory }) => {
             </ToolGroup>
             <ToolGroup label="Results">
                 <ToolButton icon={FileText} label="Output" onClick={() => { }} />
-                <ToolButton icon={Download} label="Report" onClick={() => { }} />
+                <ToolButton icon={Download} label="Export" onClick={() => document.dispatchEvent(new CustomEvent('trigger-export'))} />
             </ToolGroup>
         </>
     );

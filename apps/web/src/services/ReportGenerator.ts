@@ -852,380 +852,372 @@ export class ReportGenerator {
         // Save
         this.doc.save(fullFilename);
     }
-}
+    addExecutiveSummary(options: {
+        totalNodes: number;
+        totalMembers: number;
+        totalLoads: number;
+        maxDisplacement: number;
+        maxStress: number;
+        overallStatus: 'PASS' | 'FAIL' | 'WARNING';
+        criticalMembers: string[];
+        analysisTime: number;
+    }): void {
+        const { totalNodes, totalMembers, totalLoads, maxDisplacement, maxStress, overallStatus, criticalMembers, analysisTime } = options;
 
-// ============================================
-// EXECUTIVE SUMMARY
-// ============================================
+        let startY = this.contentTop + 5;
 
-/**
- * Add executive summary section
- */
-addExecutiveSummary(options: {
-    totalNodes: number;
-    totalMembers: number;
-    totalLoads: number;
-    maxDisplacement: number;
-    maxStress: number;
-    overallStatus: 'PASS' | 'FAIL' | 'WARNING';
-    criticalMembers: string[];
-    analysisTime: number;
-}): void {
-    const { totalNodes, totalMembers, totalLoads, maxDisplacement, maxStress, overallStatus, criticalMembers, analysisTime } = options;
-
-    let startY = this.contentTop + 5;
-
-    // Section title
-    this.doc.setFontSize(14);
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.text('Executive Summary', this.margin, startY);
-    startY += 10;
-
-    // Status badge
-    const statusColors: Record<string, [number, number, number]> = {
-        'PASS': [34, 197, 94],
-        'FAIL': [239, 68, 68],
-        'WARNING': [234, 179, 8]
-    };
-
-    const statusColor = statusColors[overallStatus] || statusColors['WARNING'];
-    this.doc.setFillColor(...statusColor);
-    this.doc.roundedRect(this.margin, startY, 40, 8, 2, 2, 'F');
-    this.doc.setTextColor(255, 255, 255);
-    this.doc.setFontSize(10);
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.text(overallStatus, this.margin + 20, startY + 5.5, { align: 'center' });
-    this.doc.setTextColor(0, 0, 0);
-
-    startY += 15;
-
-    // Summary statistics table
-    const summaryData = [
-        ['Model Statistics', ''],
-        ['Total Nodes', totalNodes.toString()],
-        ['Total Members', totalMembers.toString()],
-        ['Total Load Cases', totalLoads.toString()],
-        ['', ''],
-        ['Analysis Results', ''],
-        ['Max Displacement', `${maxDisplacement.toFixed(4)} mm`],
-        ['Max Stress', `${maxStress.toFixed(2)} MPa`],
-        ['Analysis Time', `${analysisTime.toFixed(2)} ms`],
-    ];
-
-    autoTable(this.doc, {
-        startY: startY,
-        head: [],
-        body: summaryData,
-        theme: 'plain',
-        styles: {
-            fontSize: 10,
-            cellPadding: 2,
-        },
-        columnStyles: {
-            0: { fontStyle: 'bold', cellWidth: 50, textColor: [80, 80, 80] },
-            1: { cellWidth: 40, halign: 'right' },
-        },
-        margin: { left: this.margin, right: this.margin },
-        didParseCell: (data) => {
-            // Make section headers bold and colored
-            if (data.row.index === 0 || data.row.index === 5) {
-                data.cell.styles.textColor = [59, 130, 246];
-                data.cell.styles.fontStyle = 'bold';
-            }
-        }
-    });
-
-    // Critical members warning
-    if (criticalMembers.length > 0) {
-        let y = (this.doc as any).lastAutoTable?.finalY + 10 || startY + 60;
-
-        this.doc.setFontSize(11);
+        // Section title
+        this.doc.setFontSize(14);
         this.doc.setFont('helvetica', 'bold');
-        this.doc.setTextColor(239, 68, 68);
-        this.doc.text('⚠ Critical Members Requiring Attention:', this.margin, y);
+        this.doc.text('Executive Summary', this.margin, startY);
+        startY += 10;
+
+        // Status badge
+        const statusColors: Record<string, [number, number, number]> = {
+            'PASS': [34, 197, 94],
+            'FAIL': [239, 68, 68],
+            'WARNING': [234, 179, 8]
+        };
+
+        const statusColor = statusColors[overallStatus] || statusColors['WARNING'];
+        this.doc.setFillColor(...statusColor);
+        this.doc.roundedRect(this.margin, startY, 40, 8, 2, 2, 'F');
+        this.doc.setTextColor(255, 255, 255);
+        this.doc.setFontSize(10);
+        this.doc.setFont('helvetica', 'bold');
+        this.doc.text(overallStatus, this.margin + 20, startY + 5.5, { align: 'center' });
         this.doc.setTextColor(0, 0, 0);
 
-        y += 5;
-        this.doc.setFontSize(9);
-        this.doc.setFont('helvetica', 'normal');
+        startY += 15;
 
-        for (const member of criticalMembers.slice(0, 5)) {
-            y += 4;
-            this.doc.text(`• ${member}`, this.margin + 3, y);
-        }
+        // Summary statistics table
+        const summaryData = [
+            ['Model Statistics', ''],
+            ['Total Nodes', totalNodes.toString()],
+            ['Total Members', totalMembers.toString()],
+            ['Total Load Cases', totalLoads.toString()],
+            ['', ''],
+            ['Analysis Results', ''],
+            ['Max Displacement', `${maxDisplacement.toFixed(4)} mm`],
+            ['Max Stress', `${maxStress.toFixed(2)} MPa`],
+            ['Analysis Time', `${analysisTime.toFixed(2)} ms`],
+        ];
 
-        if (criticalMembers.length > 5) {
-            y += 4;
-            this.doc.setTextColor(100, 100, 100);
-            this.doc.text(`... and ${criticalMembers.length - 5} more`, this.margin + 3, y);
-            this.doc.setTextColor(0, 0, 0);
-        }
-    }
-}
-
-// ============================================
-// DEFLECTION SUMMARY
-// ============================================
-
-/**
- * Add deflection check summary
- */
-addDeflectionSummary(data: Array<{
-    nodeId: string;
-    displacement: number;
-    limit: number;
-    ratio: number;
-    status: 'OK' | 'EXCESSIVE';
-}>): void {
-    this.tableCount++;
-
-    let startY = 60;
-    try {
-        startY = (this.doc as any).lastAutoTable?.finalY + 15 || startY;
-    } catch {
-        // Use default
-    }
-
-    if (startY > this.pageHeight - 80) {
-        this.doc.addPage();
-        this.addHeader('Deflection Checks');
-        startY = this.contentTop + 5;
-    }
-
-    // Title
-    this.doc.setFontSize(12);
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.text('Deflection Summary', this.margin, startY);
-
-    const passCount = data.filter(d => d.status === 'OK').length;
-    const failCount = data.filter(d => d.status === 'EXCESSIVE').length;
-
-    // Summary
-    this.doc.setFontSize(9);
-    this.doc.setFont('helvetica', 'normal');
-    const summaryY = startY + 6;
-    this.doc.setTextColor(34, 197, 94);
-    this.doc.text(`✓ ${passCount} OK`, this.margin, summaryY);
-    this.doc.setTextColor(239, 68, 68);
-    this.doc.text(`✗ ${failCount} Excessive`, this.margin + 30, summaryY);
-    this.doc.setTextColor(0, 0, 0);
-
-    // Table
-    autoTable(this.doc, {
-        startY: summaryY + 5,
-        head: [['Node', 'Displacement (mm)', 'Limit (mm)', 'Ratio', 'Status']],
-        body: data.map(d => [
-            d.nodeId.slice(0, 8),
-            d.displacement.toFixed(4),
-            d.limit.toFixed(2),
-            `L/${(1 / d.ratio).toFixed(0)}`,
-            d.status
-        ]),
-        theme: 'striped',
-        headStyles: {
-            fillColor: [75, 85, 99],
-            textColor: [255, 255, 255],
-            fontStyle: 'bold',
-            fontSize: 8,
-            halign: 'center',
-        },
-        bodyStyles: {
-            fontSize: 8,
-            halign: 'center',
-        },
-        didParseCell: (cellData) => {
-            if (cellData.section === 'body' && cellData.column.index === 4) {
-                const status = cellData.cell.text[0];
-                if (status === 'EXCESSIVE') {
-                    cellData.cell.styles.textColor = [239, 68, 68];
-                    cellData.cell.styles.fontStyle = 'bold';
-                } else {
-                    cellData.cell.styles.textColor = [34, 197, 94];
+        autoTable(this.doc, {
+            startY: startY,
+            head: [],
+            body: summaryData,
+            theme: 'plain',
+            styles: {
+                fontSize: 10,
+                cellPadding: 2,
+            },
+            columnStyles: {
+                0: { fontStyle: 'bold', cellWidth: 50, textColor: [80, 80, 80] },
+                1: { cellWidth: 40, halign: 'right' },
+            },
+            margin: { left: this.margin, right: this.margin },
+            didParseCell: (data) => {
+                // Make section headers bold and colored
+                if (data.row.index === 0 || data.row.index === 5) {
+                    data.cell.styles.textColor = [59, 130, 246];
+                    data.cell.styles.fontStyle = 'bold';
                 }
             }
-        },
-        margin: { left: this.margin, right: this.margin },
-    });
-}
+        });
 
-// ============================================
-// LOAD COMBINATION TABLE
-// ============================================
+        // Critical members warning
+        if (criticalMembers.length > 0) {
+            let y = (this.doc as any).lastAutoTable?.finalY + 10 || startY + 60;
 
-/**
- * Add load combinations table
- */
-addLoadCombinations(combinations: Array<{
-    name: string;
-    type: string;
-    factors: Record<string, number>;
-}>): void {
-    this.tableCount++;
+            this.doc.setFontSize(11);
+            this.doc.setFont('helvetica', 'bold');
+            this.doc.setTextColor(239, 68, 68);
+            this.doc.text('⚠ Critical Members Requiring Attention:', this.margin, y);
+            this.doc.setTextColor(0, 0, 0);
 
-    let startY = 60;
-    try {
-        startY = (this.doc as any).lastAutoTable?.finalY + 15 || startY;
-    } catch {
-        // Use default
+            y += 5;
+            this.doc.setFontSize(9);
+            this.doc.setFont('helvetica', 'normal');
+
+            for (const member of criticalMembers.slice(0, 5)) {
+                y += 4;
+                this.doc.text(`• ${member}`, this.margin + 3, y);
+            }
+
+            if (criticalMembers.length > 5) {
+                y += 4;
+                this.doc.setTextColor(100, 100, 100);
+                this.doc.text(`... and ${criticalMembers.length - 5} more`, this.margin + 3, y);
+                this.doc.setTextColor(0, 0, 0);
+            }
+        }
     }
 
-    if (startY > this.pageHeight - 60) {
-        this.doc.addPage();
-        this.addHeader('Load Combinations');
-        startY = this.contentTop + 5;
+    // ============================================
+    // DEFLECTION SUMMARY
+    // ============================================
+
+    /**
+     * Add deflection check summary
+     */
+    addDeflectionSummary(data: Array<{
+        nodeId: string;
+        displacement: number;
+        limit: number;
+        ratio: number;
+        status: 'OK' | 'EXCESSIVE';
+    }>): void {
+        this.tableCount++;
+
+        let startY = 60;
+        try {
+            startY = (this.doc as any).lastAutoTable?.finalY + 15 || startY;
+        } catch {
+            // Use default
+        }
+
+        if (startY > this.pageHeight - 80) {
+            this.doc.addPage();
+            this.addHeader('Deflection Checks');
+            startY = this.contentTop + 5;
+        }
+
+        // Title
+        this.doc.setFontSize(12);
+        this.doc.setFont('helvetica', 'bold');
+        this.doc.text('Deflection Summary', this.margin, startY);
+
+        const passCount = data.filter(d => d.status === 'OK').length;
+        const failCount = data.filter(d => d.status === 'EXCESSIVE').length;
+
+        // Summary
+        this.doc.setFontSize(9);
+        this.doc.setFont('helvetica', 'normal');
+        const summaryY = startY + 6;
+        this.doc.setTextColor(34, 197, 94);
+        this.doc.text(`✓ ${passCount} OK`, this.margin, summaryY);
+        this.doc.setTextColor(239, 68, 68);
+        this.doc.text(`✗ ${failCount} Excessive`, this.margin + 30, summaryY);
+        this.doc.setTextColor(0, 0, 0);
+
+        // Table
+        autoTable(this.doc, {
+            startY: summaryY + 5,
+            head: [['Node', 'Displacement (mm)', 'Limit (mm)', 'Ratio', 'Status']],
+            body: data.map(d => [
+                d.nodeId.slice(0, 8),
+                d.displacement.toFixed(4),
+                d.limit.toFixed(2),
+                `L/${(1 / d.ratio).toFixed(0)}`,
+                d.status
+            ]),
+            theme: 'striped',
+            headStyles: {
+                fillColor: [75, 85, 99],
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                fontSize: 8,
+                halign: 'center',
+            },
+            bodyStyles: {
+                fontSize: 8,
+                halign: 'center',
+            },
+            didParseCell: (cellData) => {
+                if (cellData.section === 'body' && cellData.column.index === 4) {
+                    const status = cellData.cell.text[0];
+                    if (status === 'EXCESSIVE') {
+                        cellData.cell.styles.textColor = [239, 68, 68];
+                        cellData.cell.styles.fontStyle = 'bold';
+                    } else {
+                        cellData.cell.styles.textColor = [34, 197, 94];
+                    }
+                }
+            },
+            margin: { left: this.margin, right: this.margin },
+        });
     }
 
-    this.doc.setFontSize(12);
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.text('Load Combinations', this.margin, startY);
+    // ============================================
+    // LOAD COMBINATION TABLE
+    // ============================================
 
-    const allLoadNames = [...new Set(combinations.flatMap(c => Object.keys(c.factors)))];
-    const headers = ['Combination', 'Type', ...allLoadNames.map(n => n.slice(0, 6))];
+    /**
+     * Add load combinations table
+     */
+    addLoadCombinations(combinations: Array<{
+        name: string;
+        type: string;
+        factors: Record<string, number>;
+    }>): void {
+        this.tableCount++;
 
-    const rows = combinations.map(c => [
-        c.name,
-        c.type,
-        ...allLoadNames.map(n => (c.factors[n] ?? 0).toFixed(2))
-    ]);
+        let startY = 60;
+        try {
+            startY = (this.doc as any).lastAutoTable?.finalY + 15 || startY;
+        } catch {
+            // Use default
+        }
 
-    autoTable(this.doc, {
-        startY: startY + 5,
-        head: [headers],
-        body: rows,
-        theme: 'grid',
-        headStyles: {
-            fillColor: [75, 85, 99],
-            textColor: [255, 255, 255],
-            fontStyle: 'bold',
-            fontSize: 7,
-            halign: 'center',
-        },
-        bodyStyles: {
-            fontSize: 7,
-            halign: 'center',
-        },
-        margin: { left: this.margin, right: this.margin },
-    });
-}
+        if (startY > this.pageHeight - 60) {
+            this.doc.addPage();
+            this.addHeader('Load Combinations');
+            startY = this.contentTop + 5;
+        }
 
-// ============================================
-// MATERIAL PROPERTIES TABLE
-// ============================================
+        this.doc.setFontSize(12);
+        this.doc.setFont('helvetica', 'bold');
+        this.doc.text('Load Combinations', this.margin, startY);
 
-/**
- * Add material properties table
- */
-addMaterialProperties(materials: Array<{
-    name: string;
-    E: number;  // GPa
-    fy: number; // MPa
-    fu?: number; // MPa
-    density: number; // kg/m³
-    type: string;
-}>): void {
-    this.tableCount++;
+        const allLoadNames = [...new Set(combinations.flatMap(c => Object.keys(c.factors)))];
+        const headers = ['Combination', 'Type', ...allLoadNames.map(n => n.slice(0, 6))];
 
-    let startY = 60;
-    try {
-        startY = (this.doc as any).lastAutoTable?.finalY + 15 || startY;
-    } catch {
-        // Use default
+        const rows = combinations.map(c => [
+            c.name,
+            c.type,
+            ...allLoadNames.map(n => (c.factors[n] ?? 0).toFixed(2))
+        ]);
+
+        autoTable(this.doc, {
+            startY: startY + 5,
+            head: [headers],
+            body: rows,
+            theme: 'grid',
+            headStyles: {
+                fillColor: [75, 85, 99],
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                fontSize: 7,
+                halign: 'center',
+            },
+            bodyStyles: {
+                fontSize: 7,
+                halign: 'center',
+            },
+            margin: { left: this.margin, right: this.margin },
+        });
     }
 
-    this.doc.setFontSize(12);
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.text('Material Properties', this.margin, startY);
+    // ============================================
+    // MATERIAL PROPERTIES TABLE
+    // ============================================
 
-    autoTable(this.doc, {
-        startY: startY + 5,
-        head: [['Material', 'Type', 'E (GPa)', 'fy (MPa)', 'fu (MPa)', 'ρ (kg/m³)']],
-        body: materials.map(m => [
-            m.name,
-            m.type,
-            m.E.toFixed(0),
-            m.fy.toFixed(0),
-            (m.fu ?? '-').toString(),
-            m.density.toFixed(0)
-        ]),
-        theme: 'striped',
-        headStyles: {
-            fillColor: [59, 130, 246],
-            textColor: [255, 255, 255],
-            fontStyle: 'bold',
-            fontSize: 9,
-            halign: 'center',
-        },
-        bodyStyles: {
-            fontSize: 9,
-            halign: 'center',
-        },
-        margin: { left: this.margin, right: this.margin },
-    });
-}
+    /**
+     * Add material properties table
+     */
+    addMaterialProperties(materials: Array<{
+        name: string;
+        E: number;  // GPa
+        fy: number; // MPa
+        fu?: number; // MPa
+        density: number; // kg/m³
+        type: string;
+    }>): void {
+        this.tableCount++;
 
-// ============================================
-// SECTION PROPERTIES TABLE
-// ============================================
+        let startY = 60;
+        try {
+            startY = (this.doc as any).lastAutoTable?.finalY + 15 || startY;
+        } catch {
+            // Use default
+        }
 
-/**
- * Add section properties table
- */
-addSectionProperties(sections: Array<{
-    name: string;
-    type: string;
-    A: number;      // mm²
-    Iy: number;     // mm⁴ × 10⁶
-    Iz: number;     // mm⁴ × 10⁶
-    J: number;      // mm⁴ × 10⁶
-    Zy: number;     // mm³ × 10³
-    Zz: number;     // mm³ × 10³
-}>): void {
-    this.tableCount++;
+        this.doc.setFontSize(12);
+        this.doc.setFont('helvetica', 'bold');
+        this.doc.text('Material Properties', this.margin, startY);
 
-    let startY = 60;
-    try {
-        startY = (this.doc as any).lastAutoTable?.finalY + 15 || startY;
-    } catch {
-        // Use default
+        autoTable(this.doc, {
+            startY: startY + 5,
+            head: [['Material', 'Type', 'E (GPa)', 'fy (MPa)', 'fu (MPa)', 'ρ (kg/m³)']],
+            body: materials.map(m => [
+                m.name,
+                m.type,
+                m.E.toFixed(0),
+                m.fy.toFixed(0),
+                (m.fu ?? '-').toString(),
+                m.density.toFixed(0)
+            ]),
+            theme: 'striped',
+            headStyles: {
+                fillColor: [59, 130, 246],
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                fontSize: 9,
+                halign: 'center',
+            },
+            bodyStyles: {
+                fontSize: 9,
+                halign: 'center',
+            },
+            margin: { left: this.margin, right: this.margin },
+        });
     }
 
-    if (startY > this.pageHeight - 60) {
-        this.doc.addPage();
-        this.addHeader('Section Properties');
-        startY = this.contentTop + 5;
+    // ============================================
+    // SECTION PROPERTIES TABLE
+    // ============================================
+
+    /**
+     * Add section properties table
+     */
+    addSectionProperties(sections: Array<{
+        name: string;
+        type: string;
+        A: number;      // mm²
+        Iy: number;     // mm⁴ × 10⁶
+        Iz: number;     // mm⁴ × 10⁶
+        J: number;      // mm⁴ × 10⁶
+        Zy: number;     // mm³ × 10³
+        Zz: number;     // mm³ × 10³
+    }>): void {
+        this.tableCount++;
+
+        let startY = 60;
+        try {
+            startY = (this.doc as any).lastAutoTable?.finalY + 15 || startY;
+        } catch {
+            // Use default
+        }
+
+        if (startY > this.pageHeight - 60) {
+            this.doc.addPage();
+            this.addHeader('Section Properties');
+            startY = this.contentTop + 5;
+        }
+
+        this.doc.setFontSize(12);
+        this.doc.setFont('helvetica', 'bold');
+        this.doc.text('Section Properties', this.margin, startY);
+
+        autoTable(this.doc, {
+            startY: startY + 5,
+            head: [['Section', 'Type', 'A (mm²)', 'Iy (×10⁶)', 'Iz (×10⁶)', 'J (×10⁶)', 'Zy (×10³)', 'Zz (×10³)']],
+            body: sections.map(s => [
+                s.name,
+                s.type,
+                s.A.toFixed(0),
+                s.Iy.toFixed(2),
+                s.Iz.toFixed(2),
+                s.J.toFixed(2),
+                s.Zy.toFixed(2),
+                s.Zz.toFixed(2)
+            ]),
+            theme: 'striped',
+            headStyles: {
+                fillColor: [59, 130, 246],
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                fontSize: 8,
+                halign: 'center',
+            },
+            bodyStyles: {
+                fontSize: 8,
+                halign: 'center',
+            },
+            margin: { left: this.margin, right: this.margin },
+        });
     }
-
-    this.doc.setFontSize(12);
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.text('Section Properties', this.margin, startY);
-
-    autoTable(this.doc, {
-        startY: startY + 5,
-        head: [['Section', 'Type', 'A (mm²)', 'Iy (×10⁶)', 'Iz (×10⁶)', 'J (×10⁶)', 'Zy (×10³)', 'Zz (×10³)']],
-        body: sections.map(s => [
-            s.name,
-            s.type,
-            s.A.toFixed(0),
-            s.Iy.toFixed(2),
-            s.Iz.toFixed(2),
-            s.J.toFixed(2),
-            s.Zy.toFixed(2),
-            s.Zz.toFixed(2)
-        ]),
-        theme: 'striped',
-        headStyles: {
-            fillColor: [59, 130, 246],
-            textColor: [255, 255, 255],
-            fontStyle: 'bold',
-            fontSize: 8,
-            halign: 'center',
-        },
-        bodyStyles: {
-            fontSize: 8,
-            halign: 'center',
-        },
-        margin: { left: this.margin, right: this.margin },
-    });
 }
 
 // ============================================

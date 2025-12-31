@@ -15,6 +15,7 @@ import React, { FC, useState, useMemo, useCallback } from 'react';
 import { Html, Line, Text } from '@react-three/drei';
 import * as THREE from 'three';
 import { useModelStore } from '../../store/model';
+import StressContourRenderer, { MemberStressData, StressType } from './StressContourRenderer';
 
 // ============================================
 // TYPES
@@ -45,7 +46,7 @@ type DiagramDisplayType = 'SFD' | 'BMD' | 'AFD' | 'DEFLECTION' | 'STRESS';
 const getValueColor = (value: number, maxAbs: number): string => {
     if (maxAbs === 0) return '#808080';
     const ratio = value / maxAbs;
-    
+
     // Blue (negative) -> White (zero) -> Red (positive)
     if (ratio >= 0) {
         const intensity = Math.min(1, ratio);
@@ -128,9 +129,9 @@ interface CriticalPointMarkerProps {
 }
 
 const CriticalPointMarker: FC<CriticalPointMarkerProps> = ({ point, scale = 1 }) => {
-    const color = point.type === 'max' ? '#ff4444' : 
-                  point.type === 'min' ? '#4444ff' : '#44ff44';
-    
+    const color = point.type === 'max' ? '#ff4444' :
+        point.type === 'min' ? '#4444ff' : '#44ff44';
+
     return (
         <group position={[point.x, point.y, point.z]}>
             {/* Diamond marker */}
@@ -138,7 +139,7 @@ const CriticalPointMarker: FC<CriticalPointMarkerProps> = ({ point, scale = 1 })
                 <boxGeometry args={[1, 1, 0.2]} />
                 <meshBasicMaterial color={color} />
             </mesh>
-            
+
             {/* Value label */}
             <Html
                 position={[0, 0.2, 0]}
@@ -204,11 +205,11 @@ export const MemberDiagramOverlay: FC<MemberDiagramOverlayProps> = ({
         const start = new THREE.Vector3(startNode.x, startNode.y, startNode.z);
         const end = new THREE.Vector3(endNode.x, endNode.y, endNode.z);
         const length = start.distanceTo(end);
-        
+
         if (length < 0.001) return null;
 
         const direction = end.clone().sub(start).normalize();
-        
+
         // Perpendicular direction for diagram offset
         const up = new THREE.Vector3(0, 1, 0);
         let perpendicular = new THREE.Vector3().crossVectors(direction, up);
@@ -220,7 +221,7 @@ export const MemberDiagramOverlay: FC<MemberDiagramOverlayProps> = ({
         // Get values based on diagram type
         let startValue = 0, endValue = 0;
         let unit = '';
-        
+
         switch (diagramType) {
             case 'SFD':
                 startValue = memberForces.shearY;
@@ -250,20 +251,20 @@ export const MemberDiagramOverlay: FC<MemberDiagramOverlayProps> = ({
         for (let i = 0; i <= numPoints - 1; i++) {
             const t = i / (numPoints - 1);
             const pos = start.clone().lerp(end, t);
-            
+
             // Interpolate value (parabolic for BMD, linear for SFD)
             let value: number;
             if (diagramType === 'BMD') {
                 // Parabolic shape for UDL
-                value = startValue + (endValue - startValue) * t + 
-                        4 * (startValue + endValue) / 2 * t * (1 - t);
+                value = startValue + (endValue - startValue) * t +
+                    4 * (startValue + endValue) / 2 * t * (1 - t);
             } else {
                 // Linear for SFD
                 value = startValue + (endValue - startValue) * t;
             }
-            
+
             values.push(value);
-            
+
             // Offset position by value
             const offsetPos = pos.clone().addScaledVector(perpendicular, value * scale);
             points.push(offsetPos);
@@ -272,7 +273,7 @@ export const MemberDiagramOverlay: FC<MemberDiagramOverlayProps> = ({
         // Find critical points
         const criticalPoints: CriticalPoint[] = [];
         let maxVal = values[0], minVal = values[0], maxIdx = 0, minIdx = 0;
-        
+
         for (let i = 0; i < values.length; i++) {
             if (values[i] > maxVal) { maxVal = values[i]; maxIdx = i; }
             if (values[i] < minVal) { minVal = values[i]; minIdx = i; }
@@ -309,12 +310,12 @@ export const MemberDiagramOverlay: FC<MemberDiagramOverlayProps> = ({
             const p2 = points[i + 1];
             const b1 = start.clone().lerp(end, i / (numPoints - 1));
             const b2 = start.clone().lerp(end, (i + 1) / (numPoints - 1));
-            
+
             // Triangle 1
             fillVertices.push(b1.x, b1.y, b1.z);
             fillVertices.push(p1.x, p1.y, p1.z);
             fillVertices.push(p2.x, p2.y, p2.z);
-            
+
             // Triangle 2
             fillVertices.push(b1.x, b1.y, b1.z);
             fillVertices.push(p2.x, p2.y, p2.z);
@@ -323,7 +324,7 @@ export const MemberDiagramOverlay: FC<MemberDiagramOverlayProps> = ({
             // Colors based on value
             const color1 = new THREE.Color(getValueColor(values[i], maxAbs));
             const color2 = new THREE.Color(getValueColor(values[i + 1], maxAbs));
-            
+
             for (let j = 0; j < 3; j++) {
                 fillColors.push(color1.r, color1.g, color1.b);
             }
@@ -348,8 +349,8 @@ export const MemberDiagramOverlay: FC<MemberDiagramOverlayProps> = ({
     if (!diagramData) return null;
 
     const { points, criticalPoints, fillVertices, fillColors, start, end, unit } = diagramData;
-    const lineColor = diagramType === 'BMD' ? '#ff8800' : 
-                      diagramType === 'SFD' ? '#00aaff' : '#00ff00';
+    const lineColor = diagramType === 'BMD' ? '#ff8800' :
+        diagramType === 'SFD' ? '#00aaff' : '#00ff00';
 
     return (
         <group>
@@ -428,6 +429,8 @@ export const MemberDiagramOverlay: FC<MemberDiagramOverlayProps> = ({
 // STRESS COLOR OVERLAY FOR MEMBERS
 // ============================================
 
+
+
 interface StressColorOverlayProps {
     showUtilization?: boolean;
     showAxial?: boolean;
@@ -439,57 +442,81 @@ export const StressColorOverlay: FC<StressColorOverlayProps> = ({
     const members = useModelStore((state) => state.members);
     const nodes = useModelStore((state) => state.nodes);
     const analysisResults = useModelStore((state) => state.analysisResults);
+    const [stressType, setStressType] = useState<StressType>('utilization');
 
-    const coloredMembers = useMemo(() => {
-        if (!analysisResults) return [];
+    // Convert model data to StressContour format
+    const stressData = useMemo(() => {
+        if (!analysisResults) return { nodes: [], memberStress: [] };
 
-        const result: Array<{
-            start: [number, number, number];
-            end: [number, number, number];
-            color: string;
-            utilization: number;
-        }> = [];
+        const nodeList = Array.from(nodes.values()).map(n => ({
+            id: n.id, x: n.x, y: n.y, z: n.z
+        }));
+
+        const memberStressList: MemberStressData[] = [];
 
         members.forEach((member, memberId) => {
-            const startNode = nodes.get(member.startNodeId);
-            const endNode = nodes.get(member.endNodeId);
             const forces = analysisResults.memberForces.get(memberId);
+            if (!forces) return;
 
-            if (!startNode || !endNode || !forces) return;
+            // Simple stress simplification for demo
+            // In a real app, we would calculate this at multiple points
+            // Here we interpolate linearly between start and end
+            const stressProfile = [];
+            const steps = 10;
 
-            // Estimate utilization (simplified - would use actual section capacity)
-            const maxMoment = Math.max(Math.abs(forces.momentY), Math.abs(forces.momentZ));
-            const maxShear = Math.max(Math.abs(forces.shearY), Math.abs(forces.shearZ));
-            const axial = Math.abs(forces.axial);
-            
-            // Simplified combined stress (actual would use interaction equations)
-            const estimatedStress = maxMoment * 0.15 / 1e-4 + axial / 0.01; // Very simplified
-            const utilization = Math.min(estimatedStress / 250000, 1.5); // 250 MPa
+            // Calculate approximate stress values (MPa)
+            // Assuming simplified section properties if not available
+            const area = member.A || 0.01; // m2
+            const modulus = (member.I || 1e-4) * 1e6; // cm4 approx
 
-            result.push({
-                start: [startNode.x, startNode.y, startNode.z],
-                end: [endNode.x, endNode.y, endNode.z],
-                color: getStressColor(utilization),
-                utilization
+            // Max stress calculation (very simplified for visualization)
+            // sigma = P/A + M/S
+            const axialStress = (forces.axial / area) / 1000; // MPa
+            const momentStressStart = (Math.max(Math.abs(forces.momentY), Math.abs(forces.momentZ)) / (modulus * 1e-6)) / 1000;
+            const momentStressEnd = momentStressStart; // Simplified
+
+            for (let i = 0; i <= steps; i++) {
+                const position = i / steps;
+                stressProfile.push({
+                    position,
+                    vonMises: Math.abs(axialStress) + momentStressStart, // Mock
+                    principal1: Math.abs(axialStress) + momentStressStart,
+                    principal2: 0,
+                    principal3: 0,
+                    axial: axialStress,
+                    bending: momentStressStart,
+                    shear: forces.shearY / 1000
+                });
+            }
+
+            memberStressList.push({
+                id: memberId,
+                startNodeId: member.startNodeId,
+                endNodeId: member.endNodeId,
+                stressProfile,
+                maxStress: Math.abs(axialStress) + momentStressStart,
+                minStress: 0,
+                criticalLocation: 0.5,
+                capacity: 250, // MPa yield
+                utilization: (Math.abs(axialStress) + momentStressStart) / 250
             });
         });
 
-        return result;
+        return { nodes: nodeList, memberStress: memberStressList };
     }, [members, nodes, analysisResults]);
 
     if (!analysisResults) return null;
 
     return (
-        <group>
-            {coloredMembers.map((m, idx) => (
-                <Line
-                    key={idx}
-                    points={[m.start, m.end]}
-                    color={m.color}
-                    lineWidth={8}
-                />
-            ))}
-        </group>
+        <StressContourRenderer
+            nodes={stressData.nodes}
+            memberStress={stressData.memberStress}
+            stressType={stressType}
+            onStressTypeChange={setStressType}
+            showContourLines={true}
+            contourIntervals={12}
+            highlightCritical={true}
+        />
     );
 };
 
@@ -529,7 +556,7 @@ export const SectionScanner: FC<SectionScannerProps> = ({
         // Calculate value at position (linear interpolation)
         let value = 0;
         let unit = '';
-        
+
         switch (diagramType) {
             case 'SFD':
                 value = forces.shearY * (1 - 2 * position);
@@ -562,7 +589,7 @@ export const SectionScanner: FC<SectionScannerProps> = ({
                 lineWidth={2}
                 dashed
             />
-            
+
             {/* Value tooltip */}
             <Html
                 position={[0, 0.5, 0]}

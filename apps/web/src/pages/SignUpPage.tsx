@@ -134,18 +134,12 @@ export const SignUpPage = () => {
                             routing="path"
                             path="/sign-up"
                             signInUrl="/sign-in"
-                            afterSignUpUrl="/app"
+                            forceRedirectUrl="/app"
                         />
                     </div>
 
                     {/* Additional Links */}
-                    <div className="text-center space-y-4">
-                        <p className="text-zinc-400">
-                            Already have an account?{' '}
-                            <Link to="/sign-in" className="text-purple-400 hover:text-purple-300 font-medium">
-                                Sign in
-                            </Link>
-                        </p>
+                    <div className="text-center space-y-4 pt-4">
                         <Link to="/" className="text-sm text-zinc-500 hover:text-zinc-400 flex items-center justify-center gap-2">
                             ← Back to home
                         </Link>

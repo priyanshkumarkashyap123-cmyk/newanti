@@ -2,10 +2,23 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { temporal } from 'zundo';
 
-// 1. Define Interfaces
+export interface ProjectInfo {
+    name: string;
+    client: string;
+    engineer: string;
+    jobNo: string;
+    rev: string;
+    date: Date;
+    description: string;
+}
+
 export interface Restraints {
-    fx: boolean; fy: boolean; fz: boolean; // Translation restraints
-    mx: boolean; my: boolean; mz: boolean; // Rotation restraints
+    fx: boolean;
+    fy: boolean;
+    fz: boolean;
+    mx: boolean;
+    my: boolean;
+    mz: boolean;
 }
 
 export interface Node {
@@ -86,6 +99,7 @@ export interface ModalResult {
 
 interface ModelState {
     // 2. State using Maps for O(1) lookup
+    projectInfo: ProjectInfo; // NEW
     nodes: Map<string, Node>;
     members: Map<string, Member>;
     loads: NodeLoad[];
@@ -111,6 +125,7 @@ interface ModelState {
     isAnimating: boolean;       // Play/pause animation
 
     // 3. Actions
+    setProjectInfo: (info: Partial<ProjectInfo>) => void; // NEW
     addNode: (node: Node) => void;
     removeNode: (id: string) => void;
     addMember: (member: Member) => void;
@@ -178,6 +193,15 @@ export const useModelStore = create<ModelState>()(
     devtools(
         temporal(
             (set, get) => ({
+                projectInfo: {
+                    name: 'Structure 1',
+                    client: '',
+                    engineer: '',
+                    jobNo: '',
+                    rev: '0',
+                    date: new Date(),
+                    description: ''
+                },
                 nodes: new Map(),
                 members: new Map(),
                 loads: [],
@@ -200,6 +224,9 @@ export const useModelStore = create<ModelState>()(
                 activeModeIndex: 0,
                 modeAmplitude: 1.0,
                 isAnimating: false,
+
+                setProjectInfo: (info) =>
+                    set((state) => ({ projectInfo: { ...state.projectInfo, ...info } })),
 
                 addNode: (node) =>
                     set((state) => {
@@ -347,7 +374,7 @@ export const useModelStore = create<ModelState>()(
                 // ============================================
                 // ADVANCED SELECTION (Like STAAD)
                 // ============================================
-                
+
                 selectAll: () =>
                     set((state) => {
                         const allIds = new Set<string>();
@@ -366,22 +393,22 @@ export const useModelStore = create<ModelState>()(
                 boxSelect: (minX, minZ, maxX, maxZ) =>
                     set((state) => {
                         const newSelected = new Set(state.selectedIds);
-                        
+
                         // Select nodes within box
                         state.nodes.forEach((node, id) => {
-                            if (node.x >= minX && node.x <= maxX && 
+                            if (node.x >= minX && node.x <= maxX &&
                                 node.z >= minZ && node.z <= maxZ) {
                                 newSelected.add(id);
                             }
                         });
-                        
+
                         // Select members if both nodes are in selection
                         state.members.forEach((member, id) => {
                             if (newSelected.has(member.startNodeId) && newSelected.has(member.endNodeId)) {
                                 newSelected.add(id);
                             }
                         });
-                        
+
                         return { selectedIds: newSelected };
                     }),
 
@@ -393,27 +420,27 @@ export const useModelStore = create<ModelState>()(
                     set((state) => {
                         const selectedNodes: Node[] = [];
                         const selectedMembers: Member[] = [];
-                        
+
                         state.selectedIds.forEach(id => {
                             const node = state.nodes.get(id);
                             if (node) selectedNodes.push({ ...node });
-                            
+
                             const member = state.members.get(id);
                             if (member) selectedMembers.push({ ...member });
                         });
-                        
+
                         return { clipboard: { nodes: selectedNodes, members: selectedMembers } };
                     }),
 
                 pasteClipboard: (offset = { x: 2, y: 0, z: 0 }) =>
                     set((state) => {
                         if (!state.clipboard) return state;
-                        
+
                         const newNodes = new Map(state.nodes);
                         const newMembers = new Map(state.members);
                         const idMap = new Map<string, string>(); // old ID -> new ID
                         const newSelected = new Set<string>();
-                        
+
                         // Clone nodes with offset
                         state.clipboard.nodes.forEach(node => {
                             const newId = crypto.randomUUID();
@@ -427,7 +454,7 @@ export const useModelStore = create<ModelState>()(
                             });
                             newSelected.add(newId);
                         });
-                        
+
                         // Clone members with updated node references
                         state.clipboard.members.forEach(member => {
                             const newStartId = idMap.get(member.startNodeId);
@@ -443,7 +470,7 @@ export const useModelStore = create<ModelState>()(
                                 newSelected.add(newId);
                             }
                         });
-                        
+
                         return { nodes: newNodes, members: newMembers, selectedIds: newSelected };
                     }),
 
@@ -452,20 +479,20 @@ export const useModelStore = create<ModelState>()(
                     // First copy, then paste
                     const selectedNodes: Node[] = [];
                     const selectedMembers: Member[] = [];
-                    
+
                     state.selectedIds.forEach(id => {
                         const node = state.nodes.get(id);
                         if (node) selectedNodes.push({ ...node });
-                        
+
                         const member = state.members.get(id);
                         if (member) selectedMembers.push({ ...member });
                     });
-                    
+
                     const newNodes = new Map(state.nodes);
                     const newMembers = new Map(state.members);
                     const idMap = new Map<string, string>();
                     const newSelected = new Set<string>();
-                    
+
                     selectedNodes.forEach(node => {
                         const newId = crypto.randomUUID();
                         idMap.set(node.id, newId);
@@ -478,7 +505,7 @@ export const useModelStore = create<ModelState>()(
                         });
                         newSelected.add(newId);
                     });
-                    
+
                     selectedMembers.forEach(member => {
                         const newStartId = idMap.get(member.startNodeId);
                         const newEndId = idMap.get(member.endNodeId);
@@ -493,14 +520,14 @@ export const useModelStore = create<ModelState>()(
                             newSelected.add(newId);
                         }
                     });
-                    
+
                     set({ nodes: newNodes, members: newMembers, selectedIds: newSelected });
                 },
 
                 moveSelection: (dx, dy, dz) =>
                     set((state) => {
                         const newNodes = new Map(state.nodes);
-                        
+
                         // Move all selected nodes
                         state.selectedIds.forEach(id => {
                             const node = state.nodes.get(id);
@@ -513,7 +540,7 @@ export const useModelStore = create<ModelState>()(
                                 });
                             }
                         });
-                        
+
                         return { nodes: newNodes };
                     }),
 
@@ -523,7 +550,7 @@ export const useModelStore = create<ModelState>()(
                         const newMembers = new Map(state.members);
                         let newLoads = [...state.loads];
                         let newMemberLoads = [...state.memberLoads];
-                        
+
                         state.selectedIds.forEach(id => {
                             // Delete node
                             if (state.nodes.has(id)) {
@@ -538,20 +565,20 @@ export const useModelStore = create<ModelState>()(
                                 // Delete loads on this node
                                 newLoads = newLoads.filter(l => l.nodeId !== id);
                             }
-                            
+
                             // Delete member
                             if (state.members.has(id)) {
                                 newMembers.delete(id);
                                 newMemberLoads = newMemberLoads.filter(ml => ml.memberId !== id);
                             }
                         });
-                        
-                        return { 
-                            nodes: newNodes, 
-                            members: newMembers, 
-                            loads: newLoads, 
+
+                        return {
+                            nodes: newNodes,
+                            members: newMembers,
+                            loads: newLoads,
                             memberLoads: newMemberLoads,
-                            selectedIds: new Set() 
+                            selectedIds: new Set()
                         };
                     }),
 
@@ -743,3 +770,5 @@ export const useModelStore = create<ModelState>()(
         }
     )
 );
+
+

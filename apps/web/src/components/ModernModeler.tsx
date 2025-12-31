@@ -60,6 +60,8 @@ import LoadCombinationsDialog from './LoadCombinationsDialog';
 import { AdvancedAnalysisDialog } from './AdvancedAnalysisDialog';
 import { DesignCodesDialog } from './DesignCodesDialog';
 import { LegalConsentModal, useCheckLegalConsent } from './LegalConsentModal';
+import { ExportDialog } from './ExportDialog';
+import { ActionToast, type ToastType } from './ui/ActionToast';
 import type { Node, Member } from '../store/model';
 
 // Analysis service
@@ -252,6 +254,17 @@ export const ModernModeler: FC = () => {
     const [analysisError, setAnalysisError] = useState<string | undefined>();
     const [showProgressModal, setShowProgressModal] = useState(false);
     const [analysisStats, setAnalysisStats] = useState<{ nodes: number; members: number; dof: number; timeMs: number } | undefined>();
+    const [showResultsToolbar, setShowResultsToolbar] = useState(false);
+
+    // Export state
+    const [showExportDialog, setShowExportDialog] = useState(false);
+
+    // Feedback state
+    const [toast, setToast] = useState<{ message: string; type: ToastType; show: boolean } | null>(null);
+
+    const showToast = useCallback((message: string, type: ToastType = 'info') => {
+        setToast({ message, type, show: true });
+    }, []);
 
     // Quick start modal
     const [showQuickStart, setShowQuickStart] = useState(false);
@@ -573,10 +586,14 @@ export const ModernModeler: FC = () => {
                     dof: result.stats?.totalDof ?? nodes.size * 3,
                     timeMs: endTime - startTime
                 });
+                // Show results toolbar after successful analysis
+                setShowResultsToolbar(true);
+                showToast('Analysis completed successfully!', 'success');
                 // setActiveStep(4); // Move to results step
             } else {
                 setAnalysisStage('error');
                 setAnalysisError(result.error || 'Analysis failed');
+                showToast(`Analysis failed: ${result.error}`, 'error');
             }
         } catch (err) {
             setAnalysisStage('error');
@@ -590,8 +607,15 @@ export const ModernModeler: FC = () => {
     // Listener for Ribbon Analysis Trigger
     useEffect(() => {
         const handleTrigger = () => handleRunAnalysis();
+        const handleExport = () => setShowExportDialog(true);
+
         document.addEventListener('trigger-analysis', handleTrigger);
-        return () => document.removeEventListener('trigger-analysis', handleTrigger);
+        document.addEventListener('trigger-export', handleExport);
+
+        return () => {
+            document.removeEventListener('trigger-analysis', handleTrigger);
+            document.removeEventListener('trigger-export', handleExport);
+        };
     }, [handleRunAnalysis]);
 
     // Close progress modal and show results
@@ -793,6 +817,20 @@ export const ModernModeler: FC = () => {
             </div>
 
             {/* Modals & Overlays */}
+
+            {toast?.show && (
+                <ActionToast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(prev => prev ? { ...prev, show: false } : null)}
+                />
+            )}
+
+            <ExportDialog
+                isOpen={showExportDialog}
+                onClose={() => setShowExportDialog(false)}
+            />
+
             {showProgressModal && (
                 <AnalysisProgressModal
                     isOpen={showProgressModal}
@@ -802,6 +840,11 @@ export const ModernModeler: FC = () => {
                     onClose={() => setShowProgressModal(false)}
                     stats={analysisStats}
                 />
+            )}
+
+            {/* Results Toolbar - Shows after successful analysis */}
+            {showResultsToolbar && analysisResults && (
+                <ResultsToolbar onClose={() => setShowResultsToolbar(false)} />
             )}
 
             {showQuickStart && <QuickStartModal isOpen={showQuickStart} onClose={() => setShowQuickStart(false)} />}
