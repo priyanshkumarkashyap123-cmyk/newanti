@@ -248,8 +248,8 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                     <Tabs.Trigger
                         value="forces"
                         className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'forces'
-                                ? 'text-primary border-b-2 border-primary'
-                                : 'text-text-muted hover:text-white'
+                            ? 'text-primary border-b-2 border-primary'
+                            : 'text-text-muted hover:text-white'
                             }`}
                     >
                         <span className="material-symbols-outlined text-[16px] mr-1.5 align-middle">functions</span>
@@ -258,8 +258,8 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                     <Tabs.Trigger
                         value="design"
                         className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'design'
-                                ? 'text-primary border-b-2 border-primary'
-                                : 'text-text-muted hover:text-white'
+                            ? 'text-primary border-b-2 border-primary'
+                            : 'text-text-muted hover:text-white'
                             }`}
                     >
                         <span className="material-symbols-outlined text-[16px] mr-1.5 align-middle">engineering</span>
@@ -268,8 +268,8 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                     <Tabs.Trigger
                         value="sections"
                         className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'sections'
-                                ? 'text-primary border-b-2 border-primary'
-                                : 'text-text-muted hover:text-white'
+                            ? 'text-primary border-b-2 border-primary'
+                            : 'text-text-muted hover:text-white'
                             }`}
                     >
                         <span className="material-symbols-outlined text-[16px] mr-1.5 align-middle">view_column</span>
@@ -291,8 +291,8 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                                     <div
                                         key={memberId}
                                         className={`bg-zinc-900 rounded-lg p-3 border cursor-pointer transition-all ${selectedMemberId === memberId
-                                                ? 'border-primary'
-                                                : 'border-border-dark hover:border-text-muted'
+                                            ? 'border-primary'
+                                            : 'border-border-dark hover:border-text-muted'
                                             }`}
                                         onClick={() => setSelectedMemberId(memberId)}
                                     >
@@ -327,24 +327,26 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                                 <div
                                     key={memberId}
                                     className={`bg-zinc-900 rounded-lg p-3 border transition-all ${result.overallStatus === 'FAIL'
-                                            ? 'border-red-500/50'
-                                            : result.overallStatus === 'WARNING'
-                                                ? 'border-yellow-500/50'
-                                                : 'border-border-dark'
+                                        ? 'border-red-500/50'
+                                        : result.overallStatus === 'WARNING'
+                                            ? 'border-yellow-500/50'
+                                            : 'border-border-dark'
                                         }`}
                                 >
                                     <div className="flex items-center justify-between mb-2">
                                         <div className="flex items-center gap-2">
+                                            <div className="absolute top-2 right-2">
+                                                <StatusBadge
+                                                    variant={result.overallStatus === 'PASS' ? 'pass' : result.overallStatus === 'FAIL' ? 'critical' : 'warning'}
+                                                >
+                                                    {result.overallStatus}
+                                                </StatusBadge>
+                                            </div>
                                             <span className="text-sm font-bold text-white">Member {memberId}</span>
-                                            <StatusBadge
-                                                status={result.overallStatus === 'PASS' ? 'ok' : result.overallStatus === 'FAIL' ? 'critical' : 'warning'}
-                                            >
-                                                {result.overallStatus}
-                                            </StatusBadge>
                                         </div>
                                         <span className={`text-sm font-bold font-mono ${result.criticalRatio > 1 ? 'text-red-400' :
-                                                result.criticalRatio > 0.9 ? 'text-yellow-400' :
-                                                    'text-green-400'
+                                            result.criticalRatio > 0.9 ? 'text-yellow-400' :
+                                                'text-green-400'
                                             }`}>
                                             {(result.criticalRatio * 100).toFixed(1)}%
                                         </span>

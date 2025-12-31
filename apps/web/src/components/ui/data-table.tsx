@@ -43,6 +43,8 @@ export interface DataTableProps<TData> {
     getRowId?: (row: TData) => string;
     className?: string;
     emptyMessage?: string;
+    compact?: boolean;
+    highlightRow?: (row: TData) => string | false;
 }
 
 // ============================================
@@ -60,7 +62,9 @@ export function DataTable<TData>({
     selectedRowId,
     getRowId,
     className,
-    emptyMessage = 'No data'
+    emptyMessage = 'No data',
+    compact = false,
+    highlightRow
 }: DataTableProps<TData>) {
     const parentRef = useRef<HTMLDivElement>(null);
 
@@ -202,7 +206,9 @@ export function DataTable<TData>({
                                         // Selected
                                         isSelected && 'bg-blue-100 dark:bg-blue-900/40',
                                         // Clickable
-                                        (onRowClick || onRowDoubleClick) && 'cursor-pointer'
+                                        (onRowClick || onRowDoubleClick) && 'cursor-pointer',
+                                        // Custom Highlight
+                                        highlightRow ? highlightRow(row.original) : false
                                     )}
                                     style={{ height: rowHeight }}
                                 >
@@ -210,7 +216,7 @@ export function DataTable<TData>({
                                         <td
                                             key={cell.id}
                                             className={cn(
-                                                'px-3 py-1',
+                                                compact ? 'px-2 py-0.5' : 'px-3 py-1',
                                                 'border-r border-zinc-100 dark:border-zinc-800 last:border-r-0',
                                                 'text-zinc-700 dark:text-zinc-300'
                                             )}

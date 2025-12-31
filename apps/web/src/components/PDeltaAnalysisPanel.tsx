@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useModelStore } from '../store/model';
 import { useAdvancedAnalysis } from '../hooks/useAdvancedAnalysis';
+import { getSectionById, STEEL_SECTIONS } from '../data/SectionDatabase';
 
 // ============================================
 // TYPES
@@ -47,7 +48,7 @@ const ConvergenceChart: FC<{ history: number[] }> = ({ history }) => {
             <svg width="100%" height="100%" viewBox="0 0 100 60" preserveAspectRatio="none">
                 {/* Grid lines */}
                 <line x1="0" y1="30" x2="100" y2="30" stroke="#ddd" strokeDasharray="2" />
-                
+
                 {/* Convergence curve */}
                 <polyline
                     fill="none"
@@ -68,10 +69,10 @@ const ConvergenceChart: FC<{ history: number[] }> = ({ history }) => {
                 {history.length > 0 && (
                     <circle
                         cx="100"
-                        cy={55 - ((Math.log10(history[history.length - 1] + 1e-10) - Math.log10(minResidual)) / 
+                        cy={55 - ((Math.log10(history[history.length - 1] + 1e-10) - Math.log10(minResidual)) /
                             (Math.log10(maxResidual + 1e-10) - Math.log10(minResidual))) * 50}
                         r="3"
-                        fill={history[history.length - 1] < 1e-4 ? '#22c55e' : '#ef4444'}
+                        fill={history[history.length - 1]! < 1e-4 ? '#22c55e' : '#ef4444'}
                     />
                 )}
             </svg>
@@ -95,7 +96,7 @@ const ComparisonBar: FC<{
     secondOrder: number;
     unit: string;
 }> = ({ label, firstOrder, secondOrder, unit }) => {
-    const amplification = secondOrder > 0 && firstOrder > 0 
+    const amplification = secondOrder > 0 && firstOrder > 0
         ? ((secondOrder / firstOrder) * 100 - 100).toFixed(1)
         : '—';
     const maxValue = Math.max(firstOrder, secondOrder);
@@ -143,7 +144,6 @@ const ComparisonBar: FC<{
 export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = false }) => {
     const nodes = useModelStore((s) => s.nodes);
     const members = useModelStore((s) => s.members);
-    const supports = useModelStore((s) => s.supports);
     const analysisResults = useModelStore((s) => s.analysisResults);
 
     const [maxIterations, setMaxIterations] = useState(20);
@@ -161,13 +161,23 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
     // Run P-Delta analysis
     const handleRunAnalysis = async () => {
         const nodesArray = Array.from(nodes.values());
-        const membersArray = Array.from(members.values()).map((m, idx) => ({
-            id: `member-${idx}`,
-            startNodeId: m.startNodeId,
-            endNodeId: m.endNodeId,
-            section: m.section,
-        }));
-        const supportsArray = Array.from(supports.values());
+        const membersArray = Array.from(members.values()).map((m, idx) => {
+            const section = getSectionById(m.sectionId) || STEEL_SECTIONS[0];
+            return {
+                id: `member-${idx}`,
+                startNodeId: m.startNodeId,
+                endNodeId: m.endNodeId,
+                section: section,
+            };
+        });
+
+        const supportsArray = Array.from(nodes.values())
+            .filter(n => n.restraints)
+            .map(n => ({
+                nodeId: n.id,
+                type: (n.restraints?.fx && n.restraints?.fy && n.restraints?.fz && n.restraints?.mx) ? 'FIXED' : 'PINNED'
+                // Simplified support type mapping for this example
+            }));
 
         const model = convertModelForAdvancedAnalysis(
             nodesArray.map((n) => ({ id: n.id, x: n.x, y: n.y, z: n.z })),
@@ -311,8 +321,8 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
                         {/* Convergence Status */}
                         <div className={`
                             flex items-center gap-3 p-3 rounded-lg mb-4
-                            ${pdeltaResult.converged 
-                                ? 'bg-green-100 dark:bg-green-900/30' 
+                            ${pdeltaResult.converged
+                                ? 'bg-green-100 dark:bg-green-900/30'
                                 : 'bg-red-100 dark:bg-red-900/30'}
                         `}>
                             {pdeltaResult.converged ? (
@@ -321,9 +331,8 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
                                 <AlertTriangle className="w-5 h-5 text-red-500" />
                             )}
                             <div>
-                                <div className={`font-semibold text-sm ${
-                                    pdeltaResult.converged ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'
-                                }`}>
+                                <div className={`font-semibold text-sm ${pdeltaResult.converged ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'
+                                    }`}>
                                     {pdeltaResult.converged ? 'Converged' : 'Did Not Converge'}
                                 </div>
                                 <div className="text-xs opacity-75">
@@ -343,21 +352,21 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
                         {amplificationInfo && (
                             <div className={`
                                 p-3 rounded-lg mb-4 border
-                                ${amplificationInfo.status === 'safe' 
+                                ${amplificationInfo.status === 'safe'
                                     ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800'
                                     : amplificationInfo.status === 'warning'
-                                    ? 'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800'
-                                    : 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800'}
+                                        ? 'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800'
+                                        : 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800'}
                             `}>
                                 <div className="flex items-center justify-between mb-2">
                                     <span className="text-sm font-medium">Amplification Factor</span>
                                     <span className={`
                                         text-2xl font-bold
-                                        ${amplificationInfo.status === 'safe' 
-                                            ? 'text-green-500' 
+                                        ${amplificationInfo.status === 'safe'
+                                            ? 'text-green-500'
                                             : amplificationInfo.status === 'warning'
-                                            ? 'text-yellow-500'
-                                            : 'text-red-500'}
+                                                ? 'text-yellow-500'
+                                                : 'text-red-500'}
                                     `}>
                                         {amplificationInfo.factor.toFixed(3)}
                                     </span>
@@ -391,14 +400,14 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
                                     </span>
                                     <BarChart3 className="w-4 h-4 text-gray-400" />
                                 </div>
-                                
+
                                 <ComparisonBar
                                     label="Max Displacement"
                                     firstOrder={5.2} // From linear analysis
                                     secondOrder={pdeltaResult.maxDisplacement || 5.5}
                                     unit="mm"
                                 />
-                                
+
                                 <ComparisonBar
                                     label="Max Moment"
                                     firstOrder={120}
@@ -413,9 +422,9 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
                             <div className="flex items-start gap-2">
                                 <TrendingUp className="w-4 h-4 text-blue-500 mt-0.5" />
                                 <div className="text-xs text-blue-600 dark:text-blue-400">
-                                    <strong>P-Delta Effect:</strong> Second-order moments arise when 
-                                    axial loads act on the deformed structure. The amplification 
-                                    factor B₂ = 1 / (1 - ΣP/ΣPcr) indicates the increase in 
+                                    <strong>P-Delta Effect:</strong> Second-order moments arise when
+                                    axial loads act on the deformed structure. The amplification
+                                    factor B₂ = 1 / (1 - ΣP/ΣPcr) indicates the increase in
                                     moments due to this effect.
                                 </div>
                             </div>

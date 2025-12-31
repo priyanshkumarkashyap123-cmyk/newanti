@@ -43,9 +43,7 @@ export function LegalConsentModal({ open, onAccept, canClose = false }: LegalCon
         liability: false
     });
 
-    const [hasScrolledAll, setHasScrolledAll] = useState(false);
-
-    const allConsentsGiven = Object.values(consents).every(v => v === true) && hasScrolledAll;
+    const allConsentsGiven = Object.values(consents).every(v => v === true);
 
     const handleConsentChange = (key: keyof ConsentState, checked: boolean) => {
         setConsents(prev => ({ ...prev, [key]: checked }));
@@ -65,17 +63,9 @@ export function LegalConsentModal({ open, onAccept, canClose = false }: LegalCon
         onAccept();
     };
 
-    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-        const element = e.currentTarget;
-        const isAtBottom = element.scrollHeight - element.scrollTop <= element.clientHeight + 50;
-        if (isAtBottom && !hasScrolledAll) {
-            setHasScrolledAll(true);
-        }
-    };
-
     return (
         <Dialog open={open} onOpenChange={canClose ? undefined : () => { }}>
-            <DialogContent className="max-w-4xl max-h-[90vh] p-0 gap-0">
+            <DialogContent className="max-w-4xl max-h-[90vh] p-0 gap-0 z-[100]">
                 <DialogHeader className="p-6 pb-4 bg-gradient-to-r from-red-50 to-orange-50 border-b">
                     <div className="flex items-start gap-3">
                         <AlertTriangle className="w-8 h-8 text-red-600 mt-1 flex-shrink-0" />
@@ -110,7 +100,7 @@ export function LegalConsentModal({ open, onAccept, canClose = false }: LegalCon
 
                         <div className="mt-4 border rounded-lg">
                             <TabsContent value="disclaimer" className="m-0">
-                                <ScrollArea className="h-[300px] p-4" onScrollCapture={handleScroll}>
+                                <ScrollArea className="h-[300px] p-4">
                                     <div className="prose prose-sm max-w-none">
                                         <div className="whitespace-pre-wrap text-sm leading-relaxed">
                                             {ENGINEERING_DISCLAIMER}
@@ -120,7 +110,7 @@ export function LegalConsentModal({ open, onAccept, canClose = false }: LegalCon
                             </TabsContent>
 
                             <TabsContent value="terms" className="m-0">
-                                <ScrollArea className="h-[300px] p-4" onScrollCapture={handleScroll}>
+                                <ScrollArea className="h-[300px] p-4">
                                     <div className="prose prose-sm max-w-none">
                                         <div className="whitespace-pre-wrap text-sm leading-relaxed">
                                             {TERMS_OF_SERVICE}
@@ -130,7 +120,7 @@ export function LegalConsentModal({ open, onAccept, canClose = false }: LegalCon
                             </TabsContent>
 
                             <TabsContent value="privacy" className="m-0">
-                                <ScrollArea className="h-[300px] p-4" onScrollCapture={handleScroll}>
+                                <ScrollArea className="h-[300px] p-4">
                                     <div className="prose prose-sm max-w-none">
                                         <div className="whitespace-pre-wrap text-sm leading-relaxed">
                                             {PRIVACY_POLICY}
@@ -140,15 +130,6 @@ export function LegalConsentModal({ open, onAccept, canClose = false }: LegalCon
                             </TabsContent>
                         </div>
                     </Tabs>
-
-                    {/* Scroll Indicator */}
-                    {!hasScrolledAll && (
-                        <div className="text-center py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
-                            <p className="text-sm text-yellow-800 font-medium">
-                                ⚠️ Please scroll through all documents above before accepting
-                            </p>
-                        </div>
-                    )}
 
                     {/* Consent Checkboxes */}
                     <div className="space-y-4 bg-gray-50 rounded-lg p-4 border-2 border-gray-200">

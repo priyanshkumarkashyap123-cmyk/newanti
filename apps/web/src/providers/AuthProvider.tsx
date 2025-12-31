@@ -36,15 +36,16 @@ export interface UnifiedAuthContext {
     isSignedIn: boolean;
     user: UnifiedUser | null;
     userId: string | null;
-    
+
     // Actions
     signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
     signUp: (data: SignUpData) => Promise<{ success: boolean; error?: string }>;
     signOut: () => Promise<void>;
-    
+    forgotPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
+
     // Tokens
     getToken: () => Promise<string | null>;
-    
+
     // Provider info
     authProvider: 'clerk' | 'inhouse';
 }
@@ -114,6 +115,14 @@ const InHouseAuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         store.signOut();
     }, [store]);
 
+    const forgotPassword = useCallback(async (email: string) => {
+        const success = await store.forgotPassword(email);
+        return {
+            success,
+            error: success ? undefined : 'Failed to send reset email'
+        };
+    }, [store]);
+
     const getToken = useCallback(async () => {
         // Auto-refresh if needed
         const token = store.getAccessToken();
@@ -135,9 +144,10 @@ const InHouseAuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         signIn,
         signUp,
         signOut,
+        forgotPassword,
         getToken,
         authProvider: 'inhouse'
-    }), [isLoaded, store.user, store.tokens, unifiedUser, signIn, signUp, signOut, getToken]);
+    }), [isLoaded, store.user, store.tokens, unifiedUser, signIn, signUp, signOut, forgotPassword, getToken]);
 
     return (
         <AuthContext.Provider value={contextValue}>
@@ -153,7 +163,7 @@ const InHouseAuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 const ClerkAuthBridge: React.FC<{ children: ReactNode }> = ({ children }) => {
     const clerkAuth = useClerkAuth();
     const { user: clerkUser, isLoaded: userLoaded } = useClerkUser();
-    
+
     // Memoize unified user to prevent unnecessary re-renders
     const unifiedUser: UnifiedUser | null = useMemo(() => {
         if (!clerkUser) return null;
@@ -193,6 +203,18 @@ const ClerkAuthBridge: React.FC<{ children: ReactNode }> = ({ children }) => {
         await clerkAuth.signOut();
     }, [clerkAuth]);
 
+    const forgotPassword = useCallback(async (_email: string) => {
+        console.warn('Clerk handles forgot password via its UI components. This function is a placeholder.');
+        // In a Clerk application, password reset is typically initiated through Clerk's UI components
+        // (e.g., a "Forgot password?" link on the SignIn component).
+        // This unified function can return success: true to indicate the "request" was acknowledged,
+        // or you might trigger a Clerk-specific flow if possible/desired.
+        return {
+            success: true,
+            error: undefined
+        };
+    }, []);
+
     const getToken = useCallback(async () => {
         try {
             return await clerkAuth.getToken() || null;
@@ -210,9 +232,10 @@ const ClerkAuthBridge: React.FC<{ children: ReactNode }> = ({ children }) => {
         signIn,
         signUp,
         signOut,
+        forgotPassword,
         getToken,
         authProvider: 'clerk'
-    }), [clerkAuth.isLoaded, userLoaded, clerkAuth.isSignedIn, unifiedUser, clerkAuth.userId, signIn, signUp, signOut, getToken]);
+    }), [clerkAuth.isLoaded, userLoaded, clerkAuth.isSignedIn, unifiedUser, clerkAuth.userId, signIn, signUp, signOut, forgotPassword, getToken]);
 
     return (
         <AuthContext.Provider value={contextValue}>
@@ -258,7 +281,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
  */
 export const useAuth = (): UnifiedAuthContext => {
     const context = useContext(AuthContext);
-    
+
     if (!context) {
         // Return a safe default if not in provider (e.g., during SSR or tests)
         return {
@@ -268,12 +291,13 @@ export const useAuth = (): UnifiedAuthContext => {
             userId: null,
             signIn: async () => ({ success: false, error: 'Auth not initialized' }),
             signUp: async () => ({ success: false, error: 'Auth not initialized' }),
-            signOut: async () => {},
+            signOut: async () => { },
+            forgotPassword: async () => ({ success: false, error: 'Auth not initialized' }),
             getToken: async () => null,
             authProvider: 'inhouse'
         };
     }
-    
+
     return context;
 };
 

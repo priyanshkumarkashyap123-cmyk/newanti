@@ -96,11 +96,17 @@ export function useDesign() {
     const loadDesignCodes = useCallback(async () => {
         try {
             const codes = await getDesignCodes();
+            const flattenedCodes = [
+                ...codes.steel.map(c => ({ id: c.code, name: c.name, material: 'steel', region: c.country })),
+                ...codes.concrete.map(c => ({ id: c.code, name: c.name, material: 'concrete', region: c.country })),
+                ...codes.connections.map(c => ({ id: c.code, name: c.name, material: 'connection', region: c.country })),
+                ...codes.foundations.map(c => ({ id: c.code, name: c.name, material: 'foundation', region: c.country })),
+            ];
             setState((s) => ({
                 ...s,
-                availableCodes: codes,
+                availableCodes: flattenedCodes,
             }));
-            return codes;
+            return flattenedCodes;
         } catch (err) {
             console.error('Failed to load design codes:', err);
             return [];
@@ -300,7 +306,7 @@ export function useDesign() {
     ): 'pass' | 'warning' | 'fail' | 'not_designed' => {
         const steelResult = state.steelResults.get(memberId);
         if (steelResult) {
-            const maxRatio = Math.max(...steelResult.checks.map((c) => c.utilization_ratio));
+            const maxRatio = Math.max(...steelResult.checks.map((c) => c.ratio));
             if (maxRatio > 1) return 'fail';
             if (maxRatio > 0.9) return 'warning';
             return 'pass';
@@ -395,14 +401,20 @@ export function useRCDesign() {
         const rebarData = REBAR_GRADES.find((g) => g.name === rcSettings.rebarGrade);
 
         const request: ConcreteBeamRequest = {
-            b,
-            D,
-            Mu,
-            Vu,
-            fck: concreteData?.fck || 25,
-            fy: rebarData?.fy || 500,
-            clear_cover: rcSettings.clearCover,
-            span,
+            section: {
+                width: b,
+                depth: D,
+                effectiveDepth: D - rcSettings.clearCover,
+                cover: rcSettings.clearCover,
+            },
+            forces: {
+                Mu,
+                Vu,
+            },
+            material: {
+                fck: concreteData?.fck || 25,
+                fy: rebarData?.fy || 500,
+            },
         };
 
         return design.designBeam(beamId, request);
@@ -421,15 +433,23 @@ export function useRCDesign() {
         const rebarData = REBAR_GRADES.find((g) => g.name === rcSettings.rebarGrade);
 
         const request: ConcreteColumnRequest = {
-            b,
-            D,
-            Pu,
-            Mux,
-            Muy: Muy || 0,
-            fck: concreteData?.fck || 25,
-            fy: rebarData?.fy || 500,
-            clear_cover: rcSettings.clearCover,
-            unsupported_length: L,
+            section: {
+                width: b,
+                depth: D,
+                cover: rcSettings.clearCover,
+            },
+            forces: {
+                Pu,
+                Mux,
+                Muy: Muy || 0,
+            },
+            geometry: {
+                unsupportedLength: L,
+            },
+            material: {
+                fck: concreteData?.fck || 25,
+                fy: rebarData?.fy || 500,
+            },
         };
 
         return design.designColumn(columnId, request);
@@ -464,15 +484,22 @@ export function useFoundationDesign() {
     ) => {
         const request: FootingRequest = {
             type: 'isolated',
-            loads: {
-                axial: columnLoad,
-                momentX: columnMoment,
-                momentY: 0,
+            loads: [{
+                P: columnLoad,
+                Mx: columnMoment,
+                My: 0,
+            }],
+            soil: {
+                bearingCapacity: soilSettings.sbc,
             },
-            soilBearingCapacity: soilSettings.sbc,
-            concreteGrade: 25,
-            steelGrade: 500,
-            columnDimensions: columnSize,
+            material: {
+                fck: 25, // default concrete grade
+                fy: 500, // default steel grade
+            },
+            columnSize: {
+                width: columnSize.B,
+                depth: columnSize.D,
+            },
         };
 
         return design.designFooting(footingId, request);

@@ -119,7 +119,7 @@ const StatusBadge: FC<{ status: 'pass' | 'warning' | 'fail' }> = ({ status }) =>
         fail: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
     };
     const labels = { pass: 'PASS', warning: 'WARNING', fail: 'FAIL' };
-    
+
     return (
         <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors[status]}`}>
             {labels[status]}
@@ -260,13 +260,13 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
     // Design the connection
     const handleDesign = async () => {
         if (!isPro) return;
-        
+
         setIsLoading(true);
         try {
             // Call API for detailed design
             const apiResult = await designConnection({
-                type: connectionType.includes('bolted') ? 'bolted_shear' : 
-                       connectionType === 'welded' ? 'welded' : 'base_plate',
+                type: connectionType.includes('bolted') ? 'bolted_shear' :
+                    connectionType === 'welded' ? 'welded' : 'base_plate',
                 forces: {
                     shear: shearForce,
                     axial: axialForce,
@@ -278,7 +278,7 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
                 },
                 plate: {
                     thickness: plateThickness,
-                    fy: STEEL_GRADES[steelGrade as keyof typeof STEEL_GRADES]?.fy || 250,
+                    fy: (Array.isArray(STEEL_GRADES) ? STEEL_GRADES.find((g: any) => g.name === steelGrade)?.fy : 250) || 250,
                 },
                 weld: connectionType === 'welded' ? { size: weldSize, length: 100, type: 'fillet' as const } : undefined,
             });
@@ -299,18 +299,22 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
         }
     };
 
-    // Local calculation fallback
     const performLocalCalculation = () => {
-        const fyp = STEEL_GRADES[steelGrade as keyof typeof STEEL_GRADES]?.fy || 250;
-        const fub = BOLT_GRADES[boltGrade as keyof typeof BOLT_GRADES]?.fub || 400;
-        
+        const gradeObj = Array.isArray(STEEL_GRADES) ? STEEL_GRADES.find((g: any) => g.name === steelGrade) : null;
+        const fyp = gradeObj?.fy || 250;
+
+        const boltGradeObj = Array.isArray(BOLT_GRADES) ? BOLT_GRADES.find((g: any) => g.name === boltGrade) : null;
+        // Check if bolt grade object has fub, otherwise try to parse it from name if possible or default
+        // Assuming BOLT_GRADES objects have 'fub' property
+        const fub = boltGradeObj?.fub || 400;
+
         // Simplified bolt capacity (IS 800 Cl. 10.3.3)
         const Ab = Math.PI * Math.pow(boltDiameter, 2) / 4;
         const Vdsb = (fub * Ab * 0.78) / (Math.sqrt(3) * 1.25);
-        
+
         const numBoltsRequired = Math.ceil((shearForce * 1000) / Vdsb);
         const actualCapacity = numBoltsRequired * Vdsb / 1000;
-        
+
         const ratio = shearForce / actualCapacity;
 
         setResult({
@@ -389,11 +393,10 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
                                             <button
                                                 key={type}
                                                 onClick={() => setConnectionType(type)}
-                                                className={`p-2 rounded-lg border text-left transition-all ${
-                                                    connectionType === type
+                                                className={`p-2 rounded-lg border text-left transition-all ${connectionType === type
                                                         ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
                                                         : 'border-gray-200 dark:border-gray-700 hover:border-blue-300'
-                                                }`}
+                                                    }`}
                                             >
                                                 <div className="font-medium text-sm">
                                                     {CONNECTION_TYPES[type].icon} {CONNECTION_TYPES[type].name}
@@ -523,10 +526,9 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
                                                         <span className="text-gray-500">
                                                             {check.demand.toFixed(1)}/{check.capacity.toFixed(1)} kN
                                                         </span>
-                                                        <span className={`font-medium ${
-                                                            check.status === 'pass' ? 'text-green-500' :
-                                                            check.status === 'warning' ? 'text-yellow-500' : 'text-red-500'
-                                                        }`}>
+                                                        <span className={`font-medium ${check.status === 'pass' ? 'text-green-500' :
+                                                                check.status === 'warning' ? 'text-yellow-500' : 'text-red-500'
+                                                            }`}>
                                                             {(check.ratio * 100).toFixed(0)}%
                                                         </span>
                                                     </div>

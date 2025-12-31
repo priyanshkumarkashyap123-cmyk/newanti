@@ -174,48 +174,36 @@ export const ReportViewerEnhanced: FC = () => {
                             <div className="border border-gray-200 rounded-lg overflow-hidden">
                                 <DataTable
                                     columns={[
-                                        { key: 'node', header: 'Node', align: 'left', width: '15%' },
+                                        { accessorKey: 'node', header: 'Node' },
                                         {
-                                            key: 'fx',
+                                            accessorKey: 'fx',
                                             header: 'FX (kN)',
-                                            align: 'right',
-                                            width: '14%',
-                                            render: (row) => <span className="font-mono">{row.fx.toFixed(2)}</span>
+                                            cell: ({ row }: any) => <span className="font-mono">{row.original.fx.toFixed(2)}</span>
                                         },
                                         {
-                                            key: 'fy',
+                                            accessorKey: 'fy',
                                             header: 'FY (kN)',
-                                            align: 'right',
-                                            width: '14%',
-                                            render: (row) => <span className="font-mono font-semibold">{row.fy.toFixed(2)}</span>
+                                            cell: ({ row }: any) => <span className="font-mono font-semibold">{row.original.fy.toFixed(2)}</span>
                                         },
                                         {
-                                            key: 'fz',
+                                            accessorKey: 'fz',
                                             header: 'FZ (kN)',
-                                            align: 'right',
-                                            width: '14%',
-                                            render: (row) => <span className="font-mono">{row.fz.toFixed(2)}</span>
+                                            cell: ({ row }: any) => <span className="font-mono">{row.original.fz.toFixed(2)}</span>
                                         },
                                         {
-                                            key: 'mx',
+                                            accessorKey: 'mx',
                                             header: 'MX (kN·m)',
-                                            align: 'right',
-                                            width: '14%',
-                                            render: (row) => <span className="font-mono">{row.mx.toFixed(2)}</span>
+                                            cell: ({ row }: any) => <span className="font-mono">{row.original.mx.toFixed(2)}</span>
                                         },
                                         {
-                                            key: 'my',
+                                            accessorKey: 'my',
                                             header: 'MY (kN·m)',
-                                            align: 'right',
-                                            width: '14%',
-                                            render: (row) => <span className="font-mono">{row.my.toFixed(2)}</span>
+                                            cell: ({ row }: any) => <span className="font-mono">{row.original.my.toFixed(2)}</span>
                                         },
                                         {
-                                            key: 'mz',
+                                            accessorKey: 'mz',
                                             header: 'MZ (kN·m)',
-                                            align: 'right',
-                                            width: '14%',
-                                            render: (row) => <span className="font-mono">{row.mz.toFixed(2)}</span>
+                                            cell: ({ row }: any) => <span className="font-mono">{row.original.mz.toFixed(2)}</span>
                                         },
                                     ]}
                                     data={REACTIONS_DATA}
@@ -233,60 +221,50 @@ export const ReportViewerEnhanced: FC = () => {
                             <div className="border border-gray-200 rounded-lg overflow-hidden">
                                 <DataTable
                                     columns={[
-                                        { key: 'member', header: 'Member', align: 'left', width: '15%' },
+                                        { accessorKey: 'member', header: 'Member' },
                                         {
-                                            key: 'axial',
+                                            accessorKey: 'axial',
                                             header: 'Axial (kN)',
-                                            align: 'right',
-                                            width: '20%',
-                                            render: (row) => (
-                                                <span className={`font-mono font-semibold ${row.axial < 0 ? 'text-blue-600' : 'text-red-600'}`}>
-                                                    {row.axial.toFixed(1)}
+                                            cell: ({ row }: any) => (
+                                                <span className={`font-mono font-semibold ${row.original.axial < 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                                                    {row.original.axial.toFixed(1)}
                                                 </span>
                                             )
                                         },
                                         {
-                                            key: 'shear',
+                                            accessorKey: 'shear',
                                             header: 'Shear (kN)',
-                                            align: 'right',
-                                            width: '20%',
-                                            render: (row) => <span className="font-mono">{row.shear.toFixed(1)}</span>
+                                            cell: ({ row }: any) => <span className="font-mono">{row.original.shear.toFixed(1)}</span>
                                         },
                                         {
-                                            key: 'moment',
+                                            accessorKey: 'moment',
                                             header: 'Moment (kN·m)',
-                                            align: 'right',
-                                            width: '20%',
-                                            render: (row) => <span className="font-mono">{row.moment.toFixed(1)}</span>
+                                            cell: ({ row }: any) => <span className="font-mono">{row.original.moment.toFixed(1)}</span>
                                         },
                                         {
-                                            key: 'utilization',
+                                            accessorKey: 'utilization',
                                             header: 'Utilization',
-                                            align: 'right',
-                                            width: '15%',
-                                            render: (row) => (
-                                                <span className={`font-mono font-bold ${row.utilization > 0.9 ? 'text-orange-600' :
-                                                    row.utilization > 0.7 ? 'text-yellow-600' :
+                                            cell: ({ row }: any) => (
+                                                <span className={`font-mono font-bold ${row.original.utilization > 0.9 ? 'text-orange-600' :
+                                                    row.original.utilization > 0.7 ? 'text-yellow-600' :
                                                         'text-green-600'
                                                     }`}>
-                                                    {(row.utilization * 100).toFixed(0)}%
+                                                    {(row.original.utilization * 100).toFixed(0)}%
                                                 </span>
                                             )
                                         },
                                         {
-                                            key: 'status',
+                                            accessorKey: 'status',
                                             header: 'Status',
-                                            align: 'center',
-                                            width: '10%',
-                                            render: (row) => (
-                                                <StatusBadge variant={row.status} size="sm">
-                                                    {row.status === 'pass' ? '✓' : '!'}
+                                            cell: ({ row }: any) => (
+                                                <StatusBadge variant={row.original.status} size="sm">
+                                                    {row.original.status === 'pass' ? '✓' : '!'}
                                                 </StatusBadge>
                                             )
                                         },
                                     ]}
                                     data={MEMBER_FORCES}
-                                    highlightRow={(row) => row.status === 'warning' ? 'bg-yellow-50' : false}
+                                    highlightRow={(row: any) => row.status === 'warning' ? 'bg-yellow-50' : false}
                                     compact
                                 />
                             </div>

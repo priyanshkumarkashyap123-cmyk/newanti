@@ -22,6 +22,7 @@ import crypto from 'crypto';
 import axios from 'axios';
 import queryString from 'query-string';
 import { UserModel, RefreshTokenModel, VerificationCodeModel } from '../models.js';
+import { emailService } from '../services/emailService.js';
 
 const router = Router();
 
@@ -523,8 +524,13 @@ router.post('/signup', async (req: Request, res: Response): Promise<void> => {
             expiresAt: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
         });
 
-        // TODO: Send verification email
-        console.log(`📧 Verification code for ${email}: ${verificationCode}`);
+        // Send verification email
+        try {
+            await emailService.sendVerificationEmail(user.email, user.firstName, verificationCode);
+        } catch (emailError) {
+            console.error('Failed to send verification email:', emailError);
+            // Continue signup even if email fails - user can request resend
+        }
 
         res.status(201).json({
             success: true,
@@ -847,6 +853,10 @@ router.post('/forgot-password', async (req: Request, res: Response) => {
         const resetToken = generateResetToken();
         const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
 
+        // Generate reset token
+        const resetToken = generateResetToken();
+        const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
+
         // Store reset token
         await VerificationCodeModel.create({
             userId: user._id,
@@ -855,8 +865,13 @@ router.post('/forgot-password', async (req: Request, res: Response) => {
             expiresAt: new Date(Date.now() + 60 * 60 * 1000) // 1 hour
         });
 
-        // TODO: Send password reset email
-        console.log(`🔑 Password reset token for ${email}: ${resetToken}`);
+        // Send password reset email
+        try {
+            await emailService.sendPasswordResetEmail(user.email, user.firstName, resetToken);
+        } catch (emailError) {
+            console.error('Failed to send password reset email:', emailError);
+            // Continue - user can request to resend
+        }
 
         res.json({
             success: true,
@@ -1127,6 +1142,78 @@ router.get('/check-email', async (req: Request, res: Response) => {
     } catch (error) {
         console.error('Check email error:', error);
         res.json({ available: false });
+    }
+});
+
+/**
+ * POST /api/auth/resend-verification - Resend verification email
+ */
+router.post('/resend-verification', async (req: Request, res: Response) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({
+                success: false,
+                message: 'Not authenticated'
+            });
+        }
+
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+
+        const user = await UserModel.findById(decoded.userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        if (user.emailVerified) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email already verified'
+            });
+        }
+
+        // Generate new verification code
+        const verificationCode = generateVerificationCode();
+        
+        // Delete old codes
+        await VerificationCodeModel.deleteMany({
+            userId: user._id,
+            type: 'email'
+        });
+
+        // Create new code
+        await VerificationCodeModel.create({
+            userId: user._id,
+            code: verificationCode,
+            type: 'email',
+            expiresAt: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
+        });
+
+        // Send verification email
+        try {
+            await emailService.sendVerificationEmail(user.email, user.firstName, verificationCode);
+        } catch (emailError) {
+            console.error('Failed to send verification email:', emailError);
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to send verification email. Please try again later.'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Verification email sent successfully'
+        });
+    } catch (error) {
+        console.error('Resend verification error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to resend verification email'
+        });
     }
 });
 

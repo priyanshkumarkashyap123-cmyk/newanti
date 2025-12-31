@@ -158,7 +158,7 @@ PERFORM ANALYSIS
     onValidate,
     height = '500px'
 }) => {
-    const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+    const editorRef = useRef<any>(null);
     const [isRunning, setIsRunning] = useState(false);
     const [lastResult, setLastResult] = useState<string>('');
 

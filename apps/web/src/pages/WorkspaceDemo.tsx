@@ -149,53 +149,45 @@ export const WorkspaceDemo: FC = () => {
                                 <div className="p-2">
                                     <DataTable
                                         columns={[
-                                            { key: 'node', header: 'Node', align: 'left', width: '15%' },
-                                            { key: 'lc', header: 'LC', align: 'left', width: '10%' },
+                                            { accessorKey: 'node', header: 'Node' },
+                                            { accessorKey: 'lc', header: 'LC' },
                                             {
-                                                key: 'fx',
+                                                accessorKey: 'fx',
                                                 header: 'FX (kN)',
-                                                align: 'right',
-                                                width: '20%',
-                                                render: (row) => (
-                                                    <span className={row.fx === 0 ? 'text-zinc-600' : 'text-white'}>
-                                                        {row.fx.toFixed(1)}
+                                                cell: ({ row }: any) => (
+                                                    <span className={row.original.fx === 0 ? 'text-zinc-600' : 'text-white'}>
+                                                        {row.original.fx.toFixed(1)}
                                                     </span>
                                                 ),
                                             },
                                             {
-                                                key: 'fy',
+                                                accessorKey: 'fy',
                                                 header: 'FY (kN)',
-                                                align: 'right',
-                                                width: '20%',
-                                                render: (row) => (
-                                                    <span className="text-white font-semibold">{row.fy.toFixed(1)}</span>
+                                                cell: ({ row }: any) => (
+                                                    <span className="text-white font-semibold">{row.original.fy.toFixed(1)}</span>
                                                 ),
                                             },
                                             {
-                                                key: 'fz',
+                                                accessorKey: 'fz',
                                                 header: 'FZ (kN)',
-                                                align: 'right',
-                                                width: '20%',
-                                                render: (row) => (
-                                                    <span className={row.fz === 0 ? 'text-zinc-600' : 'text-white'}>
-                                                        {row.fz.toFixed(1)}
+                                                cell: ({ row }: any) => (
+                                                    <span className={row.original.fz === 0 ? 'text-zinc-600' : 'text-white'}>
+                                                        {row.original.fz.toFixed(1)}
                                                     </span>
                                                 ),
                                             },
                                             {
-                                                key: 'status',
+                                                accessorKey: 'status',
                                                 header: 'Status',
-                                                align: 'center',
-                                                width: '15%',
-                                                render: (row) => (
-                                                    <StatusBadge variant={row.status} size="sm">
-                                                        {row.status.toUpperCase()}
+                                                cell: ({ row }: any) => (
+                                                    <StatusBadge variant={row.original.status} size="sm">
+                                                        {row.original.status.toUpperCase()}
                                                     </StatusBadge>
                                                 ),
                                             },
                                         ]}
                                         data={sampleReactions}
-                                        highlightRow={(row) => row.status === 'warning'}
+                                        highlightRow={(row) => row.status === 'warning' ? 'bg-yellow-500/10' : false}
                                         compact
                                     />
                                 </div>
@@ -209,27 +201,24 @@ export const WorkspaceDemo: FC = () => {
                                 <div className="p-2">
                                     <DataTable
                                         columns={[
-                                            { key: 'member', header: 'Member', align: 'left', width: '20%' },
+                                            { accessorKey: 'member', header: 'Member' },
                                             {
-                                                key: 'axial',
+                                                accessorKey: 'axial',
                                                 header: 'Axial (kN)',
-                                                align: 'right',
-                                                width: '25%',
-                                                render: (row) => (
-                                                    <span className={row.axial < 0 ? 'text-blue-400' : 'text-red-400'}>
-                                                        {row.axial.toFixed(1)}
+                                                cell: ({ row }: any) => (
+                                                    <span className={row.original.axial < 0 ? 'text-blue-400' : 'text-red-400'}>
+                                                        {row.original.axial.toFixed(1)}
                                                     </span>
                                                 ),
                                             },
-                                            { key: 'shear', header: 'Shear (kN)', align: 'right', width: '25%', render: (row) => row.shear.toFixed(1) },
-                                            { key: 'moment', header: 'Moment (kN·m)', align: 'right', width: '25%', render: (row) => row.moment.toFixed(1) },
+                                            { accessorKey: 'shear', header: 'Shear (kN)', cell: ({ row }: any) => row.original.shear.toFixed(1) },
+                                            { accessorKey: 'moment', header: 'Moment (kN·m)', cell: ({ row }: any) => row.original.moment.toFixed(1) },
                                             {
-                                                key: 'status',
+                                                accessorKey: 'status',
                                                 header: 'Check',
-                                                align: 'center',
-                                                render: (row) => (
-                                                    <StatusBadge variant={row.status} size="sm">
-                                                        {row.status === 'pass' ? '✓' : '✗'}
+                                                cell: ({ row }: any) => (
+                                                    <StatusBadge variant={row.original.status} size="sm">
+                                                        {row.original.status === 'pass' ? '✓' : '✗'}
                                                     </StatusBadge>
                                                 ),
                                             },

@@ -20,9 +20,7 @@ import { FC, ReactNode, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Panel,
-    // @ts-ignore - Type definitions may be outdated
     Group as PanelGroup,
-    // @ts-ignore - Type definitions may be outdated
     Separator as PanelResizeHandle
 } from 'react-resizable-panels';
 import { useModelStore } from '../store/model';
@@ -177,11 +175,9 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
                 />
 
                 {/* Main Panel Group */}
-                {/* @ts-expect-error - React-resizable-panels types are incorrect */}
                 <PanelGroup direction="vertical" className="flex-1">
                     {/* Top: Horizontal panels */}
                     <Panel defaultSize={75} minSize={40}>
-                        {/* @ts-expect-error - React-resizable-panels types are incorrect */}
                         <PanelGroup direction="horizontal">
                             {/* Left Sidebar */}
                             {!isSidebarCollapsed && (
@@ -193,9 +189,8 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
                                         collapsible
                                     >
                                         <WorkflowSidebar
-                                            activeWorkflow={activeWorkflow}
-                                            onWorkflowChange={setActiveWorkflow}
-                                            onToolSelect={handleToolSelect}
+                                            activeCategory={activeWorkflow as any}
+                                            onCategoryChange={(cat) => setActiveWorkflow(cat)}
                                         />
                                     </Panel>
                                     <ResizeHandle direction="horizontal" />

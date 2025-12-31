@@ -307,9 +307,9 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                                         <div key={activity.id} className="flex gap-3">
                                             <div className="flex flex-col items-center">
                                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${activity.type === 'analyze' ? 'bg-blue-500/20 text-blue-400' :
-                                                        activity.type === 'create' ? 'bg-green-500/20 text-green-400' :
-                                                            activity.type === 'export' ? 'bg-purple-500/20 text-purple-400' :
-                                                                'bg-orange-500/20 text-orange-400'
+                                                    activity.type === 'create' ? 'bg-green-500/20 text-green-400' :
+                                                        activity.type === 'export' ? 'bg-purple-500/20 text-purple-400' :
+                                                            'bg-orange-500/20 text-orange-400'
                                                     }`}>
                                                     <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>{getActivityIcon(activity.type)}</span>
                                                 </div>
@@ -344,12 +344,19 @@ const SIDEBAR_NAV = [
     { id: 'settings', label: 'Settings', icon: 'settings' },
 ];
 
-const STATS = [
-    { label: 'Total Projects', value: '12', icon: 'folder', bgColor: 'bg-blue-500/20 text-blue-400', trend: 'up' as const, change: '+2' },
-    { label: 'Analyses Run', value: '48', icon: 'analytics', bgColor: 'bg-green-500/20 text-green-400', trend: 'up' as const, change: '+12%' },
-    { label: 'Models Created', value: '8', icon: 'deployed_code', bgColor: 'bg-purple-500/20 text-purple-400', trend: 'neutral' as const, change: '0' },
-    { label: 'Reports Generated', value: '24', icon: 'description', bgColor: 'bg-orange-500/20 text-orange-400', trend: 'up' as const, change: '+6' },
-];
+const STATS: {
+    label: string;
+    value: string;
+    change: string;
+    trend: 'up' | 'down' | 'neutral';
+    icon: string;
+    bgColor: string;
+}[] = [
+        { label: 'Total Projects', value: '12', change: '+2', trend: 'up', icon: 'folder', bgColor: 'bg-blue-500/20 text-blue-400' },
+        { label: 'Active Designs', value: '5', change: '+1', trend: 'up', icon: 'architecture', bgColor: 'bg-indigo-500/20 text-indigo-400' },
+        { label: 'Cloud Storage', value: '45%', change: '0%', trend: 'neutral', icon: 'cloud', bgColor: 'bg-cyan-500/20 text-cyan-400' },
+        { label: 'Team Members', value: '3', change: '+1', trend: 'up', icon: 'group', bgColor: 'bg-violet-500/20 text-violet-400' }
+    ];
 
 const RECENT_PROJECTS: Project[] = [
     { id: '1', name: 'Office Building Phase 1', type: 'Frame', lastModified: '2 hours ago', nodeCount: 48, memberCount: 82, status: 'Draft' },

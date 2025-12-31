@@ -87,7 +87,7 @@ export const ViewCubeOverlay: FC<ViewCubeProps> = ({ onViewChange }) => {
     }, [onViewChange]);
 
     return (
-        <div className="absolute top-4 right-4 z-50 pointer-events-auto">
+        <div className="absolute top-4 right-4 z-10 pointer-events-auto">
             {/* Cube Container */}
             <div className="relative w-16 h-16">
                 {/* 2D representation of cube faces */}

@@ -366,56 +366,59 @@ export function createSectionFromDatabase(
 /**
  * Get standard steel grades
  */
-export const STEEL_GRADES = {
-    'Fe250': { fy: 250, fu: 410 },
-    'Fe345': { fy: 345, fu: 450 },
-    'Fe410': { fy: 410, fu: 490 },
-    'Fe440': { fy: 440, fu: 520 },
-    'Fe490': { fy: 490, fu: 570 },
-    'Fe540': { fy: 540, fu: 620 },
-    'A36': { fy: 250, fu: 400 },      // ASTM A36
-    'A572-50': { fy: 345, fu: 450 },  // ASTM A572 Grade 50
-    'A992': { fy: 345, fu: 450 },     // ASTM A992
-};
+/**
+ * Get standard steel grades
+ */
+export const STEEL_GRADES = [
+    { name: 'Fe250', fy: 250, fu: 410 },
+    { name: 'Fe345', fy: 345, fu: 450 },
+    { name: 'Fe410', fy: 410, fu: 490 },
+    { name: 'Fe440', fy: 440, fu: 520 },
+    { name: 'Fe490', fy: 490, fu: 570 },
+    { name: 'Fe540', fy: 540, fu: 620 },
+    { name: 'A36', fy: 250, fu: 400 },      // ASTM A36
+    { name: 'A572-50', fy: 345, fu: 450 },  // ASTM A572 Grade 50
+    { name: 'A992', fy: 345, fu: 450 },     // ASTM A992
+];
 
 /**
  * Get standard concrete grades
  */
-export const CONCRETE_GRADES = {
-    'M15': { fck: 15 },
-    'M20': { fck: 20 },
-    'M25': { fck: 25 },
-    'M30': { fck: 30 },
-    'M35': { fck: 35 },
-    'M40': { fck: 40 },
-    'M45': { fck: 45 },
-    'M50': { fck: 50 },
-};
+export const CONCRETE_GRADES = [
+    { name: 'M15', fck: 15 },
+    { name: 'M20', fck: 20 },
+    { name: 'M25', fck: 25 },
+    { name: 'M30', fck: 30 },
+    { name: 'M35', fck: 35 },
+    { name: 'M40', fck: 40 },
+    { name: 'M45', fck: 45 },
+    { name: 'M50', fck: 50 },
+];
 
 /**
  * Get standard rebar grades
  */
-export const REBAR_GRADES = {
-    'Fe250': { fy: 250 },
-    'Fe415': { fy: 415 },
-    'Fe500': { fy: 500 },
-    'Fe550': { fy: 550 },
-    'Fe600': { fy: 600 },
-};
+export const REBAR_GRADES = [
+    { name: 'Fe250', fy: 250 },
+    { name: 'Fe415', fy: 415 },
+    { name: 'Fe500', fy: 500 },
+    { name: 'Fe550', fy: 550 },
+    { name: 'Fe600', fy: 600 },
+];
 
 /**
  * Get bolt grades
  */
-export const BOLT_GRADES = {
-    '4.6': { fub: 400, fyb: 240 },
-    '4.8': { fub: 400, fyb: 320 },
-    '5.6': { fub: 500, fyb: 300 },
-    '5.8': { fub: 500, fyb: 400 },
-    '6.8': { fub: 600, fyb: 480 },
-    '8.8': { fub: 800, fyb: 640 },
-    '10.9': { fub: 1000, fyb: 900 },
-    '12.9': { fub: 1200, fyb: 1080 },
-};
+export const BOLT_GRADES = [
+    { name: '4.6', fub: 400, fyb: 240 },
+    { name: '4.8', fub: 400, fyb: 320 },
+    { name: '5.6', fub: 500, fyb: 300 },
+    { name: '5.8', fub: 500, fyb: 400 },
+    { name: '6.8', fub: 600, fyb: 480 },
+    { name: '8.8', fub: 800, fyb: 640 },
+    { name: '10.9', fub: 1000, fyb: 900 },
+    { name: '12.9', fub: 1200, fyb: 1080 },
+];
 
 // ============================================
 // PYTHON API DESIGN FUNCTIONS (IS 456:2000)
@@ -457,12 +460,12 @@ export async function designBeamIS456(params: {
             fy: params.fy ?? 500
         })
     });
-    
+
     if (!response.ok) {
         const error = await response.json().catch(() => ({ detail: 'Design failed' }));
         throw new Error(error.detail || 'Beam design failed');
     }
-    
+
     return response.json();
 }
 
@@ -507,12 +510,12 @@ export async function designColumnIS456(params: {
             fy: params.fy ?? 500
         })
     });
-    
+
     if (!response.ok) {
         const error = await response.json().catch(() => ({ detail: 'Design failed' }));
         throw new Error(error.detail || 'Column design failed');
     }
-    
+
     return response.json();
 }
 
@@ -555,12 +558,12 @@ export async function designSlabIS456(params: {
             fy: params.fy ?? 500
         })
     });
-    
+
     if (!response.ok) {
         const error = await response.json().catch(() => ({ detail: 'Design failed' }));
         throw new Error(error.detail || 'Slab design failed');
     }
-    
+
     return response.json();
 }
 
@@ -593,14 +596,14 @@ export async function autoDesignMember(
 }> {
     const fck = material?.fck ?? 25;
     const fy = material?.fy ?? 500;
-    
+
     // Default section sizes based on member type
     const width = section?.width ?? (memberType === 'column' ? 400 : 300);
     const depth = section?.depth ?? (memberType === 'column' ? 400 : 500);
-    
+
     try {
         let design;
-        
+
         if (memberType === 'beam') {
             design = await designBeamIS456({
                 width,
@@ -630,7 +633,7 @@ export async function autoDesignMember(
                 fy
             });
         }
-        
+
         return {
             memberId,
             memberType,

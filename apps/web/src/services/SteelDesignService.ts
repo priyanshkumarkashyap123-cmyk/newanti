@@ -259,7 +259,7 @@ export function checkFlexure(
 
     return {
         memberId: '',
-        checkType: axios === 'major' ? 'Flexure (Major)' : 'Flexure (Minor)',
+        checkType: axis === 'major' ? 'Flexure (Major)' : 'Flexure (Minor)',
         capacity: Phi_Mn,
         demand: Math.abs(Mu),
         ratio,
