@@ -114,19 +114,26 @@ export const PropertiesPanel: FC = () => {
 
     // Get current selection for useEffect dependency
     const selectedId = selectedIds.size === 1 ? Array.from(selectedIds)[0] : null;
-    const selectedMember = selectedId ? members.get(selectedId) : null;
 
     // Sync custom values when member selection changes
+    // Note: Only depend on selectedId to avoid re-runs when members Map reference changes
     useEffect(() => {
-        if (selectedMember) {
-            setCustomA((selectedMember.A ?? 0.01) * 1e4); // Convert to cm²
-            setCustomI((selectedMember.I ?? 1e-4) * 1e8); // Convert to cm⁴
-            setCustomE((selectedMember.E ?? 200e6) / 1e6); // Convert to GPa
+        if (selectedId) {
+            const member = members.get(selectedId);
+            if (member) {
+                setCustomA((member.A ?? 0.01) * 1e4); // Convert to cm²
+                setCustomI((member.I ?? 1e-4) * 1e8); // Convert to cm⁴
+                setCustomE((member.E ?? 200e6) / 1e6); // Convert to GPa
+            }
         }
         // Reset dialogs when selection changes
         setShowCustomSection(false);
         setShowCustomMaterial(false);
-    }, [selectedId, selectedMember]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedId]); // Only re-run when selection changes, not when members Map updates
+
+    // Get selected member for rendering
+    const selectedMember = selectedId ? members.get(selectedId) : null;
 
     // 2. Conditional Render: No selection
     if (selectedIds.size === 0) {

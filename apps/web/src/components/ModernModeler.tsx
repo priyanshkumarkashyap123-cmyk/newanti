@@ -289,6 +289,7 @@ export const ModernModeler: FC = () => {
         if (activeTool === 'memberLoad' && selectedIds.size === 1) {
             const selectedId = Array.from(selectedIds)[0];
             // Check if it's a member (not a node) and not the same as previous selection
+            // Use members.has() to verify it's a member, not a node
             if (selectedId && members.has(selectedId) && selectedId !== previousSelectionRef.current) {
                 previousSelectionRef.current = selectedId;
                 setLoadDialogMemberId(selectedId);
@@ -298,7 +299,8 @@ export const ModernModeler: FC = () => {
             // Reset previous selection when tool changes or selection is cleared
             previousSelectionRef.current = undefined;
         }
-    }, [selectedIds, activeTool, members]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedIds, activeTool]); // Don't depend on members - it only changes when members are added/removed
 
     // Show quick start on first load if model is empty
     useEffect(() => {
