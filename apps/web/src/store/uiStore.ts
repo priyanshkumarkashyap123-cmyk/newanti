@@ -109,6 +109,7 @@ interface UIState {
         boundaryDialog: boolean;
         // ASCE 7 Load Generation
         asce7SeismicDialog: boolean;
+        asce7WindDialog: boolean;
         loadCombinationsDialog: boolean;
         // Advanced Analysis & Design dialogs
         advancedAnalysis: boolean;
@@ -201,6 +202,7 @@ export const useUIStore = create<UIState>()(
                 boundaryDialog: false,
                 // ASCE 7 Load Generation
                 asce7SeismicDialog: false,
+                asce7WindDialog: false,
                 loadCombinationsDialog: false,
                 // Advanced Analysis & Design dialogs
                 advancedAnalysis: false,
@@ -400,6 +402,7 @@ export const useUIStore = create<UIState>()(
                     movingLoadDialog: false,
                     boundaryDialog: false,
                     asce7SeismicDialog: false,
+                    asce7WindDialog: false,
                     loadCombinationsDialog: false,
                     advancedAnalysis: false,
                     designCodes: false,

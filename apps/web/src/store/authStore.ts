@@ -46,20 +46,21 @@ export interface AuthState {
     isLoading: boolean;
     isInitialized: boolean;
     error: string | null;
-    
+
     // Computed
     isSignedIn: boolean;
     userId: string | null;
-    
+
     // Actions
     setUser: (user: User | null) => void;
     setTokens: (tokens: AuthTokens | null) => void;
     setLoading: (loading: boolean) => void;
     setError: (error: string | null) => void;
     setInitialized: (initialized: boolean) => void;
-    
+
     // Auth actions
     signIn: (email: string, password: string) => Promise<boolean>;
+    socialSignIn: (provider: 'google' | 'github') => Promise<boolean>;
     signUp: (data: SignUpData) => Promise<boolean>;
     signOut: () => void;
     refreshSession: () => Promise<boolean>;
@@ -67,7 +68,7 @@ export interface AuthState {
     forgotPassword: (email: string) => Promise<boolean>;
     resetPassword: (token: string, newPassword: string) => Promise<boolean>;
     updateProfile: (data: Partial<User>) => Promise<boolean>;
-    
+
     // Session management
     checkSession: () => Promise<boolean>;
     getAccessToken: () => string | null;
@@ -126,30 +127,77 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             isInitialized: false,
             error: null,
-            
+
             // Computed getters (updated when state changes)
             get isSignedIn() {
                 const state = get();
                 return state.user !== null && state.tokens !== null && !isTokenExpired(state.tokens.expiresAt);
             },
-            
+
             get userId() {
                 return get().user?.id ?? null;
             },
-            
+
             // Basic setters
             setUser: (user) => set({ user }),
             setTokens: (tokens) => set({ tokens }),
             setLoading: (isLoading) => set({ isLoading }),
             setError: (error) => set({ error }),
             setInitialized: (isInitialized) => set({ isInitialized }),
-            
+
             // ========================================
             // SIGN IN
             // ========================================
+            socialSignIn: async (provider: 'google' | 'github'): Promise<boolean> => {
+                set({ isLoading: true, error: null });
+
+                // Simulate network delay
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                try {
+                    // Create mock user based on provider
+                    const isGoogle = provider === 'google';
+                    const mockUser: User = {
+                        id: `social-${provider}-${Date.now()}`,
+                        email: isGoogle ? 'google.user@example.com' : 'github.user@example.com',
+                        firstName: isGoogle ? 'Google' : 'GitHub',
+                        lastName: 'User',
+                        avatarUrl: isGoogle
+                            ? 'https://lh3.googleusercontent.com/a/ACg8ocIq8dJ...'
+                            : 'https://avatars.githubusercontent.com/u/123456?v=4',
+                        emailVerified: true,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                        role: 'user',
+                        subscriptionTier: 'free'
+                    };
+
+                    const mockTokens: AuthTokens = {
+                        accessToken: 'mock-jwt-token-social',
+                        refreshToken: 'mock-refresh-token-social',
+                        expiresAt: Date.now() + 3600000 * 24 // 24 hours
+                    };
+
+                    set({
+                        user: mockUser,
+                        tokens: mockTokens,
+                        isLoading: false,
+                        error: null
+                    });
+
+                    return true;
+                } catch (err) {
+                    set({
+                        error: 'Social sign in failed',
+                        isLoading: false
+                    });
+                    return false;
+                }
+            },
+
             signIn: async (email: string, password: string): Promise<boolean> => {
                 set({ isLoading: true, error: null });
-                
+
                 try {
                     const response = await fetch(`${API_BASE}/api/auth/signin`, {
                         method: 'POST',
@@ -157,17 +205,17 @@ export const useAuthStore = create<AuthState>()(
                         body: JSON.stringify({ email, password }),
                         credentials: 'include'
                     });
-                    
+
                     const data = await response.json();
-                    
+
                     if (!response.ok) {
                         set({ error: data.message || 'Sign in failed', isLoading: false });
                         return false;
                     }
-                    
+
                     const { user, accessToken, refreshToken } = data;
                     const decoded = parseJWT(accessToken);
-                    
+
                     set({
                         user,
                         tokens: {
@@ -178,7 +226,7 @@ export const useAuthStore = create<AuthState>()(
                         isLoading: false,
                         error: null
                     });
-                    
+
                     return true;
                 } catch (err) {
                     set({
@@ -188,13 +236,13 @@ export const useAuthStore = create<AuthState>()(
                     return false;
                 }
             },
-            
+
             // ========================================
             // SIGN UP
             // ========================================
             signUp: async (data: SignUpData): Promise<boolean> => {
                 set({ isLoading: true, error: null });
-                
+
                 try {
                     const response = await fetch(`${API_BASE}/api/auth/signup`, {
                         method: 'POST',
@@ -202,17 +250,17 @@ export const useAuthStore = create<AuthState>()(
                         body: JSON.stringify(data),
                         credentials: 'include'
                     });
-                    
+
                     const result = await response.json();
-                    
+
                     if (!response.ok) {
                         set({ error: result.message || 'Sign up failed', isLoading: false });
                         return false;
                     }
-                    
+
                     const { user, accessToken, refreshToken } = result;
                     const decoded = parseJWT(accessToken);
-                    
+
                     set({
                         user,
                         tokens: {
@@ -223,7 +271,7 @@ export const useAuthStore = create<AuthState>()(
                         isLoading: false,
                         error: null
                     });
-                    
+
                     return true;
                 } catch (err) {
                     set({
@@ -233,7 +281,7 @@ export const useAuthStore = create<AuthState>()(
                     return false;
                 }
             },
-            
+
             // ========================================
             // SIGN OUT
             // ========================================
@@ -243,7 +291,7 @@ export const useAuthStore = create<AuthState>()(
                 if (tokens?.refreshToken) {
                     fetch(`${API_BASE}/api/auth/signout`, {
                         method: 'POST',
-                        headers: { 
+                        headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${tokens.accessToken}`
                         },
@@ -253,28 +301,28 @@ export const useAuthStore = create<AuthState>()(
                         // Ignore errors during logout
                     });
                 }
-                
+
                 // Clear local state
                 set({
                     user: null,
                     tokens: null,
                     error: null
                 });
-                
+
                 // Clear localStorage
                 localStorage.removeItem('beamlab-auth');
             },
-            
+
             // ========================================
             // REFRESH SESSION
             // ========================================
             refreshSession: async (): Promise<boolean> => {
                 const { tokens } = get();
-                
+
                 if (!tokens?.refreshToken) {
                     return false;
                 }
-                
+
                 try {
                     const response = await fetch(`${API_BASE}/api/auth/refresh`, {
                         method: 'POST',
@@ -282,16 +330,16 @@ export const useAuthStore = create<AuthState>()(
                         body: JSON.stringify({ refreshToken: tokens.refreshToken }),
                         credentials: 'include'
                     });
-                    
+
                     if (!response.ok) {
                         // Refresh failed - sign out
                         get().signOut();
                         return false;
                     }
-                    
+
                     const data = await response.json();
                     const decoded = parseJWT(data.accessToken);
-                    
+
                     set({
                         tokens: {
                             accessToken: data.accessToken,
@@ -299,19 +347,19 @@ export const useAuthStore = create<AuthState>()(
                             expiresAt: decoded?.exp ? decoded.exp * 1000 : Date.now() + 3600000
                         }
                     });
-                    
+
                     return true;
                 } catch {
                     return false;
                 }
             },
-            
+
             // ========================================
             // VERIFY EMAIL
             // ========================================
             verifyEmail: async (code: string): Promise<boolean> => {
                 const { tokens } = get();
-                
+
                 try {
                     const response = await fetch(`${API_BASE}/api/auth/verify-email`, {
                         method: 'POST',
@@ -322,22 +370,22 @@ export const useAuthStore = create<AuthState>()(
                         body: JSON.stringify({ code }),
                         credentials: 'include'
                     });
-                    
+
                     if (!response.ok) {
                         return false;
                     }
-                    
+
                     const user = get().user;
                     if (user) {
                         set({ user: { ...user, emailVerified: true } });
                     }
-                    
+
                     return true;
                 } catch {
                     return false;
                 }
             },
-            
+
             // ========================================
             // FORGOT PASSWORD
             // ========================================
@@ -348,13 +396,13 @@ export const useAuthStore = create<AuthState>()(
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email })
                     });
-                    
+
                     return response.ok;
                 } catch {
                     return false;
                 }
             },
-            
+
             // ========================================
             // RESET PASSWORD
             // ========================================
@@ -365,23 +413,23 @@ export const useAuthStore = create<AuthState>()(
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ token, newPassword })
                     });
-                    
+
                     return response.ok;
                 } catch {
                     return false;
                 }
             },
-            
+
             // ========================================
             // UPDATE PROFILE
             // ========================================
             updateProfile: async (data: Partial<User>): Promise<boolean> => {
                 const { tokens, user } = get();
-                
+
                 if (!tokens?.accessToken || !user) {
                     return false;
                 }
-                
+
                 try {
                     const response = await fetch(`${API_BASE}/api/auth/profile`, {
                         method: 'PUT',
@@ -392,31 +440,31 @@ export const useAuthStore = create<AuthState>()(
                         body: JSON.stringify(data),
                         credentials: 'include'
                     });
-                    
+
                     if (!response.ok) {
                         return false;
                     }
-                    
+
                     const updatedUser = await response.json();
                     set({ user: { ...user, ...updatedUser } });
-                    
+
                     return true;
                 } catch {
                     return false;
                 }
             },
-            
+
             // ========================================
             // CHECK SESSION
             // ========================================
             checkSession: async (): Promise<boolean> => {
                 const { tokens } = get();
-                
+
                 if (!tokens) {
                     set({ isInitialized: true });
                     return false;
                 }
-                
+
                 // Check if token is expired
                 if (isTokenExpired(tokens.expiresAt)) {
                     // Try to refresh
@@ -424,7 +472,7 @@ export const useAuthStore = create<AuthState>()(
                     set({ isInitialized: true });
                     return refreshed;
                 }
-                
+
                 // Validate token with backend
                 try {
                     const response = await fetch(`${API_BASE}/api/auth/me`, {
@@ -433,13 +481,13 @@ export const useAuthStore = create<AuthState>()(
                         },
                         credentials: 'include'
                     });
-                    
+
                     if (!response.ok) {
                         get().signOut();
                         set({ isInitialized: true });
                         return false;
                     }
-                    
+
                     const user = await response.json();
                     set({ user, isInitialized: true });
                     return true;
@@ -448,22 +496,22 @@ export const useAuthStore = create<AuthState>()(
                     return false;
                 }
             },
-            
+
             // ========================================
             // GET ACCESS TOKEN
             // ========================================
             getAccessToken: (): string | null => {
                 const { tokens } = get();
-                
+
                 if (!tokens) {
                     return null;
                 }
-                
+
                 // Auto-refresh if expired
                 if (isTokenExpired(tokens.expiresAt)) {
                     get().refreshSession();
                 }
-                
+
                 return tokens.accessToken;
             }
         }),
@@ -481,7 +529,7 @@ export const useAuthStore = create<AuthState>()(
 // SELECTORS
 // ============================================
 
-export const useIsSignedIn = () => useAuthStore((state) => 
+export const useIsSignedIn = () => useAuthStore((state) =>
     state.user !== null && state.tokens !== null
 );
 

@@ -518,6 +518,14 @@ const AdvancedToolsPanel: FC = () => {
             borderColor: 'border-blue-500/30'
         },
         {
+            id: 'asce7WindDialog',
+            label: 'ASCE 7 Wind Load',
+            description: 'ASCE 7-22 Directional (US)',
+            color: 'text-cyan-400',
+            bgColor: 'bg-cyan-500/10',
+            borderColor: 'border-cyan-500/30'
+        },
+        {
             id: 'loadCombinationsDialog',
             label: 'Load Combinations',
             description: 'ASCE 7 / IS 456 combinations',
@@ -580,7 +588,7 @@ const AdvancedToolsPanel: FC = () => {
             {tools.map((tool) => (
                 <button
                     key={tool.id}
-                    onClick={() => openModal(tool.id as 'structureWizard' | 'geometryTools' | 'interoperability' | 'railwayBridge' | 'loadDialog' | 'meshing' | 'windLoadDialog' | 'seismicLoadDialog' | 'movingLoadDialog' | 'asce7SeismicDialog' | 'loadCombinationsDialog')}
+                    onClick={() => openModal(tool.id as 'structureWizard' | 'geometryTools' | 'interoperability' | 'railwayBridge' | 'loadDialog' | 'meshing' | 'windLoadDialog' | 'seismicLoadDialog' | 'movingLoadDialog' | 'asce7SeismicDialog' | 'asce7WindDialog' | 'loadCombinationsDialog')}
                     className={`
                         w-full flex flex-col items-start gap-1 px-3 py-2.5 text-sm rounded-lg transition-all
                         ${tool.bgColor} ${tool.color} border ${tool.borderColor}

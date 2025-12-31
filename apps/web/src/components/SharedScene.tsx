@@ -8,15 +8,20 @@ import { LoadRenderer } from './LoadRenderer';
 import { MemberLoadRenderer } from './MemberLoadRenderer';
 import { AllMemberDiagrams } from './DiagramRenderer';
 import { LoadPlacementLayer } from './viewer/LoadPlacementLayer';
+import { AllResultsOverlay, StressColorOverlay } from './results';
 import { useModelStore } from '../store/model';
 
 export const SharedScene: FC = () => {
     const showSFD = useModelStore((state) => state.showSFD);
     const showBMD = useModelStore((state) => state.showBMD);
+    const showAFD = useModelStore((state) => state.showAFD);
+    const showStressOverlay = useModelStore((state) => state.showStressOverlay);
+    const diagramScale = useModelStore((state) => state.diagramScale);
     const displacementScale = useModelStore((state) => state.displacementScale);
+    const analysisResults = useModelStore((state) => state.analysisResults);
 
-    // Use displacement scale to derive diagram scale (smaller)
-    const diagramScale = displacementScale * 0.001;
+    // Use displacement scale to derive diagram scale (smaller) for legacy diagrams
+    const legacyDiagramScale = displacementScale * 0.001;
 
     return (
         <>
@@ -64,8 +69,12 @@ export const SharedScene: FC = () => {
             <MemberLoadRenderer />
 
             {/* Force Diagrams - Show when toggled */}
-            {showSFD && <AllMemberDiagrams type="FY" scale={diagramScale} />}
-            {showBMD && <AllMemberDiagrams type="MZ" scale={diagramScale} />}
+            {showSFD && <AllMemberDiagrams type="FY" scale={legacyDiagramScale} />}
+            {showBMD && <AllMemberDiagrams type="MZ" scale={legacyDiagramScale} />}
+            {showAFD && <AllMemberDiagrams type="FX" scale={legacyDiagramScale} />}
+
+            {/* Professional STAAD-like Stress Overlay */}
+            {showStressOverlay && analysisResults && <StressColorOverlay />}
 
             {/* Tools */}
             <SelectionTransform />

@@ -1,199 +1,135 @@
-/**
- * WorkflowSidebar - Vertical Workflow Navigation
- * 
- * Contains collapsible sections for Geometry, Loading, Analysis workflows.
- */
-
-import { FC, useState } from 'react';
+import { FC } from 'react';
 import {
     Box,
-    Loader,
-    Play,
-    ChevronDown,
-    ChevronRight,
-    Plus,
-    Move,
-    Grid3X3,
-    ArrowDown,
-    Triangle,
-    BarChart3,
-    FileCheck,
+    Layers,
+    Database,
     Settings,
-    Layers
+    Anchor,
+    Download,
+    BarChart3,
+    Ruler
 } from 'lucide-react';
-
-// ============================================
-// TYPES
-// ============================================
-
-interface WorkflowItem {
-    id: string;
-    label: string;
-    icon: React.ElementType;
-    subItems?: { id: string; label: string }[];
-}
+import { Category } from '../../store/uiStore';
 
 interface WorkflowSidebarProps {
-    activeWorkflow: string;
-    onWorkflowChange: (id: string) => void;
-    onToolSelect?: (toolId: string) => void;
+    activeCategory: Category;
+    onCategoryChange: (category: Category) => void;
+    currentStep?: string; // Fine-grained step control if needed
 }
 
-// ============================================
-// WORKFLOW DATA
-// ============================================
-
-const WORKFLOWS: WorkflowItem[] = [
-    {
-        id: 'geometry',
-        label: 'Geometry',
-        icon: Box,
-        subItems: [
-            { id: 'add-node', label: 'Add Node' },
-            { id: 'add-beam', label: 'Add Beam' },
-            { id: 'add-plate', label: 'Add Plate' },
-            { id: 'add-support', label: 'Add Support' },
-            { id: 'translate', label: 'Translate' },
-            { id: 'rotate', label: 'Rotate' },
-            { id: 'mirror', label: 'Mirror' }
-        ]
-    },
-    {
-        id: 'loading',
-        label: 'Loading',
-        icon: ArrowDown,
-        subItems: [
-            { id: 'add-point-load', label: 'Point Load' },
-            { id: 'add-member-load', label: 'Member Load' },
-            { id: 'add-area-load', label: 'Area Load' },
-            { id: 'load-combinations', label: 'Load Combinations' },
-            { id: 'selfweight', label: 'Self Weight' }
-        ]
-    },
-    {
-        id: 'analysis',
-        label: 'Analysis',
-        icon: Play,
-        subItems: [
-            { id: 'run-analysis', label: 'Run Analysis' },
-            { id: 'modal-analysis', label: 'Modal Analysis' },
-            { id: 'pdelta', label: 'P-Delta' },
-            { id: 'buckling', label: 'Buckling' }
-        ]
-    },
-    {
-        id: 'design',
-        label: 'Design',
-        icon: FileCheck,
-        subItems: [
-            { id: 'steel-design', label: 'Steel Design' },
-            { id: 'concrete-design', label: 'Concrete Design' },
-            { id: 'connection-design', label: 'Connection Design' }
-        ]
-    },
-    {
-        id: 'results',
-        label: 'Results',
-        icon: BarChart3,
-        subItems: [
-            { id: 'reactions', label: 'Reactions' },
-            { id: 'displacements', label: 'Displacements' },
-            { id: 'member-forces', label: 'Member Forces' },
-            { id: 'stress-contours', label: 'Stress Contours' }
-        ]
-    }
-];
-
-// ============================================
-// COMPONENT
-// ============================================
-
 export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
-    activeWorkflow,
-    onWorkflowChange,
-    onToolSelect
+    activeCategory,
+    onCategoryChange
 }) => {
-    const [expandedItems, setExpandedItems] = useState<Set<string>>(
-        new Set(['geometry', 'loading'])
-    );
 
-    const toggleExpanded = (id: string) => {
-        const newExpanded = new Set(expandedItems);
-        if (newExpanded.has(id)) {
-            newExpanded.delete(id);
-        } else {
-            newExpanded.add(id);
+    const workflowItems = [
+        { id: 'MODELING', label: 'Geometry', icon: Box, subtext: 'Nodes & Beams' },
+        { id: 'PROPERTIES', label: 'Properties', icon: Layers, subtext: 'Sections' },
+        { id: 'MATERIALS', label: 'Materials', icon: Database, subtext: 'Concrete/Steel' }, // New category mapping needed
+        { id: 'SPECS', label: 'Specifications', icon: Settings, subtext: 'Releases' },      // New category mapping needed
+        { id: 'SUPPORTS', label: 'Supports', icon: Anchor, subtext: 'Restraints' },         // New category mapping needed
+        { id: 'LOADING', label: 'Loading', icon: Download, subtext: 'Load Cases' },
+        { id: 'ANALYSIS', label: 'Analysis', icon: BarChart3, subtext: 'Run Solver' },
+        { id: 'DESIGN', label: 'Design', icon: Ruler, subtext: 'Code Check' },
+    ];
+
+    // Helper to map UI ID to Store Category
+    const handleClick = (id: string) => {
+        // Map specific workflow steps to general store categories for now
+        // This preserves compatibility while giving granular UI
+        let category: Category = 'MODELING';
+
+        switch (id) {
+            case 'MODELING': category = 'MODELING'; break;
+            case 'PROPERTIES':
+            case 'MATERIALS':
+            case 'SPECS':
+            case 'SUPPORTS':
+                category = 'PROPERTIES'; break;
+            case 'LOADING': category = 'LOADING'; break;
+            case 'ANALYSIS': category = 'ANALYSIS'; break;
+            case 'DESIGN': category = 'DESIGN'; break;
         }
-        setExpandedItems(newExpanded);
+
+        onCategoryChange(category);
     };
 
     return (
-        <div className="h-full flex flex-col bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800">
+        <div className="h-full w-full bg-zinc-900 flex flex-col border-r border-zinc-800">
             {/* Header */}
-            <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
-                <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
-                    <Layers className="w-4 h-4" />
+            <div className="p-4 border-b border-zinc-800 bg-zinc-950">
+                <h2 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
                     Workflow
                 </h2>
+                <div className="text-[10px] text-zinc-600 mt-1 font-mono">
+                    ANALYTICAL MODELING
+                </div>
             </div>
 
-            {/* Scrollable Content */}
+            {/* Workflow Steps */}
             <div className="flex-1 overflow-y-auto py-2">
-                {WORKFLOWS.map((workflow) => {
-                    const Icon = workflow.icon;
-                    const isActive = activeWorkflow === workflow.id;
-                    const isExpanded = expandedItems.has(workflow.id);
+                <div className="flex flex-col gap-1 px-2">
+                    {workflowItems.map((item) => {
+                        // Simple active check logic - relies on mapped categories
+                        const isActive =
+                            (activeCategory === 'MODELING' && item.id === 'MODELING') ||
+                            (activeCategory === 'PROPERTIES' && ['PROPERTIES', 'MATERIALS', 'SPECS', 'SUPPORTS'].includes(item.id)) ||
+                            (activeCategory === 'LOADING' && item.id === 'LOADING') ||
+                            (activeCategory === 'ANALYSIS' && item.id === 'ANALYSIS') ||
+                            (activeCategory === 'DESIGN' && item.id === 'DESIGN');
 
-                    return (
-                        <div key={workflow.id} className="mb-1">
-                            {/* Workflow Header */}
+                        // Specifically highlight the exact item if we track granular state in future
+                        // For now, highlight broader categories slightly differently or just the main one
+
+                        return (
                             <button
-                                onClick={() => {
-                                    onWorkflowChange(workflow.id);
-                                    toggleExpanded(workflow.id);
-                                }}
-                                className={`w-full flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors ${isActive
-                                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                                        : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                                    }`}
+                                key={item.id}
+                                onClick={() => handleClick(item.id)}
+                                className={`
+                                    group flex items-center gap-3 px-3 py-3 rounded-md text-left transition-all
+                                    ${isActive
+                                        ? 'bg-blue-600 text-white shadow-md'
+                                        : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'}
+                                `}
                             >
-                                {isExpanded ? (
-                                    <ChevronDown className="w-4 h-4 flex-shrink-0" />
-                                ) : (
-                                    <ChevronRight className="w-4 h-4 flex-shrink-0" />
-                                )}
-                                <Icon className="w-4 h-4 flex-shrink-0" />
-                                <span>{workflow.label}</span>
-                            </button>
-
-                            {/* Sub Items */}
-                            {isExpanded && workflow.subItems && (
-                                <div className="ml-6 border-l border-zinc-200 dark:border-zinc-700">
-                                    {workflow.subItems.map((subItem) => (
-                                        <button
-                                            key={subItem.id}
-                                            onClick={() => onToolSelect?.(subItem.id)}
-                                            className="w-full text-left px-4 py-1.5 text-xs text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
-                                        >
-                                            {subItem.label}
-                                        </button>
-                                    ))}
+                                <div className={`
+                                    p-1.5 rounded-md transition-colors
+                                    ${isActive ? 'bg-blue-500' : 'bg-zinc-800 group-hover:bg-zinc-700'}
+                                `}>
+                                    <item.icon className="w-4 h-4" />
                                 </div>
-                            )}
-                        </div>
-                    );
-                })}
+                                <div className="flex flex-col">
+                                    <span className="text-sm font-medium leading-none">
+                                        {item.label}
+                                    </span>
+                                    <span className={`text-[10px] mt-1 ${isActive ? 'text-blue-200' : 'text-zinc-600'}`}>
+                                        {item.subtext}
+                                    </span>
+                                </div>
+
+                                {/* Active Indicator Bar */}
+                                {isActive && (
+                                    <div className="absolute left-0 w-1 h-8 bg-blue-400 rounded-r-full" />
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
 
-            {/* Footer */}
-            <div className="px-3 py-2 border-t border-zinc-200 dark:border-zinc-800">
-                <button className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors">
-                    <Settings className="w-3 h-3" />
-                    Settings
-                </button>
+            {/* Bottom Section */}
+            <div className="p-4 bg-zinc-950 border-t border-zinc-800">
+                <div className="flex flex-col gap-2">
+                    <button className="text-xs text-zinc-500 hover:text-white text-left">
+                        Connection Client
+                    </button>
+                    <div className="w-full h-px bg-zinc-800" />
+                    <button className="text-xs text-green-500 hover:text-green-400 text-left flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                        Connected
+                    </button>
+                </div>
             </div>
         </div>
     );
 };
-
-export default WorkflowSidebar;

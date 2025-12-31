@@ -98,6 +98,10 @@ interface ModelState {
     // Diagram visibility
     showSFD: boolean;  // Shear Force Diagram
     showBMD: boolean;  // Bending Moment Diagram
+    showAFD: boolean;  // Axial Force Diagram
+    showStressOverlay: boolean;  // Stress color overlay on members
+    showDeflectedShape: boolean;  // Deflected shape
+    diagramScale: number;  // Scale factor for diagrams
     showResults: boolean;  // Results Table visibility
 
     // Modal Analysis / Dynamics
@@ -142,6 +146,10 @@ interface ModelState {
     setDisplacementScale: (scale: number) => void;
     setShowSFD: (show: boolean) => void;
     setShowBMD: (show: boolean) => void;
+    setShowAFD: (show: boolean) => void;
+    setShowStressOverlay: (show: boolean) => void;
+    setShowDeflectedShape: (show: boolean) => void;
+    setDiagramScale: (scale: number) => void;
     setShowResults: (show: boolean) => void;
 
     // Modal Analysis Actions
@@ -180,6 +188,10 @@ export const useModelStore = create<ModelState>()(
                 displacementScale: 100, // Default scale factor
                 showSFD: false,
                 showBMD: false,
+                showAFD: false,
+                showStressOverlay: false,
+                showDeflectedShape: false,
+                diagramScale: 0.05, // Professional diagram scale
                 showResults: false,
                 clipboard: null, // Clipboard for copy/paste
 
@@ -548,6 +560,10 @@ export const useModelStore = create<ModelState>()(
                 setDisplacementScale: (scale) => set({ displacementScale: scale }),
                 setShowSFD: (show) => set({ showSFD: show }),
                 setShowBMD: (show) => set({ showBMD: show }),
+                setShowAFD: (show) => set({ showAFD: show }),
+                setShowStressOverlay: (show) => set({ showStressOverlay: show }),
+                setShowDeflectedShape: (show) => set({ showDeflectedShape: show }),
+                setDiagramScale: (scale) => set({ diagramScale: scale }),
                 setShowResults: (show) => set({ showResults: show }),
 
                 // Modal Analysis Actions
@@ -567,6 +583,10 @@ export const useModelStore = create<ModelState>()(
                     isAnalyzing: false,
                     showSFD: false,
                     showBMD: false,
+                    showAFD: false,
+                    showStressOverlay: false,
+                    showDeflectedShape: false,
+                    diagramScale: 0.05,
                     showResults: false,
                     modalResults: null,
                     activeModeIndex: 0,
@@ -602,6 +622,10 @@ export const useModelStore = create<ModelState>()(
                         isAnalyzing: false,
                         showSFD: false,
                         showBMD: false,
+                        showAFD: false,
+                        showStressOverlay: false,
+                        showDeflectedShape: false,
+                        diagramScale: 0.05,
                         showResults: false,
                         modalResults: null,
                         activeModeIndex: 0,

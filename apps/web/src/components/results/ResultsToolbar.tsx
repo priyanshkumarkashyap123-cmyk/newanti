@@ -170,6 +170,15 @@ const convertToAnalysisResultsData = (results: AnalysisResults): AnalysisResults
 export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
     const analysisResults = useModelStore((s) => s.analysisResults) as AnalysisResults | null;
     const displacementScale = useModelStore((s) => s.displacementScale) as number;
+    const showSFD = useModelStore((s) => s.showSFD);
+    const showBMD = useModelStore((s) => s.showBMD);
+    const showAFD = useModelStore((s) => s.showAFD);
+    const showStressOverlay = useModelStore((s) => s.showStressOverlay);
+    const setShowSFD = useModelStore((s) => s.setShowSFD);
+    const setShowBMD = useModelStore((s) => s.setShowBMD);
+    const setShowAFD = useModelStore((s) => s.setShowAFD);
+    const setShowStressOverlay = useModelStore((s) => s.setShowStressOverlay);
+    const setDisplacementScale = useModelStore((s) => s.setDisplacementScale);
     const openModal = useUIStore((s) => s.openModal);
 
     // Local state
@@ -182,7 +191,18 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
 
     // Store doesn't have these - we'll use local state
     const [_showReactions, _setShowReactions] = useState(true);
-    const [_showAxial, _setShowAxial] = useState(false);
+
+    // Sync diagram toggles with store
+    const handleDiagramToggle = (type: DiagramType) => {
+        const newActive = activeDiagram === type ? null : type;
+        setActiveDiagram(newActive);
+        
+        // Update store based on diagram type
+        setShowSFD(newActive === 'sfd');
+        setShowBMD(newActive === 'bmd');
+        setShowAFD(newActive === 'axial');
+        setShowStressOverlay(newActive === 'heatmap');
+    };
 
     if (!analysisResults) return null;
 
@@ -195,12 +215,9 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
         { id: 'heatmap', label: 'Heat Map', icon: Flame, color: 'text-yellow-500' }
     ];
 
-    const handleDiagramToggle = (type: DiagramType) => {
-        setActiveDiagram(activeDiagram === type ? null : type);
-    };
-
     const handleScaleChange = (newScale: number) => {
         setScale(newScale);
+        setDisplacementScale(newScale);
     };
 
     const toggleAnimation = () => {

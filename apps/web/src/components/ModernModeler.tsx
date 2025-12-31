@@ -27,12 +27,16 @@ import { useUIStore, Category } from '../store/uiStore';
 import { useModelStore } from '../store/model';
 import { SmartSidebar } from './layout/SmartSidebar';
 import { ViewportManager } from './ViewportManager';
-import { Toolbar } from './Toolbar';
+// import { Toolbar } from './Toolbar'; // Replaced by Ribbon
 import { PropertiesPanel } from './PropertiesPanel';
 import { ResultsTable } from './ResultsTable';
 
+// New layout components
+import { WorkflowSidebar } from './layout/WorkflowSidebar';
+import { EngineeringRibbon } from './layout/EngineeringRibbon';
+
 // New workflow components
-import { AnalysisWorkflow } from './AnalysisWorkflow';
+import { AnalysisWorkflow } from './AnalysisWorkflow'; // Keep for now if types rely on it or if used in stepper
 import { AnalysisProgressModal, type AnalysisStage } from './AnalysisProgressModal';
 import { QuickStartModal } from './QuickStartModal';
 import { ResultsToolbar } from './results/ResultsToolbar';
@@ -51,6 +55,7 @@ import WindLoadDialog from './WindLoadDialog';
 import SeismicLoadDialog from './SeismicLoadDialog';
 import MovingLoadDialog from './MovingLoadDialog';
 import ASCE7SeismicLoadDialog from './ASCE7SeismicLoadDialog';
+import ASCE7WindLoadDialog from './ASCE7WindLoadDialog';
 import LoadCombinationsDialog from './LoadCombinationsDialog';
 import { AdvancedAnalysisDialog } from './AdvancedAnalysisDialog';
 import { DesignCodesDialog } from './DesignCodesDialog';
@@ -235,13 +240,10 @@ export const ModernModeler: FC = () => {
     const analysisResults = useModelStore((state) => state.analysisResults);
     const setAnalysisResults = useModelStore((state) => state.setAnalysisResults);
     const setIsAnalyzing = useModelStore((state) => state.setIsAnalyzing);
-    const { setCategory } = useUIStore();
+    // UI Store
+    const { activeCategory, setCategory, notification, hideNotification } = useUIStore();
 
-    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [inspectorCollapsed, setInspectorCollapsed] = useState(false);
-
-    // Workflow state
-    const [activeStep, setActiveStep] = useState(0);
 
     // Analysis state
     const [isAnalyzing, setIsAnalyzingLocal] = useState(false);
@@ -253,128 +255,11 @@ export const ModernModeler: FC = () => {
 
     // Quick start modal
     const [showQuickStart, setShowQuickStart] = useState(false);
-
-    // Tutorial overlay for first-time users
-    const [showTutorial, setShowTutorial] = useState(false);
-
-    // Legal consent state
-    const { hasConsent } = useCheckLegalConsent();
     const [showLegalConsent, setShowLegalConsent] = useState(false);
+    const { hasConsent } = useCheckLegalConsent();
+    const { openModal } = useUIStore();
 
-    // Modal states from uiStore (for cross-component access)
-    const modals = useUIStore((s) => s.modals);
-    const openModal = useUIStore((s) => s.openModal);
-    const closeModal = useUIStore((s) => s.closeModal);
-
-    // Alias modal states for cleaner code
-    const showStructureWizard = modals.structureWizard;
-    const showFoundationDesign = modals.foundationDesign;
-    const showIS875Load = modals.is875Load;
-    const showGeometryTools = modals.geometryTools;
-    const showInterop = modals.interoperability;
-    const showRailwayBridge = modals.railwayBridge;
-    const showLoadingManager = modals.loadDialog;
-
-    const loadStructure = useModelStore((state) => state.loadStructure);
-
-    // UDL Load Dialog state
-    const [showLoadDialog, setShowLoadDialog] = useState(false);
-    const [loadDialogMemberId, setLoadDialogMemberId] = useState<string | undefined>();
-    const selectedIds = useModelStore((state) => state.selectedIds);
-    const activeTool = useModelStore((state) => state.activeTool);
-
-    // Track previous selection to avoid reopening dialog on same member
-    const previousSelectionRef = useRef<string | undefined>();
-
-    // Watch for member selection when memberLoad tool is active
-    useEffect(() => {
-        if (activeTool === 'memberLoad' && selectedIds.size === 1) {
-            const selectedId = Array.from(selectedIds)[0];
-            // Check if it's a member (not a node) and not the same as previous selection
-            // Use members.has() to verify it's a member, not a node
-            if (selectedId && members.has(selectedId) && selectedId !== previousSelectionRef.current) {
-                previousSelectionRef.current = selectedId;
-                setLoadDialogMemberId(selectedId);
-                setShowLoadDialog(true);
-            }
-        } else {
-            // Reset previous selection when tool changes or selection is cleared
-            previousSelectionRef.current = undefined;
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedIds, activeTool]); // Don't depend on members - it only changes when members are added/removed
-
-    // Show quick start on first load if model is empty
-    useEffect(() => {
-        if (nodes.size === 0 && members.size === 0) {
-            const timer = setTimeout(() => setShowQuickStart(true), 500);
-            return () => clearTimeout(timer);
-        }
-        return undefined;
-    }, [nodes.size, members.size]);
-
-    // URL Parameter Handling - Connect Capabilities page to dialogs
-    const [searchParams] = useSearchParams();
-
-    useEffect(() => {
-        const mode = searchParams.get('mode');
-        const tool = searchParams.get('tool');
-        const code = searchParams.get('code');
-        const panel = searchParams.get('panel');
-        const exportType = searchParams.get('export');
-        const type = searchParams.get('type');
-
-        // Handle tool-specific dialogs
-        if (tool === 'foundation') {
-            openModal('foundationDesign');
-            return;
-        }
-        if (mode === 'loading' || tool === 'wind' || tool === 'seismic' || tool === 'combinations') {
-            openModal('is875Load');
-            return;
-        }
-        if (panel === 'templates' || tool === 'architect') {
-            openModal('structureWizard');
-            return;
-        }
-        if (tool === 'geometry' || mode === 'geometry') {
-            openModal('geometryTools');
-            return;
-        }
-        if (exportType || tool === 'import' || tool === 'export') {
-            openModal('interoperability');
-            return;
-        }
-
-        // Handle analysis types - run analysis
-        if (mode === 'analysis' && type) {
-            // Trigger analysis workflow
-            setShowProgressModal(true);
-            handleRunAnalysis();
-        }
-
-        // Handle AI mode
-        if (mode === 'ai') {
-            // Would open AI Command Center
-            setShowQuickStart(true);
-        }
-
-        // Handle design codes
-        if (mode === 'design' && code) {
-            // Open design panel with specific code
-            setShowQuickStart(true);
-        }
-    }, [searchParams]);
-
-    // Handle step click
-    const handleStepClick = useCallback((step: number) => {
-        setActiveStep(step);
-        // Switch to appropriate category
-        const category = STEP_TO_CATEGORY[step];
-        if (category) {
-            setCategory(category);
-        }
-    }, [setCategory]);
+    // Import new layout components handled at top of file
 
     // Run analysis
     const handleRunAnalysis = useCallback(async () => {
@@ -688,7 +573,7 @@ export const ModernModeler: FC = () => {
                     dof: result.stats?.totalDof ?? nodes.size * 3,
                     timeMs: endTime - startTime
                 });
-                setActiveStep(4); // Move to results step
+                // setActiveStep(4); // Move to results step
             } else {
                 setAnalysisStage('error');
                 setAnalysisError(result.error || 'Analysis failed');
@@ -700,7 +585,14 @@ export const ModernModeler: FC = () => {
             setIsAnalyzingLocal(false);
             setIsAnalyzing(false);
         }
-    }, [nodes, members, loads, memberLoads, setAnalysisResults, setIsAnalyzing]);
+    }, [nodes, members, loads, memberLoads, setAnalysisResults, setIsAnalyzing, hasConsent]);
+
+    // Listener for Ribbon Analysis Trigger
+    useEffect(() => {
+        const handleTrigger = () => handleRunAnalysis();
+        document.addEventListener('trigger-analysis', handleTrigger);
+        return () => document.removeEventListener('trigger-analysis', handleTrigger);
+    }, [handleRunAnalysis]);
 
     // Close progress modal and show results
     const handleCloseProgressModal = useCallback(() => {
@@ -710,168 +602,235 @@ export const ModernModeler: FC = () => {
         }
     }, [analysisStage, setCategory]);
 
+    // Workflow state
+    // const [activeStep, setActiveStep] = useState(0); // Removed
+    // const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // Removed
+
+    // Quick start modal
+    // const [showQuickStart, setShowQuickStart] = useState(false); // Moved to top
+
+    // Tutorial overlay for first-time users
+    const [showTutorial, setShowTutorial] = useState(false);
+
+    // Legal consent state
+    // const { hasConsent } = useCheckLegalConsent(); // Moved to top
+    // const [showLegalConsent, setShowLegalConsent] = useState(false); // Moved to top
+
+    // Modal states from uiStore (for cross-component access)
+    const modals = useUIStore((s) => s.modals);
+    // const openModal = useUIStore((s) => s.openModal); // Moved to top
+    const closeModal = useUIStore((s) => s.closeModal);
+
+    // Alias modal states for cleaner code
+    const showStructureWizard = modals.structureWizard;
+    const showFoundationDesign = modals.foundationDesign;
+    const showIS875Load = modals.is875Load;
+    const showGeometryTools = modals.geometryTools;
+    const showInterop = modals.interoperability;
+    const showRailwayBridge = modals.railwayBridge;
+    const showLoadingManager = modals.loadDialog;
+
+    const loadStructure = useModelStore((state) => state.loadStructure);
+
+    // UDL Load Dialog state
+    const [showLoadDialog, setShowLoadDialog] = useState(false);
+    const [loadDialogMemberId, setLoadDialogMemberId] = useState<string | undefined>();
+    const selectedIds = useModelStore((state) => state.selectedIds);
+    const activeTool = useModelStore((state) => state.activeTool);
+
+    // Track previous selection to avoid reopening dialog on same member
+    const previousSelectionRef = useRef<string | undefined>();
+
+    // Watch for member selection when memberLoad tool is active
+    useEffect(() => {
+        if (activeTool === 'memberLoad' && selectedIds.size === 1) {
+            const selectedId = Array.from(selectedIds)[0];
+            // Check if it's a member (not a node) and not the same as previous selection
+            // Use members.has() to verify it's a member, not a node
+            if (selectedId && members.has(selectedId) && selectedId !== previousSelectionRef.current) {
+                previousSelectionRef.current = selectedId;
+                setLoadDialogMemberId(selectedId);
+                setShowLoadDialog(true);
+            }
+        } else {
+            // Reset previous selection when tool changes or selection is cleared
+            previousSelectionRef.current = undefined;
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedIds, activeTool]); // Don't depend on members - it only changes when members are added/removed
+
+    // Show quick start on first load if model is empty
+    useEffect(() => {
+        if (nodes.size === 0 && members.size === 0) {
+            const timer = setTimeout(() => setShowQuickStart(true), 500);
+            return () => clearTimeout(timer);
+        }
+        return undefined;
+    }, [nodes.size, members.size]);
+
+    // URL Parameter Handling - Connect Capabilities page to dialogs
+    const [searchParams] = useSearchParams();
+
+    useEffect(() => {
+        const mode = searchParams.get('mode');
+        const tool = searchParams.get('tool');
+        const code = searchParams.get('code');
+        const panel = searchParams.get('panel');
+        const exportType = searchParams.get('export');
+        const type = searchParams.get('type');
+
+        // Handle tool-specific dialogs
+        if (tool === 'foundation') {
+            openModal('foundationDesign');
+            return;
+        }
+        if (mode === 'loading' || tool === 'wind' || tool === 'seismic' || tool === 'combinations') {
+            openModal('is875Load');
+            return;
+        }
+        if (panel === 'templates' || tool === 'architect') {
+            openModal('structureWizard');
+            return;
+        }
+        if (tool === 'geometry' || mode === 'geometry') {
+            openModal('geometryTools');
+            return;
+        }
+        if (exportType || tool === 'import' || tool === 'export') {
+            openModal('interoperability');
+            return;
+        }
+
+        // Handle analysis types - run analysis
+        if (mode === 'analysis' && type) {
+            // Trigger analysis workflow
+            setShowProgressModal(true);
+            handleRunAnalysis();
+        }
+
+        // Handle AI mode
+        if (mode === 'ai') {
+            // Would open AI Command Center
+            setShowQuickStart(true);
+        }
+
+        // Handle design codes
+        if (mode === 'design' && code) {
+            // Open design panel with specific code
+            setShowQuickStart(true);
+        }
+    }, [searchParams, openModal, handleRunAnalysis]);
+
+    // Handle step click
+    // const handleStepClick = useCallback((step: number) => { // Removed
+    //     setActiveStep(step);
+    //     // Switch to appropriate category
+    //     const category = STEP_TO_CATEGORY[step];
+    //     if (category) {
+    //         setCategory(category);
+    //     }
+    // }, [setCategory]);
+
     return (
         <div className="h-screen w-screen flex flex-col bg-zinc-950 text-white overflow-hidden">
-            {/* Top Bar - Header + Category Switcher */}
-            <header className="h-12 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between px-4 flex-shrink-0">
-                {/* Logo */}
-                <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2">
-                        <span className="text-2xl">⬡</span>
-                        <span className="font-bold text-lg">BeamLab</span>
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded">
-                            ULTIMATE
-                        </span>
-                    </div>
+            {/* Top Bar - Minimal Header */}
+            <header className="h-8 bg-zinc-950 border-b border-zinc-800 flex items-center justify-between px-4 flex-shrink-0 select-none">
+                {/* Logo Area */}
+                <div className="flex items-center gap-2">
+                    <span className="text-xl text-blue-500">⬡</span>
+                    <span className="font-bold text-sm tracking-tight">BeamLab <span className="text-xs font-normal text-zinc-500">ULTIMATE</span></span>
                 </div>
 
-                {/* Category Tabs */}
-                <CategorySwitcher />
-
-                {/* Right actions */}
-                <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-3 text-xs text-zinc-500">
-                        <span>● {nodes.size} nodes</span>
-                        <span>━ {members.size} members</span>
-                        <span>↓ {loads.length + memberLoads.length} loads</span>
-                    </div>
-                    <button
-                        onClick={() => setShowQuickStart(true)}
-                        className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
-                        title="Quick Start"
-                    >
-                        <HelpCircle className="w-4 h-4" />
-                    </button>
-                    <button className="px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-500 rounded text-white transition-colors">
-                        ⚡ Upgrade
-                    </button>
+                {/* Window Controls / User */}
+                <div className="flex items-center gap-3">
+                    {/* Notification Toast */}
+                    {notification?.show && (
+                        <div className={`px-3 py-1 rounded text-xs flex items-center gap-2 ${notification.type === 'error' ? 'bg-red-900/50 text-red-200' : 'bg-blue-900/50 text-blue-200'
+                            }`}>
+                            <span>{notification.message}</span>
+                            <button onClick={hideNotification}>×</button>
+                        </div>
+                    )}
+                    <span className="text-xs text-zinc-600">v24.01.00</span>
                 </div>
             </header>
 
-            {/* Workflow Stepper */}
-            <AnalysisWorkflow
-                activeStep={activeStep}
-                onStepClick={handleStepClick}
-                onRunAnalysis={handleRunAnalysis}
-                isAnalyzing={isAnalyzing}
-            />
-
-            {/* Main Content Area */}
+            {/* Main Application Layout (Flex Row) */}
             <div className="flex-1 flex overflow-hidden">
-                {/* Left Panel - Smart Sidebar */}
-                {sidebarCollapsed ? (
-                    <div className="w-10 bg-zinc-900 border-r border-zinc-800 flex flex-col items-center py-2 flex-shrink-0">
-                        <button
-                            onClick={() => setSidebarCollapsed(false)}
-                            className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg"
-                            title="Show Sidebar"
-                        >
-                            <PanelLeftOpen className="w-4 h-4" />
-                        </button>
-                    </div>
-                ) : (
-                    <div className="w-64 flex-shrink-0 flex flex-col bg-zinc-900 border-r border-zinc-800">
-                        <div className="flex items-center justify-between px-2 py-2 border-b border-zinc-800">
-                            <span className="text-xs font-bold text-zinc-400 uppercase px-1">Tools</span>
-                            <button
-                                onClick={() => setSidebarCollapsed(true)}
-                                className="p-1 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded"
-                                title="Hide Sidebar"
-                            >
-                                <PanelLeftClose className="w-4 h-4" />
-                            </button>
-                        </div>
-                        <div className="flex-1 overflow-y-auto">
-                            <SmartSidebar />
-                        </div>
-                        {/* AI Command Center */}
-                        <div className="border-t border-zinc-800">
-                            <AICommandCenter />
-                        </div>
-                    </div>
-                )}
 
-                {/* Center - 3D Canvas */}
-                <div className="flex-1 bg-zinc-950 relative">
-                    <ViewportManager />
-                    <Toolbar />
+                {/* 1. Workflow Sidebar (Left) */}
+                <div className="w-48 flex-shrink-0 h-full z-20 shadow-xl">
+                    <WorkflowSidebar
+                        activeCategory={activeCategory}
+                        onCategoryChange={setCategory}
+                    />
                 </div>
 
-                {/* Right Panel - Inspector */}
+                {/* 2. Main Workspace (Ribbon + Canvas) */}
+                <div className="flex-1 flex flex-col min-w-0">
+
+                    {/* Top Ribbon */}
+                    <div className="flex-shrink-0 z-10 shadow-md">
+                        <EngineeringRibbon activeCategory={activeCategory} />
+                    </div>
+
+                    {/* 3D Canvas Area */}
+                    <div className="flex-1 bg-zinc-900 relative">
+                        <ViewportManager />
+
+                        {/* Status Bar Overlay */}
+                        <div className="absolute bottom-0 w-full z-10">
+                            <StatusBar isAnalyzing={isAnalyzing} />
+                        </div>
+                    </div>
+                </div>
+
+                {/* 3. Right Inspector Panel (Context Aware) */}
                 <InspectorPanel
                     collapsed={inspectorCollapsed}
                     onToggle={() => setInspectorCollapsed(!inspectorCollapsed)}
                 />
             </div>
 
-            {/* Results Table - conditional */}
-            {showResults && <ResultsTable />}
-
-            {/* Results Toolbar - show after analysis */}
-            {analysisResults && (
-                <ResultsToolbar />
+            {/* Modals & Overlays */}
+            {showProgressModal && (
+                <AnalysisProgressModal
+                    isOpen={showProgressModal}
+                    stage={analysisStage}
+                    progress={analysisProgress}
+                    error={analysisError}
+                    onClose={() => setShowProgressModal(false)}
+                    stats={analysisStats}
+                />
             )}
 
-            {/* Bottom Bar - Status */}
-            <StatusBar isAnalyzing={isAnalyzing} />
+            {showQuickStart && <QuickStartModal isOpen={showQuickStart} onClose={() => setShowQuickStart(false)} />}
+            {showLegalConsent && <LegalConsentModal open={showLegalConsent} onAccept={() => {
+                setShowLegalConsent(false);
+                // Re-run analysis after consent is given
+                setTimeout(() => handleRunAnalysis(), 100);
+            }}
+                canClose={false} />}
 
-            {/* Modals */}
-            <AnalysisProgressModal
-                isOpen={showProgressModal}
-                stage={analysisStage}
-                progress={analysisProgress}
-                error={analysisError}
-                onClose={handleCloseProgressModal}
-                stats={analysisStats}
-            />
-
-            <QuickStartModal
-                isOpen={showQuickStart}
-                onClose={() => setShowQuickStart(false)}
-                onOpenWizard={() => openModal('structureWizard')}
-                onOpenFoundation={() => openModal('foundationDesign')}
-                onOpenLoads={() => openModal('is875Load')}
-            />
-
-            {/* UDL Load Dialog - opens when memberLoad tool is active and member is selected */}
-            <LoadInputDialog
-                isOpen={showLoadDialog}
-                onClose={() => {
-                    setShowLoadDialog(false);
-                    setLoadDialogMemberId(undefined);
-                }}
-                targetMemberId={loadDialogMemberId}
-            />
-
-            {/* Tutorial Overlay for first-time users */}
-            <TutorialOverlay
-                isOpen={showTutorial}
-                onClose={() => setShowTutorial(false)}
-                onComplete={() => setShowTutorial(false)}
-            />
-
-            {/* Structure Wizard for generating parametric structures */}
-            <StructureWizard
-                isOpen={showStructureWizard}
-                onClose={() => closeModal('structureWizard')}
-                onGenerate={(structure) => {
-                    // Convert generated structure to model format
-                    const nodes: Node[] = structure.nodes.map(n => ({
-                        id: n.id,
-                        x: n.x,
-                        y: n.y,
-                        z: n.z,
-                        restraints: n.restraints
-                    }));
-                    const members: Member[] = structure.members.map(m => ({
-                        id: m.id,
-                        startNodeId: m.startNodeId,
-                        endNodeId: m.endNodeId,
-                        sectionId: 'ISMB300'
-                    }));
-                    loadStructure(nodes, members);
-                    closeModal('structureWizard');
-                }}
+            {/* Global Dialogs triggered by Ribbon */}
+            <StructureWizard isOpen={useUIStore.getState().modals.structureWizard} onClose={() => useUIStore.getState().closeModal('structureWizard')} onGenerate={(structure) => {
+                // Convert generated structure to model format
+                const nodes: Node[] = structure.nodes.map(n => ({
+                    id: n.id,
+                    x: n.x,
+                    y: n.y,
+                    z: n.z,
+                    restraints: n.restraints
+                }));
+                const members: Member[] = structure.members.map(m => ({
+                    id: m.id,
+                    startNodeId: m.startNodeId,
+                    endNodeId: m.endNodeId,
+                    sectionId: 'ISMB300'
+                }));
+                loadStructure(nodes, members);
+                closeModal('structureWizard');
+            }}
             />
 
             {/* Foundation Design Dialog */}
@@ -939,6 +898,9 @@ export const ModernModeler: FC = () => {
 
             {/* ASCE 7 Seismic Load Generator */}
             <ASCE7SeismicLoadDialog />
+
+            {/* ASCE 7 Wind Load Generator */}
+            <ASCE7WindLoadDialog />
 
             {/* Load Combinations Dialog */}
             <LoadCombinationsDialog />
