@@ -6,6 +6,8 @@
  * - Full 12x12 beam-column element stiffness
  * - Euler-Bernoulli (default) or Timoshenko beam theory
  * - Coordinate transformation for arbitrarily oriented members
+ * - Matrix caching for improved performance
+ * - Performance metrics tracking
  * 
  * Theory Reference:
  *   [K]global = [T]^T · [K]local · [T]
@@ -19,6 +21,74 @@
  */
 
 import * as math from 'mathjs';
+
+// ============================================
+// PERFORMANCE MONITORING
+// ============================================
+
+export interface PerformanceMetrics {
+    assemblyTimeMs: number;
+    solveTimeMs: number;
+    postProcessTimeMs: number;
+    totalTimeMs: number;
+    matrixSize: number;
+    sparsity: number;
+    cacheHits: number;
+    cacheMisses: number;
+}
+
+let lastPerformanceMetrics: PerformanceMetrics = {
+    assemblyTimeMs: 0,
+    solveTimeMs: 0,
+    postProcessTimeMs: 0,
+    totalTimeMs: 0,
+    matrixSize: 0,
+    sparsity: 0,
+    cacheHits: 0,
+    cacheMisses: 0
+};
+
+export function getLastPerformanceMetrics(): PerformanceMetrics {
+    return { ...lastPerformanceMetrics };
+}
+
+// ============================================
+// MEMBER STIFFNESS CACHE
+// ============================================
+
+const memberStiffnessCache = new Map<string, number[][]>();
+const MAX_CACHE_SIZE = 1000;
+
+function getCachedMemberStiffness(key: string): number[][] | undefined {
+    const cached = memberStiffnessCache.get(key);
+    if (cached) {
+        lastPerformanceMetrics.cacheHits++;
+        return cached;
+    }
+    lastPerformanceMetrics.cacheMisses++;
+    return undefined;
+}
+
+function setCachedMemberStiffness(key: string, matrix: number[][]): void {
+    if (memberStiffnessCache.size >= MAX_CACHE_SIZE) {
+        // Remove oldest entry (FIFO)
+        const firstKey = memberStiffnessCache.keys().next().value;
+        if (firstKey) memberStiffnessCache.delete(firstKey);
+    }
+    memberStiffnessCache.set(key, matrix);
+}
+
+function generateMemberCacheKey(material: Material, section: Section, L: number, theory: BeamTheory): string {
+    return `${material.E.toFixed(0)}_${section.A.toFixed(6)}_${section.Iy.toFixed(8)}_${section.Iz.toFixed(8)}_${section.J.toFixed(8)}_${L.toFixed(6)}_${theory}`;
+}
+
+export function clearSolverCache(): void {
+    memberStiffnessCache.clear();
+}
+
+export function getSolverCacheStats(): { size: number; maxSize: number } {
+    return { size: memberStiffnessCache.size, maxSize: MAX_CACHE_SIZE };
+}
 
 // ============================================
 // ENUMS & INTERFACES
@@ -116,6 +186,7 @@ export interface AnalysisResult3D {
     warnings: string[];
     success: boolean;
     message: string;
+    performanceMetrics?: PerformanceMetrics;
 }
 
 // ============================================
@@ -312,9 +383,22 @@ function getTransformationMatrix3D(startNode: Node3D, endNode: Node3D): number[]
  * @returns Analysis results with displacements, reactions, and member forces
  */
 export function analyzeStructure3D(request: AnalysisRequest3D): AnalysisResult3D {
+    const startTime = performance.now();
     const { nodes, members, loads, options } = request;
     const defaultTheory = options?.defaultTheory ?? BeamTheory.EULER_BERNOULLI;
     const warnings: string[] = [];
+
+    // Reset performance metrics
+    lastPerformanceMetrics = {
+        assemblyTimeMs: 0,
+        solveTimeMs: 0,
+        postProcessTimeMs: 0,
+        totalTimeMs: 0,
+        matrixSize: 0,
+        sparsity: 0,
+        cacheHits: 0,
+        cacheMisses: 0
+    };
 
     // ===== VALIDATION =====
     if (nodes.length < 2) {
@@ -338,7 +422,10 @@ export function analyzeStructure3D(request: AnalysisRequest3D): AnalysisResult3D
     const dofsPerNode = 6;
     const totalDofs = numNodes * dofsPerNode;
 
+    lastPerformanceMetrics.matrixSize = totalDofs;
+
     // ===== INITIALIZE GLOBAL MATRICES =====
+    const assemblyStart = performance.now();
     let K: number[][] = Array(totalDofs).fill(null).map(() => Array(totalDofs).fill(0));
     let F: number[] = Array(totalDofs).fill(0);
 
@@ -373,8 +460,13 @@ export function analyzeStructure3D(request: AnalysisRequest3D): AnalysisResult3D
             );
         }
 
-        // Build local stiffness matrix
-        const kLocal = getLocalStiffnessMatrix3D(member.material, member.section, L, theory);
+        // Build local stiffness matrix (with caching)
+        const cacheKey = generateMemberCacheKey(member.material, member.section, L, theory);
+        let kLocal = getCachedMemberStiffness(cacheKey);
+        if (!kLocal) {
+            kLocal = getLocalStiffnessMatrix3D(member.material, member.section, L, theory);
+            setCachedMemberStiffness(cacheKey, kLocal);
+        }
 
         // Get transformation matrix
         const T = getTransformationMatrix3D(startNode, endNode);
@@ -399,6 +491,8 @@ export function analyzeStructure3D(request: AnalysisRequest3D): AnalysisResult3D
             }
         }
     }
+
+    lastPerformanceMetrics.assemblyTimeMs = performance.now() - assemblyStart;
 
     // ===== APPLY LOADS =====
     for (const load of loads) {
@@ -452,7 +546,17 @@ export function analyzeStructure3D(request: AnalysisRequest3D): AnalysisResult3D
         }
     }
 
+    // Calculate sparsity
+    let nnz = 0;
+    for (let i = 0; i < nFree; i++) {
+        for (let j = 0; j < nFree; j++) {
+            if (Math.abs(Kff[i]![j]!) > 1e-14) nnz++;
+        }
+    }
+    lastPerformanceMetrics.sparsity = 1 - (nnz / (nFree * nFree));
+
     // ===== SOLVE FOR DISPLACEMENTS =====
+    const solveStart = performance.now();
     let Uf: number[];
     try {
         const solution = math.lusolve(Kff, Ff) as number[][];
@@ -464,8 +568,10 @@ export function analyzeStructure3D(request: AnalysisRequest3D): AnalysisResult3D
             message: 'Matrix singular - structure may be unstable or mechanism'
         };
     }
+    lastPerformanceMetrics.solveTimeMs = performance.now() - solveStart;
 
     // ===== BUILD FULL DISPLACEMENT VECTOR =====
+    const postProcessStart = performance.now();
     const U: number[] = Array(totalDofs).fill(0);
     for (let i = 0; i < freeDofs.length; i++) {
         U[freeDofs[i]!] = Uf[i]!;
@@ -549,13 +655,18 @@ export function analyzeStructure3D(request: AnalysisRequest3D): AnalysisResult3D
         };
     }
 
+    // Finalize performance metrics
+    lastPerformanceMetrics.postProcessTimeMs = performance.now() - postProcessStart;
+    lastPerformanceMetrics.totalTimeMs = performance.now() - startTime;
+
     return {
         displacements,
         reactions,
         memberForces,
         warnings,
         success: true,
-        message: `Analysis completed: ${nodes.length} nodes, ${members.length} members, ${freeDofs.length} DOFs`
+        message: `Analysis completed: ${nodes.length} nodes, ${members.length} members, ${freeDofs.length} DOFs`,
+        performanceMetrics: lastPerformanceMetrics
     };
 }
 
