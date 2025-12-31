@@ -9,7 +9,7 @@
  * - Quick Start modal for new users
  */
 
-import { FC, useState, useEffect, useCallback } from 'react';
+import { FC, useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
     Box,
@@ -281,15 +281,22 @@ export const ModernModeler: FC = () => {
     const selectedIds = useModelStore((state) => state.selectedIds);
     const activeTool = useModelStore((state) => state.activeTool);
 
+    // Track previous selection to avoid reopening dialog on same member
+    const previousSelectionRef = useRef<string | undefined>();
+
     // Watch for member selection when memberLoad tool is active
     useEffect(() => {
         if (activeTool === 'memberLoad' && selectedIds.size === 1) {
             const selectedId = Array.from(selectedIds)[0];
-            // Check if it's a member (not a node)
-            if (selectedId && members.has(selectedId)) {
+            // Check if it's a member (not a node) and not the same as previous selection
+            if (selectedId && members.has(selectedId) && selectedId !== previousSelectionRef.current) {
+                previousSelectionRef.current = selectedId;
                 setLoadDialogMemberId(selectedId);
                 setShowLoadDialog(true);
             }
+        } else {
+            // Reset previous selection when tool changes or selection is cleared
+            previousSelectionRef.current = undefined;
         }
     }, [selectedIds, activeTool, members]);
 

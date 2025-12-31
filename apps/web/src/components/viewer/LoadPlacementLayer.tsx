@@ -347,23 +347,44 @@ export const LoadPlacementLayer: FC<LoadPlacementLayerProps> = ({
     }, [raycaster, pointer, camera, groundPlane, memberGeometries]);
 
     // ---- Update on frame ----
+    // Use refs to avoid unnecessary state updates that cause re-renders
+    const hoveredMemberIdRef = useRef<string | null>(null);
+    const cursorRatioRef = useRef<number>(0.5);
+    const showPreviewRef = useRef<boolean>(false);
+    
     useFrame(() => {
         if (!isLoadToolActive) return;
         
         const result = findMemberUnderCursor();
         
         if (result) {
-            setHoveredMemberId(result.memberId);
-            setCursorRatio(result.ratio);
-            setShowPreview(true);
+            // Only update state if values actually changed
+            if (hoveredMemberIdRef.current !== result.memberId) {
+                hoveredMemberIdRef.current = result.memberId;
+                setHoveredMemberId(result.memberId);
+            }
+            if (Math.abs(cursorRatioRef.current - result.ratio) > 0.01) {
+                cursorRatioRef.current = result.ratio;
+                setCursorRatio(result.ratio);
+            }
+            if (!showPreviewRef.current) {
+                showPreviewRef.current = true;
+                setShowPreview(true);
+            }
             
             if (isDragging) {
                 setDragEnd(result.ratio);
             }
         } else {
             if (!isDragging) {
-                setHoveredMemberId(null);
-                setShowPreview(false);
+                if (hoveredMemberIdRef.current !== null) {
+                    hoveredMemberIdRef.current = null;
+                    setHoveredMemberId(null);
+                }
+                if (showPreviewRef.current) {
+                    showPreviewRef.current = false;
+                    setShowPreview(false);
+                }
             }
         }
     });
@@ -414,8 +435,8 @@ export const LoadPlacementLayer: FC<LoadPlacementLayerProps> = ({
                     });
                 }
                 
-                // Select the member
-                select(hoveredMemberId, false);
+                // Switch to select tool after applying load to prevent dialog from reopening
+                setTool('select');
                 
                 // Callback
                 onMemberSelected?.(hoveredMemberId, (startPos + endPos) / 2);
@@ -441,7 +462,7 @@ export const LoadPlacementLayer: FC<LoadPlacementLayerProps> = ({
             gl.domElement.removeEventListener('pointermove', handlePointerMove);
             gl.domElement.style.cursor = 'auto';
         };
-    }, [isLoadToolActive, hoveredMemberId, isDragging, dragStart, cursorRatio, dragEnd, addMemberLoad, select, onMemberSelected, gl, previewMagnitude]);
+    }, [isLoadToolActive, hoveredMemberId, isDragging, dragStart, cursorRatio, dragEnd, addMemberLoad, setTool, onMemberSelected, gl, previewMagnitude]);
 
     // ---- Keyboard handling (ESC to exit) ----
     useEffect(() => {

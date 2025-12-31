@@ -4,7 +4,7 @@
  */
 
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Component, ReactNode, ErrorInfo } from 'react';
+import { Component, ReactNode, ErrorInfo, useState } from 'react';
 
 // Pages
 import { LandingPage } from './pages/LandingPage';
@@ -21,6 +21,7 @@ import { PricingPage } from './pages/PricingPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
+import TermsPage from './pages/TermsPage';
 import { HelpPage } from './pages/HelpPage';
 import { ReportsPage } from './pages/ReportsPage';
 import ReportViewerEnhanced from './pages/ReportViewerEnhanced';
@@ -39,6 +40,7 @@ import { PropertiesPanel } from './components/PropertiesPanel';
 import { ResultsTable } from './components/ResultsTable';
 import { useModelStore } from './store/model';
 import { AICommandCenter } from './components/ai';
+import { LegalConsentModal, useCheckLegalConsent } from './components/LegalConsentModal';
 import './App.css';
 
 
@@ -290,6 +292,17 @@ function App() {
     // Ensure user is registered in MongoDB upon login/load
     useUserRegistration();
 
+    // Legal consent state
+    const { hasConsent } = useCheckLegalConsent();
+    const [consentAccepted, setConsentAccepted] = useState(false);
+
+    // Show legal consent modal if user hasn't agreed yet (hasConsent === null means still loading)
+    const showConsentModal = hasConsent === false && !consentAccepted;
+
+    const handleAcceptConsent = () => {
+        setConsentAccepted(true);
+    };
+
     return (
         <ErrorBoundary>
             <Routes>
@@ -333,6 +346,9 @@ function App() {
                 {/* Privacy Policy */}
                 <Route path="/privacy" element={<PrivacyPolicyPage />} />
 
+                {/* Terms of Service */}
+                <Route path="/terms" element={<TermsPage />} />
+
                 {/* Help & Tutorials */}
                 <Route path="/help" element={<HelpPage />} />
 
@@ -360,6 +376,13 @@ function App() {
                 {/* Fallback */}
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
+
+            {/* Legal Consent Modal - shows on first use */}
+            <LegalConsentModal
+                open={showConsentModal}
+                onAccept={handleAcceptConsent}
+                canClose={false}
+            />
         </ErrorBoundary>
     );
 }

@@ -648,9 +648,12 @@ interface MemberLoadCardProps {
 const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdate }) => {
     const [expanded, setExpanded] = useState(true);
     
+    // Type labels and icons for load types
+    // Note: LoadDialog uses 'uniform'/'trapezoidal' while store uses 'UDL'/'UVL'
+    // These are separate systems, so we only need to support the LoadDialog types here
     const typeLabels: Record<string, string> = {
         uniform: 'Uniform (UDL)',
-        trapezoidal: 'Trapezoidal',
+        trapezoidal: 'Trapezoidal (UVL)',
         point: 'Point Load',
         moment: 'Applied Moment'
     };

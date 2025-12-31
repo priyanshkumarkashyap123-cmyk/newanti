@@ -6,11 +6,17 @@
 export const TERMS_OF_SERVICE = `
 # Terms of Service
 
-**Last Updated: January 1, 2026**
+**Last Updated: January 1, 2025**
+**Effective Date: January 1, 2025**
+
+This Agreement is made in accordance with the **Information Technology Act, 2000** of India and constitutes an electronic contract under Indian law.
 
 ## 1. Acceptance of Terms
 
-By accessing or using BeamLab Ultimate ("Service"), you agree to be bound by these Terms of Service. If you do not agree, do not use this Service.
+By accessing or using BeamLab Ultimate ("Service"), you agree to be bound by these Terms of Service. If you do not agree, do not use this Service. You confirm that:
+- You are at least 18 years of age
+- You have the legal capacity to enter into a binding agreement
+- If using on behalf of an organization, you have authority to bind that organization
 
 ## 2. Service Description
 
@@ -19,24 +25,30 @@ BeamLab Ultimate is a structural analysis and design software tool intended for 
 - Structural design calculations
 - Code compliance checking (AISC, Eurocode, IS codes)
 - AI-assisted model generation
+- Professional PDF report generation
+
+**IMPORTANT**: The Service is a computational aid only. It is NOT a substitute for professional engineering judgment.
 
 ## 3. Professional Responsibility
 
 **YOU ACKNOWLEDGE AND AGREE THAT:**
 
-- You are solely responsible for verifying all analysis results
+- You are **solely responsible** for verifying all analysis results
 - BeamLab Ultimate is a **computational aid**, not a substitute for professional engineering judgment
-- All designs must be reviewed and stamped by a licensed Professional Engineer
+- All designs must be reviewed and stamped by a licensed Professional Engineer (PE/SE)
 - You must verify results using independent methods before construction
+- Local building codes may differ from the design codes implemented in the software
 
 ## 4. Limitation of Liability
 
-**TO THE MAXIMUM EXTENT PERMITTED BY LAW:**
+**TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW:**
 
+- The Service is provided "AS IS" and "AS AVAILABLE" without warranties of any kind
 - BeamLab Ultimate and its operators are **NOT LIABLE** for any property damage, structural failure, injury, or death arising from use of this software
-- Results are provided "AS IS" without warranty of any kind
 - We do not guarantee accuracy, completeness, or fitness for any particular purpose
 - Maximum liability is limited to the amount you paid for the Service in the past 12 months
+
+Nothing in these Terms excludes liability that cannot be excluded under Indian law, including liability for fraud.
 
 ## 5. Indemnification
 
@@ -53,18 +65,40 @@ You agree to:
 - Not redistribute or reverse-engineer the software
 - Maintain confidentiality of your account credentials
 - Comply with all applicable building codes and regulations
+- Provide accurate information when creating an account
 
-## 7. Modifications
+## 7. Payment Terms (as per Consumer Protection Act, 2019)
+
+- Subscriptions are billed in advance in Indian Rupees (INR) or as specified
+- Refund requests may be considered within 7 days for annual subscriptions
+- This does not affect your statutory rights under the Consumer Protection Act, 2019
+
+## 8. Governing Law (India)
+
+These Terms shall be governed by and construed in accordance with the laws of **India**, including:
+- Information Technology Act, 2000 and its amendments
+- Indian Contract Act, 1872
+- Consumer Protection Act, 2019
+- IT (Reasonable Security Practices) Rules, 2011
+
+## 9. Dispute Resolution
+
+If negotiation fails, disputes shall be resolved by arbitration in accordance with the **Arbitration and Conciliation Act, 1996** of India. The seat of arbitration shall be New Delhi, India.
+
+## 10. Modifications
 
 We reserve the right to modify these Terms at any time. Continued use after modifications constitutes acceptance.
 
-## 8. Governing Law
+## 11. Grievance Officer
 
-These Terms are governed by the laws of India. Disputes shall be resolved in courts of competent jurisdiction.
+In accordance with the IT Act, 2000, the Grievance Officer is:
+- **Name:** Rakshit Tiwari
+- **Email:** grievance@beamlabultimate.tech
+- **Response Time:** Within 24 hours
 
-## 9. Contact
+## 12. Contact
 
-For questions about these Terms: contact@beamlabultimate.tech
+For questions about these Terms: legal@beamlabultimate.tech
 `;
 
 export const PRIVACY_POLICY = `

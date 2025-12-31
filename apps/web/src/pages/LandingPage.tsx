@@ -8,6 +8,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { SignInButton, SignUpButton, UserButton } from '@clerk/clerk-react';
 import { useAuth, isUsingClerk } from '../providers/AuthProvider';
+import useTierAccess from '../hooks/useTierAccess';
 
 // ============================================
 // ANIMATION VARIANTS
@@ -37,6 +38,9 @@ export const LandingPage: FC = () => {
     // Use unified auth hook
     const { isSignedIn, isLoaded, signOut } = useAuth();
     const useClerk = isUsingClerk();
+
+    // Get user tier for tier-aware UI
+    const { isPro, isEnterprise, isFree } = useTierAccess();
 
     const handleGetStarted = () => {
         if (isSignedIn) {
@@ -207,24 +211,48 @@ export const LandingPage: FC = () => {
                         Free, instant, and professional grade. Perform complex structural calculations without the heavy software downloads.
                     </motion.p>
 
-                    {/* CTA Buttons */}
+                    {/* CTA Buttons - Tier Aware */}
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3 }}
                         className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
                     >
-                        <button
-                            onClick={handleGetStarted}
-                            className="group flex h-12 min-w-[200px] items-center justify-center gap-2 rounded-lg bg-accent px-8 text-base font-bold text-steel-blue transition-all hover:bg-accent-dark hover:scale-105 shadow-lg shadow-accent/20"
-                        >
-                            Start Analyzing for Free
-                            <span className="material-symbols-outlined transition-transform group-hover:translate-x-1" style={{ fontSize: '20px' }}>arrow_forward</span>
-                        </button>
-                        <button className="flex h-12 min-w-[200px] items-center justify-center gap-2 rounded-lg border-2 border-steel-blue/10 bg-white px-8 text-base font-bold text-steel-blue transition-all hover:bg-gray-50">
-                            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>play_circle</span>
-                            Watch Demo
-                        </button>
+                        {(isPro || isEnterprise) && isSignedIn ? (
+                            // Pro/Enterprise users see "Open Workspace"
+                            <button
+                                onClick={() => navigate('/app')}
+                                className="group flex h-12 min-w-[200px] items-center justify-center gap-2 rounded-lg bg-steel-blue px-8 text-base font-bold text-white transition-all hover:bg-steel-blue/90 hover:scale-105 shadow-lg"
+                            >
+                                Open Workspace
+                                <span className="material-symbols-outlined transition-transform group-hover:translate-x-1" style={{ fontSize: '20px' }}>arrow_forward</span>
+                            </button>
+                        ) : (
+                            // Free users and guests see "Start Analyzing for Free"
+                            <button
+                                onClick={handleGetStarted}
+                                className="group flex h-12 min-w-[200px] items-center justify-center gap-2 rounded-lg bg-accent px-8 text-base font-bold text-steel-blue transition-all hover:bg-accent-dark hover:scale-105 shadow-lg shadow-accent/20"
+                            >
+                                Start Analyzing for Free
+                                <span className="material-symbols-outlined transition-transform group-hover:translate-x-1" style={{ fontSize: '20px' }}>arrow_forward</span>
+                            </button>
+                        )}
+
+                        {/* Show upgrade button for free users who are signed in */}
+                        {isFree && isSignedIn ? (
+                            <Link
+                                to="/pricing"
+                                className="flex h-12 min-w-[200px] items-center justify-center gap-2 rounded-lg border-2 border-accent bg-white px-8 text-base font-bold text-steel-blue transition-all hover:bg-accent/10"
+                            >
+                                <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>bolt</span>
+                                Upgrade to Pro
+                            </Link>
+                        ) : (
+                            <button className="flex h-12 min-w-[200px] items-center justify-center gap-2 rounded-lg border-2 border-steel-blue/10 bg-white px-8 text-base font-bold text-steel-blue transition-all hover:bg-gray-50">
+                                <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>play_circle</span>
+                                Watch Demo
+                            </button>
+                        )}
                     </motion.div>
 
                     {/* Browser Mockup */}
@@ -416,7 +444,7 @@ export const LandingPage: FC = () => {
                                 <a href="#features" className="text-sm font-semibold text-white hover:text-accent transition-colors">Features</a>
                                 <a href="#pricing" className="text-sm font-semibold text-white hover:text-accent transition-colors">Pricing</a>
                                 <Link to="/capabilities" className="text-sm font-semibold text-white hover:text-accent transition-colors">Docs</Link>
-                                <a href="#" className="text-sm font-semibold text-white hover:text-accent transition-colors">Support</a>
+                                <Link to="/help" className="text-sm font-semibold text-white hover:text-accent transition-colors">Support</Link>
                             </div>
                         </div>
 
@@ -433,8 +461,13 @@ export const LandingPage: FC = () => {
                         </div>
                     </div>
 
-                    <div className="mt-8 border-t border-white/10 pt-8 flex justify-center md:justify-end">
+                    {/* Bottom Bar with Legal Links */}
+                    <div className="mt-8 border-t border-white/10 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
                         <p className="text-xs leading-5 text-slate-400">© 2025 BeamLab Ultimate. All rights reserved.</p>
+                        <div className="flex gap-6">
+                            <Link to="/terms" className="text-xs text-slate-400 hover:text-white transition-colors">Terms of Service</Link>
+                            <Link to="/privacy" className="text-xs text-slate-400 hover:text-white transition-colors">Privacy Policy</Link>
+                        </div>
                     </div>
                 </div>
             </footer>
