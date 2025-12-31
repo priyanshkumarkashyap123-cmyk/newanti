@@ -128,7 +128,13 @@ const SeismicLoadDialog: React.FC = () => {
     });
     
     // Auto-generate floor data when storey count changes
+    const prevFloorConfigRef = React.useRef<string>('');
     React.useEffect(() => {
+        const configKey = `${params.numStoreys}-${params.height}`;
+        // Only update if the config actually changed (prevent infinite loops)
+        if (configKey === prevFloorConfigRef.current) return;
+        prevFloorConfigRef.current = configKey;
+        
         const storeyHeight = params.height / params.numStoreys;
         const typicalFloorWeight = 1000; // kN (placeholder)
         

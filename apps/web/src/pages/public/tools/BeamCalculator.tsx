@@ -433,13 +433,19 @@ export const BeamCalculator: FC = () => {
     const [model, setModel] = useState<BeamModel>(DEFAULT_BEAM);
     const [results, setResults] = useState<AnalysisResults | null>(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+    
+    // Use ref to track if we're already analyzing to prevent loops
+    const isAnalyzingRef = useRef(false);
 
     const runAnalysis = useCallback(() => {
+        if (isAnalyzingRef.current) return; // Prevent re-entry
+        isAnalyzingRef.current = true;
         setIsAnalyzing(true);
         setTimeout(() => {
             const res = solveBeam(model);
             setResults(res);
             setIsAnalyzing(false);
+            isAnalyzingRef.current = false;
         }, 300);
     }, [model]);
 

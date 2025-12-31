@@ -244,12 +244,20 @@ const MovingLoadDialog: React.FC = () => {
     };
     
     // Update impact factor when vehicle or span changes
+    const prevImpactConfigRef = React.useRef<string>('');
     React.useEffect(() => {
         if (params.includeImpact) {
+            const configKey = `${params.spanLength}-${params.vehicleId}`;
+            // Only update if config changed and value is different (prevent infinite loops)
+            if (configKey === prevImpactConfigRef.current) return;
+            prevImpactConfigRef.current = configKey;
+            
             const impact = calculateImpactFactor(params.spanLength, params.vehicleId);
-            setParams(prev => ({ ...prev, impactFactor: impact }));
+            if (impact !== params.impactFactor) {
+                setParams(prev => ({ ...prev, impactFactor: impact }));
+            }
         }
-    }, [params.spanLength, params.vehicleId, params.includeImpact]);
+    }, [params.spanLength, params.vehicleId, params.includeImpact, params.impactFactor]);
     
     // Calculate influence line values for simply supported span
     const calculateInfluenceLine = (position: number, span: number, type: 'moment' | 'shear') => {
