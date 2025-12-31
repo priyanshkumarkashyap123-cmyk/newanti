@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useAuth, useUser } from '@clerk/clerk-react';
+import { useAuth } from '../providers/AuthProvider';
 import { MASTER_EMAILS } from '../constants/masterUsers';
 
 // ============================================
@@ -114,20 +114,12 @@ export function useTierAccess(): TierAccess {
     const [tier, setTier] = useState<UserTier>('free');
     const [isLoading, setIsLoading] = useState(true);
 
-    // Try to use Clerk auth (graceful fallback if not available)
-    let isAuthenticated = false;
-    let userEmail: string | null = null;
-
-    try {
-        const { isSignedIn } = useAuth();
-        const { user } = useUser();
-        isAuthenticated = !!isSignedIn;
-        userEmail = user?.primaryEmailAddress?.emailAddress || null;
-    } catch {
-        // Clerk not available - demo mode
-        isAuthenticated = false;
-        userEmail = null;
-    }
+    // Use unified auth provider (works with both Clerk and in-house auth)
+    const { isSignedIn, user } = useAuth();
+    
+    // Derive auth state from unified auth
+    const isAuthenticated = !!isSignedIn;
+    const userEmail = user?.email || null;
 
     useEffect(() => {
         const fetchTier = async () => {
