@@ -11,7 +11,7 @@
  * - VITE_API_URL: Backend API URL for in-house auth
  */
 
-import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo, ReactNode } from 'react';
 import { ClerkProvider, useAuth as useClerkAuth, useUser as useClerkUser } from '@clerk/clerk-react';
 import { useAuthStore, type User, type SignUpData } from '../store/authStore';
 
@@ -79,17 +79,20 @@ const InHouseAuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         initAuth();
     }, []);
 
-    // Map store user to unified user
-    const unifiedUser: UnifiedUser | null = store.user ? {
-        id: store.user.id,
-        email: store.user.email,
-        firstName: store.user.firstName,
-        lastName: store.user.lastName,
-        fullName: `${store.user.firstName} ${store.user.lastName}`.trim() || null,
-        avatarUrl: store.user.avatarUrl || null,
-        emailVerified: store.user.emailVerified,
-        createdAt: store.user.createdAt ? new Date(store.user.createdAt) : null
-    } : null;
+    // Memoize unified user to prevent unnecessary re-renders
+    const unifiedUser: UnifiedUser | null = useMemo(() => {
+        if (!store.user) return null;
+        return {
+            id: store.user.id,
+            email: store.user.email,
+            firstName: store.user.firstName,
+            lastName: store.user.lastName,
+            fullName: `${store.user.firstName} ${store.user.lastName}`.trim() || null,
+            avatarUrl: store.user.avatarUrl || null,
+            emailVerified: store.user.emailVerified,
+            createdAt: store.user.createdAt ? new Date(store.user.createdAt) : null
+        };
+    }, [store.user?.id, store.user?.email, store.user?.firstName, store.user?.lastName, store.user?.avatarUrl, store.user?.emailVerified, store.user?.createdAt]);
 
     const signIn = useCallback(async (email: string, password: string) => {
         const success = await store.signIn(email, password);
@@ -123,7 +126,8 @@ const InHouseAuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return token;
     }, [store]);
 
-    const contextValue: UnifiedAuthContext = {
+    // Memoize context value to prevent unnecessary re-renders
+    const contextValue: UnifiedAuthContext = useMemo(() => ({
         isLoaded,
         isSignedIn: !!store.user && !!store.tokens,
         user: unifiedUser,
@@ -133,7 +137,7 @@ const InHouseAuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         signOut,
         getToken,
         authProvider: 'inhouse'
-    };
+    }), [isLoaded, store.user, store.tokens, unifiedUser, signIn, signUp, signOut, getToken]);
 
     return (
         <AuthContext.Provider value={contextValue}>
@@ -150,17 +154,20 @@ const ClerkAuthBridge: React.FC<{ children: ReactNode }> = ({ children }) => {
     const clerkAuth = useClerkAuth();
     const { user: clerkUser, isLoaded: userLoaded } = useClerkUser();
     
-    // Map Clerk user to unified user
-    const unifiedUser: UnifiedUser | null = clerkUser ? {
-        id: clerkUser.id,
-        email: clerkUser.primaryEmailAddress?.emailAddress || '',
-        firstName: clerkUser.firstName,
-        lastName: clerkUser.lastName,
-        fullName: clerkUser.fullName,
-        avatarUrl: clerkUser.imageUrl,
-        emailVerified: clerkUser.primaryEmailAddress?.verification.status === 'verified',
-        createdAt: clerkUser.createdAt ? new Date(clerkUser.createdAt) : null
-    } : null;
+    // Memoize unified user to prevent unnecessary re-renders
+    const unifiedUser: UnifiedUser | null = useMemo(() => {
+        if (!clerkUser) return null;
+        return {
+            id: clerkUser.id,
+            email: clerkUser.primaryEmailAddress?.emailAddress || '',
+            firstName: clerkUser.firstName,
+            lastName: clerkUser.lastName,
+            fullName: clerkUser.fullName,
+            avatarUrl: clerkUser.imageUrl,
+            emailVerified: clerkUser.primaryEmailAddress?.verification.status === 'verified',
+            createdAt: clerkUser.createdAt ? new Date(clerkUser.createdAt) : null
+        };
+    }, [clerkUser?.id, clerkUser?.primaryEmailAddress?.emailAddress, clerkUser?.firstName, clerkUser?.lastName, clerkUser?.fullName, clerkUser?.imageUrl, clerkUser?.createdAt]);
 
     // Sign in is handled by Clerk components - return guidance
     const signIn = useCallback(async (_email: string, _password: string) => {
@@ -194,7 +201,8 @@ const ClerkAuthBridge: React.FC<{ children: ReactNode }> = ({ children }) => {
         }
     }, [clerkAuth]);
 
-    const contextValue: UnifiedAuthContext = {
+    // Memoize context value to prevent unnecessary re-renders
+    const contextValue: UnifiedAuthContext = useMemo(() => ({
         isLoaded: clerkAuth.isLoaded && userLoaded,
         isSignedIn: clerkAuth.isSignedIn ?? false,
         user: unifiedUser,
@@ -204,7 +212,7 @@ const ClerkAuthBridge: React.FC<{ children: ReactNode }> = ({ children }) => {
         signOut,
         getToken,
         authProvider: 'clerk'
-    };
+    }), [clerkAuth.isLoaded, userLoaded, clerkAuth.isSignedIn, unifiedUser, clerkAuth.userId, signIn, signUp, signOut, getToken]);
 
     return (
         <AuthContext.Provider value={contextValue}>
