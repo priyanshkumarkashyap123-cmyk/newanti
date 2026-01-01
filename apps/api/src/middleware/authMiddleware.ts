@@ -15,6 +15,10 @@ import { clerkMiddleware, requireAuth as clerkRequireAuth, getAuth as clerkGetAu
 // CONFIGURATION
 // ============================================
 
+export const isUsingClerk = (): boolean => {
+    return process.env['USE_CLERK'] === 'true';
+};
+
 console.log('🔐 API Auth Mode: Clerk');
 
 // ============================================
@@ -84,7 +88,7 @@ export const isAuthenticated = (req: Request): boolean => {
 export const requireRole = (roles: string[]): RequestHandler => {
     return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         const auth = clerkGetAuth(req);
-        
+
         if (!auth.userId) {
             res.status(401).json({
                 success: false,

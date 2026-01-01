@@ -92,7 +92,10 @@ if (isUsingClerk()) {
 // ============================================
 
 // Auth routes (signup, signin, signout, etc.)
-app.use('/api/auth', authRouter);
+// Auth routes (signup, signin, signout, etc.)
+if (!isUsingClerk()) {
+    app.use('/api/auth', authRouter);
+}
 
 // Health check (public)
 app.get('/health', (_req: Request, res: Response) => {

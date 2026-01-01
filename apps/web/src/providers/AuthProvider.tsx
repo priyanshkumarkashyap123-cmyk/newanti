@@ -18,6 +18,24 @@ import { ClerkProvider, useAuth as useClerkAuth, useUser as useClerkUser, SignIn
 
 const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
+// Fail fast with a clear UI if the publishable key is missing
+const MissingClerkKey: React.FC = () => (
+    <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-center px-6">
+        <div className="max-w-xl space-y-4 text-white">
+            <div className="text-2xl font-semibold">Clerk publishable key missing</div>
+            <p className="text-zinc-300">
+                Set <code className="px-1 py-0.5 bg-zinc-800 rounded text-xs">VITE_CLERK_PUBLISHABLE_KEY</code> in your environment and rebuild.
+                For GitHub Actions, add it as a repository secret and ensure the workflow exports it during the build step.
+            </p>
+            <ul className="text-left text-sm text-zinc-400 list-disc list-inside space-y-1">
+                <li>Local dev: create <code className="px-1 py-0.5 bg-zinc-800 rounded text-xs">apps/web/.env</code> with <code className="px-1 py-0.5 bg-zinc-800 rounded text-xs">VITE_CLERK_PUBLISHABLE_KEY=pk_...</code></li>
+                <li>Production: set the same secret in the repo and redeploy</li>
+                <li>Allow your domain in Clerk Dashboard → Allowed Origins</li>
+            </ul>
+        </div>
+    </div>
+);
+
 if (!CLERK_KEY) {
     console.error('❌ VITE_CLERK_PUBLISHABLE_KEY is required!');
 }
@@ -157,6 +175,10 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+    if (!CLERK_KEY) {
+        // Render a friendly error instead of crashing the ClerkProvider
+        return <MissingClerkKey />;
+    }
     if (!CLERK_KEY) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white p-8">

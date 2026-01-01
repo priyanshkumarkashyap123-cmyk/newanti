@@ -315,18 +315,28 @@ interface RazorpayWebhookPayload {
 // EXPRESS ROUTER
 // ============================================
 
+import { requireAuth, getAuth } from './middleware/authMiddleware.js';
+
+// ... (existing imports)
+
 export const razorpayRouter = Router();
 
 /**
  * POST /api/create-subscription
  * Create Razorpay subscription
  */
-razorpayRouter.post('/create-subscription', async (req: Request, res: Response) => {
+razorpayRouter.post('/create-subscription', requireAuth(), async (req: Request, res: Response) => {
     try {
-        const { userId, email, planId, planType } = req.body;
+        const { email, planId, planType } = req.body;
+        const { userId } = getAuth(req);
 
-        if (!userId || !email) {
-            res.status(400).json({ success: false, message: 'Missing userId or email' });
+        if (!userId) {
+            res.status(401).json({ success: false, message: 'Unauthorized' });
+            return;
+        }
+
+        if (!email) {
+            res.status(400).json({ success: false, message: 'Missing email' });
             return;
         }
 
@@ -354,9 +364,15 @@ razorpayRouter.post('/create-subscription', async (req: Request, res: Response) 
  * POST /api/verify-payment
  * Verify Razorpay payment signature
  */
-razorpayRouter.post('/verify-payment', async (req: Request, res: Response) => {
+razorpayRouter.post('/verify-payment', requireAuth(), async (req: Request, res: Response) => {
     try {
-        const { razorpay_payment_id, razorpay_subscription_id, razorpay_signature, userId } = req.body;
+        const { razorpay_payment_id, razorpay_subscription_id, razorpay_signature } = req.body;
+        const { userId } = getAuth(req);
+
+        if (!userId) {
+            res.status(401).json({ success: false, message: 'Unauthorized' });
+            return;
+        }
 
         if (!razorpay_payment_id || !razorpay_subscription_id || !razorpay_signature) {
             res.status(400).json({ success: false, message: 'Missing payment details' });
