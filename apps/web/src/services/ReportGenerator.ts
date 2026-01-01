@@ -631,6 +631,167 @@ By using this report, you acknowledge that you have read and understood these te
     }
 
     // ============================================
+    // DIAGRAM METHODS
+    // ============================================
+
+    /**
+     * Add a diagram (BMD, SFD, AFD) visualization to the PDF
+     */
+    addMemberDiagram(memberId: string, diagramType: 'BMD' | 'SFD' | 'AFD', 
+                     data: { x_values: number[]; values: number[] }, 
+                     maxValue: number): void {
+        // Check if we need a new page
+        if (this.contentTop > this.pageHeight - 80) {
+            this.addPage();
+        }
+
+        // Title
+        this.doc.setFontSize(10);
+        this.doc.setTextColor(0, 0, 0);
+        this.doc.text(`Member ${memberId} - ${diagramType}`, this.margin, this.contentTop);
+
+        // Draw canvas diagram
+        const width = this.pageWidth - 2 * this.margin;
+        const height = 60;
+        const canvas = document.createElement('canvas');
+        canvas.width = width * 3.78; // Convert mm to pixels (72 DPI)
+        canvas.height = height * 3.78;
+
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            // Draw diagram
+            this.drawDiagramOnCanvas(ctx, data.x_values, data.values, maxValue, canvas.width, canvas.height);
+            
+            // Convert canvas to image
+            const imgData = canvas.toDataURL('image/png');
+            
+            // Add to PDF
+            this.contentTop += 2;
+            this.doc.addImage(imgData, 'PNG', this.margin, this.contentTop, width, height);
+            this.contentTop += height + 8;
+        }
+    }
+
+    /**
+     * Helper: Draw diagram on canvas
+     */
+    private drawDiagramOnCanvas(ctx: CanvasRenderingContext2D, 
+                               xValues: number[], values: number[], 
+                               maxValue: number, 
+                               canvasWidth: number, canvasHeight: number): void {
+        const padding = 40;
+        const graphWidth = canvasWidth - 2 * padding;
+        const graphHeight = canvasHeight - 2 * padding;
+
+        // Clear background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+        // Draw axes
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(padding, padding);
+        ctx.lineTo(padding, canvasHeight - padding);
+        ctx.lineTo(canvasWidth - padding, canvasHeight - padding);
+        ctx.stroke();
+
+        // Draw grid
+        ctx.strokeStyle = '#e0e0e0';
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i <= 5; i++) {
+            const x = padding + (graphWidth / 5) * i;
+            ctx.beginPath();
+            ctx.moveTo(x, padding);
+            ctx.lineTo(x, canvasHeight - padding);
+            ctx.stroke();
+
+            const y = padding + (graphHeight / 5) * i;
+            ctx.beginPath();
+            ctx.moveTo(padding, y);
+            ctx.lineTo(canvasWidth - padding, y);
+            ctx.stroke();
+        }
+
+        // Draw data line
+        if (values.length > 0 && xValues.length > 0) {
+            ctx.strokeStyle = '#2563eb';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+
+            for (let i = 0; i < values.length; i++) {
+                const x = padding + (xValues[i] / (xValues[xValues.length - 1] || 1)) * graphWidth;
+                const y = canvasHeight - padding - ((values[i] + maxValue) / (2 * maxValue)) * graphHeight;
+
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+
+            // Fill under curve
+            ctx.fillStyle = 'rgba(37, 99, 235, 0.1)';
+            ctx.lineTo(canvasWidth - padding, canvasHeight - padding);
+            ctx.lineTo(padding, canvasHeight - padding);
+            ctx.fill();
+        }
+
+        // Draw labels
+        ctx.fillStyle = '#666666';
+        ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(`0`, padding - 20, canvasHeight - padding + 15);
+        ctx.textAlign = 'center';
+        ctx.fillText(`L`, canvasWidth - padding + 5, canvasHeight - padding + 15);
+        
+        ctx.textAlign = 'right';
+        ctx.fillText(`+${maxValue.toFixed(1)}`, padding - 10, padding + 10);
+        ctx.fillText(`-${maxValue.toFixed(1)}`, padding - 10, canvasHeight - padding - 10);
+    }
+
+    /**
+     * Add multiple member diagrams for all members
+     */
+    addAllMemberDiagrams(members: Array<{
+        id: string;
+        maxShear?: number;
+        maxMoment?: number;
+        maxAxial?: number;
+        diagramData?: {
+            x_values: number[];
+            shear_values: number[];
+            moment_values: number[];
+            axial_values: number[];
+            deflection_values: number[];
+        };
+    }>, diagramTypes: ('BMD' | 'SFD' | 'AFD')[] = ['SFD', 'BMD']): void {
+        if (members.length === 0) return;
+
+        this.addPage('Member Diagrams');
+        this.addSectionHeading('Force and Moment Diagrams');
+
+        members.forEach(member => {
+            if (!member.diagramData) return;
+
+            diagramTypes.forEach(type => {
+                const values = type === 'SFD' ? member.diagramData!.shear_values :
+                             type === 'BMD' ? member.diagramData!.moment_values :
+                             member.diagramData!.axial_values;
+                const maxVal = type === 'SFD' ? (member.maxShear || 10) :
+                              type === 'BMD' ? (member.maxMoment || 10) :
+                              (member.maxAxial || 10);
+
+                this.addMemberDiagram(member.id, type, {
+                    x_values: member.diagramData!.x_values,
+                    values
+                }, maxVal);
+            });
+        });
+    }
+
+    // ============================================
     // SAVE
     // ============================================
 

@@ -291,6 +291,16 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                     }));
                     report.addMemberForcesTable(forces);
                 }
+
+                // Add member diagrams
+                const dashboardData = convertToAnalysisResultsData(analysisResults);
+                if (dashboardData.members.length > 0) {
+                    try {
+                        report.addAllMemberDiagrams(dashboardData.members, ['SFD', 'BMD', 'AFD']);
+                    } catch (error) {
+                        console.warn('Failed to add diagrams to PDF:', error);
+                    }
+                }
             }
 
             report.save('BeamLab_Analysis_Report');
