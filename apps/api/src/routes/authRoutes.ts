@@ -853,10 +853,6 @@ router.post('/forgot-password', async (req: Request, res: Response) => {
         const resetToken = generateResetToken();
         const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
 
-        // Generate reset token
-        const resetToken = generateResetToken();
-        const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
-
         // Store reset token
         await VerificationCodeModel.create({
             userId: user._id,
@@ -1178,7 +1174,7 @@ router.post('/resend-verification', async (req: Request, res: Response) => {
 
         // Generate new verification code
         const verificationCode = generateVerificationCode();
-        
+
         // Delete old codes
         await VerificationCodeModel.deleteMany({
             userId: user._id,
