@@ -364,6 +364,7 @@ export const ModernModeler: FC = () => {
                     const response = await fetch(`${PYTHON_API}/analyze/frame`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
                         body: JSON.stringify({
                             nodes: nodesArray,
                             members: membersArray,

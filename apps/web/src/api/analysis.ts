@@ -41,7 +41,8 @@ export async function runAnalysis(): Promise<{ success: boolean; message: string
         const response = await fetch(`${API_BASE}/api/analyze`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nodes, members, loads })
+            credentials: 'include',
+            body: JSON.stringify({ nodes, members, loads, memberLoads })
         });
 
         const result = await response.json();
