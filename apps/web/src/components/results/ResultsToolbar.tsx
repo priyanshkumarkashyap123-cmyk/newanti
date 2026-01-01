@@ -10,7 +10,7 @@
  * - Full Results Dashboard with enhanced visualizations
  */
 
-import { FC, useState } from 'react';
+import React, { FC, useState, useEffect } from 'react';
 import {
     TrendingDown,
     BarChart2,
@@ -200,6 +200,16 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
 
     // Store doesn't have these - we'll use local state
     const [_showReactions, _setShowReactions] = useState(true);
+
+    // Initialize diagram state on mount - ensure deflection is shown by default
+    useEffect(() => {
+        // Sync initial activeDiagram state with store
+        setShowDeflectedShape(activeDiagram === 'deflection');
+        setShowSFD(activeDiagram === 'sfd');
+        setShowBMD(activeDiagram === 'bmd');
+        setShowAFD(activeDiagram === 'axial');
+        setShowStressOverlay(activeDiagram === 'heatmap');
+    }, []); // Run once on mount
 
     // Sync diagram toggles with store
     const handleDiagramToggle = (type: DiagramType) => {

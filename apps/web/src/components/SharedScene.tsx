@@ -24,8 +24,9 @@ export const SharedScene: FC = () => {
     const nodes = useModelStore((state) => state.nodes);
     const members = useModelStore((state) => state.members);
 
-    // Use displacement scale to derive diagram scale (smaller) for legacy diagrams
-    const legacyDiagramScale = displacementScale * 0.001;
+    // Use diagram scale from store, with fallback to displacement-based scale
+    // Multiply by a factor to ensure diagrams are visible
+    const legacyDiagramScale = diagramScale > 0 ? diagramScale : displacementScale * 0.01;
 
     return (
         <>
