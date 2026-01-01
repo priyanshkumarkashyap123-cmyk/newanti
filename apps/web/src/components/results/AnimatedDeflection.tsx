@@ -81,7 +81,7 @@ const INTERPOLATION_SEGMENTS = 20;
  */
 function getDisplacementColor(normalized: number): THREE.Color {
     const clamped = Math.max(0, Math.min(1, normalized));
-    
+
     if (clamped <= 0.5) {
         const t = clamped * 2;
         return COLOR_MIN.clone().lerp(COLOR_MID, t);
@@ -103,12 +103,12 @@ function hermiteInterpolate(
 ): THREE.Vector3 {
     const t2 = t * t;
     const t3 = t2 * t;
-    
+
     const h00 = 2 * t3 - 3 * t2 + 1;
     const h10 = t3 - 2 * t2 + t;
     const h01 = -2 * t3 + 3 * t2;
     const h11 = t3 - t2;
-    
+
     return new THREE.Vector3()
         .addScaledVector(p0, h00)
         .addScaledVector(m0, h10)
@@ -154,24 +154,24 @@ const AnimatedMemberLine: FC<AnimatedMemberLineProps> = ({
 }) => {
     const lineRef = useRef<THREE.Line>(null);
     const phaseRef = useRef(0);
-    
+
     // Pre-calculate spline control points
     const controlPoints = useMemo(() => {
         const points: THREE.Vector3[] = [];
         const colors: THREE.Color[] = [];
-        
+
         // Generate interpolated points
         for (let i = 0; i <= segments; i++) {
             const t = i / segments;
-            
+
             // Original position (linear interpolation)
             const original = new THREE.Vector3().lerpVectors(startOriginal, endOriginal, t);
-            
+
             // Displacement (linear interpolation for now)
             const disp = new THREE.Vector3().lerpVectors(startDisp, endDisp, t);
-            
+
             points.push(original);
-            
+
             // Color based on displacement magnitude at this point
             if (colorByMagnitude) {
                 const mag = disp.length();
@@ -181,28 +181,28 @@ const AnimatedMemberLine: FC<AnimatedMemberLineProps> = ({
                 colors.push(new THREE.Color('#f97316')); // Orange
             }
         }
-        
+
         return { points, colors };
     }, [startOriginal, endOriginal, startDisp, endDisp, segments, colorByMagnitude, maxMagnitude]);
-    
+
     // Animation loop
     useFrame((_, delta) => {
         if (!lineRef.current) return;
-        
+
         phaseRef.current += delta * animationSpeed * Math.PI * 2;
         const animFactor = Math.sin(phaseRef.current) * scale;
-        
+
         const positions = lineRef.current.geometry.attributes.position as THREE.BufferAttribute;
-        
+
         for (let i = 0; i <= segments; i++) {
             const t = i / segments;
-            
+
             // Original position
             const original = new THREE.Vector3().lerpVectors(startOriginal, endOriginal, t);
-            
+
             // Displacement
             const disp = new THREE.Vector3().lerpVectors(startDisp, endDisp, t);
-            
+
             // Apply animated displacement
             positions.setXYZ(
                 i,
@@ -211,36 +211,36 @@ const AnimatedMemberLine: FC<AnimatedMemberLineProps> = ({
                 original.z + disp.z * animFactor
             );
         }
-        
+
         positions.needsUpdate = true;
     });
-    
+
     // Create geometry with initial positions
     const geometry = useMemo(() => {
         const geo = new THREE.BufferGeometry();
-        
+
         const positions = new Float32Array((segments + 1) * 3);
         const colors = new Float32Array((segments + 1) * 3);
-        
+
         for (let i = 0; i <= segments; i++) {
             const point = controlPoints.points[i]!;
             const color = controlPoints.colors[i]!;
-            
+
             positions[i * 3] = point.x;
             positions[i * 3 + 1] = point.y;
             positions[i * 3 + 2] = point.z;
-            
+
             colors[i * 3] = color.r;
             colors[i * 3 + 1] = color.g;
             colors[i * 3 + 2] = color.b;
         }
-        
+
         geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        
+
         return geo;
     }, [controlPoints, segments]);
-    
+
     return (
         <group>
             {/* Original shape (ghost) */}
@@ -259,8 +259,9 @@ const AnimatedMemberLine: FC<AnimatedMemberLineProps> = ({
                     transparent
                 />
             )}
-            
+
             {/* Animated deflected shape */}
+            {/* @ts-ignore */}
             <line ref={lineRef} geometry={geometry}>
                 <lineBasicMaterial vertexColors linewidth={3} />
             </line>
@@ -298,25 +299,25 @@ const AnimatedNode: FC<AnimatedNodeProps> = ({
     const meshRef = useRef<THREE.Mesh>(null);
     const phaseRef = useRef(0);
     const [hovered, setHovered] = useState(false);
-    
+
     const color = useMemo(() => {
         const normalized = maxMagnitude > 0 ? magnitude / maxMagnitude : 0;
         return getDisplacementColor(normalized);
     }, [magnitude, maxMagnitude]);
-    
+
     useFrame((_, delta) => {
         if (!meshRef.current) return;
-        
+
         phaseRef.current += delta * animationSpeed * Math.PI * 2;
         const animFactor = Math.sin(phaseRef.current) * scale;
-        
+
         meshRef.current.position.set(
             originalPos.x + displacement.x * animFactor,
             originalPos.y + displacement.y * animFactor,
             originalPos.z + displacement.z * animFactor
         );
     });
-    
+
     return (
         <group>
             <mesh
@@ -332,7 +333,7 @@ const AnimatedNode: FC<AnimatedNodeProps> = ({
                     emissiveIntensity={hovered ? 0.5 : 0.2}
                 />
             </mesh>
-            
+
             {/* Displacement label */}
             {showLabel && magnitude > 0.001 && (
                 <Html
@@ -378,7 +379,7 @@ export const AnimatedDeflection: FC<AnimatedDeflectionProps> = ({
         }
         return map;
     }, [nodes]);
-    
+
     // Create displacement map with magnitudes
     const dispMap = useMemo(() => {
         const map = new Map<string, { vec: THREE.Vector3; magnitude: number }>();
@@ -389,11 +390,11 @@ export const AnimatedDeflection: FC<AnimatedDeflectionProps> = ({
         }
         return map;
     }, [displacements]);
-    
+
     // Calculate max displacement for normalization
     const maxMagnitude = useMemo(() => {
         if (maxDisplacementLimit) return maxDisplacementLimit;
-        
+
         let max = 0;
         for (const d of displacements) {
             const mag = d.magnitude ?? getDisplacementMagnitude(d);
@@ -401,7 +402,7 @@ export const AnimatedDeflection: FC<AnimatedDeflectionProps> = ({
         }
         return max;
     }, [displacements, maxDisplacementLimit]);
-    
+
     // Prepare member data
     const memberData = useMemo(() => {
         return members.map((member) => {
@@ -409,7 +410,7 @@ export const AnimatedDeflection: FC<AnimatedDeflectionProps> = ({
             const endPos = nodeMap.get(member.endNodeId) || new THREE.Vector3();
             const startDispData = dispMap.get(member.startNodeId);
             const endDispData = dispMap.get(member.endNodeId);
-            
+
             return {
                 id: member.id,
                 startOriginal: startPos,
@@ -419,11 +420,11 @@ export const AnimatedDeflection: FC<AnimatedDeflectionProps> = ({
             };
         });
     }, [members, nodeMap, dispMap]);
-    
+
     // Filter significant displacement nodes for markers
     const significantNodes = useMemo(() => {
         const threshold = maxMagnitude * 0.3; // Show nodes with >30% of max displacement
-        
+
         return displacements
             .filter(d => {
                 const mag = d.magnitude ?? getDisplacementMagnitude(d);
@@ -436,7 +437,7 @@ export const AnimatedDeflection: FC<AnimatedDeflectionProps> = ({
                 dispVec: dispMap.get(d.nodeId)?.vec || new THREE.Vector3()
             }));
     }, [displacements, maxMagnitude, nodeMap, dispMap]);
-    
+
     return (
         <group name="animated-deflection">
             {/* Animated members */}
@@ -454,7 +455,7 @@ export const AnimatedDeflection: FC<AnimatedDeflectionProps> = ({
                     showOriginal={showOriginal}
                 />
             ))}
-            
+
             {/* Animated node markers */}
             {significantNodes.map((node) => (
                 <AnimatedNode
@@ -504,7 +505,7 @@ export const DeflectionControls: FC<DeflectionControlsProps> = ({
     return (
         <div className="bg-slate-800/90 backdrop-blur rounded-lg p-4 space-y-4">
             <h4 className="text-sm font-semibold text-white mb-3">Deflection Animation</h4>
-            
+
             {/* Scale control */}
             <div>
                 <label className="flex items-center justify-between text-xs text-slate-400 mb-1">
@@ -520,7 +521,7 @@ export const DeflectionControls: FC<DeflectionControlsProps> = ({
                     className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer"
                 />
             </div>
-            
+
             {/* Speed control */}
             <div>
                 <label className="flex items-center justify-between text-xs text-slate-400 mb-1">
@@ -537,7 +538,7 @@ export const DeflectionControls: FC<DeflectionControlsProps> = ({
                     className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer"
                 />
             </div>
-            
+
             {/* Toggle options */}
             <div className="flex flex-col gap-2">
                 <label className="flex items-center gap-2 text-xs text-slate-400 cursor-pointer">
@@ -549,7 +550,7 @@ export const DeflectionControls: FC<DeflectionControlsProps> = ({
                     />
                     Show Original Shape
                 </label>
-                
+
                 <label className="flex items-center gap-2 text-xs text-slate-400 cursor-pointer">
                     <input
                         type="checkbox"
@@ -560,7 +561,7 @@ export const DeflectionControls: FC<DeflectionControlsProps> = ({
                     Show Displacement Labels
                 </label>
             </div>
-            
+
             {/* Max displacement info */}
             <div className="pt-2 border-t border-slate-700">
                 <div className="text-xs text-slate-500">

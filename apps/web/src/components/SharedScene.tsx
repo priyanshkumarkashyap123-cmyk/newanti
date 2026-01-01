@@ -9,6 +9,7 @@ import { MemberLoadRenderer } from './MemberLoadRenderer';
 import { AllMemberDiagrams } from './DiagramRenderer';
 import { LoadPlacementLayer } from './viewer/LoadPlacementLayer';
 import { AllResultsOverlay, StressColorOverlay } from './results';
+import AnimatedDeflection from './results/AnimatedDeflection';
 import { useModelStore } from '../store/model';
 
 export const SharedScene: FC = () => {
@@ -19,6 +20,9 @@ export const SharedScene: FC = () => {
     const diagramScale = useModelStore((state) => state.diagramScale);
     const displacementScale = useModelStore((state) => state.displacementScale);
     const analysisResults = useModelStore((state) => state.analysisResults);
+    const showDeflectedShape = useModelStore((state) => state.showDeflectedShape);
+    const nodes = useModelStore((state) => state.nodes);
+    const members = useModelStore((state) => state.members);
 
     // Use displacement scale to derive diagram scale (smaller) for legacy diagrams
     const legacyDiagramScale = displacementScale * 0.001;
@@ -76,10 +80,27 @@ export const SharedScene: FC = () => {
             {/* Professional STAAD-like Stress Overlay */}
             {showStressOverlay && analysisResults && <StressColorOverlay />}
 
+            {/* Deflected Shape Animation */}
+            {showDeflectedShape && analysisResults && (
+                <AnimatedDeflection
+                    nodes={Array.from(nodes.values())}
+                    members={Array.from(members.values())}
+                    displacements={Array.from(analysisResults.displacements.entries()).map(([id, d]) => ({
+                        nodeId: id,
+                        ...d
+                    }))}
+                    scale={displacementScale}
+                    animationSpeed={1.0}
+                    showOriginal={true}
+                    showLabels={false}
+                    colorByMagnitude={true}
+                />
+            )}
+
             {/* Tools */}
             <SelectionTransform />
             <InteractionManager />
-            
+
             {/* Interactive Load Placement */}
             <LoadPlacementLayer />
         </>

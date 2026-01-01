@@ -4,10 +4,14 @@
  * Uses Clerk for authentication
  */
 
+import { useState } from 'react';
 import { SignUp } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 
 export const SignUpPage = () => {
+    const [agreed, setAgreed] = useState(false);
+    const [consented, setConsented] = useState(false);
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 flex">
             {/* Left Side - Branding */}
@@ -106,36 +110,71 @@ export const SignUpPage = () => {
 
                     {/* Clerk Sign Up */}
                     <div className="clerk-signup-container">
-                        <SignUp
-                            appearance={{
-                                elements: {
-                                    rootBox: 'w-full',
-                                    card: 'bg-zinc-900/50 border border-zinc-800 shadow-2xl backdrop-blur-sm',
-                                    headerTitle: 'text-white',
-                                    headerSubtitle: 'text-zinc-400',
-                                    formFieldLabel: 'text-zinc-300',
-                                    formFieldInput: 'bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500',
-                                    formButtonPrimary: 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500',
-                                    footerActionLink: 'text-purple-400 hover:text-purple-300',
-                                    identityPreviewText: 'text-white',
-                                    identityPreviewEditButton: 'text-purple-400',
-                                    socialButtonsBlockButton: 'bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700',
-                                    socialButtonsBlockButtonText: 'text-white',
-                                    dividerLine: 'bg-zinc-700',
-                                    dividerText: 'text-zinc-500',
-                                    formFieldInputShowPasswordButton: 'text-zinc-400',
-                                    otpCodeFieldInput: 'bg-zinc-800 border-zinc-700 text-white'
-                                },
-                                layout: {
-                                    socialButtonsPlacement: 'bottom',
-                                    showOptionalFields: false
-                                }
-                            }}
-                            routing="path"
-                            path="/sign-up"
-                            signInUrl="/sign-in"
-                            forceRedirectUrl="/app"
-                        />
+                        {!consented ? (
+                            <div className="w-full max-w-md bg-zinc-900/50 border border-zinc-800 rounded-xl p-8 backdrop-blur-sm shadow-2xl">
+                                <h3 className="text-xl font-bold text-white mb-4">Legal Consent Required</h3>
+                                <p className="text-zinc-400 mb-6 text-sm">
+                                    Before creating an account, you must agree to our legal terms regarding the use of this engineering software.
+                                </p>
+
+                                <div className="space-y-4 mb-8">
+                                    <div className="flex items-start gap-3 p-3 bg-zinc-800/50 rounded-lg border border-zinc-700">
+                                        <input
+                                            type="checkbox"
+                                            id="terms-check"
+                                            className="mt-1 w-4 h-4 rounded border-zinc-600 bg-zinc-700 text-blue-500 focus:ring-blue-500 cursor-pointer"
+                                            checked={agreed}
+                                            onChange={(e) => setAgreed(e.target.checked)}
+                                        />
+                                        <label htmlFor="terms-check" className="text-sm text-zinc-300 cursor-pointer select-none">
+                                            I agree to the <Link to="/terms" className="text-blue-400 hover:text-blue-300 hover:underline">Terms of Service</Link> and <Link to="/privacy" className="text-blue-400 hover:text-blue-300 hover:underline">Privacy Policy</Link>. I understand this software is a computational aid only.
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={() => agreed && setConsented(true)}
+                                    disabled={!agreed}
+                                    className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 ${agreed
+                                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white shadow-lg shadow-purple-900/20'
+                                        : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                                        }`}
+                                >
+                                    Continue to Sign Up
+                                </button>
+                            </div>
+                        ) : (
+                            <SignUp
+                                appearance={{
+                                    elements: {
+                                        rootBox: 'w-full',
+                                        card: 'bg-zinc-900/50 border border-zinc-800 shadow-2xl backdrop-blur-sm',
+                                        headerTitle: 'text-white',
+                                        headerSubtitle: 'text-zinc-400',
+                                        formFieldLabel: 'text-zinc-300',
+                                        formFieldInput: 'bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500',
+                                        formButtonPrimary: 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500',
+                                        footerActionLink: 'text-purple-400 hover:text-purple-300',
+                                        identityPreviewText: 'text-white',
+                                        identityPreviewEditButton: 'text-purple-400',
+                                        socialButtonsBlockButton: 'bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700',
+                                        socialButtonsBlockButtonText: 'text-white',
+                                        dividerLine: 'bg-zinc-700',
+                                        dividerText: 'text-zinc-500',
+                                        formFieldInputShowPasswordButton: 'text-zinc-400',
+                                        otpCodeFieldInput: 'bg-zinc-800 border-zinc-700 text-white'
+                                    },
+                                    layout: {
+                                        socialButtonsPlacement: 'bottom',
+                                        showOptionalFields: false
+                                    }
+                                }}
+                                routing="path"
+                                path="/sign-up"
+                                signInUrl="/sign-in"
+                                forceRedirectUrl="/app"
+                            />
+                        )}
                     </div>
 
                     {/* Additional Links */}

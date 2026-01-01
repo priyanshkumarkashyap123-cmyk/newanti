@@ -125,24 +125,7 @@ const CategorySwitcher: FC = () => {
             </div>
 
             {/* Notification Toast */}
-            {notification?.show && (
-                <div className={`
-                    fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg
-                    flex items-center gap-3 max-w-md
-                    ${notification.type === 'error' ? 'bg-red-600' : ''}
-                    ${notification.type === 'warning' ? 'bg-yellow-600' : ''}
-                    ${notification.type === 'success' ? 'bg-green-600' : ''}
-                    ${notification.type === 'info' ? 'bg-blue-600' : ''}
-                `}>
-                    <span className="text-white text-sm">{notification.message}</span>
-                    <button
-                        onClick={hideNotification}
-                        className="text-white/70 hover:text-white"
-                    >
-                        ×
-                    </button>
-                </div>
-            )}
+
         </>
     );
 };
@@ -243,7 +226,7 @@ export const ModernModeler: FC = () => {
     const setAnalysisResults = useModelStore((state) => state.setAnalysisResults);
     const setIsAnalyzing = useModelStore((state) => state.setIsAnalyzing);
     // UI Store
-    const { activeCategory, setCategory, notification, hideNotification } = useUIStore();
+    const { activeCategory, setCategory, notification, hideNotification, showNotification } = useUIStore();
 
     const [inspectorCollapsed, setInspectorCollapsed] = useState(false);
 
@@ -260,11 +243,7 @@ export const ModernModeler: FC = () => {
     const [showExportDialog, setShowExportDialog] = useState(false);
 
     // Feedback state
-    const [toast, setToast] = useState<{ message: string; type: ToastType; show: boolean } | null>(null);
 
-    const showToast = useCallback((message: string, type: ToastType = 'info') => {
-        setToast({ message, type, show: true });
-    }, []);
 
     // Quick start modal
     const [showQuickStart, setShowQuickStart] = useState(false);
@@ -588,12 +567,12 @@ export const ModernModeler: FC = () => {
                 });
                 // Show results toolbar after successful analysis
                 setShowResultsToolbar(true);
-                showToast('Analysis completed successfully!', 'success');
+                showNotification('success', 'Analysis completed successfully!');
                 // setActiveStep(4); // Move to results step
             } else {
                 setAnalysisStage('error');
                 setAnalysisError(result.error || 'Analysis failed');
-                showToast(`Analysis failed: ${result.error}`, 'error');
+                showNotification('error', `Analysis failed: ${result.error}`);
             }
         } catch (err) {
             setAnalysisStage('error');
@@ -767,14 +746,7 @@ export const ModernModeler: FC = () => {
 
                 {/* Window Controls / User */}
                 <div className="flex items-center gap-3">
-                    {/* Notification Toast */}
-                    {notification?.show && (
-                        <div className={`px-3 py-1 rounded text-xs flex items-center gap-2 ${notification.type === 'error' ? 'bg-red-900/50 text-red-200' : 'bg-blue-900/50 text-blue-200'
-                            }`}>
-                            <span>{notification.message}</span>
-                            <button onClick={hideNotification}>×</button>
-                        </div>
-                    )}
+
                     <span className="text-xs text-zinc-600">v24.01.00</span>
                 </div>
             </header>
@@ -818,11 +790,13 @@ export const ModernModeler: FC = () => {
 
             {/* Modals & Overlays */}
 
-            {toast?.show && (
+            {/* Modals & Overlays */}
+
+            {notification?.show && (
                 <ActionToast
-                    message={toast.message}
-                    type={toast.type}
-                    onClose={() => setToast(prev => prev ? { ...prev, show: false } : null)}
+                    message={notification.message}
+                    type={notification.type as any}
+                    onClose={hideNotification}
                 />
             )}
 

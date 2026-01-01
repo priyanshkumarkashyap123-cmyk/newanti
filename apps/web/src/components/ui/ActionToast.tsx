@@ -24,6 +24,7 @@ export const ActionToast: FC<ToastProps> = ({
             }, duration);
             return () => clearTimeout(timer);
         }
+        return undefined;
     }, [duration, onClose, type]);
 
     const colors = {

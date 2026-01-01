@@ -466,26 +466,52 @@ export const StressColorOverlay: FC<StressColorOverlayProps> = ({
 
             // Calculate approximate stress values (MPa)
             // Assuming simplified section properties if not available
-            const area = member.A || 0.01; // m2
-            const modulus = (member.I || 1e-4) * 1e6; // cm4 approx
+            // Improved stress calculation
+            // Calculate approximate Section Modulus (S) assuming I-beam shape
+            // radius of gyration r = sqrt(I/A)
+            // Depth d approx 2.5 * r (empirical for wide flange)
+            // c = d/2 = 1.25 * r
+            // S = I / c
 
-            // Max stress calculation (very simplified for visualization)
-            // sigma = P/A + M/S
-            const axialStress = (forces.axial / area) / 1000; // MPa
-            const momentStressStart = (Math.max(Math.abs(forces.momentY), Math.abs(forces.momentZ)) / (modulus * 1e-6)) / 1000;
-            const momentStressEnd = momentStressStart; // Simplified
+            const area = member.A || 0.01; // m²
+            const I = member.I || 1e-4;   // m⁴
 
+            // Avoid division by zero
+            const safeArea = area > 0 ? area : 0.01;
+            const safeI = I > 0 ? I : 1e-4;
+
+            const r = Math.sqrt(safeI / safeArea);
+            const c = 1.25 * r;
+            const S = c > 0 ? safeI / c : safeI / 0.1; // m³
+
+            // Calculate stresses (MPa)
+            // Axial Stress: P/A (kN/m² = kPa) -> /1000 = MPa
+            const axialStress = (forces.axial / safeArea) / 1000;
+
+            // Bending Stress: M/S (kNm/m³ = kPa) -> /1000 = MPa
+            const momentMag = Math.sqrt(forces.momentY ** 2 + forces.momentZ ** 2);
+            const bendingStress = (momentMag / S) / 1000;
+
+            const totalStress = Math.abs(axialStress) + bendingStress;
+
+            // Generate profile
             for (let i = 0; i <= steps; i++) {
                 const position = i / steps;
+
+                // Interpolate forces if needed (here we assume max for simplicity or linear if we had start/end)
+                // For a more accurate profile, we should interpolate M over the member length
+                // But simplified: assume parabolic max at center for beams, or linear for columns
+                // Using max moment for conservative display
+
                 stressProfile.push({
                     position,
-                    vonMises: Math.abs(axialStress) + momentStressStart, // Mock
-                    principal1: Math.abs(axialStress) + momentStressStart,
+                    vonMises: totalStress, // Simplified Von Mises equivalent
+                    principal1: totalStress,
                     principal2: 0,
                     principal3: 0,
                     axial: axialStress,
-                    bending: momentStressStart,
-                    shear: forces.shearY / 1000
+                    bending: bendingStress,
+                    shear: (forces.shearY / 1000) // Very rough shear stress in MPa (V/A approx)
                 });
             }
 
@@ -494,11 +520,11 @@ export const StressColorOverlay: FC<StressColorOverlayProps> = ({
                 startNodeId: member.startNodeId,
                 endNodeId: member.endNodeId,
                 stressProfile,
-                maxStress: Math.abs(axialStress) + momentStressStart,
+                maxStress: totalStress,
                 minStress: 0,
                 criticalLocation: 0.5,
-                capacity: 250, // MPa yield
-                utilization: (Math.abs(axialStress) + momentStressStart) / 250
+                capacity: 250, // MPa yield (Steel S275 approx)
+                utilization: totalStress / 250
             });
         });
 

@@ -64,7 +64,7 @@ const convertToAnalysisResultsData = (results: AnalysisResults): AnalysisResults
             const reaction = results.reactions?.get(nodeId);
             const totalDisp = Math.sqrt(disp.dx ** 2 + disp.dy ** 2 + disp.dz ** 2);
             maxDisp = Math.max(maxDisp, totalDisp);
-            
+
             nodes.push({
                 id: nodeId,
                 x: 0,
@@ -97,7 +97,7 @@ const convertToAnalysisResultsData = (results: AnalysisResults): AnalysisResults
             const shear = Math.max(Math.abs(forces.shearY), Math.abs(forces.shearZ));
             const moment = Math.max(Math.abs(forces.momentY), Math.abs(forces.momentZ));
             const axial = Math.abs(forces.axial);
-            
+
             // Generate diagram data points (uniform for now - would need array data for real diagrams)
             const numPoints = 20;
             const memberLength = 5; // Default length - would need actual from store
@@ -117,12 +117,12 @@ const convertToAnalysisResultsData = (results: AnalysisResults): AnalysisResults
                 axial_values.push(forces.axial);
                 deflection_values.push(0);
             }
-            
+
             // Estimate stress from bending (sigma = M*c/I, simplified)
             // Assuming typical beam: c ≈ 0.15m, I ≈ 1e-4 m^4
             const estimatedStress = moment > 0 ? (moment * 0.15) / 1e-4 / 1000 : axial / 0.01 / 1000; // MPa
             const util = Math.min(Math.abs(estimatedStress) / 250, 1.5); // 250 MPa yield
-            
+
             maxStress = Math.max(maxStress, Math.abs(estimatedStress));
             maxUtil = Math.max(maxUtil, util);
 
@@ -182,8 +182,10 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
     const setShowBMD = useModelStore((s) => s.setShowBMD);
     const setShowAFD = useModelStore((s) => s.setShowAFD);
     const setShowStressOverlay = useModelStore((s) => s.setShowStressOverlay);
+    const setShowDeflectedShape = useModelStore((s) => s.setShowDeflectedShape);
     const setDisplacementScale = useModelStore((s) => s.setDisplacementScale);
     const openModal = useUIStore((s) => s.openModal);
+    const showNotification = useUIStore((s) => s.showNotification);
     const nodes = useModelStore((s) => s.nodes);
     const members = useModelStore((s) => s.members);
 
@@ -203,12 +205,13 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
     const handleDiagramToggle = (type: DiagramType) => {
         const newActive = activeDiagram === type ? null : type;
         setActiveDiagram(newActive);
-        
+
         // Update store based on diagram type
         setShowSFD(newActive === 'sfd');
         setShowBMD(newActive === 'bmd');
         setShowAFD(newActive === 'axial');
         setShowStressOverlay(newActive === 'heatmap');
+        setShowDeflectedShape(newActive === 'deflection');
     };
 
     // Handle PDF export
@@ -217,7 +220,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
         try {
             const { ReportGenerator } = await import('../../services/ReportGenerator');
             const report = new ReportGenerator();
-            
+
             // Add header and project info
             report.addHeader('Structural Analysis Report');
             report.addProjectInfo({
@@ -250,7 +253,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
             // Add analysis results if available
             if (analysisResults) {
                 report.addPage('Analysis Results');
-                
+
                 // Reactions
                 if (analysisResults.reactions && analysisResults.reactions.size > 0) {
                     const reactions = Array.from(analysisResults.reactions.entries()).map(([nodeId, r]) => ({
@@ -281,9 +284,10 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
             }
 
             report.save('BeamLab_Analysis_Report');
+            showNotification('success', 'PDF Report generated successfully');
         } catch (error) {
             console.error('PDF export failed:', error);
-            alert('Failed to generate PDF report. Please try again.');
+            showNotification('error', 'Failed to generate PDF report');
         } finally {
             setIsExporting(false);
         }
@@ -294,7 +298,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
         setIsExporting(true);
         try {
             const { ExportService } = await import('../../services/ExportService');
-            
+
             const exportData = {
                 projectName: 'BeamLab_Analysis',
                 timestamp: new Date().toISOString(),
@@ -310,7 +314,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                     endNodeId: m.endNodeId,
                     sectionId: m.sectionId || 'Default'
                 })),
-                displacements: analysisResults?.displacements ? 
+                displacements: analysisResults?.displacements ?
                     Array.from(analysisResults.displacements.entries()).map(([nodeId, d]) => ({
                         nodeId,
                         dx: d.dx,
@@ -344,8 +348,9 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
 
             const service = new ExportService(exportData as any);
             const blob = service.exportToCSV('all');
-            
+
             // Trigger download
+            showNotification('success', 'CSV exported successfully');
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -356,7 +361,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
             URL.revokeObjectURL(url);
         } catch (error) {
             console.error('CSV export failed:', error);
-            alert('Failed to export CSV. Please try again.');
+            showNotification('error', 'Failed to export CSV');
         } finally {
             setIsExporting(false);
         }
@@ -406,293 +411,292 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
     if (!isExpanded) {
         return (
             <>
-            <div className="fixed bottom-4 right-4 z-40">
-                <button
-                    onClick={() => setIsExpanded(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-lg shadow-lg hover:bg-zinc-800 transition-colors"
-                >
-                    <BarChart2 className="w-4 h-4" />
-                    <span className="text-sm font-medium">Results</span>
-                    <Maximize2 className="w-3 h-3" />
-                </button>
-            </div>
-            {/* Full Results Dashboard Modal - accessible even when collapsed */}
-            {showDashboard && analysisResults && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-                    <div className="w-[95vw] h-[90vh] max-w-[1800px] bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden">
-                        <AnalysisResultsDashboard
-                            results={convertToAnalysisResultsData(analysisResults)}
-                            onClose={() => setShowDashboard(false)}
-                        />
-                    </div>
+                <div className="fixed bottom-4 right-4 z-40">
+                    <button
+                        onClick={() => setIsExpanded(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-lg shadow-lg hover:bg-zinc-800 transition-colors"
+                    >
+                        <BarChart2 className="w-4 h-4" />
+                        <span className="text-sm font-medium">Results</span>
+                        <Maximize2 className="w-3 h-3" />
+                    </button>
                 </div>
-            )}
+                {/* Full Results Dashboard Modal - accessible even when collapsed */}
+                {showDashboard && analysisResults && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+                        <div className="w-[95vw] h-[90vh] max-w-[1800px] bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden">
+                            <AnalysisResultsDashboard
+                                results={convertToAnalysisResultsData(analysisResults)}
+                                onClose={() => setShowDashboard(false)}
+                            />
+                        </div>
+                    </div>
+                )}
             </>
         );
     }
 
     return (
         <>
-        <div className="fixed bottom-4 right-4 z-40 w-80 bg-white dark:bg-zinc-900 rounded-xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                <div className="flex items-center gap-2">
-                    <BarChart2 className="w-4 h-4" />
-                    <span className="font-medium">Analysis Results</span>
-                </div>
-                <div className="flex items-center gap-1">
-                    <button
-                        onClick={() => setIsExpanded(false)}
-                        className="p-1 rounded hover:bg-white/20 transition-colors"
-                        title="Minimize"
-                    >
-                        <Minimize2 className="w-4 h-4" />
-                    </button>
-                    {onClose && (
+            <div className="fixed bottom-4 right-4 z-40 w-80 bg-white dark:bg-zinc-900 rounded-xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+                {/* Header */}
+                <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                    <div className="flex items-center gap-2">
+                        <BarChart2 className="w-4 h-4" />
+                        <span className="font-medium">Analysis Results</span>
+                    </div>
+                    <div className="flex items-center gap-1">
                         <button
-                            onClick={onClose}
+                            onClick={() => setIsExpanded(false)}
                             className="p-1 rounded hover:bg-white/20 transition-colors"
-                            title="Close"
+                            title="Minimize"
                         >
-                            <X className="w-4 h-4" />
+                            <Minimize2 className="w-4 h-4" />
                         </button>
-                    )}
-                </div>
-            </div>
-
-            {/* Diagram Toggles */}
-            <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
-                <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
-                    Diagrams
-                </h4>
-                <div className="grid grid-cols-6 gap-1">
-                    {diagrams.map((diagram) => {
-                        const Icon = diagram.icon;
-                        const isActive = activeDiagram === diagram.id;
-
-                        return (
+                        {onClose && (
                             <button
-                                key={diagram.id}
-                                onClick={() => handleDiagramToggle(diagram.id)}
-                                className={`
+                                onClick={onClose}
+                                className="p-1 rounded hover:bg-white/20 transition-colors"
+                                title="Close"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                {/* Diagram Toggles */}
+                <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+                    <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
+                        Diagrams
+                    </h4>
+                    <div className="grid grid-cols-6 gap-1">
+                        {diagrams.map((diagram) => {
+                            const Icon = diagram.icon;
+                            const isActive = activeDiagram === diagram.id;
+
+                            return (
+                                <button
+                                    key={diagram.id}
+                                    onClick={() => handleDiagramToggle(diagram.id)}
+                                    className={`
                                     flex flex-col items-center gap-1 p-2 rounded-lg transition-all
                                     ${isActive
-                                        ? 'bg-zinc-100 dark:bg-zinc-800'
-                                        : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
-                                    }
+                                            ? 'bg-zinc-100 dark:bg-zinc-800'
+                                            : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
+                                        }
                                 `}
-                                title={diagram.label}
-                            >
-                                <Icon className={`w-4 h-4 ${isActive ? diagram.color : 'text-zinc-400'}`} />
-                                <span className={`text-[9px] ${isActive ? 'text-zinc-900 dark:text-white' : 'text-zinc-400'}`}>
-                                    {diagram.label}
-                                </span>
-                            </button>
-                        );
-                    })}
-                </div>
-                
-                {/* Heat Map Type Selector - Show when heatmap is active */}
-                {activeDiagram === 'heatmap' && (
-                    <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700">
-                        <h5 className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase">
-                            Heat Map Type
-                        </h5>
-                        <div className="flex gap-1">
-                            {[
-                                { id: 'displacement', label: 'Displacement', gradient: 'from-blue-500 to-red-500' },
-                                { id: 'stress', label: 'Stress', gradient: 'from-green-500 to-red-500' },
-                                { id: 'utilization', label: 'Utilization', gradient: 'from-green-500 via-yellow-500 to-red-500' }
-                            ].map(type => (
-                                <button
-                                    key={type.id}
-                                    onClick={() => setHeatmapType(type.id as any)}
-                                    className={`
+                                    title={diagram.label}
+                                >
+                                    <Icon className={`w-4 h-4 ${isActive ? diagram.color : 'text-zinc-400'}`} />
+                                    <span className={`text-[9px] ${isActive ? 'text-zinc-900 dark:text-white' : 'text-zinc-400'}`}>
+                                        {diagram.label}
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {/* Heat Map Type Selector - Show when heatmap is active */}
+                    {activeDiagram === 'heatmap' && (
+                        <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700">
+                            <h5 className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase">
+                                Heat Map Type
+                            </h5>
+                            <div className="flex gap-1">
+                                {[
+                                    { id: 'displacement', label: 'Displacement', gradient: 'from-blue-500 to-red-500' },
+                                    { id: 'stress', label: 'Stress', gradient: 'from-green-500 to-red-500' },
+                                    { id: 'utilization', label: 'Utilization', gradient: 'from-green-500 via-yellow-500 to-red-500' }
+                                ].map(type => (
+                                    <button
+                                        key={type.id}
+                                        onClick={() => setHeatmapType(type.id as any)}
+                                        className={`
                                         flex-1 px-2 py-1.5 text-[10px] font-medium rounded transition-all
                                         ${heatmapType === type.id
-                                            ? 'bg-gradient-to-r ' + type.gradient + ' text-white shadow-md'
-                                            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-                                        }
+                                                ? 'bg-gradient-to-r ' + type.gradient + ' text-white shadow-md'
+                                                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                                            }
                                     `}
-                                >
-                                    {type.label}
-                                </button>
-                            ))}
+                                    >
+                                        {type.label}
+                                    </button>
+                                ))}
+                            </div>
+                            {/* Color Scale Legend */}
+                            <div className="mt-2 flex items-center gap-2">
+                                <span className="text-[9px] text-zinc-500">Low</span>
+                                <div className={`flex-1 h-2 rounded bg-gradient-to-r ${heatmapType === 'displacement' ? 'from-blue-500 to-red-500' :
+                                    heatmapType === 'stress' ? 'from-green-500 to-red-500' :
+                                        'from-green-500 via-yellow-500 to-red-500'
+                                    }`} />
+                                <span className="text-[9px] text-zinc-500">High</span>
+                            </div>
                         </div>
-                        {/* Color Scale Legend */}
-                        <div className="mt-2 flex items-center gap-2">
-                            <span className="text-[9px] text-zinc-500">Low</span>
-                            <div className={`flex-1 h-2 rounded bg-gradient-to-r ${
-                                heatmapType === 'displacement' ? 'from-blue-500 to-red-500' :
-                                heatmapType === 'stress' ? 'from-green-500 to-red-500' :
-                                'from-green-500 via-yellow-500 to-red-500'
-                            }`} />
-                            <span className="text-[9px] text-zinc-500">High</span>
-                        </div>
+                    )}
+                </div>
+
+                {/* Scale Slider */}
+                <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+                    <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                            Scale
+                        </h4>
+                        <span className="text-xs font-mono text-zinc-600 dark:text-zinc-400">
+                            {scale}x
+                        </span>
                     </div>
-                )}
-            </div>
+                    <input
+                        type="range"
+                        min="1"
+                        max="200"
+                        value={scale}
+                        onChange={(e) => handleScaleChange(Number(e.target.value))}
+                        className="w-full h-2 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                    />
+                    <div className="flex justify-between text-[10px] text-zinc-400 mt-1">
+                        <span>1x</span>
+                        <span>100x</span>
+                        <span>200x</span>
+                    </div>
+                </div>
 
-            {/* Scale Slider */}
-            <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
-                <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                        Scale
+                {/* Animation Controls */}
+                <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+                    <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
+                        Animation
                     </h4>
-                    <span className="text-xs font-mono text-zinc-600 dark:text-zinc-400">
-                        {scale}x
-                    </span>
-                </div>
-                <input
-                    type="range"
-                    min="1"
-                    max="200"
-                    value={scale}
-                    onChange={(e) => handleScaleChange(Number(e.target.value))}
-                    className="w-full h-2 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                />
-                <div className="flex justify-between text-[10px] text-zinc-400 mt-1">
-                    <span>1x</span>
-                    <span>100x</span>
-                    <span>200x</span>
-                </div>
-            </div>
-
-            {/* Animation Controls */}
-            <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
-                <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
-                    Animation
-                </h4>
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={toggleAnimation}
-                        className={`
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={toggleAnimation}
+                            className={`
                             flex items-center gap-2 px-3 py-2 rounded-lg transition-colors flex-1
                             ${isAnimating
-                                ? 'bg-red-100 dark:bg-red-900/30 text-red-600'
-                                : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600'
-                            }
+                                    ? 'bg-red-100 dark:bg-red-900/30 text-red-600'
+                                    : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600'
+                                }
                         `}
-                    >
-                        {isAnimating ? (
-                            <>
-                                <Pause className="w-4 h-4" />
-                                <span className="text-sm font-medium">Stop</span>
-                            </>
-                        ) : (
-                            <>
-                                <Play className="w-4 h-4" />
-                                <span className="text-sm font-medium">Animate</span>
-                            </>
-                        )}
-                    </button>
-                    <button
-                        onClick={resetView}
-                        className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
-                        title="Reset View"
-                    >
-                        <RotateCcw className="w-4 h-4" />
-                    </button>
-                </div>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
-                <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
-                    Max Values
-                </h4>
-                <div className="grid grid-cols-2 gap-2">
-                    <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                        <div className="text-[10px] text-blue-600 dark:text-blue-400">Max Displacement</div>
-                        <div className="text-sm font-bold text-blue-700 dark:text-blue-300">
-                            {getMaxDisplacement()}
-                        </div>
-                    </div>
-                    <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                        <div className="text-[10px] text-purple-600 dark:text-purple-400">Max Reaction</div>
-                        <div className="text-sm font-bold text-purple-700 dark:text-purple-300">
-                            {getMaxReaction()}
-                        </div>
+                        >
+                            {isAnimating ? (
+                                <>
+                                    <Pause className="w-4 h-4" />
+                                    <span className="text-sm font-medium">Stop</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Play className="w-4 h-4" />
+                                    <span className="text-sm font-medium">Animate</span>
+                                </>
+                            )}
+                        </button>
+                        <button
+                            onClick={resetView}
+                            className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                            title="Reset View"
+                        >
+                            <RotateCcw className="w-4 h-4" />
+                        </button>
                     </div>
                 </div>
-            </div>
 
-            {/* Advanced Tools - Quick Access */}
-            <div className="px-4 py-3 border-t border-zinc-200 dark:border-zinc-800">
-                <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
-                    Export Results
-                </h4>
-                <div className="flex flex-col gap-2">
-                    <button
-                        onClick={handleExportPDF}
-                        disabled={isExporting}
-                        className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 transition-all shadow-lg text-sm font-medium"
-                    >
-                        {isExporting ? <Loader className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-                        <span>Export PDF Report</span>
-                    </button>
-                    <button
-                        onClick={handleExportCSV}
-                        disabled={isExporting}
-                        className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-lg transition-all text-sm font-medium"
-                    >
-                        {isExporting ? <Loader className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />}
-                        <span>Export CSV Data</span>
-                    </button>
+                {/* Quick Stats */}
+                <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+                    <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
+                        Max Values
+                    </h4>
+                    <div className="grid grid-cols-2 gap-2">
+                        <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                            <div className="text-[10px] text-blue-600 dark:text-blue-400">Max Displacement</div>
+                            <div className="text-sm font-bold text-blue-700 dark:text-blue-300">
+                                {getMaxDisplacement()}
+                            </div>
+                        </div>
+                        <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                            <div className="text-[10px] text-purple-600 dark:text-purple-400">Max Reaction</div>
+                            <div className="text-sm font-bold text-purple-700 dark:text-purple-300">
+                                {getMaxReaction()}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Advanced Tools - Quick Access */}
+                <div className="px-4 py-3 border-t border-zinc-200 dark:border-zinc-800">
+                    <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
+                        Export Results
+                    </h4>
+                    <div className="flex flex-col gap-2">
+                        <button
+                            onClick={handleExportPDF}
+                            disabled={isExporting}
+                            className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 transition-all shadow-lg text-sm font-medium"
+                        >
+                            {isExporting ? <Loader className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+                            <span>Export PDF Report</span>
+                        </button>
+                        <button
+                            onClick={handleExportCSV}
+                            disabled={isExporting}
+                            className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-lg transition-all text-sm font-medium"
+                        >
+                            {isExporting ? <Loader className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />}
+                            <span>Export CSV Data</span>
+                        </button>
+                    </div>
+                </div>
+
+                {/* Advanced Tools - Quick Access */}
+                <div className="px-4 py-3">
+                    <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
+                        Next Steps
+                    </h4>
+                    <div className="flex flex-col gap-2">
+                        {/* Full Dashboard Button - Premium feature */}
+                        <button
+                            onClick={() => setShowDashboard(true)}
+                            className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all shadow-lg text-sm"
+                        >
+                            <LayoutDashboard className="w-4 h-4" />
+                            <span className="font-medium">Full Results Dashboard</span>
+                        </button>
+                        <button
+                            onClick={() => openModal('advancedAnalysis')}
+                            className="flex items-center gap-2 px-3 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-800/40 transition-colors text-sm"
+                        >
+                            <Zap className="w-4 h-4" />
+                            <span className="font-medium">Advanced Analysis</span>
+                        </button>
+                        <button
+                            onClick={() => openModal('designCodes')}
+                            className="flex items-center gap-2 px-3 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800/40 transition-colors text-sm"
+                        >
+                            <FileCheck className="w-4 h-4" />
+                            <span className="font-medium">Design Code Check</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            {/* Advanced Tools - Quick Access */}
-            <div className="px-4 py-3">
-                <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
-                    Next Steps
-                </h4>
-                <div className="flex flex-col gap-2">
-                    {/* Full Dashboard Button - Premium feature */}
-                    <button
-                        onClick={() => setShowDashboard(true)}
-                        className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all shadow-lg text-sm"
-                    >
-                        <LayoutDashboard className="w-4 h-4" />
-                        <span className="font-medium">Full Results Dashboard</span>
-                    </button>
-                    <button
-                        onClick={() => openModal('advancedAnalysis')}
-                        className="flex items-center gap-2 px-3 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-800/40 transition-colors text-sm"
-                    >
-                        <Zap className="w-4 h-4" />
-                        <span className="font-medium">Advanced Analysis</span>
-                    </button>
-                    <button
-                        onClick={() => openModal('designCodes')}
-                        className="flex items-center gap-2 px-3 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800/40 transition-colors text-sm"
-                    >
-                        <FileCheck className="w-4 h-4" />
-                        <span className="font-medium">Design Code Check</span>
-                    </button>
+            {/* Full Results Dashboard Modal */}
+            {showDashboard && analysisResults && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+                    <div className="w-[95vw] h-[90vh] max-w-[1800px] bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden">
+                        <AnalysisResultsDashboard
+                            results={convertToAnalysisResultsData(analysisResults)}
+                            onClose={() => setShowDashboard(false)}
+                            onExport={(format) => {
+                                if (format === 'pdf') {
+                                    handleExportPDF();
+                                } else if (format === 'excel' || format === 'json') {
+                                    handleExportCSV();
+                                }
+                                setShowDashboard(false);
+                            }}
+                        />
+                    </div>
                 </div>
-            </div>
-        </div>
-
-        {/* Full Results Dashboard Modal */}
-        {showDashboard && analysisResults && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-                <div className="w-[95vw] h-[90vh] max-w-[1800px] bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden">
-                    <AnalysisResultsDashboard
-                        results={convertToAnalysisResultsData(analysisResults)}
-                        onClose={() => setShowDashboard(false)}
-                        onExport={(format) => {
-                            if (format === 'pdf') {
-                                handleExportPDF();
-                            } else if (format === 'excel' || format === 'json') {
-                                handleExportCSV();
-                            }
-                            setShowDashboard(false);
-                        }}
-                    />
-                </div>
-            </div>
-        )}
+            )}
         </>
     );
 };
