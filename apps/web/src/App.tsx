@@ -28,6 +28,7 @@ import ReportViewerEnhanced from './pages/ReportViewerEnhanced';
 import { WorkspaceDemo } from './pages/WorkspaceDemo';
 // Layouts
 import { WorkspaceLayout } from './layouts/WorkspaceLayout';
+import { RequireAuth } from './components/layout/RequireAuth';
 
 // Modern Modeler Component
 import { ModernModeler } from './components/ModernModeler';
@@ -312,13 +313,28 @@ function App() {
                 <Route path="/landing-enhanced" element={<LandingPageEnhanced />} />
 
                 {/* Stream Dashboard - Main Entry Point */}
-                <Route path="/stream" element={<StreamDashboard />} />
+                {/* Stream Dashboard - Main Entry Point */}
+                <Route path="/stream" element={
+                    <RequireAuth>
+                        <StreamDashboard />
+                    </RequireAuth>
+                } />
 
                 {/* Legacy Dashboard */}
-                <Route path="/dashboard" element={<Dashboard />} />
+                {/* Legacy Dashboard */}
+                <Route path="/dashboard" element={
+                    <RequireAuth>
+                        <Dashboard />
+                    </RequireAuth>
+                } />
 
                 {/* Enhanced Dashboard - NEW Advanced Template */}
-                <Route path="/dashboard-enhanced" element={<DashboardEnhanced />} />
+                {/* Enhanced Dashboard - NEW Advanced Template */}
+                <Route path="/dashboard-enhanced" element={
+                    <RequireAuth>
+                        <DashboardEnhanced />
+                    </RequireAuth>
+                } />
 
                 {/* Capabilities Page */}
                 <Route path="/capabilities" element={<Capabilities />} />
@@ -328,10 +344,20 @@ function App() {
                 <Route path="/sign-up/*" element={<SignUpPage />} />
 
                 {/* Settings Page */}
-                <Route path="/settings" element={<SettingsPage />} />
+                {/* Settings Page */}
+                <Route path="/settings" element={
+                    <RequireAuth>
+                        <SettingsPage />
+                    </RequireAuth>
+                } />
 
                 {/* Enhanced Settings - NEW Advanced Template */}
-                <Route path="/settings-enhanced" element={<SettingsPageEnhanced />} />
+                {/* Enhanced Settings - NEW Advanced Template */}
+                <Route path="/settings-enhanced" element={
+                    <RequireAuth>
+                        <SettingsPageEnhanced />
+                    </RequireAuth>
+                } />
 
                 {/* Pricing Page */}
                 <Route path="/pricing" element={<PricingPage />} />
@@ -352,22 +378,42 @@ function App() {
                 <Route path="/help" element={<HelpPage />} />
 
                 {/* Reports */}
-                <Route path="/reports" element={<ReportsPage />} />
+                {/* Reports */}
+                <Route path="/reports" element={
+                    <RequireAuth>
+                        <ReportsPage />
+                    </RequireAuth>
+                } />
 
                 {/* Report Viewer - NEW Advanced Template */}
-                <Route path="/report/:reportId" element={<ReportViewerEnhanced />} />
+                {/* Report Viewer - NEW Advanced Template */}
+                <Route path="/report/:reportId" element={
+                    <RequireAuth>
+                        <ReportViewerEnhanced />
+                    </RequireAuth>
+                } />
 
                 {/* Workspace Demo - NEW Advanced UI Templates */}
                 <Route path="/workspace-demo" element={<WorkspaceDemo />} />
 
                 {/* Main App - Modern Modeler with integrated sidebar */}
-                <Route path="/app" element={<ModernModeler />} />
+                {/* Main App - Modern Modeler with integrated sidebar */}
+                <Route path="/app" element={
+                    <RequireAuth>
+                        <ModernModeler />
+                    </RequireAuth>
+                } />
 
                 {/* Demo Route - Modern Modeler */}
                 <Route path="/demo" element={<ModernModeler />} />
 
                 {/* Workspace Routes */}
-                <Route path="/workspace/:moduleType" element={<WorkspacePageWrapper />} />
+                {/* Workspace Routes */}
+                <Route path="/workspace/:moduleType" element={
+                    <RequireAuth>
+                        <WorkspacePageWrapper />
+                    </RequireAuth>
+                } />
 
                 {/* Legacy Modeler Route (backward compat) */}
                 <Route path="/modeler" element={<Modeler />} />
