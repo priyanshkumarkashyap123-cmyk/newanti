@@ -24,7 +24,7 @@ import queryString from 'query-string';
 import { UserModel, RefreshTokenModel, VerificationCodeModel } from '../models.js';
 import { emailService } from '../services/emailService.js';
 
-const router = Router();
+const router: Router = Router();
 
 // ============================================
 // CONFIGURATION
