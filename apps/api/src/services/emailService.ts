@@ -282,7 +282,7 @@ if (EMAIL_SERVICE === 'nodemailer') {
         });
 
         // Verify connection
-        transporter.verify((error, success) => {
+        transporter.verify((error: Error | null, success: boolean) => {
             if (error) {
                 console.error('❌ Email service failed to initialize:', error.message);
             } else {

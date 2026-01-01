@@ -64,6 +64,10 @@ import { ExportDialog } from './ExportDialog';
 import { ActionToast, type ToastType } from './ui/ActionToast';
 import type { Node, Member } from '../store/model';
 
+// Quick Commands and Context Menu (STAAD Pro style)
+import { useQuickCommands, getDefaultQuickCommands } from './QuickCommandsToolbar';
+import { useContextMenu, getNodeContextMenuItems, getMemberContextMenuItems, getEmptyContextMenuItems } from './ContextMenu';
+
 // Analysis service
 import { analysisService } from '../services/AnalysisService';
 
@@ -641,6 +645,24 @@ export const ModernModeler: FC = () => {
     const selectedIds = useModelStore((state) => state.selectedIds);
     const activeTool = useModelStore((state) => state.activeTool);
 
+    // Quick Commands Toolbar (Spacebar)
+    const quickCommandActions = {
+        onAddNode: () => useModelStore.getState().setTool('node'),
+        onAddBeam: () => useModelStore.getState().setTool('member'),
+        onAddLoad: () => openModal('loadDialog'),
+        onAssignSection: () => openModal('structureWizard'),
+        onAssignSupport: () => useModelStore.getState().setTool('support'),
+        onRunAnalysis: handleRunAnalysis,
+        onFitView: () => document.dispatchEvent(new CustomEvent('fit-view')),
+        onToggleGrid: () => document.dispatchEvent(new CustomEvent('toggle-grid')),
+        onSelect: () => useModelStore.getState().setTool('select'),
+        onMove: () => useModelStore.getState().setTool('select'),
+    };
+    const { QuickCommandsToolbar } = useQuickCommands(getDefaultQuickCommands(quickCommandActions));
+
+    // Context Menu (Right-click)
+    const contextMenu = useContextMenu();
+
     // Track previous selection to avoid reopening dialog on same member
     const previousSelectionRef = useRef<string | undefined>();
 
@@ -771,7 +793,41 @@ export const ModernModeler: FC = () => {
                     </div>
 
                     {/* 3D Canvas Area */}
-                    <div className="flex-1 bg-zinc-900 relative">
+                    <div
+                        className="flex-1 bg-zinc-900 relative"
+                        onContextMenu={(e) => {
+                            // Determine what was clicked and show appropriate context menu
+                            const selectedId = selectedIds.size === 1 ? Array.from(selectedIds)[0] : undefined;
+                            if (selectedId && nodes.has(selectedId)) {
+                                contextMenu.show(e, getNodeContextMenuItems(selectedId, {
+                                    onEdit: () => { },
+                                    onAddBeamFrom: () => useModelStore.getState().setTool('member'),
+                                    onAssignSupport: () => useModelStore.getState().setTool('support'),
+                                    onAssignLoad: () => openModal('loadDialog'),
+                                    onDelete: () => useModelStore.getState().removeNode(selectedId)
+                                }));
+                            } else if (selectedId && members.has(selectedId)) {
+                                contextMenu.show(e, getMemberContextMenuItems(selectedId, {
+                                    onEdit: () => { },
+                                    onAssignSection: () => openModal('structureWizard'),
+                                    onAssignMaterial: () => { },
+                                    onInsertNode: () => { },
+                                    onSplit: () => { },
+                                    onAssignLoad: () => openModal('loadDialog'),
+                                    onReleases: () => { },
+                                    onDelete: () => useModelStore.getState().removeMember(selectedId)
+                                }));
+                            } else {
+                                contextMenu.show(e, getEmptyContextMenuItems({
+                                    onAddNodeHere: () => useModelStore.getState().setTool('node'),
+                                    onPaste: () => { },
+                                    onFitView: () => document.dispatchEvent(new CustomEvent('fit-view')),
+                                    onToggleGrid: () => document.dispatchEvent(new CustomEvent('toggle-grid')),
+                                    onViewSettings: () => { }
+                                }));
+                            }
+                        }}
+                    >
                         <ViewportManager />
 
                         {/* Status Bar Overlay */}
