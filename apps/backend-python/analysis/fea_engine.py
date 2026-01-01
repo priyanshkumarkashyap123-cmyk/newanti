@@ -362,8 +362,14 @@ class FEAEngine:
                 
                 # Create unique section name
                 sec_name = f"Sec_{i+1}"
-                # Define section: A, Iy, Iz, J
-                self.model.add_section(sec_name, member.A, member.Iy, member.Iz, member.J)
+                # Define section as a dict with section properties
+                section_props = {
+                    'A': member.A,      # Cross-sectional area
+                    'Iy': member.Iy,    # Moment of inertia about y-axis
+                    'Iz': member.Iz,    # Moment of inertia about z-axis
+                    'J': member.J       # Polar moment of inertia (torsion)
+                }
+                self.model.add_section(sec_name, section_props)
                 
                 # Add member with material and section names
                 self.model.add_member(
