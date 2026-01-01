@@ -435,13 +435,13 @@ router.post('/linkedin', async (req: Request, res: Response) => {
 /**
  * POST /api/auth/signup - Register new user
  */
-router.post('/signup', async (req: Request, res: Response): Promise<void> => {
+router.post('/signup', async (req: Request, res: Response) => {
     try {
         const { email, password, firstName, lastName, company, phone }: SignUpBody = req.body;
 
         // Validate required fields
         if (!email || !password || !firstName || !lastName) {
-            return res.status(400).json({
+            res.status(400).json({
                 success: false,
                 message: 'Missing required fields',
                 errors: {
@@ -451,35 +451,39 @@ router.post('/signup', async (req: Request, res: Response): Promise<void> => {
                     lastName: !lastName ? 'Last name is required' : undefined
                 }
             });
+            return;
         }
 
         // Validate email format
         if (!isValidEmail(email)) {
-            return res.status(400).json({
+            res.status(400).json({
                 success: false,
                 message: 'Invalid email format',
                 errors: { email: 'Please enter a valid email address' }
             });
+            return;
         }
 
         // Validate password strength
         const passwordValidation = isValidPassword(password);
         if (!passwordValidation.valid) {
-            return res.status(400).json({
+            res.status(400).json({
                 success: false,
                 message: passwordValidation.message,
                 errors: { password: passwordValidation.message }
             });
+            return;
         }
 
         // Check if user already exists
         const existingUser = await UserModel.findOne({ email: email.toLowerCase() });
         if (existingUser) {
-            return res.status(409).json({
+            res.status(409).json({
                 success: false,
                 message: 'An account with this email already exists',
                 errors: { email: 'Email already registered' }
             });
+            return;
         }
 
         // Hash password
