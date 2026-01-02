@@ -58,7 +58,8 @@ export const getAuth = (req: Request) => {
     const auth = clerkGetAuth(req);
     return {
         userId: auth.userId ?? null,
-        sessionId: auth.sessionId ?? null
+        sessionId: auth.sessionId ?? null,
+        email: null as string | null // Email must be fetched from Clerk user API separately
     };
 };
 

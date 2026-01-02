@@ -90,7 +90,7 @@ router.get('/limits', requireAuth(), async (req: Request, res: Response) => {
             userEmail = user?.email || authEmail || '';
             dbTier = user?.subscriptionTier || 'free';
         }
-        
+
         const tier = getEffectiveTier(userEmail, dbTier);
         const limits = TIER_LIMITS[tier];
 
@@ -127,7 +127,7 @@ router.get('/subscription', requireAuth(), async (req: Request, res: Response) =
             const user = await User.findOne({ clerkId: userId });
             userEmail = user?.email || '';
             dbTier = user?.tier || 'free';
-            
+
             // Get subscription details if exists
             if (user?.subscription) {
                 const subscription = await Subscription.findById(user.subscription);
@@ -145,11 +145,11 @@ router.get('/subscription', requireAuth(), async (req: Request, res: Response) =
             userEmail = user?.email || authEmail || '';
             dbTier = user?.subscriptionTier || 'free';
         }
-        
+
         // Use getEffectiveTier to check for master user elevation
         const tier = getEffectiveTier(userEmail, dbTier);
         console.log(`[Subscription] User: ${userEmail}, DB Tier: ${dbTier}, Effective Tier: ${tier}, Master: ${isMasterUser(userEmail)}`);
-        
+
         const limits = TIER_LIMITS[tier];
 
         // Feature access based on tier
@@ -311,6 +311,69 @@ router.get('/activity', requireAuth(), async (req: Request, res: Response) => {
         }
     } catch (error) {
         console.error('[UserRoutes] /activity error:', error);
+        return res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+// ============================================
+// PUT /user/admin/upgrade - Admin endpoint to upgrade user tier
+// ============================================
+
+router.put('/admin/upgrade', requireAuth(), async (req: Request, res: Response) => {
+    try {
+        const { userId: adminUserId } = getAuth(req);
+        if (!adminUserId) {
+            return res.status(401).json({ success: false, error: 'Unauthorized' });
+        }
+
+        // Fetch admin email from database to check master user status
+        const { isMasterUser } = await import('../models.js');
+
+        // Check Clerk user first, then in-house user
+        const clerkAdminUser = await User.findOne({ clerkId: adminUserId });
+        const inHouseAdminUser = await UserModel.findById(adminUserId);
+        const adminEmail = clerkAdminUser?.email || inHouseAdminUser?.email || null;
+
+        if (!isMasterUser(adminEmail)) {
+            return res.status(403).json({ success: false, error: 'Admin access required' });
+        }
+
+        const { email, tier } = req.body;
+        if (!email || !tier) {
+            return res.status(400).json({ success: false, error: 'Email and tier are required' });
+        }
+
+        if (!['free', 'pro', 'enterprise'].includes(tier)) {
+            return res.status(400).json({ success: false, error: 'Invalid tier. Must be free, pro, or enterprise' });
+        }
+
+        // Try Clerk user first
+        let updated = false;
+        const clerkUser = await User.findOne({ email: email.toLowerCase() });
+        if (clerkUser) {
+            await User.updateOne({ _id: clerkUser._id }, { $set: { tier } });
+            updated = true;
+            console.log(`[Admin] Updated Clerk user ${email} to tier: ${tier}`);
+        }
+
+        // Try in-house user
+        const inHouseUser = await UserModel.findOne({ email: email.toLowerCase() });
+        if (inHouseUser) {
+            await UserModel.updateOne({ _id: inHouseUser._id }, { $set: { subscriptionTier: tier } });
+            updated = true;
+            console.log(`[Admin] Updated in-house user ${email} to tier: ${tier}`);
+        }
+
+        if (!updated) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+
+        return res.json({
+            success: true,
+            message: `User ${email} upgraded to ${tier}`
+        });
+    } catch (error) {
+        console.error('[UserRoutes] /admin/upgrade error:', error);
         return res.status(500).json({ success: false, error: 'Server error' });
     }
 });
