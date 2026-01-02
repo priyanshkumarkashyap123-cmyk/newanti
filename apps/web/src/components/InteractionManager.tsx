@@ -339,20 +339,20 @@ interface RubberBandProps {
 }
 
 const RubberBand: FC<RubberBandProps> = ({ start, endRef }) => {
-    const lineRef = useRef<any>(null!);
+    const [endPoint, setEndPoint] = useState(start.clone());
 
     useFrame(() => {
-        if (lineRef.current) {
-            lineRef.current.setPoints([start, endRef.current]);
+        // Update end point state each frame to trigger re-render with new line
+        if (!endRef.current.equals(endPoint)) {
+            setEndPoint(endRef.current.clone());
         }
     });
 
     return (
         <Line
-            ref={lineRef}
             color="#ffcc00"
             lineWidth={2}
-            points={[start, start]}
+            points={[start, endPoint]}
             dashed
             dashScale={2}
         />
