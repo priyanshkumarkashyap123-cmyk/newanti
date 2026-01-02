@@ -279,7 +279,10 @@ class FEAEngine:
         Returns:
             Tuple of (E_axial, E_flexural) - may differ due to τ_b
         """
-        E = member.E
+        # Use defaults if properties are None
+        E = member.E if member.E is not None else 200e6
+        A = member.A if member.A is not None else 0.01
+        Fy = member.Fy if member.Fy is not None else 345e3
         
         if not self.options.direct_analysis:
             return (E, E)
@@ -289,7 +292,7 @@ class FEAEngine:
         
         # Calculate τ_b for flexural stiffness if enabled
         if self.options.tau_b_enabled and axial_force != 0:
-            Py = member.Fy * member.A
+            Py = Fy * A
             tau_b = self._calculate_tau_b(axial_force, Py)
             E_flexural = E_reduced * tau_b
         else:
@@ -353,21 +356,28 @@ class FEAEngine:
             
             # PyNite v2.0+ uses material/section names instead of direct properties
             if PYNITE_V2:
+                # Use defaults if properties are None
+                G = member.G if member.G is not None else 77e6
+                A = member.A if member.A is not None else 0.01
+                Iy = member.Iy if member.Iy is not None else 1e-4
+                Iz = member.Iz if member.Iz is not None else 1e-4
+                J = member.J if member.J is not None else 1e-5
+                
                 # Create unique material name based on E and G
                 mat_name = f"Mat_{i+1}"
                 # Define material: E, G, nu (Poisson's ratio), rho (density)
                 nu = 0.3  # Typical for steel
                 rho = 7850 / 1e9  # Steel density in kg/mm³ (or appropriate units)
-                self.model.add_material(mat_name, E_axial, member.G, nu, rho)
+                self.model.add_material(mat_name, E_axial, G, nu, rho)
                 
                 # Create unique section name
                 sec_name = f"Sec_{i+1}"
                 # Define section as a dict with section properties
                 section_props = {
-                    'A': member.A,      # Cross-sectional area
-                    'Iy': member.Iy,    # Moment of inertia about y-axis
-                    'Iz': member.Iz,    # Moment of inertia about z-axis
-                    'J': member.J       # Polar moment of inertia (torsion)
+                    'A': A,      # Cross-sectional area
+                    'Iy': Iy,    # Moment of inertia about y-axis
+                    'Iz': Iz,    # Moment of inertia about z-axis
+                    'J': J       # Polar moment of inertia (torsion)
                 }
                 self.model.add_section(sec_name, section_props)
                 
@@ -381,16 +391,23 @@ class FEAEngine:
                 )
             else:
                 # PyNite v0.x API - direct property specification
+                # Use defaults if properties are None
+                G = member.G if member.G is not None else 77e6
+                Iy = member.Iy if member.Iy is not None else 1e-4
+                Iz = member.Iz if member.Iz is not None else 1e-4
+                J = member.J if member.J is not None else 1e-5
+                A = member.A if member.A is not None else 0.01
+                
                 self.model.add_member(
                     member_name,
                     start_name,
                     end_name,
                     E=E_axial,
-                    G=member.G,
-                    Iy=member.Iy,
-                    Iz=member.Iz,
-                    J=member.J,
-                    A=member.A
+                    G=G,
+                    Iy=Iy,
+                    Iz=Iz,
+                    J=J,
+                    A=A
                 )
         
         # ============================================
