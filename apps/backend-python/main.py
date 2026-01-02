@@ -297,8 +297,12 @@ async def analyze_3d_frame(request: FrameAnalysisRequest):
     - Member forces at 100 points (shear, moment, axial, torsion)
     - Deflection arrays
     """
+    import traceback
+    
     try:
         from analysis.fea_engine import analyze_frame
+        
+        print(f"[FEA] Received analysis request: {len(request.nodes)} nodes, {len(request.members)} members")
         
         # Convert to dict format
         model_dict = {
@@ -352,21 +356,32 @@ async def analyze_3d_frame(request: FrameAnalysisRequest):
             ]
         }
         
+        print(f"[FEA] Running analysis...")
+        
         # Run analysis
         result = analyze_frame(model_dict)
         
         if not result['success']:
-            raise HTTPException(status_code=400, detail=result.get('error', 'Analysis failed'))
+            error_msg = result.get('error', 'Analysis failed')
+            print(f"[FEA] Analysis returned error: {error_msg}")
+            raise HTTPException(status_code=400, detail=error_msg)
         
+        print(f"[FEA] Analysis successful! Max moment: {result.get('max_moment', 0):.2f}")
         return result
         
     except ImportError as e:
+        print(f"[FEA] ImportError: {e}")
+        traceback.print_exc()
         raise HTTPException(
             status_code=500,
-            detail="PyNiteFEA not installed. Run: pip install PyNiteFEA"
+            detail=f"PyNiteFEA import error: {str(e)}"
         )
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"[FEA] Exception: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Analysis error: {str(e)}")
 
 
 # ============================================
