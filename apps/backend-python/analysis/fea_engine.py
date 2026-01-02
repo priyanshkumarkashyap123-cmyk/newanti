@@ -354,61 +354,31 @@ class FEAEngine:
                     'reduction_factor': self.options.stiffness_reduction_factor
                 }
             
-            # PyNite v2.0+ uses material/section names instead of direct properties
-            if PYNITE_V2:
-                # Use defaults if properties are None
-                G = member.G if member.G is not None else 77e6
-                A = member.A if member.A is not None else 0.01
-                Iy = member.Iy if member.Iy is not None else 1e-4
-                Iz = member.Iz if member.Iz is not None else 1e-4
-                J = member.J if member.J is not None else 1e-5
-                
-                # Create unique material name based on E and G
-                mat_name = f"Mat_{i+1}"
-                # Define material: E, G, nu (Poisson's ratio), rho (density)
-                nu = 0.3  # Typical for steel
-                rho = 7850 / 1e9  # Steel density in kg/mm³ (or appropriate units)
-                self.model.add_material(mat_name, E_axial, G, nu, rho)
-                
-                # Create unique section name
-                sec_name = f"Sec_{i+1}"
-                # Define section as a dict with section properties
-                section_props = {
-                    'A': A,      # Cross-sectional area
-                    'Iy': Iy,    # Moment of inertia about y-axis
-                    'Iz': Iz,    # Moment of inertia about z-axis
-                    'J': J       # Polar moment of inertia (torsion)
-                }
-                self.model.add_section(sec_name, section_props)
-                
-                # Add member with material and section names
-                self.model.add_member(
-                    member_name,
-                    start_name,
-                    end_name,
-                    mat_name,
-                    sec_name
-                )
-            else:
-                # PyNite v0.x API - direct property specification
-                # Use defaults if properties are None
-                G = member.G if member.G is not None else 77e6
-                Iy = member.Iy if member.Iy is not None else 1e-4
-                Iz = member.Iz if member.Iz is not None else 1e-4
-                J = member.J if member.J is not None else 1e-5
-                A = member.A if member.A is not None else 0.01
-                
-                self.model.add_member(
-                    member_name,
-                    start_name,
-                    end_name,
-                    E=E_axial,
-                    G=G,
-                    Iy=Iy,
-                    Iz=Iz,
-                    J=J,
-                    A=A
-                )
+            # Use defaults if properties are None
+            G = member.G if member.G is not None else 77e6
+            A = member.A if member.A is not None else 0.01
+            Iy = member.Iy if member.Iy is not None else 1e-4
+            Iz = member.Iz if member.Iz is not None else 1e-4
+            J = member.J if member.J is not None else 1e-5
+            
+            # Define material for this member
+            mat_name = f"Mat_{i+1}"
+            nu = 0.3  # Poisson's ratio for steel
+            rho = 7850 / 1e9  # kg/mm³
+            self.model.add_material(mat_name, E_axial, G, nu, rho)
+            
+            # Add member with material name and section properties as keyword args
+            # PyNite API: add_member(name, i_node, j_node, material_name, Iy, Iz, J, A, ...)
+            self.model.add_member(
+                member_name,
+                start_name,
+                end_name,
+                mat_name,
+                Iy=Iy,
+                Iz=Iz,
+                J=J,
+                A=A
+            )
         
         # ============================================
         # 3. ADD LOAD CASE
@@ -529,24 +499,24 @@ class FEAEngine:
             
             # Displacements
             displacement = {
-                'dx': node.DX.get('Combo 1', 0) * 1000,  # Convert to mm
-                'dy': node.DY.get('Combo 1', 0) * 1000,
-                'dz': node.DZ.get('Combo 1', 0) * 1000,
-                'rx': node.RX.get('Combo 1', 0),
-                'ry': node.RY.get('Combo 1', 0),
-                'rz': node.RZ.get('Combo 1', 0),
+                'dx': node.DX.get('LC1', 0) * 1000,  # Convert to mm
+                'dy': node.DY.get('LC1', 0) * 1000,
+                'dz': node.DZ.get('LC1', 0) * 1000,
+                'rx': node.RX.get('LC1', 0),
+                'ry': node.RY.get('LC1', 0),
+                'rz': node.RZ.get('LC1', 0),
             }
             
             # Reactions (if supported)
             reaction = None
             if node.support_DX or node.support_DY or node.support_DZ:
                 reaction = {
-                    'fx': node.RxnFX.get('Combo 1', 0),
-                    'fy': node.RxnFY.get('Combo 1', 0),
-                    'fz': node.RxnFZ.get('Combo 1', 0),
-                    'mx': node.RxnMX.get('Combo 1', 0),
-                    'my': node.RxnMY.get('Combo 1', 0),
-                    'mz': node.RxnMZ.get('Combo 1', 0),
+                    'fx': node.RxnFX.get('LC1', 0),
+                    'fy': node.RxnFY.get('LC1', 0),
+                    'fz': node.RxnFZ.get('LC1', 0),
+                    'mx': node.RxnMX.get('LC1', 0),
+                    'my': node.RxnMY.get('LC1', 0),
+                    'mz': node.RxnMZ.get('LC1', 0),
                 }
             
             results.append(NodeResults(
@@ -580,14 +550,14 @@ class FEAEngine:
             
             for x in x_values:
                 try:
-                    shear_y.append(round(member.shear('Fy', x, 'Combo 1'), 4))
-                    shear_z.append(round(member.shear('Fz', x, 'Combo 1'), 4))
-                    moment_y.append(round(member.moment('My', x, 'Combo 1'), 4))
-                    moment_z.append(round(member.moment('Mz', x, 'Combo 1'), 4))
-                    axial.append(round(member.axial(x, 'Combo 1'), 4))
-                    torsion.append(round(member.torsion(x, 'Combo 1'), 4))
-                    deflection_y.append(round(member.deflection('dy', x, 'Combo 1') * 1000, 4))  # mm
-                    deflection_z.append(round(member.deflection('dz', x, 'Combo 1') * 1000, 4))  # mm
+                    shear_y.append(round(member.shear('Fy', x, 'LC1'), 4))
+                    shear_z.append(round(member.shear('Fz', x, 'LC1'), 4))
+                    moment_y.append(round(member.moment('My', x, 'LC1'), 4))
+                    moment_z.append(round(member.moment('Mz', x, 'LC1'), 4))
+                    axial.append(round(member.axial(x, 'LC1'), 4))
+                    torsion.append(round(member.torsion(x, 'LC1'), 4))
+                    deflection_y.append(round(member.deflection('dy', x, 'LC1') * 1000, 4))  # mm
+                    deflection_z.append(round(member.deflection('dz', x, 'LC1') * 1000, 4))  # mm
                 except Exception:
                     # If extraction fails, use zeros
                     shear_y.append(0)
