@@ -617,8 +617,8 @@ const SectionPickerPanel: FC = () => {
 
     const codes = [
         { id: 'IS808', label: 'IS 808 (Indian)', isPro: false },
-        { id: 'AISC', label: 'AISC (American)', isPro: true },
-        { id: 'EN', label: 'EN 10034 (European)', isPro: true },
+        { id: 'AISC', label: 'AISC (American)', isPro: false },
+        { id: 'EN', label: 'EN 10034 (European)', isPro: false },
     ];
 
     const sections: Record<string, string[]> = {

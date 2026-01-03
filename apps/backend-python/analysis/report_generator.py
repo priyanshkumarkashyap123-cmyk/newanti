@@ -354,10 +354,10 @@ class ReportGenerator:
         
         summary_text = f"""
         <b>Analysis Summary:</b><br/>
-        • Maximum Displacement: {max_displacement:.2f} mm<br/>
-        • Maximum Bending Moment: {max_moment:.2f} kN·m<br/>
-        • Maximum Shear Force: {max_shear:.2f} kN<br/>
-        • Maximum Axial Force: {max_axial:.2f} kN<br/>
+        • Max. Displacement (&delta;<sub>max</sub>): {max_displacement:.2f} mm<br/>
+        • Max. Bending Moment (M<sub>z,max</sub>): {max_moment:.2f} kN·m<br/>
+        • Max. Shear Force (V<sub>max</sub>): {max_shear:.2f} kN<br/>
+        • Max. Axial Force (P<sub>max</sub>): {max_axial:.2f} kN<br/>
         • Analysis Status: {'✓ SUCCESSFUL' if results.get('success') else '✗ FAILED'}<br/>
         """
         
@@ -372,7 +372,7 @@ class ReportGenerator:
                 self.styles['CustomHeading2']
             ))
             
-            disp_data = [['Node', 'Dx (mm)', 'Dy (mm)', 'Dz (mm)', 'Total (mm)']]
+            disp_data = [['Node', '&delta;x (mm)', '&delta;y (mm)', '&delta;z (mm)', '&delta;total (mm)']]
             for node_id, disp in list(displacements.items())[:15]:
                 dx = disp.get('dx', 0) * 1000  # Convert to mm
                 dy = disp.get('dy', 0) * 1000
@@ -400,7 +400,7 @@ class ReportGenerator:
                 self.styles['CustomHeading2']
             ))
             
-            force_data = [['Member', 'Max Moment (kN·m)', 'Max Shear (kN)', 'Axial (kN)']]
+            force_data = [['Member', 'Moment Mz (kN·m)', 'Shear V (kN)', 'Axial P (kN)']]
             for member_id, forces in list(member_forces.items())[:15]:
                 max_m = max(abs(forces.get('moment', [])), default=0) if isinstance(forces.get('moment'), list) else 0
                 max_v = max(abs(forces.get('shear', [])), default=0) if isinstance(forces.get('shear'), list) else 0
@@ -455,7 +455,7 @@ class ReportGenerator:
             self.story.append(check_table)
     
     def _add_diagrams(self, diagrams: Dict[str, Any]):
-        """Add diagrams section"""
+        """Add diagrams section with generated images"""
         self.story.append(PageBreak())
         self.story.append(Paragraph(
             "4. DIAGRAMS",
@@ -463,22 +463,64 @@ class ReportGenerator:
         ))
         self.story.append(Spacer(1, 12))
         
-        # Placeholder for diagrams
-        # In production, this would include:
-        # - 3D model visualization
-        # - BMD/SFD diagrams
-        # - Deflected shape
-        # - Stress contours
-        
-        diagram_text = """
-        <b>Diagrams included:</b><br/>
-        • Structural Model (3D View)<br/>
-        • Bending Moment Diagram<br/>
-        • Shear Force Diagram<br/>
-        • Deflected Shape<br/>
-        """
-        
-        self.story.append(Paragraph(diagram_text, self.styles['CustomBody']))
+        # We will generate simplified diagrams using matplotlib
+        # In a real app, you might pass base64 images from frontend
+        # but here we generate them from analysis data for better quality
+        try:
+            import matplotlib.pyplot as plt
+            import numpy as np
+            from io import BytesIO
+            
+            # Simple 3D Model View (XY Projection)
+            nodes = diagrams.get('nodes', [])
+            members = diagrams.get('members', [])
+            
+            if nodes:
+                plt.figure(figsize=(6, 4), dpi=300) # High DPI for clarity
+                
+                # Plot members
+                for member in members:
+                    start = next((n for n in nodes if n['id'] == member['startNodeId']), None)
+                    end = next((n for n in nodes if n['id'] == member['endNodeId']), None)
+                    if start and end:
+                        plt.plot([start['x'], end['x']], [start['y'], end['y']], 'k-', linewidth=1.5)
+                
+                # Plot nodes
+                x_coords = [n['x'] for n in nodes]
+                y_coords = [n['y'] for n in nodes]
+                plt.plot(x_coords, y_coords, 'bo', markersize=4)
+                
+                # Add node labels with readable font
+                for n in nodes:
+                    plt.annotate(
+                        n['id'], 
+                        (n['x'], n['y']),
+                        xytext=(5, 5), textcoords='offset points',
+                        fontsize=8,
+                        color='blue'
+                    )
+                
+                plt.title("Structural Model (XY View)", fontsize=10, fontweight='bold')
+                plt.xlabel("X (m)", fontsize=8)
+                plt.ylabel("Y (m)", fontsize=8)
+                plt.grid(True, linestyle='--', alpha=0.5)
+                plt.axis('equal')
+                
+                # Save to buffer
+                img_buffer = BytesIO()
+                plt.savefig(img_buffer, format='png', bbox_inches='tight')
+                img_buffer.seek(0)
+                plt.close()
+                
+                # Add to report
+                img = Image(img_buffer, width=5*inch, height=3.5*inch)
+                self.story.append(img)
+                self.story.append(Paragraph("Figure 4.1: Structural Geometry", self.styles['CustomBody']))
+                self.story.append(Spacer(1, 20))
+
+        except Exception as e:
+            self.story.append(Paragraph(f"Could not generate diagrams: {str(e)}", self.styles['CustomBody']))
+
     
     def _get_table_style(self) -> TableStyle:
         """Get standard table style"""

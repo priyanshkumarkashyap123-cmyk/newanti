@@ -124,14 +124,26 @@ class PromptAnalyzer:
             r'(\d+(?:\.\d+)?)\s*(?:m|meter|meters)?\s*wide',
             r'width\s*(?:of|:)?\s*(\d+(?:\.\d+)?)\s*(?:m|meter|meters)?',
         ],
+        'length': [
+            r'(\d+(?:\.\d+)?)\s*(?:m|meter|meters)?\s*(?:long|length)',
+            r'length\s*(?:of|:)?\s*(\d+(?:\.\d+)?)\s*(?:m|meter|meters)?',
+        ],
         'stories': [
             r'(\d+)\s*(?:stor(?:ey|y|ies)|floor)',
             r'g\s*\+\s*(\d+)',  # G+3 format
             r'(\d+)\s*level',
+            r'(\d+)\s*story',
         ],
         'bays': [
             r'(\d+)\s*(?:bay|panel|segment)',
             r'(\d+)\s*division',
+        ],
+        'rooms': [
+           r'(\d+)\s*room',
+           r'(\d+)\s*bhk', 
+        ],
+        'grid_dims': [
+            r'(\d+(?:\.\d+)?)\s*[xX]\s*(\d+(?:\.\d+)?)\s*(?:m|meter)?', # 4x4 m
         ],
         'angle': [
             r'(\d+(?:\.\d+)?)\s*(?:degree|deg|°)\s*(?:roof|pitch|slope)',
@@ -155,23 +167,43 @@ class PromptAnalyzer:
         span = cls._extract_dimension(prompt_lower, 'span')
         height = cls._extract_dimension(prompt_lower, 'height')
         width = cls._extract_dimension(prompt_lower, 'width')
+        length = cls._extract_dimension(prompt_lower, 'length')
         stories = cls._extract_integer(prompt_lower, 'stories')
         bays = cls._extract_integer(prompt_lower, 'bays')
         angle = cls._extract_dimension(prompt_lower, 'angle')
         load = cls._extract_dimension(prompt_lower, 'load')
         
+        # New extractions
+        room_count = cls._extract_integer(prompt_lower, 'rooms')
+        
+        # Extract Grid Dims (4x4)
+        grid_w, grid_l = None, None
+        grid_match = None
+        for pattern in cls.DIMENSION_PATTERNS['grid_dims']:
+            grid_match = re.search(pattern, prompt_lower)
+            if grid_match:
+                break
+        
+        if grid_match:
+            try:
+                grid_w = float(grid_match.group(1))
+                grid_l = float(grid_match.group(2))
+            except:
+                pass
+
         # Apply defaults based on structure type
         params = cls._apply_defaults(ExtractedParams(
             structure_type=structure_type,
             span=span,
             height=height,
             width=width,
+            length=length,
             stories=stories,
             bays=bays,
             roof_angle=angle,
             load=load,
             raw_prompt=prompt
-        ))
+        ), room_count, grid_w, grid_l)
         
         return params
     
@@ -192,6 +224,8 @@ class PromptAnalyzer:
             return StructureType.PRATT_TRUSS
         elif 'frame' in prompt:
             return StructureType.BUILDING_FRAME
+        elif 'room' in prompt: # If user mentions rooms, likely a building
+             return StructureType.BUILDING_FRAME
         
         return StructureType.UNKNOWN
     
@@ -217,10 +251,31 @@ class PromptAnalyzer:
         return None
     
     @classmethod
-    def _apply_defaults(cls, params: ExtractedParams) -> ExtractedParams:
+    def _apply_defaults(cls, params: ExtractedParams, room_count: Optional[int] = None, grid_w: Optional[float] = None, grid_l: Optional[float] = None) -> ExtractedParams:
         """Apply sensible defaults based on structure type"""
         st = params.structure_type
         
+        # Special logic for Building Frame with Rooms
+        if st == StructureType.BUILDING_FRAME:
+            # If rooms are specified, try to infer bays and dimensions
+            if room_count:
+                # Simple logic: Assume square-ish grid
+                import math
+                side_rooms = math.ceil(math.sqrt(room_count))
+                params.bays_x = side_rooms
+                params.bays_z = math.ceil(room_count / side_rooms)
+                
+                # If grid dimensions provided (4x4)
+                if grid_w and grid_l:
+                    params.width = params.bays_x * grid_w
+                    params.length = params.bays_z * grid_l
+                
+                # If total width/length not set but rooms are, assume standard room size (4m)
+                if not params.width:
+                    params.width = params.bays_x * (grid_w or 4.0)
+                if not params.length:
+                    params.length = params.bays_z * (grid_l or 4.0)
+
         # Default spans
         if params.span is None:
             if st in [StructureType.SIMPLE_BEAM, StructureType.CANTILEVER]:
@@ -258,8 +313,9 @@ class PromptAnalyzer:
             if st in [StructureType.PRATT_TRUSS, StructureType.HOWE_TRUSS, StructureType.WARREN_TRUSS]:
                 params.bays = 6
             elif st == StructureType.BUILDING_FRAME:
-                params.bays_x = 2
-                params.bays_z = 2
+                # Already handled above if rooms exist, otherwise default
+                if not params.bays_x: params.bays_x = 2
+                if not params.bays_z: params.bays_z = 2
         
         # Default roof angle
         if params.roof_angle is None:
