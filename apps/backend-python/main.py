@@ -4,9 +4,12 @@ main.py - FastAPI Entry Point
 REST API for structural model generation.
 """
 
-# Load environment variables from .env file
-from dotenv import load_dotenv
-load_dotenv()
+# Load environment variables from .env file (if it exists - for local dev only)
+try:
+    from dotenv import load_dotenv
+    load_dotenv(override=False)  # Don't override Azure app settings
+except Exception as e:
+    print(f"[WARNING] dotenv not available or failed: {e}")
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -33,6 +36,15 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+# Debug: Print environment info at startup
+print(f"\n{'='*60}")
+print(f"[STARTUP] BeamLab Backend Initializing...")
+print(f"[STARTUP] GEMINI_API_KEY present: {bool(os.getenv('GEMINI_API_KEY'))}")
+print(f"[STARTUP] USE_MOCK_AI: {os.getenv('USE_MOCK_AI', 'not set')}")
+print(f"[STARTUP] FRONTEND_URL: {os.getenv('FRONTEND_URL', 'not set')}")
+print(f"[STARTUP] ALLOWED_ORIGINS: {os.getenv('ALLOWED_ORIGINS', 'not set')[:50]}...")
+print(f"{'='*60}\n")
 
 # ============================================
 # CORS CONFIGURATION
