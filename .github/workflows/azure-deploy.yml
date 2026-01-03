@@ -90,20 +90,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Create .env file with secrets
-        working-directory: apps/backend-python
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: |
-          cat > .env << EOF
-          GEMINI_API_KEY=$GEMINI_API_KEY
-          USE_MOCK_AI=false
-          FRONTEND_URL=https://beamlabultimate.tech
-          ALLOWED_ORIGINS=https://beamlabultimate.tech,https://www.beamlabultimate.tech,http://localhost:5173,http://localhost:3001,http://127.0.0.1:5173
-          PORT=8081
-          HOST=0.0.0.0
-          EOF
-
       - name: Create zip package
         working-directory: apps/backend-python
         run: zip -r ../../python-app.zip .
