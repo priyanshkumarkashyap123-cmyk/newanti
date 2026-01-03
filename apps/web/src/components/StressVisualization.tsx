@@ -336,23 +336,164 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
         {/* Stress Distribution Chart (Simplified) */}
         {showDetails && (
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-medium text-gray-700">
+            <div className="flex items-center justify-between mb-3">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                 Stress Distribution Along Member
               </label>
               <button
                 onClick={() => setShowDetails(!showDetails)}
-                className="text-xs text-blue-600 hover:text-blue-700"
+                className="text-xs text-blue-600 hover:text-blue-700 font-medium"
               >
-                {showDetails ? 'Hide' : 'Show'}
+                {showDetails ? 'Hide Chart' : 'Show Chart'}
               </button>
             </div>
             
-            <div className="h-48 bg-gray-50 rounded-lg border border-gray-200 p-4">
-              <div className="relative h-full">
-                {/* Simple bar chart representation */}
-                <div className="flex items-end justify-between h-full gap-1">
-                  {contours.values.slice(0, 20).map((value, i) => {
+            <div className="bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+              <div className="relative h-56">
+                {/* SVG-based chart for better quality */}
+                <svg width="100%" height="100%" viewBox="0 0 600 200" className="overflow-visible">
+                  {/* Grid lines */}
+                  {[0, 1, 2, 3, 4, 5].map(i => (
+                    <line
+                      key={`grid-h-${i}`}
+                      x1="50"
+                      y1={20 + i * 35}
+                      x2="580"
+                      y2={20 + i * 35}
+                      stroke="#e5e7eb"
+                      strokeWidth="1"
+                      strokeDasharray="3,3"
+                      opacity="0.5"
+                    />
+                  ))}
+                  
+                  {/* Axes */}
+                  <line x1="50" y1="195" x2="580" y2="195" stroke="#374151" strokeWidth="2" />
+                  <line x1="50" y1="20" x2="50" y2="195" stroke="#374151" strokeWidth="2" />
+                  
+                  {/* Stress distribution curve */}
+                  <path
+                    d={(() => {
+                      const values = contours.values.slice(0, 30);
+                      const maxVal = Math.max(...values);
+                      const minVal = Math.min(...values);
+                      const range = maxVal - minVal || 1;
+                      
+                      return values.map((value, i) => {
+                        const x = 50 + (i / (values.length - 1)) * 530;
+                        const normalizedValue = (value - minVal) / range;
+                        const y = 195 - (normalizedValue * 175);
+                        return i === 0 ? `M ${x},${y}` : `L ${x},${y}`;
+                      }).join(' ');
+                    })()}
+                    fill="none"
+                    stroke="url(#stressGradient)"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                  />
+                  
+                  {/* Fill under curve with gradient */}
+                  <path
+                    d={(() => {
+                      const values = contours.values.slice(0, 30);
+                      const maxVal = Math.max(...values);
+                      const minVal = Math.min(...values);
+                      const range = maxVal - minVal || 1;
+                      
+                      const points = values.map((value, i) => {
+                        const x = 50 + (i / (values.length - 1)) * 530;
+                        const normalizedValue = (value - minVal) / range;
+                        const y = 195 - (normalizedValue * 175);
+                        return `${x},${y}`;
+                      });
+                      
+                      return `M 50,195 L ${points.join(' L ')} L 580,195 Z`;
+                    })()}
+                    fill="url(#stressGradient)"
+                    fillOpacity="0.15"
+                  />
+                  
+                  {/* Data points */}
+                  {contours.values.slice(0, 30).map((value, i) => {
+                    const maxVal = Math.max(...contours.values.slice(0, 30));
+                    const minVal = Math.min(...contours.values.slice(0, 30));
+                    const range = maxVal - minVal || 1;
+                    const normalizedValue = (value - minVal) / range;
+                    const x = 50 + (i / 29) * 530;
+                    const y = 195 - (normalizedValue * 175);
+                    const color = getStressColor(value, contours.min, contours.max);
+                    
+                    return (
+                      <g key={i}>
+                        <circle
+                          cx={x}
+                          cy={y}
+                          r="4"
+                          fill={color}
+                          stroke="white"
+                          strokeWidth="1.5"
+                          opacity="0.9"
+                        />
+                      </g>
+                    );
+                  })}
+                  
+                  {/* Y-axis labels */}
+                  <text x="45" y="23" fontSize="11" textAnchor="end" fill="#6b7280" fontWeight="500">
+                    {contours.max.toFixed(1)}
+                  </text>
+                  <text x="45" y="110" fontSize="11" textAnchor="end" fill="#6b7280" fontWeight="500">
+                    {((contours.max + contours.min) / 2).toFixed(1)}
+                  </text>
+                  <text x="45" y="197" fontSize="11" textAnchor="end" fill="#6b7280" fontWeight="500">
+                    {contours.min.toFixed(1)}
+                  </text>
+                  
+                  {/* X-axis label */}
+                  <text x="315" y="215" fontSize="12" textAnchor="middle" fill="#374151" fontWeight="600">
+                    Position Along Member
+                  </text>
+                  
+                  {/* Y-axis label */}
+                  <text x="15" y="110" fontSize="12" textAnchor="middle" fill="#374151" fontWeight="600" transform="rotate(-90, 15, 110)">
+                    Stress (MPa)
+                  </text>
+                  
+                  {/* Gradient definition */}
+                  <defs>
+                    <linearGradient id="stressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#3b82f6" />
+                      <stop offset="25%" stopColor="#10b981" />
+                      <stop offset="50%" stopColor="#fbbf24" />
+                      <stop offset="75%" stopColor="#f97316" />
+                      <stop offset="100%" stopColor="#ef4444" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+              
+              {/* Legend */}
+              <div className="mt-4 flex items-center justify-center gap-6 text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <span className="text-gray-600 dark:text-gray-400">Low Stress</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <span className="text-gray-600 dark:text-gray-400">Moderate</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                  <span className="text-gray-600 dark:text-gray-400">Elevated</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                  <span className="text-gray-600 dark:text-gray-400">Critical</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
                     const height = contours.max > 0 
                       ? (value / contours.max) * 100 
                       : 0;

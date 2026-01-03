@@ -381,39 +381,50 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
                 {/* Content */}
                 <div className="flex flex-1 overflow-hidden">
                     {/* Sidebar */}
-                    <div className="w-64 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+                    <div className="w-72 border-r border-gray-200 dark:border-gray-700 overflow-y-auto bg-gray-50/50 dark:bg-gray-800/50">
                         {ANALYSIS_OPTIONS.map((option) => {
                             const Icon = option.icon;
                             const isActive = activeTab === option.id;
+                            
+                            // Define color classes statically (Tailwind JIT requires literal class names)
+                            const colorClasses = {
+                                blue: { bg: 'bg-blue-50 dark:bg-blue-900/30', border: 'border-blue-500', text: 'text-blue-500', textDark: 'text-blue-700 dark:text-blue-400' },
+                                purple: { bg: 'bg-purple-50 dark:bg-purple-900/30', border: 'border-purple-500', text: 'text-purple-500', textDark: 'text-purple-700 dark:text-purple-400' },
+                                emerald: { bg: 'bg-emerald-50 dark:bg-emerald-900/30', border: 'border-emerald-500', text: 'text-emerald-500', textDark: 'text-emerald-700 dark:text-emerald-400' },
+                                indigo: { bg: 'bg-indigo-50 dark:bg-indigo-900/30', border: 'border-indigo-500', text: 'text-indigo-500', textDark: 'text-indigo-700 dark:text-indigo-400' },
+                                red: { bg: 'bg-red-50 dark:bg-red-900/30', border: 'border-red-500', text: 'text-red-500', textDark: 'text-red-700 dark:text-red-400' },
+                                teal: { bg: 'bg-teal-50 dark:bg-teal-900/30', border: 'border-teal-500', text: 'text-teal-500', textDark: 'text-teal-700 dark:text-teal-400' },
+                            };
+                            const colors = colorClasses[option.color as keyof typeof colorClasses] || colorClasses.blue;
 
                             return (
                                 <button
                                     key={option.id}
                                     onClick={() => setActiveTab(option.id)}
                                     className={`
-                                        w-full flex items-center gap-3 p-3 text-left transition-all
+                                        w-full flex items-center gap-3 p-4 text-left transition-all cursor-pointer
                                         ${isActive
-                                            ? `bg-${option.color}-50 dark:bg-${option.color}-900/30 border-r-2 border-${option.color}-500`
-                                            : 'hover:bg-gray-50 dark:hover:bg-gray-800'}
+                                            ? `${colors.bg} border-r-4 ${colors.border}`
+                                            : 'hover:bg-gray-50 dark:hover:bg-gray-800 border-r-4 border-transparent'}
                                     `}
                                 >
-                                    <Icon className={`w-5 h-5 ${isActive ? `text-${option.color}-500` : 'text-gray-400'}`} />
+                                    <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? colors.text : 'text-gray-400'}`} />
                                     <div className="flex-1 min-w-0">
-                                        <div className={`text-sm font-medium ${isActive ? `text-${option.color}-700 dark:text-${option.color}-400` : ''}`}>
+                                        <div className={`text-sm font-semibold ${isActive ? colors.textDark : 'text-gray-700 dark:text-gray-300'}`}>
                                             {option.name}
                                         </div>
-                                        <div className="text-xs text-gray-400 truncate">
+                                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
                                             {option.description}
                                         </div>
                                     </div>
-                                    <ChevronRight className={`w-4 h-4 ${isActive ? `text-${option.color}-500` : 'text-gray-300'}`} />
+                                    <ChevronRight className={`w-4 h-4 flex-shrink-0 ${isActive ? colors.text : 'text-gray-300 dark:text-gray-600'}`} />
                                 </button>
                             );
                         })}
                     </div>
 
                     {/* Panel Content */}
-                    <div className="flex-1 overflow-y-auto">
+                    <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900 p-6">
                         {renderPanel()}
                     </div>
                 </div>
