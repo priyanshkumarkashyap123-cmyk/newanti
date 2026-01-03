@@ -99,14 +99,15 @@ class AnalysisService {
      */
     async analyze(
         model: ModelData,
-        onProgress?: ProgressCallback
+        onProgress?: ProgressCallback,
+        token?: string | null
     ): Promise<AnalysisResult> {
         const nodeCount = model.nodes.length;
 
         onProgress?.('validating', 5, 'Validating model...');
 
         // Validate model first
-        const validation = await this.validateModel(model);
+        const validation = await this.validateModel(model, token);
         if (!validation.valid) {
             return {
                 success: false,
@@ -118,7 +119,7 @@ class AnalysisService {
         if (nodeCount < CONFIG.LOCAL_THRESHOLD) {
             return this.analyzeLocal(model, onProgress);
         } else {
-            return this.analyzeCloud(model, onProgress);
+            return this.analyzeCloud(model, onProgress, token);
         }
     }
 
@@ -203,7 +204,8 @@ class AnalysisService {
      */
     private async analyzeCloud(
         model: ModelData,
-        onProgress?: ProgressCallback
+        onProgress?: ProgressCallback,
+        token?: string | null
     ): Promise<AnalysisResult> {
         this.abortController = new AbortController();
         const signal = this.abortController.signal;
@@ -211,10 +213,15 @@ class AnalysisService {
         try {
             onProgress?.('uploading', 10, 'Uploading to Cloud Engine...');
 
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             // POST model to server
             const response = await fetch(`${CONFIG.API_BASE_URL}/api/analyze`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
                 body: JSON.stringify(model),
                 signal
             });
@@ -229,7 +236,7 @@ class AnalysisService {
             // Check if async job was created
             if (data.jobId) {
                 onProgress?.('queued', 20, 'Job queued, waiting for results...');
-                return this.pollForResults(data.jobId, onProgress, signal);
+                return this.pollForResults(data.jobId, onProgress, signal, token);
             }
 
             // Synchronous result
@@ -256,7 +263,8 @@ class AnalysisService {
     private async pollForResults(
         jobId: string,
         onProgress?: ProgressCallback,
-        signal?: AbortSignal
+        signal?: AbortSignal,
+        token?: string | null
     ): Promise<AnalysisResult> {
         const startTime = Date.now();
 
@@ -266,9 +274,17 @@ class AnalysisService {
             }
 
             try {
+                const headers: Record<string, string> = {};
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+
                 const response = await fetch(
                     `${CONFIG.API_BASE_URL}/api/analyze/job/${jobId}`,
-                    { signal }
+                    {
+                        signal,
+                        headers
+                    }
                 );
 
                 if (!response.ok) {
@@ -308,11 +324,16 @@ class AnalysisService {
     /**
      * Validate model with server
      */
-    async validateModel(model: ModelData): Promise<{ valid: boolean; errors: string[] }> {
+    async validateModel(model: ModelData, token?: string | null): Promise<{ valid: boolean; errors: string[] }> {
         try {
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             const response = await fetch(`${CONFIG.API_BASE_URL}/api/analyze/validate`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
                 body: JSON.stringify(model)
             });
 

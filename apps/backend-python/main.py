@@ -598,6 +598,116 @@ async def validate_model(model: StructuralModel):
 
 
 # ============================================
+# SECTION RECOMMENDATION ENDPOINT
+# ============================================
+
+class SectionRecommendationRequest(BaseModel):
+    """Request for section recommendation"""
+    member_type: str  # "beam" or "column"
+    required_Mx: float = 0.0  # Required moment capacity x-axis (kN·m)
+    required_My: float = 0.0  # Required moment capacity y-axis (kN·m)
+    required_P: float = 0.0   # Required axial capacity (kN)
+    required_V: float = 0.0   # Required shear capacity (kN)
+    length: float = 5000.0    # Member length (mm)
+    section_type: str = "ISMB"  # "ISMB", "ISMC", "ISA"
+    safety_factor: float = 1.5
+    max_deflection: Optional[float] = None  # mm (L/360 etc)
+
+
+@app.post("/sections/recommend", tags=["Design"])
+async def recommend_section(request: SectionRecommendationRequest):
+    """
+    Recommend suitable structural sections based on demands.
+    
+    Uses IS 800 Indian Standard sections (ISMB, ISMC, ISA).
+    Returns top 5 most efficient sections that meet requirements.
+    
+    Args:
+        member_type: "beam" or "column"
+        required_Mx: Bending moment about major axis (kN·m)
+        required_My: Bending moment about minor axis (kN·m)
+        required_P: Axial force (kN, positive for compression)
+        length: Member length (mm)
+        section_type: Type of section (ISMB, ISMC, ISA)
+        safety_factor: Safety factor to apply (default 1.5)
+    
+    Returns:
+        List of recommended sections with properties and capacities
+    """
+    try:
+        from analysis.section_database import SectionRecommender
+        
+        recommender = SectionRecommender()
+        
+        if request.member_type.lower() == "beam":
+            sections = recommender.recommend_for_beam(
+                required_Mx=request.required_Mx,
+                required_My=request.required_My,
+                length=request.length,
+                section_type=request.section_type,
+                safety_factor=request.safety_factor
+            )
+        elif request.member_type.lower() == "column":
+            sections = recommender.recommend_for_column(
+                required_P=request.required_P,
+                length=request.length,
+                section_type=request.section_type,
+                safety_factor=request.safety_factor
+            )
+        else:
+            raise HTTPException(status_code=400, detail="member_type must be 'beam' or 'column'")
+        
+        # Convert to response format
+        recommendations = []
+        for section in sections:
+            capacity = section.get_capacity_info()
+            recommendations.append({
+                "designation": section.designation,
+                "section_type": section.section_type,
+                "properties": {
+                    "area": section.area,
+                    "depth": section.depth,
+                    "width": section.width,
+                    "tw": section.tw,
+                    "tf": section.tf,
+                    "ixx": section.ixx,
+                    "iyy": section.iyy,
+                    "zxx": section.zxx,
+                    "zyy": section.zyy,
+                    "rxx": section.rxx,
+                    "ryy": section.ryy,
+                    "weight_per_meter": section.weight_per_meter
+                },
+                "capacity": capacity,
+                "material": {
+                    "fy": section.fy,
+                    "fu": section.fu,
+                    "E": section.E
+                }
+            })
+        
+        return {
+            "success": True,
+            "recommendations": recommendations,
+            "count": len(recommendations),
+            "criteria": {
+                "member_type": request.member_type,
+                "required_Mx": request.required_Mx,
+                "required_My": request.required_My,
+                "required_P": request.required_P,
+                "length": request.length,
+                "section_type": request.section_type,
+                "safety_factor": request.safety_factor
+            }
+        }
+        
+    except Exception as e:
+        print(f"[SECTION] Recommendation error: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Recommendation error: {str(e)}")
+
+
+# ============================================
 # AI GENERATION ENDPOINT (HARDENED)
 # ============================================
 
@@ -1440,6 +1550,167 @@ async def get_available_combinations():
         
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+# ============================================
+# ADVANCED STRUCTURAL ANALYSIS & DESIGN ENDPOINTS
+# ============================================
+
+from analysis.model_validator import validate_model
+from is_codes import (
+    check_member_is800, calculate_floor_loads, 
+    calculate_wind_pressure, design_beam_flexure,
+    calculate_base_shear
+)
+
+class SteelDesignRequest(BaseModel):
+    section: str = "ISMB300"
+    grade: str = "E250"
+    Pu: float = 0
+    Mux: float = 0
+    Muy: float = 0
+    Lx: float = 3000
+    Ly: float = 3000
+    Lb: float = 3000
+
+class FloorLoadRequest(BaseModel):
+    occupancy: str = "residential"
+    slabThickness: float = 150
+    floorFinish: str = "tiles"
+    area: float = 20
+    floors: int = 1
+
+class WindLoadRequest(BaseModel):
+    city: str = "Mumbai"
+    windSpeed: float = 44
+    height: float = 10
+    terrainCategory: int = 2
+
+
+@app.post("/analyze/validate", tags=["Advanced Analysis"])
+async def validate_structure_model(model: Dict):
+    """
+    Validate structural model before analysis.
+    Checks for stability, connectivity, and geometry issues.
+    """
+    try:
+        return validate_model(model)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/design/steel/check", tags=["IS Codes Design"])
+async def check_steel_member(request: SteelDesignRequest):
+    """
+    Check steel member capacity per IS 800:2007.
+    """
+    try:
+        return check_member_is800(
+            section_name=request.section,
+            steel_grade=request.grade,
+            Pu=request.Pu,
+            Mux=request.Mux,
+            Muy=request.Muy,
+            Lx=request.Lx,
+            Ly=request.Ly,
+            Lb=request.Lb
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/design/loads/floor", tags=["IS Codes Design"])
+async def generate_floor_loads(request: FloorLoadRequest):
+    """
+    Calculate floor loads per IS 875 Part 1 & 2.
+    """
+    try:
+        return calculate_floor_loads(
+            occupancy=request.occupancy,
+            slab_thickness_mm=request.slabThickness,
+            floor_finish=request.floorFinish,
+            tributary_area=request.area,
+            num_floors=request.floors
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/design/loads/wind", tags=["IS Codes Design"])
+async def generate_wind_loads(request: WindLoadRequest):
+    """
+    Calculate wind loads per IS 875 Part 3.
+    """
+    try:
+        # Map terrain integer to enum if needed, or handle in service
+        from is_codes import TerrainCategory
+        terrain_map = {1: TerrainCategory.CATEGORY_1, 2: TerrainCategory.CATEGORY_2, 
+                       3: TerrainCategory.CATEGORY_3, 4: TerrainCategory.CATEGORY_4}
+        
+        return calculate_wind_pressure(
+            Vb=request.windSpeed,
+            height=request.height,
+            terrain=terrain_map.get(request.terrainCategory, TerrainCategory.CATEGORY_2)
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+class ConcreteDesignRequest(BaseModel):
+    b: float = 230
+    D: float = 450
+    cover: float = 25
+    fck: str = "M20"
+    fy: str = "Fe415"
+    Mu: float = 50 # kN·m
+
+@app.post("/design/concrete/beam", tags=["IS Codes Design"])
+async def design_concrete_beam(request: ConcreteDesignRequest):
+    """
+    Design concrete beam reinforcement per IS 456:2000.
+    """
+    try:
+        return design_beam_flexure(
+            b=request.b,
+            D=request.D,
+            cover=request.cover,
+            fck=request.fck,
+            fy=request.fy,
+            Mu=request.Mu
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+class SeismicLoadRequest(BaseModel):
+    weight: float = 1000 # kN
+    height: float = 12 # m
+    zone: str = "III"
+    soilType: int = 2 # Medium
+
+@app.post("/design/loads/seismic", tags=["IS Codes Design"])
+async def calculate_seismic_loads(request: SeismicLoadRequest):
+    """
+    Calculate seismic base shear per IS 1893:2016.
+    """
+    try:
+        from is_codes import SeismicZone, SoilType, calculate_period_approx
+        
+        # Approximate period if not provided
+        T = calculate_period_approx(request.height)
+        
+        zone_map = {"II": SeismicZone.II, "III": SeismicZone.III, "IV": SeismicZone.IV, "V": SeismicZone.V}
+        soil_map = {1: SoilType.HARD, 2: SoilType.MEDIUM, 3: SoilType.SOFT}
+        
+        return calculate_base_shear(
+            W=request.weight,
+            T=T,
+            zone=zone_map.get(request.zone, SeismicZone.III),
+            soil_type=soil_map.get(request.soilType, SoilType.MEDIUM)
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 
 
 # ============================================

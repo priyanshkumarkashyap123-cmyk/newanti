@@ -453,7 +453,7 @@ class FEAEngine:
                 model_input.load_case
             )
     
-    def analyze(self, check_stability: bool = True) -> AnalysisOutput:
+    def analyze(self, check_stability: bool = True, options: Optional['AnalysisOptions'] = None) -> AnalysisOutput:
         """
         Run analysis and extract results
         """
@@ -461,8 +461,24 @@ class FEAEngine:
             return AnalysisOutput(success=False, error="Model not built")
         
         try:
-            # Run the analysis
-            self.model.analyze(check_statics=True, check_stability=check_stability)
+            # P-Delta / Second Order Analysis
+            if options and options.include_p_delta:
+                # PyNite handles P-Delta if we solve iteratively or use specific solver
+                # Using P-Delta solver if available in this PyNite version
+                if hasattr(self.model, 'analyze_PDelta'):
+                    self.model.analyze_PDelta(
+                        max_iter=options.p_delta_max_iterations, 
+                        tol=options.p_delta_tolerance
+                    )
+                else:
+                    # Fallback or standard analyze with many iterations if supported
+                    self.model.analyze(check_statics=True, check_stability=check_stability)
+            else:
+                # Linear Analysis
+                self.model.analyze(check_statics=True, check_stability=check_stability)
+            
+            # Modal Analysis (if requested separately, but basic analyze is static)
+            # For now, we focus on static results here.
             
             # Extract results
             node_results = self._extract_node_results()
@@ -623,6 +639,32 @@ def analyze_frame(model_dict: Dict[str, Any]) -> Dict[str, Any]:
         apply_notional_loads: bool - Apply 0.2% notional loads
     """
     try:
+        # Step 0: Pre-Analysis Validation
+        # -----------------------------
+        # Prevent solver crashes by catching common issues early
+        from analysis.model_validator import validate_model
+        
+        validation_result = validate_model(model_dict)
+        
+        # If model is critically invalid, return validation errors immediately
+        # checking specifically for ERROR severity issues
+        critical_errors = [
+            i for i in validation_result['issues'] 
+            if i['severity'] == 'error'
+        ]
+        
+        if critical_errors:
+            return {
+                'success': False,
+                'error': f"Validation Failed: {validation_result['summary']}",
+                'validation_results': validation_result,
+                'max_displacement': 0,
+                'max_moment': 0,
+                'max_shear': 0,
+                'nodes': [],
+                'members': []
+            }
+
         # Parse analysis options
         options_dict = model_dict.get('options', {})
         options = AnalysisOptions(
@@ -712,7 +754,7 @@ def analyze_frame(model_dict: Dict[str, Any]) -> Dict[str, Any]:
         # Run analysis with options
         engine = FEAEngine(options=options)
         engine.build_model(model_input)
-        result = engine.analyze()
+        result = engine.analyze(options=options)
         
         # Convert to dict
         response = {

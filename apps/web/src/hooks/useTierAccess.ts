@@ -115,8 +115,8 @@ export function useTierAccess(): TierAccess {
     const [isLoading, setIsLoading] = useState(true);
 
     // Use unified auth provider (works with both Clerk and in-house auth)
-    const { isSignedIn, user } = useAuth();
-    
+    const { isSignedIn, user, getToken } = useAuth();
+
     // Derive auth state from unified auth
     const isAuthenticated = !!isSignedIn;
     const userEmail = user?.email || null;
@@ -136,11 +136,18 @@ export function useTierAccess(): TierAccess {
                 // Try to fetch tier from API
                 if (isAuthenticated && userEmail) {
                     try {
+                        const token = await getToken();
+                        const headers: Record<string, string> = {
+                            'Content-Type': 'application/json',
+                        };
+
+                        if (token) {
+                            headers['Authorization'] = `Bearer ${token}`;
+                        }
+
                         const API_URL = import.meta.env.VITE_API_URL || 'https://api.beamlabultimate.tech';
                         const response = await fetch(`${API_URL}/api/user/tier`, {
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
+                            headers,
                             credentials: 'include',
                         });
 
@@ -162,7 +169,7 @@ export function useTierAccess(): TierAccess {
         };
 
         fetchTier();
-    }, [isAuthenticated, userEmail]);
+    }, [isAuthenticated, userEmail, getToken]);
 
     const effectiveTier = getEffectiveTier(userEmail, tier);
     const limits = TIER_LIMITS[effectiveTier];

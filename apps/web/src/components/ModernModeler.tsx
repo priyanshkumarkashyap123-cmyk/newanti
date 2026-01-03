@@ -41,13 +41,14 @@ import { AnalysisProgressModal, type AnalysisStage } from './AnalysisProgressMod
 import { QuickStartModal } from './QuickStartModal';
 import { ProjectDetailsDialog } from './ProjectDetailsDialog';
 import { ResultsToolbar } from './results/ResultsToolbar';
-import { AICommandCenter } from './ai';
+import { AICommandCenter, AIAssistantChat, AIAssistantButton } from './ai';
 import { LoadInputDialog } from './ui/LoadInputDialog';
 import { TutorialOverlay } from './TutorialOverlay';
 import { StructureWizard } from './StructureWizard';
 import { FoundationDesignDialog } from './FoundationDesignDialog';
 import { IS875LoadDialog } from './IS875LoadDialog';
 import { GeometryToolsPanel } from './GeometryToolsPanel';
+import { ValidationErrorDisplay } from './ValidationErrorDisplay';
 import { InteroperabilityDialog } from './InteroperabilityDialog';
 import { RailwayBridgeDialog } from './RailwayBridgeDialog';
 import { MeshingPanel } from './MeshingPanel';
@@ -66,6 +67,7 @@ import { ExportDialog } from './ExportDialog';
 import { ActionToast, type ToastType } from './ui/ActionToast';
 import type { Node, Member } from '../store/model';
 import consentService from '../services/ConsentService';
+import { useAuth } from '../providers/AuthProvider';
 
 // Quick Commands and Context Menu (STAAD Pro style)
 import { useQuickCommands, getDefaultQuickCommands } from './QuickCommandsToolbar';
@@ -234,6 +236,7 @@ const StatusBar: FC<{ isAnalyzing: boolean }> = ({ isAnalyzing }) => {
 // ============================================
 
 export const ModernModeler: FC = () => {
+    const { getToken } = useAuth();
     const showResults = useModelStore((state) => state.showResults);
     const nodes = useModelStore((state) => state.nodes);
     const members = useModelStore((state) => state.members);
@@ -256,8 +259,15 @@ export const ModernModeler: FC = () => {
     const [analysisStats, setAnalysisStats] = useState<{ nodes: number; members: number; dof: number; timeMs: number } | undefined>();
     const [showResultsToolbar, setShowResultsToolbar] = useState(false);
 
+    // Validation state
+    const [validationErrors, setValidationErrors] = useState<any | null>(null);
+    const [showValidationErrors, setShowValidationErrors] = useState(false);
+
     // Export state
     const [showExportDialog, setShowExportDialog] = useState(false);
+
+    // AI Assistant state
+    const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
 
     // Feedback state
 
@@ -397,9 +407,15 @@ export const ModernModeler: FC = () => {
                     setAnalysisStage('solving');
                     setAnalysisProgress(50);
 
+                    const token = await getToken();
+                    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+                    if (token) {
+                        headers['Authorization'] = `Bearer ${token}`;
+                    }
+
                     const response = await fetch(`${PYTHON_API}/analyze/frame`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers,
                         credentials: 'include',
                         body: JSON.stringify({
                             nodes: nodesArray,
@@ -411,6 +427,14 @@ export const ModernModeler: FC = () => {
 
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({ detail: 'Analysis server error' }));
+
+                        // Check if this is a validation error
+                        if (errorData.validation_results) {
+                            setValidationErrors(errorData.validation_results);
+                            setShowValidationErrors(true);
+                            throw new Error('Model validation failed. Please fix the errors shown.');
+                        }
+
                         throw new Error(errorData.detail || `Server error: ${response.status}`);
                     }
 
@@ -491,10 +515,11 @@ export const ModernModeler: FC = () => {
                 };
 
                 // Run analysis with progress callback
+                const token = await getToken();
                 result = await analysisService.analyze(modelData, (stage, progress) => {
                     setAnalysisStage(stage as AnalysisStage);
                     setAnalysisProgress(progress);
-                });
+                }, token);
             }
 
             const endTime = Date.now();
@@ -643,7 +668,17 @@ export const ModernModeler: FC = () => {
             } else {
                 setAnalysisStage('error');
                 setAnalysisError(result.error || 'Analysis failed');
-                showNotification('error', `Analysis failed: ${result.error}`);
+                // showNotification('error', `Analysis failed: ${result.error}`);
+
+                // Trigger AI diagnosis for the error automatically
+                // We use a custom event or store update to notify the AI assistant
+                const event = new CustomEvent('ai-diagnose-error', {
+                    detail: { error: result.error || 'Unknown analysis error' }
+                });
+                window.dispatchEvent(event);
+
+                setIsAIAssistantOpen(true);
+                showNotification('error', 'Analysis failed. AI Architect is analyzing the issue...');
             }
         } catch (err) {
             setAnalysisStage('error');
@@ -1097,6 +1132,30 @@ export const ModernModeler: FC = () => {
                     setTimeout(() => handleRunAnalysis(), 100);
                 }}
                 canClose={false}
+            />
+
+            {/* Validation Error Display */}
+            {showValidationErrors && validationErrors && (
+                <ValidationErrorDisplay
+                    results={validationErrors}
+                    onDismiss={() => {
+                        setShowValidationErrors(false);
+                        setValidationErrors(null);
+                    }}
+                    onAutoFix={(issue) => {
+                        // TODO: Implement auto-fix functionality
+                        console.log('Auto-fix for issue:', issue);
+                    }}
+                />
+            )}
+
+            {/* AI Assistant Components */}
+            <AIAssistantChat
+                isOpen={isAIAssistantOpen}
+                onClose={() => setIsAIAssistantOpen(false)}
+            />
+            <AIAssistantButton
+                onClick={() => setIsAIAssistantOpen(!isAIAssistantOpen)}
             />
         </div>
     );

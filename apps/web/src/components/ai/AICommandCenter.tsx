@@ -326,16 +326,32 @@ export const AICommandCenter: FC = () => {
                 </h3>
             </div>
 
+            {/* Code & Complexity Selection */}
+            <div className="flex gap-2 mb-2">
+                <select
+                    className="flex-1 bg-zinc-800 text-xs text-zinc-300 border border-zinc-700 rounded p-1.5 focus:border-blue-500 outline-none"
+                    disabled={isLoading}
+                >
+                    <option value="IS800">IS 800:2007 (Steel)</option>
+                    <option value="IS456">IS 456:2000 (Concrete)</option>
+                    <option value="AISC360">AISC 360-16 (US)</option>
+                </select>
+                <div className="flex-1 flex items-center gap-1 bg-zinc-800 border border-zinc-700 rounded p-1.5" title="Predicted Model Complexity">
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    <span className="text-xs text-zinc-400">Standard</span>
+                </div>
+            </div>
+
             {/* Prompt Input */}
             <textarea
                 className="
-                    w-full h-20 bg-zinc-800 p-3 text-sm text-white
+                    w-full h-24 bg-zinc-800 p-3 text-sm text-white
                     rounded-lg border border-zinc-700
                     placeholder-zinc-500
                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                    resize-none
+                    resize-none mb-1
                 "
-                placeholder="e.g. 'Generate a 12m span bridge truss' or 'Simple Warehouse'"
+                placeholder="Describe your structure (e.g. 'G+3 commercial building on 200m2 plot' or '30m steel truss bridge')..."
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 disabled={isLoading}

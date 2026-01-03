@@ -15,7 +15,9 @@ interface DiagramRendererProps {
     showLabels?: boolean;
 }
 
-const FILL_OPACITY = 0.3;
+const FILL_OPACITY = 0.15;  // Light color fill for better contrast
+const FILL_COLOR_MOMENT = '#ff8800';  // Orange
+const FILL_COLOR_SHEAR = '#00aaff';  // Light blue
 
 export const DiagramRenderer: FC<DiagramRendererProps> = ({
     memberId,
@@ -205,11 +207,11 @@ export const DiagramRenderer: FC<DiagramRendererProps> = ({
 
     return (
         <group>
-            {/* Main diagram line */}
+            {/* Main diagram line with solid border */}
             <Line
                 points={linePoints}
-                color={type === 'MZ' || type === 'MY' ? '#ff8800' : '#00aaff'}
-                lineWidth={2}
+                color={type === 'MZ' || type === 'MY' ? '#ff6600' : '#0088dd'}
+                lineWidth={2.5}
                 segments
             />
 
@@ -219,14 +221,12 @@ export const DiagramRenderer: FC<DiagramRendererProps> = ({
                     startPos,
                     startPos.clone().addScaledVector(dir, L)
                 ]}
-                color="#666666"
-                lineWidth={1}
-                dashed
-                dashSize={0.1}
-                gapSize={0.05}
+                color="#444444"
+                lineWidth={1.5}
+                segments
             />
 
-            {/* Fill shape */}
+            {/* Fill shape with light colors */}
             {showFill && fillShape && (
                 <mesh
                     position={startPos}
@@ -234,7 +234,7 @@ export const DiagramRenderer: FC<DiagramRendererProps> = ({
                 >
                     <shapeGeometry args={[fillShape]} />
                     <meshBasicMaterial
-                        color={type === 'MZ' || type === 'MY' ? '#ff8800' : '#00aaff'}
+                        color={type === 'MZ' || type === 'MY' ? FILL_COLOR_MOMENT : FILL_COLOR_SHEAR}
                         transparent
                         opacity={FILL_OPACITY}
                         side={THREE.DoubleSide}
@@ -243,27 +243,48 @@ export const DiagramRenderer: FC<DiagramRendererProps> = ({
                 </mesh>
             )}
 
-            {/* Vertical lines at key points (start, end, extremes) */}
-            {linePoints.length > 0 && (
+            {/* Border outline with solid line */}
+            {showFill && linePoints.length > 0 && (
                 <>
-                    {/* Start vertical */}
+                    {/* Top outline */}
+                    <Line
+                        points={linePoints}
+                        color={type === 'MZ' || type === 'MY' ? '#cc5500' : '#0066bb'}
+                        lineWidth={1.5}
+                        segments
+                    />
+                    {/* Bottom baseline outline */}
                     <Line
                         points={[
                             startPos,
-                            linePoints[0]!
+                            startPos.clone().addScaledVector(dir, L)
                         ]}
-                        color="#888888"
-                        lineWidth={1}
+                        color="#333333"
+                        lineWidth={1.5}
+                        segments
                     />
-                    {/* End vertical */}
+                    {/* Left vertical */}
                     <Line
                         points={[
-                            startPos.clone().addScaledVector(dir, L),
-                            linePoints[linePoints.length - 1]!
+                            startPos,
+                            linePoints[0]
                         ]}
-                        color="#888888"
-                        lineWidth={1}
+                        color={type === 'MZ' || type === 'MY' ? '#cc5500' : '#0066bb'}
+                        lineWidth={1.5}
+                        segments
                     />
+                    {/* Right vertical */}
+                    {linePoints.length > 1 && (
+                        <Line
+                            points={[
+                                startPos.clone().addScaledVector(dir, L),
+                                linePoints[linePoints.length - 1]
+                            ]}
+                            color={type === 'MZ' || type === 'MY' ? '#cc5500' : '#0066bb'}
+                            lineWidth={1.5}
+                            segments
+                        />
+                    )}
                 </>
             )}
         </group>
