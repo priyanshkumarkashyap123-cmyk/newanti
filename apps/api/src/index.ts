@@ -10,6 +10,7 @@ import interopRouter from './routes/interop/index.js';
 import authRouter from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import projectRoutes from './routes/projectRoutes.js';
+import consentRoutes from './routes/consentRoutes.js';
 import { razorpayRouter } from './razorpay.js';
 import { connectDB } from './models.js';
 import { authMiddleware as inHouseAuthMiddleware, isUsingClerk } from './middleware/authMiddleware.js';
@@ -140,6 +141,9 @@ const authRequired = requireAuth();
 
 // Project API
 app.use('/api/project', projectRoutes);
+
+// Legal Consent API
+app.use('/api/consent', consentRoutes);
 
 // Get users in a project (for multiplayer)
 app.get('/api/project/:id/users', (req: Request, res: Response) => {

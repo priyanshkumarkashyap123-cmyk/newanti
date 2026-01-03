@@ -49,6 +49,8 @@ allow_origins = [
     "https://beamlabultimate.tech",
     "https://www.beamlabultimate.tech",
     "https://brave-mushroom-0eae8ec00.4.azurestaticapps.net",
+    "https://beamlab-backend-python.azurewebsites.net", 
+    "https://beamlab-backend-node.azurewebsites.net",
 ]
 
 if allowed_origins_env:
