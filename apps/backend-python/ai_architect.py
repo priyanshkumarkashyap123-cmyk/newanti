@@ -16,7 +16,9 @@ class StructureType(Enum):
     PRATT_TRUSS = "pratt_truss"
     HOWE_TRUSS = "howe_truss"
     WARREN_TRUSS = "warren_truss"
+    K_TRUSS = "k_truss"
     PORTAL_FRAME = "portal_frame"
+    MULTI_BAY_PORTAL = "multi_bay_portal"
     BUILDING_FRAME = "building_frame"
     WAREHOUSE = "warehouse"
     BRIDGE = "bridge"
@@ -24,6 +26,10 @@ class StructureType(Enum):
     TOWER = "tower"
     TRANSMISSION_TOWER = "transmission_tower"
     CRANE = "crane"
+    ARCH = "arch"
+    SPACE_TRUSS = "space_truss"
+    CANOPY = "canopy"
+    STAIRCASE = "staircase"
     UNKNOWN = "unknown"
 
 @dataclass
@@ -42,27 +48,64 @@ class ExtractedParams:
     support_type: Optional[str] = None
     material: Optional[str] = None
     load: Optional[float] = None
+    rise: Optional[float] = None  # For arches
+    segments: Optional[int] = None  # For arches
+    seismic_zone: Optional[int] = None  # Indian seismic zone
+    occupancy_type: Optional[str] = None  # residential, commercial, industrial
     raw_prompt: str = ""
+
+# Indian Standard section presets
+IS_SECTIONS = {
+    "column_heavy": "ISMB500",
+    "column_medium": "ISMB400",
+    "column_light": "ISMB350",
+    "beam_heavy": "ISMB400",
+    "beam_medium": "ISMB300",
+    "beam_light": "ISMB250",
+    "rafter": "ISMB250",
+    "truss_chord": "ISA100x100x10",
+    "truss_web": "ISA75x75x8",
+    "truss_light": "ISA50x50x6",
+    "channel": "ISMC200",
+    "purlin": "ISMC150",
+}
+
+# IS 875 Load presets (kN/m²)
+IS_875_LOADS = {
+    "residential": {"live": 2.0, "floor_finish": 1.0, "partition": 1.5},
+    "office": {"live": 3.0, "floor_finish": 1.0, "partition": 1.5},
+    "commercial": {"live": 4.0, "floor_finish": 1.5, "partition": 2.0},
+    "industrial": {"live": 5.0, "floor_finish": 1.0, "partition": 0},
+    "storage": {"live": 7.5, "floor_finish": 1.0, "partition": 0},
+    "roof_accessible": {"live": 1.5, "floor_finish": 0.5, "partition": 0},
+    "roof_inaccessible": {"live": 0.75, "floor_finish": 0.5, "partition": 0},
+}
 
 class PromptAnalyzer:
     """Analyzes natural language prompts to extract structural parameters"""
     
-    # Keywords for structure type detection
+    # Keywords for structure type detection (expanded)
     STRUCTURE_KEYWORDS = {
-        StructureType.SIMPLE_BEAM: ["simple beam", "simply supported", "ss beam", "beam with roller"],
-        StructureType.CANTILEVER: ["cantilever", "cantilevered", "fixed free", "overhang"],
+        StructureType.SIMPLE_BEAM: ["simple beam", "simply supported", "ss beam", "beam with roller", "rcc beam"],
+        StructureType.CANTILEVER: ["cantilever", "cantilevered", "fixed free", "overhang", "projecting"],
         StructureType.CONTINUOUS_BEAM: ["continuous", "multi-span", "multispan", "2-span", "3-span", "4-span", "two span", "three span"],
         StructureType.PRATT_TRUSS: ["pratt", "pratt truss"],
         StructureType.HOWE_TRUSS: ["howe", "howe truss"],
         StructureType.WARREN_TRUSS: ["warren", "warren truss", "triangular truss"],
+        StructureType.K_TRUSS: ["k-truss", "k truss", "k-bracing"],
         StructureType.PORTAL_FRAME: ["portal", "portal frame", "rigid frame"],
-        StructureType.BUILDING_FRAME: ["building", "frame", "multi-story", "multistory", "storey", "story", "floor", "office", "residential"],
-        StructureType.WAREHOUSE: ["warehouse", "industrial shed", "factory", "godown", "storage"],
+        StructureType.MULTI_BAY_PORTAL: ["multi-bay", "multibay", "3 bay", "4 bay", "5 bay", "industrial shed"],
+        StructureType.BUILDING_FRAME: ["building", "frame", "multi-story", "multistory", "storey", "story", "floor", "office", "residential", "g+", "rcc frame", "rcc building"],
+        StructureType.WAREHOUSE: ["warehouse", "factory", "godown", "storage"],
         StructureType.BRIDGE: ["bridge", "overpass", "flyover", "viaduct"],
-        StructureType.FOOTBRIDGE: ["footbridge", "pedestrian bridge", "walkway"],
+        StructureType.FOOTBRIDGE: ["footbridge", "pedestrian bridge", "walkway bridge"],
         StructureType.TOWER: ["tower", "mast"],
         StructureType.TRANSMISSION_TOWER: ["transmission", "power line", "electricity tower", "lattice tower"],
-        StructureType.CRANE: ["crane", "gantry", "overhead crane"],
+        StructureType.CRANE: ["crane", "gantry", "overhead crane", "eot crane"],
+        StructureType.ARCH: ["arch", "parabolic", "circular arch"],
+        StructureType.SPACE_TRUSS: ["space truss", "space frame", "double layer", "flat truss roof"],
+        StructureType.CANOPY: ["canopy", "awning", "shade structure", "covered walkway", "balcony"],
+        StructureType.STAIRCASE: ["staircase", "stair", "flight", "dog-leg", "dogleg"],
     }
     
     # Dimension patterns
@@ -292,16 +335,42 @@ class EnhancedAIArchitect:
                     height=params.height or 3.0,
                     bays=params.bays or 6
                 )
+            elif st == StructureType.HOWE_TRUSS:
+                model = SF.generate_howe_truss(
+                    span=params.span or 12.0,
+                    height=params.height or 3.0,
+                    bays=params.bays or 6
+                )
+            elif st == StructureType.WARREN_TRUSS:
+                model = SF.generate_warren_truss(
+                    span=params.span or 12.0,
+                    height=params.height or 3.0,
+                    bays=params.bays or 6
+                )
+            elif st == StructureType.K_TRUSS:
+                model = SF.generate_k_truss(
+                    span=params.span or 12.0,
+                    height=params.height or 3.0,
+                    bays=params.bays or 6
+                )
             elif st == StructureType.PORTAL_FRAME:
                 model = SF.generate_portal_frame(
                     width=params.span or params.width or 15.0,
                     eave_height=params.height or 6.0,
                     roof_angle=params.roof_angle or 15.0
                 )
-            elif st == StructureType.WAREHOUSE:
-                model = SF.generate_portal_frame(
-                    width=params.width or params.span or 20.0,
+            elif st == StructureType.MULTI_BAY_PORTAL:
+                model = SF.generate_multi_bay_portal(
+                    total_width=params.width or params.span or 30.0,
                     eave_height=params.height or 8.0,
+                    bays=params.bays or 3,
+                    roof_angle=params.roof_angle or 10.0
+                )
+            elif st == StructureType.WAREHOUSE:
+                model = SF.generate_multi_bay_portal(
+                    total_width=params.width or params.span or 30.0,
+                    eave_height=params.height or 8.0,
+                    bays=params.bays or 2,
                     roof_angle=params.roof_angle or 10.0
                 )
             elif st == StructureType.BUILDING_FRAME:
@@ -312,6 +381,62 @@ class EnhancedAIArchitect:
                     stories=params.stories or 3,
                     bays_x=params.bays_x or 2,
                     bays_z=params.bays_z or 2
+                )
+            elif st == StructureType.BRIDGE:
+                model = SF.generate_bridge(
+                    span=params.span or 24.0,
+                    deck_width=params.width or 6.0,
+                    truss_height=params.height or 4.0,
+                    panels=params.bays or 6
+                )
+            elif st == StructureType.FOOTBRIDGE:
+                model = SF.generate_bridge(
+                    span=params.span or 15.0,
+                    deck_width=params.width or 3.0,
+                    truss_height=params.height or 2.5,
+                    panels=params.bays or 5
+                )
+            elif st == StructureType.TOWER:
+                model = SF.generate_tower(
+                    base_width=params.width or 8.0,
+                    top_width=2.0,
+                    height=params.height or 30.0,
+                    levels=4
+                )
+            elif st == StructureType.TRANSMISSION_TOWER:
+                model = SF.generate_tower(
+                    base_width=params.width or 10.0,
+                    top_width=3.0,
+                    height=params.height or 40.0,
+                    levels=5
+                )
+            elif st == StructureType.ARCH:
+                model = SF.generate_arch(
+                    span=params.span or 20.0,
+                    rise=params.rise or (params.span or 20.0) / 4,
+                    segments=params.segments or 12,
+                    arch_type="parabolic"
+                )
+            elif st == StructureType.SPACE_TRUSS:
+                model = SF.generate_space_truss(
+                    width=params.width or 20.0,
+                    length=params.length or 20.0,
+                    depth=params.height or 2.0,
+                    bays_x=params.bays_x or 4,
+                    bays_z=params.bays_z or 4
+                )
+            elif st == StructureType.CANOPY:
+                model = SF.generate_cantilever_structure(
+                    cantilever_length=params.span or 4.0,
+                    height=params.height or 3.0,
+                    width=params.width or 0,
+                    structure_type="canopy"
+                )
+            elif st == StructureType.STAIRCASE:
+                model = SF.generate_staircase(
+                    total_rise=params.height or 3.0,
+                    total_run=params.span or 4.5,
+                    width=params.width or 1.2
                 )
             else:
                 return None
