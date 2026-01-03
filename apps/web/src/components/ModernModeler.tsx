@@ -69,6 +69,7 @@ import { ActionToast, type ToastType } from './ui/ActionToast';
 import type { Node, Member } from '../store/model';
 import consentService from '../services/ConsentService';
 import { useAuth } from '../providers/AuthProvider';
+import { useSubscription } from '../hooks/useSubscription';
 
 // Quick Commands and Context Menu (STAAD Pro style)
 import { useQuickCommands, getDefaultQuickCommands } from './QuickCommandsToolbar';
@@ -238,6 +239,7 @@ const StatusBar: FC<{ isAnalyzing: boolean }> = ({ isAnalyzing }) => {
 
 export const ModernModeler: FC = () => {
     const { getToken } = useAuth();
+    const { subscription } = useSubscription();
     const showResults = useModelStore((state) => state.showResults);
     const nodes = useModelStore((state) => state.nodes);
     const members = useModelStore((state) => state.members);
@@ -407,30 +409,30 @@ export const ModernModeler: FC = () => {
     ) => {
         try {
             console.log('[STRESS] Calculating stresses for members...');
-            
+
             // Prepare stress calculation request
             const membersData = Array.from(members.values()).map(member => {
                 const forces = memberForces.get(member.id);
                 if (!forces) return null;
-                
+
                 // Extract diagram data or use single values
                 const axialArray = forces.diagramData?.axial || [forces.axial || 0];
                 const shearYArray = forces.diagramData?.shear_y || [forces.shearY || 0];
                 const shearZArray = forces.diagramData?.shear_z || [forces.shearZ || 0];
                 const momentYArray = forces.diagramData?.moment_y || [forces.momentY || 0];
                 const momentZArray = forces.diagramData?.moment_z || [forces.momentZ || 0];
-                
+
                 // Get section properties from member
                 // Use member's A and I properties, with defaults
                 const area = member.A || 0.01;  // m²
                 const I = member.I || 1e-4;  // m⁴
-                
+
                 // Estimate depth and width from section area/inertia
                 // For rectangular section: I = bd³/12, A = bd
                 // Assume depth = 2*width for typical beam proportion
-                const estimatedDepth = Math.pow(12 * I / area * 2, 1/2);
+                const estimatedDepth = Math.pow(12 * I / area * 2, 1 / 2);
                 const estimatedWidth = estimatedDepth / 2;
-                
+
                 const section = {
                     area: area,
                     Ixx: I,   // m⁴
@@ -438,17 +440,17 @@ export const ModernModeler: FC = () => {
                     depth: estimatedDepth || 0.3,  // m
                     width: estimatedWidth || 0.15  // m
                 };
-                
+
                 // Calculate member length
                 const startNode = nodes.get(member.startNodeId);
                 const endNode = nodes.get(member.endNodeId);
                 if (!startNode || !endNode) return null;
-                
+
                 const dx = endNode.x - startNode.x;
                 const dy = endNode.y - startNode.y;
                 const dz = endNode.z - startNode.z;
-                const length = Math.sqrt(dx*dx + dy*dy + dz*dz);
-                
+                const length = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
                 return {
                     id: member.id,
                     forces: {
@@ -462,12 +464,12 @@ export const ModernModeler: FC = () => {
                     length
                 };
             }).filter(m => m !== null);
-            
+
             if (membersData.length === 0) {
                 console.log('[STRESS] No member force data available');
                 return;
             }
-            
+
             // Call stress calculation API
             const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/stress/calculate`, {
                 method: 'POST',
@@ -479,13 +481,13 @@ export const ModernModeler: FC = () => {
                     safety_factor: 1.5
                 })
             });
-            
+
             if (!response.ok) {
                 throw new Error(`Stress calculation failed: ${response.statusText}`);
             }
-            
+
             const data = await response.json();
-            
+
             if (data.success && data.results) {
                 setStressResults(data.results);
                 setShowStressVisualization(true);
@@ -864,7 +866,7 @@ export const ModernModeler: FC = () => {
                 // Show results toolbar after successful analysis
                 setShowResultsToolbar(true);
                 showNotification('success', 'Analysis completed successfully!');
-                
+
                 // Calculate stresses automatically after successful analysis
                 calculateStresses(memberForces, members);
                 // setActiveStep(4); // Move to results step
@@ -1305,16 +1307,17 @@ export const ModernModeler: FC = () => {
             {/* Moving Load Analysis (IRC 6 / AASHTO) */}
             <MovingLoadDialog />
 
-            {/* Advanced Analysis Dialog (P-Delta, Modal, Buckling, Spectrum) */}
             <AdvancedAnalysisDialog
                 isOpen={modals.advancedAnalysis}
                 onClose={() => closeModal('advancedAnalysis')}
+                isPro={subscription?.tier === 'pro' || subscription?.tier === 'enterprise'}
             />
 
-            {/* Design Codes Dialog */}
+            {/* DesignCodes Dialog */}
             <DesignCodesDialog
                 isOpen={modals.designCodes}
                 onClose={() => closeModal('designCodes')}
+                isPro={subscription?.tier === 'pro' || subscription?.tier === 'enterprise'}
             />
 
             {/* ASCE 7 Seismic Load Generator */}

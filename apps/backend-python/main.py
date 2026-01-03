@@ -918,6 +918,139 @@ async def calculate_stress(request: dict):
         raise HTTPException(status_code=500, detail=f"Stress calculation error: {str(e)}")
 
 
+@app.post("/analysis/time-history")
+async def time_history_analysis(request: dict):
+    """
+    Perform dynamic time history analysis
+    
+    Request body:
+    {
+        "mass_matrix": [[...], [...]], // Global mass matrix
+        "stiffness_matrix": [[...], [...]], // Global stiffness matrix
+        "damping_ratio": 0.05,
+        "analysis_type": "modal" | "newmark" | "spectrum",
+        "ground_motion": {
+            "name": "el_centro_1940",
+            "scale_factor": 1.0
+        },
+        "num_modes": 10,
+        "periods": [0.1, 0.2, ..., 4.0] // For response spectrum
+    }
+    """
+    try:
+        from analysis.time_history_analysis import TimeHistoryAnalyzer, load_ground_motion
+        import numpy as np
+        
+        print("[TIME-HISTORY] Starting dynamic analysis...")
+        
+        analysis_type = request.get('analysis_type', 'modal')
+        damping_ratio = request.get('damping_ratio', 0.05)
+        
+        # Parse matrices
+        M = np.array(request.get('mass_matrix', []))
+        K = np.array(request.get('stiffness_matrix', []))
+        
+        if M.size == 0 or K.size == 0:
+            raise ValueError("Mass and stiffness matrices are required")
+        
+        analyzer = TimeHistoryAnalyzer()
+        analyzer.damping_ratio = damping_ratio
+        
+        results = {}
+        
+        if analysis_type == 'modal':
+            # Modal analysis only
+            num_modes = request.get('num_modes', 10)
+            modes = analyzer.modal_analysis(M, K, num_modes)
+            
+            results = {
+                'success': True,
+                'analysis_type': 'modal',
+                'modes': [
+                    {
+                        'mode_number': m.mode_number,
+                        'frequency': m.frequency,
+                        'period': m.period,
+                        'omega': m.omega,
+                        'participation_factor': m.participation_factor,
+                        'mass_participation': m.mass_participation,
+                        'mode_shape': m.mode_shape.tolist()
+                    }
+                    for m in modes
+                ],
+                'total_mass_participation': sum(m.mass_participation for m in modes)
+            }
+            
+        elif analysis_type == 'newmark':
+            # Time history integration
+            ground_motion_config = request.get('ground_motion', {})
+            gm_name = ground_motion_config.get('name', 'el_centro_1940')
+            scale_factor = ground_motion_config.get('scale_factor', 1.0)
+            
+            ground_motion = load_ground_motion(gm_name, scale_factor)
+            
+            # Rayleigh damping matrix: C = α*M + β*K
+            # For 5% damping at two frequencies
+            omega1 = 2 * np.pi * 1.0  # 1 Hz
+            omega2 = 2 * np.pi * 10.0  # 10 Hz
+            alpha = damping_ratio * 2 * omega1 * omega2 / (omega1 + omega2)
+            beta = damping_ratio * 2 / (omega1 + omega2)
+            C = alpha * M + beta * K
+            
+            response = analyzer.newmark_beta_integration(M, K, C, ground_motion)
+            
+            results = {
+                'success': True,
+                'analysis_type': 'newmark',
+                'ground_motion': {
+                    'name': ground_motion.name,
+                    'pga': float(ground_motion.pga),
+                    'duration': float(ground_motion.duration),
+                    'dt': float(ground_motion.dt)
+                },
+                'time': response['time'].tolist(),
+                'displacement': response['displacement'].tolist(),
+                'velocity': response['velocity'].tolist(),
+                'acceleration': response['acceleration'].tolist(),
+                'max_displacement': float(np.max(np.abs(response['displacement']))),
+                'max_velocity': float(np.max(np.abs(response['velocity']))),
+                'max_acceleration': float(np.max(np.abs(response['acceleration'])))
+            }
+            
+        elif analysis_type == 'spectrum':
+            # Response spectrum
+            ground_motion_config = request.get('ground_motion', {})
+            gm_name = ground_motion_config.get('name', 'el_centro_1940')
+            scale_factor = ground_motion_config.get('scale_factor', 1.0)
+            
+            ground_motion = load_ground_motion(gm_name, scale_factor)
+            
+            periods = np.array(request.get('periods', np.linspace(0.1, 4.0, 40)))
+            spectrum = analyzer.get_response_spectrum(ground_motion, periods, damping_ratio)
+            
+            results = {
+                'success': True,
+                'analysis_type': 'spectrum',
+                'ground_motion': {
+                    'name': ground_motion.name,
+                    'pga': float(ground_motion.pga)
+                },
+                'periods': spectrum['periods'].tolist(),
+                'Sd': spectrum['Sd'].tolist(),
+                'Sv': spectrum['Sv'].tolist(),
+                'Sa': spectrum['Sa'].tolist(),
+                'max_Sa': float(np.max(spectrum['Sa']))
+            }
+        
+        print(f"[TIME-HISTORY] {analysis_type} analysis complete")
+        return results
+        
+    except Exception as e:
+        print(f"[TIME-HISTORY] Error: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Time history analysis error: {str(e)}")
+
+
 # ============================================
 # AI GENERATION ENDPOINT (HARDENED)
 # ============================================

@@ -53,39 +53,39 @@ const DESIGN_OPTIONS: Array<{
     icon: FC<{ className?: string }>;
     color: string;
 }> = [
-    {
-        id: 'steel',
-        name: 'Steel Design',
-        codes: ['IS 800:2007', 'AISC 360-16'],
-        description: 'Steel member capacity checks and optimization',
-        icon: Building2,
-        color: 'blue',
-    },
-    {
-        id: 'concrete',
-        name: 'Concrete Design',
-        codes: ['IS 456:2000'],
-        description: 'RC beam/column design with rebar detailing',
-        icon: Columns,
-        color: 'gray',
-    },
-    {
-        id: 'connection',
-        name: 'Connection Design',
-        codes: ['IS 800 Ch.10'],
-        description: 'Bolted, welded, and base plate connections',
-        icon: Link2,
-        color: 'orange',
-    },
-    {
-        id: 'foundation',
-        name: 'Foundation Design',
-        codes: ['IS 456', 'IS 1904'],
-        description: 'Isolated, combined, and mat footings',
-        icon: Landmark,
-        color: 'brown',
-    },
-];
+        {
+            id: 'steel',
+            name: 'Steel Design',
+            codes: ['IS 800:2007', 'AISC 360-16'],
+            description: 'Steel member capacity checks and optimization',
+            icon: Building2,
+            color: 'blue',
+        },
+        {
+            id: 'concrete',
+            name: 'Concrete Design',
+            codes: ['IS 456:2000'],
+            description: 'RC beam/column design with rebar detailing',
+            icon: Columns,
+            color: 'gray',
+        },
+        {
+            id: 'connection',
+            name: 'Connection Design',
+            codes: ['IS 800 Ch.10'],
+            description: 'Bolted, welded, and base plate connections',
+            icon: Link2,
+            color: 'orange',
+        },
+        {
+            id: 'foundation',
+            name: 'Foundation Design',
+            codes: ['IS 456', 'IS 1904'],
+            description: 'Isolated, combined, and mat footings',
+            icon: Landmark,
+            color: 'brown',
+        },
+    ];
 
 // ============================================
 // FOUNDATION DESIGN PANEL (Inline)
@@ -107,35 +107,20 @@ const FoundationDesignPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
         status: 'pass' | 'fail';
     } | null>(null);
 
-    if (!isPro) {
-        return (
-            <div className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
-                <div className="flex items-center gap-2 mb-2">
-                    <Crown className="w-5 h-5 text-amber-500" />
-                    <h3 className="font-semibold text-amber-700 dark:text-amber-400">
-                        Foundation Design - Pro Feature
-                    </h3>
-                </div>
-                <p className="text-sm text-amber-600 dark:text-amber-300">
-                    Upgrade to Pro for foundation design with bearing capacity checks,
-                    punching shear, one-way shear, and flexure design.
-                </p>
-            </div>
-        );
-    }
+
 
     const handleDesign = async () => {
         setIsDesigning(true);
-        
+
         // Simulate design calculation
         await new Promise((r) => setTimeout(r, 1000));
-        
+
         // Calculate approximate footing size
         const requiredArea = columnLoad / sbc;
         const side = Math.ceil(Math.sqrt(requiredArea) * 100) / 100;
         const eccentricity = momentX / columnLoad;
         const adjustedLength = side * (1 + 6 * eccentricity / side);
-        
+
         setResult({
             length: Math.max(1.5, Math.ceil(adjustedLength * 10) / 10),
             width: Math.max(1.5, Math.ceil(side * 10) / 10),
@@ -143,7 +128,7 @@ const FoundationDesignPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
             rebarMain: '12 @ 150 c/c B/W',
             status: 'pass',
         });
-        
+
         setIsDesigning(false);
     };
 
@@ -242,18 +227,16 @@ const FoundationDesignPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
 
             {/* Result */}
             {result && (
-                <div className={`p-4 rounded-lg border ${
-                    result.status === 'pass'
-                        ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800'
-                        : 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800'
-                }`}>
+                <div className={`p-4 rounded-lg border ${result.status === 'pass'
+                    ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800'
+                    : 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800'
+                    }`}>
                     <div className="flex items-center justify-between mb-3">
                         <span className="font-medium text-sm">Design Result</span>
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                            result.status === 'pass'
-                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                        }`}>
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${result.status === 'pass'
+                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                            : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                            }`}>
                             {result.status.toUpperCase()}
                         </span>
                     </div>
@@ -283,13 +266,13 @@ const FoundationDesignPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                             {/* Soil */}
                             <rect x="0" y="80" width="200" height="40" fill="#D4A574" opacity="0.3" />
                             <line x1="0" y1="80" x2="200" y2="80" stroke="#A0522D" strokeWidth="2" />
-                            
+
                             {/* Footing */}
                             <rect x="40" y="55" width="120" height="25" fill="#9CA3AF" stroke="#6B7280" strokeWidth="2" />
-                            
+
                             {/* Column */}
                             <rect x="85" y="10" width="30" height="45" fill="#6B7280" stroke="#374151" strokeWidth="2" />
-                            
+
                             {/* Dimensions */}
                             <text x="100" y="95" fontSize="10" textAnchor="middle" fill="#888">{result.length}m × {result.width}m</text>
                         </svg>
@@ -320,7 +303,7 @@ const FoundationDesignPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
 export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
     isOpen,
     onClose,
-    isPro = false,
+    isPro = false, // Changed from true - must be explicitly passed
     initialTab = 'steel',
 }) => {
     const [activeTab, setActiveTab] = useState<DesignType>(initialTab);
@@ -417,14 +400,14 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
                             {DESIGN_OPTIONS.map((option) => {
                                 const Icon = option.icon;
                                 const isActive = activeTab === option.id;
-                                
+
                                 return (
                                     <button
                                         key={option.id}
                                         onClick={() => setActiveTab(option.id)}
                                         className={`
                                             w-full flex items-center gap-3 p-3 text-left transition-all
-                                            ${isActive 
+                                            ${isActive
                                                 ? 'bg-gray-100 dark:bg-gray-800 border-r-2 border-blue-500'
                                                 : 'hover:bg-gray-50 dark:hover:bg-gray-800'}
                                         `}

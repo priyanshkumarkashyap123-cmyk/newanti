@@ -17,6 +17,7 @@ import {
     Waves,
     Shield,
     Cable,
+    Clock,
     ChevronRight,
     Crown,
     Zap,
@@ -27,12 +28,13 @@ import {
 import { PDeltaAnalysisPanel } from './PDeltaAnalysisPanel';
 import { ModalAnalysisPanel } from './ModalAnalysisPanel';
 import { BucklingAnalysisPanel } from './BucklingAnalysisPanel';
+import { TimeHistoryPanel } from './TimeHistoryPanel';
 
 // ============================================
 // TYPES
 // ============================================
 
-type AnalysisType = 'pdelta' | 'modal' | 'spectrum' | 'buckling' | 'cable';
+type AnalysisType = 'pdelta' | 'modal' | 'spectrum' | 'buckling' | 'cable' | 'timehistory';
 
 interface AdvancedAnalysisDialogProps {
     isOpen: boolean;
@@ -65,6 +67,13 @@ const ANALYSIS_OPTIONS: Array<{
         description: 'Extract natural frequencies, periods, and mode shapes',
         icon: Activity,
         color: 'purple',
+    },
+    {
+        id: 'timehistory',
+        name: 'Time History Analysis',
+        description: 'Dynamic seismic time history with Newmark-beta integration',
+        icon: Clock,
+        color: 'emerald',
     },
     {
         id: 'spectrum',
@@ -100,21 +109,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
     const [response, setResponse] = useState(5.0);
     const [numModes, setNumModes] = useState(12);
 
-    if (!isPro) {
-        return (
-            <div className="p-4 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-lg border border-indigo-200 dark:border-indigo-800">
-                <div className="flex items-center gap-2 mb-2">
-                    <Crown className="w-5 h-5 text-indigo-500" />
-                    <h3 className="font-semibold text-indigo-700 dark:text-indigo-400">
-                        Response Spectrum - Pro Feature
-                    </h3>
-                </div>
-                <p className="text-sm text-indigo-600 dark:text-indigo-300">
-                    Upgrade to Pro for IS 1893:2016 seismic analysis with CQC/SRSS modal combination.
-                </p>
-            </div>
-        );
-    }
+
 
     return (
         <div className="p-4">
@@ -216,7 +211,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                         {/* Axes */}
                         <line x1="30" y1="90" x2="290" y2="90" stroke="#888" strokeWidth="1" />
                         <line x1="30" y1="10" x2="30" y2="90" stroke="#888" strokeWidth="1" />
-                        
+
                         {/* Spectrum curve (simplified) */}
                         <path
                             d={`M 30,60 L 50,${90 - zone * 8} L 100,${90 - zone * 8} C 150,${90 - zone * 8} 180,70 290,85`}
@@ -224,7 +219,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                             stroke="#6366f1"
                             strokeWidth="2"
                         />
-                        
+
                         {/* Labels */}
                         <text x="160" y="98" fontSize="8" textAnchor="middle" fill="#888">Period (T)</text>
                         <text x="10" y="50" fontSize="8" textAnchor="middle" fill="#888" transform="rotate(-90, 10, 50)">Sa/g</text>
@@ -252,21 +247,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
 // ============================================
 
 const CableAnalysisPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
-    if (!isPro) {
-        return (
-            <div className="p-4 bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 rounded-lg border border-teal-200 dark:border-teal-800">
-                <div className="flex items-center gap-2 mb-2">
-                    <Crown className="w-5 h-5 text-teal-500" />
-                    <h3 className="font-semibold text-teal-700 dark:text-teal-400">
-                        Cable Analysis - Pro Feature
-                    </h3>
-                </div>
-                <p className="text-sm text-teal-600 dark:text-teal-300">
-                    Upgrade to Pro for cable elements with catenary effects and tension-only analysis.
-                </p>
-            </div>
-        );
-    }
+
 
     return (
         <div className="p-4">
@@ -318,7 +299,7 @@ const CableAnalysisPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                 {/* Catenary Info */}
                 <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                     <div className="text-xs text-blue-600 dark:text-blue-400">
-                        <strong>Catenary Effect:</strong> Cable elements automatically calculate 
+                        <strong>Catenary Effect:</strong> Cable elements automatically calculate
                         sag and equivalent modulus based on the catenary equation:
                         <div className="mt-1 font-mono">
                             E<sub>eq</sub> = E / (1 + (wL)²AE / 12T³)
@@ -356,6 +337,8 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
                 return <PDeltaAnalysisPanel isPro={isPro} />;
             case 'modal':
                 return <ModalAnalysisPanel isPro={isPro} />;
+            case 'timehistory':
+                return <TimeHistoryPanel isPro={isPro} />;
             case 'spectrum':
                 return <ResponseSpectrumPanel isPro={isPro} />;
             case 'buckling':
@@ -402,14 +385,14 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
                         {ANALYSIS_OPTIONS.map((option) => {
                             const Icon = option.icon;
                             const isActive = activeTab === option.id;
-                            
+
                             return (
                                 <button
                                     key={option.id}
                                     onClick={() => setActiveTab(option.id)}
                                     className={`
                                         w-full flex items-center gap-3 p-3 text-left transition-all
-                                        ${isActive 
+                                        ${isActive
                                             ? `bg-${option.color}-50 dark:bg-${option.color}-900/30 border-r-2 border-${option.color}-500`
                                             : 'hover:bg-gray-50 dark:hover:bg-gray-800'}
                                     `}

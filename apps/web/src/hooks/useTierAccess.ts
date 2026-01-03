@@ -177,7 +177,7 @@ export function useTierAccess(): TierAccess {
     return {
         tier: effectiveTier,
         isFree: effectiveTier === 'free',
-        isPro: effectiveTier === 'pro',
+        isPro: effectiveTier === 'pro' || effectiveTier === 'enterprise', // Enterprise includes all Pro features
         isEnterprise: effectiveTier === 'enterprise',
         isMasterUser: isMasterUserEmail(userEmail),
         isAuthenticated,
