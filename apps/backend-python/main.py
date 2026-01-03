@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List, Dict
 import os
+from datetime import datetime
 
 from models import (
     StructuralModel, GenerateResponse,
