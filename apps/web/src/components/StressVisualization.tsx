@@ -179,10 +179,10 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
       <div className="p-4 space-y-4">
         {/* Stress Type Selector */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Stress Type
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+            Select Stress Type
           </label>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {stressTypes.map(type => {
               const Icon = type.icon;
               const isActive = stressType === type.id;
@@ -191,15 +191,17 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
                 <button
                   key={type.id}
                   onClick={() => onStressTypeChange?.(type.id)}
-                  className={`p-2 rounded-lg border-2 transition-all ${
+                  className={`p-3 rounded-lg border-2 transition-all cursor-pointer hover:scale-105 ${
                     isActive
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                      ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 text-blue-700 dark:text-blue-300 shadow-lg'
+                      : 'border-gray-300 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-600 text-gray-700 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-blue-900/10'
                   }`}
                 >
-                  <div className="flex items-center gap-2">
-                    <Icon className="w-4 h-4" />
-                    <span className="text-xs font-medium">{type.label}</span>
+                  <div className="flex flex-col items-center gap-1.5">
+                    <Icon className={`w-5 h-5 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`} />
+                    <span className={`text-xs font-semibold text-center leading-tight ${isActive ? 'text-blue-700 dark:text-blue-300' : ''}`}>
+                      {type.label}
+                    </span>
                   </div>
                 </button>
               );
@@ -210,13 +212,13 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
         {/* Member Selector */}
         {results.length > 1 && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Member
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              Select Member
             </label>
             <select
               value={selectedMember || ''}
               onChange={(e) => setSelectedMember(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-200 font-medium cursor-pointer"
             >
               {results.map(result => (
                 <option key={result.member_id} value={result.member_id}>
@@ -494,48 +496,29 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
             </div>
           </div>
         )}
-                    const height = contours.max > 0 
-                      ? (value / contours.max) * 100 
-                      : 0;
-                    const color = getStressColor(value, contours.min, contours.max);
-                    
-                    return (
-                      <div
-                        key={i}
-                        className="flex-1 rounded-t transition-all hover:opacity-80 cursor-pointer group relative"
-                        style={{
-                          height: `${height}%`,
-                          backgroundColor: color,
-                          minHeight: '2px'
-                        }}
-                        title={`${value.toFixed(2)} MPa`}
-                      >
-                        {/* Tooltip on hover */}
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
-                          {value.toFixed(2)} MPa
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Actions */}
-        <div className="flex gap-2 pt-2 border-t border-gray-200">
+        <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
           <button
-            onClick={() => window.alert('Export stress data feature coming soon!')}
-            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            onClick={() => {
+              const dataStr = JSON.stringify(results, null, 2);
+              const dataBlob = new Blob([dataStr], { type: 'application/json' });
+              const url = URL.createObjectURL(dataBlob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.download = `stress-analysis-${Date.now()}.json`;
+              link.click();
+              URL.revokeObjectURL(url);
+            }}
+            className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all font-semibold shadow-lg"
           >
-            Export Data
+            Export Data (JSON)
           </button>
           <button
-            onClick={() => window.alert('Detailed report feature coming soon!')}
-            className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+            onClick={() => window.alert('Detailed PDF report feature coming soon!')}
+            className="flex-1 px-4 py-2.5 bg-gradient-to-r from-gray-600 to-gray-700 dark:from-gray-700 dark:to-gray-800 text-white rounded-lg hover:from-gray-700 hover:to-gray-800 dark:hover:from-gray-600 dark:hover:to-gray-700 transition-all font-semibold shadow-lg"
           >
-            Detailed Report
+            PDF Report
           </button>
         </div>
       </div>
