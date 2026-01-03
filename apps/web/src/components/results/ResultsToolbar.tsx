@@ -267,7 +267,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                 report.addNodesTable(nodeList);
             }
 
-            // Add members table
+            // Add members table (basic)
             const memberList = Array.from(members.values()).map(m => ({
                 id: m.id,
                 startNodeId: m.startNodeId,
@@ -278,11 +278,88 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                 report.addMembersTable(memberList);
             }
 
+            // Add cross-sectional details with properties
+            const memberDetails = Array.from(members.values()).map(m => {
+                // Calculate member length
+                const startNode = nodes.get(m.startNodeId);
+                const endNode = nodes.get(m.endNodeId);
+                let length = 0;
+                if (startNode && endNode) {
+                    length = Math.sqrt(
+                        Math.pow(endNode.x - startNode.x, 2) +
+                        Math.pow(endNode.y - startNode.y, 2) +
+                        Math.pow(endNode.z - startNode.z, 2)
+                    );
+                }
+                return {
+                    id: m.id,
+                    sectionId: m.sectionId || 'Default',
+                    E: m.E || 200000000,  // Default steel E in kN/m²
+                    A: m.A,
+                    Iy: m.I,  // Use I as Iy
+                    Iz: m.I,
+                    J: m.I,   // Approximate J as I for simple cases
+                    length
+                };
+            });
+            if (memberDetails.length > 0) {
+                report.addCrossSectionalDetails(memberDetails);
+            }
+
             // Add analysis results if available
             if (analysisResults) {
-                report.addPage('Analysis Results');
+                // Prepare loads for FBD (from applied loads if available)
+                const appliedLoads: Array<{ nodeId: string; fx?: number; fy?: number; fz?: number }> = [];
+                // Try to get loads from the store if available
+                // For now, we'll use empty loads array - loads should be passed from store
 
-                // Reactions
+                // Prepare supports info
+                const supportsInfo: Array<{ nodeId: string; type: 'fixed' | 'pinned' | 'roller' }> = [];
+                if (analysisResults.reactions) {
+                    for (const [nodeId, r] of analysisResults.reactions.entries()) {
+                        // Determine support type based on reaction components
+                        const hasRotation = Math.abs(r.mx ?? 0) > 0.001 || Math.abs(r.my ?? 0) > 0.001 || Math.abs(r.mz ?? 0) > 0.001;
+                        const hasHorizontal = Math.abs(r.fx) > 0.001;
+                        
+                        if (hasRotation && hasHorizontal) {
+                            supportsInfo.push({ nodeId, type: 'fixed' });
+                        } else if (hasHorizontal) {
+                            supportsInfo.push({ nodeId, type: 'pinned' });
+                        } else {
+                            supportsInfo.push({ nodeId, type: 'roller' });
+                        }
+                    }
+                }
+
+                // Reactions for FBD
+                const reactionsForFBD = analysisResults.reactions 
+                    ? Array.from(analysisResults.reactions.entries()).map(([nodeId, r]) => ({
+                        nodeId,
+                        fx: r.fx,
+                        fy: r.fy,
+                        fz: r.fz ?? 0,
+                        mx: r.mx ?? 0,
+                        my: r.my ?? 0,
+                        mz: r.mz ?? 0
+                    }))
+                    : [];
+
+                // Add Free Body Diagram
+                if (nodeList.length > 0 && memberList.length > 0) {
+                    try {
+                        report.addFreeBodyDiagram(
+                            nodeList,
+                            memberList,
+                            appliedLoads,
+                            reactionsForFBD,
+                            supportsInfo
+                        );
+                    } catch (error) {
+                        console.warn('Failed to add FBD to PDF:', error);
+                    }
+                }
+
+                // Add detailed reactions with equilibrium check
                 if (analysisResults.reactions && analysisResults.reactions.size > 0) {
                     const reactions = Array.from(analysisResults.reactions.entries()).map(([nodeId, r]) => ({
                         nodeId,
@@ -293,11 +370,12 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                         my: r.my ?? 0,
                         mz: r.mz ?? 0
                     }));
-                    report.addReactionsTable(reactions);
+                    report.addDetailedReactionsTable(reactions, appliedLoads);
                 }
 
                 // Member forces
                 if (analysisResults.memberForces && analysisResults.memberForces.size > 0) {
+                    report.addPage('Member Forces');
                     const forces = Array.from(analysisResults.memberForces.entries()).map(([memberId, f]) => ({
                         memberId,
                         axial: f.axial,

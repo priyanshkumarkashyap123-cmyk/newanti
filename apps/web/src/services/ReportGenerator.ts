@@ -792,6 +792,494 @@ By using this report, you acknowledge that you have read and understood these te
     }
 
     // ============================================
+    // CROSS-SECTIONAL DETAILS
+    // ============================================
+
+    /**
+     * Add detailed cross-sectional properties for all members
+     */
+    addCrossSectionalDetails(members: Array<{
+        id: string;
+        sectionId: string;
+        E?: number;      // Young's Modulus (kN/m² or MPa)
+        A?: number;      // Cross-sectional Area (m² or mm²)
+        Iy?: number;     // Moment of Inertia about Y (m⁴ or mm⁴)
+        Iz?: number;     // Moment of Inertia about Z (m⁴ or mm⁴)
+        J?: number;      // Torsional constant
+        length?: number; // Member length (m)
+    }>): void {
+        if (members.length === 0) return;
+
+        this.addPage('Cross-Sectional Properties');
+        this.addSectionHeading('Member Cross-Section Details');
+
+        this.tableCount++;
+        const headers = ['Member ID', 'Section', 'E (GPa)', 'A (cm²)', 'Iy (cm⁴)', 'Iz (cm⁴)', 'J (cm⁴)', 'Length (m)'];
+        
+        const data = members.map(m => [
+            m.id.slice(0, 10),
+            m.sectionId || 'Custom',
+            m.E ? (m.E / 1e6).toFixed(0) : '200',  // Convert kN/m² to GPa
+            m.A ? (m.A * 1e4).toFixed(2) : '—',    // Convert m² to cm²
+            m.Iy ? (m.Iy * 1e8).toFixed(2) : '—',  // Convert m⁴ to cm⁴
+            m.Iz ? (m.Iz * 1e8).toFixed(2) : '—',
+            m.J ? (m.J * 1e8).toFixed(2) : '—',
+            m.length?.toFixed(3) || '—'
+        ]);
+
+        this.addResultsTable(`Table ${this.tableCount}: Cross-Sectional Properties`, headers, data);
+
+        // Add cross-section diagrams for each unique section
+        const uniqueSections = [...new Set(members.map(m => m.sectionId))];
+        if (uniqueSections.length > 0 && uniqueSections.length <= 6) {
+            this.addCrossSectionVisualizations(uniqueSections.filter(s => s && s !== 'Custom'));
+        }
+    }
+
+    /**
+     * Draw cross-section visualization for common section types
+     */
+    private addCrossSectionVisualizations(sectionIds: string[]): void {
+        let y = (this.doc as any).lastAutoTable?.finalY + 15 || this.contentTop + 50;
+
+        if (y > this.pageHeight - 100) {
+            this.doc.addPage();
+            this.addHeader('Cross-Section Details');
+            y = this.contentTop + 5;
+        }
+
+        this.doc.setFontSize(11);
+        this.doc.setFont('helvetica', 'bold');
+        this.doc.text('Section Profiles', this.margin, y);
+        y += 8;
+
+        const sectionWidth = 50;
+        const sectionHeight = 40;
+        let x = this.margin;
+
+        for (const sectionId of sectionIds) {
+            if (x + sectionWidth > this.pageWidth - this.margin) {
+                x = this.margin;
+                y += sectionHeight + 20;
+            }
+
+            // Draw section box
+            this.doc.setDrawColor(100, 100, 100);
+            this.doc.setLineWidth(0.3);
+            this.doc.rect(x, y, sectionWidth, sectionHeight);
+
+            // Draw section shape based on type
+            this.drawSectionProfile(x + sectionWidth / 2, y + sectionHeight / 2, sectionId);
+
+            // Add section label
+            this.doc.setFontSize(8);
+            this.doc.setFont('helvetica', 'normal');
+            this.doc.text(sectionId.slice(0, 12), x + sectionWidth / 2, y + sectionHeight + 5, { align: 'center' });
+
+            x += sectionWidth + 10;
+        }
+    }
+
+    /**
+     * Draw a section profile (I-beam, rectangular, circular, etc.)
+     */
+    private drawSectionProfile(cx: number, cy: number, sectionId: string): void {
+        this.doc.setDrawColor(50, 50, 50);
+        this.doc.setFillColor(200, 200, 200);
+        this.doc.setLineWidth(0.5);
+
+        const sectionType = sectionId.toLowerCase();
+
+        if (sectionType.includes('ismb') || sectionType.includes('w') || sectionType.includes('ipe')) {
+            // I-section (wide flange)
+            const w = 18, h = 24, tf = 3, tw = 2;
+            // Top flange
+            this.doc.rect(cx - w/2, cy - h/2, w, tf, 'FD');
+            // Web
+            this.doc.rect(cx - tw/2, cy - h/2 + tf, tw, h - 2*tf, 'FD');
+            // Bottom flange
+            this.doc.rect(cx - w/2, cy + h/2 - tf, w, tf, 'FD');
+        } else if (sectionType.includes('ismc') || sectionType.includes('c') || sectionType.includes('channel')) {
+            // Channel section
+            const w = 14, h = 24, tf = 3, tw = 2;
+            // Top flange
+            this.doc.rect(cx - w/2, cy - h/2, w, tf, 'FD');
+            // Web
+            this.doc.rect(cx - w/2, cy - h/2 + tf, tw, h - 2*tf, 'FD');
+            // Bottom flange
+            this.doc.rect(cx - w/2, cy + h/2 - tf, w, tf, 'FD');
+        } else if (sectionType.includes('isa') || sectionType.includes('angle') || sectionType.includes('l')) {
+            // Angle section
+            const w = 16, t = 3;
+            // Vertical leg
+            this.doc.rect(cx - w/2, cy - w/2, t, w, 'FD');
+            // Horizontal leg
+            this.doc.rect(cx - w/2, cy + w/2 - t, w, t, 'FD');
+        } else if (sectionType.includes('rect') || sectionType.includes('rhs')) {
+            // Rectangular hollow section
+            const w = 16, h = 20, t = 2;
+            this.doc.setFillColor(200, 200, 200);
+            this.doc.rect(cx - w/2, cy - h/2, w, h, 'FD');
+            this.doc.setFillColor(255, 255, 255);
+            this.doc.rect(cx - w/2 + t, cy - h/2 + t, w - 2*t, h - 2*t, 'FD');
+        } else if (sectionType.includes('chs') || sectionType.includes('pipe') || sectionType.includes('circular')) {
+            // Circular hollow section
+            const r = 10, t = 2;
+            this.doc.setFillColor(200, 200, 200);
+            this.doc.circle(cx, cy, r, 'FD');
+            this.doc.setFillColor(255, 255, 255);
+            this.doc.circle(cx, cy, r - t, 'FD');
+        } else {
+            // Default: solid rectangle
+            const w = 12, h = 20;
+            this.doc.rect(cx - w/2, cy - h/2, w, h, 'FD');
+        }
+    }
+
+    // ============================================
+    // FREE BODY DIAGRAM (FBD)
+    // ============================================
+
+    /**
+     * Add Free Body Diagram showing structure with loads and reactions
+     */
+    addFreeBodyDiagram(
+        nodes: Array<{ id: string; x: number; y: number; z: number }>,
+        members: Array<{ id: string; startNodeId: string; endNodeId: string }>,
+        loads: Array<{ nodeId: string; fx?: number; fy?: number; fz?: number }>,
+        reactions: Array<{ nodeId: string; fx: number; fy: number; fz?: number; mx?: number; my?: number; mz?: number }>,
+        supports: Array<{ nodeId: string; type: 'fixed' | 'pinned' | 'roller' }>
+    ): void {
+        this.addPage('Free Body Diagram');
+        this.addSectionHeading('Structural Free Body Diagram (FBD)');
+
+        // Calculate bounds
+        const xs = nodes.map(n => n.x);
+        const ys = nodes.map(n => n.y);
+        const minX = Math.min(...xs), maxX = Math.max(...xs);
+        const minY = Math.min(...ys), maxY = Math.max(...ys);
+        const rangeX = maxX - minX || 1;
+        const rangeY = maxY - minY || 1;
+
+        // Canvas dimensions
+        const canvasWidth = this.pageWidth - 2 * this.margin;
+        const canvasHeight = 120;
+        const padding = 30;
+        const drawWidth = canvasWidth - 2 * padding;
+        const drawHeight = canvasHeight - 2 * padding;
+
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = canvasWidth * 3.78;
+        canvas.height = canvasHeight * 3.78;
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) return;
+
+        const scale = 3.78;
+        const pxPadding = padding * scale;
+        const pxDrawWidth = drawWidth * scale;
+        const pxDrawHeight = drawHeight * scale;
+
+        // Clear background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Coordinate transform
+        const toCanvasX = (x: number) => pxPadding + ((x - minX) / rangeX) * pxDrawWidth;
+        const toCanvasY = (y: number) => canvas.height - pxPadding - ((y - minY) / rangeY) * pxDrawHeight;
+
+        // Draw grid
+        ctx.strokeStyle = '#f0f0f0';
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= 10; i++) {
+            const x = pxPadding + (pxDrawWidth / 10) * i;
+            const y = pxPadding + (pxDrawHeight / 10) * i;
+            ctx.beginPath();
+            ctx.moveTo(x, pxPadding);
+            ctx.lineTo(x, canvas.height - pxPadding);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(pxPadding, y);
+            ctx.lineTo(canvas.width - pxPadding, y);
+            ctx.stroke();
+        }
+
+        // Draw members
+        ctx.strokeStyle = '#374151';
+        ctx.lineWidth = 4;
+        for (const member of members) {
+            const startNode = nodes.find(n => n.id === member.startNodeId);
+            const endNode = nodes.find(n => n.id === member.endNodeId);
+            if (startNode && endNode) {
+                ctx.beginPath();
+                ctx.moveTo(toCanvasX(startNode.x), toCanvasY(startNode.y));
+                ctx.lineTo(toCanvasX(endNode.x), toCanvasY(endNode.y));
+                ctx.stroke();
+            }
+        }
+
+        // Draw supports
+        for (const support of supports) {
+            const node = nodes.find(n => n.id === support.nodeId);
+            if (!node) continue;
+
+            const px = toCanvasX(node.x);
+            const py = toCanvasY(node.y);
+
+            if (support.type === 'fixed') {
+                // Fixed support - hatched rectangle
+                ctx.fillStyle = '#6b7280';
+                ctx.fillRect(px - 15, py, 30, 15);
+                ctx.strokeStyle = '#374151';
+                ctx.lineWidth = 2;
+                for (let i = 0; i < 5; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(px - 15 + i * 8, py);
+                    ctx.lineTo(px - 15 + i * 8 + 8, py + 15);
+                    ctx.stroke();
+                }
+            } else if (support.type === 'pinned') {
+                // Pinned support - triangle
+                ctx.fillStyle = '#10b981';
+                ctx.beginPath();
+                ctx.moveTo(px, py);
+                ctx.lineTo(px - 12, py + 20);
+                ctx.lineTo(px + 12, py + 20);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = '#064e3b';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            } else if (support.type === 'roller') {
+                // Roller support - triangle with circle
+                ctx.fillStyle = '#3b82f6';
+                ctx.beginPath();
+                ctx.moveTo(px, py);
+                ctx.lineTo(px - 10, py + 15);
+                ctx.lineTo(px + 10, py + 15);
+                ctx.closePath();
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(px, py + 20, 5, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+        }
+
+        // Draw applied loads (red arrows pointing down/direction)
+        ctx.fillStyle = '#ef4444';
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 3;
+        for (const load of loads) {
+            const node = nodes.find(n => n.id === load.nodeId);
+            if (!node) continue;
+
+            const px = toCanvasX(node.x);
+            const py = toCanvasY(node.y);
+
+            if (load.fy && load.fy !== 0) {
+                const arrowLen = Math.min(40, Math.abs(load.fy) * 2);
+                const dir = load.fy < 0 ? 1 : -1;
+                ctx.beginPath();
+                ctx.moveTo(px, py - dir * 10);
+                ctx.lineTo(px, py - dir * (10 + arrowLen));
+                ctx.stroke();
+                // Arrow head
+                ctx.beginPath();
+                ctx.moveTo(px, py - dir * 10);
+                ctx.lineTo(px - 6, py - dir * 20);
+                ctx.lineTo(px + 6, py - dir * 20);
+                ctx.closePath();
+                ctx.fill();
+                // Label
+                ctx.font = 'bold 12px Arial';
+                ctx.fillText(`${Math.abs(load.fy).toFixed(1)} kN`, px + 8, py - dir * 25);
+            }
+
+            if (load.fx && load.fx !== 0) {
+                const arrowLen = Math.min(40, Math.abs(load.fx) * 2);
+                const dir = load.fx > 0 ? 1 : -1;
+                ctx.beginPath();
+                ctx.moveTo(px + dir * 10, py);
+                ctx.lineTo(px + dir * (10 + arrowLen), py);
+                ctx.stroke();
+                // Arrow head
+                ctx.beginPath();
+                ctx.moveTo(px + dir * 10, py);
+                ctx.lineTo(px + dir * 20, py - 6);
+                ctx.lineTo(px + dir * 20, py + 6);
+                ctx.closePath();
+                ctx.fill();
+                // Label
+                ctx.font = 'bold 12px Arial';
+                ctx.fillText(`${Math.abs(load.fx).toFixed(1)} kN`, px + dir * 45, py + 5);
+            }
+        }
+
+        // Draw reaction forces (green arrows)
+        ctx.fillStyle = '#22c55e';
+        ctx.strokeStyle = '#22c55e';
+        ctx.lineWidth = 3;
+        for (const reaction of reactions) {
+            const node = nodes.find(n => n.id === reaction.nodeId);
+            if (!node) continue;
+
+            const px = toCanvasX(node.x);
+            const py = toCanvasY(node.y);
+
+            if (Math.abs(reaction.fy) > 0.01) {
+                const arrowLen = Math.min(40, Math.abs(reaction.fy) * 2);
+                const dir = reaction.fy > 0 ? -1 : 1;
+                ctx.beginPath();
+                ctx.moveTo(px, py + dir * 25);
+                ctx.lineTo(px, py + dir * (25 + arrowLen));
+                ctx.stroke();
+                // Arrow head
+                ctx.beginPath();
+                ctx.moveTo(px, py + dir * 25);
+                ctx.lineTo(px - 6, py + dir * 35);
+                ctx.lineTo(px + 6, py + dir * 35);
+                ctx.closePath();
+                ctx.fill();
+                // Label
+                ctx.font = 'bold 11px Arial';
+                ctx.fillText(`R=${Math.abs(reaction.fy).toFixed(2)} kN`, px + 10, py + dir * 50);
+            }
+
+            if (Math.abs(reaction.fx) > 0.01) {
+                const arrowLen = Math.min(40, Math.abs(reaction.fx) * 2);
+                const dir = reaction.fx > 0 ? -1 : 1;
+                ctx.beginPath();
+                ctx.moveTo(px + dir * 25, py);
+                ctx.lineTo(px + dir * (25 + arrowLen), py);
+                ctx.stroke();
+                // Arrow head
+                ctx.beginPath();
+                ctx.moveTo(px + dir * 25, py);
+                ctx.lineTo(px + dir * 35, py - 6);
+                ctx.lineTo(px + dir * 35, py + 6);
+                ctx.closePath();
+                ctx.fill();
+                // Label
+                ctx.font = 'bold 11px Arial';
+                ctx.fillText(`H=${Math.abs(reaction.fx).toFixed(2)} kN`, px + dir * 50, py - 8);
+            }
+        }
+
+        // Draw nodes
+        ctx.fillStyle = '#1f2937';
+        for (const node of nodes) {
+            const px = toCanvasX(node.x);
+            const py = toCanvasY(node.y);
+            ctx.beginPath();
+            ctx.arc(px, py, 6, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Node label
+            ctx.font = '10px Arial';
+            ctx.fillStyle = '#374151';
+            ctx.fillText(node.id.slice(0, 8), px + 10, py - 10);
+            ctx.fillStyle = '#1f2937';
+        }
+
+        // Convert to image and add to PDF
+        const imgData = canvas.toDataURL('image/png');
+        const y = (this.doc as any).lastAutoTable?.finalY + 10 || this.contentTop + 10;
+        this.doc.addImage(imgData, 'PNG', this.margin, y, canvasWidth, canvasHeight);
+
+        // Add legend
+        const legendY = y + canvasHeight + 8;
+        this.doc.setFontSize(9);
+        this.doc.setFont('helvetica', 'normal');
+        this.doc.setTextColor(239, 68, 68);
+        this.doc.text('● Applied Loads (Red)', this.margin, legendY);
+        this.doc.setTextColor(34, 197, 94);
+        this.doc.text('● Reaction Forces (Green)', this.margin + 50, legendY);
+        this.doc.setTextColor(55, 65, 81);
+        this.doc.text('● Members (Grey)', this.margin + 110, legendY);
+        this.doc.setTextColor(0, 0, 0);
+    }
+
+    // ============================================
+    // DETAILED REACTIONS TABLE
+    // ============================================
+
+    /**
+     * Add comprehensive reactions summary with totals and equilibrium check
+     */
+    addDetailedReactionsTable(
+        reactions: ReactionRow[],
+        loads: Array<{ nodeId: string; fx?: number; fy?: number; fz?: number }>
+    ): void {
+        this.addPage('Reaction Forces');
+        this.addSectionHeading('Support Reactions Summary');
+
+        // Calculate totals
+        const totalRx = reactions.reduce((sum, r) => sum + r.fx, 0);
+        const totalRy = reactions.reduce((sum, r) => sum + r.fy, 0);
+        const totalRz = reactions.reduce((sum, r) => sum + (r.fz ?? 0), 0);
+        const totalMx = reactions.reduce((sum, r) => sum + (r.mx ?? 0), 0);
+        const totalMy = reactions.reduce((sum, r) => sum + (r.my ?? 0), 0);
+        const totalMz = reactions.reduce((sum, r) => sum + (r.mz ?? 0), 0);
+
+        const totalLoadFx = loads.reduce((sum, l) => sum + (l.fx ?? 0), 0);
+        const totalLoadFy = loads.reduce((sum, l) => sum + (l.fy ?? 0), 0);
+        const totalLoadFz = loads.reduce((sum, l) => sum + (l.fz ?? 0), 0);
+
+        // Reactions table
+        this.tableCount++;
+        const headers = ['Support Node', 'Rx (kN)', 'Ry (kN)', 'Rz (kN)', 'Mx (kN·m)', 'My (kN·m)', 'Mz (kN·m)'];
+        const data = reactions.map(r => [
+            r.nodeId.slice(0, 10),
+            r.fx.toFixed(3),
+            r.fy.toFixed(3),
+            (r.fz ?? 0).toFixed(3),
+            (r.mx ?? 0).toFixed(3),
+            (r.my ?? 0).toFixed(3),
+            (r.mz ?? 0).toFixed(3),
+        ]);
+
+        // Add totals row
+        data.push([
+            'TOTAL',
+            totalRx.toFixed(3),
+            totalRy.toFixed(3),
+            totalRz.toFixed(3),
+            totalMx.toFixed(3),
+            totalMy.toFixed(3),
+            totalMz.toFixed(3),
+        ]);
+
+        this.addResultsTable(`Table ${this.tableCount}: Reaction Forces`, headers, data);
+
+        // Equilibrium check
+        let checkY = (this.doc as any).lastAutoTable?.finalY + 15 || this.contentTop + 80;
+
+        this.doc.setFontSize(11);
+        this.doc.setFont('helvetica', 'bold');
+        this.doc.text('Equilibrium Check', this.margin, checkY);
+        checkY += 6;
+
+        this.doc.setFontSize(9);
+        this.doc.setFont('helvetica', 'normal');
+
+        const equilibriumX = Math.abs(totalRx + totalLoadFx) < 0.01;
+        const equilibriumY = Math.abs(totalRy + totalLoadFy) < 0.01;
+        const equilibriumZ = Math.abs(totalRz + totalLoadFz) < 0.01;
+
+        this.doc.setTextColor(equilibriumX ? 34 : 239, equilibriumX ? 197 : 68, equilibriumX ? 94 : 68);
+        this.doc.text(`ΣFx = ${(totalRx + totalLoadFx).toFixed(4)} kN ${equilibriumX ? '✓' : '✗'}`, this.margin, checkY);
+        
+        this.doc.setTextColor(equilibriumY ? 34 : 239, equilibriumY ? 197 : 68, equilibriumY ? 94 : 68);
+        this.doc.text(`ΣFy = ${(totalRy + totalLoadFy).toFixed(4)} kN ${equilibriumY ? '✓' : '✗'}`, this.margin + 60, checkY);
+        
+        this.doc.setTextColor(equilibriumZ ? 34 : 239, equilibriumZ ? 197 : 68, equilibriumZ ? 94 : 68);
+        this.doc.text(`ΣFz = ${(totalRz + totalLoadFz).toFixed(4)} kN ${equilibriumZ ? '✓' : '✗'}`, this.margin + 120, checkY);
+
+        this.doc.setTextColor(0, 0, 0);
+    }
+
+    // ============================================
     // SAVE
     // ============================================
 
