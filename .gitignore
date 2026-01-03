@@ -82,3 +82,24 @@ python_logs/
 *.zip
 deploy-api/
 deploy-pkg/
+deployment-*/
+
+# Documentation (session notes, not part of codebase)
+*_COMPLETE.md
+*_SUMMARY.md
+*_RESEARCH.md
+*_IMPLEMENTATION.md
+*_INDEX.md
+*_REFERENCE.md
+*_GUIDE.md
+*_CHECKLIST.md
+*_ROADMAP*.md
+*_DELIVERY*.md
+*_FINDINGS*.md
+ADVANCED_FEM_*.md
+MASTER_*.md
+QUICK_START_*.md
+START_HERE_*.md
+SESSION_*.md
+IMPLEMENTATION_*.md
+RESEARCH_*.md
