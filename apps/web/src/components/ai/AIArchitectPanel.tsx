@@ -2,11 +2,11 @@
  * AIArchitectPanel.tsx - AI-Powered Structure Generation
  * 
  * Allows users to describe a structure in natural language
- * and generates it using the Python AI backend.
+ * and generates it using the Python AI backend with Google Gemini.
  */
 
-import { FC, useState, useCallback } from 'react';
-import { Sparkles, Loader2, AlertCircle, CheckCircle, Zap } from 'lucide-react';
+import { FC, useState, useCallback, useEffect, useRef } from 'react';
+import { Sparkles, Loader2, AlertCircle, CheckCircle, Zap, MessageCircle, Send, Bot, User, Wand2 } from 'lucide-react';
 import { useModelStore } from '../../store/model';
 
 // ============================================
@@ -42,6 +42,19 @@ interface GenerateResponse {
     hint?: string;
 }
 
+interface ChatMessage {
+    role: 'user' | 'assistant';
+    content: string;
+    timestamp: Date;
+}
+
+interface AIStatus {
+    gemini_configured: boolean;
+    mock_mode: boolean;
+    model: string;
+    capabilities: string[];
+}
+
 // ============================================
 // EXAMPLE PROMPTS
 // ============================================
@@ -53,6 +66,13 @@ const EXAMPLE_PROMPTS = [
     "Make a simple beam, 8m span with fixed supports"
 ];
 
+const CHAT_SUGGESTIONS = [
+    "What is a Pratt truss?",
+    "Explain moment of inertia",
+    "How to reduce deflection?",
+    "IS 800 steel design basics"
+];
+
 // ============================================
 // MAIN COMPONENT
 // ============================================
@@ -62,11 +82,34 @@ export const AIArchitectPanel: FC = () => {
     const [isGenerating, setIsGenerating] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
+    
+    // Chat state
+    const [activeTab, setActiveTab] = useState<'generate' | 'chat'>('generate');
+    const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+    const [chatInput, setChatInput] = useState('');
+    const [isChatting, setIsChatting] = useState(false);
+    const [aiStatus, setAIStatus] = useState<AIStatus | null>(null);
+    const chatEndRef = useRef<HTMLDivElement>(null);
 
     // Store actions
     const clearModel = useModelStore((state) => state.clearModel);
     const addNode = useModelStore((state) => state.addNode);
     const addMember = useModelStore((state) => state.addMember);
+    const nodes = useModelStore((state) => state.nodes);
+    const members = useModelStore((state) => state.members);
+
+    // Check AI status on mount
+    useEffect(() => {
+        fetch(`${PYTHON_API}/ai/status`)
+            .then(res => res.json())
+            .then(data => setAIStatus(data))
+            .catch(() => setAIStatus(null));
+    }, []);
+
+    // Auto-scroll chat
+    useEffect(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [chatMessages]);
 
     // ========================================
     // GENERATE HANDLER
@@ -142,7 +185,7 @@ export const AIArchitectPanel: FC = () => {
 
             // Check for network/connection errors
             if (err instanceof TypeError && err.message.includes('fetch')) {
-                setError('Cannot connect to Python Server. Is it running on port 8080?');
+                setError('Cannot connect to Python Server. Is it running on port 8081?');
             } else {
                 setError(err instanceof Error ? err.message : 'Unknown error occurred');
             }
@@ -150,6 +193,64 @@ export const AIArchitectPanel: FC = () => {
             setIsGenerating(false);
         }
     }, [prompt, clearModel, addNode, addMember]);
+
+    // ========================================
+    // CHAT HANDLER
+    // ========================================
+    const handleChat = useCallback(async () => {
+        if (!chatInput.trim()) return;
+
+        const userMessage: ChatMessage = {
+            role: 'user',
+            content: chatInput,
+            timestamp: new Date()
+        };
+        
+        setChatMessages(prev => [...prev, userMessage]);
+        setChatInput('');
+        setIsChatting(true);
+
+        try {
+            // Build context from current model
+            let context = '';
+            if (nodes.size > 0 || members.size > 0) {
+                context = `Current model has ${nodes.size} nodes and ${members.size} members.`;
+            }
+
+            const response = await fetch(`${PYTHON_API}/ai/chat`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: chatInput,
+                    context,
+                    history: chatMessages.slice(-10).map(m => ({
+                        role: m.role,
+                        content: m.content
+                    }))
+                })
+            });
+
+            const data = await response.json();
+            
+            const assistantMessage: ChatMessage = {
+                role: 'assistant',
+                content: data.success ? data.response : 'Sorry, I encountered an error. Please try again.',
+                timestamp: new Date()
+            };
+            
+            setChatMessages(prev => [...prev, assistantMessage]);
+
+        } catch (err) {
+            const errorMessage: ChatMessage = {
+                role: 'assistant',
+                content: 'Unable to connect to the AI service. Please check if the backend is running.',
+                timestamp: new Date()
+            };
+            setChatMessages(prev => [...prev, errorMessage]);
+        } finally {
+            setIsChatting(false);
+        }
+    }, [chatInput, chatMessages, nodes.size, members.size]);
 
     // ========================================
     // HANDLE EXAMPLE CLICK
@@ -160,119 +261,259 @@ export const AIArchitectPanel: FC = () => {
         setSuccess(null);
     };
 
+    const handleChatSuggestion = (suggestion: string) => {
+        setChatInput(suggestion);
+    };
+
     return (
         <div className="h-full flex flex-col bg-zinc-900">
-            {/* Header */}
+            {/* Header with Gemini branding */}
             <div className="px-3 py-3 border-b border-zinc-800">
-                <div className="flex items-center gap-2">
-                    <div className="p-1.5 bg-purple-500/10 rounded-lg">
-                        <Sparkles className="w-4 h-4 text-purple-400" />
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-lg">
+                            <Sparkles className="w-4 h-4 text-blue-400" />
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-semibold text-white">AI Architect</h3>
+                            <p className="text-[10px] text-zinc-500 flex items-center gap-1">
+                                Powered by 
+                                <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent font-medium">
+                                    Google Gemini
+                                </span>
+                                {aiStatus?.gemini_configured && (
+                                    <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+                                )}
+                            </p>
+                        </div>
                     </div>
+                </div>
+                
+                {/* Tab Switcher */}
+                <div className="flex gap-1 mt-3 p-0.5 bg-zinc-800/50 rounded-lg">
+                    <button
+                        onClick={() => setActiveTab('generate')}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-medium transition-all ${
+                            activeTab === 'generate'
+                                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm'
+                                : 'text-zinc-400 hover:text-white'
+                        }`}
+                    >
+                        <Wand2 className="w-3.5 h-3.5" />
+                        Generate
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('chat')}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-medium transition-all ${
+                            activeTab === 'chat'
+                                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm'
+                                : 'text-zinc-400 hover:text-white'
+                        }`}
+                    >
+                        <MessageCircle className="w-3.5 h-3.5" />
+                        Chat
+                    </button>
+                </div>
+            </div>
+
+            {/* Main Content - Generate Tab */}
+            {activeTab === 'generate' && (
+                <div className="flex-1 p-3 space-y-3 overflow-y-auto">
+                    {/* Prompt Input */}
                     <div>
-                        <h3 className="text-sm font-semibold text-white">AI Architect</h3>
-                        <p className="text-[10px] text-zinc-500">Text-to-Structure</p>
+                        <label className="block text-xs text-zinc-500 mb-1">
+                            Describe your structure
+                        </label>
+                        <textarea
+                            value={prompt}
+                            onChange={(e) => setPrompt(e.target.value)}
+                            placeholder="e.g., Create a 15m span Pratt truss..."
+                            disabled={isGenerating}
+                            className="
+                                w-full h-24 px-3 py-2
+                                bg-zinc-800 border border-zinc-700 rounded-lg
+                                text-sm text-zinc-200 placeholder-zinc-600
+                                focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500
+                                resize-none
+                                disabled:opacity-50 disabled:cursor-not-allowed
+                            "
+                        />
                     </div>
-                </div>
-            </div>
 
-            {/* Main Content */}
-            <div className="flex-1 p-3 space-y-3 overflow-y-auto">
-                {/* Prompt Input */}
-                <div>
-                    <label className="block text-xs text-zinc-500 mb-1">
-                        Describe your structure
-                    </label>
-                    <textarea
-                        value={prompt}
-                        onChange={(e) => setPrompt(e.target.value)}
-                        placeholder="e.g., Create a 15m span Pratt truss..."
-                        disabled={isGenerating}
-                        className="
-                            w-full h-24 px-3 py-2
-                            bg-zinc-800 border border-zinc-700 rounded-lg
-                            text-sm text-zinc-200 placeholder-zinc-600
-                            focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500
-                            resize-none
-                            disabled:opacity-50 disabled:cursor-not-allowed
-                        "
-                    />
-                </div>
-
-                {/* Example Prompts */}
-                <div>
-                    <label className="block text-xs text-zinc-500 mb-1.5">
-                        Try an example
-                    </label>
-                    <div className="flex flex-wrap gap-1.5">
-                        {EXAMPLE_PROMPTS.slice(0, 3).map((example, i) => (
-                            <button
-                                key={i}
-                                onClick={() => handleExampleClick(example)}
-                                disabled={isGenerating}
-                                className="
-                                    px-2 py-1 text-[10px]
-                                    bg-zinc-800/50 border border-zinc-700
-                                    text-zinc-400 rounded
-                                    hover:bg-zinc-700/50 hover:text-white
-                                    transition-colors
-                                    disabled:opacity-50
-                                "
-                            >
-                                {example.slice(0, 25)}...
-                            </button>
-                        ))}
+                    {/* Example Prompts */}
+                    <div>
+                        <label className="block text-xs text-zinc-500 mb-1.5">
+                            Try an example
+                        </label>
+                        <div className="flex flex-wrap gap-1.5">
+                            {EXAMPLE_PROMPTS.slice(0, 3).map((example, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => handleExampleClick(example)}
+                                    disabled={isGenerating}
+                                    className="
+                                        px-2 py-1 text-[10px]
+                                        bg-zinc-800/50 border border-zinc-700
+                                        text-zinc-400 rounded
+                                        hover:bg-zinc-700/50 hover:text-white
+                                        transition-colors
+                                        disabled:opacity-50
+                                    "
+                                >
+                                    {example.slice(0, 25)}...
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                </div>
 
-                {/* Generate Button */}
-                <button
-                    onClick={handleGenerate}
-                    disabled={isGenerating || !prompt.trim()}
-                    className={`
-                        w-full flex items-center justify-center gap-2
-                        py-3 rounded-lg font-medium text-sm
-                        transition-all duration-200
-                        ${isGenerating
-                            ? 'bg-purple-600/20 text-purple-300 cursor-wait'
-                            : 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-500 hover:to-blue-500 shadow-lg shadow-purple-600/20'
-                        }
-                        disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none
-                    `}
-                >
-                    {isGenerating ? (
-                        <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            Architect is thinking...
-                        </>
-                    ) : (
-                        <>
-                            <Zap className="w-4 h-4" />
-                            Generate Structure
-                        </>
+                    {/* Generate Button */}
+                    <button
+                        onClick={handleGenerate}
+                        disabled={isGenerating || !prompt.trim()}
+                        className={`
+                            w-full flex items-center justify-center gap-2
+                            py-3 rounded-lg font-medium text-sm
+                            transition-all duration-200
+                            ${isGenerating
+                                ? 'bg-purple-600/20 text-purple-300 cursor-wait'
+                                : 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-500 hover:to-blue-500 shadow-lg shadow-purple-600/20'
+                            }
+                            disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none
+                        `}
+                    >
+                        {isGenerating ? (
+                            <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Gemini is thinking...
+                            </>
+                        ) : (
+                            <>
+                                <Zap className="w-4 h-4" />
+                                Generate Structure
+                            </>
+                        )}
+                    </button>
+
+                    {/* Error Message */}
+                    {error && (
+                        <div className="flex items-start gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                            <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                            <p className="text-xs text-red-400">{error}</p>
+                        </div>
                     )}
-                </button>
 
-                {/* Error Message */}
-                {error && (
-                    <div className="flex items-start gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-                        <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
-                        <p className="text-xs text-red-400">{error}</p>
-                    </div>
-                )}
+                    {/* Success Message */}
+                    {success && (
+                        <div className="flex items-start gap-2 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                            <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+                            <p className="text-xs text-green-400">{success}</p>
+                        </div>
+                    )}
+                </div>
+            )}
 
-                {/* Success Message */}
-                {success && (
-                    <div className="flex items-start gap-2 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                        <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
-                        <p className="text-xs text-green-400">{success}</p>
+            {/* Main Content - Chat Tab */}
+            {activeTab === 'chat' && (
+                <div className="flex-1 flex flex-col overflow-hidden">
+                    {/* Chat Messages */}
+                    <div className="flex-1 overflow-y-auto p-3 space-y-3">
+                        {chatMessages.length === 0 ? (
+                            <div className="text-center py-8">
+                                <Bot className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
+                                <p className="text-sm text-zinc-400 mb-4">
+                                    Ask me anything about structural engineering!
+                                </p>
+                                <div className="flex flex-wrap gap-1.5 justify-center">
+                                    {CHAT_SUGGESTIONS.map((suggestion, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => handleChatSuggestion(suggestion)}
+                                            className="px-2 py-1 text-[10px] bg-zinc-800/50 border border-zinc-700 text-zinc-400 rounded hover:bg-zinc-700/50 hover:text-white transition-colors"
+                                        >
+                                            {suggestion}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            chatMessages.map((msg, i) => (
+                                <div
+                                    key={i}
+                                    className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                >
+                                    {msg.role === 'assistant' && (
+                                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
+                                            <Bot className="w-3.5 h-3.5 text-blue-400" />
+                                        </div>
+                                    )}
+                                    <div
+                                        className={`max-w-[80%] px-3 py-2 rounded-lg text-xs ${
+                                            msg.role === 'user'
+                                                ? 'bg-purple-600 text-white'
+                                                : 'bg-zinc-800 text-zinc-200 border border-zinc-700'
+                                        }`}
+                                    >
+                                        {msg.content}
+                                    </div>
+                                    {msg.role === 'user' && (
+                                        <div className="w-6 h-6 rounded-full bg-purple-600/20 flex items-center justify-center flex-shrink-0">
+                                            <User className="w-3.5 h-3.5 text-purple-400" />
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        )}
+                        {isChatting && (
+                            <div className="flex gap-2 justify-start">
+                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
+                                    <Bot className="w-3.5 h-3.5 text-blue-400" />
+                                </div>
+                                <div className="px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700">
+                                    <Loader2 className="w-4 h-4 text-zinc-400 animate-spin" />
+                                </div>
+                            </div>
+                        )}
+                        <div ref={chatEndRef} />
                     </div>
-                )}
-            </div>
+
+                    {/* Chat Input */}
+                    <div className="p-3 border-t border-zinc-800">
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={chatInput}
+                                onChange={(e) => setChatInput(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleChat()}
+                                placeholder="Ask about structural engineering..."
+                                disabled={isChatting}
+                                className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-200 placeholder-zinc-600 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 disabled:opacity-50"
+                            />
+                            <button
+                                onClick={handleChat}
+                                disabled={isChatting || !chatInput.trim()}
+                                className="p-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg text-white hover:from-purple-500 hover:to-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <Send className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Footer */}
             <div className="px-3 py-2 border-t border-zinc-800">
-                <p className="text-[10px] text-zinc-600 text-center">
-                    Powered by AI · Mock mode for testing
+                <p className="text-[10px] text-zinc-600 text-center flex items-center justify-center gap-1">
+                    {aiStatus?.gemini_configured ? (
+                        <>
+                            <span className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                            Gemini AI Connected
+                        </>
+                    ) : (
+                        <>
+                            <span className="w-1.5 h-1.5 bg-yellow-400 rounded-full" />
+                            Demo Mode · Add GEMINI_API_KEY for full AI
+                        </>
+                    )}
                 </p>
             </div>
         </div>

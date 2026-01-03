@@ -4,6 +4,10 @@ main.py - FastAPI Entry Point
 REST API for structural model generation.
 """
 
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -1063,13 +1067,25 @@ import asyncio
 import os
 import traceback
 from pydantic import BaseModel
+from typing import List, Optional
 
 class AIGenerateRequest(BaseModel):
     prompt: str
 
+class AIChatRequest(BaseModel):
+    message: str
+    context: Optional[str] = None
+    history: Optional[List[dict]] = None
+
+class AIChatResponse(BaseModel):
+    success: bool
+    response: Optional[str] = None
+    error: Optional[str] = None
+
 # Configuration flags
-USE_MOCK_AI = os.getenv("USE_MOCK_AI", "true").lower() == "true"  # Default to mock for testing
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", None)
+# Use real AI by default if API key is available, otherwise use mock
+USE_MOCK_AI = os.getenv("USE_MOCK_AI", "false" if GEMINI_API_KEY else "true").lower() == "true"
 
 # Mock response for testing
 MOCK_BEAM_RESPONSE = {
@@ -1217,6 +1233,122 @@ async def generate_from_ai(request: AIGenerateRequest):
             "original_prompt": prompt[:50]
         }
         return GenerateResponse(success=True, model=fallback)
+
+
+# ============================================
+# AI CHAT ASSISTANT ENDPOINT (Gemini-powered)
+# ============================================
+
+@app.post("/ai/chat", tags=["AI Chat"])
+async def ai_chat(request: AIChatRequest):
+    """
+    Chat with the AI assistant about structural engineering.
+    Uses Google Gemini to provide intelligent responses.
+    """
+    message = request.message
+    context = request.context or ""
+    history = request.history or []
+    
+    print(f"\n{'='*60}")
+    print(f"[AI CHAT] Message: {message[:100]}...")
+    print(f"[AI CHAT] Context provided: {bool(context)}")
+    print(f"[AI CHAT] API Key Present: {bool(GEMINI_API_KEY)}")
+    
+    try:
+        if not GEMINI_API_KEY:
+            # Mock response when no API key
+            mock_responses = {
+                "what": "I'm the AI Architect assistant. I can help you design and analyze structural models, explain engineering concepts, and answer questions about your structures.",
+                "help": "I can help you with: 1) Generating structural models from descriptions, 2) Explaining analysis results, 3) Suggesting design improvements, 4) Answering structural engineering questions.",
+                "explain": "I'd be happy to explain! Structural analysis helps us understand how forces flow through a structure, calculate stresses and deflections, and ensure the design is safe and efficient.",
+                "default": "I understand you're asking about structural engineering. To provide real AI-powered assistance, please configure your GEMINI_API_KEY in the environment. For now, try using the 'Generate Structure' feature!"
+            }
+            
+            response_key = "default"
+            for key in mock_responses:
+                if key in message.lower():
+                    response_key = key
+                    break
+            
+            return AIChatResponse(
+                success=True,
+                response=mock_responses[response_key]
+            )
+        
+        # Use Gemini for real AI chat
+        import google.generativeai as genai
+        
+        genai.configure(api_key=GEMINI_API_KEY)
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        
+        # Build the chat prompt
+        system_context = """You are an expert Structural Engineering AI assistant for BeamLab Ultimate, 
+a professional-grade structural analysis software. You help users:
+
+1. Understand structural analysis concepts (beams, trusses, frames, etc.)
+2. Interpret analysis results (stresses, deflections, reactions)
+3. Suggest design improvements and optimizations
+4. Explain Indian Standard (IS) codes and specifications
+5. Answer questions about finite element analysis
+6. Help with load calculations and combinations
+
+Keep responses concise but informative. Use engineering terminology appropriately.
+If the user shares model context, analyze it and provide specific insights.
+For numerical data, provide realistic engineering estimates based on context.
+"""
+        
+        # Build conversation
+        full_prompt = f"{system_context}\n\n"
+        
+        if context:
+            full_prompt += f"CURRENT MODEL CONTEXT:\n{context}\n\n"
+        
+        # Add conversation history
+        for entry in history[-5:]:  # Keep last 5 messages for context
+            role = entry.get("role", "user")
+            content = entry.get("content", "")
+            full_prompt += f"{role.upper()}: {content}\n"
+        
+        full_prompt += f"\nUSER: {message}\n\nASSISTANT:"
+        
+        response = model.generate_content(full_prompt)
+        ai_response = response.text.strip()
+        
+        print(f"[AI CHAT] ✅ Response generated: {len(ai_response)} chars")
+        
+        return AIChatResponse(
+            success=True,
+            response=ai_response
+        )
+        
+    except Exception as e:
+        print(f"[AI CHAT] ❌ Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
+        return AIChatResponse(
+            success=False,
+            error=str(e)
+        )
+
+
+@app.get("/ai/status", tags=["AI Chat"])
+async def ai_status():
+    """Check the status of AI capabilities"""
+    return {
+        "gemini_configured": bool(GEMINI_API_KEY),
+        "mock_mode": USE_MOCK_AI,
+        "capabilities": [
+            "structure_generation",
+            "chat_assistant",
+            "model_diagnosis",
+            "design_suggestions"
+        ] if GEMINI_API_KEY else [
+            "structure_generation_basic",
+            "mock_responses"
+        ],
+        "model": "gemini-1.5-flash" if GEMINI_API_KEY else "mock"
+    }
 
 
 # ============================================
