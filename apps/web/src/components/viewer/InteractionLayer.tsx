@@ -202,7 +202,7 @@ export const InteractionLayer: FC<InteractionLayerProps> = ({
     gridPlaneY = 0
 }) => {
     // ---- Store ----
-    const { nodes, addNode, addMember, activeTool } = useModelStore();
+    const { nodes, addNode, addMember, activeTool, getNextNodeId, getNextMemberId } = useModelStore();
 
     // ---- State Machine ----
     const [drawingState, setDrawingState] = useState<DrawingState>('IDLE');
@@ -299,13 +299,10 @@ export const InteractionLayer: FC<InteractionLayerProps> = ({
         } else if (drawingState === 'PLACING_END' && startPoint) {
             // Second click: Complete the member
 
-            // Generate IDs
-            const timestamp = Date.now();
-
             // Handle start node
             let startNodeId = startPoint.snappedToNode;
             if (!startNodeId) {
-                startNodeId = `N${timestamp}_start`;
+                startNodeId = getNextNodeId();
                 addNode({
                     id: startNodeId,
                     x: startPoint.x,
@@ -317,7 +314,7 @@ export const InteractionLayer: FC<InteractionLayerProps> = ({
             // Handle end node
             let endNodeId = cursorPoint.snappedToNode;
             if (!endNodeId) {
-                endNodeId = `N${timestamp}_end`;
+                endNodeId = getNextNodeId();
                 addNode({
                     id: endNodeId,
                     x: cursorPoint.x,
@@ -330,7 +327,7 @@ export const InteractionLayer: FC<InteractionLayerProps> = ({
             if (startNodeId !== endNodeId) {
                 // Add the member
                 addMember({
-                    id: `M${timestamp}`,
+                    id: getNextMemberId(),
                     startNodeId,
                     endNodeId,
                     sectionId: 'default'
@@ -341,7 +338,7 @@ export const InteractionLayer: FC<InteractionLayerProps> = ({
             setStartPoint({ ...cursorPoint });
             setDrawingState('PLACING_END');
         }
-    }, [isPenToolActive, cursorPoint, drawingState, startPoint, addNode, addMember]);
+    }, [isPenToolActive, cursorPoint, drawingState, startPoint, addNode, addMember, getNextNodeId, getNextMemberId]);
 
     // ---- Handle Right Click / Escape (Cancel) ----
     const handleCancel = useCallback((event: MouseEvent | KeyboardEvent) => {

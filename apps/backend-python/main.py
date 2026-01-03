@@ -38,7 +38,7 @@ allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
 frontend_url_env = os.getenv("FRONTEND_URL", "")
 
 allow_origins = [
-    "http://localhost:3000",
+    "https://beamlabultimate.tech",
     "http://localhost:3001",
     "http://localhost:5173",
     "http://localhost:8000",

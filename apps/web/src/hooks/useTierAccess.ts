@@ -136,7 +136,7 @@ export function useTierAccess(): TierAccess {
                 // Try to fetch tier from API
                 if (isAuthenticated && userEmail) {
                     try {
-                        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+                        const API_URL = import.meta.env.VITE_API_URL || 'https://api.beamlabultimate.tech';
                         const response = await fetch(`${API_URL}/api/user/tier`, {
                             headers: {
                                 'Content-Type': 'application/json',

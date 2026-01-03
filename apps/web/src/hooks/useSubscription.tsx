@@ -106,7 +106,7 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
             const token = await getToken();
             
             // Fetch from backend API
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+            const apiUrl = import.meta.env.VITE_API_URL || 'https://api.beamlabultimate.tech';
             const headers: Record<string, string> = {
                 'Content-Type': 'application/json',
             };
@@ -142,7 +142,8 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
 
             // Fallback to localStorage for demo mode
             const savedTier = localStorage.getItem('beamlab_subscription_tier') as SubscriptionTier | null;
-            const tier = savedTier || 'free';
+            // Default to enterprise tier if no tier is saved
+            const tier = savedTier || 'enterprise';
 
             setSubscription({
                 tier,
@@ -154,7 +155,8 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
             console.error('Failed to fetch subscription:', error);
             // Fallback to localStorage
             const savedTier = localStorage.getItem('beamlab_subscription_tier') as SubscriptionTier | null;
-            const tier = savedTier || 'free';
+            // Default to enterprise tier if no tier is saved
+            const tier = savedTier || 'enterprise';
             setSubscription({
                 tier,
                 isLoading: false,

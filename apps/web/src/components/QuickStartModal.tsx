@@ -5,12 +5,13 @@
  * - New empty project
  * - Pre-built sample structures
  * - Tutorial link
+ * - Resume last project
  */
 
-import { FC, useState } from 'react';
-import { X, Plus, FileText, Bookmark, Play, Building2, Layers, Weight } from 'lucide-react';
+import { FC, useState, useEffect } from 'react';
+import { X, Plus, FileText, Bookmark, Play, Building2, Layers, Weight, RotateCcw } from 'lucide-react';
 import { ALL_SAMPLES, type SampleStructure } from '../data/SampleStructures';
-import { useModelStore } from '../store/model';
+import { useModelStore, loadProjectFromStorage, getSavedProjectInfo } from '../store/model';
 
 // ============================================
 // TYPES
@@ -22,14 +23,23 @@ interface QuickStartModalProps {
     onOpenWizard?: () => void;
     onOpenFoundation?: () => void;
     onOpenLoads?: () => void;
+    onNewProject?: () => void; // NEW: Opens ProjectDetailsDialog
 }
 
 // ============================================
 // COMPONENT
 // ============================================
 
-export const QuickStartModal: FC<QuickStartModalProps> = ({ isOpen, onClose, onOpenWizard, onOpenFoundation, onOpenLoads }) => {
+export const QuickStartModal: FC<QuickStartModalProps> = ({
+    isOpen,
+    onClose,
+    onOpenWizard,
+    onOpenFoundation,
+    onOpenLoads,
+    onNewProject
+}) => {
     const [selectedSample, setSelectedSample] = useState<SampleStructure | null>(null);
+    const [savedProject, setSavedProject] = useState<{ name: string; savedAt: string } | null>(null);
 
     // Model store actions
     const addNode = useModelStore((s) => s.addNode);
@@ -37,6 +47,14 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({ isOpen, onClose, onO
     const addLoad = useModelStore((s) => s.addLoad);
     const addMemberLoad = useModelStore((s) => s.addMemberLoad);
     const clearModel = useModelStore((s) => s.clearModel);
+
+    // Check for saved project on mount
+    useEffect(() => {
+        if (isOpen) {
+            const info = getSavedProjectInfo();
+            setSavedProject(info);
+        }
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
@@ -60,9 +78,33 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({ isOpen, onClose, onO
     };
 
     const handleNewProject = () => {
-        clearModel();
-        onClose();
+        if (onNewProject) {
+            // Open project details dialog
+            onNewProject();
+        } else {
+            // Fallback: just clear and close
+            clearModel();
+            onClose();
+        }
     };
+
+    const handleResumeProject = () => {
+        const success = loadProjectFromStorage();
+        if (success) {
+            onClose();
+        }
+    };
+
+    // Format saved date
+    const formatSavedDate = (isoString: string) => {
+        try {
+            const date = new Date(isoString);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } catch {
+            return 'Unknown';
+        }
+    };
+
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -102,14 +144,28 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({ isOpen, onClose, onO
                             <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">New Project</span>
                         </button>
 
-                        <button
-                            className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 hover:border-green-500 dark:hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all group"
-                        >
-                            <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:bg-green-100 dark:group-hover:bg-green-900/50 transition-colors">
-                                <FileText className="w-5 h-5 text-zinc-500 group-hover:text-green-600" />
-                            </div>
-                            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Open File</span>
-                        </button>
+                        {/* Resume Last Project - only show if saved project exists */}
+                        {savedProject ? (
+                            <button
+                                onClick={handleResumeProject}
+                                className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-900/20 hover:border-green-500 dark:hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/30 transition-all group"
+                            >
+                                <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/50 flex items-center justify-center group-hover:bg-green-200 dark:group-hover:bg-green-800/50 transition-colors">
+                                    <RotateCcw className="w-5 h-5 text-green-600 dark:text-green-400" />
+                                </div>
+                                <span className="text-sm font-medium text-green-700 dark:text-green-300">Resume</span>
+                                <span className="text-xs text-green-600/70 dark:text-green-400/70 truncate max-w-full">{savedProject.name}</span>
+                            </button>
+                        ) : (
+                            <button
+                                className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 hover:border-green-500 dark:hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all group"
+                            >
+                                <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:bg-green-100 dark:group-hover:bg-green-900/50 transition-colors">
+                                    <FileText className="w-5 h-5 text-zinc-500 group-hover:text-green-600" />
+                                </div>
+                                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Open File</span>
+                            </button>
+                        )}
 
                         <button
                             className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 hover:border-purple-500 dark:hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all group"

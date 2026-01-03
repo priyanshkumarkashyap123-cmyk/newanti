@@ -24,7 +24,7 @@ import {
     HelpCircle
 } from 'lucide-react';
 import { useUIStore, Category } from '../store/uiStore';
-import { useModelStore } from '../store/model';
+import { useModelStore, saveProjectToStorage } from '../store/model';
 import { SmartSidebar } from './layout/SmartSidebar';
 import { ViewportManager } from './ViewportManager';
 // import { Toolbar } from './Toolbar'; // Replaced by Ribbon
@@ -39,6 +39,7 @@ import { EngineeringRibbon } from './layout/EngineeringRibbon';
 import { AnalysisWorkflow } from './AnalysisWorkflow'; // Keep for now if types rely on it or if used in stepper
 import { AnalysisProgressModal, type AnalysisStage } from './AnalysisProgressModal';
 import { QuickStartModal } from './QuickStartModal';
+import { ProjectDetailsDialog } from './ProjectDetailsDialog';
 import { ResultsToolbar } from './results/ResultsToolbar';
 import { AICommandCenter } from './ai';
 import { LoadInputDialog } from './ui/LoadInputDialog';
@@ -263,11 +264,26 @@ export const ModernModeler: FC = () => {
 
     // Quick start modal
     const [showQuickStart, setShowQuickStart] = useState(false);
+    const [showProjectDetails, setShowProjectDetails] = useState(false);
+    const [isNewProject, setIsNewProject] = useState(false);
     const [showLegalConsent, setShowLegalConsent] = useState(false);
     const [pendingAction, setPendingAction] = useState<'analysis' | 'design' | 'pdf_export' | null>(null);
     const [currentCheckpointType, setCurrentCheckpointType] = useState<'analysis' | 'design' | 'pdf_export'>('analysis');
     const { hasConsent } = useCheckLegalConsent();
     const { openModal } = useUIStore();
+
+    // Handler for new project from QuickStart
+    const handleNewProject = useCallback(() => {
+        setShowQuickStart(false);
+        setIsNewProject(true);
+        setShowProjectDetails(true);
+    }, []);
+
+    // Auto-save project after analysis completes
+    const handleProjectSave = useCallback(() => {
+        saveProjectToStorage();
+        showNotification('success', 'Project saved successfully!');
+    }, [showNotification]);
 
     // Import new layout components handled at top of file
 
@@ -277,7 +293,7 @@ export const ModernModeler: FC = () => {
         setPendingAction('analysis');
         setCurrentCheckpointType('analysis');
         setShowLegalConsent(true);
-        
+
         // Don't proceed with actual analysis yet
         return;
     }, []);
@@ -375,7 +391,7 @@ export const ModernModeler: FC = () => {
                 }));
 
                 // Call Python API for frame analysis
-                const PYTHON_API = import.meta.env['VITE_PYTHON_API_URL'] || 'http://localhost:8081';
+                const PYTHON_API = import.meta.env['VITE_PYTHON_API_URL'] || 'https://api.beamlabultimate.tech';
 
                 try {
                     setAnalysisStage('solving');
@@ -928,7 +944,24 @@ export const ModernModeler: FC = () => {
                 <ResultsToolbar onClose={() => setShowResultsToolbar(false)} />
             )}
 
-            {showQuickStart && <QuickStartModal isOpen={showQuickStart} onClose={() => setShowQuickStart(false)} />}
+            {showQuickStart && (
+                <QuickStartModal
+                    isOpen={showQuickStart}
+                    onClose={() => setShowQuickStart(false)}
+                    onNewProject={handleNewProject}
+                    onOpenWizard={() => openModal('structureWizard')}
+                    onOpenFoundation={() => openModal('foundationDesign')}
+                    onOpenLoads={() => openModal('is875Load')}
+                />
+            )}
+
+            {/* Project Details Dialog */}
+            <ProjectDetailsDialog
+                isOpen={showProjectDetails}
+                onClose={() => setShowProjectDetails(false)}
+                onSave={handleProjectSave}
+                isNewProject={isNewProject}
+            />
 
             {/* Checkpoint Legal Modals for different actions */}
             {showLegalConsent && (
@@ -937,7 +970,7 @@ export const ModernModeler: FC = () => {
                     checkpointType={currentCheckpointType}
                     onAccept={() => {
                         setShowLegalConsent(false);
-                        
+
                         // Record consent and execute pending action
                         if (pendingAction === 'analysis') {
                             consentService.recordConsent(`user-${Date.now()}`, 'analysis');

@@ -19,7 +19,7 @@ const SMTP_PASSWORD = process.env['SMTP_PASSWORD'];
 const SENDGRID_API_KEY = process.env['SENDGRID_API_KEY'];
 const FROM_EMAIL = process.env['FROM_EMAIL'] || 'noreply@beamlabultimate.tech';
 const FROM_NAME = process.env['FROM_NAME'] || 'BeamLab';
-const FRONTEND_URL = process.env['FRONTEND_URL'] || 'http://localhost:5173';
+const FRONTEND_URL = process.env['FRONTEND_URL'] || 'https://beamlabultimate.tech';
 
 // ============================================
 // EMAIL TEMPLATES

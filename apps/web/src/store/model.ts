@@ -132,6 +132,12 @@ interface ModelState {
     isAnalyzing: boolean;
     displacementScale: number;  // Scale factor for displaced shape visualization
 
+    // Sequential ID counters for user-friendly naming (M1, M2, N1, N2...)
+    nextNodeNumber: number;
+    nextMemberNumber: number;
+    getNextNodeId: () => string;
+    getNextMemberId: () => string;
+
     // Diagram visibility
     showSFD: boolean;  // Shear Force Diagram
     showBMD: boolean;  // Bending Moment Diagram
@@ -233,6 +239,23 @@ export const useModelStore = create<ModelState>()(
                 analysisResults: null,
                 isAnalyzing: false,
                 displacementScale: 100, // Default scale factor
+
+                // Sequential ID counters
+                nextNodeNumber: 1,
+                nextMemberNumber: 1,
+                getNextNodeId: () => {
+                    const state = get();
+                    const id = `N${state.nextNodeNumber}`;
+                    set({ nextNodeNumber: state.nextNodeNumber + 1 });
+                    return id;
+                },
+                getNextMemberId: () => {
+                    const state = get();
+                    const id = `M${state.nextMemberNumber}`;
+                    set({ nextMemberNumber: state.nextMemberNumber + 1 });
+                    return id;
+                },
+
                 showSFD: false,
                 showBMD: false,
                 showAFD: false,
@@ -466,7 +489,7 @@ export const useModelStore = create<ModelState>()(
 
                         // Clone nodes with offset
                         state.clipboard.nodes.forEach(node => {
-                            const newId = crypto.randomUUID();
+                            const newId = state.getNextNodeId();
                             idMap.set(node.id, newId);
                             newNodes.set(newId, {
                                 ...node,
@@ -483,7 +506,7 @@ export const useModelStore = create<ModelState>()(
                             const newStartId = idMap.get(member.startNodeId);
                             const newEndId = idMap.get(member.endNodeId);
                             if (newStartId && newEndId) {
-                                const newId = crypto.randomUUID();
+                                const newId = state.getNextMemberId();
                                 newMembers.set(newId, {
                                     ...member,
                                     id: newId,
@@ -517,7 +540,7 @@ export const useModelStore = create<ModelState>()(
                     const newSelected = new Set<string>();
 
                     selectedNodes.forEach(node => {
-                        const newId = crypto.randomUUID();
+                        const newId = state.getNextNodeId();
                         idMap.set(node.id, newId);
                         newNodes.set(newId, {
                             ...node,
@@ -533,7 +556,7 @@ export const useModelStore = create<ModelState>()(
                         const newStartId = idMap.get(member.startNodeId);
                         const newEndId = idMap.get(member.endNodeId);
                         if (newStartId && newEndId) {
-                            const newId = crypto.randomUUID();
+                            const newId = state.getNextMemberId();
                             newMembers.set(newId, {
                                 ...member,
                                 id: newId,
@@ -641,15 +664,26 @@ export const useModelStore = create<ModelState>()(
                     modalResults: null,
                     activeModeIndex: 0,
                     modeAmplitude: 1.0,
-                    isAnimating: false
+                    isAnimating: false,
+                    nextNodeNumber: 1,
+                    nextMemberNumber: 1
                 }),
 
-                loadStructure: (newNodes, newMembers) => set(() => {
+                loadStructure: (newNodes, newMembers) => set((state) => {
                     const nodesMap = new Map<string, Node>();
                     const membersMap = new Map<string, Member>();
 
+                    // Track highest numbers for counter initialization
+                    let maxNodeNum = state.nextNodeNumber - 1;
+                    let maxMemberNum = state.nextMemberNumber - 1;
+
                     for (const node of newNodes) {
                         nodesMap.set(node.id, node);
+                        // Extract number from N1, N2, etc.
+                        const match = node.id.match(/^N(\d+)$/);
+                        if (match) {
+                            maxNodeNum = Math.max(maxNodeNum, parseInt(match[1]));
+                        }
                     }
 
                     for (const member of newMembers) {
@@ -660,6 +694,11 @@ export const useModelStore = create<ModelState>()(
                             A: member.A ?? 0.01,
                             I: member.I ?? 1e-4
                         });
+                        // Extract number from M1, M2, etc.
+                        const match = member.id.match(/^M(\d+)$/);
+                        if (match) {
+                            maxMemberNum = Math.max(maxMemberNum, parseInt(match[1]));
+                        }
                     }
 
                     return {
@@ -675,6 +714,8 @@ export const useModelStore = create<ModelState>()(
                         showAFD: false,
                         showStressOverlay: false,
                         showDeflectedShape: false,
+                        nextNodeNumber: maxNodeNum + 1,
+                        nextMemberNumber: maxMemberNum + 1,
                         diagramScale: 0.05,
                         showResults: false,
                         modalResults: null,
@@ -730,7 +771,7 @@ export const useModelStore = create<ModelState>()(
                         const dz = endNode.z - startNode.z;
                         const clampedRatio = Math.max(0.01, Math.min(0.99, ratio));
 
-                        const newNodeId = `${memberId}_split`;
+                        const newNodeId = state.getNextNodeId();
                         const newNode: Node = {
                             id: newNodeId,
                             x: startNode.x + dx * clampedRatio,
@@ -740,7 +781,7 @@ export const useModelStore = create<ModelState>()(
 
                         // Create two new members
                         const member1: Member = {
-                            id: `${memberId}_a`,
+                            id: state.getNextMemberId(),
                             startNodeId: member.startNodeId,
                             endNodeId: newNodeId,
                             sectionId: member.sectionId,
@@ -751,7 +792,7 @@ export const useModelStore = create<ModelState>()(
                         };
 
                         const member2: Member = {
-                            id: `${memberId}_b`,
+                            id: state.getNextMemberId(),
                             startNodeId: newNodeId,
                             endNodeId: member.endNodeId,
                             sectionId: member.sectionId,
@@ -794,4 +835,128 @@ export const useModelStore = create<ModelState>()(
     )
 );
 
+// ============================================
+// LOCAL STORAGE PERSISTENCE
+// ============================================
 
+const STORAGE_KEY = 'beamlab_project';
+
+export interface SavedProjectData {
+    projectInfo: ProjectInfo;
+    nodes: [string, Node][];
+    members: [string, Member][];
+    loads: NodeLoad[];
+    memberLoads: MemberLoad[];
+    savedAt: string;
+}
+
+/**
+ * Save current project to localStorage
+ */
+export const saveProjectToStorage = (): boolean => {
+    try {
+        const state = useModelStore.getState();
+        const projectData: SavedProjectData = {
+            projectInfo: state.projectInfo,
+            nodes: Array.from(state.nodes.entries()),
+            members: Array.from(state.members.entries()),
+            loads: state.loads,
+            memberLoads: state.memberLoads,
+            savedAt: new Date().toISOString()
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(projectData));
+        return true;
+    } catch (e) {
+        console.error('Failed to save project:', e);
+        return false;
+    }
+};
+
+/**
+ * Load project from localStorage
+ */
+export const loadProjectFromStorage = (): boolean => {
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (!stored) return false;
+
+        const data: SavedProjectData = JSON.parse(stored);
+
+        const state = useModelStore.getState();
+
+        // Restore nodes
+        const nodesMap = new Map<string, Node>();
+        data.nodes.forEach(([id, node]) => nodesMap.set(id, node));
+
+        // Restore members
+        const membersMap = new Map<string, Member>();
+        data.members.forEach(([id, member]) => membersMap.set(id, member));
+
+        // Calculate next IDs
+        let maxNodeNum = 0;
+        let maxMemberNum = 0;
+
+        nodesMap.forEach((_, id) => {
+            const match = id.match(/^N(\d+)$/);
+            if (match) maxNodeNum = Math.max(maxNodeNum, parseInt(match[1]));
+        });
+
+        membersMap.forEach((_, id) => {
+            const match = id.match(/^M(\d+)$/);
+            if (match) maxMemberNum = Math.max(maxMemberNum, parseInt(match[1]));
+        });
+
+        // Update store
+        useModelStore.setState({
+            projectInfo: {
+                ...data.projectInfo,
+                date: new Date(data.projectInfo.date)
+            },
+            nodes: nodesMap,
+            members: membersMap,
+            loads: data.loads,
+            memberLoads: data.memberLoads,
+            nextNodeNumber: maxNodeNum + 1,
+            nextMemberNumber: maxMemberNum + 1,
+            selectedIds: new Set(),
+            analysisResults: null
+        });
+
+        return true;
+    } catch (e) {
+        console.error('Failed to load project:', e);
+        return false;
+    }
+};
+
+/**
+ * Check if a saved project exists
+ */
+export const hasSavedProject = (): boolean => {
+    return localStorage.getItem(STORAGE_KEY) !== null;
+};
+
+/**
+ * Get saved project metadata without loading it
+ */
+export const getSavedProjectInfo = (): { name: string; savedAt: string } | null => {
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (!stored) return null;
+
+        const data: SavedProjectData = JSON.parse(stored);
+        return {
+            name: data.projectInfo.name,
+            savedAt: data.savedAt
+        };
+    } catch {
+        return null;
+    }
+};
+
+/**
+ * Clear saved project from localStorage
+ */
+export const clearSavedProject = (): void => {
+    localStorage.removeItem(STORAGE_KEY);
+};
