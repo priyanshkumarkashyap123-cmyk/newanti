@@ -762,6 +762,115 @@ async def generate_from_ai(request: AIGenerateRequest):
         return GenerateResponse(success=True, model=fallback)
 
 
+# ============================================
+# AI MODEL ASSISTANT ENDPOINTS
+# ============================================
+
+class ModelDiagnoseRequest(BaseModel):
+    """Request to diagnose a structural model"""
+    nodes: List[Dict]
+    members: List[Dict]
+    loads: Optional[List[Dict]] = []
+    memberLoads: Optional[List[Dict]] = []
+
+class ModelModifyRequest(BaseModel):
+    """Request to modify a model via natural language"""
+    command: str
+    nodes: List[Dict]
+    members: List[Dict]
+    loads: Optional[List[Dict]] = []
+
+
+@app.post("/ai/diagnose", tags=["AI Assistant"])
+async def diagnose_model(request: ModelDiagnoseRequest):
+    """
+    Diagnose a structural model for issues.
+    
+    Returns a list of detected issues with severity and suggested fixes.
+    """
+    try:
+        from ai_assistant import AIModelAssistant
+        
+        model_data = {
+            'nodes': request.nodes,
+            'members': request.members,
+            'loads': request.loads or [],
+            'memberLoads': request.memberLoads or []
+        }
+        
+        assistant = AIModelAssistant()
+        result = assistant.diagnose(model_data)
+        
+        print(f"[AI ASSISTANT] Diagnosed model: {result['summary']}")
+        return {"success": True, **result}
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/ai/fix", tags=["AI Assistant"])
+async def fix_model(request: ModelDiagnoseRequest):
+    """
+    Auto-fix common issues in a structural model.
+    
+    Returns the fixed model and list of changes made.
+    """
+    try:
+        from ai_assistant import AIModelAssistant
+        
+        model_data = {
+            'nodes': request.nodes,
+            'members': request.members,
+            'loads': request.loads or [],
+            'memberLoads': request.memberLoads or []
+        }
+        
+        assistant = AIModelAssistant()
+        result = assistant.fix(model_data)
+        
+        print(f"[AI ASSISTANT] Fixed model: {result['message']}")
+        return {"success": True, **result}
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/ai/modify", tags=["AI Assistant"])
+async def modify_model(request: ModelModifyRequest):
+    """
+    Modify a structural model using natural language commands.
+    
+    Examples:
+    - "Change columns to ISMB500"
+    - "Add support at N5"
+    - "Remove member M3"
+    - "Add member from N1 to N8"
+    - "Set span to 15m"
+    """
+    try:
+        from ai_assistant import AIModelAssistant
+        
+        model_data = {
+            'nodes': request.nodes,
+            'members': request.members,
+            'loads': request.loads or []
+        }
+        
+        assistant = AIModelAssistant()
+        result = assistant.modify(model_data, request.command)
+        
+        print(f"[AI ASSISTANT] Modified model: {result['message']}")
+        return result
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 # ============================================
 # CONCRETE DESIGN ENDPOINTS
