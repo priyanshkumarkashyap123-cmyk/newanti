@@ -58,10 +58,10 @@ export const LandingPage: FC = () => {
             return (
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={() => navigate('/app')}
+                        onClick={() => navigate('/dashboard')}
                         className="flex h-10 items-center justify-center rounded-lg bg-steel-blue px-4 text-sm font-bold text-white transition-all hover:bg-steel-blue/90"
                     >
-                        Open App
+                        Open Dashboard
                     </button>
                     {isClerkEnabled ? (
                         <UserButton afterSignOutUrl="/" />
@@ -221,7 +221,7 @@ export const LandingPage: FC = () => {
                         {(isPro || isEnterprise) && isSignedIn ? (
                             // Pro/Enterprise users see "Open Workspace"
                             <button
-                                onClick={() => navigate('/app')}
+                                onClick={() => navigate('/dashboard')}
                                 className="group flex h-12 min-w-[200px] items-center justify-center gap-2 rounded-lg bg-steel-blue px-8 text-base font-bold text-white transition-all hover:bg-steel-blue/90 hover:scale-105 shadow-lg"
                             >
                                 Open Workspace

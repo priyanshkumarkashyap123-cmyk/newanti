@@ -708,6 +708,217 @@ async def recommend_section(request: SectionRecommendationRequest):
 
 
 # ============================================
+# PDF REPORT GENERATION ENDPOINT
+# ============================================
+
+class ReportCustomization(BaseModel):
+    """Report customization settings"""
+    # Company branding
+    company_name: str = "Engineering Consultancy"
+    company_address: str = ""
+    company_phone: str = ""
+    company_email: str = ""
+    
+    # Project information
+    project_name: str = "Structural Analysis"
+    project_number: str = ""
+    project_location: str = ""
+    client_name: str = ""
+    engineer_name: str = ""
+    checked_by: str = ""
+    
+    # Report sections
+    include_cover_page: bool = True
+    include_input_summary: bool = True
+    include_analysis_results: bool = True
+    include_design_checks: bool = True
+    include_diagrams: bool = True
+    
+    # Styling
+    primary_color: List[float] = [0.0, 0.4, 0.8]  # RGB 0-1
+    page_size: str = "A4"  # "A4" or "Letter"
+
+
+class GenerateReportRequest(BaseModel):
+    """Request to generate PDF report"""
+    analysis_data: Dict[str, Any]
+    customization: Optional[ReportCustomization] = None
+
+
+@app.post("/reports/generate", tags=["Reports"])
+async def generate_pdf_report(request: GenerateReportRequest):
+    """
+    Generate professional PDF report from analysis results.
+    
+    Creates a customizable report with:
+    - Cover page with project details
+    - Input summary (geometry, loads, supports)
+    - Analysis results (displacements, forces)
+    - Design checks (IS 800 compliance)
+    - Charts and diagrams
+    
+    Returns PDF file as downloadable response.
+    """
+    try:
+        from analysis.report_generator import ReportGenerator, ReportSettings
+        import tempfile
+        import os
+        from fastapi.responses import FileResponse
+        
+        # Create settings from customization
+        customization = request.customization or ReportCustomization()
+        
+        settings = ReportSettings(
+            company_name=customization.company_name,
+            company_address=customization.company_address,
+            company_phone=customization.company_phone,
+            company_email=customization.company_email,
+            project_name=customization.project_name,
+            project_number=customization.project_number,
+            project_location=customization.project_location,
+            client_name=customization.client_name,
+            engineer_name=customization.engineer_name,
+            checked_by=customization.checked_by,
+            include_cover_page=customization.include_cover_page,
+            include_input_summary=customization.include_input_summary,
+            include_analysis_results=customization.include_analysis_results,
+            include_design_checks=customization.include_design_checks,
+            include_diagrams=customization.include_diagrams,
+            primary_color=tuple(customization.primary_color),
+            page_size=customization.page_size
+        )
+        
+        # Generate report
+        generator = ReportGenerator(settings)
+        
+        # Create temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp:
+            output_path = tmp.name
+        
+        # Generate PDF
+        generator.generate_report(request.analysis_data, output_path)
+        
+        # Return as downloadable file
+        filename = f"{customization.project_name.replace(' ', '_')}_Report_{datetime.now().strftime('%Y%m%d')}.pdf"
+        
+        return FileResponse(
+            output_path,
+            media_type='application/pdf',
+            filename=filename,
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}"
+            }
+        )
+        
+    except Exception as e:
+        print(f"[REPORT] Generation error: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Report generation error: {str(e)}")
+
+
+@app.post("/stress/calculate")
+async def calculate_stress(request: dict):
+    """
+    Calculate stresses for structural members
+    
+    Request body:
+    {
+        "members": [
+            {
+                "id": "M1",
+                "forces": {
+                    "axial": [...],
+                    "moment_x": [...],
+                    "moment_y": [...],
+                    "shear_y": [...],
+                    "shear_z": [...]
+                },
+                "section": {
+                    "area": 0.01,
+                    "Ixx": 1e-4,
+                    "Iyy": 1e-4,
+                    "depth": 0.3,
+                    "width": 0.15
+                },
+                "length": 5.0
+            }
+        ],
+        "stress_type": "von_mises",  # or "principal_1", "sigma_x", etc.
+        "fy": 250.0,  # Yield strength (MPa)
+        "safety_factor": 1.5
+    }
+    """
+    try:
+        from analysis.stress_calculator import StressCalculator
+        
+        print("[STRESS] Calculating stresses...")
+        
+        calculator = StressCalculator()
+        members_data = request.get('members', [])
+        stress_type = request.get('stress_type', 'von_mises')
+        fy = request.get('fy', 250.0)
+        safety_factor = request.get('safety_factor', 1.5)
+        
+        results = []
+        
+        for member in members_data:
+            member_id = member.get('id', 'unknown')
+            
+            # Calculate stress points
+            stress_points = calculator.calculate_member_stresses(
+                member_id=member_id,
+                member_forces=member.get('forces', {}),
+                section_properties=member.get('section', {}),
+                member_length=member.get('length', 1.0),
+                num_points=20
+            )
+            
+            # Get contour data
+            contours = calculator.get_stress_contours(stress_points, stress_type)
+            
+            # Check stress limits
+            check = calculator.check_stress_limits(stress_points, fy, safety_factor)
+            
+            results.append({
+                'member_id': member_id,
+                'stress_points': [
+                    {
+                        'x': p.x,
+                        'y': p.y,
+                        'z': p.z,
+                        'sigma_x': p.sigma_x,
+                        'sigma_y': p.sigma_y,
+                        'sigma_z': p.sigma_z,
+                        'tau_xy': p.tau_xy,
+                        'tau_yz': p.tau_yz,
+                        'tau_zx': p.tau_zx,
+                        'von_mises': p.von_mises,
+                        'principal_1': p.principal_1,
+                        'principal_2': p.principal_2,
+                        'principal_3': p.principal_3,
+                        'max_shear': p.max_shear
+                    }
+                    for p in stress_points
+                ],
+                'contours': contours,
+                'check': check
+            })
+        
+        print(f"[STRESS] Calculated stresses for {len(results)} members")
+        
+        return {
+            'success': True,
+            'results': results,
+            'stress_type': stress_type
+        }
+        
+    except Exception as e:
+        print(f"[STRESS] Calculation error: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Stress calculation error: {str(e)}")
+
+
+# ============================================
 # AI GENERATION ENDPOINT (HARDENED)
 # ============================================
 

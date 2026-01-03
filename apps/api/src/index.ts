@@ -9,6 +9,7 @@ import advancedRouter from './routes/advanced/index.js';
 import interopRouter from './routes/interop/index.js';
 import authRouter from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import projectRoutes from './routes/projectRoutes.js';
 import { razorpayRouter } from './razorpay.js';
 import { connectDB } from './models.js';
 import { authMiddleware as inHouseAuthMiddleware, isUsingClerk } from './middleware/authMiddleware.js';
@@ -134,76 +135,11 @@ app.use('/api/billing', billingRateLimit, razorpayRouter);
 const authRequired = requireAuth();
 
 // Get current user projects
-app.get('/api/project', authRequired, (req: Request, res: Response) => {
-    const auth = getAuth(req);
-    const userId = auth.userId;
+// Project API handled by projectRoutes
+// app.get('/api/project', ... ) removed
 
-    // TODO: Fetch projects from database
-    res.json({
-        success: true,
-        userId,
-        projects: []
-    });
-});
-
-// Create a new project
-app.post('/api/project', authRequired, (req: Request, res: Response) => {
-    const auth = getAuth(req);
-    const userId = auth.userId;
-    const { name, description } = req.body;
-
-    // TODO: Save project to database
-    res.json({
-        success: true,
-        project: {
-            id: `proj_${Date.now()}`,
-            userId,
-            name,
-            description,
-            createdAt: new Date().toISOString()
-        }
-    });
-});
-
-// Get a specific project
-app.get('/api/project/:id', authRequired, (req: Request, res: Response) => {
-    const auth = getAuth(req);
-    const userId = auth.userId;
-    const projectId = req.params['id'];
-
-    // TODO: Fetch project from database
-    res.json({
-        success: true,
-        project: { id: projectId, userId }
-    });
-});
-
-// Update a project
-app.put('/api/project/:id', authRequired, (req: Request, res: Response) => {
-    const auth = getAuth(req);
-    const userId = auth.userId;
-    const projectId = req.params['id'];
-    const { name, data } = req.body;
-
-    // TODO: Update project in database
-    res.json({
-        success: true,
-        project: { id: projectId, userId, name, data, updatedAt: new Date().toISOString() }
-    });
-});
-
-// Delete a project
-app.delete('/api/project/:id', authRequired, (req: Request, res: Response) => {
-    const auth = getAuth(req);
-    const userId = auth.userId;
-    const projectId = req.params['id'];
-
-    // TODO: Delete project from database
-    res.json({
-        success: true,
-        deleted: { id: projectId, userId }
-    });
-});
+// Project API
+app.use('/api/project', projectRoutes);
 
 // Get users in a project (for multiplayer)
 app.get('/api/project/:id/users', (req: Request, res: Response) => {

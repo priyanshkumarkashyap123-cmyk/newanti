@@ -49,6 +49,7 @@ import { FoundationDesignDialog } from './FoundationDesignDialog';
 import { IS875LoadDialog } from './IS875LoadDialog';
 import { GeometryToolsPanel } from './GeometryToolsPanel';
 import { ValidationErrorDisplay } from './ValidationErrorDisplay';
+import StressVisualization from './StressVisualization';
 import { InteroperabilityDialog } from './InteroperabilityDialog';
 import { RailwayBridgeDialog } from './RailwayBridgeDialog';
 import { MeshingPanel } from './MeshingPanel';
@@ -75,9 +76,9 @@ import { useContextMenu, getNodeContextMenuItems, getMemberContextMenuItems, get
 
 // Analysis service
 import { analysisService } from '../services/AnalysisService';
+import { CloudProjectManager } from './CloudProjectManager';
+import { ProjectService, Project } from '../services/ProjectService';
 
-// ============================================
-// TYPES
 // ============================================
 
 interface TabConfig {
@@ -249,6 +250,105 @@ export const ModernModeler: FC = () => {
     const { activeCategory, setCategory, notification, hideNotification, showNotification } = useUIStore();
 
     const [inspectorCollapsed, setInspectorCollapsed] = useState(false);
+    const [showCloudManager, setShowCloudManager] = useState(false);
+
+    // ============================================
+    // CLOUD PROJECT MANAGEMENT
+    // ============================================
+
+    // Cloud Save Handler
+    const handleCloudSave = useCallback(async () => {
+        const token = await getToken();
+        if (!token) {
+            showNotification('error', 'Please log in to save to cloud');
+            return;
+        }
+
+        const state = useModelStore.getState();
+
+        // Serialize Maps to Array
+        const projectData = {
+            projectInfo: state.projectInfo,
+            nodes: Array.from(state.nodes.entries()),
+            members: Array.from(state.members.entries()),
+            loads: state.loads,
+            memberLoads: state.memberLoads,
+            analysisResults: null // Don't save large results
+        };
+
+        try {
+            let savedProject: Project;
+            if (state.projectInfo.cloudId) {
+                // Update existing
+                savedProject = await ProjectService.updateProject(state.projectInfo.cloudId, {
+                    name: state.projectInfo.name,
+                    description: state.projectInfo.description,
+                    data: projectData
+                }, token);
+                showNotification('success', 'Project updated in cloud');
+            } else {
+                // Create new
+                savedProject = await ProjectService.createProject({
+                    name: state.projectInfo.name || 'Untitled Project',
+                    description: state.projectInfo.description,
+                    data: projectData
+                }, token);
+
+                // Update local state with new cloud ID
+                useModelStore.setState(s => ({
+                    projectInfo: { ...s.projectInfo, cloudId: savedProject._id }
+                }));
+                showNotification('success', 'Project saved to cloud');
+            }
+        } catch (error) {
+            console.error(error);
+            showNotification('error', 'Failed to save project. Ensure you are logged in.');
+        }
+    }, [getToken, showNotification]);
+
+    // Cloud Load Handler
+    const handleCloudLoad = useCallback((project: Project) => {
+        try {
+            const data = project.data;
+            if (!data) return;
+
+            // Reconstruct Maps
+            const nodesMap = new Map(data.nodes as [string, Node][]);
+            const membersMap = new Map(data.members as [string, Member][]);
+
+            // Update store
+            useModelStore.setState({
+                projectInfo: { ...data.projectInfo, cloudId: project._id },
+                nodes: nodesMap,
+                members: membersMap,
+                loads: data.loads || [],
+                memberLoads: data.memberLoads || [],
+                analysisResults: null,
+                selectedIds: new Set(),
+                isAnalyzing: false
+            });
+
+            showNotification('success', `Loaded project: ${project.name}`);
+        } catch (error) {
+            console.error(error);
+            showNotification('error', 'Failed to parse project data');
+        }
+    }, [showNotification]);
+
+    // Ribbon Event Listeners
+    useEffect(() => {
+        const onSave = () => handleCloudSave();
+        const onOpen = () => setShowCloudManager(true);
+
+        document.addEventListener('trigger-save', onSave);
+        document.addEventListener('trigger-cloud-open', onOpen);
+
+        return () => {
+            document.removeEventListener('trigger-save', onSave);
+            document.removeEventListener('trigger-cloud-open', onOpen);
+        };
+    }, [handleCloudSave]);
+
 
     // Analysis state
     const [isAnalyzing, setIsAnalyzingLocal] = useState(false);
@@ -262,6 +362,9 @@ export const ModernModeler: FC = () => {
     // Validation state
     const [validationErrors, setValidationErrors] = useState<any | null>(null);
     const [showValidationErrors, setShowValidationErrors] = useState(false);
+    const [stressResults, setStressResults] = useState<any[] | null>(null);
+    const [showStressVisualization, setShowStressVisualization] = useState(false);
+    const [currentStressType, setCurrentStressType] = useState('von_mises');
 
     // Export state
     const [showExportDialog, setShowExportDialog] = useState(false);
@@ -296,6 +399,103 @@ export const ModernModeler: FC = () => {
     }, [showNotification]);
 
     // Import new layout components handled at top of file
+
+    // Calculate stresses from analysis results
+    const calculateStresses = useCallback(async (
+        memberForces: Map<string, any>,
+        members: Map<string, Member>
+    ) => {
+        try {
+            console.log('[STRESS] Calculating stresses for members...');
+            
+            // Prepare stress calculation request
+            const membersData = Array.from(members.values()).map(member => {
+                const forces = memberForces.get(member.id);
+                if (!forces) return null;
+                
+                // Extract diagram data or use single values
+                const axialArray = forces.diagramData?.axial || [forces.axial || 0];
+                const shearYArray = forces.diagramData?.shear_y || [forces.shearY || 0];
+                const shearZArray = forces.diagramData?.shear_z || [forces.shearZ || 0];
+                const momentYArray = forces.diagramData?.moment_y || [forces.momentY || 0];
+                const momentZArray = forces.diagramData?.moment_z || [forces.momentZ || 0];
+                
+                // Get section properties from member
+                // Use member's A and I properties, with defaults
+                const area = member.A || 0.01;  // m²
+                const I = member.I || 1e-4;  // m⁴
+                
+                // Estimate depth and width from section area/inertia
+                // For rectangular section: I = bd³/12, A = bd
+                // Assume depth = 2*width for typical beam proportion
+                const estimatedDepth = Math.pow(12 * I / area * 2, 1/2);
+                const estimatedWidth = estimatedDepth / 2;
+                
+                const section = {
+                    area: area,
+                    Ixx: I,   // m⁴
+                    Iyy: I / 10,   // m⁴ (approximate for typical I-beam)
+                    depth: estimatedDepth || 0.3,  // m
+                    width: estimatedWidth || 0.15  // m
+                };
+                
+                // Calculate member length
+                const startNode = nodes.get(member.startNodeId);
+                const endNode = nodes.get(member.endNodeId);
+                if (!startNode || !endNode) return null;
+                
+                const dx = endNode.x - startNode.x;
+                const dy = endNode.y - startNode.y;
+                const dz = endNode.z - startNode.z;
+                const length = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                
+                return {
+                    id: member.id,
+                    forces: {
+                        axial: axialArray,
+                        moment_x: momentZArray,  // Convention: Mx = Mz in local coords
+                        moment_y: momentYArray,
+                        shear_y: shearYArray,
+                        shear_z: shearZArray
+                    },
+                    section,
+                    length
+                };
+            }).filter(m => m !== null);
+            
+            if (membersData.length === 0) {
+                console.log('[STRESS] No member force data available');
+                return;
+            }
+            
+            // Call stress calculation API
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/stress/calculate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    members: membersData,
+                    stress_type: currentStressType,
+                    fy: 250.0,  // Default yield strength for steel (MPa)
+                    safety_factor: 1.5
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Stress calculation failed: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.success && data.results) {
+                setStressResults(data.results);
+                setShowStressVisualization(true);
+                console.log('[STRESS] Stress calculation completed:', data.results.length, 'members');
+            }
+        } catch (error) {
+            console.error('[STRESS] Error calculating stresses:', error);
+            // Don't show error to user - stress visualization is optional enhancement
+        }
+    }, [currentStressType, nodes]);
 
     // Run analysis
     const handleRunAnalysis = useCallback(async () => {
@@ -664,6 +864,9 @@ export const ModernModeler: FC = () => {
                 // Show results toolbar after successful analysis
                 setShowResultsToolbar(true);
                 showNotification('success', 'Analysis completed successfully!');
+                
+                // Calculate stresses automatically after successful analysis
+                calculateStresses(memberForces, members);
                 // setActiveStep(4); // Move to results step
             } else {
                 setAnalysisStage('error');
@@ -1148,6 +1351,31 @@ export const ModernModeler: FC = () => {
                     }}
                 />
             )}
+
+            {/* Stress Visualization */}
+            {showStressVisualization && stressResults && (
+                <StressVisualization
+                    results={stressResults}
+                    stressType={currentStressType}
+                    onClose={() => {
+                        setShowStressVisualization(false);
+                    }}
+                    onStressTypeChange={(type) => {
+                        setCurrentStressType(type);
+                        // Recalculate with new stress type
+                        if (analysisResults?.memberForces) {
+                            calculateStresses(analysisResults.memberForces, members);
+                        }
+                    }}
+                />
+            )}
+
+            {/* Cloud Project Manager */}
+            <CloudProjectManager
+                isOpen={showCloudManager}
+                onClose={() => setShowCloudManager(false)}
+                onLoad={handleCloudLoad}
+            />
 
             {/* AI Assistant Components */}
             <AIAssistantChat

@@ -31,7 +31,7 @@ export const LandingPageEnhanced: FC = () => {
 
     const handleGetStarted = () => {
         if (isSignedIn) {
-            navigate('/app');
+            navigate('/dashboard');
         } else {
             navigate('/sign-up');
         }
@@ -44,10 +44,10 @@ export const LandingPageEnhanced: FC = () => {
             return (
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={() => navigate('/app')}
+                        onClick={() => navigate('/dashboard')}
                         className="flex h-10 items-center justify-center rounded-lg bg-steel-blue px-4 text-sm font-bold text-white transition-all hover:bg-steel-blue/90"
                     >
-                        Open App
+                        Open Dashboard
                     </button>
                     {isClerkEnabled ? (
                         <UserButton afterSignOutUrl="/" />

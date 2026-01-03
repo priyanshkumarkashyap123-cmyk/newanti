@@ -79,8 +79,9 @@ export const EngineeringRibbon: FC<RibbonProps> = ({ activeCategory }) => {
     // Content specific to each tab
     const renderGeometryTab = () => (
         <>
-            <ToolGroup label="Clipboard">
-                <ToolButton icon={Save} label="Save" onClick={() => { }} />
+            <ToolGroup label="Project">
+                <ToolButton icon={Save} label="Save" onClick={() => document.dispatchEvent(new CustomEvent('trigger-save'))} />
+                <ToolButton icon={FolderOpen} label="Open" onClick={() => document.dispatchEvent(new CustomEvent('trigger-cloud-open'))} />
                 <div className="flex flex-col gap-1">
                     <button onClick={() => undo()} disabled={pastStates.length === 0} className="p-1 hover:bg-zinc-800 rounded disabled:opacity-30"><Undo className="w-3 h-3" /></button>
                     <button onClick={() => redo()} disabled={futureStates.length === 0} className="p-1 hover:bg-zinc-800 rounded disabled:opacity-30"><Redo className="w-3 h-3" /></button>

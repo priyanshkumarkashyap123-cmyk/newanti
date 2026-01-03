@@ -10,6 +10,7 @@ export interface ProjectInfo {
     rev: string;
     date: Date;
     description: string;
+    cloudId?: string; // ID from database if saved
 }
 
 export interface Restraints {

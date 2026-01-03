@@ -1,0 +1,405 @@
+/**
+ * StressVisualization.tsx - Advanced Stress Visualization Component
+ * 
+ * Displays stress contours on structural members with:
+ * - Von Mises stress visualization
+ * - Principal stress display
+ * - Color-coded contours (blue to red)
+ * - Interactive stress type selection
+ * - Pass/fail status indicators
+ * - Stress limit checking
+ */
+
+import React, { useState, useEffect } from 'react';
+import { Activity, AlertTriangle, CheckCircle, TrendingUp, Layers } from 'lucide-react';
+
+interface StressPoint {
+  x: number;
+  y: number;
+  z: number;
+  sigma_x: number;
+  sigma_y: number;
+  sigma_z: number;
+  tau_xy: number;
+  tau_yz: number;
+  tau_zx: number;
+  von_mises: number;
+  principal_1: number;
+  principal_2: number;
+  principal_3: number;
+  max_shear: number;
+}
+
+interface ContourData {
+  min: number;
+  max: number;
+  levels: number[];
+  colors: string[];
+  values: number[];
+  points: Array<{
+    x: number;
+    y: number;
+    z: number;
+    value: number;
+  }>;
+}
+
+interface StressCheck {
+  passes: boolean;
+  max_utilization: number;
+  allowable_stress: number;
+  critical_points: Array<{
+    x: number;
+    y: number;
+    von_mises: number;
+    utilization: number;
+    status: string;
+  }>;
+  summary: string;
+}
+
+interface MemberStress {
+  member_id: string;
+  stress_points: StressPoint[];
+  contours: ContourData;
+  check: StressCheck;
+}
+
+interface StressVisualizationProps {
+  results: MemberStress[];
+  stressType: string;
+  onClose?: () => void;
+  onStressTypeChange?: (type: string) => void;
+}
+
+const StressVisualization: React.FC<StressVisualizationProps> = ({
+  results,
+  stressType,
+  onClose,
+  onStressTypeChange
+}) => {
+  const [selectedMember, setSelectedMember] = useState<string | null>(null);
+  const [showDetails, setShowDetails] = useState(true);
+
+  useEffect(() => {
+    if (results.length > 0 && !selectedMember) {
+      setSelectedMember(results[0].member_id);
+    }
+  }, [results, selectedMember]);
+
+  const currentResult = results.find(r => r.member_id === selectedMember);
+
+  const stressTypes = [
+    { id: 'von_mises', label: 'Von Mises', icon: Activity },
+    { id: 'principal_1', label: 'Max Principal (σ₁)', icon: TrendingUp },
+    { id: 'principal_3', label: 'Min Principal (σ₃)', icon: TrendingUp },
+    { id: 'sigma_x', label: 'Axial Stress (σₓ)', icon: Layers },
+    { id: 'max_shear', label: 'Max Shear (τ_max)', icon: Layers }
+  ];
+
+  const getStressColor = (value: number, min: number, max: number): string => {
+    if (max === min) return '#3b82f6'; // Blue if no variation
+    
+    const t = (value - min) / (max - min);
+    
+    // Blue (low) -> Cyan -> Green -> Yellow -> Red (high)
+    let r: number, g: number, b: number;
+    
+    if (t < 0.25) {
+      r = 0;
+      g = Math.floor(255 * (t / 0.25));
+      b = 255;
+    } else if (t < 0.5) {
+      r = 0;
+      g = 255;
+      b = Math.floor(255 * (1 - (t - 0.25) / 0.25));
+    } else if (t < 0.75) {
+      r = Math.floor(255 * ((t - 0.5) / 0.25));
+      g = 255;
+      b = 0;
+    } else {
+      r = 255;
+      g = Math.floor(255 * (1 - (t - 0.75) / 0.25));
+      b = 0;
+    }
+    
+    return `rgb(${r}, ${g}, ${b})`;
+  };
+
+  if (!currentResult) {
+    return (
+      <div className="p-6 bg-white rounded-lg shadow-lg">
+        <p className="text-gray-500">No stress data available</p>
+      </div>
+    );
+  }
+
+  const { contours, check } = currentResult;
+
+  return (
+    <div className="fixed bottom-4 left-4 right-4 bg-white rounded-lg shadow-2xl border border-gray-200 max-h-[600px] overflow-y-auto z-50">
+      {/* Header */}
+      <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50 sticky top-0 z-10">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Activity className="w-6 h-6 text-blue-600" />
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Stress Visualization</h3>
+              <p className="text-sm text-gray-600">
+                Interactive stress analysis and contour display
+              </p>
+            </div>
+          </div>
+          
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        {/* Status Banner */}
+        <div className={`mt-3 p-3 rounded-lg flex items-center gap-2 ${
+          check.passes 
+            ? 'bg-green-50 text-green-800 border border-green-200' 
+            : 'bg-red-50 text-red-800 border border-red-200'
+        }`}>
+          {check.passes ? (
+            <CheckCircle className="w-5 h-5" />
+          ) : (
+            <AlertTriangle className="w-5 h-5" />
+          )}
+          <span className="font-medium">{check.summary}</span>
+        </div>
+      </div>
+
+      <div className="p-4 space-y-4">
+        {/* Stress Type Selector */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Stress Type
+          </label>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+            {stressTypes.map(type => {
+              const Icon = type.icon;
+              const isActive = stressType === type.id;
+              
+              return (
+                <button
+                  key={type.id}
+                  onClick={() => onStressTypeChange?.(type.id)}
+                  className={`p-2 rounded-lg border-2 transition-all ${
+                    isActive
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon className="w-4 h-4" />
+                    <span className="text-xs font-medium">{type.label}</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Member Selector */}
+        {results.length > 1 && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Member
+            </label>
+            <select
+              value={selectedMember || ''}
+              onChange={(e) => setSelectedMember(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              {results.map(result => (
+                <option key={result.member_id} value={result.member_id}>
+                  {result.member_id}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Stress Statistics */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-xs text-blue-600 font-medium">Min Stress</p>
+            <p className="text-lg font-bold text-blue-900">{contours.min.toFixed(2)}</p>
+            <p className="text-xs text-blue-600">MPa</p>
+          </div>
+          
+          <div className="p-3 bg-red-50 rounded-lg border border-red-200">
+            <p className="text-xs text-red-600 font-medium">Max Stress</p>
+            <p className="text-lg font-bold text-red-900">{contours.max.toFixed(2)}</p>
+            <p className="text-xs text-red-600">MPa</p>
+          </div>
+          
+          <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+            <p className="text-xs text-purple-600 font-medium">Allowable</p>
+            <p className="text-lg font-bold text-purple-900">{check.allowable_stress.toFixed(2)}</p>
+            <p className="text-xs text-purple-600">MPa</p>
+          </div>
+          
+          <div className={`p-3 rounded-lg border ${
+            check.max_utilization > 1.0
+              ? 'bg-red-50 border-red-200'
+              : check.max_utilization > 0.8
+              ? 'bg-yellow-50 border-yellow-200'
+              : 'bg-green-50 border-green-200'
+          }`}>
+            <p className={`text-xs font-medium ${
+              check.max_utilization > 1.0
+                ? 'text-red-600'
+                : check.max_utilization > 0.8
+                ? 'text-yellow-600'
+                : 'text-green-600'
+            }`}>
+              Utilization
+            </p>
+            <p className={`text-lg font-bold ${
+              check.max_utilization > 1.0
+                ? 'text-red-900'
+                : check.max_utilization > 0.8
+                ? 'text-yellow-900'
+                : 'text-green-900'
+            }`}>
+              {(check.max_utilization * 100).toFixed(1)}%
+            </p>
+            <p className={`text-xs ${
+              check.max_utilization > 1.0
+                ? 'text-red-600'
+                : check.max_utilization > 0.8
+                ? 'text-yellow-600'
+                : 'text-green-600'
+            }`}>
+              {check.max_utilization > 1.0 ? 'OVERSTRESSED' : check.max_utilization > 0.8 ? 'WARNING' : 'SAFE'}
+            </p>
+          </div>
+        </div>
+
+        {/* Color Legend */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Stress Legend
+          </label>
+          <div className="space-y-1">
+            <div className="h-8 rounded-lg overflow-hidden flex">
+              {contours.colors.map((color, i) => (
+                <div
+                  key={i}
+                  style={{ backgroundColor: color }}
+                  className="flex-1"
+                />
+              ))}
+            </div>
+            <div className="flex justify-between text-xs text-gray-600">
+              <span>{contours.min.toFixed(1)} MPa</span>
+              <span>{contours.max.toFixed(1)} MPa</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Critical Points Warning */}
+        {check.critical_points && check.critical_points.length > 0 && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5" />
+              <div className="flex-1">
+                <h4 className="font-semibold text-red-900 mb-2">
+                  Critical Points Detected ({check.critical_points.length})
+                </h4>
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {check.critical_points.slice(0, 5).map((point, i) => (
+                    <div key={i} className="text-sm text-red-800">
+                      <span className="font-medium">Location x={point.x.toFixed(2)}m:</span>{' '}
+                      σ_vm = {point.von_mises.toFixed(2)} MPa ({(point.utilization * 100).toFixed(1)}%)
+                    </div>
+                  ))}
+                  {check.critical_points.length > 5 && (
+                    <p className="text-sm text-red-600 italic">
+                      + {check.critical_points.length - 5} more critical points
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Stress Distribution Chart (Simplified) */}
+        {showDetails && (
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Stress Distribution Along Member
+              </label>
+              <button
+                onClick={() => setShowDetails(!showDetails)}
+                className="text-xs text-blue-600 hover:text-blue-700"
+              >
+                {showDetails ? 'Hide' : 'Show'}
+              </button>
+            </div>
+            
+            <div className="h-48 bg-gray-50 rounded-lg border border-gray-200 p-4">
+              <div className="relative h-full">
+                {/* Simple bar chart representation */}
+                <div className="flex items-end justify-between h-full gap-1">
+                  {contours.values.slice(0, 20).map((value, i) => {
+                    const height = contours.max > 0 
+                      ? (value / contours.max) * 100 
+                      : 0;
+                    const color = getStressColor(value, contours.min, contours.max);
+                    
+                    return (
+                      <div
+                        key={i}
+                        className="flex-1 rounded-t transition-all hover:opacity-80 cursor-pointer group relative"
+                        style={{
+                          height: `${height}%`,
+                          backgroundColor: color,
+                          minHeight: '2px'
+                        }}
+                        title={`${value.toFixed(2)} MPa`}
+                      >
+                        {/* Tooltip on hover */}
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
+                          {value.toFixed(2)} MPa
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex gap-2 pt-2 border-t border-gray-200">
+          <button
+            onClick={() => window.alert('Export stress data feature coming soon!')}
+            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          >
+            Export Data
+          </button>
+          <button
+            onClick={() => window.alert('Detailed report feature coming soon!')}
+            className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+          >
+            Detailed Report
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default StressVisualization;
