@@ -12,7 +12,7 @@ import { User, Subscription, getEffectiveTier, UserModel, isMasterUser } from '.
 // Check which auth mode is active
 const USE_CLERK = process.env['USE_CLERK'] === 'true';
 
-const router = Router();
+const router: Router = Router();
 
 // ============================================
 // GET /user/profile - Get user profile with activity

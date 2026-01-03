@@ -440,6 +440,53 @@ VerificationCodeSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 export const VerificationCodeModel = mongoose.model<IVerificationCode>('VerificationCode', VerificationCodeSchema);
 
 // ============================================
+// CONSENT SCHEMA
+// ============================================
+
+export interface IConsent extends Document {
+    userId: string;
+    consentType: string;
+    ipAddress?: string;
+    userAgent?: string;
+    termsVersion?: string;
+    acceptedAt: Date;
+}
+
+const ConsentSchema = new Schema<IConsent>({
+    userId: {
+        type: String,
+        required: true,
+        index: true
+    },
+    consentType: {
+        type: String,
+        required: true,
+        index: true
+    },
+    ipAddress: {
+        type: String
+    },
+    userAgent: {
+        type: String
+    },
+    termsVersion: {
+        type: String,
+        default: '1.0'
+    },
+    acceptedAt: {
+        type: Date,
+        default: Date.now
+    }
+}, {
+    timestamps: true
+});
+
+ConsentSchema.index({ userId: 1, consentType: 1 });
+
+export const Consent = mongoose.model<IConsent>('Consent', ConsentSchema);
+
+
+// ============================================
 // DATABASE CONNECTION
 // ============================================
 
@@ -465,4 +512,4 @@ export async function disconnectDB(): Promise<void> {
     console.log('📤 MongoDB disconnected');
 }
 
-export default { User, Project, Subscription, UserModel, RefreshTokenModel, VerificationCodeModel, connectDB, disconnectDB };
+export default { User, Project, Subscription, UserModel, RefreshTokenModel, VerificationCodeModel, Consent, connectDB, disconnectDB };

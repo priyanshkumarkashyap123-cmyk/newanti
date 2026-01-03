@@ -17,6 +17,9 @@ export interface ModelData {
     members: MemberData[];
     loads: LoadData[];
     dofPerNode?: 2 | 3 | 6;
+    settings?: {
+        selfWeight: boolean; // Auto-apply self weight
+    };
 }
 
 export interface NodeData {
@@ -193,7 +196,8 @@ class AnalysisService {
                     nodes: model.nodes,
                     members: model.members,
                     loads: model.loads,
-                    dofPerNode: model.dofPerNode || 6
+                    dofPerNode: model.dofPerNode || 6,
+                    settings: model.settings
                 }
             });
         });

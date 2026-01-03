@@ -31,9 +31,10 @@ import {
     ChevronLeft,
     ChevronRight,
     Grid3X3,
-    FileInput
+    FileInput,
+    ScanLine
 } from 'lucide-react';
-import { useUIStore, WorkflowCategory } from '../store/uiStore';
+import { useUIStore, Category } from '../store/uiStore';
 
 // ============================================
 // TYPES
@@ -44,7 +45,7 @@ interface ModernWorkspaceProps {
 }
 
 interface TabConfig {
-    id: WorkflowCategory;
+    id: Category;
     label: string;
     icon: ReactNode;
     color: string;
@@ -70,10 +71,11 @@ const UMBRELLA_TABS: TabConfig[] = [
 ];
 
 // Sidebar content per category
-const SIDEBAR_CONTENT: Record<WorkflowCategory, SidebarItem[]> = {
+const SIDEBAR_CONTENT: Record<Category, SidebarItem[]> = {
     MODELING: [
+        { id: 'select', label: 'Select', icon: <MousePointer2 className="w-4 h-4" /> },
+        { id: 'select_range', label: 'Range Select', icon: <ScanLine className="w-4 h-4" /> },
         { id: 'templates', label: 'Template Bank', icon: <Grid3X3 className="w-4 h-4" /> },
-        { id: 'draw_node', label: 'Draw Node', icon: <Target className="w-4 h-4" /> },
         { id: 'draw_member', label: 'Draw Member', icon: <PenTool className="w-4 h-4" /> },
         { id: 'grid_tool', label: 'Grid Generator', icon: <Grid3X3 className="w-4 h-4" /> },
         { id: 'dxf_import', label: 'DXF Import', icon: <FileInput className="w-4 h-4" /> }
@@ -145,10 +147,11 @@ const UmbrellaSwitcher: FC = () => {
 // ============================================
 
 const ContextSidebar: FC = () => {
-    const { activeCategory, activeTool, setTool, sidebarOpen, toggleSidebar } = useUIStore();
+    const { activeCategory, activeTool, setActiveTool, sidebarMode, toggleSidebar } = useUIStore();
     const items = SIDEBAR_CONTENT[activeCategory];
+    const isExpanded = sidebarMode === 'EXPANDED';
 
-    if (!sidebarOpen) {
+    if (!isExpanded) {
         return (
             <div className="w-10 h-full bg-zinc-900 border-r border-zinc-800 flex flex-col items-center py-2">
                 <button
@@ -184,7 +187,7 @@ const ContextSidebar: FC = () => {
                         <button
                             key={item.id}
                             onClick={() => {
-                                setTool(item.id);
+                                setActiveTool(item.id);
                                 item.action?.();
                             }}
                             className={`

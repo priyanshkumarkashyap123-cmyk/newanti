@@ -131,7 +131,13 @@ interface ModelState {
     selectedIds: Set<string>;
     analysisResults: AnalysisResults | null;
     isAnalyzing: boolean;
+    isAnalyzing: boolean;
     displacementScale: number;  // Scale factor for displaced shape visualization
+
+    // Global Model Settings
+    settings: {
+        selfWeight: boolean; // Auto-apply self weight (-Y)
+    };
 
     // Sequential ID counters for user-friendly naming (M1, M2, N1, N2...)
     nextNodeNumber: number;
@@ -176,6 +182,7 @@ interface ModelState {
     selectAll: () => void;                          // Select all nodes and members
     selectMultiple: (ids: string[]) => void;        // Select multiple elements
     boxSelect: (minX: number, minZ: number, maxX: number, maxZ: number) => void; // Box selection
+    selectByCoordinate: (axis: 'x' | 'y' | 'z', min: number, max: number, add?: boolean) => void; // Range selection
 
     // Clipboard Operations (like STAAD)
     clipboard: { nodes: Node[]; members: Member[] } | null;
@@ -186,8 +193,8 @@ interface ModelState {
     deleteSelection: () => void;                    // Delete all selected
 
     // Tools
-    activeTool: 'select' | 'node' | 'member' | 'support' | 'load' | 'memberLoad';
-    setTool: (tool: 'select' | 'node' | 'member' | 'support' | 'load' | 'memberLoad') => void;
+    activeTool: 'select' | 'node' | 'member' | 'support' | 'load' | 'memberLoad' | 'select_range' | null;
+    setTool: (tool: 'select' | 'node' | 'member' | 'support' | 'load' | 'memberLoad' | 'select_range' | null) => void;
     setDisplacementScale: (scale: number) => void;
     setShowSFD: (show: boolean) => void;
     setShowBMD: (show: boolean) => void;
@@ -239,7 +246,13 @@ export const useModelStore = create<ModelState>()(
                 selectedIds: new Set(),
                 analysisResults: null,
                 isAnalyzing: false,
+                isAnalyzing: false,
                 displacementScale: 100, // Default scale factor
+
+                // Global Settings
+                settings: {
+                    selfWeight: true
+                },
 
                 // Sequential ID counters
                 nextNodeNumber: 1,
@@ -453,6 +466,40 @@ export const useModelStore = create<ModelState>()(
                         state.members.forEach((member, id) => {
                             if (newSelected.has(member.startNodeId) && newSelected.has(member.endNodeId)) {
                                 newSelected.add(id);
+                            }
+                        });
+
+                        return { selectedIds: newSelected };
+                    }),
+
+                selectByCoordinate: (axis, min, max, add = false) =>
+                    set((state) => {
+                        const newSelected = add ? new Set(state.selectedIds) : new Set<string>();
+
+                        // Select nodes within range
+                        state.nodes.forEach((node, id) => {
+                            const val = node[axis];
+                            if (val >= min && val <= max) {
+                                newSelected.add(id);
+                            }
+                        });
+
+                        // Select members if both nodes are within range (OR if strictly fully inside?)
+                        // "Select at height" usually means members on that floor.
+                        // If both nodes are selected, member is selected.
+                        state.members.forEach((member, id) => {
+                            const start = state.nodes.get(member.startNodeId);
+                            const end = state.nodes.get(member.endNodeId);
+                            if (start && end) {
+                                const startVal = start[axis];
+                                const endVal = end[axis];
+
+                                // Check if member is essentially ON the plane/range
+                                // Or fully contained?
+                                // Let's simplify: if BOTH nodes are in range, select member.
+                                if (startVal >= min && startVal <= max && endVal >= min && endVal <= max) {
+                                    newSelected.add(id);
+                                }
                             }
                         });
 

@@ -15,7 +15,7 @@ export const BoxSelector: FC = () => {
     const [currentPoint, setCurrentPoint] = useState<{ x: number, y: number } | null>(null);
 
     // Refs for optimization
-    const selectionBoxRef = useRef<HTMLDivElement>(null);
+    const selectionBoxRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
         const canvas = gl.domElement;

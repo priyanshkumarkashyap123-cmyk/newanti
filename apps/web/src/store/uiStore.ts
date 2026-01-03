@@ -146,6 +146,14 @@ interface UIState {
     toggleModal: (modal: keyof UIState['modals']) => void;
     setModal: (modal: keyof UIState['modals'], isOpen: boolean) => void;
 
+    // Grid Settings
+    showGrid: boolean;
+    snapToGrid: boolean;
+    gridSize: number;
+    setGridSize: (size: number) => void;
+    toggleGrid: () => void;
+    toggleSnap: () => void;
+
     // Validation
     validateModel: () => ValidationResult;
 
@@ -414,6 +422,14 @@ export const useUIStore = create<UIState>()(
                     bucklingAnalysis: false,
                 }
             })
+            // Grid Settings
+            showGrid: true,
+            snapToGrid: true,
+            gridSize: 1.0,
+
+            setGridSize: (size) => set({ gridSize: size }),
+            toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
+            toggleSnap: () => set((state) => ({ snapToGrid: !state.snapToGrid })),
         }),
         {
             name: 'beamlab-ui-store',
@@ -421,7 +437,10 @@ export const useUIStore = create<UIState>()(
                 // Only persist user preferences
                 sidebarMode: state.sidebarMode,
                 propertiesPanelOpen: state.propertiesPanelOpen,
-                dataPanelOpen: state.dataPanelOpen
+                dataPanelOpen: state.dataPanelOpen,
+                showGrid: state.showGrid,
+                snapToGrid: state.snapToGrid,
+                gridSize: state.gridSize
             })
         }
     )

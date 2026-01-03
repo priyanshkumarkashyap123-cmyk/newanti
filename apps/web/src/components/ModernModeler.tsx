@@ -53,6 +53,7 @@ import StressVisualization from './StressVisualization';
 import { InteroperabilityDialog } from './InteroperabilityDialog';
 import { RailwayBridgeDialog } from './RailwayBridgeDialog';
 import { MeshingPanel } from './MeshingPanel';
+import { AdvancedSelectionPanel } from './AdvancedSelectionPanel';
 import { LoadDialog } from './LoadDialog';
 import WindLoadDialog from './WindLoadDialog';
 import SeismicLoadDialog from './SeismicLoadDialog';
@@ -1184,17 +1185,16 @@ export const ModernModeler: FC = () => {
                 <ResultsToolbar onClose={() => setShowResultsToolbar(false)} />
             )}
 
-            {showQuickStart && (
-                <QuickStartModal
-                    isOpen={showQuickStart}
-                    onClose={() => setShowQuickStart(false)}
-                    onNewProject={handleNewProject}
-                    onOpenWizard={() => openModal('structureWizard')}
-                    onOpenFoundation={() => openModal('foundationDesign')}
-                    onOpenLoads={() => openModal('is875Load')}
-                />
-            )}
-
+            {/* Tools & Dialogs */}
+            <AdvancedSelectionPanel />
+            <QuickStartModal
+                isOpen={showQuickStart}
+                onClose={() => setShowQuickStart(false)}
+                onNewProject={handleNewProject}
+                onOpenWizard={() => openModal('structureWizard')}
+                onOpenFoundation={() => openModal('foundationDesign')}
+                onOpenLoads={() => openModal('is875Load')}
+            />
             {/* Project Details Dialog */}
             <ProjectDetailsDialog
                 isOpen={showProjectDetails}

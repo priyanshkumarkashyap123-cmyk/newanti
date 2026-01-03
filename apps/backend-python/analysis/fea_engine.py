@@ -144,6 +144,12 @@ class NodeLoadInput:
 
 
 @dataclass
+class SettingsInput:
+    """Global settings from frontend"""
+    self_weight: bool = True
+
+
+@dataclass
 class ModelInput:
     """Complete model from frontend"""
     nodes: List[NodeInput]
@@ -152,6 +158,7 @@ class ModelInput:
     point_loads: List[PointLoadInput] = field(default_factory=list)
     distributed_loads: List[DistributedLoadInput] = field(default_factory=list)
     load_case: str = "LC1"
+    settings: SettingsInput = field(default_factory=SettingsInput)
 
 
 @dataclass
@@ -452,7 +459,29 @@ class FEAEngine:
                 end,
                 model_input.load_case
             )
-    
+
+        # ============================================
+        # 7. APPLY SELF WEIGHT (If enabled)
+        # ============================================
+        if model_input.settings.self_weight:
+            gamma = 77.0 # Approx unit weight of steel (kN/m³)
+            
+            for i, member in enumerate(model_input.members):
+                member_name = f"M{i+1}"
+                # Get length from PyNite member object
+                L = self.model.Members[member_name].L()
+                
+                A = member.A if member.A is not None else 0.01
+                w = -A * gamma # kN/m (Downwards)
+                
+                self.model.add_member_dist_load(
+                    member_name,
+                    'Fy', 
+                    w, w,
+                    0, L,
+                    model_input.load_case
+                )
+
     def analyze(self, check_stability: bool = True, options: Optional['AnalysisOptions'] = None) -> AnalysisOutput:
         """
         Run analysis and extract results

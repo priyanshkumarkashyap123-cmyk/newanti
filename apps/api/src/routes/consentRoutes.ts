@@ -1,40 +1,34 @@
+import { Router, Request, Response } from 'express';
+import { Consent } from '../models.js';
 
-import express, { Request, Response } from 'express';
-import mongoose from 'mongoose';
-
-const router = express.Router();
-
-// Define Schema here for simplicity or import from models
-const ConsentSchema = new mongoose.Schema({
-    userId: { type: String, required: true },
-    ipAddress: { type: String, required: true },
-    consentDate: { type: Date, default: Date.now },
-    termsVersion: { type: String, required: true },
-    userAgent: { type: String }
-});
-
-const Consent = mongoose.models['Consent'] || mongoose.model('Consent', ConsentSchema);
+const router: Router = Router();
 
 // POST /api/consent/record
 router.post('/record', async (req: Request, res: Response) => {
     try {
-        const { userId, ipAddress, termsVersion, userAgent } = req.body;
+        const { userId, consentType, termsVersion, userAgent } = req.body;
+        // Extract IP from request if not provided in body
+        const ipAddress = req.body.ipAddress || req.ip || req.headers['x-forwarded-for'] || 'unknown';
 
-        if (!userId || !ipAddress) {
+        if (!userId || !consentType) {
             return res.status(400).json({
                 success: false,
-                message: 'Missing required fields'
+                message: 'Missing required fields: userId and consentType are required'
             });
         }
 
         const newConsent = new Consent({
             userId,
-            ipAddress,
+            consentType,
+            ipAddress: Array.isArray(ipAddress) ? ipAddress[0] : ipAddress,
             termsVersion,
-            userAgent
+            userAgent,
+            acceptedAt: new Date()
         });
 
         await newConsent.save();
+
+        console.log(`[Consent] Recorded ${consentType} consent for user ${userId}`);
 
         return res.status(200).json({
             success: true,
