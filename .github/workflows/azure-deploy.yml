@@ -49,6 +49,17 @@ jobs:
           cd deploy-api && npm install --omit=dev --ignore-scripts
           zip -r ../api-app.zip .
 
+      - name: Create environment file
+        run: |
+          cat > deploy-api/.env << EOF
+          RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }}
+          RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}
+          RAZORPAY_WEBHOOK_SECRET=${{ secrets.RAZORPAY_WEBHOOK_SECRET }}
+          NODE_ENV=production
+          PORT=8080
+          EOF
+          cd deploy-api && zip -r ../api-app.zip .
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
