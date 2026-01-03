@@ -185,15 +185,130 @@ export const PropertiesPanel: FC = () => {
         );
     }
 
-    // Multi-selection
+    // Multi-selection (Bulk Edit)
     if (selectedIds.size > 1) {
+        // Categorize selection
+        const selectedMembers = Array.from(selectedIds)
+            .map(id => members.get(id))
+            .filter((m): m is NonNullable<typeof m> => !!m);
+
+        const selectedNodes = Array.from(selectedIds)
+            .map(id => nodes.get(id))
+            .filter((n): n is NonNullable<typeof n> => !!n);
+
+        // BULK MEMBER EDITING
+        if (selectedMembers.length > 0 && selectedNodes.length === 0) {
+            const handleBulkSectionChange = (sectionId: string) => {
+                const section = SECTION_OPTIONS.find(s => s.id === sectionId);
+                selectedMembers.forEach(m => {
+                    if (section && section.A > 0) {
+                        updateMember(m.id, { sectionId, A: section.A, I: section.I });
+                    } else {
+                        updateMember(m.id, { sectionId });
+                    }
+                });
+            };
+
+            const handleBulkMaterialChange = (materialId: string) => {
+                const material = MATERIAL_OPTIONS.find(m => m.id === materialId);
+                if (material && material.E > 0) {
+                    selectedMembers.forEach(m => {
+                        updateMember(m.id, { E: material.E });
+                    });
+                }
+            };
+
+            const handleBulkReleaseChange = (key: 'startMoment' | 'endMoment', value: boolean) => {
+                selectedMembers.forEach(m => {
+                    const currentReleases = m.releases ?? { startMoment: false, endMoment: false };
+                    updateMember(m.id, { releases: { ...currentReleases, [key]: value } });
+                });
+            };
+
+            return (
+                <div style={panelStyle}>
+                    <div style={headerWithButtonStyle}>
+                        <h3 style={headerStyle}>Bulk Edit ({selectedMembers.length} Members)</h3>
+                        <button onClick={() => setIsMinimized(true)} style={minimizeButtonStyle} title="Minimize">−</button>
+                    </div>
+
+                    {/* Common Actions */}
+                    <div style={sectionStyle}>
+                        <label style={labelStyle}>📐 Set Section</label>
+                        <select
+                            onChange={(e) => handleBulkSectionChange(e.target.value)}
+                            style={selectStyle}
+                            defaultValue=""
+                        >
+                            <option value="" disabled>Select to apply to all...</option>
+                            {SECTION_OPTIONS.map(opt => (
+                                <option key={opt.id} value={opt.id}>{opt.label}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <hr style={dividerStyle} />
+
+                    <div style={sectionStyle}>
+                        <label style={labelStyle}>🧱 Set Material</label>
+                        <select
+                            onChange={(e) => handleBulkMaterialChange(e.target.value)}
+                            style={selectStyle}
+                            defaultValue=""
+                        >
+                            <option value="" disabled>Select to apply to all...</option>
+                            {MATERIAL_OPTIONS.map(opt => (
+                                <option key={opt.id} value={opt.id}>{opt.label}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <hr style={dividerStyle} />
+
+                    <div style={sectionStyle}>
+                        <label style={labelStyle}>🔓 Bulk Releases</label>
+                        <div style={{ display: 'flex', gap: 12, marginTop: 6 }}>
+                            <label style={checkboxLabelStyle}>
+                                <input type="checkbox" onChange={(e) => handleBulkReleaseChange('startMoment', e.target.checked)} /> Start
+                            </label>
+                            <label style={checkboxLabelStyle}>
+                                <input type="checkbox" onChange={(e) => handleBulkReleaseChange('endMoment', e.target.checked)} /> End
+                            </label>
+                        </div>
+                        <span style={{ fontSize: 10, color: '#888', marginTop: 4 }}>(Check to apply release to all)</span>
+                    </div>
+
+                    <hr style={dividerStyle} />
+
+                    <div style={{ marginTop: 8 }}>
+                        <button
+                            onClick={() => selectedMembers.forEach(m => useModelStore.getState().removeMember(m.id))}
+                            style={{ ...deleteButtonStyle, border: '1px solid #f44', borderRadius: 4, width: '100%', padding: '6px' }}
+                        >
+                            Delete All Selected
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // Mixed or Node selection
         return (
             <div style={panelStyle}>
                 <div style={headerWithButtonStyle}>
-                    <h3 style={headerStyle}>Properties</h3>
+                    <h3 style={headerStyle}>Multiple Selection</h3>
                     <button onClick={() => setIsMinimized(true)} style={minimizeButtonStyle} title="Minimize">−</button>
                 </div>
-                <p style={{ fontSize: 13 }}>{selectedIds.size} items selected</p>
+                <div style={{ fontSize: 13, marginBottom: 8 }}>
+                    {selectedNodes.length > 0 && <div>• {selectedNodes.length} Nodes</div>}
+                    {selectedMembers.length > 0 && <div>• {selectedMembers.length} Members</div>}
+                </div>
+                <button
+                    onClick={() => useModelStore.getState().deleteSelection()}
+                    style={{ ...deleteButtonStyle, border: '1px solid #f44', borderRadius: 4, width: '100%', padding: '6px' }}
+                >
+                    Delete Selection
+                </button>
             </div>
         );
     }

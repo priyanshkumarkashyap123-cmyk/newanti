@@ -2,6 +2,7 @@ import { FC, useRef, useState, MutableRefObject } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { View, OrbitControls, OrthographicCamera, PerspectiveCamera } from '@react-three/drei';
 import { SharedScene } from './SharedScene';
+import { BoxSelector } from './BoxSelector';
 
 type ViewportLayout = 'SINGLE' | 'QUAD';
 type WorkingPlane = 'XZ' | 'XY' | 'YZ';
@@ -241,6 +242,7 @@ const ViewportContainer: FC<{ className?: string; layout: ViewportLayout }> = ({
                         panSpeed={1.5}
                     />
                     <SharedScene />
+                    <BoxSelector />
                 </View>
 
                 {layout === 'QUAD' && (
@@ -251,6 +253,7 @@ const ViewportContainer: FC<{ className?: string; layout: ViewportLayout }> = ({
                             <OrthographicCamera makeDefault position={[0, 50, 0]} zoom={15} up={[0, 0, -1]} />
                             <OrbitControls makeDefault {...orthoControlProps} />
                             <SharedScene />
+                            <BoxSelector />
                         </View>
 
                         {/* Front View */}
@@ -259,6 +262,7 @@ const ViewportContainer: FC<{ className?: string; layout: ViewportLayout }> = ({
                             <OrthographicCamera makeDefault position={[0, 0, 50]} zoom={15} />
                             <OrbitControls makeDefault {...orthoControlProps} />
                             <SharedScene />
+                            <BoxSelector />
                         </View>
 
                         {/* Right View */}
@@ -267,6 +271,7 @@ const ViewportContainer: FC<{ className?: string; layout: ViewportLayout }> = ({
                             <OrthographicCamera makeDefault position={[50, 0, 0]} zoom={15} />
                             <OrbitControls makeDefault {...orthoControlProps} />
                             <SharedScene />
+                            <BoxSelector />
                         </View>
                     </>
                 )}
