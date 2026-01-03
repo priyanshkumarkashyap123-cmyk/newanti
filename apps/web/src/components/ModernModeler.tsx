@@ -78,6 +78,8 @@ import { useContextMenu, getNodeContextMenuItems, getMemberContextMenuItems, get
 
 // Analysis service
 import { analysisService } from '../services/AnalysisService';
+import { useRazorpayPayment } from './RazorpayPayment';
+import { useTierAccess } from '../hooks/useTierAccess';
 import { CloudProjectManager } from './CloudProjectManager';
 import { ProjectService, Project } from '../services/ProjectService';
 
@@ -239,8 +241,37 @@ const StatusBar: FC<{ isAnalyzing: boolean }> = ({ isAnalyzing }) => {
 // ============================================
 
 export const ModernModeler: FC = () => {
-    const { getToken } = useAuth();
+    const { getToken, userId, user } = useAuth();
     const { subscription } = useSubscription();
+    const { openPayment } = useRazorpayPayment();
+    const { isFree } = useTierAccess();
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // Auto-trigger upgrade if requested via URL
+    useEffect(() => {
+        const upgrade = searchParams.get('upgrade');
+        if (upgrade === 'pro' && isFree && userId && user?.email) {
+            openPayment(userId, user.email, 'monthly');
+            // Clean URL
+            setSearchParams(prev => {
+                const newParams = new URLSearchParams(prev);
+                newParams.delete('upgrade');
+                return newParams;
+            });
+        }
+    }, [searchParams, isFree, userId, user, openPayment, setSearchParams]);
+
+    // Listen for manual upgrade trigger from Ribbon
+    useEffect(() => {
+        const handleUpgradeTrigger = () => {
+            if (userId && user?.email) {
+                openPayment(userId, user.email, 'monthly');
+            }
+        };
+        document.addEventListener('trigger-upgrade', handleUpgradeTrigger);
+        return () => document.removeEventListener('trigger-upgrade', handleUpgradeTrigger);
+    }, [userId, user, openPayment]);
+
     const showResults = useModelStore((state) => state.showResults);
     const nodes = useModelStore((state) => state.nodes);
     const members = useModelStore((state) => state.members);
@@ -1002,7 +1033,7 @@ export const ModernModeler: FC = () => {
     }, [nodes.size, members.size]);
 
     // URL Parameter Handling - Connect Capabilities page to dialogs
-    const [searchParams] = useSearchParams();
+    // Note: searchParams already declared at top of component
 
     useEffect(() => {
         const mode = searchParams.get('mode');

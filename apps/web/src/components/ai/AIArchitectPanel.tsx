@@ -82,7 +82,7 @@ export const AIArchitectPanel: FC = () => {
     const [isGenerating, setIsGenerating] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
-    
+
     // Chat state
     const [activeTab, setActiveTab] = useState<'generate' | 'chat'>('generate');
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -205,7 +205,7 @@ export const AIArchitectPanel: FC = () => {
             content: chatInput,
             timestamp: new Date()
         };
-        
+
         setChatMessages(prev => [...prev, userMessage]);
         setChatInput('');
         setIsChatting(true);
@@ -231,13 +231,13 @@ export const AIArchitectPanel: FC = () => {
             });
 
             const data = await response.json();
-            
+
             const assistantMessage: ChatMessage = {
                 role: 'assistant',
                 content: data.success ? data.response : 'Sorry, I encountered an error. Please try again.',
                 timestamp: new Date()
             };
-            
+
             setChatMessages(prev => [...prev, assistantMessage]);
 
         } catch (err) {
@@ -277,7 +277,7 @@ export const AIArchitectPanel: FC = () => {
                         <div>
                             <h3 className="text-sm font-semibold text-white">AI Architect</h3>
                             <p className="text-[10px] text-zinc-500 flex items-center gap-1">
-                                Powered by 
+                                Powered by
                                 <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent font-medium">
                                     Google Gemini
                                 </span>
@@ -288,27 +288,25 @@ export const AIArchitectPanel: FC = () => {
                         </div>
                     </div>
                 </div>
-                
+
                 {/* Tab Switcher */}
                 <div className="flex gap-1 mt-3 p-0.5 bg-zinc-800/50 rounded-lg">
                     <button
                         onClick={() => setActiveTab('generate')}
-                        className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-medium transition-all ${
-                            activeTab === 'generate'
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-medium transition-all ${activeTab === 'generate'
                                 ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm'
                                 : 'text-zinc-400 hover:text-white'
-                        }`}
+                            }`}
                     >
                         <Wand2 className="w-3.5 h-3.5" />
                         Generate
                     </button>
                     <button
                         onClick={() => setActiveTab('chat')}
-                        className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-medium transition-all ${
-                            activeTab === 'chat'
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-medium transition-all ${activeTab === 'chat'
                                 ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm'
                                 : 'text-zinc-400 hover:text-white'
-                        }`}
+                            }`}
                     >
                         <MessageCircle className="w-3.5 h-3.5" />
                         Chat
@@ -447,11 +445,10 @@ export const AIArchitectPanel: FC = () => {
                                         </div>
                                     )}
                                     <div
-                                        className={`max-w-[80%] px-3 py-2 rounded-lg text-xs ${
-                                            msg.role === 'user'
+                                        className={`max-w-[80%] px-3 py-2 rounded-lg text-xs ${msg.role === 'user'
                                                 ? 'bg-purple-600 text-white'
                                                 : 'bg-zinc-800 text-zinc-200 border border-zinc-700'
-                                        }`}
+                                            }`}
                                     >
                                         {msg.content}
                                     </div>

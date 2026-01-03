@@ -421,7 +421,7 @@ export const useUIStore = create<UIState>()(
                     modalAnalysis: false,
                     bucklingAnalysis: false,
                 }
-            })
+            }),
             // Grid Settings
             showGrid: true,
             snapToGrid: true,

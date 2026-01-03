@@ -6,9 +6,10 @@
 
 import { useState } from 'react';
 import { SignUp } from '@clerk/clerk-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 export const SignUpPage = () => {
+    const [searchParams] = useSearchParams();
     const [agreed, setAgreed] = useState(false);
     const [consented, setConsented] = useState(false);
 
@@ -172,7 +173,7 @@ export const SignUpPage = () => {
                                 routing="path"
                                 path="/sign-up"
                                 signInUrl="/sign-in"
-                                forceRedirectUrl="/app"
+                                forceRedirectUrl={searchParams.get('plan') === 'pro' ? '/app?upgrade=pro' : '/app'}
                             />
                         )}
                     </div>

@@ -11,11 +11,22 @@ from . import BaseValidator
 class LoadValidator(BaseValidator):
     """Validates load application and magnitude"""
     
-    def __init__(self, nodes: Dict[str, Any], members: Dict[str, Any], node_loads: List[Dict[str, Any]], distributed_loads: List[Dict[str, Any]] = None):
+    def __init__(self, nodes, members, node_loads: List[Dict[str, Any]], distributed_loads: List[Dict[str, Any]] = None):
         super().__init__()
-        self.nodes = nodes
-        self.members = members
-        self.raw_node_loads = node_loads
+        
+        # Convert nodes list to dict if necessary
+        if isinstance(nodes, list):
+            self.nodes = {n.get('id', str(i)): n for i, n in enumerate(nodes)}
+        else:
+            self.nodes = nodes
+            
+        # Convert members list to dict if necessary
+        if isinstance(members, list):
+            self.members = {m.get('id', str(i)): m for i, m in enumerate(members)}
+        else:
+            self.members = members
+            
+        self.raw_node_loads = node_loads or []
         self.raw_distributed_loads = distributed_loads or []
         
         # Convert list format to internal dict format for validation

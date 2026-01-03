@@ -131,7 +131,6 @@ interface ModelState {
     selectedIds: Set<string>;
     analysisResults: AnalysisResults | null;
     isAnalyzing: boolean;
-    isAnalyzing: boolean;
     displacementScale: number;  // Scale factor for displaced shape visualization
 
     // Global Model Settings
@@ -245,7 +244,6 @@ export const useModelStore = create<ModelState>()(
                 memberLoads: [],  // NEW: Member distributed/point loads
                 selectedIds: new Set(),
                 analysisResults: null,
-                isAnalyzing: false,
                 isAnalyzing: false,
                 displacementScale: 100, // Default scale factor
 

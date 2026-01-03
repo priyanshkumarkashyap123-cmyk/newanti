@@ -132,31 +132,28 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro }) => {
                 <div className="grid grid-cols-3 gap-2">
                     <button
                         onClick={() => setAnalysisMethod('newmark')}
-                        className={`px-3 py-2 rounded text-xs font-medium border-2 transition-all ${
-                            analysisMethod === 'newmark'
+                        className={`px-3 py-2 rounded text-xs font-medium border-2 transition-all ${analysisMethod === 'newmark'
                                 ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20'
                                 : 'border-gray-200 hover:border-gray-300 dark:border-gray-600'
-                        }`}
+                            }`}
                     >
                         Newmark-β
                     </button>
                     <button
                         onClick={() => setAnalysisMethod('modal')}
-                        className={`px-3 py-2 rounded text-xs font-medium border-2 transition-all ${
-                            analysisMethod === 'modal'
+                        className={`px-3 py-2 rounded text-xs font-medium border-2 transition-all ${analysisMethod === 'modal'
                                 ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20'
                                 : 'border-gray-200 hover:border-gray-300 dark:border-gray-600'
-                        }`}
+                            }`}
                     >
                         Modal
                     </button>
                     <button
                         onClick={() => setAnalysisMethod('spectrum')}
-                        className={`px-3 py-2 rounded text-xs font-medium border-2 transition-all ${
-                            analysisMethod === 'spectrum'
+                        className={`px-3 py-2 rounded text-xs font-medium border-2 transition-all ${analysisMethod === 'spectrum'
                                 ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20'
                                 : 'border-gray-200 hover:border-gray-300 dark:border-gray-600'
-                        }`}
+                            }`}
                     >
                         Spectrum
                     </button>
@@ -167,11 +164,10 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro }) => {
             <button
                 onClick={handleRunAnalysis}
                 disabled={isRunning}
-                className={`w-full py-2.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-all ${
-                    isRunning
+                className={`w-full py-2.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-all ${isRunning
                         ? 'bg-gray-300 cursor-not-allowed dark:bg-gray-700'
                         : 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                }`}
+                    }`}
             >
                 {isRunning ? (
                     <>
@@ -258,7 +254,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro }) => {
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 {/* Time History Response Chart */}
                                 <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded-lg border border-emerald-200 dark:border-emerald-800">
                                     <h5 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-3">Displacement Time History</h5>
@@ -289,11 +285,11 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro }) => {
                                                     strokeDasharray="2,2"
                                                 />
                                             ))}
-                                            
+
                                             {/* Axes */}
                                             <line x1="40" y1="145" x2="380" y2="145" stroke="#374151" strokeWidth="2" />
                                             <line x1="40" y1="20" x2="40" y2="145" stroke="#374151" strokeWidth="2" />
-                                            
+
                                             {/* Response curve (simulated sinusoidal decay) */}
                                             <path
                                                 d={(() => {
@@ -313,20 +309,20 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro }) => {
                                                 stroke="#10b981"
                                                 strokeWidth="2"
                                             />
-                                            
+
                                             {/* Peak marker */}
                                             <circle cx="120" cy="32" r="4" fill="#ef4444" opacity="0.8" />
                                             <text x="125" y="28" fontSize="10" fill="#ef4444" fontWeight="600">Peak</text>
-                                            
+
                                             {/* Labels */}
                                             <text x="210" y="165" fontSize="11" textAnchor="middle" fill="#6b7280">Time (s)</text>
                                             <text x="15" y="85" fontSize="11" textAnchor="middle" fill="#6b7280" transform="rotate(-90, 15, 85)">Displacement (mm)</text>
-                                            
+
                                             {/* Y-axis values */}
                                             <text x="35" y="25" fontSize="9" textAnchor="end" fill="#6b7280">{(results.max_displacement * 1000).toFixed(1)}</text>
                                             <text x="35" y="85" fontSize="9" textAnchor="end" fill="#6b7280">0</text>
                                             <text x="35" y="145" fontSize="9" textAnchor="end" fill="#6b7280">{(-(results.max_displacement * 1000)).toFixed(1)}</text>
-                                            
+
                                             {/* X-axis values */}
                                             <text x="40" y="160" fontSize="9" textAnchor="middle" fill="#6b7280">0</text>
                                             <text x="210" y="160" fontSize="9" textAnchor="middle" fill="#6b7280">{((results.ground_motion?.duration || 20) / 2).toFixed(0)}</text>
@@ -347,7 +343,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro }) => {
                                             {/* Undeformed shape */}
                                             <line x1="-80" y1="0" x2="-80" y2="60" stroke="#9ca3af" strokeWidth="3" strokeDasharray="4,4" />
                                             <circle cx="-80" cy="60" r="4" fill="#9ca3af" />
-                                            
+
                                             {/* Deformed shape (1st mode) */}
                                             <path
                                                 d="M -80,0 Q -60,-40 -40,-50 Q -20,-55 0,-50 Q 20,-45 40,-30 Q 60,-15 80,0"
@@ -360,7 +356,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro }) => {
                                             <circle cx="0" cy="-50" r="5" fill="#10b981" />
                                             <circle cx="40" cy="-30" r="5" fill="#10b981" />
                                             <circle cx="80" cy="0" r="5" fill="#10b981" />
-                                            
+
                                             {/* Labels */}
                                             <text x="0" y="-70" fontSize="12" textAnchor="middle" fill="#10b981" fontWeight="600">
                                                 Mode 1: f = {results.modes?.[0]?.frequency?.toFixed(2) || '0.00'} Hz
@@ -390,11 +386,11 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro }) => {
                                                 strokeDasharray="2,2"
                                             />
                                         ))}
-                                        
+
                                         {/* Axes */}
                                         <line x1="50" y1="140" x2="380" y2="140" stroke="#374151" strokeWidth="2" />
                                         <line x1="50" y1="20" x2="50" y2="140" stroke="#374151" strokeWidth="2" />
-                                        
+
                                         {/* Spectrum curve */}
                                         <path
                                             d="M 50,140 L 80,120 L 110,80 L 140,50 L 170,35 L 200,30 L 230,35 L 260,50 L 290,70 L 320,90 L 350,110 L 380,125"
@@ -402,14 +398,14 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro }) => {
                                             stroke="#6366f1"
                                             strokeWidth="3"
                                         />
-                                        
+
                                         {/* Fill under curve */}
                                         <path
                                             d="M 50,140 L 80,120 L 110,80 L 140,50 L 170,35 L 200,30 L 230,35 L 260,50 L 290,70 L 320,90 L 350,110 L 380,125 L 380,140 Z"
                                             fill="#6366f1"
                                             fillOpacity="0.1"
                                         />
-                                        
+
                                         {/* Labels */}
                                         <text x="215" y="160" fontSize="11" textAnchor="middle" fill="#6b7280">Period (s)</text>
                                         <text x="20" y="80" fontSize="11" textAnchor="middle" fill="#6b7280" transform="rotate(-90, 20, 80)">Spectral Acceleration (g)</text>
@@ -440,53 +436,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro }) => {
             )}
 
             {/* Educational Info */}
-            <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800"                                        <div className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
-                                            {results.max_acceleration?.toFixed(2)} m/s²
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {results.analysis_type === 'spectrum' && (
-                            <div className="space-y-2">
-                                <div className="text-xs text-emerald-700 dark:text-emerald-300">
-                                    <strong>Earthquake:</strong> {results.ground_motion?.name}
-                                </div>
-                                <div className="text-xs text-emerald-700 dark:text-emerald-300">
-                                    <strong>Max Spectral Acceleration:</strong> {results.max_Sa?.toFixed(2)} m/s²
-                                </div>
-                                <div className="text-xs text-emerald-700 dark:text-emerald-300">
-                                    <strong>Damping:</strong> {(dampingRatio * 100).toFixed(1)}% critical
-                                </div>
-                                <div className="mt-3 text-xs text-emerald-600 dark:text-emerald-400">
-                                    Response spectrum computed for {results.periods?.length} periods
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Export Button */}
-                        <button
-                            onClick={() => {
-                                const dataStr = JSON.stringify(results, null, 2);
-                                const blob = new Blob([dataStr], { type: 'application/json' });
-                                const url = URL.createObjectURL(blob);
-                                const a = document.createElement('a');
-                                a.href = url;
-                                a.download = `time_history_${results.analysis_type}_${Date.now()}.json`;
-                                a.click();
-                            }}
-                            className="mt-4 w-full py-2 px-4 bg-white dark:bg-gray-800 border border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all flex items-center justify-center gap-2 text-sm font-medium"
-                        >
-                            <Download className="w-4 h-4" />
-                            Export Results
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {/* Info Box */}
-            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">
+            <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                 <h4 className="text-xs font-semibold text-blue-900 dark:text-blue-100 mb-1">Integration Methods</h4>
                 <ul className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
                     <li><strong>Newmark-β:</strong> Direct integration (accurate, slower)</li>

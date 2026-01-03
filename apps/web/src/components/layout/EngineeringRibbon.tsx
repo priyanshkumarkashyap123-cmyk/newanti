@@ -17,7 +17,8 @@ import {
     ZoomIn,
     Rotate3d,
     Eye,
-    Database
+    Database,
+    Crown
 } from 'lucide-react';
 import { useModelStore } from '../../store/model';
 import { useUIStore, Category } from '../../store/uiStore';
@@ -44,7 +45,8 @@ export const EngineeringRibbon: FC<RibbonProps> = ({ activeCategory }) => {
         onClick,
         isActive = false,
         disabled = false,
-        vertical = true
+        vertical = true,
+        className = ''
     }: any) => (
         <button
             onClick={onClick}
@@ -55,6 +57,7 @@ export const EngineeringRibbon: FC<RibbonProps> = ({ activeCategory }) => {
                 ${isActive ? 'bg-blue-900/40 border-blue-700/50 text-blue-200' : 'text-zinc-400'}
                 ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                 ${vertical ? 'h-14 w-14 min-w-[56px]' : 'flex-row h-8 px-3 w-auto gap-2'}
+                ${className}
             `}
         >
             <Icon className={`${vertical ? 'w-5 h-5' : 'w-4 h-4'} flex-shrink-0`} />
@@ -86,6 +89,13 @@ export const EngineeringRibbon: FC<RibbonProps> = ({ activeCategory }) => {
                     <button onClick={() => undo()} disabled={pastStates.length === 0} className="p-1 hover:bg-zinc-800 rounded disabled:opacity-30"><Undo className="w-3 h-3" /></button>
                     <button onClick={() => redo()} disabled={futureStates.length === 0} className="p-1 hover:bg-zinc-800 rounded disabled:opacity-30"><Redo className="w-3 h-3" /></button>
                 </div>
+                <ToolButton
+                    icon={Crown}
+                    label="Upgrade"
+                    onClick={() => document.dispatchEvent(new CustomEvent('trigger-upgrade'))}
+                    active={false}
+                    className="text-amber-400 hover:text-amber-300"
+                />
             </ToolGroup>
 
             <ToolGroup label="Structure">

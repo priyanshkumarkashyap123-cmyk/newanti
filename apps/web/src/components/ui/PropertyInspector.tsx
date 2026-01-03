@@ -42,7 +42,7 @@ interface MaterialData {
     poisson: number;
 }
 
-type DatabaseKey = 'european' | 'us' | 'uk' | 'tubes' | 'angles';
+type DatabaseKey = 'indian' | 'european' | 'us' | 'tubes';
 type MaterialKey = keyof typeof sectionsData.materials;
 
 // ============================================

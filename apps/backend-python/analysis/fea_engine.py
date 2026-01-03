@@ -374,8 +374,8 @@ class FEAEngine:
             rho = 7850 / 1e9  # kg/mm³
             self.model.add_material(mat_name, E_axial, G, nu, rho)
             
-            # Add member with material name and section properties as keyword args
-            # PyNite API: add_member(name, i_node, j_node, material_name, Iy, Iz, J, A, ...)
+            # Add member with material name and section properties
+            # PyNite v0.0.94 API: add_member(name, i_node, j_node, material_name, Iy=, Iz=, J=, A=)
             self.model.add_member(
                 member_name,
                 start_name,

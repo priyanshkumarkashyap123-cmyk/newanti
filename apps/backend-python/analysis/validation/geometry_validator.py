@@ -39,7 +39,12 @@ class GeometryValidator(BaseValidator):
         duplicates = []
         
         for node_id, node_data in self.nodes.items():
-            coords = tuple(node_data.get('position', [0, 0, 0]))
+            # Use x/y/z fields directly instead of 'position' array
+            coords = (
+                float(node_data.get('x', 0)),
+                float(node_data.get('y', 0)),
+                float(node_data.get('z', 0))
+            )
             
             # Check against existing coords
             for existing_id, existing_coords in node_coords.items():
@@ -65,8 +70,9 @@ class GeometryValidator(BaseValidator):
         zero_length = []
         
         for member_id, member_data in self.members.items():
-            start_id = member_data.get('startNode')
-            end_id = member_data.get('endNode')
+            # Support both naming conventions: camelCase frontend format and snake_case
+            start_id = member_data.get('startNodeId') or member_data.get('startNode') or member_data.get('start_node_id')
+            end_id = member_data.get('endNodeId') or member_data.get('endNode') or member_data.get('end_node_id')
             
             if not start_id or not end_id:
                 continue
@@ -74,8 +80,16 @@ class GeometryValidator(BaseValidator):
             start_node = self.nodes.get(start_id, {})
             end_node = self.nodes.get(end_id, {})
             
-            start_pos = np.array(start_node.get('position', [0, 0, 0]))
-            end_pos = np.array(end_node.get('position', [0, 0, 0]))
+            start_pos = np.array([
+                float(start_node.get('x', 0)),
+                float(start_node.get('y', 0)),
+                float(start_node.get('z', 0))
+            ])
+            end_pos = np.array([
+                float(end_node.get('x', 0)),
+                float(end_node.get('y', 0)),
+                float(end_node.get('z', 0))
+            ])
             
             length = np.linalg.norm(end_pos - start_pos)
             
@@ -98,8 +112,8 @@ class GeometryValidator(BaseValidator):
         lengths = []
         
         for member_id, member_data in self.members.items():
-            start_id = member_data.get('startNode')
-            end_id = member_data.get('endNode')
+            start_id = member_data.get('startNodeId') or member_data.get('startNode') or member_data.get('start_node_id')
+            end_id = member_data.get('endNodeId') or member_data.get('endNode') or member_data.get('end_node_id')
             
             if not start_id or not end_id:
                 continue
@@ -107,8 +121,16 @@ class GeometryValidator(BaseValidator):
             start_node = self.nodes.get(start_id, {})
             end_node = self.nodes.get(end_id, {})
             
-            start_pos = np.array(start_node.get('position', [0, 0, 0]))
-            end_pos = np.array(end_node.get('position', [0, 0, 0]))
+            start_pos = np.array([
+                float(start_node.get('x', 0)),
+                float(start_node.get('y', 0)),
+                float(start_node.get('z', 0))
+            ])
+            end_pos = np.array([
+                float(end_node.get('x', 0)),
+                float(end_node.get('y', 0)),
+                float(end_node.get('z', 0))
+            ])
             
             length = np.linalg.norm(end_pos - start_pos)
             if length > self.tolerance:
@@ -146,8 +168,8 @@ class GeometryValidator(BaseValidator):
         
         lengths = []
         for member_id, member_data in self.members.items():
-            start_id = member_data.get('startNode')
-            end_id = member_data.get('endNode')
+            start_id = member_data.get('startNodeId') or member_data.get('startNode') or member_data.get('start_node_id')
+            end_id = member_data.get('endNodeId') or member_data.get('endNode') or member_data.get('end_node_id')
             
             if not start_id or not end_id:
                 continue
@@ -155,8 +177,16 @@ class GeometryValidator(BaseValidator):
             start_node = self.nodes.get(start_id, {})
             end_node = self.nodes.get(end_id, {})
             
-            start_pos = np.array(start_node.get('position', [0, 0, 0]))
-            end_pos = np.array(end_node.get('position', [0, 0, 0]))
+            start_pos = np.array([
+                float(start_node.get('x', 0)),
+                float(start_node.get('y', 0)),
+                float(start_node.get('z', 0))
+            ])
+            end_pos = np.array([
+                float(end_node.get('x', 0)),
+                float(end_node.get('y', 0)),
+                float(end_node.get('z', 0))
+            ])
             
             length = np.linalg.norm(end_pos - start_pos)
             if length > self.tolerance:

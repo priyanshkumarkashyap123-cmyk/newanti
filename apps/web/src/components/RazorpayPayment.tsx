@@ -4,6 +4,7 @@
  */
 
 import { FC, useState, useCallback, useEffect } from 'react';
+import { useAuth } from '../providers/AuthProvider';
 
 // ============================================
 // TYPES
@@ -80,10 +81,13 @@ const loadRazorpayScript = (): Promise<boolean> => {
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 
-async function createSubscription(userId: string, email: string, planType: 'monthly' | 'yearly') {
-    const response = await fetch(`${API_URL}/api/create-subscription`, {
+async function createSubscription(userId: string, email: string, token: string, planType: 'monthly' | 'yearly') {
+    const response = await fetch(`${API_URL}/api/billing/create-subscription`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ userId, email, planType })
     });
 
@@ -98,11 +102,15 @@ async function verifyPayment(
     razorpay_payment_id: string,
     razorpay_subscription_id: string,
     razorpay_signature: string,
-    userId: string
+    userId: string,
+    token: string
 ) {
-    const response = await fetch(`${API_URL}/api/verify-payment`, {
+    const response = await fetch(`${API_URL}/api/billing/verify-payment`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
             razorpay_payment_id,
             razorpay_subscription_id,
@@ -134,6 +142,9 @@ export const RazorpayPaymentModal: FC<PaymentModalProps> = ({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Use auth hook to get token
+    const { getToken } = useAuth();
+
     // Load Razorpay script on mount
     useEffect(() => {
         loadRazorpayScript();
@@ -144,6 +155,11 @@ export const RazorpayPaymentModal: FC<PaymentModalProps> = ({
         setError(null);
 
         try {
+            const token = await getToken();
+            if (!token) {
+                throw new Error('Authentication required');
+            }
+
             // 1. Load Razorpay script
             const scriptLoaded = await loadRazorpayScript();
             if (!scriptLoaded) {
@@ -151,7 +167,7 @@ export const RazorpayPaymentModal: FC<PaymentModalProps> = ({
             }
 
             // 2. Create subscription on backend
-            const { subscriptionId, keyId } = await createSubscription(userId, email, planType);
+            const { subscriptionId, keyId } = await createSubscription(userId, email, token, planType);
 
             // 3. Open Razorpay checkout
             const options: RazorpayOptions = {
@@ -169,7 +185,8 @@ export const RazorpayPaymentModal: FC<PaymentModalProps> = ({
                             response.razorpay_payment_id,
                             response.razorpay_subscription_id,
                             response.razorpay_signature,
-                            userId
+                            userId,
+                            token
                         );
 
                         setLoading(false);
@@ -205,7 +222,7 @@ export const RazorpayPaymentModal: FC<PaymentModalProps> = ({
             onError?.(errMsg);
             setLoading(false);
         }
-    }, [userId, email, userName, planType, onSuccess, onError, onClose]);
+    }, [userId, email, userName, planType, onSuccess, onError, onClose, getToken]);
 
     return (
         <div style={styles.container}>
@@ -254,6 +271,7 @@ export const RazorpayPaymentModal: FC<PaymentModalProps> = ({
 
 export function useRazorpayPayment() {
     const [loading, setLoading] = useState(false);
+    const { getToken } = useAuth();
 
     const openPayment = useCallback(async (
         userId: string,
@@ -263,10 +281,13 @@ export function useRazorpayPayment() {
         setLoading(true);
 
         try {
+            const token = await getToken();
+            if (!token) throw new Error('Authentication required');
+
             const scriptLoaded = await loadRazorpayScript();
             if (!scriptLoaded) throw new Error('Failed to load Razorpay');
 
-            const { subscriptionId, keyId } = await createSubscription(userId, email, planType);
+            const { subscriptionId, keyId } = await createSubscription(userId, email, token, planType);
 
             return new Promise((resolve) => {
                 const options: RazorpayOptions = {
@@ -279,7 +300,8 @@ export function useRazorpayPayment() {
                             response.razorpay_payment_id,
                             response.razorpay_subscription_id,
                             response.razorpay_signature,
-                            userId
+                            userId,
+                            token
                         );
                         setLoading(false);
                         resolve(true);
@@ -301,7 +323,7 @@ export function useRazorpayPayment() {
             setLoading(false);
             throw err;
         }
-    }, []);
+    }, [getToken]);
 
     return { openPayment, loading };
 }
