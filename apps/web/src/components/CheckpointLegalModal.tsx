@@ -313,3 +313,4 @@ export const CheckpointLegalModal: FC<CheckpointLegalModalProps> = ({
 };
 
 export default CheckpointLegalModal;
+
