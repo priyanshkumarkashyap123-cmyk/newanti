@@ -98,11 +98,11 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                                 `}>
                                     <item.icon className="w-4 h-4" />
                                 </div>
-                                <div className="flex flex-col">
+                                <div className="flex flex-col items-start">
                                     <span className="text-sm font-medium leading-none">
                                         {item.label}
                                     </span>
-                                    <span className={`text-[10px] mt-1 ${isActive ? 'text-blue-200' : 'text-zinc-600'}`}>
+                                    <span className={`text-[10px] mt-1 leading-none ${isActive ? 'text-blue-200' : 'text-zinc-600'}`}>
                                         {item.subtext}
                                     </span>
                                 </div>

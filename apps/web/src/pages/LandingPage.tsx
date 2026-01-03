@@ -129,8 +129,8 @@ export const LandingPage: FC = () => {
                         <Link to="/capabilities" className="text-sm font-medium text-steel-blue/80 hover:text-steel-blue transition-colors">Docs</Link>
                     </nav>
 
-                    {/* Auth Buttons */}
-                    <div className="hidden md:flex items-center gap-4">
+                    {/* Auth Buttons - Fixed spacing */}
+                    <div className="hidden md:flex items-center gap-6">
                         {renderAuthButtons()}
                     </div>
 
@@ -194,7 +194,7 @@ export const LandingPage: FC = () => {
                     >
                         Structural Analysis{' '}
                         <span className="relative whitespace-nowrap text-steel-blue">
-                            <svg aria-hidden="true" className="absolute left-0 top-2/3 h-[0.58em] w-full fill-accent/40" preserveAspectRatio="none" viewBox="0 0 418 42">
+                            <svg aria-hidden="true" className="absolute left-0 top-[85%] h-[0.35em] w-full fill-accent/50" preserveAspectRatio="none" viewBox="0 0 418 42">
                                 <path d="M203.371.916c-26.013-2.078-76.686 1.963-124.73 9.946L67.3 12.749C61.16 13.643 45.698 15.696 20.916 20.457c-13.437 2.61-3.696.536-12.261 2.308-4.303.882-8.586 1.763-12.869 2.646L0 27.63c21.841-3.837 83.189-13.313 184.073-19.167 122.42-7.1 233.15 1.166 306.924 10.375 19.336 2.416 34.405 4.544 45.214 6.386 10.809 1.842 17.202 3.09 19.181 3.743l-4.223 9.172c-1.979-.653-8.372-1.901-19.181-3.743-10.809-1.842-25.878-3.97-45.214-6.386-73.774-9.209-184.504-17.475-306.924-10.375-100.884 5.854-162.232 15.33-184.073 19.167l-4.223-2.22c4.283-.883 8.566-1.764 12.869-2.646 8.565-1.772 -1.176.302 12.261-2.308 24.782-4.761 40.244-6.814 46.384-7.708l11.341-1.887c48.044-7.983 98.717-12.024 124.73-9.946l2.126-10.59z"></path>
                             </svg>
                             <span className="relative">in Your Browser</span>
@@ -479,8 +479,10 @@ export const LandingPage: FC = () => {
                                     }`}
                             >
                                 {tier.popular && (
-                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-accent text-steel-blue text-xs font-bold px-4 py-1.5 rounded-full shadow-sm uppercase tracking-wide">
-                                        Most Popular
+                                    <div className="absolute -top-4 left-0 right-0 flex justify-center">
+                                        <span className="bg-accent text-steel-blue text-xs font-bold px-4 py-1.5 rounded-full shadow-sm uppercase tracking-wide">
+                                            Most Popular
+                                        </span>
                                     </div>
                                 )}
                                 <div>

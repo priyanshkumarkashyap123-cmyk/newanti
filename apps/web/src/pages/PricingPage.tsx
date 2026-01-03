@@ -168,8 +168,8 @@ export const PricingPage: FC = () => {
                             <button
                                 onClick={() => setBillingPeriod('monthly')}
                                 className={`flex-1 h-full rounded-lg px-4 text-sm font-bold transition-all ${billingPeriod === 'monthly'
-                                        ? 'bg-white shadow-sm text-steel-blue'
-                                        : 'text-steel-blue/60 hover:text-steel-blue'
+                                    ? 'bg-white shadow-sm text-steel-blue'
+                                    : 'text-steel-blue/60 hover:text-steel-blue'
                                     }`}
                             >
                                 Monthly
@@ -177,8 +177,8 @@ export const PricingPage: FC = () => {
                             <button
                                 onClick={() => setBillingPeriod('yearly')}
                                 className={`flex-1 h-full rounded-lg px-4 text-sm font-bold transition-all flex items-center justify-center gap-2 ${billingPeriod === 'yearly'
-                                        ? 'bg-white shadow-sm text-steel-blue'
-                                        : 'text-steel-blue/60 hover:text-steel-blue'
+                                    ? 'bg-white shadow-sm text-steel-blue'
+                                    : 'text-steel-blue/60 hover:text-steel-blue'
                                     }`}
                             >
                                 Yearly
@@ -202,14 +202,16 @@ export const PricingPage: FC = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
                                 className={`relative flex flex-col gap-6 rounded-2xl p-8 h-full ${tier.popular
-                                        ? 'border-2 border-accent bg-white shadow-xl transform md:-translate-y-4 z-10'
-                                        : 'border border-gray-200 bg-white hover:shadow-lg transition-shadow'
+                                    ? 'border-2 border-accent bg-white shadow-xl transform md:-translate-y-4 z-10'
+                                    : 'border border-gray-200 bg-white hover:shadow-lg transition-shadow'
                                     }`}
                             >
                                 {/* Badge */}
                                 {tier.badge && (
-                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-accent text-steel-blue text-xs font-bold px-4 py-1.5 rounded-full shadow-sm uppercase tracking-wide">
-                                        {tier.badge}
+                                    <div className="absolute -top-4 left-0 right-0 flex justify-center">
+                                        <span className="bg-accent text-steel-blue text-xs font-bold px-4 py-1.5 rounded-full shadow-sm uppercase tracking-wide">
+                                            {tier.badge}
+                                        </span>
                                     </div>
                                 )}
 
@@ -227,10 +229,10 @@ export const PricingPage: FC = () => {
                                 <button
                                     onClick={() => navigate(tier.ctaLink)}
                                     className={`w-full py-3 px-4 rounded-lg text-sm font-bold transition-all ${tier.popular
-                                            ? 'bg-accent hover:bg-accent/90 text-steel-blue shadow-md hover:shadow-lg'
-                                            : tier.name === 'Enterprise'
-                                                ? 'bg-steel-blue hover:bg-steel-blue/90 text-white'
-                                                : 'bg-gray-100 hover:bg-gray-200 text-steel-blue'
+                                        ? 'bg-accent hover:bg-accent/90 text-steel-blue shadow-md hover:shadow-lg'
+                                        : tier.name === 'Enterprise'
+                                            ? 'bg-steel-blue hover:bg-steel-blue/90 text-white'
+                                            : 'bg-gray-100 hover:bg-gray-200 text-steel-blue'
                                         }`}
                                 >
                                     {tier.cta}

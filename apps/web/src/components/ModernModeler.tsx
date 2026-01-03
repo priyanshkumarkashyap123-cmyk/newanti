@@ -196,20 +196,30 @@ const StatusBar: FC<{ isAnalyzing: boolean }> = ({ isAnalyzing }) => {
 
     return (
         <div className="h-7 bg-zinc-950 border-t border-zinc-800 flex items-center justify-between px-4 text-xs text-zinc-500 flex-shrink-0">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6">
                 <span className="flex items-center gap-1.5">
                     <span className={`w-2 h-2 rounded-full ${isAnalyzing ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`} />
                     {isAnalyzing ? 'Analyzing...' : 'Ready'}
                 </span>
-                <span>Mode: {activeCategory}</span>
-                <span>Tool: {activeTool || 'None'}</span>
+                <span className="h-3 w-px bg-zinc-700" />
+                <span>Mode: <span className="text-zinc-400">{activeCategory}</span></span>
+                <span className="h-3 w-px bg-zinc-700" />
+                <span>Tool: <span className="text-zinc-400">{activeTool || 'None'}</span></span>
             </div>
-            <div className="flex items-center gap-4">
-                <span>Nodes: {nodes.size}</span>
-                <span>Members: {members.size}</span>
-                <span>Units: kN, m</span>
+            <div className="flex items-center gap-6">
+                <span>Nodes: <span className="text-zinc-400 font-mono">{nodes.size}</span></span>
+                <span className="h-3 w-px bg-zinc-700" />
+                <span>Members: <span className="text-zinc-400 font-mono">{members.size}</span></span>
+                <span className="h-3 w-px bg-zinc-700" />
+                <span>Units: <span className="text-zinc-400">kN, m</span></span>
                 {analysisResults && (
-                    <span className="text-green-400">✓ Results Available</span>
+                    <>
+                        <span className="h-3 w-px bg-zinc-700" />
+                        <span className="text-green-400 flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                            Results Available
+                        </span>
+                    </>
                 )}
             </div>
         </div>
@@ -467,7 +477,7 @@ export const ModernModeler: FC = () => {
                 // Convert results to store format
                 const displacements = new Map<string, { dx: number; dy: number; dz: number; rx: number; ry: number; rz: number }>();
                 const reactions = new Map<string, { fx: number; fy: number; fz: number; mx: number; my: number; mz: number }>();
-                const memberForces = new Map<string, { 
+                const memberForces = new Map<string, {
                     axial: number; shearY: number; shearZ: number; momentY: number; momentZ: number; torsion: number;
                     diagramData?: {
                         x_values: number[];

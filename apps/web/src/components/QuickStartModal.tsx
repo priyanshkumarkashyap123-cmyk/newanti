@@ -65,7 +65,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({ isOpen, onClose, onO
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
             <div className="w-full max-w-2xl bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden">
                 {/* Header */}
                 <div className="relative px-8 pt-8 pb-4">
