@@ -35,6 +35,8 @@ import {
 import { useModelStore, type AnalysisResults } from '../../store/model';
 import { useUIStore } from '../../store/uiStore';
 import { AnalysisResultsDashboard, type AnalysisResultsData } from './AnalysisResultsDashboard';
+import { CheckpointLegalModal } from '../CheckpointLegalModal';
+import consentService from '../../services/ConsentService';
 
 // ============================================
 // TYPES
@@ -243,7 +245,21 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
     };
 
     // Handle PDF export
+    const [showPDFConsentModal, setShowPDFConsentModal] = useState(false);
+
     const handleExportPDF = async () => {
+        // Check if user has accepted PDF export terms
+        const userId = `user-${Date.now()}`; // In real app, use actual user ID
+        if (!consentService.hasUserAccepted(userId, 'pdf_export')) {
+            setShowPDFConsentModal(true);
+            return;
+        }
+
+        // Proceed with PDF export
+        executePDFExport();
+    };
+
+    const executePDFExport = async () => {
         setIsExporting(true);
         try {
             const { ReportGenerator } = await import('../../services/ReportGenerator');
@@ -876,7 +892,24 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                     </div>
                 </div>
             )}
-        </>
+
+            {/* PDF Export Legal Consent Modal */}
+            {showPDFConsentModal && (
+                <CheckpointLegalModal
+                    open={showPDFConsentModal}
+                    checkpointType="pdf_export"
+                    onAccept={() => {
+                        setShowPDFConsentModal(false);
+                        const userId = `user-${Date.now()}`;
+                        consentService.recordConsent(userId, 'pdf_export');
+                        executePDFExport();
+                    }}
+                    onDecline={() => {
+                        setShowPDFConsentModal(false);
+                    }}
+                    canClose={true}
+                />
+            )}        </>
     );
 };
 

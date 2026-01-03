@@ -60,9 +60,11 @@ import LoadCombinationsDialog from './LoadCombinationsDialog';
 import { AdvancedAnalysisDialog } from './AdvancedAnalysisDialog';
 import { DesignCodesDialog } from './DesignCodesDialog';
 import { LegalConsentModal, useCheckLegalConsent } from './LegalConsentModal';
+import { CheckpointLegalModal } from './CheckpointLegalModal';
 import { ExportDialog } from './ExportDialog';
 import { ActionToast, type ToastType } from './ui/ActionToast';
 import type { Node, Member } from '../store/model';
+import consentService from '../services/ConsentService';
 
 // Quick Commands and Context Menu (STAAD Pro style)
 import { useQuickCommands, getDefaultQuickCommands } from './QuickCommandsToolbar';
@@ -262,6 +264,8 @@ export const ModernModeler: FC = () => {
     // Quick start modal
     const [showQuickStart, setShowQuickStart] = useState(false);
     const [showLegalConsent, setShowLegalConsent] = useState(false);
+    const [pendingAction, setPendingAction] = useState<'analysis' | 'design' | 'pdf_export' | null>(null);
+    const [currentCheckpointType, setCurrentCheckpointType] = useState<'analysis' | 'design' | 'pdf_export'>('analysis');
     const { hasConsent } = useCheckLegalConsent();
     const { openModal } = useUIStore();
 
@@ -269,11 +273,17 @@ export const ModernModeler: FC = () => {
 
     // Run analysis
     const handleRunAnalysis = useCallback(async () => {
-        // Check legal consent first
-        if (hasConsent === false) {
-            setShowLegalConsent(true);
-            return;
-        }
+        // Check legal consent for analysis
+        setPendingAction('analysis');
+        setCurrentCheckpointType('analysis');
+        setShowLegalConsent(true);
+        
+        // Don't proceed with actual analysis yet
+        return;
+    }, []);
+
+    // Actual analysis execution (called after consent)
+    const executeAnalysis = useCallback(async () => {
 
         setIsAnalyzingLocal(true);
         setIsAnalyzing(true);
@@ -919,12 +929,38 @@ export const ModernModeler: FC = () => {
             )}
 
             {showQuickStart && <QuickStartModal isOpen={showQuickStart} onClose={() => setShowQuickStart(false)} />}
-            {showLegalConsent && <LegalConsentModal open={showLegalConsent} onAccept={() => {
-                setShowLegalConsent(false);
-                // Re-run analysis after consent is given
-                setTimeout(() => handleRunAnalysis(), 100);
-            }}
-                canClose={false} />}
+
+            {/* Checkpoint Legal Modals for different actions */}
+            {showLegalConsent && (
+                <CheckpointLegalModal
+                    open={showLegalConsent}
+                    checkpointType={currentCheckpointType}
+                    onAccept={() => {
+                        setShowLegalConsent(false);
+                        
+                        // Record consent and execute pending action
+                        if (pendingAction === 'analysis') {
+                            consentService.recordConsent(`user-${Date.now()}`, 'analysis');
+                            setTimeout(() => executeAnalysis(), 100);
+                        } else if (pendingAction === 'design') {
+                            consentService.recordConsent(`user-${Date.now()}`, 'design');
+                            // Trigger design check
+                            document.dispatchEvent(new CustomEvent('trigger-design'));
+                        } else if (pendingAction === 'pdf_export') {
+                            consentService.recordConsent(`user-${Date.now()}`, 'pdf_export');
+                            // Trigger PDF export
+                            document.dispatchEvent(new CustomEvent('trigger-pdf-export'));
+                        }
+                        setPendingAction(null);
+                    }}
+                    onDecline={() => {
+                        setShowLegalConsent(false);
+                        setPendingAction(null);
+                        showNotification('info', `${currentCheckpointType} requires legal consent to proceed`);
+                    }}
+                    canClose={true}
+                />
+            )}
 
             {/* Global Dialogs triggered by Ribbon */}
             <StructureWizard isOpen={useUIStore.getState().modals.structureWizard} onClose={() => useUIStore.getState().closeModal('structureWizard')} onGenerate={(structure) => {

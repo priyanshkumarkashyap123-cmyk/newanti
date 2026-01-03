@@ -3,6 +3,48 @@
  * Contains Terms of Service, Privacy Policy, and Engineering Disclaimer
  */
 
+// Consent type definitions
+export type ConsentType = 
+    | 'signup'           // On registration/login
+    | 'analysis'         // Before running analysis
+    | 'design'           // Before running design
+    | 'pdf_export'       // Before downloading PDF
+    | 'initial_landing'; // Checkbox on landing page (optional)
+
+// Checkpoint configurations
+export const CONSENT_CHECKPOINTS = {
+    signup: {
+        type: 'signup' as ConsentType,
+        required: true,
+        title: 'Accept Legal Terms to Continue',
+        message: 'You must accept all legal agreements before creating or accessing your account.'
+    },
+    analysis: {
+        type: 'analysis' as ConsentType,
+        required: true,
+        title: 'Engineering Disclaimer - Analysis',
+        message: 'Before running structural analysis, you must acknowledge that this software is a computational aid only and requires professional engineering verification.'
+    },
+    design: {
+        type: 'design' as ConsentType,
+        required: true,
+        title: 'Engineering Disclaimer - Design Check',
+        message: 'Before running design checks, you must confirm that you understand your professional responsibility and will independently verify all results.'
+    },
+    pdf_export: {
+        type: 'pdf_export' as ConsentType,
+        required: true,
+        title: 'Report Export Terms',
+        message: 'Before exporting the report, confirm that you will clearly document software usage and limitations in your project records.'
+    },
+    initial_landing: {
+        type: 'initial_landing' as ConsentType,
+        required: false,
+        title: 'Accept to Use BeamLab Ultimate',
+        message: 'Review and accept the legal agreements.'
+    }
+};
+
 export const TERMS_OF_SERVICE = `
 # Terms of Service
 
