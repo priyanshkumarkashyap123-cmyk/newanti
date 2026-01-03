@@ -314,7 +314,7 @@ def main():
     print("="*70)
     print(f"NumPy available: Yes")
     print(f"SciPy available: {SCIPY_AVAILABLE}")
-    print(f"CPU cores: {import multiprocessing; multiprocessing.cpu_count()}")
+    print(f"CPU cores: {multiprocessing.cpu_count()}")
     print("="*70)
     
     if args.test in ['all', 'matrix']:
