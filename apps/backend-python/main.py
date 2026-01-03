@@ -38,33 +38,43 @@ app = FastAPI(
 # CORS CONFIGURATION
 # ============================================
 
-# Allow origins from env
-allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
-frontend_url_env = os.getenv("FRONTEND_URL", "")
-
+# Build allowed origins list
 allow_origins = [
-    "https://beamlabultimate.tech",
-    "http://localhost:3001",
-    "http://localhost:5173",
-    "http://localhost:8000",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:5173",
-    # Production URLs
+    # Production
     "https://beamlabultimate.tech",
     "https://www.beamlabultimate.tech",
     "https://brave-mushroom-0eae8ec00.4.azurestaticapps.net",
-    "https://beamlab-backend-python.azurewebsites.net", 
+    "https://beamlab-backend-python.azurewebsites.net",
     "https://beamlab-backend-node.azurewebsites.net",
+    # Local development
+    "http://localhost:3001",
+    "http://localhost:5173",
+    "http://localhost:8000",
+    "http://localhost:8081",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:8081",
 ]
 
+# Add origins from environment variables
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "").strip()
 if allowed_origins_env:
-    allow_origins.extend([origin.strip() for origin in allowed_origins_env.split(",")])
+    env_origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
+    allow_origins.extend(env_origins)
 
+frontend_url_env = os.getenv("FRONTEND_URL", "").strip()
 if frontend_url_env:
-    allow_origins.append(frontend_url_env.strip())
+    allow_origins.append(frontend_url_env)
 
-# Deduplicate
-allow_origins = list(set(allow_origins))
+# Remove duplicates and sort for consistent output
+allow_origins = sorted(list(set(allow_origins)))
+
+# Print CORS config for debugging
+print(f"\n{'='*60}")
+print(f"[CORS] Configured allowed origins ({len(allow_origins)}):")
+for origin in sorted(allow_origins):
+    print(f"  ✓ {origin}")
+print(f"{'='*60}\n")
 
 app.add_middleware(
     CORSMiddleware,
@@ -72,6 +82,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    max_age=3600,
 )
 
 
