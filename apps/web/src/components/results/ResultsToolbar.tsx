@@ -262,7 +262,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
     const executePDFExport = async () => {
         setIsExporting(true);
         try {
-            const { ReportGenerator } = await import('../../services/ReportGenerator');
+            const ReportGeneratorModule = await import('../../services/ReportGenerator');
+            const ReportGenerator = ReportGeneratorModule.default;
             const report = new ReportGenerator();
 
             // Add header and project info
