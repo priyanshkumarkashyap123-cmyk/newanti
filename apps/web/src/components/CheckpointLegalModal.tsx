@@ -97,6 +97,8 @@ export const CheckpointLegalModal: FC<CheckpointLegalModalProps> = ({
             initial_landing: agreedDisclaimer
         };
 
+        console.log('[CheckpointLegalModal] Accept clicked', { checkpointType, agreedDisclaimer, requiredChecks: requiredChecks[checkpointType] });
+
         if (!requiredChecks[checkpointType]) {
             alert('Please agree to all required terms to proceed');
             return;
@@ -107,6 +109,7 @@ export const CheckpointLegalModal: FC<CheckpointLegalModalProps> = ({
             consentService.recordConsent(userId, checkpointType);
         }
 
+        console.log('[CheckpointLegalModal] Calling onAccept callback');
         onAccept();
     };
 
@@ -121,8 +124,8 @@ export const CheckpointLegalModal: FC<CheckpointLegalModalProps> = ({
     if (!open) return null;
 
     return (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/70 backdrop-blur-sm">
-            <div className="w-full max-w-3xl max-h-[90vh] bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/70 backdrop-blur-sm pointer-events-auto">
+            <div className="w-full max-w-3xl max-h-[90vh] bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col pointer-events-auto">
                 {/* Header */}
                 <div className={`p-6 pb-4 bg-gradient-to-r ${context.bgColor} border-b`}>
                     <div className="flex items-start gap-3">
@@ -289,14 +292,16 @@ export const CheckpointLegalModal: FC<CheckpointLegalModalProps> = ({
                     {canClose && (
                         <button
                             onClick={handleDecline}
-                            className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                            type="button"
+                            className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer pointer-events-auto"
                         >
                             Decline & Exit
                         </button>
                     )}
                     <button
                         onClick={handleAccept}
-                        className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                        type="button"
+                        className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors flex items-center justify-center gap-2 cursor-pointer pointer-events-auto"
                     >
                         <CheckCircle2 className="w-4 h-4" />
                         I Accept & Continue
