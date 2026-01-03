@@ -76,11 +76,34 @@ export interface Member {
     endOffset?: { x: number; y: number; z: number };
 }
 
+// Member Force Results with diagram data
+export interface MemberForceData {
+    // Max values for quick access
+    axial: number;
+    shearY: number;
+    shearZ: number;
+    momentY: number;
+    momentZ: number;
+    torsion: number;
+    // Diagram data arrays from PyNite (for visualization)
+    diagramData?: {
+        x_values: number[];
+        shear_y: number[];
+        shear_z: number[];
+        moment_y: number[];
+        moment_z: number[];
+        axial: number[];
+        torsion: number[];
+        deflection_y: number[];
+        deflection_z: number[];
+    };
+}
+
 // Analysis Results
 export interface AnalysisResults {
     displacements: Map<string, { dx: number; dy: number; dz: number; rx: number; ry: number; rz: number }>;
     reactions: Map<string, { fx: number; fy: number; fz: number; mx: number; my: number; mz: number }>;
-    memberForces: Map<string, { axial: number; shearY: number; shearZ: number; momentY: number; momentZ: number; torsion: number }>;
+    memberForces: Map<string, MemberForceData>;
 }
 
 // Modal Analysis Results

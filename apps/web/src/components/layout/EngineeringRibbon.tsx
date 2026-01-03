@@ -37,7 +37,7 @@ export const EngineeringRibbon: FC<RibbonProps> = ({ activeCategory }) => {
     // This allows the ribbon to switch automatically based on workflow sidebar
     const activeTab = activeCategory;
 
-    // Helper for tool buttons
+    // Helper for tool buttons - Consistent sizing
     const ToolButton = ({
         icon: Icon,
         label,
@@ -50,27 +50,27 @@ export const EngineeringRibbon: FC<RibbonProps> = ({ activeCategory }) => {
             onClick={onClick}
             disabled={disabled}
             className={`
-                flex flex-col items-center justify-center gap-1 px-2 py-1 rounded
+                flex flex-col items-center justify-center gap-1.5 px-2 py-1.5 rounded
                 border border-transparent hover:bg-zinc-800 transition-colors
                 ${isActive ? 'bg-blue-900/40 border-blue-700/50 text-blue-200' : 'text-zinc-400'}
                 ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                ${vertical ? 'h-16 w-14' : 'flex-row h-8 px-3 w-auto gap-2'}
+                ${vertical ? 'h-14 w-14 min-w-[56px]' : 'flex-row h-8 px-3 w-auto gap-2'}
             `}
         >
-            <Icon className={`${vertical ? 'w-5 h-5' : 'w-4 h-4'}`} />
-            <span className="text-[10px] whitespace-nowrap overflow-hidden text-center leading-tight">
+            <Icon className={`${vertical ? 'w-5 h-5' : 'w-4 h-4'} flex-shrink-0`} />
+            <span className="text-[10px] whitespace-nowrap text-center leading-tight max-w-[52px] truncate">
                 {label}
             </span>
         </button>
     );
 
-    // Group Container
+    // Group Container - Fixed label positioning
     const ToolGroup = ({ label, children }: { label: string, children: React.ReactNode }) => (
-        <div className="flex flex-col h-full border-r border-zinc-800 px-2 relative group">
+        <div className="flex flex-col h-full border-r border-zinc-800 px-3 pb-4 pt-1">
             <div className="flex-1 flex items-center gap-1">
                 {children}
             </div>
-            <div className="text-[9px] text-zinc-600 text-center uppercase tracking-wider pb-0.5 select-none absolute bottom-0.5 w-full left-0">
+            <div className="text-[9px] text-zinc-500 text-center uppercase tracking-wider mt-1 select-none">
                 {label}
             </div>
         </div>

@@ -90,7 +90,7 @@ const convertToAnalysisResultsData = (results: AnalysisResults): AnalysisResults
         });
     }
 
-    // Convert member forces - use actual shear/moment data from PyNite analysis
+    // Convert member forces - use actual diagram data from PyNite analysis
     if (results.memberForces) {
         results.memberForces.forEach((forces, memberId) => {
             // Forces are already in kN/kNm from PyNite (no need to divide by 1000)
@@ -98,24 +98,42 @@ const convertToAnalysisResultsData = (results: AnalysisResults): AnalysisResults
             const moment = Math.max(Math.abs(forces.momentY), Math.abs(forces.momentZ));
             const axial = Math.abs(forces.axial);
 
-            // Generate diagram data points (uniform for now - would need array data for real diagrams)
-            const numPoints = 20;
-            const memberLength = 5; // Default length - would need actual from store
+            // Use actual PyNite diagram data if available, otherwise generate default
+            const pyniteDiagram = forces.diagramData;
+            let x_values: number[];
+            let shear_values: number[];
+            let moment_values: number[];
+            let axial_values: number[];
+            let deflection_values: number[];
+            let memberLength: number;
 
-            const x_values: number[] = [];
-            const shear_values: number[] = [];
-            const moment_values: number[] = [];
-            const axial_values: number[] = [];
-            const deflection_values: number[] = [];
+            if (pyniteDiagram && pyniteDiagram.x_values && pyniteDiagram.x_values.length > 0) {
+                // Use actual PyNite data
+                x_values = pyniteDiagram.x_values;
+                shear_values = pyniteDiagram.shear_y;
+                moment_values = pyniteDiagram.moment_z;
+                axial_values = pyniteDiagram.axial || [];
+                deflection_values = pyniteDiagram.deflection_y || [];
+                memberLength = x_values[x_values.length - 1] || 5;
+            } else {
+                // Fallback: Generate uniform data points
+                const numPoints = 20;
+                memberLength = 5; // Default length
 
-            for (let i = 0; i <= numPoints; i++) {
-                const x = (i / numPoints) * memberLength;
-                x_values.push(x);
-                // Simple linear interpolation for now
-                shear_values.push(forces.shearY);
-                moment_values.push(forces.momentZ);
-                axial_values.push(forces.axial);
-                deflection_values.push(0);
+                x_values = [];
+                shear_values = [];
+                moment_values = [];
+                axial_values = [];
+                deflection_values = [];
+
+                for (let i = 0; i <= numPoints; i++) {
+                    const x = (i / numPoints) * memberLength;
+                    x_values.push(x);
+                    shear_values.push(forces.shearY);
+                    moment_values.push(forces.momentZ);
+                    axial_values.push(forces.axial);
+                    deflection_values.push(0);
+                }
             }
 
             // Estimate stress from bending (sigma = M*c/I, simplified)

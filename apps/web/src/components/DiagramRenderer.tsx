@@ -31,7 +31,7 @@ export const DiagramRenderer: FC<DiagramRendererProps> = ({
     const startNode = member ? nodes.get(member.startNodeId) : null;
     const endNode = member ? nodes.get(member.endNodeId) : null;
 
-    // Calculate diagram data
+    // Calculate diagram data - use actual PyNite data if available
     const diagramData = useMemo(() => {
         if (!member || !startNode || !endNode || !analysisResults) {
             return null;
@@ -63,8 +63,30 @@ export const DiagramRenderer: FC<DiagramRendererProps> = ({
             localY.normalize();
         }
 
-        // Create simplified force points for the diagram
-        // Using linear interpolation from end forces
+        // Check if we have actual PyNite diagram data
+        const pyniteDiagram = memberForces.diagramData;
+        if (pyniteDiagram && pyniteDiagram.x_values && pyniteDiagram.x_values.length > 0) {
+            // Use actual PyNite diagram data
+            const forcePoints: ForcePoint[] = pyniteDiagram.x_values.map((x, i) => ({
+                x,
+                Fx: pyniteDiagram.axial[i] || 0,
+                Fy: pyniteDiagram.shear_y[i] || 0,
+                Fz: pyniteDiagram.shear_z?.[i] || 0,
+                My: pyniteDiagram.moment_y?.[i] || 0,
+                Mz: pyniteDiagram.moment_z?.[i] || 0,
+                Tx: pyniteDiagram.torsion?.[i] || 0
+            }));
+
+            return {
+                forcePoints,
+                L,
+                dir,
+                localY,
+                startPos: new THREE.Vector3(startNode.x, startNode.y, startNode.z)
+            };
+        }
+
+        // Fallback: Create simplified force points from end forces
         const endForces = {
             N1: -memberForces.axial,
             Vy1: memberForces.shearY,

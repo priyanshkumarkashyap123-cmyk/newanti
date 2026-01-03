@@ -467,7 +467,20 @@ export const ModernModeler: FC = () => {
                 // Convert results to store format
                 const displacements = new Map<string, { dx: number; dy: number; dz: number; rx: number; ry: number; rz: number }>();
                 const reactions = new Map<string, { fx: number; fy: number; fz: number; mx: number; my: number; mz: number }>();
-                const memberForces = new Map<string, { axial: number; shearY: number; shearZ: number; momentY: number; momentZ: number; torsion: number }>();
+                const memberForces = new Map<string, { 
+                    axial: number; shearY: number; shearZ: number; momentY: number; momentZ: number; torsion: number;
+                    diagramData?: {
+                        x_values: number[];
+                        shear_y: number[];
+                        shear_z: number[];
+                        moment_y: number[];
+                        moment_z: number[];
+                        axial: number[];
+                        torsion: number[];
+                        deflection_y: number[];
+                        deflection_z: number[];
+                    };
+                }>();
 
                 // Parse displacements - handle both PyNite object format and array format
                 if (result.displacements) {
@@ -513,7 +526,7 @@ export const ModernModeler: FC = () => {
                     });
                 }
 
-                // Parse member forces - extract from rich PyNite data
+                // Parse member forces - extract from rich PyNite data including diagram arrays
                 if (result.memberForces) {
                     Object.entries(result.memberForces).forEach(([memberId, forces]) => {
                         const f = forces as {
@@ -523,6 +536,9 @@ export const ModernModeler: FC = () => {
                             moment_y?: number[];
                             moment_z?: number[];
                             torsion?: number[];
+                            x_values?: number[];
+                            deflection_y?: number[];
+                            deflection_z?: number[];
                             max_shear_y?: number;
                             max_shear_z?: number;
                             max_moment_y?: number;
@@ -536,22 +552,36 @@ export const ModernModeler: FC = () => {
                         };
 
                         // Use max values if available, otherwise calculate from arrays
-                        const axial = f.max_shear_y !== undefined
+                        const axialVal = f.max_shear_y !== undefined
                             ? (Array.isArray(f.axial) ? getMaxAbs(f.axial) : (f.axial ?? 0))
-                            : (typeof f.axial === 'number' ? f.axial : 0);
+                            : (typeof f.axial === 'number' ? f.axial : getMaxAbs(f.axial as number[] | undefined));
                         const shearY = f.max_shear_y ?? getMaxAbs(f.shear_y);
                         const shearZ = f.max_shear_z ?? getMaxAbs(f.shear_z);
                         const momentY = f.max_moment_y ?? getMaxAbs(f.moment_y);
                         const momentZ = f.max_moment_z ?? getMaxAbs(f.moment_z);
-                        const torsion = getMaxAbs(f.torsion);
+                        const torsionVal = getMaxAbs(f.torsion);
+
+                        // Store diagram data arrays if available (from PyNite)
+                        const diagramData = (f.x_values && f.shear_y) ? {
+                            x_values: f.x_values,
+                            shear_y: f.shear_y,
+                            shear_z: f.shear_z || [],
+                            moment_y: f.moment_y || [],
+                            moment_z: f.moment_z || [],
+                            axial: Array.isArray(f.axial) ? f.axial : [],
+                            torsion: f.torsion || [],
+                            deflection_y: f.deflection_y || [],
+                            deflection_z: f.deflection_z || []
+                        } : undefined;
 
                         memberForces.set(memberId, {
-                            axial,
+                            axial: axialVal as number,
                             shearY,
                             shearZ,
                             momentY,
                             momentZ,
-                            torsion
+                            torsion: torsionVal,
+                            diagramData
                         });
                     });
                 }
