@@ -791,6 +791,620 @@ By using this report, you acknowledge that you have read and understood these te
         });
     }
 
+    /**
+     * Add detailed individual member diagrams with calculations
+     * Each member gets its own page with SFD, BMD, AFD and detailed calculations
+     */
+    addDetailedMemberDiagrams(members: Array<{
+        id: string;
+        startNodeId: string;
+        endNodeId: string;
+        length: number;
+        sectionId?: string;
+        E?: number;
+        I?: number;
+        A?: number;
+        maxShear?: number;
+        maxMoment?: number;
+        maxAxial?: number;
+        startReactions?: { shear: number; moment: number; axial: number };
+        endReactions?: { shear: number; moment: number; axial: number };
+        diagramData?: {
+            x_values: number[];
+            shear_values: number[];
+            moment_values: number[];
+            axial_values: number[];
+            deflection_values: number[];
+        };
+    }>): void {
+        if (members.length === 0) return;
+
+        members.forEach((member, index) => {
+            // New page for each member
+            this.addPage(`Member ${index + 1} Analysis`);
+            
+            // Member header
+            this.doc.setFontSize(14);
+            this.doc.setFont('helvetica', 'bold');
+            this.doc.setTextColor(30, 64, 175);
+            this.doc.text(`Member: ${member.id}`, this.margin, this.contentTop);
+            this.contentTop += 8;
+
+            // Member info box
+            this.doc.setFillColor(249, 250, 251);
+            this.doc.roundedRect(this.margin, this.contentTop, this.pageWidth - 2 * this.margin, 25, 2, 2, 'F');
+            
+            this.doc.setFontSize(9);
+            this.doc.setFont('helvetica', 'normal');
+            this.doc.setTextColor(55, 65, 81);
+            
+            const infoY = this.contentTop + 6;
+            this.doc.text(`Start Node: ${member.startNodeId}`, this.margin + 5, infoY);
+            this.doc.text(`End Node: ${member.endNodeId}`, this.margin + 55, infoY);
+            this.doc.text(`Length: ${member.length.toFixed(3)} m`, this.margin + 105, infoY);
+            this.doc.text(`Section: ${member.sectionId || 'Default'}`, this.margin + 5, infoY + 8);
+            this.doc.text(`E: ${member.E ? (member.E / 1e6).toFixed(0) : '200'} GPa`, this.margin + 55, infoY + 8);
+            this.doc.text(`I: ${member.I ? (member.I * 1e8).toFixed(2) : '—'} cm⁴`, this.margin + 105, infoY + 8);
+            this.doc.text(`A: ${member.A ? (member.A * 1e4).toFixed(2) : '—'} cm²`, this.margin + 155, infoY + 8);
+            
+            this.contentTop += 30;
+            this.doc.setTextColor(0, 0, 0);
+
+            if (!member.diagramData) {
+                this.doc.setFontSize(10);
+                this.doc.text('No diagram data available for this member.', this.margin, this.contentTop);
+                return;
+            }
+
+            const diagrams: Array<{ type: string; values: number[]; maxVal: number; unit: string; color: string }> = [
+                { 
+                    type: 'Shear Force Diagram (SFD)', 
+                    values: member.diagramData.shear_values, 
+                    maxVal: member.maxShear || Math.max(...member.diagramData.shear_values.map(Math.abs)) || 10,
+                    unit: 'kN',
+                    color: '#dc2626'
+                },
+                { 
+                    type: 'Bending Moment Diagram (BMD)', 
+                    values: member.diagramData.moment_values, 
+                    maxVal: member.maxMoment || Math.max(...member.diagramData.moment_values.map(Math.abs)) || 10,
+                    unit: 'kN·m',
+                    color: '#2563eb'
+                },
+                { 
+                    type: 'Axial Force Diagram (AFD)', 
+                    values: member.diagramData.axial_values, 
+                    maxVal: member.maxAxial || Math.max(...member.diagramData.axial_values.map(Math.abs)) || 10,
+                    unit: 'kN',
+                    color: '#16a34a'
+                }
+            ];
+
+            diagrams.forEach(diagram => {
+                if (this.contentTop > this.pageHeight - 80) {
+                    this.doc.addPage();
+                    this.addHeader(`Member ${member.id} - Continued`);
+                    this.contentTop = 45;
+                }
+
+                // Diagram title
+                this.doc.setFontSize(11);
+                this.doc.setFont('helvetica', 'bold');
+                this.doc.setTextColor(0, 0, 0);
+                this.doc.text(diagram.type, this.margin, this.contentTop);
+                this.contentTop += 5;
+
+                // Draw enhanced diagram
+                this.drawEnhancedDiagram(
+                    member.diagramData!.x_values,
+                    diagram.values,
+                    diagram.maxVal,
+                    diagram.unit,
+                    diagram.color,
+                    member.length
+                );
+
+                this.contentTop += 5;
+            });
+
+            // Add calculations section
+            this.addMemberCalculations(member);
+        });
+    }
+
+    /**
+     * Draw enhanced diagram with better visualization
+     */
+    private drawEnhancedDiagram(
+        xValues: number[],
+        values: number[],
+        maxValue: number,
+        unit: string,
+        color: string,
+        memberLength: number
+    ): void {
+        const width = this.pageWidth - 2 * this.margin;
+        const height = 50;
+        const canvas = document.createElement('canvas');
+        canvas.width = width * 3.78;
+        canvas.height = height * 3.78;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        const padding = { left: 45, right: 20, top: 15, bottom: 20 };
+        const graphWidth = canvas.width - padding.left - padding.right;
+        const graphHeight = canvas.height - padding.top - padding.bottom;
+
+        // Clear background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw grid
+        ctx.strokeStyle = '#f0f0f0';
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= 10; i++) {
+            const x = padding.left + (graphWidth / 10) * i;
+            ctx.beginPath();
+            ctx.moveTo(x, padding.top);
+            ctx.lineTo(x, canvas.height - padding.bottom);
+            ctx.stroke();
+        }
+        for (let i = 0; i <= 4; i++) {
+            const y = padding.top + (graphHeight / 4) * i;
+            ctx.beginPath();
+            ctx.moveTo(padding.left, y);
+            ctx.lineTo(canvas.width - padding.right, y);
+            ctx.stroke();
+        }
+
+        // Draw baseline (zero line)
+        const zeroY = padding.top + graphHeight / 2;
+        ctx.strokeStyle = '#374151';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(padding.left, zeroY);
+        ctx.lineTo(canvas.width - padding.right, zeroY);
+        ctx.stroke();
+
+        // Draw member representation
+        ctx.fillStyle = '#6b7280';
+        ctx.fillRect(padding.left, zeroY - 3, graphWidth, 6);
+
+        // Draw diagram curve with fill
+        if (values.length > 0 && xValues.length > 0) {
+            const maxX = xValues[xValues.length - 1] || memberLength || 1;
+            const scale = maxValue > 0 ? (graphHeight / 2) / maxValue : 1;
+
+            ctx.beginPath();
+            ctx.moveTo(padding.left, zeroY);
+
+            for (let i = 0; i < values.length; i++) {
+                const x = padding.left + (xValues[i] / maxX) * graphWidth;
+                const y = zeroY - values[i] * scale;
+                if (i === 0) {
+                    ctx.lineTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+
+            ctx.lineTo(canvas.width - padding.right, zeroY);
+            ctx.closePath();
+
+            // Fill
+            const hexToRgb = (hex: string) => {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : { r: 0, g: 0, b: 0 };
+            };
+            const rgb = hexToRgb(color);
+            ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2)`;
+            ctx.fill();
+
+            // Stroke
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            for (let i = 0; i < values.length; i++) {
+                const x = padding.left + (xValues[i] / maxX) * graphWidth;
+                const y = zeroY - values[i] * scale;
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+
+            // Mark max/min values
+            const maxVal = Math.max(...values);
+            const minVal = Math.min(...values);
+            const maxIdx = values.indexOf(maxVal);
+            const minIdx = values.indexOf(minVal);
+
+            ctx.font = 'bold 11px Arial';
+            ctx.fillStyle = color;
+            
+            if (Math.abs(maxVal) > 0.01) {
+                const maxX = padding.left + (xValues[maxIdx] / (xValues[xValues.length - 1] || 1)) * graphWidth;
+                const maxY = zeroY - maxVal * scale;
+                ctx.beginPath();
+                ctx.arc(maxX, maxY, 4, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.fillText(`${maxVal.toFixed(2)} ${unit}`, maxX + 5, maxY - 5);
+            }
+            
+            if (Math.abs(minVal) > 0.01 && minIdx !== maxIdx) {
+                const minX = padding.left + (xValues[minIdx] / (xValues[xValues.length - 1] || 1)) * graphWidth;
+                const minY = zeroY - minVal * scale;
+                ctx.beginPath();
+                ctx.arc(minX, minY, 4, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.fillText(`${minVal.toFixed(2)} ${unit}`, minX + 5, minY + 15);
+            }
+        }
+
+        // Draw axis labels
+        ctx.fillStyle = '#374151';
+        ctx.font = '10px Arial';
+        ctx.textAlign = 'right';
+        ctx.fillText(`+${maxValue.toFixed(1)} ${unit}`, padding.left - 5, padding.top + 10);
+        ctx.fillText(`-${maxValue.toFixed(1)} ${unit}`, padding.left - 5, canvas.height - padding.bottom - 5);
+        ctx.fillText('0', padding.left - 5, zeroY + 4);
+
+        ctx.textAlign = 'center';
+        ctx.fillText('0', padding.left, canvas.height - 5);
+        ctx.fillText(`${memberLength.toFixed(2)} m`, canvas.width - padding.right, canvas.height - 5);
+
+        // Convert to image and add to PDF
+        const imgData = canvas.toDataURL('image/png');
+        this.doc.addImage(imgData, 'PNG', this.margin, this.contentTop, width, height);
+        this.contentTop += height + 3;
+    }
+
+    /**
+     * Add detailed calculations for a member
+     */
+    private addMemberCalculations(member: {
+        id: string;
+        length: number;
+        E?: number;
+        I?: number;
+        A?: number;
+        maxShear?: number;
+        maxMoment?: number;
+        maxAxial?: number;
+        diagramData?: {
+            x_values: number[];
+            shear_values: number[];
+            moment_values: number[];
+            axial_values: number[];
+            deflection_values: number[];
+        };
+    }): void {
+        if (this.contentTop > this.pageHeight - 80) {
+            this.doc.addPage();
+            this.addHeader(`Member ${member.id} - Calculations`);
+            this.contentTop = 45;
+        }
+
+        // Calculations header
+        this.doc.setFontSize(11);
+        this.doc.setFont('helvetica', 'bold');
+        this.doc.setTextColor(30, 64, 175);
+        this.doc.text('Detailed Calculations', this.margin, this.contentTop);
+        this.contentTop += 6;
+
+        this.doc.setFontSize(9);
+        this.doc.setFont('helvetica', 'normal');
+        this.doc.setTextColor(0, 0, 0);
+
+        const L = member.length;
+        const E = member.E || 200e6; // kN/m²
+        const I = member.I || 1e-4;  // m⁴
+        const A = member.A || 1e-2;  // m²
+
+        // Extract key values
+        const shearValues = member.diagramData?.shear_values || [];
+        const momentValues = member.diagramData?.moment_values || [];
+        const axialValues = member.diagramData?.axial_values || [];
+        const deflectionValues = member.diagramData?.deflection_values || [];
+
+        const Vmax = shearValues.length > 0 ? Math.max(...shearValues.map(Math.abs)) : (member.maxShear || 0);
+        const Mmax = momentValues.length > 0 ? Math.max(...momentValues.map(Math.abs)) : (member.maxMoment || 0);
+        const Nmax = axialValues.length > 0 ? Math.max(...axialValues.map(Math.abs)) : (member.maxAxial || 0);
+        const deltaMax = deflectionValues.length > 0 ? Math.max(...deflectionValues.map(Math.abs)) : 0;
+
+        const V_start = shearValues[0] || 0;
+        const V_end = shearValues[shearValues.length - 1] || 0;
+        const M_start = momentValues[0] || 0;
+        const M_end = momentValues[momentValues.length - 1] || 0;
+        const N_start = axialValues[0] || 0;
+        const N_end = axialValues[axialValues.length - 1] || 0;
+
+        // Create calculation box
+        this.doc.setFillColor(254, 252, 232);
+        this.doc.roundedRect(this.margin, this.contentTop, this.pageWidth - 2 * this.margin, 70, 2, 2, 'F');
+        this.doc.setDrawColor(202, 138, 4);
+        this.doc.setLineWidth(0.3);
+        this.doc.roundedRect(this.margin, this.contentTop, this.pageWidth - 2 * this.margin, 70, 2, 2, 'S');
+
+        let calcY = this.contentTop + 6;
+        const col1 = this.margin + 5;
+        const col2 = this.margin + 95;
+
+        // Section 1: Shear Force
+        this.doc.setFont('helvetica', 'bold');
+        this.doc.text('Shear Force Analysis:', col1, calcY);
+        calcY += 5;
+        this.doc.setFont('helvetica', 'normal');
+        this.doc.text(`V_start = ${V_start.toFixed(3)} kN`, col1, calcY);
+        this.doc.text(`V_end = ${V_end.toFixed(3)} kN`, col2, calcY);
+        calcY += 5;
+        this.doc.text(`V_max = ${Vmax.toFixed(3)} kN`, col1, calcY);
+        this.doc.text(`ΔV = ${Math.abs(V_end - V_start).toFixed(3)} kN (change along member)`, col2, calcY);
+        calcY += 7;
+
+        // Section 2: Bending Moment
+        this.doc.setFont('helvetica', 'bold');
+        this.doc.text('Bending Moment Analysis:', col1, calcY);
+        calcY += 5;
+        this.doc.setFont('helvetica', 'normal');
+        this.doc.text(`M_start = ${M_start.toFixed(3)} kN·m`, col1, calcY);
+        this.doc.text(`M_end = ${M_end.toFixed(3)} kN·m`, col2, calcY);
+        calcY += 5;
+        this.doc.text(`M_max = ${Mmax.toFixed(3)} kN·m`, col1, calcY);
+        
+        // Calculate bending stress
+        const y_max = 0.15; // Assume 150mm half-depth (typical)
+        const sigma_b = (Mmax * 1000 * y_max) / (I * 1e8); // MPa (approximate)
+        this.doc.text(`σ_b ≈ M·y/I = ${sigma_b.toFixed(2)} MPa (approx)`, col2, calcY);
+        calcY += 7;
+
+        // Section 3: Axial Force
+        this.doc.setFont('helvetica', 'bold');
+        this.doc.text('Axial Force Analysis:', col1, calcY);
+        calcY += 5;
+        this.doc.setFont('helvetica', 'normal');
+        this.doc.text(`N_start = ${N_start.toFixed(3)} kN`, col1, calcY);
+        this.doc.text(`N_end = ${N_end.toFixed(3)} kN`, col2, calcY);
+        calcY += 5;
+        this.doc.text(`N_max = ${Nmax.toFixed(3)} kN`, col1, calcY);
+        
+        // Calculate axial stress
+        const sigma_a = (Nmax * 1000) / (A * 1e4); // MPa
+        this.doc.text(`σ_a = N/A = ${sigma_a.toFixed(2)} MPa`, col2, calcY);
+        calcY += 7;
+
+        // Section 4: Deflection
+        this.doc.setFont('helvetica', 'bold');
+        this.doc.text('Deflection:', col1, calcY);
+        this.doc.setFont('helvetica', 'normal');
+        this.doc.text(`δ_max = ${(deltaMax * 1000).toFixed(3)} mm`, col1 + 40, calcY);
+        this.doc.text(`L/δ = ${deltaMax > 0 ? (L / deltaMax).toFixed(0) : '∞'}`, col2, calcY);
+
+        this.contentTop += 75;
+    }
+
+    /**
+     * Add combined structure diagram showing all members
+     */
+    addCombinedStructureDiagram(
+        nodes: Array<{ id: string; x: number; y: number; z: number }>,
+        members: Array<{
+            id: string;
+            startNodeId: string;
+            endNodeId: string;
+            diagramData?: {
+                x_values: number[];
+                shear_values: number[];
+                moment_values: number[];
+                axial_values: number[];
+            };
+        }>,
+        diagramType: 'SFD' | 'BMD' | 'AFD'
+    ): void {
+        this.addPage(`Combined ${diagramType} - Entire Structure`);
+        this.addSectionHeading(`Combined ${diagramType === 'SFD' ? 'Shear Force' : diagramType === 'BMD' ? 'Bending Moment' : 'Axial Force'} Diagram`);
+
+        // Calculate bounds
+        const xs = nodes.map(n => n.x);
+        const ys = nodes.map(n => n.y);
+        const minX = Math.min(...xs), maxX = Math.max(...xs);
+        const minY = Math.min(...ys), maxY = Math.max(...ys);
+        const rangeX = (maxX - minX) || 1;
+        const rangeY = (maxY - minY) || 1;
+
+        // Canvas dimensions
+        const canvasWidth = this.pageWidth - 2 * this.margin;
+        const canvasHeight = 140;
+        const padding = 35;
+        const drawWidth = canvasWidth - 2 * padding;
+        const drawHeight = canvasHeight - 2 * padding;
+
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = canvasWidth * 3.78;
+        canvas.height = canvasHeight * 3.78;
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) return;
+
+        const scale = 3.78;
+        const pxPadding = padding * scale;
+        const pxDrawWidth = drawWidth * scale;
+        const pxDrawHeight = drawHeight * scale;
+
+        // Clear background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Coordinate transform
+        const toCanvasX = (x: number) => pxPadding + ((x - minX) / rangeX) * pxDrawWidth;
+        const toCanvasY = (y: number) => canvas.height - pxPadding - ((y - minY) / rangeY) * pxDrawHeight;
+
+        // Draw grid
+        ctx.strokeStyle = '#f0f0f0';
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= 10; i++) {
+            const x = pxPadding + (pxDrawWidth / 10) * i;
+            const y = pxPadding + (pxDrawHeight / 10) * i;
+            ctx.beginPath();
+            ctx.moveTo(x, pxPadding);
+            ctx.lineTo(x, canvas.height - pxPadding);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(pxPadding, y);
+            ctx.lineTo(canvas.width - pxPadding, y);
+            ctx.stroke();
+        }
+
+        // Draw members (baseline)
+        ctx.strokeStyle = '#9ca3af';
+        ctx.lineWidth = 4;
+        for (const member of members) {
+            const startNode = nodes.find(n => n.id === member.startNodeId);
+            const endNode = nodes.find(n => n.id === member.endNodeId);
+            if (startNode && endNode) {
+                ctx.beginPath();
+                ctx.moveTo(toCanvasX(startNode.x), toCanvasY(startNode.y));
+                ctx.lineTo(toCanvasX(endNode.x), toCanvasY(endNode.y));
+                ctx.stroke();
+            }
+        }
+
+        // Diagram colors
+        const colors: Record<string, string> = {
+            'SFD': '#dc2626',
+            'BMD': '#2563eb',
+            'AFD': '#16a34a'
+        };
+        const color = colors[diagramType];
+
+        // Find global max for scaling
+        let globalMax = 1;
+        for (const member of members) {
+            if (member.diagramData) {
+                const values = diagramType === 'SFD' ? member.diagramData.shear_values :
+                             diagramType === 'BMD' ? member.diagramData.moment_values :
+                             member.diagramData.axial_values;
+                const maxVal = Math.max(...values.map(Math.abs));
+                if (maxVal > globalMax) globalMax = maxVal;
+            }
+        }
+
+        // Scale factor for diagram offset from member (in pixels)
+        const diagramScale = 30 / globalMax;
+
+        // Draw diagram for each member
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.fillStyle = color.replace(')', ', 0.15)').replace('rgb', 'rgba');
+
+        for (const member of members) {
+            const startNode = nodes.find(n => n.id === member.startNodeId);
+            const endNode = nodes.find(n => n.id === member.endNodeId);
+            if (!startNode || !endNode || !member.diagramData) continue;
+
+            const values = diagramType === 'SFD' ? member.diagramData.shear_values :
+                         diagramType === 'BMD' ? member.diagramData.moment_values :
+                         member.diagramData.axial_values;
+            const xValues = member.diagramData.x_values;
+
+            if (values.length === 0) continue;
+
+            // Calculate member direction
+            const dx = endNode.x - startNode.x;
+            const dy = endNode.y - startNode.y;
+            const memberLen = Math.sqrt(dx * dx + dy * dy) || 1;
+            const perpX = -dy / memberLen;
+            const perpY = dx / memberLen;
+
+            const startPx = toCanvasX(startNode.x);
+            const startPy = toCanvasY(startNode.y);
+            const endPx = toCanvasX(endNode.x);
+            const endPy = toCanvasY(endNode.y);
+
+            // Draw diagram polygon
+            ctx.beginPath();
+            ctx.moveTo(startPx, startPy);
+
+            for (let i = 0; i < values.length; i++) {
+                const t = xValues[i] / (xValues[xValues.length - 1] || 1);
+                const basePx = startPx + t * (endPx - startPx);
+                const basePy = startPy + t * (endPy - startPy);
+                const offset = values[i] * diagramScale;
+                ctx.lineTo(basePx + perpX * offset, basePy - perpY * offset);
+            }
+
+            ctx.lineTo(endPx, endPy);
+            ctx.closePath();
+
+            // Fill and stroke
+            const hexToRgb = (hex: string) => {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : { r: 0, g: 0, b: 0 };
+            };
+            const rgb = hexToRgb(color);
+            ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2)`;
+            ctx.fill();
+            ctx.strokeStyle = color;
+            ctx.stroke();
+
+            // Add max value label
+            const maxVal = Math.max(...values);
+            const minVal = Math.min(...values);
+            const maxIdx = values.indexOf(Math.abs(maxVal) > Math.abs(minVal) ? maxVal : minVal);
+            const t = xValues[maxIdx] / (xValues[xValues.length - 1] || 1);
+            const labelPx = startPx + t * (endPx - startPx);
+            const labelPy = startPy + t * (endPy - startPy);
+            const labelOffset = (Math.abs(maxVal) > Math.abs(minVal) ? maxVal : minVal) * diagramScale;
+
+            ctx.font = 'bold 11px Arial';
+            ctx.fillStyle = color;
+            const labelValue = Math.abs(maxVal) > Math.abs(minVal) ? maxVal : minVal;
+            ctx.fillText(
+                `${labelValue.toFixed(1)}`,
+                labelPx + perpX * labelOffset + 5,
+                labelPy - perpY * labelOffset
+            );
+        }
+
+        // Draw nodes
+        ctx.fillStyle = '#374151';
+        for (const node of nodes) {
+            const px = toCanvasX(node.x);
+            const py = toCanvasY(node.y);
+            ctx.beginPath();
+            ctx.arc(px, py, 5, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+
+        // Convert to image and add to PDF
+        const imgData = canvas.toDataURL('image/png');
+        const y = (this.doc as any).lastAutoTable?.finalY + 10 || this.contentTop;
+        this.doc.addImage(imgData, 'PNG', this.margin, y, canvasWidth, canvasHeight);
+
+        // Add legend
+        const legendY = y + canvasHeight + 8;
+        this.doc.setFontSize(9);
+        this.doc.setFont('helvetica', 'normal');
+        this.doc.setTextColor(parseInt(color.slice(1, 3), 16), parseInt(color.slice(3, 5), 16), parseInt(color.slice(5, 7), 16));
+        const unit = diagramType === 'BMD' ? 'kN·m' : 'kN';
+        this.doc.text(`${diagramType} values in ${unit} | Max scale: ±${globalMax.toFixed(2)} ${unit}`, this.margin, legendY);
+        this.doc.setTextColor(0, 0, 0);
+
+        this.contentTop = legendY + 10;
+    }
+
     // ============================================
     // CROSS-SECTIONAL DETAILS
     // ============================================

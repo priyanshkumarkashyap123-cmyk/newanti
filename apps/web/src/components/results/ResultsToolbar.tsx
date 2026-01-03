@@ -388,13 +388,76 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                     report.addMemberForcesTable(forces);
                 }
 
-                // Add member diagrams
+                // Add combined structure diagrams (SFD, BMD, AFD for whole structure)
+                if (nodeList.length > 0 && memberList.length > 0) {
+                    try {
+                        const membersWithDiagrams = Array.from(members.values()).map(m => {
+                            const forceData = analysisResults?.memberForces?.get(m.id);
+                            return {
+                                id: m.id,
+                                startNodeId: m.startNodeId,
+                                endNodeId: m.endNodeId,
+                                diagramData: forceData?.diagramData ? {
+                                    x_values: forceData.diagramData.x_values || [],
+                                    shear_values: forceData.diagramData.shear_y || [],
+                                    moment_values: forceData.diagramData.moment_z || [],
+                                    axial_values: forceData.diagramData.axial || []
+                                } : undefined
+                            };
+                        });
+
+                        // Add combined diagrams for entire structure
+                        report.addCombinedStructureDiagram(nodeList, membersWithDiagrams, 'SFD');
+                        report.addCombinedStructureDiagram(nodeList, membersWithDiagrams, 'BMD');
+                        report.addCombinedStructureDiagram(nodeList, membersWithDiagrams, 'AFD');
+                    } catch (error) {
+                        console.warn('Failed to add combined diagrams to PDF:', error);
+                    }
+                }
+
+                // Add detailed individual member diagrams with calculations
                 const dashboardData = convertToAnalysisResultsData(analysisResults);
                 if (dashboardData.members.length > 0) {
                     try {
-                        report.addAllMemberDiagrams(dashboardData.members, ['SFD', 'BMD', 'AFD']);
+                        // Prepare detailed member data
+                        const detailedMembers = Array.from(members.values()).map(m => {
+                            const startNode = nodes.get(m.startNodeId);
+                            const endNode = nodes.get(m.endNodeId);
+                            let length = 0;
+                            if (startNode && endNode) {
+                                length = Math.sqrt(
+                                    Math.pow(endNode.x - startNode.x, 2) +
+                                    Math.pow(endNode.y - startNode.y, 2) +
+                                    Math.pow(endNode.z - startNode.z, 2)
+                                );
+                            }
+
+                            const forceData = analysisResults?.memberForces?.get(m.id);
+                            return {
+                                id: m.id,
+                                startNodeId: m.startNodeId,
+                                endNodeId: m.endNodeId,
+                                length,
+                                sectionId: m.sectionId || 'Default',
+                                E: m.E || 200000000,
+                                I: m.I,
+                                A: m.A,
+                                maxShear: forceData?.shearY,
+                                maxMoment: forceData?.momentZ,
+                                maxAxial: forceData?.axial,
+                                diagramData: forceData?.diagramData ? {
+                                    x_values: forceData.diagramData.x_values || [],
+                                    shear_values: forceData.diagramData.shear_y || [],
+                                    moment_values: forceData.diagramData.moment_z || [],
+                                    axial_values: forceData.diagramData.axial || [],
+                                    deflection_values: forceData.diagramData.deflection_y || []
+                                } : undefined
+                            };
+                        });
+
+                        report.addDetailedMemberDiagrams(detailedMembers);
                     } catch (error) {
-                        console.warn('Failed to add diagrams to PDF:', error);
+                        console.warn('Failed to add detailed member diagrams to PDF:', error);
                     }
                 }
             }
