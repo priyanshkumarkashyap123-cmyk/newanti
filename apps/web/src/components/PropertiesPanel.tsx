@@ -105,6 +105,9 @@ export const PropertiesPanel: FC = () => {
     // Local state for new load input
     const [newLoadFy, setNewLoadFy] = useState(-10);
 
+    // Minimize state for the panel
+    const [isMinimized, setIsMinimized] = useState(false);
+
     // State for custom section/material dialogs (must be at top level - React rules of hooks)
     const [showCustomSection, setShowCustomSection] = useState(false);
     const [showCustomMaterial, setShowCustomMaterial] = useState(false);
@@ -129,17 +132,49 @@ export const PropertiesPanel: FC = () => {
         // Reset dialogs when selection changes
         setShowCustomSection(false);
         setShowCustomMaterial(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedId]); // Only re-run when selection changes, not when members Map updates
 
     // Get selected member for rendering
     const selectedMember = selectedId ? members.get(selectedId) : null;
 
-    // 2. Conditional Render: No selection
+    // 2. Conditional Render: Minimized state
+    if (isMinimized) {
+        return (
+            <button
+                onClick={() => setIsMinimized(false)}
+                style={{
+                    width: '100%',
+                    background: 'rgba(20, 20, 20, 0.95)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '8px',
+                    padding: '10px 14px',
+                    color: 'white',
+                    fontFamily: 'Inter, sans-serif',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontSize: '13px',
+                    fontWeight: 500
+                }}
+                title="Expand Properties Panel"
+            >
+                ⚙️ Properties
+                <span style={{ marginLeft: 'auto', fontSize: '10px', color: '#888' }}>▼</span>
+            </button>
+        );
+    }
+
+    // 3. Conditional Render: No selection
     if (selectedIds.size === 0) {
         return (
             <div style={panelStyle}>
-                <h3 style={headerStyle}>Properties</h3>
+                <div style={headerWithButtonStyle}>
+                    <h3 style={headerStyle}>Properties</h3>
+                    <button onClick={() => setIsMinimized(true)} style={minimizeButtonStyle} title="Minimize">−</button>
+                </div>
                 <p style={{ color: '#888', fontSize: 13 }}>No selection</p>
                 {analysisResults && (
                     <div style={{ borderTop: '1px solid #333', marginTop: 8, paddingTop: 8 }}>
@@ -154,7 +189,10 @@ export const PropertiesPanel: FC = () => {
     if (selectedIds.size > 1) {
         return (
             <div style={panelStyle}>
-                <h3 style={headerStyle}>Properties</h3>
+                <div style={headerWithButtonStyle}>
+                    <h3 style={headerStyle}>Properties</h3>
+                    <button onClick={() => setIsMinimized(true)} style={minimizeButtonStyle} title="Minimize">−</button>
+                </div>
                 <p style={{ fontSize: 13 }}>{selectedIds.size} items selected</p>
             </div>
         );
@@ -187,7 +225,10 @@ export const PropertiesPanel: FC = () => {
 
         return (
             <div style={panelStyle}>
-                <h3 style={headerStyle}>Node Properties</h3>
+                <div style={headerWithButtonStyle}>
+                    <h3 style={headerStyle}>Node Properties</h3>
+                    <button onClick={() => setIsMinimized(true)} style={minimizeButtonStyle} title="Minimize">−</button>
+                </div>
 
                 {/* ID */}
                 <div style={rowStyle}>
@@ -353,7 +394,10 @@ export const PropertiesPanel: FC = () => {
 
         return (
             <div style={panelStyle}>
-                <h3 style={headerStyle}>Member Properties</h3>
+                <div style={headerWithButtonStyle}>
+                    <h3 style={headerStyle}>Member Properties</h3>
+                    <button onClick={() => setIsMinimized(true)} style={minimizeButtonStyle} title="Minimize">−</button>
+                </div>
 
                 {/* ID */}
                 <div style={rowStyle}>
@@ -496,7 +540,7 @@ const panelStyle: React.CSSProperties = {
     padding: '14px',
     color: 'white',
     fontFamily: 'Inter, sans-serif',
-    zIndex: 100,
+    zIndex: 50,
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
@@ -504,12 +548,30 @@ const panelStyle: React.CSSProperties = {
     overflowY: 'auto'
 };
 
+const headerWithButtonStyle: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderBottom: '1px solid #333',
+    paddingBottom: 8,
+    marginBottom: 4
+};
+
 const headerStyle: React.CSSProperties = {
     margin: 0,
     fontSize: 14,
-    fontWeight: 600,
-    borderBottom: '1px solid #333',
-    paddingBottom: 8
+    fontWeight: 600
+};
+
+const minimizeButtonStyle: React.CSSProperties = {
+    background: 'none',
+    border: 'none',
+    color: '#888',
+    cursor: 'pointer',
+    fontSize: '16px',
+    padding: '2px 6px',
+    borderRadius: '4px',
+    lineHeight: 1
 };
 
 const rowStyle: React.CSSProperties = {

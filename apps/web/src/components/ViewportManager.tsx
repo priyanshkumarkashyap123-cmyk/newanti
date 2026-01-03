@@ -22,12 +22,43 @@ const WorkingPlaneControls: FC<WorkingPlaneControlsProps> = ({
     onPlaneChange,
     onElevationChange
 }) => {
+    const [isMinimized, setIsMinimized] = useState(false);
+
+    // Minimized state - just show a small expand button
+    if (isMinimized) {
+        return (
+            <button
+                onClick={() => setIsMinimized(false)}
+                style={{
+                    position: 'absolute',
+                    bottom: 100,
+                    right: 20,
+                    zIndex: 50,
+                    background: 'rgba(0, 0, 0, 0.85)',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                    color: '#fff',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                }}
+                title="Expand Working Plane Controls"
+            >
+                📐 Plane
+            </button>
+        );
+    }
+
     return (
         <div style={{
             position: 'absolute',
             bottom: 100,
             right: 20,
-            zIndex: 300,
+            zIndex: 50,
             background: 'rgba(0, 0, 0, 0.85)',
             padding: '12px',
             borderRadius: '10px',
@@ -35,10 +66,34 @@ const WorkingPlaneControls: FC<WorkingPlaneControlsProps> = ({
             boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
             minWidth: 180
         }}>
-            <div style={{ fontSize: '10px', color: '#888', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
-                📐 Working Plane
+            {/* Header with minimize button */}
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '8px'
+            }}>
+                <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
+                    📐 Working Plane
+                </div>
+                <button
+                    onClick={() => setIsMinimized(true)}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#888',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        padding: '2px 6px',
+                        borderRadius: '4px'
+                    }}
+                    title="Minimize"
+                >
+                    −
+                </button>
             </div>
-            
+
+
             {/* Plane Selection */}
             <div style={{ display: 'flex', gap: '4px', marginBottom: '10px' }}>
                 {(['XZ', 'XY', 'YZ'] as WorkingPlane[]).map(p => (
@@ -61,7 +116,7 @@ const WorkingPlaneControls: FC<WorkingPlaneControlsProps> = ({
                     </button>
                 ))}
             </div>
-            
+
             {/* Elevation Control */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -232,7 +287,7 @@ export const ViewportManager: FC = () => {
                 position: 'absolute',
                 top: 50,
                 right: 20,
-                zIndex: 300,
+                zIndex: 50,
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '4px',
