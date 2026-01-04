@@ -99,6 +99,11 @@ if (!isUsingClerk()) {
     app.use('/api/auth', authRouter);
 }
 
+// Root health check
+app.get('/', (_req: Request, res: Response) => {
+    res.send('BeamLab Ultimate API Running');
+});
+
 // Health check (public)
 app.get('/health', (_req: Request, res: Response) => {
     res.json({

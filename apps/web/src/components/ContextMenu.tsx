@@ -16,6 +16,7 @@ import {
     Target,
     Box,
     Settings,
+    Settings2,
     Scissors,
     GitBranch,
     MoveHorizontal,
@@ -216,6 +217,8 @@ export function getNodeContextMenuItems(
         onAddBeamFrom?: () => void;
         onAssignSupport?: () => void;
         onAssignLoad?: () => void;
+        onMerge?: () => void;
+        canMerge?: boolean;
         onDelete?: () => void;
     }
 ): ContextMenuItem[] {
@@ -253,6 +256,14 @@ export function getNodeContextMenuItems(
         { type: 'divider' },
         {
             type: 'action',
+            id: 'merge-nodes',
+            icon: <Target className="w-full h-full" />,
+            label: 'Merge Selected Nodes',
+            action: actions.onMerge,
+            disabled: !actions.canMerge
+        },
+        {
+            type: 'action',
             id: 'delete',
             icon: <Trash2 className="w-full h-full" />,
             label: 'Delete Node',
@@ -272,7 +283,8 @@ export function getMemberContextMenuItems(
         onInsertNode?: () => void;
         onSplit?: () => void;
         onAssignLoad?: () => void;
-        onReleases?: () => void;
+        onReleases?: () => void; // Legacy, kept for compatibility
+        onSpecifications?: () => void; // New unified specs
         onDelete?: () => void;
     }
 ): ContextMenuItem[] {
@@ -311,16 +323,24 @@ export function getMemberContextMenuItems(
         {
             type: 'action',
             id: 'insert-node',
-            icon: <Plus className="w-full h-full" />,
+            icon: <Scissors className="w-full h-full" />,
             label: 'Insert Node',
             action: actions.onInsertNode
         },
         {
             type: 'action',
-            id: 'split',
+            id: 'split-at-nodes',
             icon: <Scissors className="w-full h-full" />,
             label: 'Split at Nodes',
             action: actions.onSplit
+        },
+        { type: 'divider' },
+        {
+            type: 'action',
+            id: 'specifications',
+            icon: <Settings2 className="w-full h-full" />,
+            label: 'Member Specifications',
+            action: actions.onSpecifications
         },
         { type: 'divider' },
         {

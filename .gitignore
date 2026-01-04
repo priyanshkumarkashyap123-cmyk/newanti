@@ -1,117 +1,113 @@
-# Dependencies
-node_modules/
-.pnpm-store/
-
-# Build outputs
-dist/
-build/
-.next/
-out/
-
-# Environment variables - NEVER COMMIT!
-.env
-.env.local
-.env.*.local
-.env.development
-.env.production
-.env.staging
-*.env
-
-# Secrets and credentials
-*.pem
-*.key
-*.crt
-*.pfx
-*.p12
-secrets/
-credentials/
-*.secret
-*.credentials
-
-# Azure publish profiles
-*.PublishSettings
-*.publishsettings
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-logs/
-*.log
-npm-debug.log*
-pnpm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Testing
-coverage/
-.nyc_output/
-
-# Turbo
-.turbo/
-
-# Python
-.venv/
-venv/
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-.Python
-env/
-
-# Misc
-*.tsbuildinfo
-.cache/
-temp/
-tmp/
 
 # Azure deployment logs (downloaded for debugging)
-azure_logs/
-python_logs/
-
+# Azure publish profiles
+# Build outputs
+# Dependencies
 # Deployment temp files
-*.zip
-deploy-api/
-deploy-pkg/
-deployment-*/
-
 # Documentation (session notes, not part of codebase)
-DEPLOYMENT.md
-DEPLOYMENT_READY.md
-DEPLOYMENT_STATUS.md
-CORS_CONFIGURATION.md
-EMAIL_ARCHITECTURE.md
-EMAIL_QUICK_START.md
-LEGAL_CONSENT_SYSTEM.md
-PROJECT_COMPLETION_REPORT.md
-README_LEGAL_CONSENT.md
-START_HERE.md
-TEST_ENTERPRISE_ACCESS.md
+# Environment variables - NEVER COMMIT!
+# IDE
+# Logs
+# Misc
+# OS
+# Python
+# Secrets and credentials
+# Testing
+# Turbo
+**/build/
+**/dist/
+**/target/
+*.PublishSettings
+*.credentials
+*.crt
+*.env
+*.key
+*.log
+*.p12
+*.pem
+*.pfx
+*.publishsettings
+*.py[cod]
+*.pyd
+*.pyo
+*.secret
+*.swo
+*.swp
+*.tsbuildinfo
+*.zip
+*_CHECKLIST.md
 *_COMPLETE.md
-*_SUMMARY.md
-*_RESEARCH.md
+*_DELIVERY*.md
+*_FINDINGS*.md
+*_GUIDE.md
 *_IMPLEMENTATION.md
 *_INDEX.md
 *_REFERENCE.md
-*_GUIDE.md
-*_CHECKLIST.md
+*_RESEARCH.md
 *_ROADMAP*.md
-*_DELIVERY*.md
-*_FINDINGS*.md
+*_SUMMARY.md
+*~
+.DS_Store
+.Python
+.cache/
+.env
+.env.*.local
+.env.development
+.env.local
+.env.production
+.env.staging
+.idea/
+.next/
+.nyc_output/
+.pnpm-store/
+.turbo/
+.venv/
+.vscode/
 ADVANCED_FEM_*.md
-MASTER_*.md
-QUICK_START_*.md
-START_HERE_*.md
-SESSION_*.md
+CORS_CONFIGURATION.md
+DEPLOYMENT.md
+DEPLOYMENT_READY.md
+DEPLOYMENT_STATUS.md
+EMAIL_ARCHITECTURE.md
+EMAIL_QUICK_START.md
 IMPLEMENTATION_*.md
+LEGAL_CONSENT_SYSTEM.md
+MASTER_*.md
+PROJECT_COMPLETION_REPORT.md
+QUICK_START_*.md
+README_LEGAL_CONSENT.md
 RESEARCH_*.md
+SESSION_*.md
+START_HERE.md
+START_HERE_*.md
+TEST_ENTERPRISE_ACCESS.md
+Thumbs.db
+__pycache__/
+apps/*/.env
+apps/*/.env.local
+apps/*/dist/
+apps/*/node_modules/
+azure_logs/
+build/
+coverage/
+credentials/
+deploy-api/
+deploy-pkg/
+deployment-*/
+dist/
 docs/IN_HOUSE_AUTH.md
+env/
+logs/
+node_modules/
+npm-debug.log*
+out/
+packages/solver-wasm/pkg/
+packages/solver-wasm/target/
+pnpm-debug.log*
+python_logs/
+secrets/
+temp/
+tmp/
+venv/
+yarn-debug.log*
+yarn-error.log*

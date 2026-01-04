@@ -58,6 +58,8 @@ import { LoadDialog } from './LoadDialog';
 import WindLoadDialog from './WindLoadDialog';
 import SeismicLoadDialog from './SeismicLoadDialog';
 import MovingLoadDialog from './MovingLoadDialog';
+import { SplitMemberDialog } from './geometry/SplitMemberDialog';
+import { MemberSpecificationsDialog } from './specifications/MemberSpecificationsDialog';
 import ASCE7SeismicLoadDialog from './ASCE7SeismicLoadDialog';
 import ASCE7WindLoadDialog from './ASCE7WindLoadDialog';
 import LoadCombinationsDialog from './LoadCombinationsDialog';
@@ -82,6 +84,7 @@ import { useRazorpayPayment } from './RazorpayPayment';
 import { useTierAccess } from '../hooks/useTierAccess';
 import { CloudProjectManager } from './CloudProjectManager';
 import { ProjectService, Project } from '../services/ProjectService';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 
 // ============================================
 
@@ -984,6 +987,14 @@ export const ModernModeler: FC = () => {
     const selectedIds = useModelStore((state) => state.selectedIds);
     const activeTool = useModelStore((state) => state.activeTool);
 
+    // Split Member / Insert Node Dialog
+    const [showSplitDialog, setShowSplitDialog] = useState(false);
+    const [splitMemberId, setSplitMemberId] = useState<string | null>(null);
+
+    // Specifications Dialog State
+    const [showSpecDialog, setShowSpecDialog] = useState(false);
+    const [specMemberId, setSpecMemberId] = useState<string | null>(null);
+
     // Quick Commands Toolbar (Spacebar)
     const quickCommandActions = {
         onAddNode: () => useModelStore.getState().setTool('node'),
@@ -998,6 +1009,9 @@ export const ModernModeler: FC = () => {
         onMove: () => useModelStore.getState().setTool('select'),
     };
     const { QuickCommandsToolbar } = useQuickCommands(getDefaultQuickCommands(quickCommandActions));
+
+    // Global Keyboard Shortcuts
+    useKeyboardShortcuts();
 
     // Context Menu (Right-click)
     const contextMenu = useContextMenu();
@@ -1143,6 +1157,11 @@ export const ModernModeler: FC = () => {
                                     onAddBeamFrom: () => useModelStore.getState().setTool('member'),
                                     onAssignSupport: () => useModelStore.getState().setTool('support'),
                                     onAssignLoad: () => openModal('loadDialog'),
+                                    onMerge: () => {
+                                        const nodeIds = Array.from(selectedIds).filter(id => id.startsWith('N'));
+                                        useModelStore.getState().mergeNodes(nodeIds);
+                                    },
+                                    canMerge: selectedIds.size > 1 && Array.from(selectedIds).every(id => id.startsWith('N')),
                                     onDelete: () => useModelStore.getState().removeNode(selectedId)
                                 }));
                             } else if (selectedId && members.has(selectedId)) {
@@ -1150,10 +1169,27 @@ export const ModernModeler: FC = () => {
                                     onEdit: () => { },
                                     onAssignSection: () => openModal('structureWizard'),
                                     onAssignMaterial: () => { },
-                                    onInsertNode: () => { },
-                                    onSplit: () => { },
+                                    onInsertNode: () => {
+                                        setSplitMemberId(selectedId);
+                                        setShowSplitDialog(true);
+                                    },
+                                    onSplit: () => {
+                                        // Attempt to split at any selected node or all nodes?
+                                        // For now, check if any nodes lie on this member
+                                        const model = useModelStore.getState();
+                                        model.nodes.forEach(node => {
+                                            model.splitMemberAtNode(selectedId, node.id);
+                                        });
+                                    },
                                     onAssignLoad: () => openModal('loadDialog'),
-                                    onReleases: () => { },
+                                    onReleases: () => {
+                                        setSpecMemberId(selectedId);
+                                        setShowSpecDialog(true);
+                                    },
+                                    onSpecifications: () => {
+                                        setSpecMemberId(selectedId);
+                                        setShowSpecDialog(true);
+                                    },
                                     onDelete: () => useModelStore.getState().removeMember(selectedId)
                                 }));
                             } else {
@@ -1194,6 +1230,9 @@ export const ModernModeler: FC = () => {
                     onClose={hideNotification}
                 />
             )}
+
+            {/* Quick Commands Toolbar (Spacebar) */}
+            {QuickCommandsToolbar}
 
             <ExportDialog
                 isOpen={showExportDialog}
@@ -1337,6 +1376,26 @@ export const ModernModeler: FC = () => {
 
             {/* Moving Load Analysis (IRC 6 / AASHTO) */}
             <MovingLoadDialog />
+
+            {/* UI Dialogs */}
+            <MemberSpecificationsDialog
+                isOpen={showSpecDialog}
+                onClose={() => setShowSpecDialog(false)}
+                memberId={specMemberId}
+            />
+
+            <LoadInputDialog
+                isOpen={showLoadDialog}
+                onClose={() => setShowSplitDialog(false)}
+                memberId={splitMemberId}
+            />
+
+            {/* Split Member Dialog */}
+            <SplitMemberDialog
+                isOpen={showSplitDialog}
+                onClose={() => setShowSplitDialog(false)}
+                memberId={splitMemberId}
+            />
 
             <AdvancedAnalysisDialog
                 isOpen={modals.advancedAnalysis}

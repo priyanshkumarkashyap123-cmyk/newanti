@@ -64,17 +64,26 @@ export interface Member {
     endNodeId: string;
     sectionId: string;
     // Default properties for analysis
+    width?: number; // m
+    depth?: number; // m
     E?: number; // Young's Modulus (kN/m²)
     A?: number; // Cross-sectional Area (m²)
     I?: number; // Moment of Inertia (m⁴)
-    // Member releases (hinges)
+    // Member releases (hinges) - 6 DOF
     releases?: {
-        startMoment: boolean; // Release moment at start
-        endMoment: boolean;   // Release moment at end
+        fxStart?: boolean; fyStart?: boolean; fzStart?: boolean;
+        mxStart?: boolean; myStart?: boolean; mzStart?: boolean;
+        fxEnd?: boolean; fyEnd?: boolean; fzEnd?: boolean;
+        mxEnd?: boolean; myEnd?: boolean; mzEnd?: boolean;
+        // Legacy support
+        startMoment?: boolean;
+        endMoment?: boolean;
     };
     // Rigid zone offsets (for beam-column connections)
     startOffset?: { x: number; y: number; z: number };
     endOffset?: { x: number; y: number; z: number };
+    // Geometric properties
+    betaAngle?: number; // Rotation in degrees
 }
 
 // Member Force Results with diagram data
@@ -182,6 +191,8 @@ interface ModelState {
     selectMultiple: (ids: string[]) => void;        // Select multiple elements
     boxSelect: (minX: number, minZ: number, maxX: number, maxZ: number) => void; // Box selection
     selectByCoordinate: (axis: 'x' | 'y' | 'z', min: number, max: number, add?: boolean) => void; // Range selection
+    selectParallel: (axis: 'x' | 'y' | 'z', add?: boolean) => void; // Select members parallel to axis
+    selectByProperty: (prop: string, value: any, add?: boolean) => void; // Select by property (section, material)
 
     // Clipboard Operations (like STAAD)
     clipboard: { nodes: Node[]; members: Member[] } | null;
@@ -218,6 +229,10 @@ interface ModelState {
     addNodes: (nodes: Node[]) => void;      // Bulk add nodes
     addMembers: (members: Member[]) => void; // Bulk add members
     splitMemberById: (memberId: string, ratio: number) => void; // Insert node in member
+    splitMemberAtNode: (memberId: string, nodeId: string) => void; // Split member at existing node
+    mergeNodes: (nodeIds: string[]) => void; // Merge multiple nodes into centroid
+    renumberNodes: () => void; // Renumber all nodes (N1, N2...)
+    renumberMembers: () => void; // Renumber all members (M1, M2...)
 }
 
 // Helper to convert Map to Record for DevTools display
@@ -286,11 +301,20 @@ export const useModelStore = create<ModelState>()(
                 setProjectInfo: (info) =>
                     set((state) => ({ projectInfo: { ...state.projectInfo, ...info } })),
 
-                addNode: (node) =>
+                addMember: (member) =>
                     set((state) => {
-                        const newNodes = new Map(state.nodes);
-                        newNodes.set(node.id, node);
-                        return { nodes: newNodes };
+                        const newMembers = new Map(state.members);
+                        newMembers.set(member.id, member);
+                        return { members: newMembers };
+                    }),
+
+                updateMember: (id, updates) =>
+                    set((state) => {
+                        const member = state.members.get(id);
+                        if (!member) return state;
+                        const newMembers = new Map(state.members);
+                        newMembers.set(id, { ...member, ...updates });
+                        return { members: newMembers };
                     }),
 
                 removeNode: (id) =>
@@ -504,6 +528,54 @@ export const useModelStore = create<ModelState>()(
                         return { selectedIds: newSelected };
                     }),
 
+                selectParallel: (axis, add = false) =>
+                    set((state) => {
+                        const newSelected = add ? new Set(state.selectedIds) : new Set<string>();
+                        const TOLERANCE = 0.001; // 1mm tolerance
+
+                        state.members.forEach((member, id) => {
+                            const start = state.nodes.get(member.startNodeId);
+                            const end = state.nodes.get(member.endNodeId);
+
+                            if (start && end) {
+                                const dx = Math.abs(end.x - start.x);
+                                const dy = Math.abs(end.y - start.y);
+                                const dz = Math.abs(end.z - start.z);
+
+                                let isParallel = false;
+                                if (axis === 'x') isParallel = dy < TOLERANCE && dz < TOLERANCE;
+                                else if (axis === 'y') isParallel = dx < TOLERANCE && dz < TOLERANCE;
+                                else if (axis === 'z') isParallel = dx < TOLERANCE && dy < TOLERANCE;
+
+                                if (isParallel) newSelected.add(id);
+                            }
+                        });
+
+                        return { selectedIds: newSelected };
+                    }),
+
+                selectByProperty: (prop, value, add = false) =>
+                    set((state) => {
+                        const newSelected = add ? new Set(state.selectedIds) : new Set<string>();
+
+                        // Check Members
+                        state.members.forEach((member, id) => {
+                            // Using type assertion for dynamic property access
+                            if ((member as any)[prop] === value) {
+                                newSelected.add(id);
+                            }
+                        });
+
+                        // Check Nodes (if property exists on nodes)
+                        state.nodes.forEach((node, id) => {
+                            if ((node as any)[prop] === value) {
+                                newSelected.add(id);
+                            }
+                        });
+
+                        return { selectedIds: newSelected };
+                    }),
+
                 // ============================================
                 // CLIPBOARD OPERATIONS
                 // ============================================
@@ -671,6 +743,169 @@ export const useModelStore = create<ModelState>()(
                             loads: newLoads,
                             memberLoads: newMemberLoads,
                             selectedIds: new Set()
+                        };
+                    }),
+
+                mergeNodes: (nodeIds) =>
+                    set((state) => {
+                        if (nodeIds.length < 2) return state;
+
+                        const nodesToMerge = nodeIds.map(id => state.nodes.get(id)).filter(n => !!n) as Node[];
+                        if (nodesToMerge.length < 2) return state;
+
+                        // Calculate Centroid
+                        let cx = 0, cy = 0, cz = 0;
+                        nodesToMerge.forEach(n => { cx += n.x; cy += n.y; cz += n.z; });
+                        cx /= nodesToMerge.length;
+                        cy /= nodesToMerge.length;
+                        cz /= nodesToMerge.length;
+
+                        // Keep the first ID as the "surviving" node
+                        const survivorId = nodesToMerge[0].id;
+                        const idsToRemove = new Set(nodeIds.filter(id => id !== survivorId));
+
+                        // 1. Update Survivor Position
+                        const newNodes = new Map(state.nodes);
+                        const survivor = newNodes.get(survivorId)!;
+                        newNodes.set(survivorId, { ...survivor, x: cx, y: cy, z: cz });
+
+                        // 2. Remove other nodes
+                        idsToRemove.forEach(id => newNodes.delete(id));
+
+                        // 3. Update Members
+                        const newMembers = new Map(state.members);
+                        for (const [mid, m] of newMembers.entries()) {
+                            let updated = false;
+                            let newStart = m.startNodeId;
+                            let newEnd = m.endNodeId;
+
+                            if (idsToRemove.has(m.startNodeId)) {
+                                newStart = survivorId;
+                                updated = true;
+                            }
+                            if (idsToRemove.has(m.endNodeId)) {
+                                newEnd = survivorId;
+                                updated = true;
+                            }
+
+                            if (updated) {
+                                // Prevent zero-length members (start == end)
+                                if (newStart === newEnd) {
+                                    newMembers.delete(mid);
+                                } else {
+                                    newMembers.set(mid, { ...m, startNodeId: newStart, endNodeId: newEnd });
+                                }
+                            }
+                        }
+
+                        // 4. Update Loads and Selection
+                        const newLoads = state.loads.map(l => {
+                            if (idsToRemove.has(l.nodeId)) {
+                                return { ...l, nodeId: survivorId };
+                            }
+                            return l;
+                        });
+
+                        const newSelected = new Set(state.selectedIds);
+                        idsToRemove.forEach(id => newSelected.delete(id));
+                        newSelected.add(survivorId);
+
+                        return {
+                            nodes: newNodes,
+                            members: newMembers,
+                            loads: newLoads,
+                            selectedIds: newSelected,
+                            analysisResults: null
+                        };
+                    }),
+
+                renumberNodes: () =>
+                    set((state) => {
+                        const sortedNodes = Array.from(state.nodes.values()).sort((a, b) => {
+                            if (Math.abs(a.y - b.y) > 0.001) return a.y - b.y;
+                            if (Math.abs(a.z - b.z) > 0.001) return a.z - b.z;
+                            return a.x - b.x;
+                        });
+
+                        const idMap = new Map<string, string>();
+                        const newNodes = new Map<string, Node>();
+                        let counter = 1;
+
+                        sortedNodes.forEach(oldNode => {
+                            const newId = `N${counter++}`;
+                            idMap.set(oldNode.id, newId);
+                            newNodes.set(newId, { ...oldNode, id: newId });
+                        });
+
+                        const newMembers = new Map(state.members);
+                        newMembers.forEach(member => {
+                            const s = idMap.get(member.startNodeId);
+                            const e = idMap.get(member.endNodeId);
+                            if (s && e) {
+                                member.startNodeId = s;
+                                member.endNodeId = e;
+                            }
+                        });
+
+                        const newLoads = state.loads.map(l => ({
+                            ...l,
+                            nodeId: idMap.get(l.nodeId) || l.nodeId
+                        }));
+
+                        const newSelected = new Set<string>();
+                        state.selectedIds.forEach(id => {
+                            if (idMap.has(id)) newSelected.add(idMap.get(id)!);
+                            else if (state.members.has(id)) newSelected.add(id);
+                        });
+
+                        return {
+                            nodes: newNodes,
+                            members: newMembers,
+                            loads: newLoads,
+                            selectedIds: newSelected,
+                            nextNodeNumber: counter,
+                            analysisResults: null
+                        };
+                    }),
+
+                renumberMembers: () =>
+                    set((state) => {
+                        const sortedMembers = Array.from(state.members.values()).sort((a, b) => {
+                            const n1a = state.nodes.get(a.startNodeId);
+                            const n1b = state.nodes.get(b.startNodeId);
+                            if (!n1a || !n1b) return 0;
+                            if (Math.abs(n1a.y - n1b.y) > 0.001) return n1a.y - n1b.y;
+                            if (Math.abs(n1a.z - n1b.z) > 0.001) return n1a.z - n1b.z;
+                            return n1a.x - n1b.x;
+                        });
+
+                        const idMap = new Map<string, string>();
+                        const newMembers = new Map<string, Member>();
+                        let counter = 1;
+
+                        sortedMembers.forEach(oldMember => {
+                            const newId = `M${counter++}`;
+                            idMap.set(oldMember.id, newId);
+                            newMembers.set(newId, { ...oldMember, id: newId });
+                        });
+
+                        const newMemberLoads = state.memberLoads.map(l => ({
+                            ...l,
+                            memberId: idMap.get(l.memberId) || l.memberId
+                        }));
+
+                        const newSelected = new Set<string>();
+                        state.selectedIds.forEach(id => {
+                            if (idMap.has(id)) newSelected.add(idMap.get(id)!);
+                            else if (state.nodes.has(id)) newSelected.add(id);
+                        });
+
+                        return {
+                            members: newMembers,
+                            memberLoads: newMemberLoads,
+                            selectedIds: newSelected,
+                            nextMemberNumber: counter,
+                            analysisResults: null
                         };
                     }),
 
@@ -867,19 +1102,87 @@ export const useModelStore = create<ModelState>()(
                             analysisResults: null // Clear results
                         };
                     })
-            })
-        ),
-        {
-            name: 'StructuralModel',
-            // Optional: Serializer for better Map visibility in Redux DevTools
-            serialize: {
-                options: {
-                    map: true // Modern DevTools might handle Maps, otherwise custom logic needed
+            }),
+
+            splitMemberAtNode: (memberId, nodeId) =>
+            set((state) => {
+                const member = state.members.get(memberId);
+                const node = state.nodes.get(nodeId);
+                if (!member || !node) return state;
+
+                const startNode = state.nodes.get(member.startNodeId);
+                const endNode = state.nodes.get(member.endNodeId);
+                if (!startNode || !endNode) return state;
+
+                // Check if node lies on member
+                // Vector A (Start->End)
+                const ax = endNode.x - startNode.x;
+                const ay = endNode.y - startNode.y;
+                const az = endNode.z - startNode.z;
+                const lenSq = ax * ax + ay * ay + az * az;
+                const len = Math.sqrt(lenSq);
+
+                if (len === 0) return state;
+
+                // Vector B (Start->Point)
+                const bx = node.x - startNode.x;
+                const by = node.y - startNode.y;
+                const bz = node.z - startNode.z;
+
+                // Project B onto A
+                const dot = ax * bx + ay * by + az * bz;
+                const t = dot / lenSq; // Normalized distance (0-1)
+
+                // Check if point is actually on the line segment
+                if (t <= 0.001 || t >= 0.999) return state; // Too close to ends or outside
+
+                // Create two new members using existing node
+                const member1: Member = {
+                    id: state.getNextMemberId(),
+                    startNodeId: member.startNodeId,
+                    endNodeId: nodeId, // Use existing node
+                    sectionId: member.sectionId,
+                    E: member.E,
+                    A: member.A,
+                    I: member.I,
+                    releases: member.releases
+                };
+
+                const member2: Member = {
+                    id: state.getNextMemberId(),
+                    startNodeId: nodeId, // Use existing node
+                    endNodeId: member.endNodeId,
+                    sectionId: member.sectionId,
+                    E: member.E,
+                    A: member.A,
+                    I: member.I,
+                    releases: member.releases
+                };
+
+                const newMembers = new Map(state.members);
+                newMembers.delete(memberId);
+                newMembers.set(member1.id, member1);
+                newMembers.set(member2.id, member2);
+
+                const newMemberLoads = state.memberLoads.filter(ml => ml.memberId !== memberId);
+
+                return {
+                    members: newMembers,
+                    memberLoads: newMemberLoads,
+                    analysisResults: null
+                };
+            }),
+            {
+                name: 'StructuralModel',
+                // Optional: Serializer for better Map visibility in Redux DevTools
+                serialize: {
+                    options: {
+                        map: true // Modern DevTools might handle Maps, otherwise custom logic needed
+                    }
                 }
             }
-        }
-    )
-);
+        )
+    );
 
 // ============================================
 // LOCAL STORAGE PERSISTENCE

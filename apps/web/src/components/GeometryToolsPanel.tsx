@@ -30,7 +30,7 @@ import {
 // TYPES
 // ============================================
 
-type GeometryTool = 'extrude' | 'rotate' | 'mirror' | 'split';
+type GeometryTool = 'extrude' | 'rotate' | 'mirror' | 'split' | 'renumber';
 
 interface GeometryToolsPanelProps {
     isOpen: boolean;
@@ -74,6 +74,9 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
     // Split params
     const [splitRatio, setSplitRatio] = useState(0.5);
 
+    // Renumber params
+    const [renumberType, setRenumberType] = useState<'nodes' | 'members' | 'both'>('both');
+
     // Get selected nodes and members
     const { selectedNodes, selectedMembers } = useMemo(() => {
         const sNodes: Node[] = [];
@@ -95,6 +98,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
         { id: 'rotate' as GeometryTool, name: 'Rotate Copy', icon: RotateCcw, description: 'Copy around axis' },
         { id: 'mirror' as GeometryTool, name: 'Mirror', icon: FlipHorizontal, description: 'Reflect across plane' },
         { id: 'split' as GeometryTool, name: 'Split Member', icon: Scissors, description: 'Insert node' },
+        { id: 'renumber' as GeometryTool, name: 'Renumber', icon: Grid3X3, description: 'Sort IDs' },
     ];
 
     // Execute the current operation
@@ -156,6 +160,15 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                 splitMemberById(selectedMembers[0].id, splitRatio);
                 break;
             }
+            case 'renumber': {
+                if (renumberType === 'nodes' || renumberType === 'both') {
+                    useModelStore.getState().renumberNodes();
+                }
+                if (renumberType === 'members' || renumberType === 'both') {
+                    useModelStore.getState().renumberMembers();
+                }
+                break;
+            }
         }
 
         onClose();
@@ -210,8 +223,8 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                     <button
                                         onClick={() => setCoordSystem('cartesian')}
                                         className={`px-3 py-1.5 text-sm rounded-lg transition-all ${coordSystem === 'cartesian'
-                                                ? 'bg-violet-600 text-white'
-                                                : 'bg-zinc-700 text-zinc-400 hover:text-white'
+                                            ? 'bg-violet-600 text-white'
+                                            : 'bg-zinc-700 text-zinc-400 hover:text-white'
                                             }`}
                                     >
                                         Cartesian (X,Y,Z)
@@ -219,8 +232,8 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                     <button
                                         onClick={() => setCoordSystem('cylindrical')}
                                         className={`px-3 py-1.5 text-sm rounded-lg transition-all ${coordSystem === 'cylindrical'
-                                                ? 'bg-violet-600 text-white'
-                                                : 'bg-zinc-700 text-zinc-400 hover:text-white'
+                                            ? 'bg-violet-600 text-white'
+                                            : 'bg-zinc-700 text-zinc-400 hover:text-white'
                                             }`}
                                     >
                                         Cylindrical (R,θ,Z)
@@ -238,8 +251,8 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                         key={tool.id}
                                         onClick={() => setActiveTool(tool.id)}
                                         className={`flex flex-col items-center gap-2 p-4 rounded-lg border transition-all ${activeTool === tool.id
-                                                ? 'border-violet-500 bg-violet-500/10'
-                                                : 'border-zinc-700 hover:border-zinc-600'
+                                            ? 'border-violet-500 bg-violet-500/10'
+                                            : 'border-zinc-700 hover:border-zinc-600'
                                             }`}
                                     >
                                         <Icon className={`w-6 h-6 ${activeTool === tool.id ? 'text-violet-400' : 'text-zinc-400'}`} />
@@ -270,8 +283,8 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                                         key={axis}
                                                         onClick={() => setExtrudeAxis(axis)}
                                                         className={`flex-1 py-2 rounded-lg text-sm font-medium ${extrudeAxis === axis
-                                                                ? 'bg-violet-600 text-white'
-                                                                : 'bg-zinc-700 text-zinc-400'
+                                                            ? 'bg-violet-600 text-white'
+                                                            : 'bg-zinc-700 text-zinc-400'
                                                             }`}
                                                     >
                                                         {axis.toUpperCase()}
@@ -322,8 +335,8 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                                         key={axis}
                                                         onClick={() => setRotateAxis(axis)}
                                                         className={`flex-1 py-2 rounded-lg text-sm font-medium ${rotateAxis === axis
-                                                                ? 'bg-violet-600 text-white'
-                                                                : 'bg-zinc-700 text-zinc-400'
+                                                            ? 'bg-violet-600 text-white'
+                                                            : 'bg-zinc-700 text-zinc-400'
                                                             }`}
                                                     >
                                                         {axis.toUpperCase()}
@@ -389,8 +402,8 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                                 key={plane}
                                                 onClick={() => setMirrorPlane(plane)}
                                                 className={`py-3 rounded-lg text-sm font-medium transition-all ${mirrorPlane === plane
-                                                        ? 'bg-violet-600 text-white'
-                                                        : 'bg-zinc-700 text-zinc-400 hover:text-white'
+                                                    ? 'bg-violet-600 text-white'
+                                                    : 'bg-zinc-700 text-zinc-400 hover:text-white'
                                                     }`}
                                             >
                                                 {plane} Plane
@@ -429,6 +442,31 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                             ⚠️ Select exactly one member to split
                                         </p>
                                     )}
+                                </div>
+                            )}
+
+                            {activeTool === 'renumber' && (
+                                <div>
+                                    <div className="p-4 bg-zinc-800/50 rounded-lg border border-zinc-700 mb-4">
+                                        <p className="text-sm text-zinc-300">
+                                            Renumbering will sort entities spatially (Y → Z → X) and reassign IDs sequentially (N1, N2... M1, M2...).
+                                        </p>
+                                    </div>
+                                    <label className="text-sm text-zinc-400 block mb-2">Renumber What?</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {(['nodes', 'members', 'both'] as const).map(type => (
+                                            <button
+                                                key={type}
+                                                onClick={() => setRenumberType(type)}
+                                                className={`py-3 rounded-lg text-sm font-medium transition-all ${renumberType === type
+                                                    ? 'bg-violet-600 text-white'
+                                                    : 'bg-zinc-700 text-zinc-400 hover:text-white'
+                                                    }`}
+                                            >
+                                                {type.charAt(0).toUpperCase() + type.slice(1)}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                         </div>

@@ -73,7 +73,8 @@ export class RazorpayBillingService {
 
         // Check if Razorpay is configured
         if (!razorpay) {
-            throw new Error('Razorpay is not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET environment variables.');
+            console.warn('⚠️ Razorpay not configured - returning 503');
+            throw new Error('PAYMENT_SERVICE_UNAVAILABLE');
         }
 
         // Create Razorpay subscription
@@ -356,6 +357,15 @@ razorpayRouter.post('/create-subscription', requireAuth(), async (req: Request, 
     } catch (error) {
         console.error('Create subscription error:', error);
         const message = error instanceof Error ? error.message : 'Unknown error';
+
+        if (message === 'PAYMENT_SERVICE_UNAVAILABLE') {
+            res.status(503).json({
+                success: false,
+                message: 'Payment service is currently unavailable. Please try again later.'
+            });
+            return;
+        }
+
         res.status(500).json({ success: false, message });
     }
 });

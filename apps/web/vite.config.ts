@@ -23,6 +23,10 @@ export default defineConfig({
     strictPort: false,
     host: true,
     cors: true,
+    fs: {
+      // Allow serving files from one level up to the project root
+      allow: ['..'],
+    },
   },
   build: {
     outDir: 'dist',

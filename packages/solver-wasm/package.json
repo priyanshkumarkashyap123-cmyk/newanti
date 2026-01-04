@@ -1,0 +1,13 @@
+{
+    "name": "solver-wasm",
+    "version": "0.1.0",
+    "type": "module",
+    "main": "./pkg/solver_wasm.js",
+    "types": "./pkg/solver_wasm.d.ts",
+    "files": [
+        "pkg"
+    ],
+    "scripts": {
+        "build": "wasm-pack build --target web"
+    }
+}

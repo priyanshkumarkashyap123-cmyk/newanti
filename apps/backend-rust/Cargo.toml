@@ -1,0 +1,33 @@
+[package]
+name = "backend-rust"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+wasm-bindgen = "0.2"
+console_error_panic_hook = "0.1"
+nalgebra = { version = "0.33", features = ["sparse", "serde-serialize"] }
+serde-wasm-bindgen = "0.6"
+wgpu = "0.19"
+wasm-bindgen-futures = "0.4"
+# burn = { version = "0.12", features = ["wgpu"] }
+petgraph = "0.6"
+clarabel = "0.5"
+uuid = { version = "1.0", features = ["v4", "js"] }
+getrandom = { version = "0.2", features = ["js"] }
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+  "Document",
+  "Window",
+  "Element",
+  "HtmlCanvasElement"
+]
+
