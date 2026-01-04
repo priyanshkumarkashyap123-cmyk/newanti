@@ -269,68 +269,59 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
         }));
     }, [result]);
 
-    // Run buckling analysis
+    // Run buckling analysis using WASM solver (client-side)
     const handleRunAnalysis = async () => {
         setIsRunning(true);
         setError(null);
         setResult(null);
 
         try {
-            const token = await getToken();
-            const PYTHON_API = import.meta.env['VITE_PYTHON_API_URL'] || 'https://api.beamlabultimate.tech';
+            // Import WASM solver
+            const { analyzeBuckling, initSolver } = await import('../services/wasmSolverService');
+            await initSolver();
 
-            // Prepare payload
-            const payload = {
-                nodes: Array.from(nodes.values()).map(n => ({
-                    id: n.id,
-                    x: n.x, y: n.y, z: n.z,
-                    support: n.restraints ? (
-                        n.restraints.fx && n.restraints.fy && n.restraints.fz && n.restraints.mx && n.restraints.my && n.restraints.mz ? 'fixed' :
-                            n.restraints.fx && n.restraints.fy && n.restraints.fz ? 'pinned' :
-                                n.restraints.fy ? 'roller' : 'none'
-                    ) : 'none'
-                })),
-                members: Array.from(members.values()).map(m => ({
-                    id: m.id,
-                    startNodeId: m.startNodeId,
-                    endNodeId: m.endNodeId,
-                    E: m.E, G: (m.E || 200e6) / 2.6,
-                    A: m.A, Iy: m.I, Iz: m.I, J: (m.I || 1e-4) * 2
-                })),
-                node_loads: loads.map(l => ({
-                    nodeId: l.nodeId,
-                    fx: l.fx, fy: l.fy, fz: l.fz,
-                    mx: l.mx, my: l.my, mz: l.mz
-                })),
-                distributed_loads: memberLoads.map(l => ({
-                    memberId: l.memberId,
-                    direction: l.direction === 'local_y' ? 'Fy' : 'Fz',
-                    w1: l.w1, w2: l.w2 ?? l.w1
-                })),
-                num_modes: numModes,
-                load_case: 'LC1'
-            };
+            // Convert nodes to WASM format
+            const wasmNodes = Array.from(nodes.values()).map(n => ({
+                id: parseInt(n.id) || 0,
+                x: n.x,
+                y: n.y,
+                fixed: [
+                    n.restraints?.fx || false,
+                    n.restraints?.fy || false,
+                    n.restraints?.fz || false
+                ] as [boolean, boolean, boolean]
+            }));
 
-            const res = await fetch(`${PYTHON_API}/analyze/buckling`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-                },
-                body: JSON.stringify(payload)
-            });
+            // Convert members to WASM format
+            const wasmElements = Array.from(members.values()).map(m => ({
+                id: parseInt(m.id) || 0,
+                node_start: parseInt(m.startNodeId) || 0,
+                node_end: parseInt(m.endNodeId) || 0,
+                e: m.E || 200e9,
+                i: m.I || 8.33e-6,
+                a: m.A || 0.01
+            }));
 
-            if (!res.ok) {
-                const errJson = await res.json();
-                throw new Error(errJson.detail || 'Analysis failed');
+            // Run WASM buckling analysis
+            const wasmResult = await analyzeBuckling(wasmNodes, wasmElements, numModes);
+
+            if (!wasmResult.success) {
+                throw new Error(wasmResult.error || 'Buckling analysis failed');
             }
 
-            const data = await res.json();
-            setResult(data);
+            // Convert to expected result format
+            setResult({
+                success: true,
+                modes: wasmResult.modes.map(m => ({
+                    mode: m.modeNumber,
+                    factor: m.factor,
+                    isStable: m.isStable
+                }))
+            });
 
         } catch (err: any) {
-            console.error(err);
-            setError(err.message);
+            console.error('[Buckling] WASM analysis error:', err);
+            setError(err.message || 'Analysis failed');
         } finally {
             setIsRunning(false);
         }
@@ -395,12 +386,12 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
                     </label>
                     <button
                         onClick={handleRunAnalysis}
-                        disabled={isLoading || !analysisResults}
+                        disabled={isRunning}
                         className="flex items-center gap-1 px-3 py-1 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded transition-colors"
-                        title={!analysisResults ? 'Run linear analysis first' : 'Run buckling analysis'}
+                        title="Run buckling analysis (WASM)"
                     >
-                        <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
-                        {isLoading ? 'Running...' : 'Run'}
+                        <RefreshCw className={`w-3 h-3 ${isRunning ? 'animate-spin' : ''}`} />
+                        {isRunning ? 'Running...' : 'Run'}
                     </button>
                 </div>
             </div>

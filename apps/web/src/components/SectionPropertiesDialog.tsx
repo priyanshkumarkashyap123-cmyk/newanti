@@ -101,15 +101,46 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
         tw: 8
     });
 
+    // Common concrete sections
+    const CONCRETE_SECTIONS: SectionProperties[] = useMemo(() => [
+        calculateRectangularSection(230, 300),  // 230x300 beam
+        calculateRectangularSection(230, 450),  // 230x450 beam
+        calculateRectangularSection(230, 600),  // 230x600 beam
+        calculateRectangularSection(300, 300),  // 300x300 column
+        calculateRectangularSection(300, 450),  // 300x450 column
+        calculateRectangularSection(300, 600),  // 300x600 beam
+        calculateRectangularSection(400, 400),  // 400x400 column
+        calculateRectangularSection(450, 450),  // 450x450 column
+        calculateRectangularSection(500, 500),  // 500x500 column
+        calculateRectangularSection(600, 600),  // 600x600 column
+        calculateCircularSection(300),          // Ø300 column
+        calculateCircularSection(400),          // Ø400 column
+        calculateCircularSection(450),          // Ø450 column
+        calculateCircularSection(500),          // Ø500 column
+        calculateCircularSection(600),          // Ø600 column
+    ], []);
+
     // Filter sections by type
     const filteredSections = useMemo(() => {
+        if (selectedSectionType === 'RECT-CONCRETE') {
+            return CONCRETE_SECTIONS.filter(s => s.type === 'RECT-CONCRETE');
+        }
+        if (selectedSectionType === 'CIRC-CONCRETE') {
+            return CONCRETE_SECTIONS.filter(s => s.type === 'CIRC-CONCRETE');
+        }
         return getSectionsByType(selectedSectionType);
-    }, [selectedSectionType]);
+    }, [selectedSectionType, CONCRETE_SECTIONS]);
 
     // Get selected section
     const selectedSection = useMemo(() => {
         if (activeTab === 'database') {
-            return STEEL_SECTIONS.find(s => s.id === selectedSectionId);
+            // Check steel sections first
+            const steelSection = STEEL_SECTIONS.find(s => s.id === selectedSectionId);
+            if (steelSection) return steelSection;
+            // Check concrete sections
+            const concreteSection = CONCRETE_SECTIONS.find(s => s.id === selectedSectionId);
+            if (concreteSection) return concreteSection;
+            return filteredSections[0]; // Fallback to first in filtered list
         } else if (activeTab === 'calculate') {
             switch (sectionShape) {
                 case 'rectangular':
@@ -147,12 +178,19 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
         }
     };
 
-    const sectionTypes: { type: SectionType; label: string }[] = [
-        { type: 'W', label: 'W Shapes (AISC)' },
-        { type: 'ISMB', label: 'ISMB (Indian)' },
-        { type: 'IPE', label: 'IPE (European)' },
-        { type: 'HEA', label: 'HEA (European)' },
-        { type: 'HSS-RECT', label: 'HSS Rectangular' },
+    const sectionTypes: { type: SectionType; label: string; category: 'steel' | 'concrete' }[] = [
+        // Steel Sections
+        { type: 'W', label: 'W Shapes (AISC)', category: 'steel' },
+        { type: 'ISMB', label: 'ISMB (Indian)', category: 'steel' },
+        { type: 'ISMC', label: 'ISMC Channel (Indian)', category: 'steel' },
+        { type: 'IPE', label: 'IPE (European)', category: 'steel' },
+        { type: 'HEA', label: 'HEA (European)', category: 'steel' },
+        { type: 'HSS-RECT', label: 'HSS Rectangular', category: 'steel' },
+        { type: 'HSS-ROUND', label: 'HSS Round/Pipe', category: 'steel' },
+        // Concrete Sections
+        { type: 'RECT-CONCRETE', label: 'RCC Rectangular Beam', category: 'concrete' },
+        { type: 'CIRC-CONCRETE', label: 'RCC Circular Column', category: 'concrete' },
+        { type: 'T-CONCRETE', label: 'RCC T-Beam', category: 'concrete' },
     ];
 
     return (
