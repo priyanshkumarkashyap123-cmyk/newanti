@@ -326,15 +326,27 @@ class ModelValidator:
                 suggested_fix="Add pinned or fixed supports at base nodes",
                 auto_fixable=True
             ))
-        elif total_restraints < MIN_SUPPORTS_3D:
-            self.issues.append(ValidationIssue(
-                issue_type=IssueType.INSUFFICIENT_SUPPORTS,
-                severity=IssueSeverity.ERROR,
-                message=f"Model has only {total_restraints} DOF restraints - needs at least 6 for 3D stability",
-                affected_elements=supported_nodes,
-                suggested_fix="Add more supports or fix existing supports",
-                auto_fixable=True
-            ))
+        # Check total restraints (Minimum 6 for 3D stability, but 3 is enough for 2D)
+        elif total_restraints < 6:
+            # Relaxed check for 2D structures
+            if total_restraints >= 3:
+                self.issues.append(ValidationIssue(
+                    issue_type=IssueType.INSUFFICIENT_SUPPORTS,
+                    severity=IssueSeverity.WARNING,  # Changed from error to warning
+                    message=f"Model has only {total_restraints} DOF restraints - might be unstable in 3D (needs 6). OK for 2D.",
+                    affected_elements=supported_nodes,
+                    suggested_fix="For full 3D stability, ensure at least 6 DOF are restrained total. For 2D, 3 is sufficient.",
+                    auto_fixable=True
+                ))
+            else:
+                self.issues.append(ValidationIssue(
+                    issue_type=IssueType.INSUFFICIENT_SUPPORTS,
+                    severity=IssueSeverity.ERROR,
+                    message=f"Model has only {total_restraints} DOF restraints - needs at least 3 for 2D stability (6 for 3D)",
+                    affected_elements=supported_nodes,
+                    suggested_fix="Add more supports or fix existing supports",
+                    auto_fixable=True
+                ))
         elif len(supported_nodes) == 1 and len(self.nodes) > 2:
             self.issues.append(ValidationIssue(
                 issue_type=IssueType.INSUFFICIENT_SUPPORTS,

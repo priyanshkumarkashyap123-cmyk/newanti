@@ -55,8 +55,8 @@ let wasmReady = false;
 async function loadWasmModule(): Promise<void> {
     try {
         // Dynamic import of WASM module
-        // Path will be configured during build
-        const wasm = await import('../../../packages/solver-wasm/pkg/solver_wasm');
+        // Path: apps/web/src/workers -> ../../../../packages/solver-wasm/pkg
+        const wasm = await import('../../../../packages/solver-wasm/pkg/solver_wasm');
         wasmModule = wasm;
         wasmReady = true;
         self.postMessage({ type: 'wasm_ready' });

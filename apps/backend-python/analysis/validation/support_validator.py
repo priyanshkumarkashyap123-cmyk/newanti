@@ -129,13 +129,23 @@ class SupportValidator(BaseValidator):
         
         if translation_count < 3:
             missing = [dof.upper() for dof in ['tx', 'ty', 'tz'] if restrained_dof[dof] == 0]
-            self.add_error(
-                code='SUP_003',
-                message=f'Insufficient support conditions. Only {translation_count}/3 translation DOF restrained. Missing: {", ".join(missing)}',
-                suggestion='Add supports to restrain all 3 translational directions (X, Y, Z). Minimum: 3 DOF for 2D, 6 DOF for 3D structures.',
-                affected_elements=list(self.supports.keys())
-            )
-            return False
+            
+            # Relaxed check: Allow 2D structures (e.g. plane frame) which might only restrain X and Y
+            if translation_count >= 2:
+                self.add_warning(
+                    code='SUP_003_W',
+                    message=f'Potentially insufficient supports for 3D. Only {translation_count}/3 translation DOF restrained. Missing: {", ".join(missing)}',
+                    suggestion='Verify if this is a 2D structure. For full 3D stability, restrain all 3 translational directions.',
+                    affected_elements=list(self.supports.keys())
+                )
+            else:
+                self.add_error(
+                    code='SUP_003',
+                    message=f'Insufficient support conditions. Only {translation_count}/3 translation DOF restrained. Missing: {", ".join(missing)}',
+                    suggestion='Add supports to restrain at least 2 translational directions (for 2D) or 3 (for 3D).',
+                    affected_elements=list(self.supports.keys())
+                )
+                return False
         
         # Check for potential instability (too few total restraints)
         total_restrained = sum(1 for count in restrained_dof.values() if count > 0)

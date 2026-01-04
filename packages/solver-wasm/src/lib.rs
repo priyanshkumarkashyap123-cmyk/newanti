@@ -203,7 +203,7 @@ pub fn solve_system_cholesky(
     let forces = DVector::from_vec(force_array.to_vec());
 
     // Try Cholesky decomposition (assumes symmetric positive-definite)
-    match stiffness.cholesky() {
+    match stiffness.clone().cholesky() {
         Some(chol) => {
             let displacements = chol.solve(&forces);
             let result = js_sys::Float64Array::new_with_length(dof as u32);
@@ -265,7 +265,7 @@ pub fn compute_eigenvalues(
             let eigen = a.symmetric_eigen();
             
             // Extract eigenvalues and vectors
-            let mut eigenvalues: Vec<f64> = eigen.eigenvalues.iter().cloned().collect();
+            let eigenvalues: Vec<f64> = eigen.eigenvalues.iter().cloned().collect();
             let eigenvectors_matrix = eigen.eigenvectors;
 
             // Sort by eigenvalue magnitude (ascending)
@@ -404,8 +404,8 @@ mod tests {
         let result = stiffness.lu().solve(&forces).unwrap();
         
         // Verify solution: u ≈ [0.2, 0.6]
-        assert!((result[0] - 0.2).abs() < 1e-10);
-        assert!((result[1] - 0.6).abs() < 1e-10);
+        assert!((result[0] - 0.2_f64).abs() < 1e-10);
+        assert!((result[1] - 0.6_f64).abs() < 1e-10);
     }
 
     #[test]

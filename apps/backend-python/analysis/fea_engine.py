@@ -19,8 +19,14 @@ import numpy as np
 import math
 
 try:
-    from PyNite import FEModel3D
-    import PyNite
+    try:
+        from PyNite import FEModel3D
+        import PyNite
+    except ImportError:
+        # Fallback for case-sensitive filesystems where package might be named 'Pynite'
+        from Pynite import FEModel3D
+        import Pynite as PyNite
+        
     PYNITE_AVAILABLE = True
     # Check PyNite version - v2.0+ has different API
     PYNITE_V2 = hasattr(FEModel3D, 'add_material')
@@ -213,10 +219,14 @@ def get_support_restraints(support_type: str) -> Tuple[bool, bool, bool, bool, b
     """
     support_map = {
         "fixed": (True, True, True, True, True, True),
-        "pinned": (True, True, True, False, False, False),
-        "pin": (True, True, True, False, False, False),
-        "roller": (False, True, False, False, False, False),
-        "roller_x": (True, True, False, False, False, False),
+        # Pinned (2D-friendly): Fix Translation XYZ, Rotation XY (Torsion/Lateral), Free Rotation Z (In-plane)
+        "pinned": (True, True, True, True, True, False),
+        "pin": (True, True, True, True, True, False),
+        # Roller (2D-friendly): Fix Y (Vertical) and Z (Lateral), Free X (Axial) and Rotations
+        "roller": (False, True, True, False, False, False),
+        # Roller X: Fix X (Normal) and Z (Lateral)
+        "roller_x": (True, False, True, False, False, False),
+        # Roller Z: Fix Z (Normal) and Y (Lateral)? No, Roller Z usually means bearing on ground
         "roller_z": (False, True, True, False, False, False),
         "none": (False, False, False, False, False, False),
     }
@@ -339,6 +349,10 @@ class FEAEngine:
             self._defined_materials = set()
             self._defined_sections = set()
         
+        # Check API capabilities once
+        has_add_material = hasattr(self.model, 'add_material')
+        has_add_section = hasattr(self.model, 'add_section')
+        
         for i, member in enumerate(model_input.members):
             member_name = f"M{i+1}"
             self.member_map[member.id] = member_name
@@ -368,24 +382,39 @@ class FEAEngine:
             Iz = member.Iz if member.Iz is not None else 1e-4
             J = member.J if member.J is not None else 1e-5
             
-            # Define material for this member
-            mat_name = f"Mat_{i+1}"
-            nu = 0.3  # Poisson's ratio for steel
-            rho = 7850 / 1e9  # kg/mm³
-            self.model.add_material(mat_name, E_axial, G, nu, rho)
-            
-            # Add member with material name and section properties
-            # PyNite v0.0.94 API: add_member(name, i_node, j_node, material_name, Iy=, Iz=, J=, A=)
-            self.model.add_member(
-                member_name,
-                start_name,
-                end_name,
-                mat_name,
-                Iy=Iy,
-                Iz=Iz,
-                J=J,
-                A=A
-            )
+            # Compatibility Logic for PyNite v1 vs v2
+            if has_add_material and has_add_section:
+                # PyNite v2.x Approach
+                mat_name = f"Mat_{i+1}"
+                nu = 0.3  # Poisson's ratio for steel
+                rho = 7850 / 1e9  # kg/mm³
+                self.model.add_material(mat_name, E_axial, G, nu, rho)
+                
+                sect_name = f"Sect_{i+1}"
+                self.model.add_section(sect_name, A, Iy, Iz, J)
+                
+                # PyNite 2.x API: add_member(name, i_node, j_node, material_name, section_name)
+                self.model.add_member(
+                    member_name,
+                    start_name,
+                    end_name,
+                    mat_name,
+                    sect_name
+                )
+            else:
+                # PyNite v1.x Approach (Older API)
+                # add_member(name, i_node, j_node, E, G, Iy, Iz, J, A)
+                self.model.add_member(
+                    member_name,
+                    start_name,
+                    end_name,
+                    E_axial,
+                    G,
+                    Iy,
+                    Iz,
+                    J,
+                    A
+                )
         
         # ============================================
         # 3. ADD LOAD CASE
@@ -421,7 +450,12 @@ class FEAEngine:
             if not member_name:
                 continue
             
-            member_obj = self.model.Members[member_name]
+            # Correct casing for Members/members
+            if hasattr(self.model, 'members'):
+                 member_obj = self.model.members[member_name]
+            else:
+                 member_obj = self.model.Members[member_name]
+                 
             length = member_obj.L()
             
             # Convert ratio to absolute position if needed
@@ -443,7 +477,12 @@ class FEAEngine:
             if not member_name:
                 continue
             
-            member_obj = self.model.Members[member_name]
+            # Correct casing for Members/members
+            if hasattr(self.model, 'members'):
+                 member_obj = self.model.members[member_name]
+            else:
+                 member_obj = self.model.Members[member_name]
+                 
             length = member_obj.L()
             
             # Convert ratios to absolute positions if needed
@@ -468,8 +507,15 @@ class FEAEngine:
             
             for i, member in enumerate(model_input.members):
                 member_name = f"M{i+1}"
+                
+                # Correct casing for Members/members
+                if hasattr(self.model, 'members'):
+                     member_obj = self.model.members[member_name]
+                else:
+                     member_obj = self.model.Members[member_name]
+                     
                 # Get length from PyNite member object
-                L = self.model.Members[member_name].L()
+                L = member_obj.L()
                 
                 A = member.A if member.A is not None else 0.01
                 w = -A * gamma # kN/m (Downwards)
@@ -540,7 +586,7 @@ class FEAEngine:
         results = []
         
         for frontend_id, pynite_name in self.node_map.items():
-            node = self.model.Nodes[pynite_name]
+            node = self.model.nodes[pynite_name]
             
             # Displacements
             displacement = {
@@ -553,16 +599,14 @@ class FEAEngine:
             }
             
             # Reactions (if supported)
-            reaction = None
-            if node.support_DX or node.support_DY or node.support_DZ:
-                reaction = {
-                    'fx': node.RxnFX.get('LC1', 0),
-                    'fy': node.RxnFY.get('LC1', 0),
-                    'fz': node.RxnFZ.get('LC1', 0),
-                    'mx': node.RxnMX.get('LC1', 0),
-                    'my': node.RxnMY.get('LC1', 0),
-                    'mz': node.RxnMZ.get('LC1', 0),
-                }
+            reaction = {
+                'fx': getattr(node, 'RxnFX', {}).get('LC1', 0),
+                'fy': getattr(node, 'RxnFY', {}).get('LC1', 0),
+                'fz': getattr(node, 'RxnFZ', {}).get('LC1', 0),
+                'mx': getattr(node, 'RxnMX', {}).get('LC1', 0),
+                'my': getattr(node, 'RxnMY', {}).get('LC1', 0),
+                'mz': getattr(node, 'RxnMZ', {}).get('LC1', 0),
+            }
             
             results.append(NodeResults(
                 node_id=frontend_id,
@@ -577,7 +621,12 @@ class FEAEngine:
         results = []
         
         for frontend_id, pynite_name in self.member_map.items():
-            member = self.model.Members[pynite_name]
+            # Correct casing for Members/members
+            if hasattr(self.model, 'members'):
+                 member = self.model.members[pynite_name]
+            else:
+                 member = self.model.Members[pynite_name]
+                 
             length = member.L()
             
             # Generate x values
@@ -763,6 +812,7 @@ def analyze_frame(model_dict: Dict[str, Any]) -> Dict[str, Any]:
             DistributedLoadInput(
                 member_id=l['memberId'],
                 direction=l.get('direction', 'Fy'),
+                magnitude=l.get('magnitude', 0),
                 w1=l.get('w1', l.get('magnitude', 0)),
                 w2=l.get('w2', l.get('magnitude', 0)),
                 start_pos=l.get('startPos', 0),
@@ -771,6 +821,7 @@ def analyze_frame(model_dict: Dict[str, Any]) -> Dict[str, Any]:
             )
             for l in model_dict.get('distributed_loads', [])
         ]
+        # Fixed distributed load parsing to handle magnitude fallback properly
         
         model_input = ModelInput(
             nodes=nodes,
@@ -785,10 +836,15 @@ def analyze_frame(model_dict: Dict[str, Any]) -> Dict[str, Any]:
         engine.build_model(model_input)
         result = engine.analyze(options=options)
         
+        if not result.success:
+            return {
+                'success': False,
+                'error': result.error
+            }
+        
         # Convert to dict
         response = {
-            'success': result.success,
-            'error': result.error,
+            'success': True,
             'max_displacement': result.max_displacement,
             'max_moment': result.max_moment,
             'max_shear': result.max_shear,
@@ -835,6 +891,8 @@ def analyze_frame(model_dict: Dict[str, Any]) -> Dict[str, Any]:
         return response
         
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return {
             'success': False,
             'error': str(e)

@@ -23,6 +23,33 @@ from models import (
     ContinuousBeamRequest, TrussRequest, FrameRequest
 )
 from factory import StructuralFactory
+from ai_routes import router as ai_router
+
+
+# ============================================
+# ENVIRONMENT CONFIGURATION WITH FALLBACKS
+# ============================================
+
+def get_env(key: str, default: str = "") -> str:
+    """Get environment variable with intelligent fallback"""
+    value = os.getenv(key, "").strip()
+    
+    # If not set in environment, use defaults
+    if not value:
+        if key == 'USE_MOCK_AI':
+            value = 'true'  # Default to mock AI
+            print(f"[ENV] {key}: Using default (MOCK AI MODE)")
+        elif key == 'GEMINI_API_KEY':
+            value = 'mock-key-local-dev'
+            print(f"[ENV] {key}: Not configured, using mock mode")
+        elif key == 'FRONTEND_URL':
+            value = 'http://localhost:5173'
+            print(f"[ENV] {key}: Not configured, defaulting to {value}")
+        elif key == 'ALLOWED_ORIGINS':
+            value = 'http://localhost:5173,http://localhost:3001,http://127.0.0.1:5173'
+            print(f"[ENV] {key}: Not configured, using localhost origins")
+    
+    return value or default
 
 
 # ============================================
@@ -37,13 +64,19 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
+# Get configuration with fallbacks
+GEMINI_API_KEY = get_env('GEMINI_API_KEY', 'mock-key-local-dev')
+USE_MOCK_AI = get_env('USE_MOCK_AI', 'true').lower() in ('true', '1', 'yes')
+FRONTEND_URL = get_env('FRONTEND_URL', 'http://localhost:5173')
+ALLOWED_ORIGINS_ENV = get_env('ALLOWED_ORIGINS', 'http://localhost:5173,http://localhost:3001')
+
 # Debug: Print environment info at startup
 print(f"\n{'='*60}")
 print(f"[STARTUP] BeamLab Backend Initializing...")
-print(f"[STARTUP] GEMINI_API_KEY present: {bool(os.getenv('GEMINI_API_KEY'))}")
-print(f"[STARTUP] USE_MOCK_AI: {os.getenv('USE_MOCK_AI', 'not set')}")
-print(f"[STARTUP] FRONTEND_URL: {os.getenv('FRONTEND_URL', 'not set')}")
-print(f"[STARTUP] ALLOWED_ORIGINS: {os.getenv('ALLOWED_ORIGINS', 'not set')[:50]}...")
+print(f"[STARTUP] GEMINI_API_KEY configured: {bool(GEMINI_API_KEY and GEMINI_API_KEY != 'mock-key-local-dev')}")
+print(f"[STARTUP] USE_MOCK_AI: {USE_MOCK_AI}")
+print(f"[STARTUP] FRONTEND_URL: {FRONTEND_URL}")
+print(f"[STARTUP] Environment: {'LOCAL/MOCK' if USE_MOCK_AI else 'PRODUCTION'}")
 print(f"{'='*60}\n")
 
 # ============================================
@@ -69,23 +102,23 @@ allow_origins = [
 ]
 
 # Add origins from environment variables
-allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "").strip()
-if allowed_origins_env:
-    env_origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
+if ALLOWED_ORIGINS_ENV:
+    env_origins = [origin.strip() for origin in ALLOWED_ORIGINS_ENV.split(",") if origin.strip()]
     allow_origins.extend(env_origins)
 
-frontend_url_env = os.getenv("FRONTEND_URL", "").strip()
-if frontend_url_env:
-    allow_origins.append(frontend_url_env)
+if FRONTEND_URL:
+    allow_origins.append(FRONTEND_URL)
 
 # Remove duplicates and sort for consistent output
 allow_origins = sorted(list(set(allow_origins)))
 
 # Print CORS config for debugging
-print(f"\n{'='*60}")
+print(f"{'='*60}")
 print(f"[CORS] Configured allowed origins ({len(allow_origins)}):")
 for origin in sorted(allow_origins):
-    print(f"  ✓ {origin}")
+    status = "✓" if origin else "✗"
+    print(f"  {status} {origin}")
+print(f"[CORS] CORS Middleware initialized")
 print(f"{'='*60}\n")
 
 app.add_middleware(
@@ -123,6 +156,12 @@ async def health_check():
         ]
     }
 
+
+# ============================================
+# ROUTER REGISTRATION
+# ============================================
+
+app.include_router(ai_router)
 
 # ============================================
 # MESHING ENDPOINTS
@@ -2222,6 +2261,11 @@ async def calculate_seismic_loads(request: SeismicLoadRequest):
 if __name__ == "__main__":
     import uvicorn
     print(f"\n🚀 Starting BeamLab Structural Engine")
-    print(f"📋 USE_MOCK_AI: {USE_MOCK_AI}")
-    print(f"🔑 GEMINI_API_KEY: {'SET' if GEMINI_API_KEY else 'NOT SET'}\n")
-    uvicorn.run(app, host="0.0.0.0", port=8081)
+    print(f"📋 USE_MOCK_AI: {os.getenv('USE_MOCK_AI', 'not set')}")
+    print(f"🔑 GEMINI_API_KEY: {'SET' if os.getenv('GEMINI_API_KEY') else 'NOT SET'}\n")
+    
+    # Azure App Service sets PORT env var (default 8000)
+    port = int(os.getenv("PORT", 8000))
+    print(f"🔌 Binding to port: {port}")
+    
+    uvicorn.run(app, host="0.0.0.0", port=port)

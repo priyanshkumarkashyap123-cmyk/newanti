@@ -12,6 +12,7 @@
         "type-check": "tsc --noEmit"
     },
     "dependencies": {
+        "solver-wasm": "file:../../packages/solver-wasm/pkg",
         "@clerk/clerk-react": "^5.59.0",
         "@monaco-editor/react": "^4.7.0",
         "@radix-ui/react-accordion": "^1.2.12",
