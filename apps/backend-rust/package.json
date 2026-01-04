@@ -1,0 +1,13 @@
+{
+    "name": "backend-rust",
+    "version": "0.1.0",
+    "type": "module",
+    "main": "./pkg/backend_rust.js",
+    "types": "./pkg/backend_rust.d.ts",
+    "files": [
+        "pkg"
+    ],
+    "scripts": {
+        "build": "wasm-pack build --target web --out-dir ./pkg --release"
+    }
+}

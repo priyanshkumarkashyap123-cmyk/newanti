@@ -115,6 +115,8 @@ importers:
         specifier: ^5.6.3
         version: 5.9.3
 
+  apps/backend-rust: {}
+
   apps/web:
     dependencies:
       '@clerk/clerk-react':
@@ -175,8 +177,8 @@ importers:
         specifier: ^10.4.23
         version: 10.4.23(postcss@8.5.6)
       backend-rust:
-        specifier: file:../backend-rust/pkg
-        version: file:apps/backend-rust/pkg
+        specifier: workspace:*
+        version: link:../backend-rust
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -2022,9 +2024,6 @@ packages:
 
   axios@1.13.2:
     resolution: {integrity: sha512-VPk9ebNqPcy5lRGuSlKx752IlDatOjT9paPlm8A7yOuW2Fbvp4X3JznJtT4f0GzGLLiWE9W8onz51SqLYwzGaA==}
-
-  backend-rust@file:apps/backend-rust/pkg:
-    resolution: {directory: apps/backend-rust/pkg, type: directory}
 
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
@@ -5638,8 +5637,6 @@ snapshots:
       proxy-from-env: 1.1.0
     transitivePeerDependencies:
       - debug
-
-  backend-rust@file:apps/backend-rust/pkg: {}
 
   balanced-match@1.0.2: {}
 

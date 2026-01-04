@@ -41,11 +41,22 @@ jobs:
 
       - name: Build WASM Solver Package
         working-directory: packages/solver-wasm
-        run: wasm-pack build --target web
+        run: |
+          wasm-pack build --target web
+          ls -la pkg/
       
       - name: Build Backend Rust WASM
         working-directory: apps/backend-rust
-        run: wasm-pack build --target web --out-dir ./pkg --release
+        run: |
+          wasm-pack build --target web --out-dir ./pkg --release
+          ls -la pkg/
+      
+      - name: Verify WASM packages exist
+        run: |
+          echo "Checking solver-wasm pkg..."
+          ls -la packages/solver-wasm/pkg/
+          echo "Checking backend-rust pkg..."
+          ls -la apps/backend-rust/pkg/
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile

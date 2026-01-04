@@ -13,7 +13,7 @@
     },
     "dependencies": {
         "solver-wasm": "workspace:*",
-        "backend-rust": "file:../backend-rust/pkg",
+        "backend-rust": "workspace:*",
         "@clerk/clerk-react": "^5.59.0",
         "@monaco-editor/react": "^4.7.0",
         "@radix-ui/react-accordion": "^1.2.12",
