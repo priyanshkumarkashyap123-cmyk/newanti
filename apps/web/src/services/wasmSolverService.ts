@@ -30,10 +30,33 @@ export interface Element {
     a: number; // Cross-sectional Area (m^2)
 }
 
+export interface PointLoad {
+    node_id: number;
+    fx: number; // Force X (N)
+    fy: number; // Force Y (N)
+    mz: number; // Moment Z (N·m)
+}
+
+export interface MemberLoad {
+    element_id: number;
+    wx: number;  // Distributed load along axis (N/m)
+    wy: number;  // Distributed load perpendicular (N/m)
+    start_pos: number; // 0-1 ratio
+    end_pos: number;   // 0-1 ratio
+}
+
+export interface MemberForces {
+    axial: number;
+    shear_start: number;
+    moment_start: number;
+    shear_end: number;
+    moment_end: number;
+}
+
 export interface AnalysisResult {
     displacements: Record<number, [number, number, number]>;
     reactions?: Record<number, [number, number, number]>;
-    memberForces?: Record<number, { axial: number; shear: number; moment: number }>;
+    memberForces?: Record<number, MemberForces>;
     success: boolean;
     error?: string;
     stats?: {
@@ -77,7 +100,9 @@ export async function initSolver(): Promise<void> {
  */
 export async function analyzeStructure(
     nodes: Node[],
-    elements: Element[]
+    elements: Element[],
+    pointLoads: PointLoad[] = [],
+    memberLoads: MemberLoad[] = []
 ): Promise<AnalysisResult> {
     if (!wasmInitialized) {
         await initSolver();
@@ -85,17 +110,20 @@ export async function analyzeStructure(
 
     try {
         console.log('[WASM] Analyzing structure:', nodes.length, 'nodes,', elements.length, 'elements');
+        console.log('[WASM] Loads:', pointLoads.length, 'point loads,', memberLoads.length, 'member loads');
         
         const startTime = performance.now();
         
-        // Call Rust WASM function with proper serialization
-        const result = solve_structure_wasm(nodes, elements);
+        // Call Rust WASM function with loads
+        const result = solve_structure_wasm(nodes, elements, pointLoads, memberLoads);
         
         const endTime = performance.now();
         const solveTime = endTime - startTime;
 
         console.log('[WASM] Analysis completed in', solveTime.toFixed(2), 'ms');
-        console.log('[WASM] Result:', result);
+        console.log('[WASM] Displacements:', result.displacements);
+        console.log('[WASM] Reactions:', result.reactions);
+        console.log('[WASM] Member Forces:', result.member_forces);
 
         if (!result.success) {
             return {
@@ -105,14 +133,10 @@ export async function analyzeStructure(
             };
         }
 
-        // Calculate reactions and member forces (TODO: move to Rust)
-        const reactions: Record<number, [number, number, number]> = {};
-        const memberForces: Record<number, { axial: number; shear: number; moment: number }> = {};
-
         return {
             displacements: result.displacements || {},
-            reactions,
-            memberForces,
+            reactions: result.reactions || {},
+            memberForces: result.member_forces || {},
             success: true,
             stats: {
                 solveTimeMs: solveTime,

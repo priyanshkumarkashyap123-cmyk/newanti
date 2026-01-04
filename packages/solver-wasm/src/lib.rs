@@ -450,24 +450,62 @@ pub struct Element {
     pub a: f64, // Cross-sectional area (m^2)
 }
 
+/// Point load applied at a node
+#[derive(Serialize, Deserialize, Clone)]
+pub struct PointLoad {
+    pub node_id: i32,
+    pub fx: f64, // Force in X direction (N)
+    pub fy: f64, // Force in Y direction (N)
+    pub mz: f64, // Moment about Z axis (N·m)
+}
+
+/// Distributed load on a member
+#[derive(Serialize, Deserialize, Clone)]
+pub struct MemberLoad {
+    pub element_id: i32,
+    pub wx: f64,  // Distributed load along member axis (N/m)
+    pub wy: f64,  // Distributed load perpendicular to member (N/m)
+    pub start_pos: f64, // Start position (0-1 ratio)
+    pub end_pos: f64,   // End position (0-1 ratio)
+}
+
+/// Member forces (internal forces in an element)
+#[derive(Serialize, Deserialize, Clone)]
+pub struct MemberForces {
+    pub axial: f64,        // Axial force (tension positive)
+    pub shear_start: f64,  // Shear at start
+    pub moment_start: f64, // Moment at start
+    pub shear_end: f64,    // Shear at end
+    pub moment_end: f64,   // Moment at end
+}
+
 /// Analysis result
 #[derive(Serialize, Deserialize)]
 pub struct AnalysisResult {
     pub displacements: std::collections::HashMap<i32, [f64; 3]>,
+    pub reactions: std::collections::HashMap<i32, [f64; 3]>,
+    pub member_forces: std::collections::HashMap<i32, MemberForces>,
     pub success: bool,
     pub error: Option<String>,
 }
 
 /// Solve a frame structure using Direct Stiffness Method
-/// Takes nodes and elements, returns displacements
+/// Takes nodes, elements, and loads, returns displacements, reactions, and member forces
 #[wasm_bindgen]
-pub fn solve_structure_wasm(nodes_json: JsValue, elements_json: JsValue) -> JsValue {
+pub fn solve_structure_wasm(
+    nodes_json: JsValue,
+    elements_json: JsValue,
+    point_loads_json: JsValue,
+    member_loads_json: JsValue
+) -> JsValue {
     // Parse input
     let nodes: Vec<Node> = match serde_wasm_bindgen::from_value(nodes_json) {
         Ok(n) => n,
         Err(e) => {
             let result = AnalysisResult {
                 displacements: std::collections::HashMap::new(),
+                reactions: std::collections::HashMap::new(),
+                member_forces: std::collections::HashMap::new(),
                 success: false,
                 error: Some(format!("Failed to parse nodes: {}", e)),
             };
@@ -480,12 +518,17 @@ pub fn solve_structure_wasm(nodes_json: JsValue, elements_json: JsValue) -> JsVa
         Err(e) => {
             let result = AnalysisResult {
                 displacements: std::collections::HashMap::new(),
+                reactions: std::collections::HashMap::new(),
+                member_forces: std::collections::HashMap::new(),
                 success: false,
                 error: Some(format!("Failed to parse elements: {}", e)),
             };
             return serde_wasm_bindgen::to_value(&result).unwrap();
         }
     };
+
+    let point_loads: Vec<PointLoad> = serde_wasm_bindgen::from_value(point_loads_json).unwrap_or_default();
+    let member_loads: Vec<MemberLoad> = serde_wasm_bindgen::from_value(member_loads_json).unwrap_or_default();
 
     // Number of DOF (3 per node: x, y, rotation)
     let num_nodes = nodes.len();
@@ -504,6 +547,8 @@ pub fn solve_structure_wasm(nodes_json: JsValue, elements_json: JsValue) -> JsVa
         if start_node.is_none() || end_node.is_none() {
             let result = AnalysisResult {
                 displacements: std::collections::HashMap::new(),
+                reactions: std::collections::HashMap::new(),
+                member_forces: std::collections::HashMap::new(),
                 success: false,
                 error: Some(format!("Element {} references invalid nodes", elem.id)),
             };
@@ -521,6 +566,8 @@ pub fn solve_structure_wasm(nodes_json: JsValue, elements_json: JsValue) -> JsVa
         if l < 1e-10 {
             let result = AnalysisResult {
                 displacements: std::collections::HashMap::new(),
+                reactions: std::collections::HashMap::new(),
+                member_forces: std::collections::HashMap::new(),
                 success: false,
                 error: Some(format!("Element {} has zero length", elem.id)),
             };
@@ -599,6 +646,91 @@ pub fn solve_structure_wasm(nodes_json: JsValue, elements_json: JsValue) -> JsVa
         }
     }
 
+    // ============================================
+    // APPLY LOADS
+    // ============================================
+
+    // 1. Apply point loads
+    for load in &point_loads {
+        // Find node index
+        if let Some(node_idx) = nodes.iter().position(|n| n.id == load.node_id) {
+            f_global[node_idx * 3 + 0] += load.fx;
+            f_global[node_idx * 3 + 1] += load.fy;
+            f_global[node_idx * 3 + 2] += load.mz;
+        }
+    }
+
+    // 2. Apply member distributed loads (convert to equivalent nodal loads)
+    for load in &member_loads {
+        if let Some(elem) = elements.iter().find(|e| e.id == load.element_id) {
+            let start_idx = nodes.iter().position(|n| n.id == elem.node_start).unwrap();
+            let end_idx = nodes.iter().position(|n| n.id == elem.node_end).unwrap();
+            let start = &nodes[start_idx];
+            let end = &nodes[end_idx];
+
+            // Element geometry
+            let dx = end.x - start.x;
+            let dy = end.y - start.y;
+            let l = (dx * dx + dy * dy).sqrt();
+            let c = dx / l;
+            let s = dy / l;
+
+            // Effective length for partial loads
+            let start_pos = load.start_pos.max(0.0).min(1.0);
+            let end_pos = load.end_pos.max(0.0).min(1.0);
+            let load_length = (end_pos - start_pos) * l;
+
+            // For uniformly distributed load (UDL) perpendicular to member
+            // Fixed-end forces in local coordinates:
+            // V_start = wL/2, M_start = -wL²/12
+            // V_end = wL/2, M_end = wL²/12
+            
+            let w_perp = load.wy;
+            let w_axial = load.wx;
+
+            if w_perp.abs() > 1e-10 {
+                // Equivalent nodal loads in local coordinates
+                let v_start = w_perp * load_length / 2.0;
+                let v_end = w_perp * load_length / 2.0;
+                let m_start = -w_perp * load_length * load_length / 12.0;
+                let m_end = w_perp * load_length * load_length / 12.0;
+
+                // Transform to global coordinates
+                // Local: [u, v, theta] -> Global: [x, y, theta]
+                // Fy_global = -v*sin(angle) for vertical load
+                // Fx_global = -v*cos(angle) for vertical load (perpendicular)
+                
+                let fx_start = -v_start * s;
+                let fy_start = v_start * c;
+                let fx_end = -v_end * s;
+                let fy_end = v_end * c;
+
+                // Add to force vector
+                f_global[start_idx * 3 + 0] += fx_start;
+                f_global[start_idx * 3 + 1] += fy_start;
+                f_global[start_idx * 3 + 2] += m_start;
+                f_global[end_idx * 3 + 0] += fx_end;
+                f_global[end_idx * 3 + 1] += fy_end;
+                f_global[end_idx * 3 + 2] += m_end;
+            }
+
+            if w_axial.abs() > 1e-10 {
+                // Axial distributed load
+                let axial_start = w_axial * load_length / 2.0;
+                let axial_end = w_axial * load_length / 2.0;
+
+                f_global[start_idx * 3 + 0] += axial_start * c;
+                f_global[start_idx * 3 + 1] += axial_start * s;
+                f_global[end_idx * 3 + 0] += axial_end * c;
+                f_global[end_idx * 3 + 1] += axial_end * s;
+            }
+        }
+    }
+
+    // ============================================
+    // APPLY BOUNDARY CONDITIONS
+    // ============================================
+
     // Apply boundary conditions (fixed DOFs)
     let mut free_dofs = Vec::new();
     let mut fixed_dofs = Vec::new();
@@ -632,6 +764,8 @@ pub fn solve_structure_wasm(nodes_json: JsValue, elements_json: JsValue) -> JsVa
         None => {
             let result = AnalysisResult {
                 displacements: std::collections::HashMap::new(),
+                reactions: std::collections::HashMap::new(),
+                member_forces: std::collections::HashMap::new(),
                 success: false,
                 error: Some("Singular stiffness matrix - structure is unstable".to_string()),
             };
@@ -659,8 +793,134 @@ pub fn solve_structure_wasm(nodes_json: JsValue, elements_json: JsValue) -> JsVa
         );
     }
 
+    // ============================================
+    // CALCULATE REACTIONS
+    // ============================================
+    
+    let mut reactions = std::collections::HashMap::new();
+    
+    // Convert to DVector for matrix multiplication
+    let u_full_vec = DVector::from_vec(u_full.clone());
+    
+    // Calculate forces at all DOF: F_reaction = K*u - F_applied
+    let f_reaction = &k_global * &u_full_vec - &f_global;
+    
+    // Extract reactions at fixed nodes
+    for (node_idx, node) in nodes.iter().enumerate() {
+        let mut has_reaction = false;
+        let mut rx = 0.0;
+        let mut ry = 0.0;
+        let mut rm = 0.0;
+        
+        for dof_offset in 0..3 {
+            if node.fixed[dof_offset] {
+                has_reaction = true;
+                match dof_offset {
+                    0 => rx = f_reaction[node_idx * 3 + 0],
+                    1 => ry = f_reaction[node_idx * 3 + 1],
+                    2 => rm = f_reaction[node_idx * 3 + 2],
+                    _ => {}
+                }
+            }
+        }
+        
+        if has_reaction {
+            reactions.insert(node.id, [rx, ry, rm]);
+        }
+    }
+
+    // ============================================
+    // CALCULATE MEMBER FORCES
+    // ============================================
+    
+    let mut member_forces = std::collections::HashMap::new();
+    
+    for elem in &elements {
+        let start_idx = nodes.iter().position(|n| n.id == elem.node_start).unwrap();
+        let end_idx = nodes.iter().position(|n| n.id == elem.node_end).unwrap();
+        let start = &nodes[start_idx];
+        let end = &nodes[end_idx];
+        
+        // Element geometry
+        let dx = end.x - start.x;
+        let dy = end.y - start.y;
+        let l = (dx * dx + dy * dy).sqrt();
+        let c = dx / l;
+        let s = dy / l;
+        
+        // Build stiffness and transformation matrices (same as assembly)
+        let ea_l = elem.e * elem.a / l;
+        let ei_l3 = elem.e * elem.i / (l * l * l);
+        let ei_l2 = elem.e * elem.i / (l * l);
+        let ei_l = elem.e * elem.i / l;
+        
+        let mut k_local = DMatrix::zeros(6, 6);
+        
+        // Axial
+        k_local[(0, 0)] = ea_l;
+        k_local[(0, 3)] = -ea_l;
+        k_local[(3, 0)] = -ea_l;
+        k_local[(3, 3)] = ea_l;
+        
+        // Bending
+        k_local[(1, 1)] = 12.0 * ei_l3;
+        k_local[(1, 2)] = 6.0 * ei_l2;
+        k_local[(1, 4)] = -12.0 * ei_l3;
+        k_local[(1, 5)] = 6.0 * ei_l2;
+        k_local[(2, 1)] = 6.0 * ei_l2;
+        k_local[(2, 2)] = 4.0 * ei_l;
+        k_local[(2, 4)] = -6.0 * ei_l2;
+        k_local[(2, 5)] = 2.0 * ei_l;
+        k_local[(4, 1)] = -12.0 * ei_l3;
+        k_local[(4, 2)] = -6.0 * ei_l2;
+        k_local[(4, 4)] = 12.0 * ei_l3;
+        k_local[(4, 5)] = -6.0 * ei_l2;
+        k_local[(5, 1)] = 6.0 * ei_l2;
+        k_local[(5, 2)] = 2.0 * ei_l;
+        k_local[(5, 4)] = -6.0 * ei_l2;
+        k_local[(5, 5)] = 4.0 * ei_l;
+        
+        // Transformation matrix T (6x6)
+        let mut t_matrix = DMatrix::zeros(6, 6);
+        t_matrix[(0, 0)] = c; t_matrix[(0, 1)] = s;
+        t_matrix[(1, 0)] = -s; t_matrix[(1, 1)] = c;
+        t_matrix[(2, 2)] = 1.0;
+        t_matrix[(3, 3)] = c; t_matrix[(3, 4)] = s;
+        t_matrix[(4, 3)] = -s; t_matrix[(4, 4)] = c;
+        t_matrix[(5, 5)] = 1.0;
+        
+        // Get element displacements in global coordinates
+        let u_elem_global = DVector::from_vec(vec![
+            u_full[start_idx * 3 + 0],
+            u_full[start_idx * 3 + 1],
+            u_full[start_idx * 3 + 2],
+            u_full[end_idx * 3 + 0],
+            u_full[end_idx * 3 + 1],
+            u_full[end_idx * 3 + 2],
+        ]);
+        
+        // Transform to local coordinates: u_local = T * u_global
+        let u_elem_local = &t_matrix * &u_elem_global;
+        
+        // Calculate local forces: f = k * u
+        let f_elem_local = &k_local * &u_elem_local;
+        
+        // Extract forces (sign convention: tension positive, compression negative)
+        let forces = MemberForces {
+            axial: f_elem_local[0],           // Axial force
+            shear_start: f_elem_local[1],     // Shear at start
+            moment_start: f_elem_local[2],    // Moment at start
+            shear_end: -f_elem_local[4],      // Shear at end (flip sign for convention)
+            moment_end: -f_elem_local[5],     // Moment at end (flip sign for convention)
+        };
+        
+        member_forces.insert(elem.id, forces);
+    }
+
     let result = AnalysisResult {
         displacements,
+        reactions,
+        member_forces,
         success: true,
         error: None,
     };
