@@ -87,8 +87,11 @@ print(f"{'='*60}\n")
 allow_origins = [
     # Production
     "https://beamlabultimate.tech",
+    "https://beamlabultimate.tech/",
     "https://www.beamlabultimate.tech",
+    "https://www.beamlabultimate.tech/",
     "https://brave-mushroom-0eae8ec00.4.azurestaticapps.net",
+    "https://brave-mushroom-0eae8ec00.4.azurestaticapps.net/",
     "https://beamlab-backend-python.azurewebsites.net",
     "https://beamlab-backend-node.azurewebsites.net",
     # Local development
@@ -109,16 +112,17 @@ if ALLOWED_ORIGINS_ENV:
 if FRONTEND_URL:
     allow_origins.append(FRONTEND_URL)
 
-# Remove duplicates and sort for consistent output
-allow_origins = sorted(list(set(allow_origins)))
+# Remove duplicates and ensure "*" is NOT present if allow_credentials is True
+allow_origins = list(set(allow_origins))
+if "*" in allow_origins:
+    allow_origins.remove("*")
 
-# Print CORS config for debugging
+# Print CORS config for debugging (visible in Azure logs)
 print(f"{'='*60}")
 print(f"[CORS] Configured allowed origins ({len(allow_origins)}):")
 for origin in sorted(allow_origins):
-    status = "✓" if origin else "✗"
-    print(f"  {status} {origin}")
-print(f"[CORS] CORS Middleware initialized")
+    print(f"  ✓ {origin}")
+print(f"[CORS] allow_credentials: True")
 print(f"{'='*60}\n")
 
 app.add_middleware(
