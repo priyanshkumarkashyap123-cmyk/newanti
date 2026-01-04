@@ -1,13 +1,15 @@
 #!/bin/bash
 
 # ============================================
-# Bheemla Ultimate - Domain Setup Script
+# BeamLab Ultimate - Domain Setup Script
 # ============================================
-# This script configures your local domain
+# Domain: https://beamlabultimate.tech
+# This script configures your local development domain
 # Requires: sudo access
 
-echo "🌐 Bheemla Ultimate - Domain Setup"
+echo "🌐 BeamLab Ultimate - Domain Setup"
 echo "===================================="
+echo "Production: https://beamlabultimate.tech"
 echo ""
 
 # Colors
@@ -47,10 +49,11 @@ echo -e "${BLUE}1. Adding domain entries to /etc/hosts...${NC}"
 
 HOSTS_FILE="/etc/hosts"
 DOMAINS=(
-    "app.bheemla.local"
-    "api.bheemla.local"
-    "www.bheemla.local"
-    "python-api.bheemla.local"
+    "app.beamlabultimate.local"
+    "api.beamlabultimate.local"
+    "www.beamlabultimate.local"
+    "python-api.beamlabultimate.local"
+    "beamlabultimate.local"
 )
 
 for domain in "${DOMAINS[@]}"; do
@@ -119,9 +122,11 @@ if [ "$all_ok" = true ]; then
     echo -e "${GREEN}✅ Domain setup complete!${NC}"
     echo ""
     echo "Your domains are ready to use:"
-    echo -e "${GREEN}  • Frontend:    http://app.bheemla.local:5173${NC}"
-    echo -e "${GREEN}  • API:         http://api.bheemla.local:3001${NC}"
-    echo -e "${GREEN}  • Python API:  http://python-api.bheemla.local:3002${NC}"
+    echo -e "${GREEN}  • Frontend:    http://app.beamlabultimate.local:5173${NC}"
+    echo -e "${GREEN}  • API:         http://api.beamlabultimate.local:3001${NC}"
+    echo -e "${GREEN}  • Python API:  http://python-api.beamlabultimate.local:3002${NC}"
+    echo ""
+    echo "Production domain: https://beamlabultimate.tech"
     echo ""
 else
     echo -e "${YELLOW}⚠️  Some domains could not be verified${NC}"
@@ -134,7 +139,8 @@ echo ""
 echo "Next steps:"
 echo "  1. Create .env.local from .env.local.example"
 echo "  2. Start servers with: pnpm dev"
-echo "  3. Access frontend at: http://app.bheemla.local:5173"
+echo "  3. Access frontend at: http://app.beamlabultimate.local:5173"
+echo "  4. Production URL: https://beamlabultimate.tech"
 echo ""
 echo "Documentation: See DOMAIN_SETUP_GUIDE.md"
 echo ""
