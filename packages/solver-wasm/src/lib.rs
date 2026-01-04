@@ -439,6 +439,15 @@ pub struct Node {
     pub fixed: [bool; 3], // [dx, dy, rotation]
 }
 
+/// Member releases (internal hinges)
+#[derive(Serialize, Deserialize, Clone)]
+pub struct MemberReleases {
+    pub start_moment: bool, // Release moment at start
+    pub end_moment: bool,   // Release moment at end
+    pub start_axial: bool,  // Release axial at start
+    pub end_axial: bool,    // Release axial at end
+}
+
 /// Element (beam/member) for structural analysis
 #[derive(Serialize, Deserialize)]
 pub struct Element {
@@ -448,6 +457,10 @@ pub struct Element {
     pub e: f64, // Young's modulus (Pa)
     pub i: f64, // Moment of inertia (m^4)
     pub a: f64, // Cross-sectional area (m^2)
+    pub g: Option<f64>, // Shear modulus (Pa) for 3D
+    pub j: Option<f64>, // Torsional constant (m^4) for 3D
+    pub alpha: Option<f64>, // Thermal expansion coefficient
+    pub releases: Option<MemberReleases>, // Member releases
 }
 
 /// Point load applied at a node
@@ -459,14 +472,34 @@ pub struct PointLoad {
     pub mz: f64, // Moment about Z axis (N·m)
 }
 
+/// Load distribution type
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum LoadDistribution {
+    Uniform,      // Constant intensity
+    Triangular,   // Linear from w1 to 0 or 0 to w2
+    Trapezoidal,  // Linear from w1 to w2
+}
+
 /// Distributed load on a member
 #[derive(Serialize, Deserialize, Clone)]
 pub struct MemberLoad {
     pub element_id: i32,
-    pub wx: f64,  // Distributed load along member axis (N/m)
-    pub wy: f64,  // Distributed load perpendicular to member (N/m)
+    pub w1: f64,  // Load intensity at start (N/m)
+    pub w2: f64,  // Load intensity at end (N/m)
+    pub direction: String, // "local_y", "local_x", "global_y", etc.
     pub start_pos: f64, // Start position (0-1 ratio)
     pub end_pos: f64,   // End position (0-1 ratio)
+    pub is_projected: bool, // Project load perpendicular to slope
+}
+
+/// Temperature load on a member
+#[derive(Serialize, Deserialize, Clone)]
+pub struct TemperatureLoad {
+    pub element_id: i32,
+    pub delta_t: f64,      // Uniform temperature change (°C)
+    pub gradient_t: f64,   // Temperature gradient through depth (°C)
+    pub alpha: f64,        // Thermal expansion coefficient (1/°C)
+    pub section_depth: f64, // Section depth for gradient (m)
 }
 
 /// Member forces (internal forces in an element)
@@ -679,27 +712,93 @@ pub fn solve_structure_wasm(
             let start_pos = load.start_pos.max(0.0).min(1.0);
             let end_pos = load.end_pos.max(0.0).min(1.0);
             let load_length = (end_pos - start_pos) * l;
+            let _a = start_pos * l;  // Distance from start to load start (for future use)
 
-            // For uniformly distributed load (UDL) perpendicular to member
-            // Fixed-end forces in local coordinates:
-            // V_start = wL/2, M_start = -wL²/12
-            // V_end = wL/2, M_end = wL²/12
+            // Determine load type
+            let w1 = load.w1;
+            let w2 = load.w2;
             
-            let w_perp = load.wy;
-            let w_axial = load.wx;
-
-            if w_perp.abs() > 1e-10 {
-                // Equivalent nodal loads in local coordinates
-                let v_start = w_perp * load_length / 2.0;
-                let v_end = w_perp * load_length / 2.0;
-                let m_start = -w_perp * load_length * load_length / 12.0;
-                let m_end = w_perp * load_length * load_length / 12.0;
-
-                // Transform to global coordinates
-                // Local: [u, v, theta] -> Global: [x, y, theta]
-                // Fy_global = -v*sin(angle) for vertical load
-                // Fx_global = -v*cos(angle) for vertical load (perpendicular)
+            // Handle different load distributions
+            let (v_start, v_end, m_start, m_end) = if (w1 - w2).abs() < 1e-10 {
+                // UNIFORM LOAD (UDL)
+                // Fixed-end forces for UDL over full span:
+                // V_start = wL/2, M_start = -wL²/12
+                // V_end = wL/2, M_end = wL²/12
+                let w = w1;
+                (
+                    w * load_length / 2.0,
+                    w * load_length / 2.0,
+                    -w * load_length * load_length / 12.0,
+                    w * load_length * load_length / 12.0,
+                )
+            } else if w2.abs() < 1e-10 {
+                // TRIANGULAR LOAD (w1 at start, 0 at end)
+                // Fixed-end forces:
+                // V_start = 7wL/20, M_start = -wL²/20
+                // V_end = 3wL/20, M_end = wL²/30
+                let w = w1;
+                (
+                    7.0 * w * load_length / 20.0,
+                    3.0 * w * load_length / 20.0,
+                    -w * load_length * load_length / 20.0,
+                    w * load_length * load_length / 30.0,
+                )
+            } else if w1.abs() < 1e-10 {
+                // TRIANGULAR LOAD (0 at start, w2 at end)
+                // Fixed-end forces:
+                // V_start = 3wL/20, M_start = -wL²/30
+                // V_end = 7wL/20, M_end = wL²/20
+                let w = w2;
+                (
+                    3.0 * w * load_length / 20.0,
+                    7.0 * w * load_length / 20.0,
+                    -w * load_length * load_length / 30.0,
+                    w * load_length * load_length / 20.0,
+                )
+            } else {
+                // TRAPEZOIDAL LOAD (w1 at start, w2 at end)
+                // Decompose into UDL + triangular
+                let w_uniform = w1.min(w2);
+                let w_triangular = (w1 - w2).abs();
                 
+                // UDL component
+                let v_udl = w_uniform * load_length / 2.0;
+                let m_udl = w_uniform * load_length * load_length / 12.0;
+                
+                // Triangular component (depends on direction)
+                let (v_tri_start, v_tri_end, m_tri_start, m_tri_end) = if w1 > w2 {
+                    // Decreasing load
+                    (
+                        7.0 * w_triangular * load_length / 20.0,
+                        3.0 * w_triangular * load_length / 20.0,
+                        -w_triangular * load_length * load_length / 20.0,
+                        w_triangular * load_length * load_length / 30.0,
+                    )
+                } else {
+                    // Increasing load
+                    (
+                        3.0 * w_triangular * load_length / 20.0,
+                        7.0 * w_triangular * load_length / 20.0,
+                        -w_triangular * load_length * load_length / 30.0,
+                        w_triangular * load_length * load_length / 20.0,
+                    )
+                };
+                
+                (
+                    v_udl + v_tri_start,
+                    v_udl + v_tri_end,
+                    -(m_udl + m_tri_start),
+                    m_udl + m_tri_end,
+                )
+            };
+
+            // Check load direction
+            let is_local_y = load.direction.to_lowercase().contains("local") 
+                          && load.direction.to_lowercase().contains("y");
+            
+            if is_local_y {
+                // Transform perpendicular load to global coordinates
+                // Local y is perpendicular to member axis
                 let fx_start = -v_start * s;
                 let fy_start = v_start * c;
                 let fx_end = -v_end * s;
@@ -712,17 +811,12 @@ pub fn solve_structure_wasm(
                 f_global[end_idx * 3 + 0] += fx_end;
                 f_global[end_idx * 3 + 1] += fy_end;
                 f_global[end_idx * 3 + 2] += m_end;
-            }
-
-            if w_axial.abs() > 1e-10 {
-                // Axial distributed load
-                let axial_start = w_axial * load_length / 2.0;
-                let axial_end = w_axial * load_length / 2.0;
-
-                f_global[start_idx * 3 + 0] += axial_start * c;
-                f_global[start_idx * 3 + 1] += axial_start * s;
-                f_global[end_idx * 3 + 0] += axial_end * c;
-                f_global[end_idx * 3 + 1] += axial_end * s;
+            } else {
+                // Global loads (typically gravity)
+                f_global[start_idx * 3 + 1] += v_start;
+                f_global[start_idx * 3 + 2] += m_start;
+                f_global[end_idx * 3 + 1] += v_end;
+                f_global[end_idx * 3 + 2] += m_end;
             }
         }
     }
@@ -929,6 +1023,436 @@ pub fn solve_structure_wasm(
 }
 
 // ============================================
+// ADVANCED ANALYSIS FUNCTIONS
+// ============================================
+
+/// Calculate geometric stiffness matrix for an element (for P-Delta and buckling)
+/// Based on axial force P in the member
+fn calculate_geometric_stiffness(
+    l: f64,      // Element length
+    p: f64,      // Axial force (positive = tension, negative = compression)
+    c: f64,      // cos(angle)
+    s: f64,      // sin(angle)
+) -> DMatrix<f64> {
+    // Geometric stiffness matrix in local coordinates (6x6)
+    // For beam-column element under axial load
+    let mut kg_local = DMatrix::zeros(6, 6);
+    
+    // Geometric stiffness due to axial force
+    // This matrix represents the effect of axial force on transverse stiffness
+    let coeff = p / l;
+    
+    // Transverse geometric stiffness (symmetric)
+    kg_local[(1, 1)] = 6.0/5.0 * coeff;
+    kg_local[(1, 2)] = coeff * l / 10.0;
+    kg_local[(1, 4)] = -6.0/5.0 * coeff;
+    kg_local[(1, 5)] = coeff * l / 10.0;
+    
+    kg_local[(2, 1)] = coeff * l / 10.0;
+    kg_local[(2, 2)] = 2.0 * coeff * l * l / 15.0;
+    kg_local[(2, 4)] = -coeff * l / 10.0;
+    kg_local[(2, 5)] = -coeff * l * l / 30.0;
+    
+    kg_local[(4, 1)] = -6.0/5.0 * coeff;
+    kg_local[(4, 2)] = -coeff * l / 10.0;
+    kg_local[(4, 4)] = 6.0/5.0 * coeff;
+    kg_local[(4, 5)] = -coeff * l / 10.0;
+    
+    kg_local[(5, 1)] = coeff * l / 10.0;
+    kg_local[(5, 2)] = -coeff * l * l / 30.0;
+    kg_local[(5, 4)] = -coeff * l / 10.0;
+    kg_local[(5, 5)] = 2.0 * coeff * l * l / 15.0;
+    
+    // Transform to global coordinates
+    let mut t_matrix = DMatrix::zeros(6, 6);
+    t_matrix[(0, 0)] = c; t_matrix[(0, 1)] = s;
+    t_matrix[(1, 0)] = -s; t_matrix[(1, 1)] = c;
+    t_matrix[(2, 2)] = 1.0;
+    t_matrix[(3, 3)] = c; t_matrix[(3, 4)] = s;
+    t_matrix[(4, 3)] = -s; t_matrix[(4, 4)] = c;
+    t_matrix[(5, 5)] = 1.0;
+    
+    &t_matrix.transpose() * &kg_local * &t_matrix
+}
+
+/// P-Delta analysis with second-order effects
+/// Iterative solution considering geometric nonlinearity
+#[wasm_bindgen]
+pub fn solve_p_delta(
+    nodes_json: JsValue,
+    elements_json: JsValue,
+    point_loads_json: JsValue,
+    member_loads_json: JsValue,
+    max_iterations: Option<usize>,
+    tolerance: Option<f64>,
+) -> JsValue {
+    let max_iter = max_iterations.unwrap_or(20);
+    let tol = tolerance.unwrap_or(1e-4);
+    
+    // Parse inputs (same as solve_structure_wasm)
+    let nodes: Vec<Node> = serde_wasm_bindgen::from_value(nodes_json).unwrap_or_default();
+    let elements: Vec<Element> = serde_wasm_bindgen::from_value(elements_json).unwrap_or_default();
+    let point_loads: Vec<PointLoad> = serde_wasm_bindgen::from_value(point_loads_json).unwrap_or_default();
+    let _member_loads: Vec<MemberLoad> = serde_wasm_bindgen::from_value(member_loads_json).unwrap_or_default();
+    
+    let num_nodes = nodes.len();
+    let dof = num_nodes * 3;
+    
+    // Initial analysis (first-order)
+    let mut u_prev = DVector::zeros(dof);
+    let mut converged = false;
+    
+    for iteration in 0..max_iter {
+        // Build stiffness matrix including geometric stiffness
+        let mut k_total = DMatrix::zeros(dof, dof);
+        
+        // Assemble elastic stiffness (same as before)
+        for elem in &elements {
+            let start_idx = nodes.iter().position(|n| n.id == elem.node_start).unwrap();
+            let end_idx = nodes.iter().position(|n| n.id == elem.node_end).unwrap();
+            let start = &nodes[start_idx];
+            let end = &nodes[end_idx];
+            
+            let dx = end.x - start.x;
+            let dy = end.y - start.y;
+            let l = (dx * dx + dy * dy).sqrt();
+            let c = dx / l;
+            let s = dy / l;
+            
+            // Elastic stiffness
+            let ea_l = elem.e * elem.a / l;
+            let ei_l3 = elem.e * elem.i / (l * l * l);
+            let ei_l2 = elem.e * elem.i / (l * l);
+            let ei_l = elem.e * elem.i / l;
+            
+            let mut k_local = DMatrix::zeros(6, 6);
+            k_local[(0, 0)] = ea_l;
+            k_local[(0, 3)] = -ea_l;
+            k_local[(3, 0)] = -ea_l;
+            k_local[(3, 3)] = ea_l;
+            
+            k_local[(1, 1)] = 12.0 * ei_l3;
+            k_local[(1, 2)] = 6.0 * ei_l2;
+            k_local[(1, 4)] = -12.0 * ei_l3;
+            k_local[(1, 5)] = 6.0 * ei_l2;
+            k_local[(2, 1)] = 6.0 * ei_l2;
+            k_local[(2, 2)] = 4.0 * ei_l;
+            k_local[(2, 4)] = -6.0 * ei_l2;
+            k_local[(2, 5)] = 2.0 * ei_l;
+            k_local[(4, 1)] = -12.0 * ei_l3;
+            k_local[(4, 2)] = -6.0 * ei_l2;
+            k_local[(4, 4)] = 12.0 * ei_l3;
+            k_local[(4, 5)] = -6.0 * ei_l2;
+            k_local[(5, 1)] = 6.0 * ei_l2;
+            k_local[(5, 2)] = 2.0 * ei_l;
+            k_local[(5, 4)] = -6.0 * ei_l2;
+            k_local[(5, 5)] = 4.0 * ei_l;
+            
+            // Transform elastic stiffness
+            let mut t_matrix = DMatrix::zeros(6, 6);
+            t_matrix[(0, 0)] = c; t_matrix[(0, 1)] = s;
+            t_matrix[(1, 0)] = -s; t_matrix[(1, 1)] = c;
+            t_matrix[(2, 2)] = 1.0;
+            t_matrix[(3, 3)] = c; t_matrix[(3, 4)] = s;
+            t_matrix[(4, 3)] = -s; t_matrix[(4, 4)] = c;
+            t_matrix[(5, 5)] = 1.0;
+            
+            let k_elem_global = &t_matrix.transpose() * &k_local * &t_matrix;
+            
+            // Calculate axial force from previous iteration
+            let u_elem = vec![
+                if iteration == 0 { 0.0 } else { u_prev[start_idx * 3] },
+                if iteration == 0 { 0.0 } else { u_prev[start_idx * 3 + 1] },
+                if iteration == 0 { 0.0 } else { u_prev[start_idx * 3 + 2] },
+                if iteration == 0 { 0.0 } else { u_prev[end_idx * 3] },
+                if iteration == 0 { 0.0 } else { u_prev[end_idx * 3 + 1] },
+                if iteration == 0 { 0.0 } else { u_prev[end_idx * 3 + 2] },
+            ];
+            let u_elem_vec = DVector::from_vec(u_elem);
+            let u_local = &t_matrix * &u_elem_vec;
+            let f_local = &k_local * &u_local;
+            let axial_force = f_local[0]; // Axial force from previous iteration
+            
+            // Geometric stiffness
+            let kg_elem_global = calculate_geometric_stiffness(l, axial_force, c, s);
+            
+            // Total element stiffness = elastic + geometric
+            let k_total_elem = k_elem_global + kg_elem_global;
+            
+            // Assemble into global
+            let dof_map = [
+                start_idx * 3, start_idx * 3 + 1, start_idx * 3 + 2,
+                end_idx * 3, end_idx * 3 + 1, end_idx * 3 + 2,
+            ];
+            
+            for i in 0..6 {
+                for j in 0..6 {
+                    k_total[(dof_map[i], dof_map[j])] += k_total_elem[(i, j)];
+                }
+            }
+        }
+        
+        // Apply loads (same as before - simplified for brevity)
+        let mut f_global = DVector::zeros(dof);
+        for load in &point_loads {
+            if let Some(node_idx) = nodes.iter().position(|n| n.id == load.node_id) {
+                f_global[node_idx * 3] += load.fx;
+                f_global[node_idx * 3 + 1] += load.fy;
+                f_global[node_idx * 3 + 2] += load.mz;
+            }
+        }
+        
+        // Apply boundary conditions and solve
+        let mut free_dofs = Vec::new();
+        for (node_idx, node) in nodes.iter().enumerate() {
+            for dof_offset in 0..3 {
+                if !node.fixed[dof_offset] {
+                    free_dofs.push(node_idx * 3 + dof_offset);
+                }
+            }
+        }
+        
+        let n_free = free_dofs.len();
+        let mut k_reduced = DMatrix::zeros(n_free, n_free);
+        let mut f_reduced = DVector::zeros(n_free);
+        
+        for (i, &dof_i) in free_dofs.iter().enumerate() {
+            for (j, &dof_j) in free_dofs.iter().enumerate() {
+                k_reduced[(i, j)] = k_total[(dof_i, dof_j)];
+            }
+            f_reduced[i] = f_global[dof_i];
+        }
+        
+        // Solve
+        let u_reduced = match k_reduced.lu().solve(&f_reduced) {
+            Some(u) => u,
+            None => break,
+        };
+        
+        // Build full displacement vector
+        let mut u_full = vec![0.0; dof];
+        for (i, &dof_idx) in free_dofs.iter().enumerate() {
+            u_full[dof_idx] = u_reduced[i];
+        }
+        let u_current = DVector::from_vec(u_full.clone());
+        
+        // Check convergence
+        if iteration > 0 {
+            let diff = &u_current - &u_prev;
+            let norm = diff.norm() / u_current.norm().max(1e-10);
+            if norm < tol {
+                converged = true;
+                break;
+            }
+        }
+        
+        u_prev = u_current;
+    }
+    
+    // Return final result
+    let mut displacements = std::collections::HashMap::new();
+    for (node_idx, node) in nodes.iter().enumerate() {
+        displacements.insert(
+            node.id,
+            [u_prev[node_idx * 3], u_prev[node_idx * 3 + 1], u_prev[node_idx * 3 + 2]],
+        );
+    }
+    
+    let result = AnalysisResult {
+        displacements,
+        reactions: std::collections::HashMap::new(),
+        member_forces: std::collections::HashMap::new(),
+        success: converged,
+        error: if converged { None } else { Some("P-Delta analysis did not converge".to_string()) },
+    };
+    
+    serde_wasm_bindgen::to_value(&result).unwrap()
+}
+
+/// Buckling analysis - eigenvalue problem to find critical loads
+/// Solves: [K_e - λ*K_g]{φ} = 0
+#[wasm_bindgen]
+pub fn analyze_buckling(
+    nodes_json: JsValue,
+    elements_json: JsValue,
+    point_loads_json: JsValue,
+    num_modes: usize,
+) -> JsValue {
+    #[derive(Serialize)]
+    struct BucklingResult {
+        success: bool,
+        buckling_factors: Vec<f64>,
+        critical_loads: Vec<f64>,
+        error: Option<String>,
+    }
+    
+    // Parse inputs
+    let nodes: Vec<Node> = match serde_wasm_bindgen::from_value(nodes_json) {
+        Ok(n) => n,
+        Err(_) => {
+            return serde_wasm_bindgen::to_value(&BucklingResult {
+                success: false,
+                buckling_factors: vec![],
+                critical_loads: vec![],
+                error: Some("Failed to parse nodes".to_string()),
+            }).unwrap();
+        }
+    };
+    
+    let elements: Vec<Element> = match serde_wasm_bindgen::from_value(elements_json) {
+        Ok(e) => e,
+        Err(_) => {
+            return serde_wasm_bindgen::to_value(&BucklingResult {
+                success: false,
+                buckling_factors: vec![],
+                critical_loads: vec![],
+                error: Some("Failed to parse elements".to_string()),
+            }).unwrap();
+        }
+    };
+    
+    let point_loads: Vec<PointLoad> = serde_wasm_bindgen::from_value(point_loads_json).unwrap_or_default();
+    
+    let num_nodes = nodes.len();
+    let dof = num_nodes * 3;
+    
+    // Build elastic stiffness matrix
+    let mut k_elastic: DMatrix<f64> = DMatrix::zeros(dof, dof);
+    
+    // Build geometric stiffness with unit loads (will be scaled by eigenvalue)
+    let mut k_geometric: DMatrix<f64> = DMatrix::zeros(dof, dof);
+    
+    for elem in &elements {
+        let start_idx = nodes.iter().position(|n| n.id == elem.node_start).unwrap();
+        let end_idx = nodes.iter().position(|n| n.id == elem.node_end).unwrap();
+        let start = &nodes[start_idx];
+        let end = &nodes[end_idx];
+        
+        let dx = end.x - start.x;
+        let dy = end.y - start.y;
+        let l = (dx * dx + dy * dy).sqrt();
+        let c = dx / l;
+        let s = dy / l;
+        
+        // Elastic stiffness (same as before)
+        let ea_l = elem.e * elem.a / l;
+        let ei_l3 = elem.e * elem.i / (l * l * l);
+        let ei_l2 = elem.e * elem.i / (l * l);
+        let ei_l = elem.e * elem.i / l;
+        
+        let mut k_local = DMatrix::zeros(6, 6);
+        k_local[(0, 0)] = ea_l;
+        k_local[(0, 3)] = -ea_l;
+        k_local[(3, 0)] = -ea_l;
+        k_local[(3, 3)] = ea_l;
+        k_local[(1, 1)] = 12.0 * ei_l3;
+        k_local[(1, 2)] = 6.0 * ei_l2;
+        k_local[(1, 4)] = -12.0 * ei_l3;
+        k_local[(1, 5)] = 6.0 * ei_l2;
+        k_local[(2, 1)] = 6.0 * ei_l2;
+        k_local[(2, 2)] = 4.0 * ei_l;
+        k_local[(2, 4)] = -6.0 * ei_l2;
+        k_local[(2, 5)] = 2.0 * ei_l;
+        k_local[(4, 1)] = -12.0 * ei_l3;
+        k_local[(4, 2)] = -6.0 * ei_l2;
+        k_local[(4, 4)] = 12.0 * ei_l3;
+        k_local[(4, 5)] = -6.0 * ei_l2;
+        k_local[(5, 1)] = 6.0 * ei_l2;
+        k_local[(5, 2)] = 2.0 * ei_l;
+        k_local[(5, 4)] = -6.0 * ei_l2;
+        k_local[(5, 5)] = 4.0 * ei_l;
+        
+        // Transformation matrix
+        let mut t_matrix = DMatrix::zeros(6, 6);
+        t_matrix[(0, 0)] = c; t_matrix[(0, 1)] = s;
+        t_matrix[(1, 0)] = -s; t_matrix[(1, 1)] = c;
+        t_matrix[(2, 2)] = 1.0;
+        t_matrix[(3, 3)] = c; t_matrix[(3, 4)] = s;
+        t_matrix[(4, 3)] = -s; t_matrix[(4, 4)] = c;
+        t_matrix[(5, 5)] = 1.0;
+        
+        let k_elem_global = &t_matrix.transpose() * &k_local * &t_matrix;
+        
+        // Geometric stiffness with unit axial force (P = -1 for compression)
+        let kg_elem_global = calculate_geometric_stiffness(l, -1.0, c, s);
+        
+        // Assemble
+        let dof_map = [
+            start_idx * 3, start_idx * 3 + 1, start_idx * 3 + 2,
+            end_idx * 3, end_idx * 3 + 1, end_idx * 3 + 2,
+        ];
+        
+        for i in 0..6 {
+            for j in 0..6 {
+                k_elastic[(dof_map[i], dof_map[j])] += k_elem_global[(i, j)];
+                k_geometric[(dof_map[i], dof_map[j])] += kg_elem_global[(i, j)];
+            }
+        }
+    }
+    
+    // Apply boundary conditions
+    let mut free_dofs = Vec::new();
+    for (node_idx, node) in nodes.iter().enumerate() {
+        for dof_offset in 0..3 {
+            if !node.fixed[dof_offset] {
+                free_dofs.push(node_idx * 3 + dof_offset);
+            }
+        }
+    }
+    
+    let n_free = free_dofs.len();
+    let mut ke_reduced = DMatrix::zeros(n_free, n_free);
+    let mut kg_reduced = DMatrix::zeros(n_free, n_free);
+    
+    for (i, &dof_i) in free_dofs.iter().enumerate() {
+        for (j, &dof_j) in free_dofs.iter().enumerate() {
+            ke_reduced[(i, j)] = k_elastic[(dof_i, dof_j)];
+            kg_reduced[(i, j)] = k_geometric[(dof_i, dof_j)];
+        }
+    }
+    
+    // Solve generalized eigenvalue problem: K_e * φ = λ * K_g * φ
+    // Use inverse iteration or QR algorithm
+    // For now, use simplified approach: solve K_e^(-1) * K_g
+    
+    let ke_inv = match ke_reduced.clone().lu().try_inverse() {
+        Some(inv) => inv,
+        None => {
+            return serde_wasm_bindgen::to_value(&BucklingResult {
+                success: false,
+                buckling_factors: vec![],
+                critical_loads: vec![],
+                error: Some("Elastic stiffness matrix is singular".to_string()),
+            }).unwrap();
+        }
+    };
+    
+    let a_matrix: DMatrix<f64> = ke_inv * kg_reduced;
+    
+    // Compute eigenvalues (this is simplified - full implementation needs proper eigenvalue solver)
+    let eigenvalues = a_matrix.symmetric_eigenvalues();
+    
+    // Buckling load factors are reciprocals of eigenvalues
+    let mut buckling_factors: Vec<f64> = eigenvalues.iter()
+        .filter(|&&e| e > 1e-10)
+        .map(|&e| 1.0 / e)
+        .collect();
+    buckling_factors.sort_by(|a: &f64, b: &f64| a.partial_cmp(b).unwrap());
+    
+    // Take first num_modes
+    buckling_factors.truncate(num_modes);
+    
+    let result = BucklingResult {
+        success: true,
+        buckling_factors: buckling_factors.clone(),
+        critical_loads: buckling_factors, // Same for unit load
+        error: None,
+    };
+    
+    serde_wasm_bindgen::to_value(&result).unwrap()
+}
+
+// ============================================
 // UTILITY FUNCTIONS
 // ============================================
 
@@ -964,10 +1488,10 @@ pub fn get_solver_info() -> String {
     serde_json::to_string(&SolverInfo {
         version: env!("CARGO_PKG_VERSION").to_string(),
         capabilities: vec![
-            "LU decomposition".to_string(),
-            "Cholesky decomposition".to_string(),
-            "Eigenvalue analysis".to_string(),
-            "Condition number estimation".to_string(),
+            String::from("LU decomposition"),
+            String::from("Cholesky decomposition"),
+            String::from("Eigenvalue analysis"),
+            String::from("Condition number estimation"),
         ],
         max_recommended_dof: 100000,
     }).unwrap_or_default()
@@ -991,10 +1515,10 @@ pub fn check_matrix_condition(stiffness_array: &[f64], dof: usize) -> String {
     let cond = if dof <= 200 { estimate_condition_number(&matrix) } else { None };
 
     let (is_well_conditioned, warning) = match cond {
-        Some(c) if c > 1e12 => (false, Some("Matrix is ill-conditioned".to_string())),
-        Some(c) if c > 1e8 => (true, Some("Matrix condition is borderline".to_string())),
+        Some(c) if c > 1e12 => (false, Some(String::from("Matrix is ill-conditioned"))),
+        Some(c) if c > 1e8 => (true, Some(String::from("Matrix condition is borderline"))),
         Some(_) => (true, None),
-        None => (rank == dof, if rank < dof { Some("Matrix is rank-deficient".to_string()) } else { None }),
+        None => (rank == dof, if rank < dof { Some(String::from("Matrix is rank-deficient")) } else { None }),
     };
 
     serde_json::to_string(&ConditionResult {

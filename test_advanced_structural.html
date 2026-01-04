@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Structural Analysis Tests</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        h2 {
+            color: #764ba2;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #667eea;
+            margin-top: 20px;
+        }
+        .test-section {
+            background: #f8f9ff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+        }
+        .success {
+            color: #10b981;
+            font-weight: bold;
+        }
+        .error {
+            color: #ef4444;
+            font-weight: bold;
+        }
+        .result {
+            background: white;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            border: 1px solid #e5e7eb;
+        }
+        .validation {
+            background: #ecfdf5;
+            border-left: 4px solid #10b981;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .math {
+            font-style: italic;
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Times New Roman', serif;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        th, td {
+            border: 1px solid #e5e7eb;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background: #667eea;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background: #f9fafb;
+        }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 15px 0;
+        }
+        .comparison-box {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 15px;
+        }
+        .formula {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏗️ Advanced Structural Analysis Test Suite</h1>
+        <p style="text-align: center; color: #6b7280;">
+            Comprehensive validation of advanced FEM features including triangular loads, P-Delta effects, and buckling analysis
+        </p>
+
+        <div style="text-align: center; margin: 20px 0;">
+            <button onclick="runAllTests()">🚀 Run All Tests</button>
+            <button onclick="clearResults()">🗑️ Clear Results</button>
+        </div>
+
+        <div id="results"></div>
+
+        <!-- Test 1: Triangular Load on Cantilever Beam -->
+        <h2>Test 1: Triangular Load on Cantilever Beam</h2>
+        <div class="test-section">
+            <h3>Problem Setup</h3>
+            <p>Cantilever beam (fixed at left, free at right) with triangular load:</p>
+            <ul>
+                <li>Length: <span class="math">L = 10 m</span></li>
+                <li>Load: <span class="math">w(x) = w₀·x/L</span>, where <span class="math">w₀ = 10 kN/m</span></li>
+                <li>Material: <span class="math">E = 200 GPa</span></li>
+                <li>Section: <span class="math">I = 0.0001 m⁴</span></li>
+            </ul>
+            <div class="formula">
+                <strong>Theoretical Solution (Beam Theory):</strong><br>
+                Maximum deflection at tip: <span class="math">δ = 11wL⁴/(120EI)</span><br>
+                For triangular load: <span class="math">δ = (11 × 10 × 10⁴) / (120 × 200×10⁹ × 0.0001)</span><br>
+                <span class="math">δ = 1,100,000 / 2,400,000,000 = 0.000458 m = 0.458 mm</span>
+            </div>
+            <button onclick="testTriangularLoad()">▶️ Run Test 1</button>
+            <div id="test1-result"></div>
+        </div>
+
+        <!-- Test 2: Trapezoidal Load Validation -->
+        <h2>Test 2: Trapezoidal Load Decomposition</h2>
+        <div class="test-section">
+            <h3>Problem Setup</h3>
+            <p>Simply supported beam with trapezoidal load:</p>
+            <ul>
+                <li>Length: <span class="math">L = 8 m</span></li>
+                <li>Load: <span class="math">w₁ = 5 kN/m</span> (left), <span class="math">w₂ = 15 kN/m</span> (right)</li>
+                <li>Material: <span class="math">E = 200 GPa</span></li>
+                <li>Section: <span class="math">I = 0.0002 m⁴</span></li>
+            </ul>
+            <div class="formula">
+                <strong>Load Decomposition:</strong><br>
+                UDL component: <span class="math">w_uniform = 5 kN/m</span><br>
+                Triangular component: <span class="math">w_tri = (15-5) = 10 kN/m</span><br>
+                Total load: <span class="math">W = (w₁ + w₂) × L / 2 = (5+15) × 8 / 2 = 80 kN</span><br>
+                Reactions: <span class="math">R₁ + R₂ = 80 kN</span>
+            </div>
+            <button onclick="testTrapezoidalLoad()">▶️ Run Test 2</button>
+            <div id="test2-result"></div>
+        </div>
+
+        <!-- Test 3: P-Delta Analysis -->
+        <h2>Test 3: P-Delta Second-Order Effects</h2>
+        <div class="test-section">
+            <h3>Problem Setup</h3>
+            <p>Column with lateral load and axial compression (P-Delta effects):</p>
+            <ul>
+                <li>Height: <span class="math">H = 6 m</span></li>
+                <li>Axial load: <span class="math">P = 1000 kN</span> (compression)</li>
+                <li>Lateral load: <span class="math">F = 10 kN</span> at top</li>
+                <li>Material: <span class="math">E = 200 GPa</span></li>
+                <li>Section: <span class="math">I = 0.0005 m⁴</span>, <span class="math">A = 0.01 m²</span></li>
+            </ul>
+            <div class="formula">
+                <strong>First-Order Deflection:</strong><br>
+                <span class="math">δ₁ = FH³/(3EI) = (10×10³ × 6³)/(3 × 200×10⁹ × 0.0005)</span><br>
+                <span class="math">δ₁ = 2,160,000 / 300,000,000 = 0.0072 m = 7.2 mm</span><br><br>
+                <strong>Amplification Factor:</strong><br>
+                <span class="math">λ = 1 / (1 - P/P_E)</span>, where <span class="math">P_E = π²EI/H²</span><br>
+                <span class="math">P_E = π² × 200×10⁹ × 0.0005 / 36 = 27,434 kN</span><br>
+                <span class="math">λ = 1 / (1 - 1000/27434) = 1.038</span><br>
+                <span class="math">δ_P-Delta ≈ 1.038 × 7.2 = 7.47 mm</span>
+            </div>
+            <button onclick="testPDelta()">▶️ Run Test 3</button>
+            <div id="test3-result"></div>
+        </div>
+
+        <!-- Test 4: Buckling Analysis -->
+        <h2>Test 4: Euler Buckling Analysis</h2>
+        <div class="test-section">
+            <h3>Problem Setup</h3>
+            <p>Pin-ended column buckling load:</p>
+            <ul>
+                <li>Length: <span class="math">L = 4 m</span></li>
+                <li>Material: <span class="math">E = 200 GPa</span></li>
+                <li>Section: <span class="math">I = 0.0004 m⁴</span></li>
+            </ul>
+            <div class="formula">
+                <strong>Euler Buckling Formula:</strong><br>
+                <span class="math">P_cr = π²EI / L²</span><br>
+                <span class="math">P_cr = π² × 200×10⁹ × 0.0004 / 16</span><br>
+                <span class="math">P_cr = 789,568,000 / 16 = 49,348 kN</span>
+            </div>
+            <button onclick="testBuckling()">▶️ Run Test 4</button>
+            <div id="test4-result"></div>
+        </div>
+
+        <!-- Test 5: Complex Frame P-Delta -->
+        <h2>Test 5: Portal Frame with P-Delta</h2>
+        <div class="test-section">
+            <h3>Problem Setup</h3>
+            <p>Portal frame with gravity loads and lateral load (sway analysis):</p>
+            <ul>
+                <li>Columns: 4m height</li>
+                <li>Beam: 6m span</li>
+                <li>Gravity loads: 500 kN on each column</li>
+                <li>Lateral load: 20 kN at beam level</li>
+            </ul>
+            <button onclick="testPortalFrame()">▶️ Run Test 5</button>
+            <div id="test5-result"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import init, * as wasm from './packages/solver-wasm/pkg/solver_wasm.js';
+
+        let wasmModule;
+
+        async function initWasm() {
+            wasmModule = await init();
+            console.log('WASM module initialized');
+            
+            // Display solver capabilities
+            const info = wasm.get_solver_info();
+            console.log('Solver info:', info);
+            
+            displaySolverInfo(info);
+        }
+
+        function displaySolverInfo(info) {
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'test-section';
+            infoDiv.innerHTML = `
+                <h3>✅ Solver Initialized</h3>
+                <p><strong>Version:</strong> ${info.version}</p>
+                <p><strong>Capabilities:</strong></p>
+                <ul>
+                    ${info.capabilities.map(cap => `<li>${cap}</li>`).join('')}
+                </ul>
+            `;
+            document.getElementById('results').appendChild(infoDiv);
+        }
+
+        window.runAllTests = async function() {
+            await testTriangularLoad();
+            await testTrapezoidalLoad();
+            await testPDelta();
+            await testBuckling();
+            await testPortalFrame();
+        };
+
+        window.clearResults = function() {
+            document.getElementById('test1-result').innerHTML = '';
+            document.getElementById('test2-result').innerHTML = '';
+            document.getElementById('test3-result').innerHTML = '';
+            document.getElementById('test4-result').innerHTML = '';
+            document.getElementById('test5-result').innerHTML = '';
+        };
+
+        window.testTriangularLoad = async function() {
+            const resultDiv = document.getElementById('test1-result');
+            resultDiv.innerHTML = '<p>Running triangular load test...</p>';
+
+            try {
+                // Cantilever beam: Node 1 (fixed) to Node 2 (free)
+                const nodes = [
+                    { id: 1, x: 0, y: 0 },
+                    { id: 2, x: 10, y: 0 }
+                ];
+
+                const elements = [
+                    {
+                        id: 1,
+                        node_start: 1,
+                        node_end: 2,
+                        e: 200e9,  // 200 GPa
+                        i: 0.0001, // m⁴
+                        a: 0.01    // m²
+                    }
+                ];
+
+                const supports = [
+                    { node_id: 1, dx: true, dy: true, rz: true } // Fixed support
+                ];
+
+                const point_loads = [];
+
+                const member_loads = [
+                    {
+                        element_id: 1,
+                        distribution: "Triangular",
+                        w1: 0,     // Load at start
+                        w2: 10000, // 10 kN/m at end (in N/m)
+                        direction: "LocalY",
+                        start_pos: 0.0,
+                        end_pos: 1.0,
+                        is_projected: false
+                    }
+                ];
+
+                const result = wasm.solve(
+                    JSON.stringify(nodes),
+                    JSON.stringify(elements),
+                    JSON.stringify(supports),
+                    JSON.stringify(point_loads),
+                    JSON.stringify(member_loads)
+                );
+
+                if (result.error) {
+                    resultDiv.innerHTML = `<div class="error">Error: ${result.error}</div>`;
+                    return;
+                }
+
+                // Theoretical deflection: δ = 11wL⁴/(120EI)
+                const w = 10000; // N/m
+                const L = 10;    // m
+                const E = 200e9; // Pa
+                const I = 0.0001; // m⁴
+                const theoreticalDeflection = (11 * w * Math.pow(L, 4)) / (120 * E * I);
+
+                // Get computed deflection at node 2
+                const node2Disp = result.displacements.find(d => d.node === 2);
+                const computedDeflection = Math.abs(node2Disp.dy);
+
+                const error = Math.abs((computedDeflection - theoreticalDeflection) / theoreticalDeflection * 100);
+
+                resultDiv.innerHTML = `
+                    <div class="result">
+                        <h4>Deflection Results</h4>
+                        <table>
+                            <tr>
+                                <th>Method</th>
+                                <th>Deflection (mm)</th>
+                            </tr>
+                            <tr>
+                                <td>Theoretical (11wL⁴/120EI)</td>
+                                <td>${(theoreticalDeflection * 1000).toFixed(4)}</td>
+                            </tr>
+                            <tr>
+                                <td>FEM Solution</td>
+                                <td>${(computedDeflection * 1000).toFixed(4)}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Error</strong></td>
+                                <td><strong>${error.toFixed(2)}%</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="validation ${error < 5 ? 'success' : 'error'}">
+                        ${error < 5 ? '✅ Test PASSED' : '❌ Test FAILED'} - Error ${error < 5 ? 'within' : 'exceeds'} acceptable range (< 5%)
+                    </div>
+                    <div class="result">
+                        <h4>Reactions</h4>
+                        <table>
+                            <tr>
+                                <th>Node</th>
+                                <th>Fx (kN)</th>
+                                <th>Fy (kN)</th>
+                                <th>Mz (kN·m)</th>
+                            </tr>
+                            ${result.reactions.map(r => `
+                                <tr>
+                                    <td>${r.node}</td>
+                                    <td>${(r.fx / 1000).toFixed(2)}</td>
+                                    <td>${(r.fy / 1000).toFixed(2)}</td>
+                                    <td>${(r.mz / 1000).toFixed(2)}</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                        <p><em>Note: Total vertical reaction should equal total load = (w₀·L)/2 = 50 kN</em></p>
+                    </div>
+                `;
+
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Exception: ${error.message}</div>`;
+                console.error(error);
+            }
+        };
+
+        window.testTrapezoidalLoad = async function() {
+            const resultDiv = document.getElementById('test2-result');
+            resultDiv.innerHTML = '<p>Running trapezoidal load test...</p>';
+
+            try {
+                // Simply supported beam
+                const nodes = [
+                    { id: 1, x: 0, y: 0 },
+                    { id: 2, x: 8, y: 0 }
+                ];
+
+                const elements = [
+                    {
+                        id: 1,
+                        node_start: 1,
+                        node_end: 2,
+                        e: 200e9,
+                        i: 0.0002,
+                        a: 0.01
+                    }
+                ];
+
+                const supports = [
+                    { node_id: 1, dx: true, dy: true, rz: false }, // Pin
+                    { node_id: 2, dx: false, dy: true, rz: false }  // Roller
+                ];
+
+                const point_loads = [];
+
+                const member_loads = [
+                    {
+                        element_id: 1,
+                        distribution: "Trapezoidal",
+                        w1: 5000,  // 5 kN/m at start
+                        w2: 15000, // 15 kN/m at end
+                        direction: "LocalY",
+                        start_pos: 0.0,
+                        end_pos: 1.0,
+                        is_projected: false
+                    }
+                ];
+
+                const result = wasm.solve(
+                    JSON.stringify(nodes),
+                    JSON.stringify(elements),
+                    JSON.stringify(supports),
+                    JSON.stringify(point_loads),
+                    JSON.stringify(member_loads)
+                );
+
+                if (result.error) {
+                    resultDiv.innerHTML = `<div class="error">Error: ${result.error}</div>`;
+                    return;
+                }
+
+                // Total load = (w1 + w2) * L / 2
+                const totalLoad = (5 + 15) * 8 / 2; // kN
+
+                // Sum of reactions
+                const totalReactionY = result.reactions.reduce((sum, r) => sum + r.fy, 0) / 1000; // kN
+
+                const error = Math.abs((totalReactionY - totalLoad) / totalLoad * 100);
+
+                resultDiv.innerHTML = `
+                    <div class="result">
+                        <h4>Load Equilibrium Check</h4>
+                        <table>
+                            <tr>
+                                <th>Quantity</th>
+                                <th>Value (kN)</th>
+                            </tr>
+                            <tr>
+                                <td>Total applied load (w₁+w₂)·L/2</td>
+                                <td>${totalLoad.toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td>Sum of reactions (R₁+R₂)</td>
+                                <td>${totalReactionY.toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Error</strong></td>
+                                <td><strong>${error.toFixed(4)}%</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="validation ${error < 0.1 ? 'success' : 'error'}">
+                        ${error < 0.1 ? '✅ Test PASSED' : '❌ Test FAILED'} - Equilibrium ${error < 0.1 ? 'satisfied' : 'violated'}
+                    </div>
+                    <div class="result">
+                        <h4>Reaction Distribution</h4>
+                        <table>
+                            <tr>
+                                <th>Node</th>
+                                <th>Fy (kN)</th>
+                                <th>Percentage</th>
+                            </tr>
+                            ${result.reactions.map(r => `
+                                <tr>
+                                    <td>${r.node}</td>
+                                    <td>${(r.fy / 1000).toFixed(2)}</td>
+                                    <td>${((r.fy / 1000) / totalLoad * 100).toFixed(1)}%</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                        <p><em>Note: For trapezoidal load, heavier end (node 2) should have larger reaction</em></p>
+                    </div>
+                `;
+
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Exception: ${error.message}</div>`;
+                console.error(error);
+            }
+        };
+
+        window.testPDelta = async function() {
+            const resultDiv = document.getElementById('test3-result');
+            resultDiv.innerHTML = '<p>Running P-Delta analysis...</p>';
+
+            try {
+                // Vertical column with axial and lateral load
+                const nodes = [
+                    { id: 1, x: 0, y: 0 },
+                    { id: 2, x: 0, y: 6 }
+                ];
+
+                const elements = [
+                    {
+                        id: 1,
+                        node_start: 1,
+                        node_end: 2,
+                        e: 200e9,  // 200 GPa
+                        i: 0.0005, // m⁴
+                        a: 0.01    // m²
+                    }
+                ];
+
+                const supports = [
+                    { node_id: 1, dx: true, dy: true, rz: true } // Fixed base
+                ];
+
+                const point_loads = [
+                    { node: 2, fx: 10000, fy: -1000000, mz: 0 } // 10 kN lateral, 1000 kN compression
+                ];
+
+                const member_loads = [];
+
+                // First-order analysis
+                const resultFirstOrder = wasm.solve(
+                    JSON.stringify(nodes),
+                    JSON.stringify(elements),
+                    JSON.stringify(supports),
+                    JSON.stringify(point_loads),
+                    JSON.stringify(member_loads)
+                );
+
+                // P-Delta analysis
+                const resultPDelta = wasm.solve_p_delta(
+                    JSON.stringify(nodes),
+                    JSON.stringify(elements),
+                    JSON.stringify(point_loads),
+                    JSON.stringify(member_loads),
+                    20,    // max iterations
+                    1e-4   // tolerance
+                );
+
+                if (resultFirstOrder.error || resultPDelta.error) {
+                    resultDiv.innerHTML = `<div class="error">Error: ${resultFirstOrder.error || resultPDelta.error}</div>`;
+                    return;
+                }
+
+                const firstOrderDeflection = Math.abs(resultFirstOrder.displacements.find(d => d.node === 2).dx);
+                const pDeltaDeflection = Math.abs(resultPDelta.displacements.find(d => d.node === 2).dx);
+                const amplification = pDeltaDeflection / firstOrderDeflection;
+
+                // Theoretical calculations
+                const H = 6;        // m
+                const E = 200e9;    // Pa
+                const I = 0.0005;   // m⁴
+                const P = 1000000;  // N
+                const F = 10000;    // N
+
+                const theoreticalFirstOrder = (F * Math.pow(H, 3)) / (3 * E * I);
+                const P_E = (Math.PI * Math.PI * E * I) / (H * H);
+                const theoreticalAmplification = 1 / (1 - P / P_E);
+                const theoreticalPDelta = theoreticalAmplification * theoreticalFirstOrder;
+
+                resultDiv.innerHTML = `
+                    <div class="result">
+                        <h4>Lateral Deflection at Top</h4>
+                        <table>
+                            <tr>
+                                <th>Analysis Type</th>
+                                <th>Deflection (mm)</th>
+                                <th>Amplification</th>
+                            </tr>
+                            <tr>
+                                <td>First-Order (Theory)</td>
+                                <td>${(theoreticalFirstOrder * 1000).toFixed(3)}</td>
+                                <td>1.000</td>
+                            </tr>
+                            <tr>
+                                <td>First-Order (FEM)</td>
+                                <td>${(firstOrderDeflection * 1000).toFixed(3)}</td>
+                                <td>1.000</td>
+                            </tr>
+                            <tr>
+                                <td>P-Delta (Theory)</td>
+                                <td>${(theoreticalPDelta * 1000).toFixed(3)}</td>
+                                <td>${theoreticalAmplification.toFixed(3)}</td>
+                            </tr>
+                            <tr>
+                                <td>P-Delta (FEM)</td>
+                                <td>${(pDeltaDeflection * 1000).toFixed(3)}</td>
+                                <td>${amplification.toFixed(3)}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="result">
+                        <h4>P-Delta Effect Analysis</h4>
+                        <p><strong>Euler Load:</strong> P_E = π²EI/H² = ${(P_E / 1000).toFixed(0)} kN</p>
+                        <p><strong>Applied Load:</strong> P = ${(P / 1000).toFixed(0)} kN</p>
+                        <p><strong>Load Ratio:</strong> P/P_E = ${(P / P_E).toFixed(3)}</p>
+                        <p><strong>Theoretical Amplification:</strong> λ = 1/(1-P/P_E) = ${theoreticalAmplification.toFixed(3)}</p>
+                        <p><strong>FEM Amplification:</strong> ${amplification.toFixed(3)}</p>
+                        <p><strong>Difference:</strong> ${Math.abs(amplification - theoreticalAmplification).toFixed(3)} (${(Math.abs(amplification - theoreticalAmplification) / theoreticalAmplification * 100).toFixed(2)}%)</p>
+                    </div>
+                    <div class="validation ${resultPDelta.converged ? 'success' : 'error'}">
+                        ${resultPDelta.converged ? '✅ P-Delta analysis CONVERGED' : '❌ P-Delta analysis DID NOT CONVERGE'}
+                        ${resultPDelta.iterations ? ` in ${resultPDelta.iterations} iterations` : ''}
+                    </div>
+                    <div class="validation ${Math.abs(amplification - theoreticalAmplification) / theoreticalAmplification < 0.05 ? 'success' : 'error'}">
+                        ${Math.abs(amplification - theoreticalAmplification) / theoreticalAmplification < 0.05 ? '✅ Amplification factor MATCHES theory' : '⚠️ Amplification factor differs from theory'}
+                    </div>
+                `;
+
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Exception: ${error.message}</div>`;
+                console.error(error);
+            }
+        };
+
+        window.testBuckling = async function() {
+            const resultDiv = document.getElementById('test4-result');
+            resultDiv.innerHTML = '<p>Running buckling analysis...</p>';
+
+            try {
+                // Pin-ended column
+                const nodes = [
+                    { id: 1, x: 0, y: 0 },
+                    { id: 2, x: 0, y: 4 }
+                ];
+
+                const elements = [
+                    {
+                        id: 1,
+                        node_start: 1,
+                        node_end: 2,
+                        e: 200e9,  // 200 GPa
+                        i: 0.0004, // m⁴
+                        a: 0.01    // m²
+                    }
+                ];
+
+                const point_loads = [
+                    { node: 2, fx: 0, fy: -1000, mz: 0 } // 1 kN reference load
+                ];
+
+                const result = wasm.analyze_buckling(
+                    JSON.stringify(nodes),
+                    JSON.stringify(elements),
+                    JSON.stringify(point_loads),
+                    3 // Calculate 3 buckling modes
+                );
+
+                if (result.error) {
+                    resultDiv.innerHTML = `<div class="error">Error: ${result.error}</div>`;
+                    return;
+                }
+
+                // Theoretical Euler buckling load
+                const L = 4;        // m
+                const E = 200e9;    // Pa
+                const I = 0.0004;   // m⁴
+                const theoreticalPcr = (Math.PI * Math.PI * E * I) / (L * L);
+
+                const mode1 = result.buckling_loads[0] || 0;
+                const error = Math.abs((mode1 - theoreticalPcr) / theoreticalPcr * 100);
+
+                resultDiv.innerHTML = `
+                    <div class="result">
+                        <h4>Critical Buckling Loads</h4>
+                        <table>
+                            <tr>
+                                <th>Mode</th>
+                                <th>FEM P_cr (kN)</th>
+                                <th>Theoretical (kN)</th>
+                                <th>Error (%)</th>
+                            </tr>
+                            ${result.buckling_loads.slice(0, 3).map((load, i) => {
+                                const theoreticalMode = Math.PI * Math.PI * E * I / (L / (i + 1)) ** 2;
+                                const modeError = Math.abs((load - theoreticalMode) / theoreticalMode * 100);
+                                return `
+                                    <tr>
+                                        <td>${i + 1}</td>
+                                        <td>${(load / 1000).toFixed(0)}</td>
+                                        <td>${(theoreticalMode / 1000).toFixed(0)}</td>
+                                        <td>${modeError.toFixed(2)}%</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </table>
+                    </div>
+                    <div class="result">
+                        <h4>Euler Formula Validation</h4>
+                        <p><strong>Euler Formula:</strong> P_cr = π²EI/L²</p>
+                        <p><strong>Theoretical:</strong> ${(theoreticalPcr / 1000).toFixed(0)} kN</p>
+                        <p><strong>FEM (Mode 1):</strong> ${(mode1 / 1000).toFixed(0)} kN</p>
+                        <p><strong>Error:</strong> ${error.toFixed(2)}%</p>
+                    </div>
+                    <div class="validation ${error < 5 ? 'success' : 'error'}">
+                        ${error < 5 ? '✅ Buckling load MATCHES Euler formula' : '❌ Buckling load DIFFERS from Euler formula'}
+                    </div>
+                    <div class="result">
+                        <h4>Buckling Mode Shapes</h4>
+                        <p><em>Mode shapes would be visualized here in production implementation</em></p>
+                        <p>Mode 1: Half sine wave (fundamental mode)</p>
+                        <p>Mode 2: Full sine wave (second mode)</p>
+                        <p>Mode 3: 1.5 sine waves (third mode)</p>
+                    </div>
+                `;
+
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Exception: ${error.message}</div>`;
+                console.error(error);
+            }
+        };
+
+        window.testPortalFrame = async function() {
+            const resultDiv = document.getElementById('test5-result');
+            resultDiv.innerHTML = '<p>Running portal frame P-Delta analysis...</p>';
+
+            try {
+                // Portal frame: 2 columns + 1 beam
+                const nodes = [
+                    { id: 1, x: 0, y: 0 },  // Left base
+                    { id: 2, x: 0, y: 4 },  // Left top
+                    { id: 3, x: 6, y: 4 },  // Right top
+                    { id: 4, x: 6, y: 0 }   // Right base
+                ];
+
+                const elements = [
+                    {
+                        id: 1,
+                        node_start: 1,
+                        node_end: 2,
+                        e: 200e9,
+                        i: 0.0003, // Column I
+                        a: 0.015
+                    },
+                    {
+                        id: 2,
+                        node_start: 2,
+                        node_end: 3,
+                        e: 200e9,
+                        i: 0.0005, // Beam I (larger)
+                        a: 0.02
+                    },
+                    {
+                        id: 3,
+                        node_start: 3,
+                        node_end: 4,
+                        e: 200e9,
+                        i: 0.0003, // Column I
+                        a: 0.015
+                    }
+                ];
+
+                const supports = [
+                    { node_id: 1, dx: true, dy: true, rz: true },
+                    { node_id: 4, dx: true, dy: true, rz: true }
+                ];
+
+                const point_loads = [
+                    { node: 2, fx: 20000, fy: -500000, mz: 0 }, // Lateral + gravity
+                    { node: 3, fx: 0, fy: -500000, mz: 0 }      // Gravity only
+                ];
+
+                const member_loads = [];
+
+                // First-order analysis
+                const resultFirstOrder = wasm.solve(
+                    JSON.stringify(nodes),
+                    JSON.stringify(elements),
+                    JSON.stringify(supports),
+                    JSON.stringify(point_loads),
+                    JSON.stringify(member_loads)
+                );
+
+                // P-Delta analysis
+                const resultPDelta = wasm.solve_p_delta(
+                    JSON.stringify(nodes),
+                    JSON.stringify(elements),
+                    JSON.stringify(point_loads),
+                    JSON.stringify(member_loads),
+                    20,
+                    1e-4
+                );
+
+                if (resultFirstOrder.error || resultPDelta.error) {
+                    resultDiv.innerHTML = `<div class="error">Error: ${resultFirstOrder.error || resultPDelta.error}</div>`;
+                    return;
+                }
+
+                // Calculate sway (horizontal displacement at beam level)
+                const swayFirstOrder = Math.abs(resultFirstOrder.displacements.find(d => d.node === 2).dx);
+                const swayPDelta = Math.abs(resultPDelta.displacements.find(d => d.node === 2).dx);
+                const swayAmplification = swayPDelta / swayFirstOrder;
+
+                resultDiv.innerHTML = `
+                    <div class="result">
+                        <h4>Sway Displacement (Node 2)</h4>
+                        <table>
+                            <tr>
+                                <th>Analysis</th>
+                                <th>Sway (mm)</th>
+                                <th>Amplification</th>
+                            </tr>
+                            <tr>
+                                <td>First-Order</td>
+                                <td>${(swayFirstOrder * 1000).toFixed(3)}</td>
+                                <td>1.000</td>
+                            </tr>
+                            <tr>
+                                <td>P-Delta</td>
+                                <td>${(swayPDelta * 1000).toFixed(3)}</td>
+                                <td>${swayAmplification.toFixed(3)}</td>
+                            </tr>
+                        </table>
+                        <p><strong>Increase due to P-Delta:</strong> ${((swayAmplification - 1) * 100).toFixed(1)}%</p>
+                    </div>
+                    <div class="result">
+                        <h4>All Node Displacements (P-Delta)</h4>
+                        <table>
+                            <tr>
+                                <th>Node</th>
+                                <th>dx (mm)</th>
+                                <th>dy (mm)</th>
+                                <th>θz (rad)</th>
+                            </tr>
+                            ${resultPDelta.displacements.map(d => `
+                                <tr>
+                                    <td>${d.node}</td>
+                                    <td>${(d.dx * 1000).toFixed(3)}</td>
+                                    <td>${(d.dy * 1000).toFixed(3)}</td>
+                                    <td>${d.rz.toFixed(6)}</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                    </div>
+                    <div class="validation ${resultPDelta.converged ? 'success' : 'error'}">
+                        ${resultPDelta.converged ? '✅ P-Delta analysis CONVERGED' : '❌ P-Delta analysis DID NOT CONVERGE'}
+                        ${resultPDelta.iterations ? ` in ${resultPDelta.iterations} iterations` : ''}
+                    </div>
+                    <div class="result">
+                        <h4>Member Forces (Element 1 - Left Column)</h4>
+                        <table>
+                            <tr>
+                                <th>End</th>
+                                <th>Axial (kN)</th>
+                                <th>Shear (kN)</th>
+                                <th>Moment (kN·m)</th>
+                            </tr>
+                            ${resultPDelta.member_forces.filter(mf => mf.element === 1).map(mf => `
+                                <tr>
+                                    <td>${mf.end}</td>
+                                    <td>${(mf.axial / 1000).toFixed(2)}</td>
+                                    <td>${(mf.shear / 1000).toFixed(2)}</td>
+                                    <td>${(mf.moment / 1000).toFixed(2)}</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                    </div>
+                `;
+
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Exception: ${error.message}</div>`;
+                console.error(error);
+            }
+        };
+
+        // Initialize on load
+        initWasm();
+    </script>
+</body>
+</html>

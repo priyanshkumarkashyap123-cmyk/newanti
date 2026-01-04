@@ -2,17 +2,21 @@
  * BeamLab WASM Solver Service
  * 
  * Complete client-side structural analysis using Rust WASM.
- * Handles: Frame Analysis, Buckling Analysis, Modal Analysis
+ * Handles: Frame Analysis, P-Delta, Buckling Analysis
  * 
  * NO backend calls - everything runs in the browser!
  */
 
 import init, { 
-    solve_structure_wasm, 
-    solve_system_json,
-    compute_eigenvalues,
-    check_matrix_condition
+    solve_structure_wasm,
+    solve_p_delta,
+    analyze_buckling,
+    get_solver_info
 } from 'solver-wasm';
+
+// ============================================
+// TYPE DEFINITIONS
+// ============================================
 
 export interface Node {
     id: number;
@@ -31,32 +35,51 @@ export interface Element {
 }
 
 export interface PointLoad {
-    node_id: number;
+    node: number;
     fx: number; // Force X (N)
     fy: number; // Force Y (N)
     mz: number; // Moment Z (N·m)
 }
 
+export type LoadDistribution = 'Uniform' | 'Triangular' | 'Trapezoidal';
+
 export interface MemberLoad {
     element_id: number;
-    wx: number;  // Distributed load along axis (N/m)
-    wy: number;  // Distributed load perpendicular (N/m)
-    start_pos: number; // 0-1 ratio
-    end_pos: number;   // 0-1 ratio
+    distribution: LoadDistribution;
+    w1: number;  // Load intensity at start (N/m)
+    w2: number;  // Load intensity at end (N/m)
+    direction: string; // "LocalY", "GlobalY", etc.
+    start_pos?: number; // 0-1 ratio (default 0)
+    end_pos?: number;   // 0-1 ratio (default 1)
+    is_projected?: boolean; // For wind/snow loads
 }
 
-export interface MemberForces {
+export interface Displacement {
+    node: number;
+    dx: number;
+    dy: number;
+    rz: number;
+}
+
+export interface Reaction {
+    node: number;
+    fx: number;
+    fy: number;
+    mz: number;
+}
+
+export interface MemberForce {
+    element: number;
+    end: 'start' | 'end';
     axial: number;
-    shear_start: number;
-    moment_start: number;
-    shear_end: number;
-    moment_end: number;
+    shear: number;
+    moment: number;
 }
 
 export interface AnalysisResult {
-    displacements: Record<number, [number, number, number]>;
-    reactions?: Record<number, [number, number, number]>;
-    memberForces?: Record<number, MemberForces>;
+    displacements: Displacement[];
+    reactions: Reaction[];
+    member_forces: MemberForce[];
     success: boolean;
     error?: string;
     stats?: {
@@ -65,19 +88,32 @@ export interface AnalysisResult {
     };
 }
 
+export interface PDeltaResult extends AnalysisResult {
+    converged: boolean;
+    iterations?: number;
+}
+
 export interface BucklingResult {
     success: boolean;
-    modes: { modeNumber: number; factor: number; isStable: boolean }[];
+    buckling_loads: number[];
+    modes?: number;
     error?: string;
 }
 
-export interface ModalResult {
-    success: boolean;
-    modes: { modeNumber: number; frequency: number; period: number; modeShape: number[] }[];
-    error?: string;
+export interface SolverInfo {
+    version: string;
+    capabilities: string[];
 }
+
+// ============================================
+// MODULE STATE
+// ============================================
 
 let wasmInitialized = false;
+
+// ============================================
+// INITIALIZATION
+// ============================================
 
 /**
  * Initialize the WASM module. Call this once before using other functions.
@@ -89,14 +125,33 @@ export async function initSolver(): Promise<void> {
         await init();
         wasmInitialized = true;
         console.log('[BeamLab] WASM Solver initialized successfully ✅');
+        
+        // Log solver capabilities
+        try {
+            const info = JSON.parse(get_solver_info());
+            console.log('[BeamLab] Solver version:', info.version);
+            console.log('[BeamLab] Capabilities:', info.capabilities);
+        } catch (e) {
+            console.log('[BeamLab] Solver info not available');
+        }
     } catch (error) {
         console.error('[BeamLab] Failed to initialize WASM Solver:', error);
         throw error;
     }
 }
 
+// ============================================
+// ANALYSIS FUNCTIONS
+// ============================================
+
 /**
  * Analyze a structure using the Direct Stiffness Method.
+ * 
+ * Supports:
+ * - Uniform distributed loads
+ * - Triangular distributed loads (linearly varying)
+ * - Trapezoidal distributed loads
+ * - Point loads and moments
  */
 export async function analyzeStructure(
     nodes: Node[],
@@ -114,39 +169,45 @@ export async function analyzeStructure(
         
         const startTime = performance.now();
         
-        // Call Rust WASM function with loads
-        const result = solve_structure_wasm(nodes, elements, pointLoads, memberLoads);
+        // Call Rust WASM function
+        const result = solve_structure_wasm(
+            nodes,
+            elements,
+            pointLoads,
+            memberLoads
+        );
         
         const endTime = performance.now();
         const solveTime = endTime - startTime;
 
         console.log('[WASM] Analysis completed in', solveTime.toFixed(2), 'ms');
-        console.log('[WASM] Displacements:', result.displacements);
-        console.log('[WASM] Reactions:', result.reactions);
-        console.log('[WASM] Member Forces:', result.member_forces);
 
-        if (!result.success) {
+        if (result.error) {
             return {
-                displacements: {},
+                displacements: [],
+                reactions: [],
+                member_forces: [],
                 success: false,
-                error: result.error || 'WASM analysis failed'
+                error: result.error
             };
         }
 
         return {
-            displacements: result.displacements || {},
-            reactions: result.reactions || {},
-            memberForces: result.member_forces || {},
+            displacements: result.displacements || [],
+            reactions: result.reactions || [],
+            member_forces: result.member_forces || [],
             success: true,
             stats: {
                 solveTimeMs: solveTime,
-                method: 'WASM Direct Stiffness'
+                method: 'Direct Stiffness Method'
             }
         };
     } catch (error) {
         console.error('[WASM] Analysis failed:', error);
         return {
-            displacements: {},
+            displacements: [],
+            reactions: [],
+            member_forces: [],
             success: false,
             error: String(error)
         };
@@ -154,11 +215,102 @@ export async function analyzeStructure(
 }
 
 /**
- * Run buckling analysis (eigenvalue buckling)
+ * P-Delta analysis with second-order effects.
+ * 
+ * Iteratively solves [K_e + K_g(P)]·u = F using Newton-Raphson.
+ * Captures geometric nonlinearity from axial forces.
+ * 
+ * Critical for:
+ * - Slender columns with high axial loads
+ * - Tall buildings with lateral forces
+ * - Structures where P/P_E > 0.05
+ */
+export async function analyzePDelta(
+    nodes: Node[],
+    elements: Element[],
+    pointLoads: PointLoad[] = [],
+    memberLoads: MemberLoad[] = [],
+    maxIterations: number = 20,
+    tolerance: number = 1e-4
+): Promise<PDeltaResult> {
+    if (!wasmInitialized) {
+        await initSolver();
+    }
+
+    try {
+        console.log('[WASM] Running P-Delta analysis...');
+        console.log('[WASM] Max iterations:', maxIterations, 'Tolerance:', tolerance);
+        
+        const startTime = performance.now();
+        
+        const result = solve_p_delta(
+            nodes,
+            elements,
+            pointLoads,
+            memberLoads,
+            maxIterations,
+            tolerance
+        );
+        
+        const endTime = performance.now();
+        const solveTime = endTime - startTime;
+
+        console.log('[WASM] P-Delta completed in', solveTime.toFixed(2), 'ms');
+        
+        if (result.converged !== undefined) {
+            console.log('[WASM] Converged:', result.converged, 'Iterations:', result.iterations);
+        }
+
+        if (result.error) {
+            return {
+                displacements: [],
+                reactions: [],
+                member_forces: [],
+                success: false,
+                converged: false,
+                error: result.error
+            };
+        }
+
+        return {
+            displacements: result.displacements || [],
+            reactions: result.reactions || [],
+            member_forces: result.member_forces || [],
+            success: true,
+            converged: result.converged || false,
+            iterations: result.iterations,
+            stats: {
+                solveTimeMs: solveTime,
+                method: 'P-Delta (Newton-Raphson)'
+            }
+        };
+    } catch (error) {
+        console.error('[WASM] P-Delta analysis failed:', error);
+        return {
+            displacements: [],
+            reactions: [],
+            member_forces: [],
+            success: false,
+            converged: false,
+            error: String(error)
+        };
+    }
+}
+
+/**
+ * Buckling analysis - eigenvalue problem to find critical loads.
+ * 
+ * Solves: [K_e - λ*K_g]{φ} = 0
+ * 
+ * Returns buckling load factors λ where:
+ * P_critical = λ × P_applied
+ * 
+ * Validates against Euler formula: P_cr = π²EI/L² for pin-ended columns
  */
 export async function analyzeBuckling(
     nodes: Node[],
     elements: Element[],
+    pointLoads: PointLoad[] = [],
     numModes: number = 5
 ): Promise<BucklingResult> {
     if (!wasmInitialized) {
@@ -166,117 +318,50 @@ export async function analyzeBuckling(
     }
 
     try {
-        // First run linear analysis to get stiffness
-        const linearResult = await analyzeStructure(nodes, elements);
-        if (!linearResult.success) {
-            return { success: false, modes: [], error: linearResult.error };
+        console.log('[WASM] Running buckling analysis for', numModes, 'modes...');
+        
+        const startTime = performance.now();
+        
+        const result = analyze_buckling(
+            nodes,
+            elements,
+            pointLoads,
+            numModes
+        );
+        
+        const endTime = performance.now();
+        const solveTime = endTime - startTime;
+
+        console.log('[WASM] Buckling analysis completed in', solveTime.toFixed(2), 'ms');
+
+        if (result.error) {
+            return {
+                success: false,
+                buckling_loads: [],
+                error: result.error
+            };
         }
 
-        // Assemble geometric stiffness and solve eigenvalue problem
-        // For now, return simplified results based on slenderness
-        const modes: { modeNumber: number; factor: number; isStable: boolean }[] = [];
-        
-        elements.forEach((elem, idx) => {
-            const startNode = nodes.find(n => n.id === elem.node_start);
-            const endNode = nodes.find(n => n.id === elem.node_end);
-            
-            if (startNode && endNode && idx < numModes) {
-                const dx = endNode.x - startNode.x;
-                const dy = endNode.y - startNode.y;
-                const L = Math.sqrt(dx * dx + dy * dy);
-                const r = Math.sqrt(elem.i / elem.a); // Radius of gyration
-                const slenderness = L / r;
-                
-                // Euler buckling factor (simplified)
-                const Pe = Math.PI * Math.PI * elem.e * elem.i / (L * L);
-                const factor = Pe / 1000; // Normalize to reference load
-                
-                modes.push({
-                    modeNumber: idx + 1,
-                    factor: Math.max(0.1, factor),
-                    isStable: factor > 1.0
-                });
-            }
-        });
+        console.log('[WASM] Critical loads:', result.buckling_loads);
 
-        return { success: true, modes };
+        return {
+            success: true,
+            buckling_loads: result.buckling_loads || [],
+            modes: numModes
+        };
     } catch (error) {
-        return { success: false, modes: [], error: String(error) };
+        console.error('[WASM] Buckling analysis failed:', error);
+        return {
+            success: false,
+            buckling_loads: [],
+            error: String(error)
+        };
     }
 }
 
-/**
- * Run modal analysis (natural frequencies and mode shapes)
- */
-export async function analyzeModal(
-    nodes: Node[],
-    elements: Element[],
-    numModes: number = 6
-): Promise<ModalResult> {
-    if (!wasmInitialized) {
-        await initSolver();
-    }
-
-    try {
-        // Assemble stiffness and mass matrices
-        const dof = nodes.length * 3;
-        const stiffness = new Array(dof * dof).fill(0);
-        const mass = new Array(dof * dof).fill(0);
-        
-        // Build mass matrix (lumped mass)
-        const density = 7850; // Steel kg/m³
-        elements.forEach(elem => {
-            const startNode = nodes.find(n => n.id === elem.node_start);
-            const endNode = nodes.find(n => n.id === elem.node_end);
-            
-            if (startNode && endNode) {
-                const dx = endNode.x - startNode.x;
-                const dy = endNode.y - startNode.y;
-                const L = Math.sqrt(dx * dx + dy * dy);
-                const memberMass = density * elem.a * L;
-                
-                // Distribute mass to nodes
-                const startIdx = nodes.findIndex(n => n.id === elem.node_start) * 3;
-                const endIdx = nodes.findIndex(n => n.id === elem.node_end) * 3;
-                
-                mass[startIdx * dof + startIdx] += memberMass / 2;
-                mass[(startIdx + 1) * dof + (startIdx + 1)] += memberMass / 2;
-                mass[endIdx * dof + endIdx] += memberMass / 2;
-                mass[(endIdx + 1) * dof + (endIdx + 1)] += memberMass / 2;
-            }
-        });
-
-        // Call WASM eigenvalue solver
-        const eigenResult = compute_eigenvalues(stiffness, mass, dof, numModes);
-        const parsed = JSON.parse(eigenResult);
-        
-        if (!parsed.success) {
-            // Fallback: estimate frequencies from member properties
-            const modes: ModalResult['modes'] = [];
-            for (let i = 0; i < numModes; i++) {
-                const freq = (i + 1) * 5.0; // Placeholder frequencies
-                modes.push({
-                    modeNumber: i + 1,
-                    frequency: freq,
-                    period: 1 / freq,
-                    modeShape: []
-                });
-            }
-            return { success: true, modes };
-        }
-
-        const modes: ModalResult['modes'] = parsed.frequencies.map((freq: number, idx: number) => ({
-            modeNumber: idx + 1,
-            frequency: freq,
-            period: freq > 0 ? 1 / freq : 0,
-            modeShape: parsed.eigenvectors?.[idx] || []
-        }));
-
-        return { success: true, modes };
-    } catch (error) {
-        return { success: false, modes: [], error: String(error) };
-    }
-}
+// ============================================
+// UTILITY FUNCTIONS
+// ============================================
 
 /**
  * Check if WASM solver is initialized
@@ -286,11 +371,88 @@ export function isSolverReady(): boolean {
 }
 
 /**
- * Get solver version information
+ * Get solver version and capabilities information
  */
-export function getSolverInfo(): { version: string; backend: string } {
+export function getSolverInfo(): SolverInfo {
+    try {
+        if (wasmInitialized) {
+            const info = JSON.parse(get_solver_info());
+            return {
+                version: info.version || '1.0.0',
+                capabilities: info.capabilities || []
+            };
+        }
+    } catch (e) {
+        console.warn('Failed to get solver info:', e);
+    }
+    
     return {
         version: '1.0.0',
-        backend: 'Rust/WASM (nalgebra + Rayon)'
+        capabilities: [
+            '2D frame analysis',
+            'Direct stiffness method',
+            'Triangular loads',
+            'Trapezoidal loads',
+            'P-Delta analysis',
+            'Buckling analysis'
+        ]
+    };
+}
+
+/**
+ * Create a simple uniform distributed load
+ */
+export function createUniformLoad(
+    elementId: number,
+    intensity: number,
+    direction: string = 'LocalY'
+): MemberLoad {
+    return {
+        element_id: elementId,
+        distribution: 'Uniform',
+        w1: intensity,
+        w2: intensity,
+        direction,
+        start_pos: 0.0,
+        end_pos: 1.0
+    };
+}
+
+/**
+ * Create a triangular distributed load (zero at start, max at end)
+ */
+export function createTriangularLoad(
+    elementId: number,
+    maxIntensity: number,
+    direction: string = 'LocalY'
+): MemberLoad {
+    return {
+        element_id: elementId,
+        distribution: 'Triangular',
+        w1: 0,
+        w2: maxIntensity,
+        direction,
+        start_pos: 0.0,
+        end_pos: 1.0
+    };
+}
+
+/**
+ * Create a trapezoidal distributed load
+ */
+export function createTrapezoidalLoad(
+    elementId: number,
+    startIntensity: number,
+    endIntensity: number,
+    direction: string = 'LocalY'
+): MemberLoad {
+    return {
+        element_id: elementId,
+        distribution: 'Trapezoidal',
+        w1: startIntensity,
+        w2: endIntensity,
+        direction,
+        start_pos: 0.0,
+        end_pos: 1.0
     };
 }
