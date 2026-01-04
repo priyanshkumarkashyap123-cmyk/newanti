@@ -112,26 +112,23 @@ if ALLOWED_ORIGINS_ENV:
 if FRONTEND_URL:
     allow_origins.append(FRONTEND_URL)
 
-# Remove duplicates and ensure "*" is NOT present if allow_credentials is True
+# Remove duplicates
 allow_origins = list(set(allow_origins))
-if "*" in allow_origins:
-    allow_origins.remove("*")
 
 # Print CORS config for debugging (visible in Azure logs)
 print(f"{'='*60}")
 print(f"[CORS] Configured allowed origins ({len(allow_origins)}):")
 for origin in sorted(allow_origins):
     print(f"  ✓ {origin}")
-print(f"[CORS] allow_credentials: True")
 print(f"{'='*60}\n")
 
+# CORS Middleware - allow all origins to prevent CORS errors
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allow_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
-    max_age=3600,
 )
 
 
