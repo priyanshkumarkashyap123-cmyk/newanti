@@ -12,7 +12,7 @@
  */
 
 import { FC, useState, useEffect, useCallback } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Sparkles } from 'lucide-react';
 import { useUIStore, CATEGORY_TOOLS } from '../../store/uiStore';
 import {
     MODELING_TOOL_GROUPS,
@@ -153,6 +153,7 @@ export const ModelingToolbar: FC = () => {
     const activeTool = useUIStore(state => state.activeTool);
     const activeCategory = useUIStore(state => state.activeCategory);
     const setActiveTool = useUIStore(state => state.setActiveTool);
+    const openModal = useUIStore(state => state.openModal);
 
     // Only show modeling tools when in MODELING category
     if (activeCategory !== 'MODELING') {
@@ -207,6 +208,15 @@ export const ModelingToolbar: FC = () => {
                         </button>
                     );
                 })}
+
+                {/* Structure Gallery Button */}
+                <button
+                    onClick={() => openModal('structureGallery')}
+                    className="p-2 rounded-md transition-all bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white shadow-lg shadow-emerald-500/20"
+                    title="Open Structure Gallery - Load iconic civil engineering structures"
+                >
+                    <Sparkles className="w-4 h-4" />
+                </button>
 
                 <div className="w-px h-6 bg-zinc-700 mx-2" />
 

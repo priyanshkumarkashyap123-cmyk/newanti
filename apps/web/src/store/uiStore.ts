@@ -130,6 +130,7 @@ interface UIState {
 
     modals: {
         structureWizard: boolean;
+        structureGallery: boolean;
         geometryTools: boolean;
         interoperability: boolean;
         foundationDesign: boolean;
@@ -235,6 +236,7 @@ export const useUIStore = create<UIState>()(
             dataPanelOpen: true,
             modals: {
                 structureWizard: false,
+                structureGallery: false,
                 geometryTools: false,
                 interoperability: false,
                 foundationDesign: false,

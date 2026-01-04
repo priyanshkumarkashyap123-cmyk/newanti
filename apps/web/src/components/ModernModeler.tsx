@@ -78,6 +78,7 @@ import type { Node, Member } from '../store/model';
 import consentService from '../services/ConsentService';
 import { useAuth } from '../providers/AuthProvider';
 import { useSubscription } from '../hooks/useSubscription';
+import { StructureGallery } from './gallery/StructureGallery';
 
 // Quick Commands and Context Menu (STAAD Pro style)
 import { useQuickCommands, getDefaultQuickCommands } from './QuickCommandsToolbar';
@@ -280,6 +281,8 @@ export const ModernModeler: FC = () => {
         return () => document.removeEventListener('trigger-upgrade', handleUpgradeTrigger);
     }, [userId, user, openPayment]);
 
+
+
     const showResults = useModelStore((state) => state.showResults);
     const nodes = useModelStore((state) => state.nodes);
     const members = useModelStore((state) => state.members);
@@ -289,7 +292,35 @@ export const ModernModeler: FC = () => {
     const setAnalysisResults = useModelStore((state) => state.setAnalysisResults);
     const setIsAnalyzing = useModelStore((state) => state.setIsAnalyzing);
     // UI Store
-    const { activeCategory, setCategory, notification, hideNotification, showNotification } = useUIStore();
+    const {
+        activeCategory,
+        setCategory,
+        activeTool,
+        setActiveTool,
+        modals,
+        openModal,
+        closeModal,
+        notification,
+        hideNotification,
+        showNotification
+    } = useUIStore();
+
+    // Wiring for Generator Tools
+    useEffect(() => {
+        if (!activeTool) return;
+
+        const GENERATOR_TOOLS = [
+            'GRID_GENERATE', 'GRID_3D', 'CIRCULAR_GRID',
+            'TRUSS_GENERATOR', 'ARCH_GENERATOR', 'PIER_GENERATOR',
+            'TOWER_GENERATOR', 'DECK_GENERATOR', 'CABLE_PATTERN',
+            'FRAME_GENERATOR', 'STAIRCASE_GENERATOR'
+        ];
+
+        if (GENERATOR_TOOLS.includes(activeTool)) {
+            openModal('structureWizard');
+            setActiveTool('SELECT'); // Reset to select after opening wizard
+        }
+    }, [activeTool, openModal, setActiveTool]);
 
     const [inspectorCollapsed, setInspectorCollapsed] = useState(false);
     const [showCloudManager, setShowCloudManager] = useState(false);
@@ -418,6 +449,18 @@ export const ModernModeler: FC = () => {
     const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
     const [showModalAnalysis, setShowModalAnalysis] = useState(false);
 
+    // Structure Gallery
+    const [showStructureGallery, setShowStructureGallery] = useState(false);
+
+    // Open structure gallery from anywhere
+    useEffect(() => {
+        const handleOpenGallery = () => {
+            openModal('structureGallery');
+        };
+        document.addEventListener('open-structure-gallery', handleOpenGallery);
+        return () => document.removeEventListener('open-structure-gallery', handleOpenGallery);
+    }, [openModal]);
+
     // Feedback state
 
 
@@ -429,7 +472,7 @@ export const ModernModeler: FC = () => {
     const [pendingAction, setPendingAction] = useState<'analysis' | 'design' | 'pdf_export' | null>(null);
     const [currentCheckpointType, setCurrentCheckpointType] = useState<'analysis' | 'design' | 'pdf_export'>('analysis');
     const { hasConsent } = useCheckLegalConsent();
-    const { openModal } = useUIStore();
+
 
     // Handler for new project from QuickStart
     const handleNewProject = useCallback(() => {
@@ -1027,9 +1070,9 @@ export const ModernModeler: FC = () => {
     // const [showLegalConsent, setShowLegalConsent] = useState(false); // Moved to top
 
     // Modal states from uiStore (for cross-component access)
-    const modals = useUIStore((s) => s.modals);
+    // const modals = useUIStore((s) => s.modals); // Moved to top
     // const openModal = useUIStore((s) => s.openModal); // Moved to top
-    const closeModal = useUIStore((s) => s.closeModal);
+    // const closeModal = useUIStore((s) => s.closeModal); // Moved to top
 
     // Alias modal states for cleaner code
     const showStructureWizard = modals.structureWizard;
@@ -1046,7 +1089,7 @@ export const ModernModeler: FC = () => {
     const [showLoadDialog, setShowLoadDialog] = useState(false);
     const [loadDialogMemberId, setLoadDialogMemberId] = useState<string | undefined>();
     const selectedIds = useModelStore((state) => state.selectedIds);
-    const activeTool = useModelStore((state) => state.activeTool);
+
 
     // Split Member / Insert Node Dialog
     const [showSplitDialog, setShowSplitDialog] = useState(false);
@@ -1372,7 +1415,7 @@ export const ModernModeler: FC = () => {
             )}
 
             {/* Global Dialogs triggered by Ribbon */}
-            <StructureWizard isOpen={useUIStore.getState().modals.structureWizard} onClose={() => useUIStore.getState().closeModal('structureWizard')} onGenerate={(structure) => {
+            <StructureWizard isOpen={modals.structureWizard} onClose={() => closeModal('structureWizard')} onGenerate={(structure) => {
                 // Convert generated structure to model format
                 const nodes: Node[] = structure.nodes.map(n => ({
                     id: n.id,
@@ -1567,6 +1610,12 @@ export const ModernModeler: FC = () => {
             />
             <AIAssistantButton
                 onClick={() => setIsAIAssistantOpen(!isAIAssistantOpen)}
+            />
+
+            {/* Structure Gallery - Iconic Civil Engineering Structures */}
+            <StructureGallery
+                isOpen={modals.structureGallery}
+                onClose={() => closeModal('structureGallery')}
             />
         </div>
     );
