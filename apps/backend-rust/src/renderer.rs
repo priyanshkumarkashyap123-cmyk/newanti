@@ -28,9 +28,12 @@ impl Renderer {
             force_fallback_adapter: false,
         }).await.ok_or("Failed to find an appropriate adapter")?;
 
+        // Use default limits instead of downlevel_webgl2_defaults to avoid
+        // requesting unsupported limits like maxInterStageShaderComponents
+        // The default() method provides conservative limits that work across all browsers
         let (device, queue) = adapter.request_device(
             &wgpu::DeviceDescriptor {
-                label: None,
+                label: Some("BeamLab WGPU Device"),
                 required_features: wgpu::Features::empty(),
                 required_limits: wgpu::Limits::default(),
             },

@@ -3,10 +3,13 @@
  * 
  * Integrates with the Rust-based wgpu renderer for 60 FPS performance
  * on complex structural models.
+ * 
+ * Falls back to WebGL automatically if WebGPU is not supported.
  */
 
 import { FC, useEffect, useRef, useState } from 'react';
 import init, { Renderer } from 'backend-rust';
+import { useUIStore } from '../../store/uiStore';
 
 interface WgpuCanvasProps {
     className?: string;
@@ -17,40 +20,63 @@ export const WgpuCanvas: FC<WgpuCanvasProps> = ({ className }) => {
     const rendererRef = useRef<Renderer | null>(null);
     const [isReady, setIsReady] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const setUseWebGpu = useUIStore(state => state.setUseWebGpu);
 
     useEffect(() => {
         let animationFrameId: number;
+        let isMounted = true;
 
         const initWgpu = async () => {
             if (!canvasRef.current) return;
 
             try {
+                // Check if WebGPU is available before initializing
+                if (!navigator.gpu) {
+                    throw new Error('WebGPU is not supported in this browser. Falling back to WebGL.');
+                }
+
                 // Initialize WASM
                 await init();
 
                 // Initialize Renderer
                 const renderer = await Renderer.new(canvasRef.current);
+
+                if (!isMounted) return;
+
                 rendererRef.current = renderer;
                 setIsReady(true);
 
-                console.log('[WgpuCanvas] WebGPU Renderer initialized');
+                console.log('[WgpuCanvas] WebGPU Renderer initialized successfully');
 
                 // Render loop
                 const render = () => {
-                    if (rendererRef.current) {
+                    if (rendererRef.current && isMounted) {
                         try {
                             rendererRef.current.render();
                         } catch (e) {
                             console.error('[WgpuCanvas] Render error:', e);
                         }
                     }
-                    animationFrameId = requestAnimationFrame(render);
+                    if (isMounted) {
+                        animationFrameId = requestAnimationFrame(render);
+                    }
                 };
 
                 render();
             } catch (err: any) {
-                console.error('[WgpuCanvas] Initialization failed:', err);
-                setError(err.message || 'Failed to initialize WebGPU');
+                console.warn('[WgpuCanvas] WebGPU initialization failed, falling back to WebGL:', err);
+
+                if (isMounted) {
+                    setError(err.message || 'Failed to initialize WebGPU');
+
+                    // Automatically fall back to WebGL after a brief delay
+                    setTimeout(() => {
+                        if (isMounted) {
+                            console.log('[WgpuCanvas] Switching to WebGL renderer');
+                            setUseWebGpu(false);
+                        }
+                    }, 1500);
+                }
             }
         };
 
@@ -71,11 +97,12 @@ export const WgpuCanvas: FC<WgpuCanvasProps> = ({ className }) => {
         handleResize(); // Initial resize
 
         return () => {
+            isMounted = false;
             window.removeEventListener('resize', handleResize);
             cancelAnimationFrame(animationFrameId);
             // Renderer cleanup if necessary (Rust might need a custom drop or free function)
         };
-    }, []);
+    }, [setUseWebGpu]);
 
     return (
         <div className={`relative w-full h-full overflow-hidden ${className}`}>
