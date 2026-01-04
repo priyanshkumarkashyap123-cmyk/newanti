@@ -32,7 +32,7 @@ impl Renderer {
             &wgpu::DeviceDescriptor {
                 label: None,
                 required_features: wgpu::Features::empty(),
-                required_limits: wgpu::Limits::downlevel_webgl2_defaults(),
+                required_limits: wgpu::Limits::default(),
             },
             None,
         ).await.map_err(|e| e.to_string())?;
