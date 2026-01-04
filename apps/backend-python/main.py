@@ -121,14 +121,13 @@ for origin in sorted(allow_origins):
 print(f"[CORS] CORS Middleware initialized")
 print(f"{'='*60}\n")
 
-# CRITICAL: Allow all origins to fix CORS errors
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_origins=allow_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
+    max_age=3600,
 )
 
 
@@ -162,12 +161,7 @@ async def health_check():
 # ROUTER REGISTRATION
 # ============================================
 
-from design_routes import router as design_router
-from analysis_routes import router as analysis_router
-
 app.include_router(ai_router)
-app.include_router(design_router)
-app.include_router(analysis_router)
 
 # ============================================
 # MESHING ENDPOINTS
