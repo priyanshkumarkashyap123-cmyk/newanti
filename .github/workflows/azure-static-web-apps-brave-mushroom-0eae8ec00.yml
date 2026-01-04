@@ -39,12 +39,16 @@ jobs:
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
+      - name: Build WASM Solver Package
+        working-directory: packages/solver-wasm
+        run: wasm-pack build --target web
+      
+      - name: Build Backend Rust WASM
+        working-directory: apps/backend-rust
+        run: wasm-pack build --target web --out-dir ./pkg --release
+
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
-      
-      - name: Build WASM Solver
-        working-directory: packages/solver-wasm
-        run: pnpm run build
 
       - name: Build Frontend
         working-directory: apps/web
