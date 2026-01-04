@@ -9,7 +9,7 @@ env:
   AZURE_WEBAPP_NAME_API: beamlab-backend-node
   AZURE_WEBAPP_NAME_PYTHON: beamlab-backend-python
   NODE_VERSION: '20.x'
-  PYTHON_VERSION: '3.12'
+  PYTHON_VERSION: '3.11'
 
 jobs:
   # Build and deploy Node.js API
