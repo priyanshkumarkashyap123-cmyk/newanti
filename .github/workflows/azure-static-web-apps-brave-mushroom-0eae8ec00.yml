@@ -28,9 +28,23 @@ jobs:
         with:
           node-version: '20'
           cache: 'pnpm'
+      
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+      
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
+      
+      - name: Build WASM Solver
+        working-directory: packages/solver-wasm
+        run: pnpm run build
 
       - name: Build Frontend
         working-directory: apps/web
