@@ -9,8 +9,10 @@
  * - Time-dependent response plots
  */
 
-import { FC, useState } from 'react';
-import { Clock, Play, Download, TrendingUp, Activity } from 'lucide-react';
+import { FC, useState, useMemo } from 'react';
+import { Clock, Play, Download, TrendingUp, Activity, AlertTriangle } from 'lucide-react';
+import { useModelStore } from '../store/model';
+import { useAuth } from '../providers/AuthProvider';
 
 interface TimeHistoryPanelProps {
     isPro: boolean;
@@ -20,9 +22,17 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro }) => {
     const [earthquake, setEarthquake] = useState('el_centro_1940');
     const [scaleFactor, setScaleFactor] = useState(1.0);
     const [dampingRatio, setDampingRatio] = useState(0.05);
-    const [analysisMethod, setAnalysisMethod] = useState<'newmark' | 'modal' | 'spectrum'>('newmark');
+    const [analysisMethod, setAnalysisMethod] = useState<'newmark' | 'modal'>('newmark');
     const [isRunning, setIsRunning] = useState(false);
     const [results, setResults] = useState<any | null>(null);
+    const [error, setError] = useState<string | null>(null);
+
+    // Get model data
+    const nodes = useModelStore((state) => state.nodes);
+    const members = useModelStore((state) => state.members);
+    const loads = useModelStore((state) => state.loads);
+    const memberLoads = useModelStore((state) => state.memberLoads);
+    const { getToken } = useAuth();
 
     const earthquakes = [
         { id: 'el_centro_1940', name: 'El Centro 1940 (Imperial Valley)', pga: 3.417 },
@@ -33,37 +43,67 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro }) => {
 
     const handleRunAnalysis = async () => {
         setIsRunning(true);
-        try {
-            // Build simple 2-DOF system for demonstration
-            const M = [[2.0, 0.0], [0.0, 1.0]];
-            const K = [[6.0, -2.0], [-2.0, 4.0]];
+        setError(null);
+        setResults(null);
 
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/analysis/time-history`, {
+        try {
+            const token = await getToken();
+            const PYTHON_API = import.meta.env['VITE_PYTHON_API_URL'] || 'https://api.beamlabultimate.tech';
+
+            // Prepare payload
+            const payload = {
+                nodes: Array.from(nodes.values()).map(n => ({
+                    id: n.id,
+                    x: n.x, y: n.y, z: n.z,
+                    support: n.restraints ? (
+                        n.restraints.fx && n.restraints.fy && n.restraints.fz && n.restraints.mx && n.restraints.my && n.restraints.mz ? 'fixed' :
+                            n.restraints.fx && n.restraints.fy && n.restraints.fz ? 'pinned' :
+                                n.restraints.fy ? 'roller' : 'none'
+                    ) : 'none'
+                })),
+                members: Array.from(members.values()).map(m => ({
+                    id: m.id,
+                    startNodeId: m.startNodeId,
+                    endNodeId: m.endNodeId,
+                    E: m.E, G: (m.E || 200e6) / 2.6,
+                    A: m.A, Iy: m.I, Iz: m.I, J: (m.I || 1e-4) * 2
+                })),
+                node_loads: loads.map(l => ({
+                    nodeId: l.nodeId,
+                    fx: l.fx, fy: l.fy, fz: l.fz,
+                    mx: l.mx, my: l.my, mz: l.mz
+                })),
+                distributed_loads: memberLoads.map(l => ({
+                    memberId: l.memberId,
+                    direction: l.direction === 'local_y' ? 'Fy' : 'Fz',
+                    w1: l.w1, w2: l.w2 ?? l.w1
+                })),
+                earthquake: earthquake,
+                scale_factor: scaleFactor,
+                damping_ratio: dampingRatio,
+                method: analysisMethod === 'newmark' ? 'direct' : 'modal',
+                num_modes: 12
+            };
+
+            const response = await fetch(`${PYTHON_API}/analyze/time-history`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    mass_matrix: M,
-                    stiffness_matrix: K,
-                    damping_ratio: dampingRatio,
-                    analysis_type: analysisMethod,
-                    ground_motion: {
-                        name: earthquake,
-                        scale_factor: scaleFactor
-                    },
-                    num_modes: 10,
-                    periods: Array.from({ length: 40 }, (_, i) => 0.1 + i * 0.1)
-                })
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
+                body: JSON.stringify(payload)
             });
 
             if (!response.ok) {
-                throw new Error(`Analysis failed: ${response.statusText}`);
+                const errJson = await response.json();
+                throw new Error(errJson.detail || 'Analysis failed');
             }
 
             const data = await response.json();
             setResults(data);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Time history analysis error:', error);
-            alert(`Analysis failed: ${error}`);
+            setError(error.message);
         } finally {
             setIsRunning(false);
         }
@@ -129,33 +169,24 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro }) => {
             {/* Analysis Method */}
             <div className="mb-4">
                 <label className="text-xs text-gray-500 mb-2 block">Integration Method</label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                     <button
                         onClick={() => setAnalysisMethod('newmark')}
                         className={`px-3 py-2 rounded text-xs font-medium border-2 transition-all ${analysisMethod === 'newmark'
-                                ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20'
-                                : 'border-gray-200 hover:border-gray-300 dark:border-gray-600'
+                            ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20'
+                            : 'border-gray-200 hover:border-gray-300 dark:border-gray-600'
                             }`}
                     >
-                        Newmark-β
+                        Newmark-β (Direct)
                     </button>
                     <button
                         onClick={() => setAnalysisMethod('modal')}
                         className={`px-3 py-2 rounded text-xs font-medium border-2 transition-all ${analysisMethod === 'modal'
-                                ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20'
-                                : 'border-gray-200 hover:border-gray-300 dark:border-gray-600'
+                            ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20'
+                            : 'border-gray-200 hover:border-gray-300 dark:border-gray-600'
                             }`}
                     >
-                        Modal
-                    </button>
-                    <button
-                        onClick={() => setAnalysisMethod('spectrum')}
-                        className={`px-3 py-2 rounded text-xs font-medium border-2 transition-all ${analysisMethod === 'spectrum'
-                                ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20'
-                                : 'border-gray-200 hover:border-gray-300 dark:border-gray-600'
-                            }`}
-                    >
-                        Spectrum
+                        Modal Superposition
                     </button>
                 </div>
             </div>
@@ -165,8 +196,8 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro }) => {
                 onClick={handleRunAnalysis}
                 disabled={isRunning}
                 className={`w-full py-2.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-all ${isRunning
-                        ? 'bg-gray-300 cursor-not-allowed dark:bg-gray-700'
-                        : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                    ? 'bg-gray-300 cursor-not-allowed dark:bg-gray-700'
+                    : 'bg-emerald-600 hover:bg-emerald-700 text-white'
                     }`}
             >
                 {isRunning ? (
@@ -182,6 +213,14 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro }) => {
                 )}
             </button>
 
+            {/* Error Display */}
+            {error && (
+                <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4" />
+                    {error}
+                </div>
+            )}
+
             {/* Results Display */}
             {results && (
                 <div className="mt-6 space-y-4">
@@ -191,13 +230,10 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro }) => {
                             Analysis Results
                         </h4>
 
-                        {results.analysis_type === 'modal' && (
+                        {results.method === 'modal' && (
                             <div className="space-y-2">
                                 <div className="text-xs text-emerald-700 dark:text-emerald-300">
                                     <strong>Modes Extracted:</strong> {results.modes?.length || 0}
-                                </div>
-                                <div className="text-xs text-emerald-700 dark:text-emerald-300">
-                                    <strong>Total Mass Participation:</strong> {results.total_mass_participation?.toFixed(1)}%
                                 </div>
                                 <div className="mt-3 max-h-48 overflow-y-auto">
                                     <table className="w-full text-xs">
@@ -210,7 +246,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro }) => {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {results.modes?.slice(0, 10).map((mode: any) => (
+                                            {results.modes?.map((mode: any) => (
                                                 <tr key={mode.mode_number} className="border-t border-emerald-200 dark:border-emerald-800">
                                                     <td className="px-2 py-1">{mode.mode_number}</td>
                                                     <td className="px-2 py-1 text-right">{mode.frequency.toFixed(2)}</td>
@@ -224,163 +260,44 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro }) => {
                             </div>
                         )}
 
-                        {results.analysis_type === 'newmark' && (
-                            <div className="space-y-2">
-                                <div className="text-xs text-emerald-700 dark:text-emerald-300">
-                                    <strong>Earthquake:</strong> {results.ground_motion?.name}
-                                </div>
-                                <div className="text-xs text-emerald-700 dark:text-emerald-300">
-                                    <strong>PGA:</strong> {results.ground_motion?.pga?.toFixed(3)} m/s²
-                                </div>
-                                <div className="text-xs text-emerald-700 dark:text-emerald-300">
-                                    <strong>Duration:</strong> {results.ground_motion?.duration?.toFixed(1)} s
-                                </div>
-                                <div className="grid grid-cols-3 gap-2 mt-3">
-                                    <div className="p-2 bg-white dark:bg-gray-800 rounded border border-emerald-200 dark:border-emerald-800">
-                                        <div className="text-xs text-gray-500">Max Displacement</div>
-                                        <div className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
-                                            {(results.max_displacement * 1000).toFixed(2)} mm
-                                        </div>
-                                    </div>
-                                    <div className="p-2 bg-white dark:bg-gray-800 rounded border border-emerald-200 dark:border-emerald-800">
-                                        <div className="text-xs text-gray-500">Max Velocity</div>
-                                        <div className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
-                                            {(results.max_velocity * 1000).toFixed(2)} mm/s
-                                        </div>
-                                    </div>
-                                    <div className="p-2 bg-white dark:bg-gray-800 rounded border border-emerald-200 dark:border-emerald-800">
-                                        <div className="text-xs text-gray-500">Max Accel</div>                                        <div className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
-                                            {(results.max_acceleration).toFixed(3)} m/s²
-                                        </div>
+                        <div className="space-y-2 mt-4">
+                            <div className="text-xs text-emerald-700 dark:text-emerald-300">
+                                <strong>Earthquake:</strong> {results.ground_motion?.name}
+                            </div>
+                            <div className="text-xs text-emerald-700 dark:text-emerald-300">
+                                <strong>PGA:</strong> {results.ground_motion?.pga?.toFixed(3)} m/s²
+                            </div>
+                            <div className="text-xs text-emerald-700 dark:text-emerald-300">
+                                <strong>Duration:</strong> {results.ground_motion?.duration?.toFixed(1)} s
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 mt-3">
+                                <div className="p-2 bg-white dark:bg-gray-800 rounded border border-emerald-200 dark:border-emerald-800">
+                                    <div className="text-xs text-gray-500">Max Displacement</div>
+                                    <div className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                                        {(results.max_displacement * 1000).toFixed(2)} mm
                                     </div>
                                 </div>
-
-                                {/* Time History Response Chart */}
-                                <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                                    <h5 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-3">Displacement Time History</h5>
-                                    <div className="h-48 relative">
-                                        <svg width="100%" height="100%" viewBox="0 0 400 150" className="overflow-visible">
-                                            {/* Grid Lines */}
-                                            {[0, 1, 2, 3, 4, 5].map(i => (
-                                                <line
-                                                    key={`grid-h-${i}`}
-                                                    x1="40"
-                                                    y1={20 + i * 25}
-                                                    x2="380"
-                                                    y2={20 + i * 25}
-                                                    stroke="#e5e7eb"
-                                                    strokeWidth="0.5"
-                                                    strokeDasharray="2,2"
-                                                />
-                                            ))}
-                                            {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-                                                <line
-                                                    key={`grid-v-${i}`}
-                                                    x1={40 + i * 42.5}
-                                                    y1="20"
-                                                    x2={40 + i * 42.5}
-                                                    y2="145"
-                                                    stroke="#e5e7eb"
-                                                    strokeWidth="0.5"
-                                                    strokeDasharray="2,2"
-                                                />
-                                            ))}
-
-                                            {/* Axes */}
-                                            <line x1="40" y1="145" x2="380" y2="145" stroke="#374151" strokeWidth="2" />
-                                            <line x1="40" y1="20" x2="40" y2="145" stroke="#374151" strokeWidth="2" />
-
-                                            {/* Response curve (simulated sinusoidal decay) */}
-                                            <path
-                                                d={(() => {
-                                                    const points: string[] = [];
-                                                    const duration = results.ground_motion?.duration || 20;
-                                                    const maxDisp = results.max_displacement * 1000; // Convert to mm
-                                                    for (let i = 0; i <= 100; i++) {
-                                                        const t = (i / 100) * duration;
-                                                        const x = 40 + (i / 100) * 340;
-                                                        const envelope = Math.exp(-t / (duration * 0.4));
-                                                        const y = 82.5 - (Math.sin(t * 4 + Math.sin(t * 2)) * 50 * envelope);
-                                                        points.push(i === 0 ? `M ${x},${y}` : `L ${x},${y}`);
-                                                    }
-                                                    return points.join(' ');
-                                                })()}
-                                                fill="none"
-                                                stroke="#10b981"
-                                                strokeWidth="2"
-                                            />
-
-                                            {/* Peak marker */}
-                                            <circle cx="120" cy="32" r="4" fill="#ef4444" opacity="0.8" />
-                                            <text x="125" y="28" fontSize="10" fill="#ef4444" fontWeight="600">Peak</text>
-
-                                            {/* Labels */}
-                                            <text x="210" y="165" fontSize="11" textAnchor="middle" fill="#6b7280">Time (s)</text>
-                                            <text x="15" y="85" fontSize="11" textAnchor="middle" fill="#6b7280" transform="rotate(-90, 15, 85)">Displacement (mm)</text>
-
-                                            {/* Y-axis values */}
-                                            <text x="35" y="25" fontSize="9" textAnchor="end" fill="#6b7280">{(results.max_displacement * 1000).toFixed(1)}</text>
-                                            <text x="35" y="85" fontSize="9" textAnchor="end" fill="#6b7280">0</text>
-                                            <text x="35" y="145" fontSize="9" textAnchor="end" fill="#6b7280">{(-(results.max_displacement * 1000)).toFixed(1)}</text>
-
-                                            {/* X-axis values */}
-                                            <text x="40" y="160" fontSize="9" textAnchor="middle" fill="#6b7280">0</text>
-                                            <text x="210" y="160" fontSize="9" textAnchor="middle" fill="#6b7280">{((results.ground_motion?.duration || 20) / 2).toFixed(0)}</text>
-                                            <text x="380" y="160" fontSize="9" textAnchor="middle" fill="#6b7280">{(results.ground_motion?.duration || 20).toFixed(0)}</text>
-                                        </svg>
+                                <div className="p-2 bg-white dark:bg-gray-800 rounded border border-emerald-200 dark:border-emerald-800">
+                                    <div className="text-xs text-gray-500">Steps</div>
+                                    <div className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                                        {results.num_steps}
                                     </div>
                                 </div>
                             </div>
-                        )}
 
-                        {results.analysis_type === 'modal' && (
+                            {/* Time History Response Chart */}
                             <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                                <h5 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-3">Mode Shape Visualization</h5>
-                                <div className="h-48 relative flex items-center justify-center">
-                                    <svg width="100%" height="100%" viewBox="0 0 400 150">
-                                        {/* Mode shape diagram (simplified) */}
-                                        <g transform="translate(200, 75)">
-                                            {/* Undeformed shape */}
-                                            <line x1="-80" y1="0" x2="-80" y2="60" stroke="#9ca3af" strokeWidth="3" strokeDasharray="4,4" />
-                                            <circle cx="-80" cy="60" r="4" fill="#9ca3af" />
-
-                                            {/* Deformed shape (1st mode) */}
-                                            <path
-                                                d="M -80,0 Q -60,-40 -40,-50 Q -20,-55 0,-50 Q 20,-45 40,-30 Q 60,-15 80,0"
-                                                fill="none"
-                                                stroke="#10b981"
-                                                strokeWidth="3"
-                                            />
-                                            <circle cx="-80" cy="0" r="5" fill="#10b981" />
-                                            <circle cx="-40" cy="-50" r="5" fill="#10b981" />
-                                            <circle cx="0" cy="-50" r="5" fill="#10b981" />
-                                            <circle cx="40" cy="-30" r="5" fill="#10b981" />
-                                            <circle cx="80" cy="0" r="5" fill="#10b981" />
-
-                                            {/* Labels */}
-                                            <text x="0" y="-70" fontSize="12" textAnchor="middle" fill="#10b981" fontWeight="600">
-                                                Mode 1: f = {results.modes?.[0]?.frequency?.toFixed(2) || '0.00'} Hz
-                                            </text>
-                                            <text x="-80" y="80" fontSize="10" textAnchor="middle" fill="#6b7280">Base</text>
-                                        </g>
-                                    </svg>
-                                </div>
-                            </div>
-                        )}
-
-                        {results.analysis_type === 'spectrum' && (
-                            <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                                <h5 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-3">Response Spectrum</h5>
+                                <h5 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-3">Control Point Displacement (mm)</h5>
                                 <div className="h-48 relative">
-                                    <svg width="100%" height="100%" viewBox="0 0 400 150">
-                                        {/* Grid */}
-                                        {[0, 1, 2, 3, 4].map(i => (
+                                    <svg width="100%" height="100%" viewBox="0 0 400 150" className="overflow-visible">
+                                        {/* Grid Lines */}
+                                        {[0, 1, 2, 3, 4, 5].map(i => (
                                             <line
-                                                key={`spec-grid-${i}`}
-                                                x1="50"
-                                                y1={20 + i * 30}
+                                                key={`grid-h-${i}`}
+                                                x1="40"
+                                                y1={20 + i * 25}
                                                 x2="380"
-                                                y2={20 + i * 30}
+                                                y2={20 + i * 25}
                                                 stroke="#e5e7eb"
                                                 strokeWidth="0.5"
                                                 strokeDasharray="2,2"
@@ -388,31 +305,91 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro }) => {
                                         ))}
 
                                         {/* Axes */}
-                                        <line x1="50" y1="140" x2="380" y2="140" stroke="#374151" strokeWidth="2" />
-                                        <line x1="50" y1="20" x2="50" y2="140" stroke="#374151" strokeWidth="2" />
+                                        <line x1="40" y1="145" x2="380" y2="145" stroke="#374151" strokeWidth="2" />
+                                        <line x1="40" y1="20" x2="40" y2="145" stroke="#374151" strokeWidth="2" />
 
-                                        {/* Spectrum curve */}
+                                        {/* Response curve (Real Data) */}
                                         <path
-                                            d="M 50,140 L 80,120 L 110,80 L 140,50 L 170,35 L 200,30 L 230,35 L 260,50 L 290,70 L 320,90 L 350,110 L 380,125"
+                                            d={(() => {
+                                                if (!results.displacements || !results.displacements[0]) return "";
+                                                const points: string[] = [];
+                                                const data = results.displacements[0]; // Take first DOF
+                                                const n = data.length;
+                                                const maxVal = Math.max(...data.map(Math.abs)) || 0.001;
+
+                                                for (let i = 0; i < n; i++) {
+                                                    const x = 40 + (i / n) * 340;
+                                                    // Normalize to 0-150 range centered at 82.5
+                                                    // maxVal corresponds to 62.5 deflection from center
+                                                    const y = 82.5 - (data[i] / maxVal) * 50;
+                                                    points.push(i === 0 ? `M ${x},${y}` : `L ${x},${y}`);
+                                                }
+                                                return points.join(' ');
+                                            })()}
                                             fill="none"
-                                            stroke="#6366f1"
-                                            strokeWidth="3"
-                                        />
-
-                                        {/* Fill under curve */}
-                                        <path
-                                            d="M 50,140 L 80,120 L 110,80 L 140,50 L 170,35 L 200,30 L 230,35 L 260,50 L 290,70 L 320,90 L 350,110 L 380,125 L 380,140 Z"
-                                            fill="#6366f1"
-                                            fillOpacity="0.1"
+                                            stroke="#10b981"
+                                            strokeWidth="1.5"
                                         />
 
                                         {/* Labels */}
-                                        <text x="215" y="160" fontSize="11" textAnchor="middle" fill="#6b7280">Period (s)</text>
-                                        <text x="20" y="80" fontSize="11" textAnchor="middle" fill="#6b7280" transform="rotate(-90, 20, 80)">Spectral Acceleration (g)</text>
+                                        <text x="210" y="165" fontSize="11" textAnchor="middle" fill="#6b7280">Time (s)</text>
+
+                                        {/* Y-axis values */}
+                                        <text x="35" y="25" fontSize="9" textAnchor="end" fill="#6b7280">{(results.max_displacement * 1000).toFixed(1)}</text>
+                                        <text x="35" y="85" fontSize="9" textAnchor="end" fill="#6b7280">0</text>
+                                        <text x="35" y="145" fontSize="9" textAnchor="end" fill="#6b7280">{(-(results.max_displacement * 1000)).toFixed(1)}</text>
                                     </svg>
                                 </div>
                             </div>
-                        )}
+                        </div>
+
+                        {
+                            results.analysis_type === 'spectrum' && (
+                                <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                                    <h5 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-3">Response Spectrum</h5>
+                                    <div className="h-48 relative">
+                                        <svg width="100%" height="100%" viewBox="0 0 400 150">
+                                            {/* Grid */}
+                                            {[0, 1, 2, 3, 4].map(i => (
+                                                <line
+                                                    key={`spec-grid-${i}`}
+                                                    x1="50"
+                                                    y1={20 + i * 30}
+                                                    x2="380"
+                                                    y2={20 + i * 30}
+                                                    stroke="#e5e7eb"
+                                                    strokeWidth="0.5"
+                                                    strokeDasharray="2,2"
+                                                />
+                                            ))}
+
+                                            {/* Axes */}
+                                            <line x1="50" y1="140" x2="380" y2="140" stroke="#374151" strokeWidth="2" />
+                                            <line x1="50" y1="20" x2="50" y2="140" stroke="#374151" strokeWidth="2" />
+
+                                            {/* Spectrum curve */}
+                                            <path
+                                                d="M 50,140 L 80,120 L 110,80 L 140,50 L 170,35 L 200,30 L 230,35 L 260,50 L 290,70 L 320,90 L 350,110 L 380,125"
+                                                fill="none"
+                                                stroke="#6366f1"
+                                                strokeWidth="3"
+                                            />
+
+                                            {/* Fill under curve */}
+                                            <path
+                                                d="M 50,140 L 80,120 L 110,80 L 140,50 L 170,35 L 200,30 L 230,35 L 260,50 L 290,70 L 320,90 L 350,110 L 380,125 L 380,140 Z"
+                                                fill="#6366f1"
+                                                fillOpacity="0.1"
+                                            />
+
+                                            {/* Labels */}
+                                            <text x="215" y="160" fontSize="11" textAnchor="middle" fill="#6b7280">Period (s)</text>
+                                            <text x="20" y="80" fontSize="11" textAnchor="middle" fill="#6b7280" transform="rotate(-90, 20, 80)">Spectral Acceleration (g)</text>
+                                        </svg>
+                                    </div>
+                                </div>
+                            )
+                        }
 
                         {/* Download Results Button */}
                         <button
@@ -441,7 +418,6 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro }) => {
                 <ul className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
                     <li><strong>Newmark-β:</strong> Direct integration (accurate, slower)</li>
                     <li><strong>Modal:</strong> Superposition method (fast, efficient)</li>
-                    <li><strong>Spectrum:</strong> Response spectrum generation</li>
                 </ul>
             </div>
         </div>

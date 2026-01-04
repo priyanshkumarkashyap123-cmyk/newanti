@@ -41,6 +41,7 @@ import { AnalysisProgressModal, type AnalysisStage } from './AnalysisProgressMod
 import { QuickStartModal } from './QuickStartModal';
 import { ProjectDetailsDialog } from './ProjectDetailsDialog';
 import { ResultsToolbar } from './results/ResultsToolbar';
+import ModalControls from './ModalControls';
 import { AICommandCenter, AIAssistantChat, AIAssistantButton } from './ai';
 import { LoadInputDialog } from './ui/LoadInputDialog';
 import { TutorialOverlay } from './TutorialOverlay';
@@ -1462,6 +1463,9 @@ export const ModernModeler: FC = () => {
                     }}
                 />
             )}
+
+            {/* Modal Analysis Controls - Shows when modal results exist */}
+            <ModalControls />
 
             {/* Cloud Project Manager */}
             <CloudProjectManager

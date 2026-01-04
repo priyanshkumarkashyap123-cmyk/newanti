@@ -5,7 +5,7 @@
  * Shows utilization ratios for concrete members
  */
 
-import { FC, useMemo } from 'react';
+import { FC, useMemo, useState } from 'react';
 import {
     Check,
     X,
@@ -54,113 +54,67 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({ isPro = false }) =
     const concreteGrade = IS456_CONCRETE_GRADES.find(g => g.grade === 'M25')!;
     const rebarGrade = IS456_REBAR_GRADES.find(g => g.grade === 'Fe500')!;
 
-    // Calculate design results
-    const designResults = useMemo<MemberDesignResult[]>(() => {
-        if (!analysisResults || !isPro) return [];
+    // State for results
+    const [apiResults, setApiResults] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
 
-        const results: MemberDesignResult[] = [];
+    const handleRunCheck = async () => {
+        if (!analysisResults) return;
+        setIsLoading(true);
+        try {
+            const designInputs = members.keys().map(id => {
+                const member = members.get(id)!;
+                const startNode = nodes.get(member.startNodeId)!;
+                const endNode = nodes.get(member.endNodeId)!;
+                const dx = endNode.x - startNode.x;
+                const dy = endNode.y - startNode.y;
+                const dz = endNode.z - startNode.z;
+                const length = Math.sqrt(dx * dx + dy * dy + dz * dz) * 1000; // mm
 
-        members.forEach((member, memberId) => {
-            const startNode = nodes.get(member.startNodeId);
-            const endNode = nodes.get(member.endNodeId);
-            if (!startNode || !endNode) return;
+                const forces = analysisResults.memberForces.get(id);
 
-            // Get member forces
-            const forces = analysisResults.memberForces.get(memberId);
-            if (!forces) return;
+                return {
+                    id,
+                    type: Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > Math.abs(dz) ? 'column' : 'beam', // Simple heuristic
+                    width: (member.width || 0.3) * 1000,
+                    depth: (member.depth || 0.5) * 1000,
+                    length,
+                    forces: {
+                        axial: forces?.axial || 0,
+                        shearY: forces?.shearY || 0,
+                        shearZ: forces?.shearZ || 0,
+                        torsion: forces?.torsion || 0,
+                        momentY: forces?.momentY || 0,
+                        momentZ: forces?.momentZ || 0
+                    },
+                    fck: concreteGrade.fck,
+                    fy: rebarGrade.fy,
+                    cover: 25
+                };
+            }).filter(Boolean);
 
-            // Calculate member length
-            const dx = endNode.x - startNode.x;
-            const dy = endNode.y - startNode.y;
-            const dz = endNode.z - startNode.z;
-            const length = Math.sqrt(dx * dx + dy * dy + dz * dz) * 1000; // mm
+            const results = await import('../api/design').then(m => m.designConcreteMembers(Array.from(designInputs)));
+            setApiResults(results);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-            // Assume typical beam section: 300x500mm
-            const b = 300;  // mm (width)
-            const D = 500;  // mm (total depth)
-            const cover = IS456_Design.clearCover('moderate');
-            const d = D - cover - 10; // mm (effective depth, assuming 20mm bars)
+    // Use API results instead of local calculation
+    const designResults = useMemo(() => {
+        if (apiResults.length > 0) return apiResults;
+        return [];
+    }, [apiResults]);
 
-            // Get applied moment and shear (from analysis or assume from axial)
-            const Mu = Math.abs(forces.momentY) * 1e6; // N.mm (convert from kN.m)
-            const Vu = Math.abs(forces.shearY) * 1e3;  // N (convert from kN)
-
-            const checks: DesignCheck[] = [];
-
-            // 1. Flexural Check
-            const Mu_lim = IS456_Design.limitingMoment(concreteGrade.fck, b, d, rebarGrade.fy);
-            const flexureRatio = Mu / Mu_lim;
-            checks.push({
-                name: 'Flexure (Moment)',
-                demand: Mu / 1e6, // kN.m
-                capacity: Mu_lim / 1e6, // kN.m
-                ratio: flexureRatio,
-                unit: 'kN.m',
-                status: flexureRatio > 1 ? 'fail' : flexureRatio > 0.9 ? 'warning' : 'pass'
-            });
-
-            // 2. Shear Check
-            const pt = 0.8; // Assume 0.8% steel
-            const tauC = IS456_Design.shearStrengthConcrete(concreteGrade.fck, pt);
-            const Vc = tauC * b * d; // N (concrete shear capacity)
-            const shearRatio = Vu / Vc;
-            checks.push({
-                name: 'Shear',
-                demand: Vu / 1e3, // kN
-                capacity: Vc / 1e3, // kN
-                ratio: shearRatio,
-                unit: 'kN',
-                status: shearRatio > 1 ? 'fail' : shearRatio > 0.9 ? 'warning' : 'pass'
-            });
-
-            // 3. Deflection Check (span/depth ratio)
-            const spanDepthLimit = IS456_Design.spanDepthRatio('simply_supported');
-            const actualSpanDepth = length / d;
-            const deflectionRatio = actualSpanDepth / spanDepthLimit;
-            checks.push({
-                name: 'Deflection (L/d)',
-                demand: actualSpanDepth,
-                capacity: spanDepthLimit,
-                ratio: deflectionRatio,
-                unit: '',
-                status: deflectionRatio > 1 ? 'fail' : deflectionRatio > 0.9 ? 'warning' : 'pass'
-            });
-
-            // 4. Minimum Reinforcement Check
-            const As_min = IS456_Design.minTensionReinforcement(b, d, rebarGrade.fy);
-            const As_provided = 0.008 * b * d; // Assume 0.8% provided
-            const minSteelRatio = As_min / As_provided;
-            checks.push({
-                name: 'Min Steel',
-                demand: As_min,
-                capacity: As_provided,
-                ratio: minSteelRatio,
-                unit: 'mm²',
-                status: minSteelRatio > 1 ? 'fail' : 'pass'
-            });
-
-            const overallUtilization = Math.max(...checks.map(c => c.ratio));
-            const status = checks.some(c => c.status === 'fail') ? 'fail'
-                : checks.some(c => c.status === 'warning') ? 'warning' : 'pass';
-
-            results.push({
-                memberId,
-                memberName: `M${memberId.slice(-4)}`,
-                checks,
-                overallUtilization,
-                status
-            });
-        });
-
-        return results;
-    }, [members, nodes, analysisResults, isPro, concreteGrade, rebarGrade]);
-
+    // ... (keep existing summary logic)
     // Summary stats
     const summary = useMemo(() => {
         const total = designResults.length;
-        const passing = designResults.filter(r => r.status === 'pass').length;
-        const warnings = designResults.filter(r => r.status === 'warning').length;
-        const failing = designResults.filter(r => r.status === 'fail').length;
+        const passing = designResults.filter((r: any) => r.status === 'pass').length;
+        const warnings = designResults.filter((r: any) => r.status === 'warning').length;
+        const failing = designResults.filter((r: any) => r.status === 'fail').length;
         return { total, passing, warnings, failing };
     }, [designResults]);
 
@@ -202,9 +156,13 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({ isPro = false }) =
                             {concreteGrade.grade} Concrete • {rebarGrade.grade} Rebar
                         </p>
                     </div>
-                    <span className="flex items-center gap-1 px-2 py-0.5 bg-yellow-500/20 rounded text-yellow-400 text-xs">
-                        <Crown className="w-3 h-3" /> PRO
-                    </span>
+                    <button
+                        onClick={handleRunCheck}
+                        disabled={isLoading}
+                        className="px-4 py-1.5 bg-white text-orange-600 rounded-md text-sm font-bold hover:bg-zinc-100 disabled:opacity-50"
+                    >
+                        {isLoading ? 'Checking...' : 'Run Check'}
+                    </button>
                 </div>
             </div>
 
@@ -230,7 +188,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({ isPro = false }) =
 
             {/* Results List */}
             <div className="max-h-96 overflow-y-auto">
-                {designResults.map((result) => (
+                {designResults.map((result: any) => (
                     <details key={result.memberId} className="border-b border-zinc-800 group">
                         <summary className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-zinc-800/50">
                             <div className="flex items-center gap-3">
@@ -241,19 +199,29 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({ isPro = false }) =
                                 ) : (
                                     <X className="w-5 h-5 text-red-400" />
                                 )}
-                                <span className="font-medium text-white">{result.memberName}</span>
+                                <span className="font-medium text-white">{result.memberId}</span>
                             </div>
                             <div className="flex items-center gap-3">
-                                <span className={`text-sm ${result.overallUtilization > 1 ? 'text-red-400' :
-                                        result.overallUtilization > 0.9 ? 'text-yellow-400' : 'text-green-400'
+                                <span className={`text-sm ${result.overallRatio > 1 ? 'text-red-400' :
+                                    result.overallRatio > 0.9 ? 'text-yellow-400' : 'text-green-400'
                                     }`}>
-                                    {(result.overallUtilization * 100).toFixed(0)}%
+                                    {(result.overallRatio * 100).toFixed(0)}%
                                 </span>
                                 <ChevronDown className="w-4 h-4 text-zinc-500 group-open:rotate-180 transition-transform" />
                             </div>
                         </summary>
                         <div className="px-4 pb-4 space-y-2">
-                            {result.checks.map((check, i) => (
+                            {/* Rebar Details */}
+                            <div className="grid grid-cols-2 gap-4 mb-4 p-2 bg-zinc-800/50 rounded text-xs border border-zinc-700">
+                                {Object.entries(result.details || {}).map(([key, value]) => (
+                                    <div key={key}>
+                                        <div className="text-zinc-500 capitalize">{key.replace('_', ' ')}</div>
+                                        <div className="text-white font-mono">{String(value)}</div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {result.checks.map((check: any, i: number) => (
                                 <div key={i} className="flex items-center justify-between text-sm py-2 border-t border-zinc-800/50">
                                     <span className="text-zinc-400">{check.name}</span>
                                     <div className="flex items-center gap-4">
@@ -261,7 +229,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({ isPro = false }) =
                                             {check.demand.toFixed(1)} / {check.capacity.toFixed(1)} {check.unit}
                                         </span>
                                         <span className={`w-16 text-right font-medium ${check.status === 'pass' ? 'text-green-400' :
-                                                check.status === 'warning' ? 'text-yellow-400' : 'text-red-400'
+                                            check.status === 'warning' ? 'text-yellow-400' : 'text-red-400'
                                             }`}>
                                             {(check.ratio * 100).toFixed(0)}%
                                         </span>
@@ -271,6 +239,11 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({ isPro = false }) =
                         </div>
                     </details>
                 ))}
+                {designResults.length === 0 && !isLoading && (
+                    <div className="p-8 text-center text-zinc-500 text-sm">
+                        Click "Run Check" to verify member capacities
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useModelStore } from '../store/model';
 import { useAdvancedAnalysis } from '../hooks/useAdvancedAnalysis';
+import { useAuth } from '../providers/AuthProvider';
 
 // ============================================
 // TYPES
@@ -58,12 +59,12 @@ const EFFECTIVE_LENGTH_FACTORS = [
 const StabilityIndicator: FC<{ factor: number }> = ({ factor }) => {
     const isStable = factor > 1.0;
     const isWarning = factor > 1.0 && factor < 1.5;
-    
+
     return (
         <div className={`
             flex items-center gap-2 px-3 py-2 rounded-lg
-            ${isStable 
-                ? isWarning 
+            ${isStable
+                ? isWarning
                     ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
                     : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
                 : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
@@ -80,7 +81,7 @@ const StabilityIndicator: FC<{ factor: number }> = ({ factor }) => {
             )}
             <div>
                 <div className="font-semibold text-sm">
-                    {isStable 
+                    {isStable
                         ? isWarning ? 'Marginally Stable' : 'Stable'
                         : 'Unstable'
                     }
@@ -110,8 +111,8 @@ const ModeCard: FC<{
             onClick={onSelect}
             className={`
                 p-3 rounded-lg border cursor-pointer transition-all
-                ${selected 
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30' 
+                ${selected
+                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
                     : 'border-gray-200 dark:border-gray-700 hover:border-blue-300'}
             `}
         >
@@ -166,7 +167,7 @@ const EulerCalculator: FC = () => {
     return (
         <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <div className="text-xs font-medium text-gray-500 mb-2">Euler Buckling Calculator</div>
-            
+
             <div className="grid grid-cols-2 gap-2 mb-3">
                 <div>
                     <label className="text-xs text-gray-400">Length (mm)</label>
@@ -237,9 +238,9 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
             .filter(n => n.restraints && (n.restraints.fx || n.restraints.fy || n.restraints.fz))
             .map(n => ({
                 nodeId: n.id,
-                type: n.restraints?.fx && n.restraints?.fy && n.restraints?.fz && 
-                      n.restraints?.mx && n.restraints?.my && n.restraints?.mz ? 'fixed' : 
-                      n.restraints?.fx && n.restraints?.fy && n.restraints?.fz ? 'pinned' : 'roller'
+                type: n.restraints?.fx && n.restraints?.fy && n.restraints?.fz &&
+                    n.restraints?.mx && n.restraints?.my && n.restraints?.mz ? 'fixed' :
+                    n.restraints?.fx && n.restraints?.fy && n.restraints?.fz ? 'pinned' : 'roller'
             }));
     }, [nodes]);
 
@@ -247,62 +248,92 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
     const [showCalculator, setShowCalculator] = useState(false);
     const [numModes, setNumModes] = useState(5);
 
-    const {
-        isLoading,
-        error,
-        bucklingResult,
-        runBuckling,
-        convertModelForAdvancedAnalysis,
-    } = useAdvancedAnalysis();
+    const [isRunning, setIsRunning] = useState(false);
+    const [result, setResult] = useState<any>(null);
+    const [error, setError] = useState<string | null>(null);
+
+    // Get model data
+    const loads = useModelStore((state) => state.loads);
+    const memberLoads = useModelStore((state) => state.memberLoads);
+    const { getToken } = useAuth();
 
     // Convert buckling result to display format
     const modes = useMemo<BucklingMode[]>(() => {
-        if (!bucklingResult) return [];
-        
-        return bucklingResult.criticalLoadFactors.map((factor, i) => ({
-            modeNumber: i + 1,
-            factor,
-            isStable: factor > 1.0,
-            criticalLoad: factor * 100, // Assuming 100 kN reference load
+        if (!result) return [];
+
+        return result.modes.map((m: any) => ({
+            modeNumber: m.mode,
+            factor: m.factor,
+            isStable: m.factor > 1.0,
+            criticalLoad: m.factor * 100, // Assuming 100 kN reference load
         }));
-    }, [bucklingResult]);
+    }, [result]);
 
     // Run buckling analysis
     const handleRunAnalysis = async () => {
-        // Check if we have analysis results (need axial forces)
-        if (!analysisResults) {
-            console.warn('Run linear analysis first to get axial forces');
-            return;
+        setIsRunning(true);
+        setError(null);
+        setResult(null);
+
+        try {
+            const token = await getToken();
+            const PYTHON_API = import.meta.env['VITE_PYTHON_API_URL'] || 'https://api.beamlabultimate.tech';
+
+            // Prepare payload
+            const payload = {
+                nodes: Array.from(nodes.values()).map(n => ({
+                    id: n.id,
+                    x: n.x, y: n.y, z: n.z,
+                    support: n.restraints ? (
+                        n.restraints.fx && n.restraints.fy && n.restraints.fz && n.restraints.mx && n.restraints.my && n.restraints.mz ? 'fixed' :
+                            n.restraints.fx && n.restraints.fy && n.restraints.fz ? 'pinned' :
+                                n.restraints.fy ? 'roller' : 'none'
+                    ) : 'none'
+                })),
+                members: Array.from(members.values()).map(m => ({
+                    id: m.id,
+                    startNodeId: m.startNodeId,
+                    endNodeId: m.endNodeId,
+                    E: m.E, G: (m.E || 200e6) / 2.6,
+                    A: m.A, Iy: m.I, Iz: m.I, J: (m.I || 1e-4) * 2
+                })),
+                node_loads: loads.map(l => ({
+                    nodeId: l.nodeId,
+                    fx: l.fx, fy: l.fy, fz: l.fz,
+                    mx: l.mx, my: l.my, mz: l.mz
+                })),
+                distributed_loads: memberLoads.map(l => ({
+                    memberId: l.memberId,
+                    direction: l.direction === 'local_y' ? 'Fy' : 'Fz',
+                    w1: l.w1, w2: l.w2 ?? l.w1
+                })),
+                num_modes: numModes,
+                load_case: 'LC1'
+            };
+
+            const res = await fetch(`${PYTHON_API}/analyze/buckling`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                const errJson = await res.json();
+                throw new Error(errJson.detail || 'Analysis failed');
+            }
+
+            const data = await res.json();
+            setResult(data);
+
+        } catch (err: any) {
+            console.error(err);
+            setError(err.message);
+        } finally {
+            setIsRunning(false);
         }
-
-        const nodesArray = Array.from(nodes.values());
-        const membersArray = Array.from(members.values()).map((m, idx) => ({
-            id: `member-${idx}`,
-            startNodeId: m.startNodeId,
-            endNodeId: m.endNodeId,
-            section: { E: m.E || 200000, A: m.A || 5000, I: m.I || 1e7 },
-        }));
-
-        const model = convertModelForAdvancedAnalysis(
-            nodesArray.map((n) => ({ id: n.id, x: n.x, y: n.y, z: n.z })),
-            membersArray,
-            supportsArray as { nodeId: string; type: string }[]
-        );
-
-        // Get loads from analysis results (simplified)
-        const loads = nodesArray
-            .filter((n) => !supportsArray.some((s: { nodeId: string; type: string }) => s.nodeId === n.id))
-            .slice(0, 1)
-            .map((n, i) => ({
-                nodeId: i + 1,
-                fy: -100, // 100 kN downward
-            }));
-
-        await runBuckling({
-            ...model,
-            loads,
-            numModes,
-        });
     };
 
     // Visualize mode shape
@@ -463,7 +494,7 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
                         Export Results
                     </button>
                     <div className="text-xs text-gray-400">
-                        {bucklingResult?.isStable ? '✓ Structure is stable' : '✗ Buckling detected'}
+                        {result?.is_stable ? '✓ Structure is stable' : '✗ Buckling detected'}
                     </div>
                 </div>
             )}

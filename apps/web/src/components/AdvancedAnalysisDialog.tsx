@@ -24,6 +24,9 @@ import {
     Play,
 } from 'lucide-react';
 
+import { useModelStore } from '../store/model';
+import { useAuth } from '../providers/AuthProvider';
+
 // Import panel components
 import { PDeltaAnalysisPanel } from './PDeltaAnalysisPanel';
 import { ModalAnalysisPanel } from './ModalAnalysisPanel';
@@ -54,49 +57,49 @@ const ANALYSIS_OPTIONS: Array<{
     icon: FC<{ className?: string }>;
     color: string;
 }> = [
-    {
-        id: 'pdelta',
-        name: 'P-Delta Analysis',
-        description: 'Second-order geometric nonlinear analysis for slender structures',
-        icon: Layers,
-        color: 'blue',
-    },
-    {
-        id: 'modal',
-        name: 'Modal Analysis',
-        description: 'Extract natural frequencies, periods, and mode shapes',
-        icon: Activity,
-        color: 'purple',
-    },
-    {
-        id: 'timehistory',
-        name: 'Time History Analysis',
-        description: 'Dynamic seismic time history with Newmark-beta integration',
-        icon: Clock,
-        color: 'emerald',
-    },
-    {
-        id: 'spectrum',
-        name: 'Response Spectrum',
-        description: 'IS 1893:2016 seismic response spectrum analysis',
-        icon: Waves,
-        color: 'indigo',
-    },
-    {
-        id: 'buckling',
-        name: 'Buckling Analysis',
-        description: 'Linear stability analysis with critical load factors',
-        icon: Shield,
-        color: 'red',
-    },
-    {
-        id: 'cable',
-        name: 'Cable Analysis',
-        description: 'Cable/tension-only members with catenary effects',
-        icon: Cable,
-        color: 'teal',
-    },
-];
+        {
+            id: 'pdelta',
+            name: 'P-Delta Analysis',
+            description: 'Second-order geometric nonlinear analysis for slender structures',
+            icon: Layers,
+            color: 'blue',
+        },
+        {
+            id: 'modal',
+            name: 'Modal Analysis',
+            description: 'Extract natural frequencies, periods, and mode shapes',
+            icon: Activity,
+            color: 'purple',
+        },
+        {
+            id: 'timehistory',
+            name: 'Time History Analysis',
+            description: 'Dynamic seismic time history with Newmark-beta integration',
+            icon: Clock,
+            color: 'emerald',
+        },
+        {
+            id: 'spectrum',
+            name: 'Response Spectrum',
+            description: 'IS 1893:2016 seismic response spectrum analysis',
+            icon: Waves,
+            color: 'indigo',
+        },
+        {
+            id: 'buckling',
+            name: 'Buckling Analysis',
+            description: 'Linear stability analysis with critical load factors',
+            icon: Shield,
+            color: 'red',
+        },
+        {
+            id: 'cable',
+            name: 'Cable Analysis',
+            description: 'Cable/tension-only members with catenary effects',
+            icon: Cable,
+            color: 'teal',
+        },
+    ];
 
 // ============================================
 // RESPONSE SPECTRUM PANEL (Inline)
@@ -108,129 +111,299 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
     const [importance, setImportance] = useState(1.0);
     const [response, setResponse] = useState(5.0);
     const [numModes, setNumModes] = useState(12);
+    const [direction, setDirection] = useState('X');
+    const [damping, setDamping] = useState(0.05);
 
+    const [isRunning, setIsRunning] = useState(false);
+    const [result, setResult] = useState<any>(null);
+    const [error, setError] = useState<string | null>(null);
 
+    // Get model data
+    const nodes = useModelStore((state) => state.nodes);
+    const members = useModelStore((state) => state.members);
+    const loads = useModelStore((state) => state.loads);
+    const memberLoads = useModelStore((state) => state.memberLoads);
+    const { getToken } = useAuth();
+
+    const handleRunSpectrum = async () => {
+        setIsRunning(true);
+        setError(null);
+        setResult(null);
+
+        try {
+            const token = await getToken();
+            const PYTHON_API = import.meta.env['VITE_PYTHON_API_URL'] || 'https://api.beamlabultimate.tech';
+
+            // Prepare payload
+            const payload = {
+                nodes: Array.from(nodes.values()).map(n => ({
+                    id: n.id,
+                    x: n.x, y: n.y, z: n.z,
+                    support: n.restraints ? (
+                        n.restraints.fx && n.restraints.fy && n.restraints.fz && n.restraints.mx && n.restraints.my && n.restraints.mz ? 'fixed' :
+                            n.restraints.fx && n.restraints.fy && n.restraints.fz ? 'pinned' :
+                                n.restraints.fy ? 'roller' : 'none'
+                    ) : 'none'
+                })),
+                members: Array.from(members.values()).map(m => ({
+                    id: m.id,
+                    startNodeId: m.startNodeId,
+                    endNodeId: m.endNodeId,
+                    E: m.E, G: (m.E || 200e6) / 2.6,
+                    A: m.A, Iy: m.I, Iz: m.I, J: (m.I || 1e-4) * 2
+                })),
+                node_loads: loads.map(l => ({
+                    nodeId: l.nodeId,
+                    fx: l.fx, fy: l.fy, fz: l.fz,
+                    mx: l.mx, my: l.my, mz: l.mz
+                })),
+                distributed_loads: memberLoads.map(l => ({
+                    memberId: l.memberId,
+                    direction: l.direction === 'local_y' ? 'Fy' : 'Fz', // Approximation
+                    w1: l.w1, w2: l.w2 ?? l.w1,
+                    startPos: l.startPos ?? 0, endPos: l.endPos ?? 1,
+                    isRatio: true
+                })),
+                zone: ['II', 'II', 'II', 'III', 'IV', 'V'][zone] || 'V', // Map 2->II etc
+                soil_type: soilType,
+                importance_factor: importance,
+                response_reduction: response,
+                damping: damping,
+                direction: direction,
+                num_modes: numModes,
+                combination_method: 'CQC'
+            };
+
+            // Fix Zone Mapping: 2->II is index 2? No.
+            // Zone integers in state: 2, 3, 4, 5.
+            // Map: 2->II, 3->III, 4->IV, 5->V
+            const zoneMap: Record<number, string> = { 2: 'II', 3: 'III', 4: 'IV', 5: 'V' };
+            payload.zone = zoneMap[zone];
+
+            const res = await fetch(`${PYTHON_API}/analyze/spectrum`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                const errJson = await res.json();
+                throw new Error(errJson.detail || 'Analysis failed');
+            }
+
+            const data = await res.json();
+            setResult(data);
+
+        } catch (err: any) {
+            console.error(err);
+            setError(err.message);
+        } finally {
+            setIsRunning(false);
+        }
+    };
 
     return (
-        <div className="p-4">
+        <div className="p-4 h-full flex flex-col">
             <h3 className="font-semibold text-sm mb-4 flex items-center gap-2">
                 <Waves className="w-4 h-4" />
                 IS 1893:2016 Response Spectrum Analysis
             </h3>
 
-            <div className="grid grid-cols-2 gap-4 mb-4">
-                {/* Zone */}
-                <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Seismic Zone</label>
-                    <select
-                        value={zone}
-                        onChange={(e) => setZone(parseInt(e.target.value))}
-                        className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
-                    >
-                        <option value={2}>Zone II (Low)</option>
-                        <option value={3}>Zone III (Moderate)</option>
-                        <option value={4}>Zone IV (Severe)</option>
-                        <option value={5}>Zone V (Very Severe)</option>
-                    </select>
-                    <div className="text-xs text-gray-400 mt-1">
-                        Z = {[0, 0.10, 0.10, 0.16, 0.24, 0.36][zone]}
+            <div className="flex-1 overflow-y-auto pr-2">
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                    {/* Zone */}
+                    <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Seismic Zone</label>
+                        <select
+                            value={zone}
+                            onChange={(e) => setZone(parseInt(e.target.value))}
+                            className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
+                        >
+                            <option value={2}>Zone II (Low)</option>
+                            <option value={3}>Zone III (Moderate)</option>
+                            <option value={4}>Zone IV (Severe)</option>
+                            <option value={5}>Zone V (Very Severe)</option>
+                        </select>
+                        <div className="text-xs text-gray-400 mt-1">
+                            Z = {[0, 0, 0.10, 0.16, 0.24, 0.36][zone]}
+                        </div>
+                    </div>
+
+                    {/* Soil Type */}
+                    <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Soil Type</label>
+                        <select
+                            value={soilType}
+                            onChange={(e) => setSoilType(e.target.value)}
+                            className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
+                        >
+                            <option value="I">Type I - Rock (N &gt; 30)</option>
+                            <option value="II">Type II - Medium (10 &lt; N ≤ 30)</option>
+                            <option value="III">Type III - Soft (N ≤ 10)</option>
+                        </select>
+                    </div>
+
+                    {/* Importance Factor */}
+                    <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Importance Factor (I)</label>
+                        <select
+                            value={importance}
+                            onChange={(e) => setImportance(parseFloat(e.target.value))}
+                            className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
+                        >
+                            <option value={1.0}>1.0 - Regular Building</option>
+                            <option value={1.2}>1.2 - Important Building</option>
+                            <option value={1.5}>1.5 - Critical/Essential</option>
+                        </select>
+                    </div>
+
+                    {/* Response Reduction */}
+                    <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Response Factor (R)</label>
+                        <select
+                            value={response}
+                            onChange={(e) => setResponse(parseFloat(e.target.value))}
+                            className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
+                        >
+                            <option value={3.0}>3.0 - Unreinforced Masonry</option>
+                            <option value={4.0}>4.0 - Ordinary RC Frame</option>
+                            <option value={5.0}>5.0 - Special RC Frame</option>
+                            <option value={5.0}>5.0 - Steel Frame (SMRF)</option>
+                        </select>
+                    </div>
+
+                    {/* Direction */}
+                    <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Excitation Direction</label>
+                        <select
+                            value={direction}
+                            onChange={(e) => setDirection(e.target.value)}
+                            className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
+                        >
+                            <option value="X">X-Direction</option>
+                            <option value="Y">Y-Direction</option>
+                            <option value="Z">Z-Direction</option>
+                        </select>
+                    </div>
+
+                    {/* Damping */}
+                    <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Damping Ratio</label>
+                        <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            max="0.2"
+                            value={damping}
+                            onChange={(e) => setDamping(parseFloat(e.target.value))}
+                            className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
+                        />
                     </div>
                 </div>
 
-                {/* Soil Type */}
-                <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Soil Type</label>
-                    <select
-                        value={soilType}
-                        onChange={(e) => setSoilType(e.target.value)}
-                        className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
-                    >
-                        <option value="I">Type I - Rock (N &gt; 30)</option>
-                        <option value="II">Type II - Medium (10 &lt; N ≤ 30)</option>
-                        <option value="III">Type III - Soft (N ≤ 10)</option>
-                    </select>
+                {/* Design Spectrum Preview */}
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg mb-4">
+                    <div className="text-xs font-medium text-gray-500 mb-2">Design Spectrum Curve</div>
+                    <div className="h-32 relative">
+                        <svg width="100%" height="100%" viewBox="0 0 300 100">
+                            {/* Axes */}
+                            <line x1="30" y1="90" x2="290" y2="90" stroke="#888" strokeWidth="1" />
+                            <line x1="30" y1="10" x2="30" y2="90" stroke="#888" strokeWidth="1" />
+
+                            {/* Spectrum curve (simplified visual) */}
+                            <path
+                                d={`M 30,60 L 50,${90 - zone * 8} L 100,${90 - zone * 8} C 150,${90 - zone * 8} 180,70 290,85`}
+                                fill="none"
+                                stroke="#6366f1"
+                                strokeWidth="2"
+                            />
+
+                            {/* Labels */}
+                            <text x="160" y="98" fontSize="8" textAnchor="middle" fill="#888">Period (T)</text>
+                            <text x="10" y="50" fontSize="8" textAnchor="middle" fill="#888" transform="rotate(-90, 10, 50)">Sa/g</text>
+                        </svg>
+                    </div>
                 </div>
 
-                {/* Importance Factor */}
-                <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Importance Factor (I)</label>
-                    <select
-                        value={importance}
-                        onChange={(e) => setImportance(parseFloat(e.target.value))}
-                        className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
-                    >
-                        <option value={1.0}>1.0 - Regular Building</option>
-                        <option value={1.2}>1.2 - Important Building</option>
-                        <option value={1.5}>1.5 - Critical/Essential</option>
-                    </select>
-                </div>
+                {/* Error Banner */}
+                {error && (
+                    <div className="mb-4 p-3 bg-red-100 border border-red-200 text-red-700 rounded text-sm">
+                        {error}
+                    </div>
+                )}
 
-                {/* Response Reduction */}
-                <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Response Factor (R)</label>
-                    <select
-                        value={response}
-                        onChange={(e) => setResponse(parseFloat(e.target.value))}
-                        className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
-                    >
-                        <option value={3.0}>3.0 - Unreinforced Masonry</option>
-                        <option value={4.0}>4.0 - Ordinary RC Frame</option>
-                        <option value={5.0}>5.0 - Special RC Frame</option>
-                        <option value={5.0}>5.0 - Steel Frame (SMRF)</option>
-                    </select>
-                </div>
+                {/* Results Display */}
+                {result && (
+                    <div className="space-y-4 mb-4">
+                        <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                            <h4 className="font-semibold text-green-800 dark:text-green-300 mb-2">Analysis Results</h4>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <div className="text-gray-500 text-xs">Base Shear ({direction})</div>
+                                    <div className="font-mono font-bold">{result.base_shear.toFixed(2)} kN</div>
+                                </div>
+                                <div>
+                                    <div className="text-gray-500 text-xs">Modes Used</div>
+                                    <div className="font-mono font-bold">{result.modes?.length || 0}</div>
+                                </div>
+                            </div>
+                        </div>
 
-                {/* Number of Modes */}
-                <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Number of Modes</label>
-                    <input
-                        type="number"
-                        min={1}
-                        max={50}
-                        value={numModes}
-                        onChange={(e) => setNumModes(parseInt(e.target.value) || 12)}
-                        className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
-                    />
-                </div>
-
-                {/* Combination Method */}
-                <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Combination</label>
-                    <select className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600">
-                        <option value="CQC">CQC (Complete Quadratic)</option>
-                        <option value="SRSS">SRSS (Square Root Sum)</option>
-                    </select>
-                </div>
-            </div>
-
-            {/* Design Spectrum Preview */}
-            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg mb-4">
-                <div className="text-xs font-medium text-gray-500 mb-2">Design Spectrum</div>
-                <div className="h-32 relative">
-                    <svg width="100%" height="100%" viewBox="0 0 300 100">
-                        {/* Axes */}
-                        <line x1="30" y1="90" x2="290" y2="90" stroke="#888" strokeWidth="1" />
-                        <line x1="30" y1="10" x2="30" y2="90" stroke="#888" strokeWidth="1" />
-
-                        {/* Spectrum curve (simplified) */}
-                        <path
-                            d={`M 30,60 L 50,${90 - zone * 8} L 100,${90 - zone * 8} C 150,${90 - zone * 8} 180,70 290,85`}
-                            fill="none"
-                            stroke="#6366f1"
-                            strokeWidth="2"
-                        />
-
-                        {/* Labels */}
-                        <text x="160" y="98" fontSize="8" textAnchor="middle" fill="#888">Period (T)</text>
-                        <text x="10" y="50" fontSize="8" textAnchor="middle" fill="#888" transform="rotate(-90, 10, 50)">Sa/g</text>
-                    </svg>
-                </div>
+                        {/* Modal Contribution Table */}
+                        <div className="border rounded-lg overflow-hidden dark:border-gray-700">
+                            <table className="w-full text-xs text-left">
+                                <thead className="bg-gray-100 dark:bg-gray-800 font-semibold">
+                                    <tr>
+                                        <th className="p-2">Mode</th>
+                                        <th className="p-2">Period (s)</th>
+                                        <th className="p-2">Mass %</th>
+                                        <th className="p-2">Base Shear (kN)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {result.modal_contributions?.slice(0, 5).map((m: any, i: number) => (
+                                        <tr key={i} className="border-t border-gray-100 dark:border-gray-700">
+                                            <td className="p-1.5">{m.mode}</td>
+                                            <td className="p-1.5">{m.period.toFixed(3)}</td>
+                                            <td className="p-1.5">{m.contribution_pct?.toFixed(2)}%</td>
+                                            <td className="p-1.5">{m.base_shear.toFixed(2)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {result.modal_contributions?.length > 5 && (
+                                <div className="p-1.5 text-center text-gray-500 bg-gray-50 dark:bg-gray-800 text-[10px]">
+                                    + {result.modal_contributions.length - 5} more modes
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Run Button */}
-            <button className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors">
-                <Play className="w-4 h-4" />
-                Run Spectrum Analysis
+            <button
+                onClick={handleRunSpectrum}
+                disabled={isRunning || !isPro}
+                className={`
+                    w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors
+                    ${isRunning ? 'bg-indigo-300 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600 text-white'}
+                `}
+            >
+                {isRunning ? (
+                    <>
+                        <Clock className="w-4 h-4 animate-spin" />
+                        Analyzing...
+                    </>
+                ) : (
+                    <>
+                        <Play className="w-4 h-4" />
+                        Run Spectrum Analysis
+                    </>
+                )}
             </button>
 
             {/* Info */}
@@ -385,7 +558,7 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
                         {ANALYSIS_OPTIONS.map((option) => {
                             const Icon = option.icon;
                             const isActive = activeTab === option.id;
-                            
+
                             // Define color classes statically (Tailwind JIT requires literal class names)
                             const colorClasses = {
                                 blue: { bg: 'bg-blue-50 dark:bg-blue-900/30', border: 'border-blue-500', text: 'text-blue-500', textDark: 'text-blue-700 dark:text-blue-400' },

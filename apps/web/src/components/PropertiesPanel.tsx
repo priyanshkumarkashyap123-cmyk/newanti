@@ -547,6 +547,14 @@ export const PropertiesPanel: FC = () => {
                             <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 8, color: '#4caf50' }}>✏️ Custom Section Properties</div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <label style={{ fontSize: 11, width: 80 }}>Width (m)</label>
+                                    <NumberInput value={member.width ?? 0.3} onChange={(v) => updateMember(id, { width: v })} style={{ flex: 1 }} />
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <label style={{ fontSize: 11, width: 80 }}>Depth (m)</label>
+                                    <NumberInput value={member.depth ?? 0.5} onChange={(v) => updateMember(id, { depth: v })} style={{ flex: 1 }} />
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                     <label style={{ fontSize: 11, width: 80 }}>Area (cm²)</label>
                                     <NumberInput value={customA} onChange={setCustomA} style={{ flex: 1 }} />
                                 </div>

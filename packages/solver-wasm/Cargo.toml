@@ -26,6 +26,9 @@ nalgebra = { version = "0.32", features = ["serde-serialize"] }
 # Sparse matrix support
 nalgebra-sparse = "0.9"
 
+# Parallel processing - Rayon for multi-threading
+rayon = "1.8"
+
 # JavaScript interop
 js-sys = "0.3.69"
 

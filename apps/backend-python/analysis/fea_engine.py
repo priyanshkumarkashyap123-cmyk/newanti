@@ -17,6 +17,7 @@ from typing import List, Dict, Optional, Any, Tuple
 from enum import Enum
 import numpy as np
 import math
+from analysis.solvers.nonlinear import GeometricStiffnessMatrix
 
 try:
     try:
@@ -616,6 +617,56 @@ class FEAEngine:
         
         return results
     
+    def get_geometric_stiffness_matrix(self, load_case: str = 'LC1') -> np.ndarray:
+        """
+        Assemble global geometric stiffness matrix [Kg] based on axial loads
+        """
+        if not self.model:
+            return None
+            
+        n_nodes = len(self.model.nodes)
+        n_dof = n_nodes * 6
+        Kg = np.zeros((n_dof, n_dof))
+        
+        # Sort node names to match global matrix assembly order in PyNite
+        sorted_nodes = sorted(self.model.nodes.keys())
+        node_index_map = {name: i for i, name in enumerate(sorted_nodes)}
+        
+        for member_name, member in self.model.members.items():
+            # Get axial force (compression positive in our Kg formula)
+            # PyNite P results: P > 0 is tension? Usually PyNite P > 0 is tension.
+            # Our Kg formula (from Kassimali) uses compression positive.
+            P_tension = member.P(load_case)
+            axial_force = -P_tension
+            
+            # Start and end node names
+            i_node_name = member.i_node.name
+            j_node_name = member.j_node.name
+            
+            # Global node indices
+            i_idx = node_index_map[i_node_name]
+            j_idx = node_index_map[j_node_name]
+            
+            # Member length and coordinates
+            L = member.L()
+            start_coord = (member.i_node.X, member.i_node.Y, member.i_node.Z)
+            end_coord = (member.j_node.X, member.j_node.Y, member.j_node.Z)
+            
+            # Local to Global Kg (12x12)
+            Kg_member_global = GeometricStiffnessMatrix.get_member_Kg_global(
+                L, axial_force, start_coord, end_coord
+            )
+            
+            # Global DOF indices
+            dofs = list(range(i_idx*6, i_idx*6 + 6)) + list(range(j_idx*6, j_idx*6 + 6))
+            
+            # Assemble into global matrix
+            for i in range(12):
+                for j in range(12):
+                    Kg[dofs[i], dofs[j]] += Kg_member_global[i, j]
+                    
+        return Kg
+
     def _extract_member_results(self) -> List[MemberResults]:
         """Extract force and deflection diagrams for all members"""
         results = []

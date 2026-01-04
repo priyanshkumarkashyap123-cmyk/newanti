@@ -161,7 +161,12 @@ async def health_check():
 # ROUTER REGISTRATION
 # ============================================
 
+from design_routes import router as design_router
+from analysis_routes import router as analysis_router
+
 app.include_router(ai_router)
+app.include_router(design_router)
+app.include_router(analysis_router)
 
 # ============================================
 # MESHING ENDPOINTS
