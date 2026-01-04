@@ -21,8 +21,25 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: false,
-    host: true,
+    host: 'app.bheemla.local', // Domain instead of localhost
     cors: true,
+    hmr: {
+      host: 'app.bheemla.local',
+      port: 5173,
+      protocol: 'http',
+    },
+    proxy: {
+      '/api': {
+        target: 'http://api.bheemla.local:3001',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+      '/ws': {
+        target: 'ws://api.bheemla.local:3001',
+        ws: true,
+        changeOrigin: true,
+      },
+    },
     fs: {
       // Allow serving files from one level up to the project root
       allow: ['..'],
