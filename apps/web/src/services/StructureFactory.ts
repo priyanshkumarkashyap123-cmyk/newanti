@@ -1693,18 +1693,25 @@ export function generateMetroViaduct(params?: Partial<ViaductParams>): Generated
 }
 
 /**
- * Generate Warren Truss Railway Bridge
+ * Generate REALISTIC Warren Truss Railway Bridge
+ * 
+ * ACCURATE FEATURES:
+ * - Twin Warren truss planes
+ * - Floor system with cross-girders and stringers
+ * - Top and bottom lateral bracing
+ * - Portal frames at ends
+ * - Proper IRS MBG loading pattern
  */
 export function generateWarrenTruss(params?: Partial<TrussParams>): GeneratedStructure {
     resetCounters();
 
     const config: TrussParams = {
         name: 'Warren Truss Railway Bridge',
-        span: 60,
-        trussDepth: 8,
-        panelWidth: 6,
+        span: 80,
+        trussDepth: 10,
+        panelWidth: 8,
         trussType: 'warren',
-        deckWidth: 5,
+        deckWidth: 6,
         ...params
     };
 
@@ -1715,52 +1722,128 @@ export function generateWarrenTruss(params?: Partial<TrussParams>): GeneratedStr
 
     const numPanels = Math.ceil(config.span / config.panelWidth);
     const actualPanelWidth = config.span / numPanels;
+    const trussSpacing = config.deckWidth * 0.9;
 
-    const topNodes: Node[] = [];
-    const bottomNodes: Node[] = [];
+    // Store nodes for both truss planes
+    const leftTruss: { top: Node[], bottom: Node[] } = { top: [], bottom: [] };
+    const rightTruss: { top: Node[], bottom: Node[] } = { top: [], bottom: [] };
 
     for (let i = 0; i <= numPanels; i++) {
         const x = i * actualPanelWidth;
 
-        const topNode = createNode(x, config.trussDepth, 0);
-        const bottomNode = createNode(x, 0, 0);
+        // Left truss plane
+        const leftTop = createNode(x, config.trussDepth, -trussSpacing / 2);
+        const leftBottom = createNode(x, 0, -trussSpacing / 2);
+        leftTruss.top.push(leftTop);
+        leftTruss.bottom.push(leftBottom);
+        nodes.push(leftTop, leftBottom);
 
-        topNodes.push(topNode);
-        bottomNodes.push(bottomNode);
-        nodes.push(topNode, bottomNode);
+        // Right truss plane
+        const rightTop = createNode(x, config.trussDepth, trussSpacing / 2);
+        const rightBottom = createNode(x, 0, trussSpacing / 2);
+        rightTruss.top.push(rightTop);
+        rightTruss.bottom.push(rightBottom);
+        nodes.push(rightTop, rightBottom);
 
-        // Verticals at ends only
+        // Verticals at ends only (Warren truss characteristic)
         if (i === 0 || i === numPanels) {
-            members.push(createMember(bottomNode, topNode, 'ISMB250'));
+            members.push(createMember(leftBottom, leftTop, 'END_VERTICAL_400x300'));
+            members.push(createMember(rightBottom, rightTop, 'END_VERTICAL_400x300'));
         }
+
+        // Cross-frames (floor beams at bottom, top struts)
+        members.push(createMember(leftBottom, rightBottom, 'FLOOR_BEAM_600x350'));
+        members.push(createMember(leftTop, rightTop, 'TOP_STRUT_350x250'));
 
         // Chord members
         if (i > 0) {
-            members.push(createMember(topNodes[i - 1], topNodes[i], 'ISMB350'));
-            members.push(createMember(bottomNodes[i - 1], bottomNodes[i], 'ISMB350'));
+            // Top chords
+            members.push(createMember(leftTruss.top[i - 1], leftTruss.top[i], 'TOP_CHORD_500x350'));
+            members.push(createMember(rightTruss.top[i - 1], rightTruss.top[i], 'TOP_CHORD_500x350'));
 
-            // Warren diagonals (alternating)
+            // Bottom chords
+            members.push(createMember(leftTruss.bottom[i - 1], leftTruss.bottom[i], 'BOTTOM_CHORD_500x350'));
+            members.push(createMember(rightTruss.bottom[i - 1], rightTruss.bottom[i], 'BOTTOM_CHORD_500x350'));
+
+            // Warren diagonals (alternating pattern)
             if (i % 2 === 1) {
-                members.push(createMember(bottomNodes[i - 1], topNodes[i], 'ISMB200'));
+                members.push(createMember(leftTruss.bottom[i - 1], leftTruss.top[i], 'WARREN_DIAGONAL_400x280'));
+                members.push(createMember(rightTruss.bottom[i - 1], rightTruss.top[i], 'WARREN_DIAGONAL_400x280'));
             } else {
-                members.push(createMember(topNodes[i - 1], bottomNodes[i], 'ISMB200'));
+                members.push(createMember(leftTruss.top[i - 1], leftTruss.bottom[i], 'WARREN_DIAGONAL_400x280'));
+                members.push(createMember(rightTruss.top[i - 1], rightTruss.bottom[i], 'WARREN_DIAGONAL_400x280'));
+            }
+
+            // Lower lateral bracing (X-pattern)
+            if (i % 2 === 0) {
+                members.push(createMember(leftTruss.bottom[i - 1], rightTruss.bottom[i], 'LOWER_LATERAL_250x200'));
+                members.push(createMember(rightTruss.bottom[i - 1], leftTruss.bottom[i], 'LOWER_LATERAL_250x200'));
+            }
+
+            // Upper lateral bracing
+            if (i % 2 === 1) {
+                members.push(createMember(leftTruss.top[i - 1], rightTruss.top[i], 'UPPER_LATERAL_280x220'));
+                members.push(createMember(rightTruss.top[i - 1], leftTruss.top[i], 'UPPER_LATERAL_280x220'));
             }
         }
     }
 
-    // Supports
-    supports.push(createPinnedSupport(bottomNodes[0]));
-    supports.push(createRollerSupport(bottomNodes[numPanels]));
+    // ========== STRINGERS (Rail bearers) ==========
+    const stringerPositions = [-trussSpacing / 3, 0, trussSpacing / 3];
+    stringerPositions.forEach(zPos => {
+        let prevNode: Node | null = null;
+        for (let i = 0; i <= numPanels; i++) {
+            const x = i * actualPanelWidth;
+            const stringerNode = createNode(x, 0, zPos);
+            nodes.push(stringerNode);
 
-    // Railway loading (IRS loading)
-    bottomNodes.forEach((n, i) => {
-        if (i > 0 && i < bottomNodes.length - 1) {
+            // Connect to floor beams
+            members.push(createMember(leftTruss.bottom[i], stringerNode, 'STRINGER_CON_100x80'));
+
+            if (prevNode) {
+                members.push(createMember(prevNode, stringerNode, 'STRINGER_350x200'));
+            }
+            prevNode = stringerNode;
+        }
+    });
+
+    // ========== PORTAL FRAMES AT ENDS ==========
+    // Left portal
+    members.push(createMember(leftTruss.bottom[0], rightTruss.top[0], 'PORTAL_BRACE_300x250'));
+    members.push(createMember(rightTruss.bottom[0], leftTruss.top[0], 'PORTAL_BRACE_300x250'));
+
+    // Right portal
+    members.push(createMember(leftTruss.bottom[numPanels], rightTruss.top[numPanels], 'PORTAL_BRACE_300x250'));
+    members.push(createMember(rightTruss.bottom[numPanels], leftTruss.top[numPanels], 'PORTAL_BRACE_300x250'));
+
+    // ========== SUPPORTS ==========
+    supports.push(createPinnedSupport(leftTruss.bottom[0]));
+    supports.push(createPinnedSupport(rightTruss.bottom[0]));
+    supports.push(createRollerSupport(leftTruss.bottom[numPanels]));
+    supports.push(createRollerSupport(rightTruss.bottom[numPanels]));
+
+    // ========== IRS MBG LOADING ==========
+    leftTruss.bottom.forEach((n, i) => {
+        if (i > 0 && i < leftTruss.bottom.length - 1) {
             loads.push({
                 id: `RL${n.id}`,
                 type: 'nodal',
                 nodeId: n.id,
                 fx: 0,
-                fy: -300,
+                fy: -350,  // IRS MBG loading
+                fz: 0
+            });
+        }
+    });
+
+    rightTruss.bottom.forEach((n, i) => {
+        if (i > 0 && i < rightTruss.bottom.length - 1) {
+            loads.push({
+                id: `RL${n.id}`,
+                type: 'nodal',
+                nodeId: n.id,
+                fx: 0,
+                fy: -350,
                 fz: 0
             });
         }
@@ -1768,7 +1851,7 @@ export function generateWarrenTruss(params?: Partial<TrussParams>): GeneratedStr
 
     return {
         name: config.name,
-        description: 'Warren Truss Railway Bridge - For IRS MBG loading',
+        description: 'Warren Truss Railway Bridge REALISTIC Model - Twin truss planes, floor system with cross-girders and stringers, lateral bracing, portal frames',
         nodes,
         members,
         supports,
@@ -1782,7 +1865,7 @@ export function generateWarrenTruss(params?: Partial<TrussParams>): GeneratedStr
                 width: config.deckWidth,
                 height: config.trussDepth
             },
-            source: 'Indian Railways Standard Warren Truss - 60m span'
+            source: 'Indian Railways Standard Warren Truss - 60-80m span, IRS MBG loading'
         }
     };
 }
@@ -2009,35 +2092,35 @@ export const FAMOUS_STRUCTURES_TEMPLATES: TemplateInfo[] = [
         id: 'burj-khalifa',
         name: 'Burj Khalifa',
         category: 'high-rise',
-        description: 'Y-shaped buttressed core high-rise (828m, 163 floors)',
+        description: 'REALISTIC: Y-shaped buttressed core, outrigger trusses, 27 setbacks, mega-columns (828m)',
         generator: () => generateBurjKhalifa()
     },
     {
         id: 'chenab-bridge',
         name: 'Chenab Bridge',
         category: 'arch',
-        description: 'Steel arch railway bridge (467m span, 359m height)',
+        description: 'REALISTIC: Twin box-section arch ribs, plate girder deck, stringers, K-bracing (467m span)',
         generator: () => generateChenabBridge()
     },
     {
         id: 'bandra-worli',
         name: 'Bandra-Worli Sea Link',
         category: 'cable-stayed',
-        description: 'Cable-stayed bridge with inverted Y towers (5.6km)',
+        description: 'REALISTIC: Inverted-Y towers, box girder with webs, dual cable planes (5.6km)',
         generator: () => generateBandraWorliSeaLink()
     },
     {
         id: 'howrah-bridge',
         name: 'Howrah Bridge',
         category: 'truss',
-        description: 'Balanced cantilever truss (457m main span)',
+        description: 'REALISTIC: K-truss cantilever, twin planes, portal bracing, floor system (457m span)',
         generator: () => generateHowrahBridge()
     },
     {
         id: 'golden-gate',
         name: 'Golden Gate Bridge',
         category: 'suspension',
-        description: 'Suspension bridge (1280m main span)',
+        description: 'REALISTIC: Dual cables, Art Deco towers, stiffening truss, suspenders (1280m span)',
         generator: () => generateGoldenGateBridge()
     },
     {
@@ -2058,7 +2141,7 @@ export const FAMOUS_STRUCTURES_TEMPLATES: TemplateInfo[] = [
         id: 'warren-truss',
         name: 'Railway Truss Bridge',
         category: 'truss',
-        description: 'Warren truss for railway (60m span)',
+        description: 'REALISTIC: Twin Warren truss, floor system, portal frames, IRS loading (80m span)',
         generator: () => generateWarrenTruss()
     },
     {
