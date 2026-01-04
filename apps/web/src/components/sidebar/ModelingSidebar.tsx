@@ -16,10 +16,12 @@ import {
     Triangle,
     Building2,
     ArrowDownUp,
-    CheckCircle
+    CheckCircle,
+    Landmark
 } from 'lucide-react';
 import { fetchTemplate, TemplateType, TemplateParams } from '../../services/factoryService';
 import { useModelStore } from '../../store/model';
+import { FAMOUS_STRUCTURES_TEMPLATES, generateFromTemplate } from '../../services/StructureFactory';
 
 // ============================================
 // TYPES
@@ -31,6 +33,7 @@ interface TemplateItem {
     templateType: TemplateType;
     params: TemplateParams;
     difficulty?: 'easy' | 'medium' | 'hard';
+    isFamousStructure?: boolean;  // Flag for local generation
 }
 
 interface TemplateCategory {
@@ -121,6 +124,19 @@ const TEMPLATE_BANK: TemplateCategory[] = [
             { id: 'special-11', name: 'Pedestrian Bridge (25m)', templateType: 'warren_truss', params: { span: 25, height: 3, panels: 10 }, difficulty: 'hard' },
             { id: 'special-12', name: 'Loading Bay Frame', templateType: 'portal_frame', params: { width: 10, height: 5, roof_angle: 0 }, difficulty: 'easy' },
         ]
+    },
+    {
+        id: 'famous',
+        name: '🌟 Famous Structures',
+        icon: <Landmark className="w-4 h-4" />,
+        items: FAMOUS_STRUCTURES_TEMPLATES.map(t => ({
+            id: t.id,
+            name: t.name,
+            templateType: 'beam' as TemplateType,  // Placeholder - uses local generator
+            params: {},
+            difficulty: 'hard' as const,
+            isFamousStructure: true
+        }))
     }
 ];
 
@@ -216,7 +232,28 @@ export const ModelingSidebar: FC = () => {
         showToast(`Loading ${item.name}...`, 'loading');
 
         try {
-            const model = await fetchTemplate(item.templateType, item.params);
+            let model;
+
+            // Check if this is a Famous Structure (local generation)
+            if (item.isFamousStructure) {
+                const generatedStructure = generateFromTemplate(item.id);
+                if (!generatedStructure) {
+                    throw new Error(`Failed to generate ${item.name}`);
+                }
+                model = {
+                    nodes: generatedStructure.nodes.map(n => ({
+                        ...n,
+                        support: n.restraints?.fx ? (n.restraints?.mx ? 'FIXED' : 'PINNED') : 'NONE'
+                    })),
+                    members: generatedStructure.members.map(m => ({
+                        ...m,
+                        section: m.sectionId
+                    }))
+                };
+            } else {
+                // Regular template - fetch from Python backend
+                model = await fetchTemplate(item.templateType, item.params);
+            }
 
             // Clear existing model
             clearModel();

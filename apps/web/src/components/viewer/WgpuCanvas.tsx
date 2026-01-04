@@ -32,11 +32,21 @@ export const WgpuCanvas: FC<WgpuCanvasProps> = ({ className }) => {
             try {
                 // Check if WebGPU is available before initializing
                 if (!navigator.gpu) {
-                    throw new Error('WebGPU is not supported in this browser. Falling back to WebGL.');
+                    throw new Error('WebGPU is not supported in this browser.');
                 }
+
+                // Test if we can get an adapter
+                const testAdapter = await navigator.gpu.requestAdapter();
+                if (!testAdapter) {
+                    throw new Error('No WebGPU adapter found. Your GPU may not support WebGPU.');
+                }
+
+                console.log('[WgpuCanvas] WebGPU available, initializing WASM...');
 
                 // Initialize WASM
                 await init();
+
+                console.log('[WgpuCanvas] Creating WebGPU renderer...');
 
                 // Initialize Renderer
                 const renderer = await Renderer.new(canvasRef.current);
@@ -45,8 +55,9 @@ export const WgpuCanvas: FC<WgpuCanvasProps> = ({ className }) => {
 
                 rendererRef.current = renderer;
                 setIsReady(true);
+                setUseWebGpu(true);
 
-                console.log('[WgpuCanvas] WebGPU Renderer initialized successfully');
+                console.log('[WgpuCanvas] ✓ WebGPU Renderer initialized successfully');
 
                 // Render loop
                 const render = () => {
@@ -64,18 +75,21 @@ export const WgpuCanvas: FC<WgpuCanvasProps> = ({ className }) => {
 
                 render();
             } catch (err: any) {
-                console.warn('[WgpuCanvas] WebGPU initialization failed, falling back to WebGL:', err);
+                const errorMessage = err.message || err.toString() || 'Unknown error';
+                console.warn('[WgpuCanvas] WebGPU initialization failed:', errorMessage);
+                console.warn('[WgpuCanvas] Falling back to WebGL renderer...');
 
                 if (isMounted) {
-                    setError(err.message || 'Failed to initialize WebGPU');
+                    setError(errorMessage);
+                    setUseWebGpu(false);
 
-                    // Automatically fall back to WebGL after a brief delay
+                    // Automatically clear error and switch to WebGL after showing message
                     setTimeout(() => {
                         if (isMounted) {
-                            console.log('[WgpuCanvas] Switching to WebGL renderer');
-                            setUseWebGpu(false);
+                            console.log('[WgpuCanvas] ✓ Switched to WebGL renderer');
+                            // Error will be hidden by parent switching to WebGL renderer
                         }
-                    }, 1500);
+                    }, 2000);
                 }
             }
         };
@@ -122,13 +136,23 @@ export const WgpuCanvas: FC<WgpuCanvasProps> = ({ className }) => {
             )}
 
             {error && (
-                <div className="absolute inset-0 flex items-center justify-center bg-red-900/20 backdrop-blur-md">
-                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 max-w-md">
-                        <h4 className="font-bold mb-1">WebGPU Error</h4>
-                        <p className="text-sm">{error}</p>
-                        <p className="text-xs mt-2 opacity-70">
-                            Please ensure your browser supports WebGPU and it is enabled in flags.
-                        </p>
+                <div className="absolute inset-0 flex items-center justify-center bg-slate-900/95 backdrop-blur-md">
+                    <div className="p-6 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 max-w-lg">
+                        <div className="flex items-start gap-3">
+                            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                                <svg className="w-6 h-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <div className="flex-1">
+                                <h4 className="font-semibold text-lg mb-2">WebGPU Not Available</h4>
+                                <p className="text-sm text-slate-300 mb-3">{error}</p>
+                                <div className="text-xs text-slate-400 space-y-1">
+                                    <p>✓ Automatically switching to WebGL renderer...</p>
+                                    <p className="opacity-60">Your browser may not support WebGPU or it may be disabled.</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

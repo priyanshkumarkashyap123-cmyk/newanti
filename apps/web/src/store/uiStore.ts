@@ -47,23 +47,57 @@ export interface AnalysisResults {
 
 export const CATEGORY_TOOLS: Record<Category, string[]> = {
     MODELING: [
-        'SELECT', 'DRAW_NODE', 'DRAW_BEAM', 'DRAW_COLUMN',
-        'COPY', 'MIRROR', 'DELETE', 'GRID_GENERATE'
+        // Selection & View
+        'SELECT', 'SELECT_RANGE', 'PAN', 'ZOOM_WINDOW',
+        // Draw - Basic
+        'DRAW_NODE', 'DRAW_BEAM', 'DRAW_COLUMN',
+        // Draw - Advanced
+        'DRAW_CABLE', 'DRAW_ARCH', 'DRAW_RIGID_LINK', 'DRAW_PLATE',
+        // Edit
+        'COPY', 'MIRROR', 'DELETE', 'DIVIDE_MEMBER', 'MERGE_NODES', 'ALIGN_NODES', 'SPLIT_MEMBER',
+        // Array
+        'ARRAY_LINEAR', 'ARRAY_POLAR', 'ARRAY_3D',
+        // Transform
+        'MOVE', 'ROTATE', 'SCALE', 'OFFSET_MEMBER', 'EXTRUDE',
+        // Generators
+        'GRID_GENERATE', 'GRID_3D', 'CIRCULAR_GRID',
+        'TRUSS_GENERATOR', 'ARCH_GENERATOR', 'PIER_GENERATOR',
+        'TOWER_GENERATOR', 'DECK_GENERATOR', 'CABLE_PATTERN',
+        'FRAME_GENERATOR', 'STAIRCASE_GENERATOR',
+        // Measure
+        'MEASURE_DISTANCE', 'MEASURE_ANGLE', 'MEASURE_AREA'
     ],
     PROPERTIES: [
-        'ASSIGN_SECTION', 'ASSIGN_MATERIAL', 'ASSIGN_RELEASE', 'ASSIGN_OFFSET'
+        'ASSIGN_SECTION', 'ASSIGN_MATERIAL', 'ASSIGN_RELEASE', 'ASSIGN_OFFSET',
+        // New property tools
+        'ASSIGN_CABLE_PROPS', 'ASSIGN_SPRING', 'ASSIGN_MASS', 'MEMBER_ORIENTATION',
+        'ASSIGN_RIGID', 'ASSIGN_HINGE', 'ASSIGN_SUPPORT',
+        // Section tools
+        'SECTION_BUILDER', 'IMPORT_SECTION'
     ],
     LOADING: [
-        'ADD_POINT_LOAD', 'ADD_MOMENT', 'ADD_UDL', 'ADD_WIND',
-        'ADD_SEISMIC', 'LOAD_COMBINATIONS'
+        'ADD_POINT_LOAD', 'ADD_MOMENT', 'ADD_UDL', 'ADD_TRAPEZOID',
+        'ADD_WIND', 'ADD_SEISMIC', 'LOAD_COMBINATIONS',
+        // New loading tools
+        'ADD_PRETENSION', 'ADD_TEMPERATURE', 'ADD_MOVING_LOAD',
+        'ADD_HYDROSTATIC', 'ADD_SELF_WEIGHT', 'ADD_SETTLEMENT',
+        'ADD_PRESSURE', 'ADD_CENTRIFUGAL',
+        // Load patterns
+        'LOAD_PATTERN', 'ENVELOPE'
     ],
     ANALYSIS: [
         'RUN_ANALYSIS', 'VIEW_DEFORMED', 'VIEW_REACTIONS',
-        'VIEW_SFD', 'VIEW_BMD', 'VIEW_DIAGRAMS'
+        'VIEW_SFD', 'VIEW_BMD', 'VIEW_DIAGRAMS',
+        // Advanced analysis
+        'MODAL_ANALYSIS', 'BUCKLING_ANALYSIS', 'P_DELTA',
+        'PUSHOVER', 'TIME_HISTORY', 'RESPONSE_SPECTRUM'
     ],
     DESIGN: [
         'STEEL_CHECK', 'CONCRETE_DESIGN', 'CONNECTION_DESIGN',
-        'FOUNDATION_DESIGN', 'GENERATE_REPORT'
+        'FOUNDATION_DESIGN', 'GENERATE_REPORT',
+        // Additional design tools
+        'TIMBER_DESIGN', 'COMPOSITE_DESIGN', 'SEISMIC_DETAIL',
+        'CROSS_SECTION_CHECK', 'DEFLECTION_CHECK'
     ]
 };
 

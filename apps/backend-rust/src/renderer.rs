@@ -26,7 +26,9 @@ impl Renderer {
             power_preference: wgpu::PowerPreference::HighPerformance,
             compatible_surface: Some(&surface),
             force_fallback_adapter: false,
-        }).await.ok_or("Failed to find an appropriate adapter")?;
+        }).await.ok_or_else(|| {
+            JsValue::from_str("Failed to find a compatible WebGPU adapter. Your GPU or browser may not support WebGPU.")
+        })?;
 
         // Use default limits instead of downlevel_webgl2_defaults to avoid
         // requesting unsupported limits like maxInterStageShaderComponents
