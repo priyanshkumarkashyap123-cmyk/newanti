@@ -3,7 +3,9 @@
 
 # 1. Install dependencies
 # (Azure usually handles this via Oryx, but good to have as fallback or for explicit control)
-pip install -r requirements.txt
+# 1. Install dependencies (Handled by Oryx build during deployment)
+# pip install -r requirements.txt -> REMOVED to prevent startup timeout
+
 
 # 2. Start Gunicorn with Uvicorn workers
 # -w 4: 4 worker processes
