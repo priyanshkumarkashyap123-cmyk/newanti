@@ -31,12 +31,12 @@ export const WgpuCanvas: FC<WgpuCanvasProps> = ({ className }) => {
 
             try {
                 // Check if WebGPU is available before initializing
-                if (!navigator.gpu) {
+                if (!(navigator as any).gpu) {
                     throw new Error('WebGPU is not supported in this browser.');
                 }
 
                 // Test if we can get an adapter
-                const testAdapter = await navigator.gpu.requestAdapter();
+                const testAdapter = await (navigator as any).gpu.requestAdapter();
                 if (!testAdapter) {
                     throw new Error('No WebGPU adapter found. Your GPU may not support WebGPU.');
                 }

@@ -34,8 +34,10 @@ import {
     Copy,
     Clipboard,
     Move,
+
     Scissors,
-    CheckCircle
+    CheckCircle,
+    Landmark
 } from 'lucide-react';
 import { useUIStore, Category } from '../../store/uiStore';
 import { useModelStore } from '../../store/model';
@@ -174,6 +176,25 @@ const TemplateBankPanel: FC = () => {
 
     return (
         <div className="space-y-3">
+            {/* Famous Structures Gallery Button */}
+            <button
+                onClick={() => useUIStore.getState().openModal('structureGallery')}
+                className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-emerald-900/40 to-teal-900/40 border border-emerald-500/30 rounded-lg hover:from-emerald-900/60 hover:to-teal-900/60 transition-all group"
+            >
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-emerald-500/20 rounded-md group-hover:bg-emerald-500/30 transition-colors">
+                        <Landmark className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div className="text-left">
+                        <div className="text-sm font-medium text-emerald-100">Famous Structures</div>
+                        <div className="text-[10px] text-emerald-400/70">Burj Khalifa, Bridges & more</div>
+                    </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-emerald-500/50 group-hover:text-emerald-400" />
+            </button>
+
+            <div className="h-px bg-zinc-800" />
+
             {/* Category Filter */}
             <div className="flex flex-wrap gap-1">
                 {categories.slice(0, 5).map((cat) => (

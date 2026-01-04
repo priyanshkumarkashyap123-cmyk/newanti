@@ -218,6 +218,7 @@ interface ModelState {
     addNodes: (nodes: Node[]) => void;      // Bulk add nodes
     addMembers: (members: Member[]) => void; // Bulk add members
     splitMemberById: (memberId: string, ratio: number) => void; // Insert node in member
+    mergeNodes: (nodeId1: string, nodeId2: string) => void; // Merge two nodes
 }
 
 // Helper to convert Map to Record for DevTools display
@@ -866,6 +867,33 @@ export const useModelStore = create<ModelState>()(
                             memberLoads: newMemberLoads,
                             analysisResults: null // Clear results
                         };
+                    }),
+
+                mergeNodes: (nodeId1, nodeId2) =>
+                    set((state) => {
+                        // Keep nodeId1, remove nodeId2
+                        // Update all members connected to nodeId2 to use nodeId1
+                        const newNodes = new Map(state.nodes);
+                        const newMembers = new Map(state.members);
+
+                        if (!newNodes.has(nodeId1) || !newNodes.has(nodeId2)) return state;
+
+                        const node1 = newNodes.get(nodeId1)!;
+                        // Move node1 to average position? Or just keep it? Let's just keep node1 for now.
+
+                        newNodes.delete(nodeId2);
+
+                        // Remap members
+                        newMembers.forEach((member, id) => {
+                            if (member.startNodeId === nodeId2) {
+                                newMembers.set(id, { ...member, startNodeId: nodeId1 });
+                            }
+                            if (member.endNodeId === nodeId2) {
+                                newMembers.set(id, { ...member, endNodeId: nodeId1 });
+                            }
+                        });
+
+                        return { nodes: newNodes, members: newMembers };
                     })
             })
         ),

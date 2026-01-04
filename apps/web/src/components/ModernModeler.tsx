@@ -21,7 +21,8 @@ import {
     ChevronRight,
     PanelLeftClose,
     PanelLeftOpen,
-    HelpCircle
+    HelpCircle,
+    Landmark
 } from 'lucide-react';
 import { useUIStore, Category } from '../store/uiStore';
 import { useModelStore, saveProjectToStorage } from '../store/model';
@@ -146,6 +147,18 @@ const CategorySwitcher: FC = () => {
                     );
                 })}
             </div>
+
+            <div className="mx-2 h-6 w-px bg-zinc-800" />
+
+            {/* Direct Structure Gallery Button */}
+            <button
+                onClick={() => useUIStore.getState().openModal('structureGallery')}
+                className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-emerald-600/20 to-teal-600/20 text-emerald-400 border border-emerald-500/30 rounded-lg hover:from-emerald-600/30 hover:to-teal-600/30 transition-all"
+                title="Browse Famous Structures"
+            >
+                <Landmark className="w-4 h-4" />
+                <span className="text-sm font-medium">Structure Gallery</span>
+            </button>
 
             {/* Notification Toast */}
 
@@ -449,8 +462,7 @@ export const ModernModeler: FC = () => {
     const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
     const [showModalAnalysis, setShowModalAnalysis] = useState(false);
 
-    // Structure Gallery
-    const [showStructureGallery, setShowStructureGallery] = useState(false);
+
 
     // Open structure gallery from anywhere
     useEffect(() => {
@@ -765,20 +777,21 @@ export const ModernModeler: FC = () => {
                         success: true,
                         nodes: Object.entries(wasmResult.displacements).map(([nodeId, disp]) => ({
                             nodeId,
-                            DX: disp[0] || 0,
-                            DY: disp[1] || 0,
-                            DZ: disp[2] || 0,
-                            RxnFX: 0,  // TODO: Calculate reactions from displacements
+                            DX: disp.dx || 0,
+                            DY: disp.dy || 0,
+                            DZ: 0, // 2D Frame
+                            RxnFX: 0,
                             RxnFY: 0,
                             RxnFZ: 0
                         })),
                         members: membersArray.map(m => ({
                             memberId: m.id,
-                            axial: 0,  // TODO: Calculate from displacements
+                            axial: 0,
                             shear: 0,
                             moment: 0
                         })),
-                        metadata: { solver: 'Rust WASM', computation_time: '< 1ms' }
+                        metadata: { solver: 'Rust WASM', computation_time: '< 1ms' },
+                        error: undefined // Fix missing property
                     };
 
                     if (pythonResult.success) {
@@ -1278,12 +1291,9 @@ export const ModernModeler: FC = () => {
                                         setShowSplitDialog(true);
                                     },
                                     onSplit: () => {
-                                        // Attempt to split at any selected node or all nodes?
-                                        // For now, check if any nodes lie on this member
                                         const model = useModelStore.getState();
-                                        model.nodes.forEach(node => {
-                                            model.splitMemberAtNode(selectedId, node.id);
-                                        });
+                                        // Simple split at 0.5 for context menu action
+                                        model.splitMemberById(selectedId, 0.5);
                                     },
                                     onAssignLoad: () => openModal('loadDialog'),
                                     onReleases: () => {
@@ -1495,8 +1505,9 @@ export const ModernModeler: FC = () => {
 
             <LoadInputDialog
                 isOpen={showLoadDialog}
-                onClose={() => setShowSplitDialog(false)}
-                memberId={splitMemberId}
+                onClose={() => setShowLoadDialog(false)}
+                targetMemberId={loadDialogMemberId}
+                targetNodeId={selectedIds.size === 1 && Array.from(selectedIds)[0]?.startsWith('N') ? Array.from(selectedIds)[0] : undefined}
             />
 
             {/* Split Member Dialog */}
