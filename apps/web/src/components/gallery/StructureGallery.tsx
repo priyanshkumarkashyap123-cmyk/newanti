@@ -38,7 +38,8 @@ const categoryNames: Record<TemplateInfo['category'], string> = {
 export const StructureGallery: FC<StructureGalleryProps> = ({ isOpen, onClose }) => {
     const [selectedCategory, setSelectedCategory] = useState<TemplateInfo['category'] | 'all'>('all');
     const [searchQuery, setSearchQuery] = useState('');
-    const { setNodes, setMembers, setSupports, setLoads } = useModelStore();
+    const loadStructure = useModelStore((state) => state.loadStructure);
+    const clearModel = useModelStore((state) => state.clearModel);
 
     if (!isOpen) return null;
 
@@ -56,20 +57,21 @@ export const StructureGallery: FC<StructureGalleryProps> = ({ isOpen, onClose })
     const filteredTemplates = FAMOUS_STRUCTURES_TEMPLATES.filter(template => {
         const matchesCategory = selectedCategory === 'all' || template.category === selectedCategory;
         const matchesSearch = template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            template.description.toLowerCase().includes(searchQuery.toLowerCase());
+            template.description.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesCategory && matchesSearch;
     });
 
     const handleLoadTemplate = (templateId: string) => {
         const structure = generateFromTemplate(templateId);
         if (structure) {
-            // Clear existing model and load new structure
-            setNodes(structure.nodes);
-            setMembers(structure.members);
-            setSupports(structure.supports);
-            setLoads(structure.loads);
+            // Clear existing model first
+            clearModel();
+
+            // Load new structure using the proper store method
+            loadStructure(structure.nodes, structure.members);
+
             onClose();
-            
+
             // Show success notification
             console.log(`Loaded: ${structure.name}`);
             console.log(`Nodes: ${structure.metadata.totalNodes}, Members: ${structure.metadata.totalMembers}`);
@@ -152,7 +154,7 @@ export const StructureGallery: FC<StructureGalleryProps> = ({ isOpen, onClose })
                                         <div className="h-48 bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center relative overflow-hidden">
                                             <div className="absolute inset-0 bg-emerald-500/5 group-hover:bg-emerald-500/10 transition-colors"></div>
                                             <Icon className="w-20 h-20 text-slate-600 group-hover:text-emerald-400 transition-colors" />
-                                            
+
                                             {/* Category Badge */}
                                             <div className="absolute top-3 right-3 px-3 py-1 bg-slate-900/90 backdrop-blur-sm rounded-full text-xs text-emerald-400 font-medium border border-emerald-500/30">
                                                 {categoryNames[template.category]}

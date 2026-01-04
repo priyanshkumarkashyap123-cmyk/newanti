@@ -14,6 +14,7 @@
 import { FC, useState, useEffect, useCallback } from 'react';
 import { ChevronDown, Sparkles } from 'lucide-react';
 import { useUIStore, CATEGORY_TOOLS } from '../../store/uiStore';
+import { useModelStore } from '../../store/model';
 import {
     MODELING_TOOL_GROUPS,
     TOOL_DEFINITIONS,
@@ -154,6 +155,25 @@ export const ModelingToolbar: FC = () => {
     const activeCategory = useUIStore(state => state.activeCategory);
     const setActiveTool = useUIStore(state => state.setActiveTool);
     const openModal = useUIStore(state => state.openModal);
+    const { setTool: setModelTool } = useModelStore();
+
+    // Helper function to set tool in both stores
+    const handleToolSelect = useCallback((toolId: string) => {
+        setActiveTool(toolId);
+        
+        // Map UI tool names to model tool names
+        const toolMap: Record<string, string> = {
+            'SELECT': 'select',
+            'NODE': 'node',
+            'MEMBER': 'member',
+            'SUPPORT': 'support',
+            'LOAD': 'load',
+            'MEMBER_LOAD': 'memberLoad',
+        };
+        
+        const modelTool = toolMap[toolId] || toolId.toLowerCase();
+        setModelTool(modelTool as any);
+    }, [setActiveTool, setModelTool]);
 
     // Only show modeling tools when in MODELING category
     if (activeCategory !== 'MODELING') {
@@ -173,13 +193,13 @@ export const ModelingToolbar: FC = () => {
 
             if (toolId && CATEGORY_TOOLS.MODELING.includes(toolId)) {
                 e.preventDefault();
-                setActiveTool(toolId);
+                handleToolSelect(toolId);
             }
         };
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [setActiveTool]);
+    }, [handleToolSelect]);
 
     return (
         <div className="flex flex-col gap-2 p-2 bg-zinc-900 border-b border-zinc-800">
@@ -194,7 +214,7 @@ export const ModelingToolbar: FC = () => {
                     return (
                         <button
                             key={toolId}
-                            onClick={() => setActiveTool(toolId)}
+                            onClick={() => handleToolSelect(toolId)}
                             className={`
                 p-2 rounded-md transition-all
                 ${activeTool === toolId
@@ -227,7 +247,7 @@ export const ModelingToolbar: FC = () => {
                             key={group.id}
                             group={group}
                             activeTool={activeTool}
-                            onToolSelect={setActiveTool}
+                            onToolSelect={handleToolSelect}
                         />
                     ))}
                 </div>
