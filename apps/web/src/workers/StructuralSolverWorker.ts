@@ -19,7 +19,8 @@ let wasmReady = false;
 async function loadWasm(): Promise<void> {
     try {
         // Correct path for monorepo resolution
-        const wasm = await import('../../../../packages/solver-wasm/pkg/solver_wasm');
+        const { default: init } = await import('solver-wasm');
+        await init();
         wasmModule = wasm;
         wasmReady = true;
         console.log('[StructuralSolverWorker] WASM Solver Module Loaded');

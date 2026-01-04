@@ -29,8 +29,8 @@ let wasmReady = false;
 
 async function initWasmAI() {
     try {
-        const wasm = await import('../../../../packages/solver-wasm/pkg/solver_wasm');
-        wasmAI = wasm;
+        const { default: init } = await import('solver-wasm');
+        await init();
         wasmReady = true;
         console.log('[AI Assistant] Rust AI Engine Loaded');
     } catch (e) {

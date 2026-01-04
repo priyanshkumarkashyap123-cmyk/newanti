@@ -3,7 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import { View, OrbitControls, OrthographicCamera, PerspectiveCamera } from '@react-three/drei';
 import { SharedScene } from './SharedScene';
 import { BoxSelector } from './BoxSelector';
-import { WgpuCanvas } from './WgpuCanvas';
+import { WgpuCanvas } from './viewer/WgpuCanvas';
 import { useUIStore } from '../store/uiStore';
 import { Cpu, Zap } from 'lucide-react';
 
