@@ -29,8 +29,18 @@ nalgebra-sparse = "0.9"
 # Parallel processing - Rayon for multi-threading
 rayon = "1.8"
 
+# Advanced structural analysis - Petgraph for connectivity
+petgraph = "0.6"
+clarabel = "0.5"
+uuid = { version = "1.0", features = ["v4", "js"] }
+getrandom = { version = "0.2", features = ["js"] }
+wasm-bindgen-futures = "0.4"
+
 # JavaScript interop
 js-sys = "0.3.69"
+
+# WebGPU support
+wgpu = { version = "0.19", features = ["webgl"] }
 
 # Serialization for data transfer
 serde = { version = "1.0", features = ["derive"] }
@@ -41,7 +51,15 @@ serde-wasm-bindgen = "0.6"
 web-sys = { version = "0.3.69", features = [
     "console",
     "Performance",
-    "Window"
+    "Window",
+    "Document",
+    "Element",
+    "HtmlCanvasElement",
+    "Gpu",
+    "GpuAdapter",
+    "GpuDevice",
+    "GpuQueue",
+    "GpuCanvasContext"
 ]}
 
 [dev-dependencies]

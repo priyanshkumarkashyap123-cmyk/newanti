@@ -16,3 +16,5 @@ export {
     type SupportType,
     type MemberData
 } from './StructuralMesh';
+export { StructuralCanvas } from './StructuralCanvas';
+export { WgpuCanvas } from './WgpuCanvas';

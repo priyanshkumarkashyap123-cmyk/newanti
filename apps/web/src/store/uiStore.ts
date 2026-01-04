@@ -122,6 +122,10 @@ interface UIState {
         bucklingAnalysis: boolean;
     };
 
+    // Graphics State
+    useWebGpu: boolean;
+    setUseWebGpu: (val: boolean) => void;
+
     // Actions
     setCategory: (cat: Category) => void;
     setActiveTool: (tool: string | null) => void;
@@ -222,6 +226,10 @@ export const useUIStore = create<UIState>()(
                 modalAnalysis: false,
                 bucklingAnalysis: false,
             },
+
+            // Graphics State
+            useWebGpu: false,
+            setUseWebGpu: (val) => set({ useWebGpu: val }),
 
             // ========================================
             // SET CATEGORY - THE "ONE-BY-ONE" LOGIC
@@ -440,7 +448,8 @@ export const useUIStore = create<UIState>()(
                 dataPanelOpen: state.dataPanelOpen,
                 showGrid: state.showGrid,
                 snapToGrid: state.snapToGrid,
-                gridSize: state.gridSize
+                gridSize: state.gridSize,
+                useWebGpu: state.useWebGpu
             })
         }
     )

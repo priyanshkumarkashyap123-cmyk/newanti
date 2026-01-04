@@ -1,8 +1,11 @@
-import { FC, useRef, useState, MutableRefObject } from 'react';
+import { FC, useRef, useState, MutableRefObject, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { View, OrbitControls, OrthographicCamera, PerspectiveCamera } from '@react-three/drei';
 import { SharedScene } from './SharedScene';
 import { BoxSelector } from './BoxSelector';
+import { WgpuCanvas } from './WgpuCanvas';
+import { useUIStore } from '../store/uiStore';
+import { Cpu, Zap } from 'lucide-react';
 
 type ViewportLayout = 'SINGLE' | 'QUAD';
 type WorkingPlane = 'XZ' | 'XY' | 'YZ';
@@ -170,7 +173,7 @@ const WorkingPlaneControls: FC<WorkingPlaneControlsProps> = ({
     );
 };
 
-const ViewportContainer: FC<{ className?: string; layout: ViewportLayout }> = ({ className, layout }) => {
+const ViewportContainer: FC<{ className?: string; layout: ViewportLayout; useWebGpu: boolean }> = ({ className, layout, useWebGpu }) => {
     const mainRef = useRef<HTMLDivElement>(null);
     const topRef = useRef<HTMLDivElement>(null);
     const frontRef = useRef<HTMLDivElement>(null);
@@ -185,6 +188,10 @@ const ViewportContainer: FC<{ className?: string; layout: ViewportLayout }> = ({
         panSpeed: 1.5,
         mouseButtons: { LEFT: 2, MIDDLE: 2, RIGHT: 2 }
     };
+
+    if (useWebGpu) {
+        return <WgpuCanvas className={className} />;
+    }
 
     return (
         <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
@@ -284,6 +291,8 @@ export const ViewportManager: FC = () => {
     const [layout, setLayout] = useState<ViewportLayout>('QUAD');
     const [workingPlane, setWorkingPlane] = useState<WorkingPlane>('XZ');
     const [workingElevation, setWorkingElevation] = useState(0);
+    const useWebGpu = useUIStore(state => state.useWebGpu);
+    const setUseWebGpu = useUIStore(state => state.setUseWebGpu);
 
     return (
         <div style={{ width: '100%', height: '100%', position: 'relative' }}>
@@ -295,50 +304,95 @@ export const ViewportManager: FC = () => {
                 zIndex: 50,
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '4px',
+                gap: '8px',
                 background: 'rgba(0, 0, 0, 0.8)',
-                padding: '8px',
-                borderRadius: '8px',
+                padding: '12px',
+                borderRadius: '12px',
                 border: '1px solid rgba(255, 255, 255, 0.15)',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                minWidth: '120px'
             }}>
-                <div style={{ fontSize: '10px', color: '#888', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <div style={{ fontSize: '10px', color: '#888', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
+                    Graphics Engine
+                </div>
+                <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
+                    <button
+                        onClick={() => setUseWebGpu(false)}
+                        style={{
+                            flex: 1,
+                            color: '#fff',
+                            background: !useWebGpu ? '#444' : 'transparent',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            borderRadius: '6px',
+                            padding: '6px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '4px'
+                        }}
+                    >
+                        <Cpu className="w-4 h-4" />
+                        <span style={{ fontSize: '10px' }}>WebGL</span>
+                    </button>
+                    <button
+                        onClick={() => setUseWebGpu(true)}
+                        style={{
+                            flex: 1,
+                            color: useWebGpu ? '#10b981' : '#fff',
+                            background: useWebGpu ? 'rgba(16, 185, 129, 0.2)' : 'transparent',
+                            border: useWebGpu ? '1px solid #10b981' : '1px solid rgba(255, 255, 255, 0.1)',
+                            borderRadius: '6px',
+                            padding: '6px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '4px'
+                        }}
+                    >
+                        <Zap className="w-4 h-4" />
+                        <span style={{ fontSize: '10px' }}>WebGPU</span>
+                    </button>
+                </div>
+
+                <div style={{ fontSize: '10px', color: '#888', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
                     Layout
                 </div>
-                <button
-                    onClick={() => setLayout('SINGLE')}
-                    style={{
-                        color: '#fff',
-                        background: layout === 'SINGLE' ? '#007bff' : 'rgba(255, 255, 255, 0.1)',
-                        border: layout === 'SINGLE' ? '1px solid #007bff' : '1px solid rgba(255, 255, 255, 0.2)',
-                        borderRadius: '4px',
-                        padding: '6px 12px',
-                        cursor: 'pointer',
-                        fontSize: '12px',
-                        fontWeight: 500,
-                        width: '100%',
-                        textAlign: 'left'
-                    }}
-                >
-                    ⬜ Single
-                </button>
-                <button
-                    onClick={() => setLayout('QUAD')}
-                    style={{
-                        color: '#fff',
-                        background: layout === 'QUAD' ? '#007bff' : 'rgba(255, 255, 255, 0.1)',
-                        border: layout === 'QUAD' ? '1px solid #007bff' : '1px solid rgba(255, 255, 255, 0.2)',
-                        borderRadius: '4px',
-                        padding: '6px 12px',
-                        cursor: 'pointer',
-                        fontSize: '12px',
-                        fontWeight: 500,
-                        width: '100%',
-                        textAlign: 'left'
-                    }}
-                >
-                    ⊞ Quad
-                </button>
+                <div style={{ display: 'flex', gap: '4px' }}>
+                    <button
+                        onClick={() => setLayout('SINGLE')}
+                        style={{
+                            flex: 1,
+                            color: '#fff',
+                            background: layout === 'SINGLE' ? '#007bff' : 'rgba(255, 255, 255, 0.1)',
+                            border: layout === 'SINGLE' ? '1px solid #007bff' : '1px solid rgba(255, 255, 255, 0.2)',
+                            borderRadius: '4px',
+                            padding: '6px',
+                            cursor: 'pointer',
+                            fontSize: '11px',
+                            fontWeight: 500
+                        }}
+                    >
+                        Single
+                    </button>
+                    <button
+                        onClick={() => setLayout('QUAD')}
+                        style={{
+                            flex: 1,
+                            color: '#fff',
+                            background: layout === 'QUAD' ? '#007bff' : 'rgba(255, 255, 255, 0.1)',
+                            border: layout === 'QUAD' ? '1px solid #007bff' : '1px solid rgba(255, 255, 255, 0.2)',
+                            borderRadius: '4px',
+                            padding: '6px',
+                            cursor: 'pointer',
+                            fontSize: '11px',
+                            fontWeight: 500
+                        }}
+                    >
+                        Quad
+                    </button>
+                </div>
             </div>
 
             {/* Working Plane Controls - For 3D Node Creation */}
@@ -349,7 +403,7 @@ export const ViewportManager: FC = () => {
                 onElevationChange={setWorkingElevation}
             />
 
-            <ViewportContainer layout={layout} />
+            <ViewportContainer layout={layout} useWebGpu={useWebGpu} />
         </div>
     );
 };

@@ -7,6 +7,9 @@ use nalgebra::{DMatrix, DVector};
 use wasm_bindgen::prelude::*;
 use serde::{Deserialize, Serialize};
 
+pub mod ai_architect;
+pub mod renderer;
+
 // ============================================
 // INITIALIZATION
 // ============================================
@@ -186,6 +189,123 @@ pub fn solve_system_json(input_json: &str) -> String {
     };
 
     serde_json::to_string(&result).unwrap_or_default()
+}
+
+/// Solve a sparse linear system using CG (Conjugate Gradient)
+#[wasm_bindgen]
+pub fn solve_sparse_system_json(input_json: &str) -> String {
+    use nalgebra_sparse::{CsrMatrix};
+    use nalgebra::{DVector};
+
+    let start = web_sys::window()
+        .and_then(|w| w.performance())
+        .map(|p| p.now())
+        .unwrap_or(0.0);
+
+    // Parse input
+    let input: SparseSolverInput = match serde_json::from_str(input_json) {
+        Ok(i) => i,
+        Err(e) => return serde_json::to_string(&SolverOutput {
+            displacements: vec![],
+            solve_time_ms: 0.0,
+            success: false,
+            error: Some(format!("Failed to parse input: {}", e)),
+            condition_number: None,
+        }).unwrap_or_default()
+    };
+
+    // Convert entries to CSR matrix
+    let mut row_indices = Vec::with_capacity(input.entries.len());
+    let mut col_indices = Vec::with_capacity(input.entries.len());
+    let mut values = Vec::with_capacity(input.entries.len());
+
+    for entry in input.entries {
+        row_indices.push(entry.row);
+        col_indices.push(entry.col);
+        values.push(entry.value);
+    }
+
+    let coo = nalgebra_sparse::CooMatrix::try_from_triplets(
+        input.size, input.size, row_indices, col_indices, values
+    );
+
+    let coo = match coo {
+        Ok(c) => c,
+        Err(e) => return serde_json::to_string(&SolverOutput {
+            displacements: vec![],
+            solve_time_ms: 0.0,
+            success: false,
+            error: Some(format!("Failed to build COO matrix: {}", e)),
+            condition_number: None,
+        }).unwrap_or_default()
+    };
+
+    let csr = CsrMatrix::from(&coo);
+    let b = DVector::from_vec(input.forces);
+    
+    // For now, let's use a simple Jacobi-preconditioned CG solver
+    // Note: nalgebra-sparse doesn't have a built-in CG, so we implement a basic one
+    let mut x = DVector::zeros(input.size);
+    let mut r = &b - &csr * &x;
+    
+    // Jacobi preconditioner
+    let mut inv_diag = DVector::zeros(input.size);
+    for i in 0..input.size {
+        let val = csr.get_entry(i, i).map(|e| e.into_value()).unwrap_or(0.0);
+        inv_diag[i] = if val.abs() > 1e-15 { 1.0 / val } else { 1.0 };
+    }
+    
+    let mut z = r.component_mul(&inv_diag);
+    let mut p = z.clone();
+    let mut rz_old = r.dot(&z);
+    
+    let b_norm = b.norm();
+    let tol = 1e-10 * b_norm.max(1.0);
+    let max_iter = input.size * 2;
+    let mut success = false;
+    let mut error = None;
+
+    for _ in 0..max_iter {
+        if r.norm() <= tol {
+            success = true;
+            break;
+        }
+        
+        let ap = &csr * &p;
+        let p_ap = p.dot(&ap);
+        
+        if p_ap.abs() < 1e-18 {
+            error = Some("Division by zero in CG solver (matrix might be indefinite)".to_string());
+            break;
+        }
+        
+        let alpha = rz_old / p_ap;
+        x += alpha * &p;
+        r -= alpha * &ap;
+        
+        z = r.component_mul(&inv_diag);
+        let rz_new = r.dot(&z);
+        let beta = rz_new / rz_old;
+        p = &z + beta * &p;
+        rz_old = rz_new;
+    }
+
+    if !success && error.is_none() {
+        error = Some("CG solver failed to converge".to_string());
+    }
+
+    let end = web_sys::window()
+        .and_then(|w| w.performance())
+        .map(|p| p.now())
+        .unwrap_or(0.0);
+
+    serde_json::to_string(&SolverOutput {
+        displacements: x.data.as_vec().clone(),
+        solve_time_ms: end - start,
+        success,
+        error,
+        condition_number: None,
+    }).unwrap_or_default()
 }
 
 /// Solve using Cholesky decomposition (faster for symmetric positive-definite matrices)

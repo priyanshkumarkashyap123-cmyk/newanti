@@ -9,6 +9,29 @@
  */
 
 // ============================================
+// IMPORTS
+// ============================================
+
+// WASM Module import (dynamic)
+let wasmModule: any = null;
+let wasmReady = false;
+
+async function loadWasm(): Promise<void> {
+    try {
+        // Correct path for monorepo resolution
+        const wasm = await import('../../../../packages/solver-wasm/pkg/solver_wasm');
+        wasmModule = wasm;
+        wasmReady = true;
+        console.log('[StructuralSolverWorker] WASM Solver Module Loaded');
+    } catch (error) {
+        console.warn('[StructuralSolverWorker] WASM Solver not available, using JS fallback:', error);
+    }
+}
+
+// Start loading
+loadWasm();
+
+// ============================================
 // MESSAGE TYPES
 // ============================================
 
@@ -411,7 +434,32 @@ function analyze(model: ModelData): ResultData {
 
         // Solve
         const solveStart = performance.now();
-        const { x: displacements, iterations, residual } = conjugateGradient(K, F, model.options);
+        let displacements: Float64Array;
+        let iterations: number | undefined;
+        let residual: number | undefined;
+
+        if (wasmReady && wasmModule) {
+            sendProgress('solving', 80, 'Solving using high-performance Rust WASM solver (LU)...');
+
+            // Prepare dense matrix for WASM (if direct)
+            // Note: For very large systems, we should use sparse WASM solver
+            // Currently solve_system expects a dense flattened array
+            const stiffnessArray = new Float64Array(totalDof * totalDof);
+            for (let i = 0; i < totalDof; i++) {
+                for (let j = 0; j < totalDof; j++) {
+                    stiffnessArray[i * totalDof + j] = K.get(i, j);
+                }
+            }
+
+            displacements = wasmModule.solve_system(stiffnessArray, F, totalDof);
+        } else {
+            sendProgress('solving', 80, 'Solving using JavaScript iterative solver (CG)...');
+            const result = conjugateGradient(K, F, model.options);
+            displacements = result.x;
+            iterations = result.iterations;
+            residual = result.residual;
+        }
+
         const solveTime = performance.now() - solveStart;
 
         sendProgress('extracting', 95, 'Extracting results...');
@@ -434,7 +482,8 @@ function analyze(model: ModelData): ResultData {
                 iterations,
                 residual,
                 nnz: K.nnz,
-                sparsity
+                sparsity,
+                method: (wasmReady && wasmModule) ? 'Rust WASM (LU)' : 'JS Conjugate Gradient'
             }
         };
     } catch (error) {
