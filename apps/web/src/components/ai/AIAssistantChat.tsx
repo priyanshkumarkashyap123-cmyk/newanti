@@ -171,48 +171,6 @@ export const AIAssistantChat: FC<AIAssistantChatProps> = ({
     // API CALLS
     // ============================================
 
-    const handleLocalDiagnose = useCallback(async () => {
-        if (!wasmReady || !wasmAI) {
-            addMessage({
-                role: 'assistant',
-                content: 'Rust AI Engine is still loading. Please try again in a moment.',
-                type: 'info'
-            });
-            return;
-        }
-
-        setIsLoading(true);
-        addMessage({ role: 'user', content: 'Use local Rust AI to diagnose' });
-
-        try {
-            // Instant local diagnosis
-            const span = 10; // Mock span for demo
-            const load = 50; // Mock load for demo
-
-            // Call the Rust AIArchitect
-            const suggestion = wasmAI.AIArchitect.suggest_beam_size(span, load);
-
-            addMessage({
-                role: 'assistant',
-                content: `🚀 **Rust AI Engine Suggestion (Instant):**\n\nBased on your model geometry, a section like **${suggestion}** would be optimal for the current spans.\n\n*Note: This was computed locally using WebAssembly for zero latency.*`,
-                type: 'success',
-                actions: [
-                    { label: 'Apply Suggestion', action: () => handleModify(`change all beams to ${suggestion}`) }
-                ]
-            });
-        } catch (error) {
-            console.error('Local diagnosis failed:', error);
-            addMessage({
-                role: 'assistant',
-                content: 'Local AI diagnosis failed. Falling back to cloud AI...',
-                type: 'error'
-            });
-            handleDiagnose();
-        } finally {
-            setIsLoading(false);
-        }
-    }, [addMessage, handleDiagnose, handleModify]);
-
     const handleDiagnose = useCallback(async () => {
         setIsLoading(true);
         addMessage({ role: 'user', content: 'Diagnose my model' });
@@ -353,51 +311,73 @@ export const AIAssistantChat: FC<AIAssistantChatProps> = ({
                             updateNode(node.id, { restraints: node.restraints });
                         }
                     }
-                } else if (action === 'remove_member') {
-                    // Remove the member
-                    const removed = result.changes?.removed;
-                    if (removed) {
-                        removeMember(removed);
-                    }
-                } else if (action === 'add_member') {
-                    // Add new member
-                    const newMember = result.changes;
-                    if (newMember?.new_member) {
-                        addMember({
-                            id: newMember.new_member,
-                            startNodeId: newMember.start,
-                            endNodeId: newMember.end,
-                            sectionId: 'ISMB300'
-                        });
-                    }
-                } else if (action === 'scale') {
-                    // Handle scaling (would need full model reload in practice)
-                    // For now, just show success message
                 }
 
                 addMessage({
                     role: 'assistant',
-                    content: result.message,
+                    content: `✅ **Done!** ${result.message || 'Modifications applied.'}`,
                     type: 'success'
                 });
             } else {
                 addMessage({
                     role: 'assistant',
-                    content: result.message || "I couldn't understand that command. Try something like:\n• 'Change columns to ISMB500'\n• 'Add support at N3'\n• 'Remove member M2'",
-                    type: result.success === false ? 'warning' : 'info'
+                    content: result.message || 'Could not modify the model. Please try a different command.',
+                    type: 'warning'
                 });
             }
         } catch (error) {
             console.error('Modification failed:', error);
             addMessage({
                 role: 'assistant',
-                content: 'Could not process your request. Please try again.',
+                content: 'Failed to modify the model. Please try again.',
                 type: 'error'
             });
         } finally {
             setIsLoading(false);
         }
-    }, [getModelData, addMessage, updateNode, updateMember, removeMember, addMember]);
+    }, [getModelData, addMessage, updateMember, updateNode]);
+
+    const handleLocalDiagnose = useCallback(async () => {
+        if (!wasmReady || !wasmAI) {
+            addMessage({
+                role: 'assistant',
+                content: 'Rust AI Engine is still loading. Please try again in a moment.',
+                type: 'info'
+            });
+            return;
+        }
+
+        setIsLoading(true);
+        addMessage({ role: 'user', content: 'Use local Rust AI to diagnose' });
+
+        try {
+            // Instant local diagnosis
+            const span = 10; // Mock span for demo
+            const load = 50; // Mock load for demo
+
+            // Call the Rust AIArchitect
+            const suggestion = wasmAI.AIArchitect.suggest_beam_size(span, load);
+
+            addMessage({
+                role: 'assistant',
+                content: `🚀 **Rust AI Engine Suggestion (Instant):**\n\nBased on your model geometry, a section like **${suggestion}** would be optimal for the current spans.\n\n*Note: This was computed locally using WebAssembly for zero latency.*`,
+                type: 'success',
+                actions: [
+                    { label: 'Apply Suggestion', action: () => handleModify(`change all beams to ${suggestion}`) }
+                ]
+            });
+        } catch (error) {
+            console.error('Local diagnosis failed:', error);
+            addMessage({
+                role: 'assistant',
+                content: 'Local AI diagnosis failed. Falling back to cloud AI...',
+                type: 'error'
+            });
+            handleDiagnose();
+        } finally {
+            setIsLoading(false);
+        }
+    }, [addMessage, handleDiagnose, handleModify, wasmReady, wasmAI]);
 
     // ============================================
     // MESSAGE HANDLING
