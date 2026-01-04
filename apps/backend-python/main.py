@@ -121,14 +121,14 @@ for origin in sorted(allow_origins):
 print(f"[CORS] CORS Middleware initialized")
 print(f"{'='*60}\n")
 
+# CRITICAL: Allow all origins to fix CORS errors
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for now
-    allow_credentials=False,  # Must be False when using allow_origins=["*"]
-    allow_methods=["*"],
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
     expose_headers=["*"],
-    max_age=3600,
 )
 
 
