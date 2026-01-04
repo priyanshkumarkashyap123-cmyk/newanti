@@ -571,6 +571,20 @@ export const ModernModeler: FC = () => {
         return;
     }, [nodes, members]);
 
+    // Analysis Event Listeners - Listen for ribbon triggers
+    useEffect(() => {
+        const onAnalysis = () => handleRunAnalysis();
+        const onModal = () => setShowModalAnalysis(true);
+
+        document.addEventListener('trigger-analysis', onAnalysis);
+        document.addEventListener('trigger-modal-analysis', onModal);
+
+        return () => {
+            document.removeEventListener('trigger-analysis', onAnalysis);
+            document.removeEventListener('trigger-modal-analysis', onModal);
+        };
+    }, [handleRunAnalysis]);
+
     // Actual analysis execution (called after consent)
     const executeAnalysis = useCallback(async () => {
 
@@ -1250,6 +1264,11 @@ export const ModernModeler: FC = () => {
                             }
                         }}
                     >
+                        {activeCategory === 'MODELING' && (
+                            <div className="absolute top-4 left-4 z-20">
+                                <ModelingToolbar />
+                            </div>
+                        )}
                         <ViewportManager />
 
                         {/* Status Bar Overlay */}

@@ -18,7 +18,8 @@ import {
     Rotate3d,
     Eye,
     Database,
-    Crown
+    Crown,
+    Activity
 } from 'lucide-react';
 import { useModelStore } from '../../store/model';
 import { useUIStore, Category } from '../../store/uiStore';
@@ -145,8 +146,14 @@ export const EngineeringRibbon: FC<RibbonProps> = ({ activeCategory }) => {
                 <ToolButton
                     icon={Play}
                     label="Run Analysis"
-                    onClick={() => document.dispatchEvent(new CustomEvent('trigger-analysis'))} // We'll listen for this
+                    onClick={() => document.dispatchEvent(new CustomEvent('trigger-analysis'))}
                     isActive={isAnalyzing}
+                    vertical
+                />
+                <ToolButton
+                    icon={Activity}
+                    label="Modal Freq"
+                    onClick={() => document.dispatchEvent(new CustomEvent('trigger-modal-analysis'))}
                     vertical
                 />
             </ToolGroup>
