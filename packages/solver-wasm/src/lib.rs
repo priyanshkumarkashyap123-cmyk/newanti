@@ -427,6 +427,248 @@ pub fn compute_eigenvalues(
 }
 
 // ============================================
+// STRUCTURAL ANALYSIS FUNCTIONS
+// ============================================
+
+/// Node for structural analysis
+#[derive(Serialize, Deserialize)]
+pub struct Node {
+    pub id: i32,
+    pub x: f64,
+    pub y: f64,
+    pub fixed: [bool; 3], // [dx, dy, rotation]
+}
+
+/// Element (beam/member) for structural analysis
+#[derive(Serialize, Deserialize)]
+pub struct Element {
+    pub id: i32,
+    pub node_start: i32,
+    pub node_end: i32,
+    pub e: f64, // Young's modulus (Pa)
+    pub i: f64, // Moment of inertia (m^4)
+    pub a: f64, // Cross-sectional area (m^2)
+}
+
+/// Analysis result
+#[derive(Serialize, Deserialize)]
+pub struct AnalysisResult {
+    pub displacements: std::collections::HashMap<i32, [f64; 3]>,
+    pub success: bool,
+    pub error: Option<String>,
+}
+
+/// Solve a frame structure using Direct Stiffness Method
+/// Takes nodes and elements, returns displacements
+#[wasm_bindgen]
+pub fn solve_structure_wasm(nodes_json: JsValue, elements_json: JsValue) -> JsValue {
+    // Parse input
+    let nodes: Vec<Node> = match serde_wasm_bindgen::from_value(nodes_json) {
+        Ok(n) => n,
+        Err(e) => {
+            let result = AnalysisResult {
+                displacements: std::collections::HashMap::new(),
+                success: false,
+                error: Some(format!("Failed to parse nodes: {}", e)),
+            };
+            return serde_wasm_bindgen::to_value(&result).unwrap();
+        }
+    };
+
+    let elements: Vec<Element> = match serde_wasm_bindgen::from_value(elements_json) {
+        Ok(e) => e,
+        Err(e) => {
+            let result = AnalysisResult {
+                displacements: std::collections::HashMap::new(),
+                success: false,
+                error: Some(format!("Failed to parse elements: {}", e)),
+            };
+            return serde_wasm_bindgen::to_value(&result).unwrap();
+        }
+    };
+
+    // Number of DOF (3 per node: x, y, rotation)
+    let num_nodes = nodes.len();
+    let dof = num_nodes * 3;
+
+    // Build global stiffness matrix
+    let mut k_global = DMatrix::zeros(dof, dof);
+    let mut f_global = DVector::zeros(dof);
+
+    // Assemble stiffness matrix for each element
+    for elem in &elements {
+        // Find start and end nodes
+        let start_node = nodes.iter().find(|n| n.id == elem.node_start);
+        let end_node = nodes.iter().find(|n| n.id == elem.node_end);
+
+        if start_node.is_none() || end_node.is_none() {
+            let result = AnalysisResult {
+                displacements: std::collections::HashMap::new(),
+                success: false,
+                error: Some(format!("Element {} references invalid nodes", elem.id)),
+            };
+            return serde_wasm_bindgen::to_value(&result).unwrap();
+        }
+
+        let start = start_node.unwrap();
+        let end = end_node.unwrap();
+
+        // Calculate element length and orientation
+        let dx = end.x - start.x;
+        let dy = end.y - start.y;
+        let l = (dx * dx + dy * dy).sqrt();
+
+        if l < 1e-10 {
+            let result = AnalysisResult {
+                displacements: std::collections::HashMap::new(),
+                success: false,
+                error: Some(format!("Element {} has zero length", elem.id)),
+            };
+            return serde_wasm_bindgen::to_value(&result).unwrap();
+        }
+
+        let c = dx / l;
+        let s = dy / l;
+
+        // Local stiffness matrix (6x6 for 2D frame element)
+        let ea_l = elem.e * elem.a / l;
+        let ei_l3 = elem.e * elem.i / (l * l * l);
+        let ei_l2 = elem.e * elem.i / (l * l);
+        let ei_l = elem.e * elem.i / l;
+
+        // Build local stiffness matrix
+        let mut k_local = DMatrix::zeros(6, 6);
+        
+        // Axial stiffness
+        k_local[(0, 0)] = ea_l;
+        k_local[(0, 3)] = -ea_l;
+        k_local[(3, 0)] = -ea_l;
+        k_local[(3, 3)] = ea_l;
+
+        // Bending stiffness
+        k_local[(1, 1)] = 12.0 * ei_l3;
+        k_local[(1, 2)] = 6.0 * ei_l2;
+        k_local[(1, 4)] = -12.0 * ei_l3;
+        k_local[(1, 5)] = 6.0 * ei_l2;
+
+        k_local[(2, 1)] = 6.0 * ei_l2;
+        k_local[(2, 2)] = 4.0 * ei_l;
+        k_local[(2, 4)] = -6.0 * ei_l2;
+        k_local[(2, 5)] = 2.0 * ei_l;
+
+        k_local[(4, 1)] = -12.0 * ei_l3;
+        k_local[(4, 2)] = -6.0 * ei_l2;
+        k_local[(4, 4)] = 12.0 * ei_l3;
+        k_local[(4, 5)] = -6.0 * ei_l2;
+
+        k_local[(5, 1)] = 6.0 * ei_l2;
+        k_local[(5, 2)] = 2.0 * ei_l;
+        k_local[(5, 4)] = -6.0 * ei_l2;
+        k_local[(5, 5)] = 4.0 * ei_l;
+
+        // Transformation matrix
+        let mut t = DMatrix::zeros(6, 6);
+        t[(0, 0)] = c; t[(0, 1)] = s;
+        t[(1, 0)] = -s; t[(1, 1)] = c;
+        t[(2, 2)] = 1.0;
+        t[(3, 3)] = c; t[(3, 4)] = s;
+        t[(4, 3)] = -s; t[(4, 4)] = c;
+        t[(5, 5)] = 1.0;
+
+        // Transform to global coordinates: K = T^T * k_local * T
+        let k_global_elem = t.transpose() * k_local * t;
+
+        // Get DOF indices for this element
+        let start_idx = nodes.iter().position(|n| n.id == elem.node_start).unwrap();
+        let end_idx = nodes.iter().position(|n| n.id == elem.node_end).unwrap();
+
+        let dof_map = [
+            start_idx * 3,     // start x
+            start_idx * 3 + 1, // start y
+            start_idx * 3 + 2, // start rotation
+            end_idx * 3,       // end x
+            end_idx * 3 + 1,   // end y
+            end_idx * 3 + 2,   // end rotation
+        ];
+
+        // Add to global stiffness matrix
+        for i in 0..6 {
+            for j in 0..6 {
+                k_global[(dof_map[i], dof_map[j])] += k_global_elem[(i, j)];
+            }
+        }
+    }
+
+    // Apply boundary conditions (fixed DOFs)
+    let mut free_dofs = Vec::new();
+    let mut fixed_dofs = Vec::new();
+
+    for (node_idx, node) in nodes.iter().enumerate() {
+        for dof_offset in 0..3 {
+            let global_dof = node_idx * 3 + dof_offset;
+            if node.fixed[dof_offset] {
+                fixed_dofs.push(global_dof);
+            } else {
+                free_dofs.push(global_dof);
+            }
+        }
+    }
+
+    // Reduce stiffness matrix to free DOFs only
+    let n_free = free_dofs.len();
+    let mut k_reduced = DMatrix::zeros(n_free, n_free);
+    let mut f_reduced = DVector::zeros(n_free);
+
+    for (i, &dof_i) in free_dofs.iter().enumerate() {
+        for (j, &dof_j) in free_dofs.iter().enumerate() {
+            k_reduced[(i, j)] = k_global[(dof_i, dof_j)];
+        }
+        f_reduced[i] = f_global[dof_i];
+    }
+
+    // Solve for displacements
+    let u_reduced = match k_reduced.lu().solve(&f_reduced) {
+        Some(u) => u,
+        None => {
+            let result = AnalysisResult {
+                displacements: std::collections::HashMap::new(),
+                success: false,
+                error: Some("Singular stiffness matrix - structure is unstable".to_string()),
+            };
+            return serde_wasm_bindgen::to_value(&result).unwrap();
+        }
+    };
+
+    // Build full displacement vector
+    let mut displacements = std::collections::HashMap::new();
+    let mut u_full = vec![0.0; dof];
+
+    for (i, &dof_idx) in free_dofs.iter().enumerate() {
+        u_full[dof_idx] = u_reduced[i];
+    }
+
+    // Organize displacements by node
+    for (node_idx, node) in nodes.iter().enumerate() {
+        displacements.insert(
+            node.id,
+            [
+                u_full[node_idx * 3],
+                u_full[node_idx * 3 + 1],
+                u_full[node_idx * 3 + 2],
+            ],
+        );
+    }
+
+    let result = AnalysisResult {
+        displacements,
+        success: true,
+        error: None,
+    };
+
+    serde_wasm_bindgen::to_value(&result).unwrap()
+}
+
+// ============================================
 // UTILITY FUNCTIONS
 // ============================================
 

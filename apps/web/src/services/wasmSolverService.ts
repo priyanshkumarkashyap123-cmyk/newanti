@@ -67,7 +67,7 @@ export async function initSolver(): Promise<void> {
         await init();
         set_panic_hook();
         wasmInitialized = true;
-        console.log('[BeamLab] WASM Solver initialized successfully');
+        console.log('[BeamLab] WASM Solver initialized successfully ✅');
     } catch (error) {
         console.error('[BeamLab] Failed to initialize WASM Solver:', error);
         throw error;
@@ -86,63 +86,43 @@ export async function analyzeStructure(
     }
 
     try {
+        console.log('[WASM] Analyzing structure:', nodes.length, 'nodes,', elements.length, 'elements');
+        
+        const startTime = performance.now();
+        
+        // Call Rust WASM function with proper serialization
         const result = solve_structure_wasm(nodes, elements);
+        
+        const endTime = performance.now();
+        const solveTime = endTime - startTime;
 
-        if (typeof result === 'string') {
+        console.log('[WASM] Analysis completed in', solveTime.toFixed(2), 'ms');
+        console.log('[WASM] Result:', result);
+
+        if (!result.success) {
             return {
                 displacements: {},
                 success: false,
-                error: result
+                error: result.error || 'WASM analysis failed'
             };
         }
 
-        // Calculate reactions and member forces from displacements
+        // Calculate reactions and member forces (TODO: move to Rust)
         const reactions: Record<number, [number, number, number]> = {};
         const memberForces: Record<number, { axial: number; shear: number; moment: number }> = {};
 
-        // For fixed nodes, calculate reactions (F = K * u)
-        nodes.forEach(node => {
-            if (node.fixed[0] || node.fixed[1] || node.fixed[2]) {
-                reactions[node.id] = [0, 0, 0]; // Will be calculated from stiffness matrix
-            }
-        });
-
-        // Calculate member forces from nodal displacements
-        elements.forEach(elem => {
-            const startNode = nodes.find(n => n.id === elem.node_start);
-            const endNode = nodes.find(n => n.id === elem.node_end);
-            
-            if (startNode && endNode) {
-                const dx = endNode.x - startNode.x;
-                const dy = endNode.y - startNode.y;
-                const L = Math.sqrt(dx * dx + dy * dy);
-                
-                const dispStart = result.displacements[elem.node_start] || [0, 0, 0];
-                const dispEnd = result.displacements[elem.node_end] || [0, 0, 0];
-                
-                // Axial force (simplified)
-                const axialDeform = (dispEnd[0] - dispStart[0]) * (dx / L) + (dispEnd[1] - dispStart[1]) * (dy / L);
-                const axialForce = elem.e * elem.a * axialDeform / L;
-                
-                memberForces[elem.id] = {
-                    axial: axialForce,
-                    shear: 0, // Would need full stiffness matrix calculation
-                    moment: 0
-                };
-            }
-        });
-
         return {
-            ...(result as AnalysisResult),
+            displacements: result.displacements || {},
             reactions,
             memberForces,
+            success: true,
             stats: {
-                solveTimeMs: 1,
+                solveTimeMs: solveTime,
                 method: 'WASM Direct Stiffness'
             }
         };
     } catch (error) {
-        console.error('[BeamLab] Analysis failed:', error);
+        console.error('[WASM] Analysis failed:', error);
         return {
             displacements: {},
             success: false,
