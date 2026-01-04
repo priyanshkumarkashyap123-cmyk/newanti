@@ -11,8 +11,7 @@ import init, {
     solve_structure_wasm, 
     solve_system_json,
     compute_eigenvalues,
-    check_matrix_condition,
-    set_panic_hook 
+    check_matrix_condition
 } from 'solver-wasm';
 
 export interface Node {
@@ -65,7 +64,6 @@ export async function initSolver(): Promise<void> {
 
     try {
         await init();
-        set_panic_hook();
         wasmInitialized = true;
         console.log('[BeamLab] WASM Solver initialized successfully ✅');
     } catch (error) {
