@@ -68,6 +68,8 @@ import ASCE7WindLoadDialog from './ASCE7WindLoadDialog';
 import LoadCombinationsDialog from './LoadCombinationsDialog';
 import { AdvancedAnalysisDialog } from './AdvancedAnalysisDialog';
 import { DesignCodesDialog } from './DesignCodesDialog';
+import { ModelingToolbar } from './toolbar/ModelingToolbar';
+import { ModalAnalysisPanel } from './analysis/ModalAnalysisPanel';
 import { LegalConsentModal, useCheckLegalConsent } from './LegalConsentModal';
 import { CheckpointLegalModal } from './CheckpointLegalModal';
 import { ExportDialog } from './ExportDialog';
@@ -414,6 +416,7 @@ export const ModernModeler: FC = () => {
 
     // AI Assistant state
     const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
+    const [showModalAnalysis, setShowModalAnalysis] = useState(false);
 
     // Feedback state
 
@@ -544,13 +547,13 @@ export const ModernModeler: FC = () => {
     const handleRunAnalysis = useCallback(async () => {
         // STEP 1: Validate structure BEFORE anything else
         const validationResult = validateStructure(nodes, members);
-        
+
         if (!validationResult.valid || validationResult.errors.length > 0 || validationResult.warnings.length > 0) {
             // Show validation dialog with errors/warnings
             setStructuralValidationErrors(validationResult.errors);
             setStructuralValidationWarnings(validationResult.warnings);
             setShowValidationDialog(true);
-            
+
             // If there are critical errors, don't proceed
             if (!validationResult.valid) {
                 return;
@@ -667,10 +670,10 @@ export const ModernModeler: FC = () => {
 
                     console.log('[Analysis] Using Rust WASM solver - client-side computation');
                     const { analyzeStructure, initSolver } = await import('../services/wasmSolverService');
-                    
+
                     // Initialize WASM module
                     await initSolver();
-                    
+
                     // Convert nodes to WASM format
                     const wasmNodes = nodesArray.map(n => ({
                         id: parseInt(n.id),
@@ -682,7 +685,7 @@ export const ModernModeler: FC = () => {
                             n.restraints?.fz || false
                         ] as [boolean, boolean, boolean]
                     }));
-                    
+
                     // Convert members to WASM format
                     const wasmElements = membersArray.map(m => ({
                         id: parseInt(m.id),
@@ -692,14 +695,14 @@ export const ModernModeler: FC = () => {
                         i: m.Iy || 8.33e-6,
                         a: m.A || 0.01
                     }));
-                    
+
                     // Run WASM analysis
                     const wasmResult = await analyzeStructure(wasmNodes, wasmElements);
-                    
+
                     if (!wasmResult.success) {
                         throw new Error(wasmResult.error || 'WASM analysis failed');
                     }
-                    
+
                     // Convert WASM result to expected format
                     const pythonResult = {
                         success: true,
@@ -1524,6 +1527,12 @@ export const ModernModeler: FC = () => {
 
             {/* Modal Analysis Controls - Shows when modal results exist */}
             <ModalControls />
+
+            {/* Modal Analysis Panel */}
+            <ModalAnalysisPanel
+                isOpen={showModalAnalysis}
+                onClose={() => setShowModalAnalysis(false)}
+            />
 
             {/* Cloud Project Manager */}
             <CloudProjectManager
