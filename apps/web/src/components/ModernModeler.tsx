@@ -50,8 +50,10 @@ import { FoundationDesignDialog } from './FoundationDesignDialog';
 import { IS875LoadDialog } from './IS875LoadDialog';
 import { GeometryToolsPanel } from './GeometryToolsPanel';
 import { ValidationErrorDisplay } from './ValidationErrorDisplay';
+import { ValidationDialog } from './ValidationDialog';
 import StressVisualization from './StressVisualization';
 import { InteroperabilityDialog } from './InteroperabilityDialog';
+import { validateStructure } from '../utils/structuralValidation';
 import { RailwayBridgeDialog } from './RailwayBridgeDialog';
 import { MeshingPanel } from './MeshingPanel';
 import { AdvancedSelectionPanel } from './AdvancedSelectionPanel';
@@ -400,6 +402,9 @@ export const ModernModeler: FC = () => {
     // Validation state
     const [validationErrors, setValidationErrors] = useState<any | null>(null);
     const [showValidationErrors, setShowValidationErrors] = useState(false);
+    const [showValidationDialog, setShowValidationDialog] = useState(false);
+    const [structuralValidationErrors, setStructuralValidationErrors] = useState<any[]>([]);
+    const [structuralValidationWarnings, setStructuralValidationWarnings] = useState<any[]>([]);
     const [stressResults, setStressResults] = useState<any[] | null>(null);
     const [showStressVisualization, setShowStressVisualization] = useState(false);
     const [currentStressType, setCurrentStressType] = useState('von_mises');
@@ -537,14 +542,31 @@ export const ModernModeler: FC = () => {
 
     // Run analysis
     const handleRunAnalysis = useCallback(async () => {
-        // Check legal consent for analysis
+        // STEP 1: Validate structure BEFORE anything else
+        const validationResult = validateStructure(nodes, members);
+        
+        if (!validationResult.valid || validationResult.errors.length > 0 || validationResult.warnings.length > 0) {
+            // Show validation dialog with errors/warnings
+            setStructuralValidationErrors(validationResult.errors);
+            setStructuralValidationWarnings(validationResult.warnings);
+            setShowValidationDialog(true);
+            
+            // If there are critical errors, don't proceed
+            if (!validationResult.valid) {
+                return;
+            }
+            // If only warnings, dialog will let user proceed
+            return;
+        }
+
+        // STEP 2: Check legal consent for analysis
         setPendingAction('analysis');
         setCurrentCheckpointType('analysis');
         setShowLegalConsent(true);
 
         // Don't proceed with actual analysis yet
         return;
-    }, []);
+    }, [nodes, members]);
 
     // Actual analysis execution (called after consent)
     const executeAnalysis = useCallback(async () => {
@@ -1447,9 +1469,24 @@ export const ModernModeler: FC = () => {
                 onAccept={() => {
                     setShowLegalConsent(false);
                     // Re-run analysis after consent is given
-                    setTimeout(() => handleRunAnalysis(), 100);
+                    setTimeout(() => executeAnalysis(), 100);
                 }}
                 canClose={false}
+            />
+
+            {/* Structural Validation Dialog - Shows errors BEFORE analysis */}
+            <ValidationDialog
+                isOpen={showValidationDialog}
+                onClose={() => setShowValidationDialog(false)}
+                errors={structuralValidationErrors}
+                warnings={structuralValidationWarnings}
+                onProceedAnyway={() => {
+                    setShowValidationDialog(false);
+                    // User wants to proceed despite warnings - show legal consent
+                    setPendingAction('analysis');
+                    setCurrentCheckpointType('analysis');
+                    setShowLegalConsent(true);
+                }}
             />
 
             {/* Validation Error Display */}
