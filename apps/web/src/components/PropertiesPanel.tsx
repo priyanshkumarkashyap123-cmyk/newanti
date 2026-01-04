@@ -1,5 +1,62 @@
 import { FC, useState, useEffect, useCallback, useRef } from 'react';
 import { useModelStore, type Restraints } from '../store/model';
+import { STEEL_SECTIONS, MATERIALS_DATABASE, type SectionProperties, type Material } from '../data/SectionDatabase';
+
+// ============================================
+// SECTION CATEGORIES & FILTERING
+// ============================================
+
+type SectionCategory = 'ISMB' | 'ISMC' | 'ISLB' | 'ISHB' | 'W' | 'RCC-BEAM' | 'RCC-COLUMN';
+
+const SECTION_CATEGORIES: { id: SectionCategory; label: string }[] = [
+    { id: 'ISMB', label: 'Steel - ISMB' },
+    { id: 'ISMC', label: 'Steel - ISMC' },
+    { id: 'ISLB', label: 'Steel - ISLB' },
+    { id: 'ISHB', label: 'Steel - ISHB' },
+    { id: 'W', label: 'Steel - W Shapes (AISC)' },
+    { id: 'RCC-BEAM', label: 'RCC - Beams' },
+    { id: 'RCC-COLUMN', label: 'RCC - Columns' },
+];
+
+// Filter sections by category
+function getSectionsByCategory(category: SectionCategory): SectionProperties[] {
+    switch (category) {
+        case 'ISMB':
+            return STEEL_SECTIONS.filter(s => s.type === 'ISMB');
+        case 'ISMC':
+            return STEEL_SECTIONS.filter(s => s.type === 'ISMC');
+        case 'ISLB':
+            return STEEL_SECTIONS.filter(s => s.type === 'ISLB');
+        case 'ISHB':
+            return STEEL_SECTIONS.filter(s => s.type === 'ISHB');
+        case 'W':
+            return STEEL_SECTIONS.filter(s => s.type === 'W');
+        case 'RCC-BEAM':
+            return STEEL_SECTIONS.filter(s => s.id.startsWith('RCC-') && !s.id.includes('COL'));
+        case 'RCC-COLUMN':
+            return STEEL_SECTIONS.filter(s => s.id.includes('RCC-COL'));
+        default:
+            return [];
+    }
+}
+
+// Convert section properties from mm to m for analysis
+function convertSectionToMeters(section: SectionProperties): { A: number; I: number } {
+    return {
+        A: section.A / 1e6,      // mm² to m²
+        I: section.Ix / 1e12     // mm⁴ to m⁴ (using Ix as major axis)
+    };
+}
+
+// ============================================
+// MATERIAL OPTIONS (from database)
+// ============================================
+const MATERIAL_OPTIONS = MATERIALS_DATABASE.map(m => ({
+    id: m.id,
+    label: m.name,
+    E: m.E * 1e3,  // Convert MPa to kN/m² (1 MPa = 1000 kN/m²)
+    fy: m.fy || m.fck || 0
+}));
 
 // ============================================
 // DEBOUNCE HOOK
@@ -59,34 +116,6 @@ const NumberInput: FC<NumberInputProps> = ({ value, onChange, step = 0.1, disabl
 };
 
 // ============================================
-// SECTION OPTIONS
-// ============================================
-const SECTION_OPTIONS = [
-    { id: 'default', label: 'Default', A: 0.01, I: 1e-4 },
-    { id: 'W12x26', label: 'W12x26', A: 0.00495, I: 2.04e-4 },
-    { id: 'W14x30', label: 'W14x30', A: 0.00568, I: 2.91e-4 },
-    { id: 'W16x40', label: 'W16x40', A: 0.00756, I: 4.93e-4 },
-    { id: 'ISMB200', label: 'ISMB 200', A: 0.00325, I: 2.24e-4 },
-    { id: 'ISMB250', label: 'ISMB 250', A: 0.00475, I: 5.13e-4 },
-    { id: 'ISMB300', label: 'ISMB 300', A: 0.00563, I: 8.6e-4 },
-    { id: 'ISMB400', label: 'ISMB 400', A: 0.00783, I: 2.04e-3 },
-    { id: 'HSS6x6x1/4', label: 'HSS6x6x1/4', A: 0.00355, I: 1.12e-4 },
-    { id: 'HSS8x8x3/8', label: 'HSS8x8x3/8', A: 0.00684, I: 3.32e-4 },
-    { id: 'custom', label: '+ Custom Section...', A: 0, I: 0 },
-];
-
-// Material presets
-const MATERIAL_OPTIONS = [
-    { id: 'steel_e250', label: 'Steel Fe250 (E=200 GPa)', E: 200e6, fy: 250 },
-    { id: 'steel_e350', label: 'Steel Fe350 (E=200 GPa)', E: 200e6, fy: 350 },
-    { id: 'steel_e410', label: 'Steel Fe410 (E=200 GPa)', E: 200e6, fy: 410 },
-    { id: 'concrete_m25', label: 'Concrete M25 (E=25 GPa)', E: 25e6, fy: 25 },
-    { id: 'concrete_m30', label: 'Concrete M30 (E=27 GPa)', E: 27e6, fy: 30 },
-    { id: 'aluminum', label: 'Aluminum (E=70 GPa)', E: 70e6, fy: 250 },
-    { id: 'custom', label: '+ Custom Material...', E: 0, fy: 0 },
-];
-
-// ============================================
 // PROPERTIES PANEL COMPONENT
 // ============================================
 export const PropertiesPanel: FC = () => {
@@ -108,12 +137,21 @@ export const PropertiesPanel: FC = () => {
     // Minimize state for the panel
     const [isMinimized, setIsMinimized] = useState(false);
 
+    // State for section category selection
+    const [sectionCategory, setSectionCategory] = useState<SectionCategory>('ISMB');
+    const [availableSections, setAvailableSections] = useState<SectionProperties[]>([]);
+
     // State for custom section/material dialogs (must be at top level - React rules of hooks)
     const [showCustomSection, setShowCustomSection] = useState(false);
     const [showCustomMaterial, setShowCustomMaterial] = useState(false);
     const [customA, setCustomA] = useState(100); // Default 100 cm²
     const [customI, setCustomI] = useState(1000); // Default 1000 cm⁴
-    const [customE, setCustomE] = useState(200); // Default 200 GPa
+    const [customE, setCustomE] = useState(200);  // Default 200 GPa
+
+    // Update available sections when category changes
+    useEffect(() => {
+        setAvailableSections(getSectionsByCategory(sectionCategory));
+    }, [sectionCategory]);
 
     // Get current selection for useEffect dependency
     const selectedId = selectedIds.size === 1 ? Array.from(selectedIds)[0] : null;
@@ -199,14 +237,18 @@ export const PropertiesPanel: FC = () => {
         // BULK MEMBER EDITING
         if (selectedMembers.length > 0 && selectedNodes.length === 0) {
             const handleBulkSectionChange = (sectionId: string) => {
-                const section = SECTION_OPTIONS.find(s => s.id === sectionId);
-                selectedMembers.forEach(m => {
-                    if (section && section.A > 0) {
-                        updateMember(m.id, { sectionId, A: section.A, I: section.I });
-                    } else {
+                const section = STEEL_SECTIONS.find(s => s.id === sectionId);
+                if (section) {
+                    const { A, I } = convertSectionToMeters(section);
+                    selectedMembers.forEach(m => {
+                        updateMember(m.id, { sectionId, A, I });
+                    });
+                } else if (sectionId) {
+                    // Fallback: just update ID
+                    selectedMembers.forEach(m => {
                         updateMember(m.id, { sectionId });
-                    }
-                });
+                    });
+                }
             };
 
             const handleBulkMaterialChange = (materialId: string) => {
@@ -234,15 +276,28 @@ export const PropertiesPanel: FC = () => {
 
                     {/* Common Actions */}
                     <div style={sectionStyle}>
-                        <label style={labelStyle}>📐 Set Section</label>
+                        <label style={labelStyle}>📐 Section Category</label>
+                        <select
+                            value={sectionCategory}
+                            onChange={(e) => setSectionCategory(e.target.value as SectionCategory)}
+                            style={selectStyle}
+                        >
+                            {SECTION_CATEGORIES.map(cat => (
+                                <option key={cat.id} value={cat.id}>{cat.label}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div style={{ ...sectionStyle, marginTop: 8 }}>
+                        <label style={labelStyle}>📏 Set Section</label>
                         <select
                             onChange={(e) => handleBulkSectionChange(e.target.value)}
                             style={selectStyle}
                             defaultValue=""
                         >
                             <option value="" disabled>Select to apply to all...</option>
-                            {SECTION_OPTIONS.map(opt => (
-                                <option key={opt.id} value={opt.id}>{opt.label}</option>
+                            {availableSections.map(section => (
+                                <option key={section.id} value={section.id}>{section.name}</option>
                             ))}
                         </select>
                     </div>
@@ -470,10 +525,17 @@ export const PropertiesPanel: FC = () => {
                 setShowCustomSection(true);
                 return;
             }
-            const section = SECTION_OPTIONS.find(s => s.id === sectionId);
-            if (section && section.A > 0) {
-                updateMember(id, { sectionId, A: section.A, I: section.I });
+            // Find section in database
+            const section = STEEL_SECTIONS.find(s => s.id === sectionId);
+            if (section) {
+                const { A, I } = convertSectionToMeters(section);
+                updateMember(id, {
+                    sectionId,
+                    A,  // Already in m²
+                    I   // Already in m⁴
+                });
             } else {
+                // Fallback: just update the ID
                 updateMember(id, { sectionId });
             }
         };
@@ -528,18 +590,43 @@ export const PropertiesPanel: FC = () => {
 
                 <hr style={dividerStyle} />
 
-                {/* Section Dropdown */}
+                {/* Section Category Dropdown */}
                 <div style={sectionStyle}>
-                    <label style={labelStyle}>📐 Section</label>
+                    <label style={labelStyle}>📐 Section Category</label>
                     <select
-                        value={member.sectionId}
+                        value={sectionCategory}
+                        onChange={(e) => setSectionCategory(e.target.value as SectionCategory)}
+                        style={selectStyle}
+                    >
+                        {SECTION_CATEGORIES.map(cat => (
+                            <option key={cat.id} value={cat.id}>{cat.label}</option>
+                        ))}
+                    </select>
+                </div>
+
+                <hr style={dividerStyle} />
+
+                {/* Section Dropdown (filtered by category) */}
+                <div style={sectionStyle}>
+                    <label style={labelStyle}>📏 Section</label>
+                    <select
+                        value={member.sectionId || ''}
                         onChange={(e) => handleSectionChange(e.target.value)}
                         style={selectStyle}
                     >
-                        {SECTION_OPTIONS.map(opt => (
-                            <option key={opt.id} value={opt.id}>{opt.label}</option>
+                        <option value="">Select section...</option>
+                        {availableSections.map(section => (
+                            <option key={section.id} value={section.id}>{section.name}</option>
                         ))}
+                        <option value="custom">+ Custom Section...</option>
                     </select>
+
+                    {/* Show current section properties */}
+                    {member.sectionId && member.sectionId !== 'custom' && (
+                        <div style={{ fontSize: 10, color: '#888', marginTop: 4 }}>
+                            A = {((member.A ?? 0.01) * 1e4).toFixed(1)} cm² | I = {((member.I ?? 1e-4) * 1e8).toFixed(1)} cm⁴
+                        </div>
+                    )}
 
                     {/* Custom Section Dialog */}
                     {showCustomSection && (
