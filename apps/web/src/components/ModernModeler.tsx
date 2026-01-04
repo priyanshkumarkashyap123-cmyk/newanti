@@ -1276,7 +1276,9 @@ export const ModernModeler: FC = () => {
                                     onAssignLoad: () => openModal('loadDialog'),
                                     onMerge: () => {
                                         const nodeIds = Array.from(selectedIds).filter(id => id.startsWith('N'));
-                                        useModelStore.getState().mergeNodes(nodeIds);
+                                        if (nodeIds.length >= 2) {
+                                            useModelStore.getState().mergeNodes(nodeIds[0], nodeIds[1]);
+                                        }
                                     },
                                     canMerge: selectedIds.size > 1 && Array.from(selectedIds).every(id => id.startsWith('N')),
                                     onDelete: () => useModelStore.getState().removeNode(selectedId)
@@ -1514,7 +1516,7 @@ export const ModernModeler: FC = () => {
             <SplitMemberDialog
                 isOpen={showSplitDialog}
                 onClose={() => setShowSplitDialog(false)}
-                memberId={splitMemberId}
+                memberId={splitMemberId ?? undefined}
             />
 
             <AdvancedAnalysisDialog

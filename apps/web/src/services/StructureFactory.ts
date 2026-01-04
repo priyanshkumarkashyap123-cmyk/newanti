@@ -20,8 +20,32 @@
  * - Realistic proportions based on actual structures
  */
 
-import type { Node, Member, Support, Load } from '../store/model';
+import type { Node, Member } from '../store/model';
 import { STRUCTURAL_SECTIONS, getSection } from '../data/StructuralSections';
+
+// Local types for structure generation
+interface Support {
+    nodeId: string;
+    type: 'fixed' | 'pinned' | 'roller';
+    restraints: {
+        fx: boolean;
+        fy: boolean;
+        fz: boolean;
+        mx: boolean;
+        my: boolean;
+        mz: boolean;
+    };
+}
+
+interface Load {
+    nodeId: string;
+    fx?: number;
+    fy?: number;
+    fz?: number;
+    mx?: number;
+    my?: number;
+    mz?: number;
+}
 
 // ============================================
 // STRUCTURE PARAMETER INTERFACES

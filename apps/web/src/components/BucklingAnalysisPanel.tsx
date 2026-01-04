@@ -303,19 +303,20 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
             }));
 
             // Run WASM buckling analysis
-            const wasmResult = await analyzeBuckling(wasmNodes, wasmElements, numModes);
+            const wasmResult = await analyzeBuckling(wasmNodes, wasmElements, [], numModes);
 
             if (!wasmResult.success) {
                 throw new Error(wasmResult.error || 'Buckling analysis failed');
             }
 
             // Convert to expected result format
+            const bucklingLoads = wasmResult.buckling_loads || [];
             setResult({
                 success: true,
-                modes: wasmResult.modes.map(m => ({
-                    mode: m.modeNumber,
-                    factor: m.factor,
-                    isStable: m.isStable
+                modes: bucklingLoads.map((factor, index) => ({
+                    mode: index + 1,
+                    factor: factor,
+                    isStable: factor > 1.0
                 }))
             });
 
