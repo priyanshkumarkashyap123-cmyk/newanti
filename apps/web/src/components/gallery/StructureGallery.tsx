@@ -150,10 +150,21 @@ export const StructureGallery: FC<StructureGalleryProps> = ({ isOpen, onClose })
                                         className="group relative bg-slate-800 rounded-lg border border-slate-700 overflow-hidden hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/20 transition-all cursor-pointer"
                                         onClick={() => handleLoadTemplate(template.id)}
                                     >
-                                        {/* Icon/Image Placeholder */}
+                                        {/* Thumbnail Image */}
                                         <div className="h-48 bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center relative overflow-hidden">
-                                            <div className="absolute inset-0 bg-emerald-500/5 group-hover:bg-emerald-500/10 transition-colors"></div>
-                                            <Icon className="w-20 h-20 text-slate-600 group-hover:text-emerald-400 transition-colors" />
+                                            <img
+                                                src={`/structures/${template.id}.png`}
+                                                alt={template.name}
+                                                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                onError={(e) => {
+                                                    // Fallback to icon if image fails to load
+                                                    e.currentTarget.style.display = 'none';
+                                                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                                }}
+                                            />
+                                            <div className="hidden absolute inset-0 bg-emerald-500/5 group-hover:bg-emerald-500/10 transition-colors flex items-center justify-center">
+                                                <Icon className="w-20 h-20 text-slate-600 group-hover:text-emerald-400 transition-colors" />
+                                            </div>
 
                                             {/* Category Badge */}
                                             <div className="absolute top-3 right-3 px-3 py-1 bg-slate-900/90 backdrop-blur-sm rounded-full text-xs text-emerald-400 font-medium border border-emerald-500/30">
