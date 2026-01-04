@@ -58,11 +58,47 @@ export interface MemberLoad {
     endPos?: number;   // Default 1
 }
 
+export type SectionType = 'I-BEAM' | 'TUBE' | 'L-ANGLE' | 'RECTANGLE' | 'CIRCLE' | 'C-CHANNEL';
+
+export interface SectionDimensions {
+    // I-BEAM dimensions
+    height?: number;
+    width?: number;
+    webThickness?: number;
+    flangeThickness?: number;
+    
+    // TUBE/BOX dimensions
+    outerWidth?: number;
+    outerHeight?: number;
+    thickness?: number;
+    
+    // L-ANGLE dimensions
+    legWidth?: number;
+    legHeight?: number;
+    
+    // RECTANGLE/PLATE dimensions
+    rectWidth?: number;
+    rectHeight?: number;
+    
+    // CIRCLE/CABLE dimensions
+    diameter?: number;
+    
+    // C-CHANNEL dimensions
+    channelHeight?: number;
+    channelWidth?: number;
+    channelThickness?: number;
+}
+
 export interface Member {
     id: string;
     startNodeId: string;
     endNodeId: string;
     sectionId: string;
+    
+    // Section geometry for 3D rendering
+    sectionType?: SectionType;
+    dimensions?: SectionDimensions;
+    
     // Default properties for analysis
     E?: number; // Young's Modulus (kN/m²)
     A?: number; // Cross-sectional Area (m²)

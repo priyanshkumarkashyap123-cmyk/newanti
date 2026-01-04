@@ -408,6 +408,9 @@ function App() {
                 {/* Demo Route - Modern Modeler */}
                 <Route path="/demo" element={<ModernModeler />} />
 
+                {/* Rust WASM Performance Demo */}
+                <Route path="/rust-wasm-demo" element={<RustWasmDemo />} />
+
                 {/* Workspace Routes */}
                 {/* Workspace Routes */}
                 <Route path="/workspace/:moduleType" element={

@@ -21,6 +21,7 @@
  */
 
 import type { Node, Member, Support, Load } from '../store/model';
+import { STRUCTURAL_SECTIONS, getSection } from '../data/StructuralSections';
 
 // ============================================
 // STRUCTURE PARAMETER INTERFACES
@@ -147,13 +148,33 @@ function createNode(x: number, y: number, z: number): Node {
 
 function createMember(startNode: Node, endNode: Node, sectionId: string = 'default'): Member {
     memberIdCounter++;
+    
+    // Get section data from database
+    const section = getSection(sectionId);
+    
+    if (section) {
+        return {
+            id: `M${memberIdCounter}`,
+            startNodeId: startNode.id,
+            endNodeId: endNode.id,
+            sectionId,
+            sectionType: section.type,
+            dimensions: section.dimensions,
+            E: section.E,
+            A: section.A,
+            I: section.I,
+        };
+    }
+    
+    // Fallback for unknown sections
     return {
         id: `M${memberIdCounter}`,
         startNodeId: startNode.id,
         endNodeId: endNode.id,
         sectionId,
-        materialId: 'steel-fe415',
-        releases: { startMx: false, startMy: false, startMz: false, endMx: false, endMy: false, endMz: false }
+        E: 210e6,  // Default steel E
+        A: 0.01,   // Default area
+        I: 0.0001, // Default inertia
     };
 }
 
