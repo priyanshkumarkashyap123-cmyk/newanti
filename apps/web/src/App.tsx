@@ -26,6 +26,7 @@ import { HelpPage } from './pages/HelpPage';
 import { ReportsPage } from './pages/ReportsPage';
 import ReportViewerEnhanced from './pages/ReportViewerEnhanced';
 import { WorkspaceDemo } from './pages/WorkspaceDemo';
+import { RustWasmDemo } from './pages/RustWasmDemo';
 // Layouts
 import { WorkspaceLayout } from './layouts/WorkspaceLayout';
 import { RequireAuth } from './components/layout/RequireAuth';
