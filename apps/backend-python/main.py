@@ -122,13 +122,14 @@ for origin in sorted(allow_origins):
     print(f"  ✓ {origin}")
 print(f"{'='*60}\n")
 
-# CORS Middleware - allow all origins to prevent CORS errors
+# CORS Middleware - use specific origins to allow credentials
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=allow_origins,  # Specific origins, not wildcard
+    allow_credentials=True,  # Allow cookies/auth headers
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 
