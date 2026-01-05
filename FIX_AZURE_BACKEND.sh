@@ -35,7 +35,7 @@ echo ""
 # ============================================
 RESOURCE_GROUP="${AZURE_RESOURCE_GROUP:-beamlab-ci-rg}"
 RUST_API_APP="beamlab-rust-api"
-NODE_API_APP="beamlab-api"
+NODE_API_APP="beamlab-backend-node"
 PYTHON_BACKEND_APP="beamlab-backend-python"
 
 echo -e "${YELLOW}[2] Azure Configuration${NC}"
@@ -139,19 +139,25 @@ echo -e "   ${GREEN}✅ Python backend restarting${NC}"
 echo ""
 
 # ============================================
-# 5. VERIFY RUST API
+# 5. VERIFY RUST API (Optional)
 # ============================================
-echo -e "${YELLOW}[5] Verifying Rust API...${NC}"
+echo -e "${YELLOW}[5] Checking for Rust API...${NC}"
 
-az webapp config appsettings set \
-  --resource-group "$RESOURCE_GROUP" \
-  --name "$RUST_API_APP" \
-  --settings \
-    RUST_API_PORT="3002" \
-    MONGODB_URI="$MONGODB_URI" \
-    JWT_SECRET="$JWT_SECRET" > /dev/null 2>&1
-
-echo -e "   ${GREEN}✅ Rust API configured${NC}"
+RUST_EXISTS=$(az webapp list --resource-group "$RESOURCE_GROUP" --query "[?name=='$RUST_API_APP'].name" -o tsv 2>/dev/null || echo "")
+if [ -z "$RUST_EXISTS" ]; then
+    echo -e "   ${YELLOW}⊘ Rust API ($RUST_API_APP) not found in resource group${NC}"
+    echo -e "   ${YELLOW}  (This is OK - Python backend handles analysis)${NC}"
+else
+    echo -e "   ${GREEN}✅ Rust API found, configuring...${NC}"
+    az webapp config appsettings set \
+      --resource-group "$RESOURCE_GROUP" \
+      --name "$RUST_API_APP" \
+      --settings \
+        RUST_API_PORT="3002" \
+        MONGODB_URI="$MONGODB_URI" \
+        JWT_SECRET="$JWT_SECRET" > /dev/null 2>&1
+    echo -e "   ${GREEN}✅ Rust API configured${NC}"
+fi
 echo ""
 
 # ============================================
