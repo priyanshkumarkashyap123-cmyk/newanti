@@ -1591,14 +1591,14 @@ export function generateSignatureBridge(params?: Partial<CableStayedParams>): Ge
     // Cables (fan arrangement from single pylon)
     deckNodes.forEach((deckNode) => {
         if (deckNode.x > pylonX - 10 && deckNode.x < endX - 10) {
-            members.push(createMember(deckNode, pylonTop, 'ISMC150'));
+            members.push(createMember(deckNode, pylonTop, 'STAY_CABLE_120mmDIA'));
         }
     });
 
     // Backstay cables
     const backstayAnchor = createNode(pylonX - 50, deckY, 0);
     nodes.push(backstayAnchor);
-    members.push(createMember(pylonTop, backstayAnchor, 'ISMC200'));
+    members.push(createMember(pylonTop, backstayAnchor, 'STAY_CABLE_100mmDIA'));
     supports.push(createFixedSupport(backstayAnchor));
 
     // Deck supports
