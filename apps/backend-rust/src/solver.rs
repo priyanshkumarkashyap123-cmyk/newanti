@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Node {
-    pub id: usize,
+    pub id: String,  // Changed from usize to String to match frontend
     pub x: f64,
     pub y: f64,
     // [dof_x, dof_y, dof_rotation] - each is true if fixed, false if free
@@ -14,9 +14,9 @@ pub struct Node {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Element {
-    pub id: usize,
-    pub node_start: usize, // IDs, not indices
-    pub node_end: usize,
+    pub id: String,  // Changed from usize to String
+    pub node_start: String,  // Node ID references are now strings
+    pub node_end: String,    // Node ID references are now strings
     pub e: f64, // Young's Modulus
     pub i: f64, // Moment of Inertia
     pub a: f64, // Area
@@ -25,7 +25,7 @@ pub struct Element {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AnalysisResult {
     // Map of Node ID to displacements [u, v, theta]
-    pub displacements: HashMap<usize, Vec<f64>>,
+    pub displacements: HashMap<String, Vec<f64>>,  // Changed key from us ize to String
     pub success: bool,
     pub error: Option<String>,
 }
@@ -37,7 +37,7 @@ pub fn analyze(nodes: Vec<Node>, elements: Vec<Element>) -> Result<AnalysisResul
     // Create mapping from Node ID to index
     let mut node_map = HashMap::new();
     for (idx, node) in nodes.iter().enumerate() {
-        node_map.insert(node.id, idx);
+        node_map.insert(node.id.clone(), idx);
     }
 
     let mut k_global = DMatrix::zeros(num_dof, num_dof);
@@ -171,7 +171,7 @@ pub fn analyze(nodes: Vec<Node>, elements: Vec<Element>) -> Result<AnalysisResul
         let u = u_global[idx * 3];
         let v = u_global[idx * 3 + 1];
         let theta = u_global[idx * 3 + 2];
-        disp_map.insert(node.id, vec![u, v, theta]);
+        disp_map.insert(node.id.clone(), vec![u, v, theta]);
     }
 
     Ok(AnalysisResult {
