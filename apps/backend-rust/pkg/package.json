@@ -1,0 +1,15 @@
+{
+  "name": "backend-rust",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "backend_rust_bg.wasm",
+    "backend_rust.js",
+    "backend_rust.d.ts"
+  ],
+  "main": "backend_rust.js",
+  "types": "backend_rust.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
