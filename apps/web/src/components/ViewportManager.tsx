@@ -5,7 +5,7 @@ import { SharedScene } from './SharedScene';
 import { BoxSelector } from './BoxSelector';
 import { WgpuCanvas } from './viewer/WgpuCanvas';
 import { useUIStore } from '../store/uiStore';
-import { Cpu, Zap } from 'lucide-react';
+import { Cpu, Zap, Box, GitBranch } from 'lucide-react';
 
 type ViewportLayout = 'SINGLE' | 'QUAD';
 type WorkingPlane = 'XZ' | 'XY' | 'YZ';
@@ -293,6 +293,8 @@ export const ViewportManager: FC = () => {
     const [workingElevation, setWorkingElevation] = useState(0);
     const useWebGpu = useUIStore(state => state.useWebGpu);
     const setUseWebGpu = useUIStore(state => state.setUseWebGpu);
+    const renderMode3D = useUIStore(state => state.renderMode3D);
+    const setRenderMode3D = useUIStore(state => state.setRenderMode3D);
 
     return (
         <div style={{ width: '100%', height: '100%', position: 'relative' }}>
@@ -353,6 +355,53 @@ export const ViewportManager: FC = () => {
                     >
                         <Zap className="w-4 h-4" />
                         <span style={{ fontSize: '10px' }}>WebGPU</span>
+                    </button>
+                </div>
+
+                {/* Member Display Mode Toggle */}
+                <div style={{ fontSize: '10px', color: '#888', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
+                    Member Display
+                </div>
+                <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
+                    <button
+                        onClick={() => setRenderMode3D(false)}
+                        style={{
+                            flex: 1,
+                            color: '#fff',
+                            background: !renderMode3D ? '#444' : 'transparent',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            borderRadius: '6px',
+                            padding: '6px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '4px'
+                        }}
+                        title="Wireframe mode - fast rendering"
+                    >
+                        <GitBranch className="w-4 h-4" />
+                        <span style={{ fontSize: '10px' }}>Wire</span>
+                    </button>
+                    <button
+                        onClick={() => setRenderMode3D(true)}
+                        style={{
+                            flex: 1,
+                            color: renderMode3D ? '#f59e0b' : '#fff',
+                            background: renderMode3D ? 'rgba(245, 158, 11, 0.2)' : 'transparent',
+                            border: renderMode3D ? '1px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.1)',
+                            borderRadius: '6px',
+                            padding: '6px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '4px'
+                        }}
+                        title="Solid 3D mode - realistic beam cross-sections"
+                    >
+                        <Box className="w-4 h-4" />
+                        <span style={{ fontSize: '10px' }}>Solid</span>
                     </button>
                 </div>
 

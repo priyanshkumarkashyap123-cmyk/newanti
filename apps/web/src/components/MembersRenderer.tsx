@@ -2,14 +2,17 @@ import { FC, useLayoutEffect, useRef, useMemo } from 'react';
 import * as THREE from 'three';
 import { Line } from '@react-three/drei';
 import { useModelStore } from '../store/model';
+import { useUIStore } from '../store/uiStore';
+import { StructuralMember, type MemberData, type NodeData } from './viewer/StructuralMesh';
+import { getSectionDataForRendering } from '../services/SectionLookup';
 
 export type ColorMode = 'DEFAULT' | 'UTILIZATION';
-export type DisplayMode = 'AUTO' | 'LINE' | 'SECTION';
+export type DisplayMode = 'AUTO' | 'LINE' | 'SECTION' | 'SOLID_3D';
 
 interface MembersRendererProps {
     colorMode?: ColorMode;
     utilizationMap?: Map<string, number>;  // memberId -> utilization ratio (0-1+)
-    displayMode?: DisplayMode;  // How to display members: AUTO (line if no section), LINE (always lines), SECTION (always cylinders)
+    displayMode?: DisplayMode;  // How to display members
 }
 
 /**
@@ -21,18 +24,14 @@ interface MembersRendererProps {
  */
 function getUtilizationColor(ratio: number): THREE.Color {
     if (ratio < 0.5) {
-        // Green to Yellow gradient
         const t = ratio / 0.5;
-        return new THREE.Color().setHSL(0.33 - t * 0.17, 1, 0.5);  // Green to Yellow-Green
+        return new THREE.Color().setHSL(0.33 - t * 0.17, 1, 0.5);
     } else if (ratio < 0.9) {
-        // Yellow to Orange gradient
         const t = (ratio - 0.5) / 0.4;
-        return new THREE.Color().setHSL(0.16 - t * 0.08, 1, 0.5);  // Yellow to Orange
+        return new THREE.Color().setHSL(0.16 - t * 0.08, 1, 0.5);
     } else if (ratio <= 1.0) {
-        // Orange
-        return new THREE.Color().setHSL(0.08, 1, 0.5);  // Orange
+        return new THREE.Color().setHSL(0.08, 1, 0.5);
     } else {
-        // Red (failed)
         return new THREE.Color(0xff0000);
     }
 }
@@ -46,25 +45,86 @@ export const MembersRenderer: FC<MembersRendererProps> = ({
     const nodes = useModelStore((state) => state.nodes);
     const selectedIds = useModelStore((state) => state.selectedIds);
     const select = useModelStore((state) => state.select);
+    const renderMode3D = useUIStore((state) => state.renderMode3D);
 
     const meshRef = useRef<THREE.InstancedMesh>(null);
-    const idsRef = useRef<string[]>([]); // Map instanceId -> memberId
+    const idsRef = useRef<string[]>([]);
 
     // Memoize colors for performance
     const memberColors = useMemo(() => {
         const colors = new Map<string, THREE.Color>();
-
         if (colorMode === 'UTILIZATION' && utilizationMap) {
             utilizationMap.forEach((ratio, memberId) => {
                 colors.set(memberId, getUtilizationColor(ratio));
             });
         }
-
         return colors;
     }, [colorMode, utilizationMap]);
 
-    // Separate members into line-display and section-display groups
+    // Determine effective display mode based on renderMode3D toggle
+    const effectiveDisplayMode = useMemo(() => {
+        if (renderMode3D) return 'SOLID_3D';
+        return displayMode;
+    }, [renderMode3D, displayMode]);
+
+    // Prepare 3D solid members data when in SOLID_3D mode
+    const solid3DMembers = useMemo<MemberData[]>(() => {
+        if (effectiveDisplayMode !== 'SOLID_3D') return [];
+
+        const memberDatas: MemberData[] = [];
+
+        for (const member of members.values()) {
+            const startNode = nodes.get(member.startNodeId);
+            const endNode = nodes.get(member.endNodeId);
+            if (!startNode || !endNode) continue;
+
+            // Get section dimensions from lookup
+            const sectionData = getSectionDataForRendering(member.sectionId);
+
+            // Create node data for StructuralMember
+            const startNodeData: NodeData = {
+                id: startNode.id,
+                position: [startNode.x, startNode.y, startNode.z],
+                support: startNode.restraints ?
+                    (startNode.restraints.fx && startNode.restraints.fy && startNode.restraints.fz &&
+                        startNode.restraints.mx && startNode.restraints.my && startNode.restraints.mz ? 'fixed' :
+                        startNode.restraints.fx && startNode.restraints.fy && startNode.restraints.fz ? 'pinned' :
+                            startNode.restraints.fy ? 'roller' : 'none') : 'none'
+            };
+
+            const endNodeData: NodeData = {
+                id: endNode.id,
+                position: [endNode.x, endNode.y, endNode.z],
+                support: 'none'
+            };
+
+            // Determine color
+            let color = '#b8b8b8'; // Steel gray default
+            if (selectedIds.has(member.id)) {
+                color = '#3b82f6'; // Blue for selected
+            } else if (colorMode === 'UTILIZATION' && utilizationMap?.has(member.id)) {
+                color = '#' + getUtilizationColor(utilizationMap.get(member.id)!).getHexString();
+            }
+
+            memberDatas.push({
+                id: member.id,
+                startNode: startNodeData,
+                endNode: endNodeData,
+                sectionType: sectionData.sectionType,
+                dimensions: sectionData.dimensions,
+                color
+            });
+        }
+
+        return memberDatas;
+    }, [members, nodes, selectedIds, effectiveDisplayMode, colorMode, utilizationMap]);
+
+    // Separate members into line-display and section-display groups (for non-3D modes)
     const { lineMembers, sectionMembers } = useMemo(() => {
+        if (effectiveDisplayMode === 'SOLID_3D') {
+            return { lineMembers: [], sectionMembers: [] };
+        }
+
         const lines: { id: string; startPos: THREE.Vector3; endPos: THREE.Vector3; color: string }[] = [];
         const sections: string[] = [];
 
@@ -73,17 +133,15 @@ export const MembersRenderer: FC<MembersRendererProps> = ({
             const endNode = nodes.get(member.endNodeId);
             if (!startNode || !endNode) continue;
 
-            const shouldRenderAsLine = displayMode === 'LINE' || 
-                (displayMode === 'AUTO' && (!member.sectionId || member.sectionId === '' || member.sectionId === 'default'));
+            const shouldRenderAsLine = effectiveDisplayMode === 'LINE' ||
+                (effectiveDisplayMode === 'AUTO' && (!member.sectionId || member.sectionId === '' || member.sectionId === 'default'));
 
             if (shouldRenderAsLine) {
-                let color = '#00aaff'; // Default: Cyan
+                let color = '#00aaff';
                 if (selectedIds.has(member.id)) {
-                    color = '#ff00ff'; // Selected: Hot Pink
+                    color = '#ff00ff';
                 } else if (colorMode === 'UTILIZATION' && utilizationMap?.has(member.id)) {
-                    const ratio = utilizationMap.get(member.id)!;
-                    color = getUtilizationColor(ratio).getHexString();
-                    color = '#' + color;
+                    color = '#' + getUtilizationColor(utilizationMap.get(member.id)!).getHexString();
                 }
 
                 lines.push({
@@ -98,13 +156,12 @@ export const MembersRenderer: FC<MembersRendererProps> = ({
         }
 
         return { lineMembers: lines, sectionMembers: sections };
-    }, [members, nodes, selectedIds, displayMode, colorMode, utilizationMap]);
+    }, [members, nodes, selectedIds, effectiveDisplayMode, colorMode, utilizationMap]);
 
-    // Update instanced mesh for section members only
+    // Update instanced mesh for simple cylinder section members
     useLayoutEffect(() => {
         if (!meshRef.current || sectionMembers.length === 0) return;
 
-        // Resize mapping array
         idsRef.current = new Array(sectionMembers.length);
 
         const dummy = new THREE.Object3D();
@@ -112,7 +169,7 @@ export const MembersRenderer: FC<MembersRendererProps> = ({
         const endPos = new THREE.Vector3();
         const direction = new THREE.Vector3();
         const quaternion = new THREE.Quaternion();
-        const up = new THREE.Vector3(0, 1, 0); // Default cylinder orientation is Y-up
+        const up = new THREE.Vector3(0, 1, 0);
         const color = new THREE.Color();
 
         let index = 0;
@@ -128,39 +185,27 @@ export const MembersRenderer: FC<MembersRendererProps> = ({
                 startPos.set(startNode.x, startNode.y, startNode.z);
                 endPos.set(endNode.x, endNode.y, endNode.z);
 
-                // Calculate length and direction
                 const length = startPos.distanceTo(endPos);
                 direction.subVectors(endPos, startPos).normalize();
 
-                // Calculate mid-point position
                 dummy.position.addVectors(startPos, endPos).multiplyScalar(0.5);
-
-                // Calculate scale (Y scale = length)
                 dummy.scale.set(1, length, 1);
-
-                // Calculate rotation to align cylinder Y-axis with member direction
                 quaternion.setFromUnitVectors(up, direction);
                 dummy.quaternion.copy(quaternion);
 
                 dummy.updateMatrix();
                 meshRef.current.setMatrixAt(index, dummy.matrix);
 
-                // Color based on mode
                 if (selectedIds.has(member.id)) {
-                    color.set('#ff00ff'); // Selected: Hot Pink
+                    color.set('#ff00ff');
                 } else if (colorMode === 'UTILIZATION' && memberColors.has(member.id)) {
                     color.copy(memberColors.get(member.id)!);
-                } else if (colorMode === 'UTILIZATION' && utilizationMap?.has(member.id)) {
-                    // Direct lookup if not in memoized map
-                    color.copy(getUtilizationColor(utilizationMap.get(member.id)!));
                 } else {
-                    color.set('#00aaff'); // Default: Cyan
+                    color.set('#00aaff');
                 }
                 meshRef.current.setColorAt(index, color);
 
-                // Map ID
                 idsRef.current[index] = member.id;
-
                 index++;
             }
         }
@@ -172,6 +217,23 @@ export const MembersRenderer: FC<MembersRendererProps> = ({
 
     if (members.size === 0) return null;
 
+    // SOLID_3D mode: Render using StructuralMember with true cross-sections
+    if (effectiveDisplayMode === 'SOLID_3D') {
+        return (
+            <group name="members-solid-3d">
+                {solid3DMembers.map((memberData) => (
+                    <StructuralMember
+                        key={memberData.id}
+                        member={memberData}
+                        selected={selectedIds.has(memberData.id)}
+                        onSelect={(id) => select(id, false)}
+                    />
+                ))}
+            </group>
+        );
+    }
+
+    // Wireframe/cylinder modes
     return (
         <group>
             {/* Render line members as simple 3D lines */}
@@ -218,7 +280,7 @@ export const MembersRenderer: FC<MembersRendererProps> = ({
                         document.body.style.cursor = 'auto';
                     }}
                 >
-                    <cylinderGeometry args={[0.1, 0.1, 1, 8]} /> {/* Height 1, scaled dynamically */}
+                    <cylinderGeometry args={[0.1, 0.1, 1, 8]} />
                     <meshStandardMaterial vertexColors />
                 </instancedMesh>
             )}
@@ -227,3 +289,4 @@ export const MembersRenderer: FC<MembersRendererProps> = ({
 };
 
 export default MembersRenderer;
+

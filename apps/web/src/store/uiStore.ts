@@ -160,6 +160,8 @@ interface UIState {
     // Graphics State
     useWebGpu: boolean;
     setUseWebGpu: (val: boolean) => void;
+    renderMode3D: boolean;  // Toggle for solid 3D beam cross-sections
+    setRenderMode3D: (val: boolean) => void;
 
     // Actions
     setCategory: (cat: Category) => void;
@@ -266,6 +268,8 @@ export const useUIStore = create<UIState>()(
             // Graphics State
             useWebGpu: false,
             setUseWebGpu: (val) => set({ useWebGpu: val }),
+            renderMode3D: false,  // Default to wireframe for performance
+            setRenderMode3D: (val) => set({ renderMode3D: val }),
 
             // ========================================
             // SET CATEGORY - THE "ONE-BY-ONE" LOGIC

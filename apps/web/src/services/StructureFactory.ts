@@ -38,7 +38,9 @@ interface Support {
 }
 
 interface Load {
+    id: string;
     nodeId: string;
+    type?: string;  // 'nodal' or other load types
     fx?: number;
     fy?: number;
     fz?: number;
