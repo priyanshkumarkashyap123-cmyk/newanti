@@ -18,12 +18,12 @@ let wasmReady = false;
 
 async function loadWasm(): Promise<void> {
     try {
-        // Correct path for monorepo resolution
-        const { default: init } = await import('solver-wasm');
+        // Correct path for monorepo resolution - using new modular backend-rust
+        const { default: init } = await import('backend-rust');
         await init();
         wasmModule = wasm;
         wasmReady = true;
-        console.log('[StructuralSolverWorker] WASM Solver Module Loaded');
+        console.log('[StructuralSolverWorker] WASM Solver Module Loaded (backend-rust)');
     } catch (error) {
         console.warn('[StructuralSolverWorker] WASM Solver not available, using JS fallback:', error);
     }

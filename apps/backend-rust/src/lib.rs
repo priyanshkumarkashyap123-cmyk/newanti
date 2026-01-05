@@ -3,9 +3,10 @@ pub mod solver_3d;
 pub mod design_codes;
 pub mod renderer;
 pub mod ai_architect;
-
+use nalgebra::{DMatrix, DVector};
 use wasm_bindgen::prelude::*;
 use serde_wasm_bindgen;
+use serde::{Deserialize, Serialize};
 
 // Re-export design code calculations
 pub use design_codes::{calculate_beam_capacity, calculate_seismic_base_shear};
@@ -20,6 +21,46 @@ extern "C" {
 #[wasm_bindgen]
 pub fn set_panic_hook() {
     console_error_panic_hook::set_once();
+}
+
+/// Solve a linear system K * u = F using LU decomposition
+/// Backported from legacy solver-wasm for compatibility with StructuralSolverWorker
+#[wasm_bindgen]
+pub fn solve_system(
+    stiffness_array: &[f64],
+    force_array: &[f64],
+    dof: usize
+) -> Result<js_sys::Float64Array, JsValue> {
+    // Validate input
+    if stiffness_array.len() != dof * dof {
+        return Err(JsValue::from_str(&format!(
+            "Stiffness matrix size mismatch: expected {}×{}={}, got {}",
+            dof, dof, dof * dof, stiffness_array.len()
+        )));
+    }
+
+    if force_array.len() != dof {
+        return Err(JsValue::from_str(&format!(
+            "Force vector size mismatch: expected {}, got {}",
+            dof, force_array.len()
+        )));
+    }
+
+    // Create nalgebra matrix and vector
+    let stiffness = DMatrix::from_row_slice(dof, dof, stiffness_array);
+    let forces = DVector::from_vec(force_array.to_vec());
+
+    // Perform LU decomposition and solve
+    match stiffness.lu().solve(&forces) {
+        Some(displacements) => {
+            let result = js_sys::Float64Array::new_with_length(dof as u32);
+            for (i, &val) in displacements.iter().enumerate() {
+                result.set_index(i as u32, val);
+            }
+            Ok(result)
+        }
+        None => Err(JsValue::from_str("Matrix is singular - cannot solve system"))
+    }
 }
 
 /// 2D Frame analysis (backward compatible)
