@@ -15,6 +15,7 @@ import { FC, useState, useEffect, useCallback } from 'react';
 import { ChevronDown, Sparkles } from 'lucide-react';
 import { useUIStore, CATEGORY_TOOLS } from '../../store/uiStore';
 import { useModelStore } from '../../store/model';
+import { DemoModelsPanel } from '../DemoModelsPanel';
 import {
     MODELING_TOOL_GROUPS,
     TOOL_DEFINITIONS,
@@ -237,6 +238,11 @@ export const ModelingToolbar: FC = () => {
                 >
                     <Sparkles className="w-4 h-4" />
                 </button>
+
+                {/* Demo Models Panel */}
+                <DemoModelsPanel onLoadDemo={(demo) => {
+                    console.log('Loaded demo:', demo.name);
+                }} />
 
                 <div className="w-px h-6 bg-zinc-700 mx-2" />
 

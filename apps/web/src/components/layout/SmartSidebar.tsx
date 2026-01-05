@@ -1171,13 +1171,49 @@ export const SmartSidebar: FC = () => {
         return null;
     }
 
+    // Tool counts per category for the badge
+    const toolCounts: Record<string, number> = {
+        'MODELING': 4,  // Template Bank, Draw, Edit, Advanced
+        'PROPERTIES': 1, // Section Picker
+        'LOADING': 2,   // Load Generators, Manual Loads
+        'ANALYSIS': 2,  // Solver Controls, Result Toggles
+        'DESIGN': 1     // Design Checks
+    };
+
     return (
         <div className="h-full w-64 bg-zinc-900 border-r border-zinc-800 flex flex-col overflow-hidden">
-            {/* Header */}
+            {/* Header with Search Hint */}
             <div className="px-3 py-3 border-b border-zinc-800">
-                <h2 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
-                    {activeCategory} TOOLS
-                </h2>
+                <div className="flex items-center justify-between mb-2">
+                    <h2 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                        {activeCategory} TOOLS
+                    </h2>
+                    <span className="text-[10px] text-zinc-500 font-medium">
+                        {toolCounts[activeCategory] || 0} panels
+                    </span>
+                </div>
+
+                {/* Quick Search Trigger */}
+                <button
+                    onClick={() => {
+                        // Trigger Command Palette
+                        const event = new KeyboardEvent('keydown', {
+                            key: 'k',
+                            metaKey: true,
+                            bubbles: true
+                        });
+                        document.dispatchEvent(event);
+                    }}
+                    className="w-full flex items-center gap-2 px-2.5 py-1.5 bg-zinc-800/60 hover:bg-zinc-800 border border-zinc-700/50 rounded-md text-zinc-400 text-xs transition-colors group"
+                >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <span className="flex-1 text-left">Search all features...</span>
+                    <kbd className="px-1.5 py-0.5 text-[10px] bg-zinc-700 rounded border border-zinc-600 group-hover:bg-zinc-600">
+                        ⌘K
+                    </kbd>
+                </button>
             </div>
 
             {/* Dynamic Content */}

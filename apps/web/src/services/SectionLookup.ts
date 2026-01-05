@@ -47,16 +47,17 @@ export function getSectionDataForRendering(sectionId: string): RenderableSection
         return DEFAULT_I_BEAM;
     }
 
-    // First try direct lookup in database
+    // First try direct lookup in STEEL_SECTIONS database
     const normalizedId = sectionId.toUpperCase();
 
-    // Search in all section categories
-    for (const category of Object.values(SECTION_DATABASE)) {
-        for (const section of category) {
-            if (section.designation.toUpperCase() === normalizedId) {
-                return mapSectionToRenderable(section);
-            }
-        }
+    // Search in steel sections
+    const matchedSection = STEEL_SECTIONS.find(s => 
+        s.id?.toUpperCase() === normalizedId || 
+        s.name?.toUpperCase() === normalizedId
+    );
+
+    if (matchedSection) {
+        return mapSectionToRenderable(matchedSection);
     }
 
     // Pattern matching for standard section nomenclature
@@ -152,35 +153,54 @@ export function getSectionDataForRendering(sectionId: string): RenderableSection
 /**
  * Map a section from database to renderable data
  */
-function mapSectionToRenderable(section: SteelSection | RCCSection): RenderableSectionData {
-    // Check if it's a steel section with I-beam properties
-    if ('d' in section && 'bf' in section && 'tw' in section && 'tf' in section) {
-        const steel = section as SteelSection;
+function mapSectionToRenderable(section: SectionProperties): RenderableSectionData {
+    // Check if it's an I-beam/W-shape with depth/flange properties
+    if (section.d && section.bf && section.tw && section.tf) {
         return {
             sectionType: 'I-BEAM',
             dimensions: {
-                height: steel.d,        // Depth in mm
-                width: steel.bf,        // Flange width in mm
-                webThickness: steel.tw, // Web thickness in mm
-                flangeThickness: steel.tf // Flange thickness in mm
+                height: section.d,        // Depth in mm
+                width: section.bf,        // Flange width in mm
+                webThickness: section.tw, // Web thickness in mm
+                flangeThickness: section.tf // Flange thickness in mm
             }
         };
     }
 
-    // Check if it's an RCC section
-    if ('b' in section && 'h' in section) {
-        const rcc = section as RCCSection;
+    // Check if it's an RCC/rectangular section
+    if (section.b && section.h) {
         return {
             sectionType: 'RECTANGLE',
             dimensions: {
-                width: rcc.b,  // Width in mm
-                height: rcc.h  // Height in mm
+                width: section.b,  // Width in mm
+                height: section.h  // Height in mm
             }
         };
     }
 
-    // Fallback for unknown types
-    return DEFAULT_I_BEAM;
+    // Check if it's a tube/HSS section
+    if (section.t && section.D) {
+        return {
+            sectionType: 'TUBE',
+            dimensions: {
+                outerWidth: section.D,
+                outerHeight: section.D,
+                thickness: section.t
+            }
+        };
+    }
+
+    // Fallback for unknown types - use area to estimate size
+    const estimatedSize = section.A ? Math.sqrt(section.A) * 2 : 300;
+    return {
+        sectionType: 'I-BEAM',
+        dimensions: {
+            height: estimatedSize,
+            width: estimatedSize * 0.5,
+            webThickness: estimatedSize * 0.03,
+            flangeThickness: estimatedSize * 0.04
+        }
+    };
 }
 
 /**

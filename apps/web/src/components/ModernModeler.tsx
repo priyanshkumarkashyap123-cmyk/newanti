@@ -81,6 +81,9 @@ import { useAuth } from '../providers/AuthProvider';
 import { useSubscription } from '../hooks/useSubscription';
 import { StructureGallery } from './gallery/StructureGallery';
 
+// Command Palette for quick feature access (Cmd+K)
+import { CommandPalette, useCommandPalette } from './CommandPalette';
+
 // Quick Commands and Context Menu (STAAD Pro style)
 import { useQuickCommands, getDefaultQuickCommands } from './QuickCommandsToolbar';
 import { useContextMenu, getNodeContextMenuItems, getMemberContextMenuItems, getEmptyContextMenuItems } from './ContextMenu';
@@ -462,6 +465,8 @@ export const ModernModeler: FC = () => {
     const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
     const [showModalAnalysis, setShowModalAnalysis] = useState(false);
 
+    // Command Palette state (Cmd+K)
+    const commandPalette = useCommandPalette();
 
 
     // Open structure gallery from anywhere
@@ -1629,6 +1634,12 @@ export const ModernModeler: FC = () => {
             <StructureGallery
                 isOpen={modals.structureGallery}
                 onClose={() => closeModal('structureGallery')}
+            />
+
+            {/* Command Palette - Quick Access (Cmd+K) */}
+            <CommandPalette
+                isOpen={commandPalette.isOpen}
+                onClose={commandPalette.close}
             />
         </div>
     );
