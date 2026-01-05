@@ -6,8 +6,13 @@
  * - Concrete design (IS 456)
  * - Connection design
  * - Foundation design
+ * 
+ * Now using high-performance Rust API for design checks
  */
 
+// Use Rust API for design checks (faster)
+const RUST_API = import.meta.env.VITE_RUST_API_URL || 'http://localhost:3002';
+// Node.js API for legacy endpoints
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 // ============================================

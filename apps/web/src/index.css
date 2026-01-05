@@ -1,44 +1,102 @@
 @import "tailwindcss";
 
 /* ============================================
-   BeamLab Ultimate Design System
+   BeamLab Ultimate Design System v2.0
+   Complete UI Overhaul - Professional & Vibrant
    ============================================ */
 
 /* Custom Theme Extensions for Tailwind v4 */
 @theme {
-  /* Primary Blue */
-  --color-primary: #2b7cee;
+  /* ========================================
+     PRIMARY COLORS - Blue Gradient System
+     ======================================== */
+  --color-primary: #3b82f6;
   --color-primary-50: #eff6ff;
   --color-primary-100: #dbeafe;
   --color-primary-200: #bfdbfe;
   --color-primary-300: #93c5fd;
   --color-primary-400: #60a5fa;
-  --color-primary-500: #2b7cee;
+  --color-primary-500: #3b82f6;
   --color-primary-600: #2563eb;
   --color-primary-700: #1d4ed8;
   --color-primary-800: #1e40af;
   --color-primary-900: #1e3a8a;
 
-  /* Accent Yellow (Construction) */
-  --color-accent: #f4e225;
-  --color-accent-light: #fac533;
-  --color-accent-dark: #dcb900;
+  /* ========================================
+     SECONDARY COLORS - Purple/Violet
+     ======================================== */
+  --color-secondary: #8b5cf6;
+  --color-secondary-light: #a78bfa;
+  --color-secondary-dark: #7c3aed;
 
-  /* Dark Theme */
-  --color-background-dark: #101822;
-  --color-surface-dark: #192433;
-  --color-border-dark: #324867;
-  --color-text-muted: #92a9c9;
+  /* ========================================
+     ACCENT COLORS - Cyan & Teal
+     ======================================== */
+  --color-accent: #06b6d4;
+  --color-accent-light: #22d3ee;
+  --color-accent-dark: #0891b2;
+  --color-teal: #14b8a6;
+  --color-emerald: #10b981;
 
-  /* Light Theme */
-  --color-background-light: #f6f7f8;
+  /* ========================================
+     CONSTRUCTION ACCENT - Gold/Yellow
+     ======================================== */
+  --color-gold: #f59e0b;
+  --color-gold-light: #fbbf24;
+  --color-gold-dark: #d97706;
+
+  /* ========================================
+     STATUS COLORS
+     ======================================== */
+  --color-success: #22c55e;
+  --color-success-light: #4ade80;
+  --color-warning: #f59e0b;
+  --color-warning-light: #fbbf24;
+  --color-error: #ef4444;
+  --color-error-light: #f87171;
+  --color-info: #3b82f6;
+
+  /* ========================================
+     DARK THEME - Navy Blue System
+     (Warmer than pure black, more professional)
+     ======================================== */
+  --color-background-dark: #0f172a;
+  /* Deep navy - main background */
+  --color-surface-dark: #1e293b;
+  /* Slate-800 - cards, panels */
+  --color-surface-elevated: #334155;
+  /* Slate-700 - elevated elements */
+  --color-border-dark: #475569;
+  /* Slate-600 - borders */
+  --color-border-subtle: #334155;
+  /* Slate-700 - subtle borders */
+
+  /* Text Colors - High Contrast */
+  --color-text-primary: #f1f5f9;
+  /* Slate-100 - primary text */
+  --color-text-secondary: #cbd5e1;
+  /* Slate-300 - secondary text */
+  --color-text-muted: #94a3b8;
+  /* Slate-400 - muted text */
+  --color-text-disabled: #64748b;
+  /* Slate-500 - disabled */
+
+  /* ========================================
+     LIGHT THEME
+     ======================================== */
+  --color-background-light: #f8fafc;
+  /* Slate-50 */
   --color-surface-light: #ffffff;
-  --color-border-light: #e9e2ce;
-  --color-steel-blue: #2C3E50;
+  --color-border-light: #e2e8f0;
+  /* Slate-200 */
+  --color-steel-blue: #1e3a5f;
 
-  /* Fonts */
-  --font-family-display: 'Space Grotesk', system-ui, sans-serif;
-  --font-family-body: 'Noto Sans', 'Inter', system-ui, sans-serif;
+  /* ========================================
+     FONTS
+     ======================================== */
+  --font-family-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --font-family-body: 'Inter', 'Noto Sans', system-ui, sans-serif;
+  --font-family-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
 /* ============================================
@@ -60,16 +118,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Dark mode default */
+/* Dark mode default - Navy Blue Theme */
 html.dark body {
-  background-color: #101822;
-  color: #fff;
+  background-color: #0f172a;
+  color: #f1f5f9;
 }
 
 /* Light mode */
 html.light body {
-  background-color: #f6f7f8;
-  color: #2C3E50;
+  background-color: #f8fafc;
+  color: #1e293b;
 }
 
 #root {
@@ -87,16 +145,16 @@ html.light body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #111822;
+  background: #0f172a;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #324867;
+  background: #475569;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4a6fa5;
+  background: #64748b;
 }
 
 /* ============================================
@@ -106,8 +164,54 @@ html.light body {
 .grid-pattern {
   background-size: 40px 40px;
   background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    linear-gradient(to right, rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+}
+
+/* ============================================
+   Gradient Utilities
+   ============================================ */
+
+.gradient-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+}
+
+.gradient-accent {
+  background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+}
+
+.gradient-success {
+  background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+}
+
+.gradient-warning {
+  background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+}
+
+.gradient-hero {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #1e293b 100%);
+}
+
+.gradient-sidebar {
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Hover Glow Effects */
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+  transition: box-shadow 0.3s ease;
+}
+
+.hover-glow-accent:hover {
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+  transition: box-shadow 0.3s ease;
 }
 
 /* ============================================

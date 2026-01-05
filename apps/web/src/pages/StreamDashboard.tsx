@@ -7,19 +7,22 @@
  * - Recent activity feed
  * - Structure templates
  * - Analysis summary widgets
+ * 
+ * Premium Navy/Slate Theme
  */
 
 import { FC, useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
+import {
     Plus, FolderOpen, Search, Clock, Star, Archive,
     BarChart3, Box, Triangle, Building2, Columns,
     Play, Settings, HelpCircle, ChevronRight, Download,
     Upload, Zap, Layers, Grid3X3, ArrowUpRight, Filter,
-    LayoutDashboard, FileText, TrendingUp, Bell
+    LayoutDashboard, FileText, TrendingUp, Bell, LogOut, Cpu
 } from 'lucide-react';
 import { useAuth } from '../providers/AuthProvider';
+import { Tooltip } from '../components/ui/Tooltip';
 
 // ============================================
 // TYPES
@@ -173,11 +176,11 @@ const formatDate = (date: Date): string => {
 
 const getStatusColor = (status: Project['status']): string => {
     switch (status) {
-        case 'draft': return 'bg-zinc-500';
+        case 'draft': return 'bg-slate-500';
         case 'analyzed': return 'bg-blue-500';
         case 'designed': return 'bg-amber-500';
         case 'complete': return 'bg-emerald-500';
-        default: return 'bg-zinc-500';
+        default: return 'bg-slate-500';
     }
 };
 
@@ -201,11 +204,11 @@ const ProjectCard: FC<{ project: Project; onClick: () => void }> = ({ project, o
         whileHover={{ y: -4, scale: 1.01 }}
         whileTap={{ scale: 0.99 }}
         onClick={onClick}
-        className="group relative bg-zinc-900 border border-zinc-800 rounded-xl p-4 cursor-pointer hover:border-zinc-700 hover:bg-zinc-800/50 transition-all"
+        className="group relative bg-slate-900 border border-slate-800 rounded-xl p-4 cursor-pointer hover:border-blue-500/30 hover:bg-slate-800/80 transition-all shadow-lg shadow-black/20"
     >
         {/* Thumbnail / Preview */}
-        <div className="aspect-video bg-zinc-800 rounded-lg mb-3 flex items-center justify-center overflow-hidden relative">
-            <div className="text-zinc-600 text-4xl">
+        <div className="aspect-video bg-slate-950 rounded-lg mb-3 flex items-center justify-center overflow-hidden relative border border-slate-800/50">
+            <div className="text-slate-700 text-4xl group-hover:scale-110 transition-transform duration-500">
                 {getTypeIcon(project.type)}
             </div>
             {project.starred && (
@@ -213,10 +216,10 @@ const ProjectCard: FC<{ project: Project; onClick: () => void }> = ({ project, o
                     <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
                 </div>
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="bg-white/10 backdrop-blur-sm rounded-full p-2">
-                    <ArrowUpRight className="w-4 h-4 text-white" />
+                <div className="bg-blue-500/20 backdrop-blur-sm rounded-full p-2 border border-blue-500/30">
+                    <ArrowUpRight className="w-4 h-4 text-blue-400" />
                 </div>
             </div>
         </div>
@@ -224,9 +227,9 @@ const ProjectCard: FC<{ project: Project; onClick: () => void }> = ({ project, o
         {/* Info */}
         <div className="space-y-2">
             <div className="flex items-start justify-between">
-                <h3 className="font-medium text-white truncate flex-1">{project.name}</h3>
+                <h3 className="font-semibold text-slate-100 truncate flex-1 group-hover:text-blue-400 transition-colors">{project.name}</h3>
             </div>
-            <div className="flex items-center gap-3 text-xs text-zinc-500">
+            <div className="flex items-center gap-3 text-xs text-slate-500">
                 <span className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     {formatDate(project.lastModified)}
@@ -236,11 +239,11 @@ const ProjectCard: FC<{ project: Project; onClick: () => void }> = ({ project, o
                 <span>•</span>
                 <span>{project.memberCount} members</span>
             </div>
-            <div className="flex items-center gap-2">
-                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium text-white ${getStatusColor(project.status)}`}>
-                    {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+            <div className="flex items-center gap-2 mt-2">
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold text-white shadow-sm ${getStatusColor(project.status)}`}>
+                    {project.status.toUpperCase()}
                 </span>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-zinc-800 text-zinc-400">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-800 text-slate-400 border border-slate-700">
                     {getTypeIcon(project.type)}
                     {project.type.charAt(0).toUpperCase() + project.type.slice(1)}
                 </span>
@@ -254,34 +257,36 @@ const QuickActionCard: FC<{ action: QuickAction; onClick: () => void }> = ({ act
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         onClick={onClick}
-        className={`relative flex flex-col items-start gap-3 p-4 rounded-xl bg-gradient-to-br ${action.color} text-white shadow-lg overflow-hidden group`}
+        className={`relative flex flex-col items-start gap-3 p-5 rounded-xl bg-gradient-to-br ${action.color} text-white shadow-lg overflow-hidden group border border-white/10`}
     >
         <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors" />
-        <div className="relative z-10">
-            <div className="flex items-center gap-2">
-                {action.icon}
+        <div className="relative z-10 w-full">
+            <div className="flex items-center justify-between mb-2">
+                <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+                    {action.icon}
+                </div>
                 {action.badge && (
-                    <span className="px-1.5 py-0.5 bg-white/20 rounded text-[10px] font-bold">
+                    <span className="px-1.5 py-0.5 bg-white text-blue-600 rounded text-[10px] font-bold shadow-sm">
                         {action.badge}
                     </span>
                 )}
             </div>
-            <h3 className="font-semibold mt-2">{action.title}</h3>
-            <p className="text-xs text-white/70">{action.description}</p>
+            <h3 className="font-bold text-lg leading-tight text-left">{action.title}</h3>
+            <p className="text-xs text-white/80 text-left mt-1 font-medium">{action.description}</p>
         </div>
     </motion.button>
 );
 
 const StatCard: FC<{ label: string; value: string | number; icon: React.ReactNode; trend?: string }> = ({ label, value, icon, trend }) => (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-        <div className="flex items-center justify-between mb-2">
-            <span className="text-zinc-500 text-sm">{label}</span>
-            <span className="text-zinc-600">{icon}</span>
+    <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition-colors">
+        <div className="flex items-center justify-between mb-3">
+            <span className="text-slate-400 text-sm font-medium">{label}</span>
+            <span className="text-slate-600 bg-slate-800 p-1.5 rounded-md">{icon}</span>
         </div>
         <div className="flex items-end gap-2">
-            <span className="text-2xl font-bold text-white">{value}</span>
+            <span className="text-3xl font-bold text-white tracking-tight">{value}</span>
             {trend && (
-                <span className="text-xs text-emerald-400 flex items-center gap-0.5 mb-1">
+                <span className="text-xs text-emerald-400 flex items-center gap-0.5 mb-1.5 font-medium bg-emerald-500/10 px-1.5 py-0.5 rounded">
                     <TrendingUp className="w-3 h-3" />
                     {trend}
                 </span>
@@ -296,7 +301,7 @@ const StatCard: FC<{ label: string; value: string | number; icon: React.ReactNod
 
 export const StreamDashboard: FC = () => {
     const navigate = useNavigate();
-    const { isSignedIn, user } = useAuth();
+    const { isSignedIn, user, signOut } = useAuth(); // Added signOut here if available
     const [searchQuery, setSearchQuery] = useState('');
     const [filterStatus, setFilterStatus] = useState<string>('all');
     const [showStarred, setShowStarred] = useState(false);
@@ -320,37 +325,37 @@ export const StreamDashboard: FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-zinc-950 text-white">
+        <div className="min-h-screen bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30">
             {/* ================================================
                 HEADER
                 ================================================ */}
-            <header className="sticky top-0 z-50 bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-800">
+            <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800">
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                     {/* Logo */}
-                    <Link to="/" className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                            <span className="text-white font-bold text-lg">B</span>
+                    <Link to="/" className="flex items-center gap-3 group">
+                        <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-blue-500/25 transition-all">
+                            <Cpu className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                            <span className="font-bold text-lg text-white">BeamLab</span>
-                            <span className="ml-1.5 px-1.5 py-0.5 bg-blue-500/20 text-blue-400 text-[10px] font-bold rounded">PRO</span>
+                            <span className="font-bold text-lg text-white bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-300">BeamLab</span>
+                            <span className="ml-1.5 px-1.5 py-0.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-bold rounded tracking-wide">ULTIMATE</span>
                         </div>
                     </Link>
 
                     {/* Center Nav */}
-                    <nav className="hidden md:flex items-center gap-1">
-                        <button className="px-4 py-2 text-white bg-zinc-800 rounded-lg text-sm font-medium">
+                    <nav className="hidden md:flex items-center justify-center p-1 bg-slate-900/50 rounded-lg border border-slate-800/50">
+                        <button className="px-4 py-1.5 text-white bg-slate-800 rounded-md text-sm font-medium shadow-sm border border-slate-700">
                             <LayoutDashboard className="w-4 h-4 inline mr-2" />
                             Dashboard
                         </button>
-                        <button 
+                        <button
                             onClick={() => navigate('/app')}
-                            className="px-4 py-2 text-zinc-400 hover:text-white hover:bg-zinc-800/50 rounded-lg text-sm font-medium transition-colors"
+                            className="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-md text-sm font-medium transition-colors"
                         >
                             <Box className="w-4 h-4 inline mr-2" />
                             Modeler
                         </button>
-                        <button className="px-4 py-2 text-zinc-400 hover:text-white hover:bg-zinc-800/50 rounded-lg text-sm font-medium transition-colors">
+                        <button className="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-md text-sm font-medium transition-colors">
                             <FileText className="w-4 h-4 inline mr-2" />
                             Reports
                         </button>
@@ -358,18 +363,23 @@ export const StreamDashboard: FC = () => {
 
                     {/* Right Actions */}
                     <div className="flex items-center gap-3">
-                        <button className="relative p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
-                            <Bell className="w-5 h-5" />
-                            <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" />
-                        </button>
-                        <button className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
-                            <HelpCircle className="w-5 h-5" />
-                        </button>
-                        <button className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
-                            <Settings className="w-5 h-5" />
-                        </button>
-                        <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white font-medium text-sm">
-                            {userName.charAt(0).toUpperCase()}
+                        <Tooltip content="Notifications">
+                            <button className="relative p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+                                <Bell className="w-5 h-5" />
+                                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full border-2 border-slate-950" />
+                            </button>
+                        </Tooltip>
+
+                        <div className="h-6 w-px bg-slate-800 mx-1" />
+
+                        <div className="flex items-center gap-3">
+                            <div className="text-right hidden sm:block">
+                                <div className="text-sm font-medium text-white">{userName}</div>
+                                <div className="text-[10px] text-slate-500 font-medium">Free Plan</div>
+                            </div>
+                            <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-inner ring-2 ring-slate-900">
+                                {userName.charAt(0).toUpperCase()}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -380,22 +390,24 @@ export const StreamDashboard: FC = () => {
                 ================================================ */}
             <main className="max-w-7xl mx-auto px-6 py-8">
                 {/* Welcome Section */}
-                <section className="mb-8">
-                    <h1 className="text-3xl font-bold mb-2">
-                        {getGreeting()}, {userName}! 👋
+                <section className="mb-10">
+                    <h1 className="text-3xl font-bold mb-2 tracking-tight">
+                        {getGreeting()}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">{userName}</span>
                     </h1>
-                    <p className="text-zinc-400">
-                        Ready to design your next structure? Start fresh or continue where you left off.
+                    <p className="text-slate-400">
+                        Ready to innovate? Select an action below to get started.
                     </p>
                 </section>
 
                 {/* Quick Actions */}
-                <section className="mb-10">
-                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                        <Zap className="w-5 h-5 text-amber-400" />
-                        Quick Actions
-                    </h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <section className="mb-12">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-semibold flex items-center gap-2 text-slate-200">
+                            <Zap className="w-5 h-5 text-amber-400" />
+                            Quick Actions
+                        </h2>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                         {QUICK_ACTIONS.map(action => (
                             <QuickActionCard
                                 key={action.id}
@@ -407,7 +419,7 @@ export const StreamDashboard: FC = () => {
                 </section>
 
                 {/* Stats */}
-                <section className="mb-10">
+                <section className="mb-12">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <StatCard label="Total Projects" value={MOCK_PROJECTS.length} icon={<FolderOpen className="w-5 h-5" />} />
                         <StatCard label="Analyzed" value={MOCK_PROJECTS.filter(p => p.status === 'analyzed').length} icon={<BarChart3 className="w-5 h-5" />} trend="+2 this week" />
@@ -417,29 +429,29 @@ export const StreamDashboard: FC = () => {
                 </section>
 
                 {/* Projects Section */}
-                <section className="mb-10">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-semibold flex items-center gap-2">
+                <section className="mb-12">
+                    <div className="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4">
+                        <h2 className="text-lg font-semibold flex items-center gap-2 text-slate-200">
                             <FolderOpen className="w-5 h-5 text-blue-400" />
                             Recent Projects
                         </h2>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
                             {/* Search */}
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                            <div className="relative flex-1 sm:flex-none">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                                 <input
                                     type="text"
                                     placeholder="Search projects..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-9 pr-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 w-64"
+                                    className="w-full sm:w-64 pl-9 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
                                 />
                             </div>
                             {/* Filter */}
                             <select
                                 value={filterStatus}
                                 onChange={(e) => setFilterStatus(e.target.value)}
-                                className="px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                className="px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
                             >
                                 <option value="all">All Status</option>
                                 <option value="draft">Draft</option>
@@ -448,21 +460,22 @@ export const StreamDashboard: FC = () => {
                                 <option value="complete">Complete</option>
                             </select>
                             {/* Starred Toggle */}
-                            <button
-                                onClick={() => setShowStarred(!showStarred)}
-                                className={`p-2 rounded-lg border transition-colors ${
-                                    showStarred 
-                                        ? 'bg-amber-500/20 border-amber-500/50 text-amber-400'
-                                        : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-amber-400'
-                                }`}
-                            >
-                                <Star className="w-4 h-4" />
-                            </button>
+                            <Tooltip content="Show Starred Only">
+                                <button
+                                    onClick={() => setShowStarred(!showStarred)}
+                                    className={`p-2 rounded-lg border transition-colors ${showStarred
+                                            ? 'bg-amber-500/10 border-amber-500/50 text-amber-400'
+                                            : 'bg-slate-900 border-slate-800 text-slate-500 hover:text-amber-400 hover:border-slate-700'
+                                        }`}
+                                >
+                                    <Star className="w-4 h-4" />
+                                </button>
+                            </Tooltip>
                         </div>
                     </div>
 
                     {/* Project Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <AnimatePresence mode="popLayout">
                             {filteredProjects.map(project => (
                                 <ProjectCard
@@ -478,54 +491,62 @@ export const StreamDashboard: FC = () => {
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => navigate('/app')}
-                            className="aspect-[4/3] flex flex-col items-center justify-center border-2 border-dashed border-zinc-800 rounded-xl hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group"
+                            className="aspect-[4/3] flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-xl hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group bg-slate-900/50 relative overflow-hidden"
                         >
-                            <div className="w-12 h-12 rounded-full bg-zinc-800 group-hover:bg-blue-500/20 flex items-center justify-center mb-3 transition-colors">
-                                <Plus className="w-6 h-6 text-zinc-500 group-hover:text-blue-400" />
+                            {/* Hint Text */}
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                <div className="absolute inset-0 bg-blue-500/5 blur-xl" />
                             </div>
-                            <span className="text-sm font-medium text-zinc-500 group-hover:text-blue-400">
+
+                            <div className="w-14 h-14 rounded-full bg-slate-800 group-hover:bg-blue-500/20 flex items-center justify-center mb-4 transition-colors z-10 border border-slate-700 group-hover:border-blue-500/50">
+                                <Plus className="w-6 h-6 text-slate-500 group-hover:text-blue-400" />
+                            </div>
+                            <span className="text-sm font-semibold text-slate-500 group-hover:text-blue-400 transition-colors z-10">
                                 Create New Project
                             </span>
                         </motion.button>
                     </div>
 
                     {filteredProjects.length === 0 && searchQuery && (
-                        <div className="text-center py-12">
-                            <Search className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
-                            <p className="text-zinc-500">No projects found matching "{searchQuery}"</p>
+                        <div className="text-center py-16 bg-slate-900/50 rounded-xl border border-slate-800 border-dashed">
+                            <Search className="w-12 h-12 text-slate-700 mx-auto mb-4" />
+                            <p className="text-slate-500 text-lg">No projects found matching "{searchQuery}"</p>
+                            <button onClick={() => setSearchQuery('')} className="mt-4 text-blue-400 hover:text-blue-300 text-sm font-medium">
+                                Clear Search
+                            </button>
                         </div>
                     )}
                 </section>
 
                 {/* Templates Section */}
                 <section>
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-semibold flex items-center gap-2">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-lg font-semibold flex items-center gap-2 text-slate-200">
                             <Layers className="w-5 h-5 text-emerald-400" />
                             Quick Templates
                         </h2>
-                        <button 
+                        <button
                             onClick={() => navigate('/app?panel=templates')}
-                            className="text-sm text-zinc-400 hover:text-white flex items-center gap-1 transition-colors"
+                            className="text-sm text-slate-400 hover:text-white flex items-center gap-1 transition-colors font-medium"
                         >
                             View All <ChevronRight className="w-4 h-4" />
                         </button>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                         {TEMPLATES.map(template => (
                             <motion.button
                                 key={template.id}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                                 onClick={() => navigate(`/app?template=${template.id}`)}
-                                className="flex items-center gap-3 p-4 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-zinc-700 hover:bg-zinc-800/50 transition-all text-left"
+                                className="flex items-center gap-3 p-4 bg-slate-900 border border-slate-800 rounded-xl hover:border-slate-700 hover:bg-slate-800/80 transition-all text-left group"
                             >
-                                <div className="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center text-zinc-400">
+                                <div className="w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-white group-hover:scale-110 transition-all border border-slate-700/50">
                                     {template.icon}
                                 </div>
-                                <div>
-                                    <h3 className="font-medium text-white text-sm">{template.name}</h3>
-                                    <p className="text-xs text-zinc-500">{template.description}</p>
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="font-semibold text-slate-200 text-sm truncate">{template.name}</h3>
+                                    <p className="text-xs text-slate-500 truncate">{template.description}</p>
                                 </div>
                             </motion.button>
                         ))}
@@ -536,13 +557,13 @@ export const StreamDashboard: FC = () => {
             {/* ================================================
                 FOOTER
                 ================================================ */}
-            <footer className="border-t border-zinc-800 mt-16">
-                <div className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between text-sm text-zinc-500">
-                    <span>© 2025 BeamLab. All rights reserved.</span>
-                    <div className="flex items-center gap-4">
-                        <Link to="/help" className="hover:text-white transition-colors">Help</Link>
-                        <Link to="/privacy" className="hover:text-white transition-colors">Privacy</Link>
-                        <Link to="/pricing" className="hover:text-white transition-colors">Upgrade</Link>
+            <footer className="border-t border-slate-800 mt-16 bg-slate-900/30">
+                <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between text-sm text-slate-500">
+                    <span className="mb-4 md:mb-0">© 2025 BeamLab Ultimate. All rights reserved.</span>
+                    <div className="flex items-center gap-6">
+                        <Link to="/help" className="hover:text-white transition-colors">Help Center</Link>
+                        <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+                        <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
                     </div>
                 </div>
             </footer>

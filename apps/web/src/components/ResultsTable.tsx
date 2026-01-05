@@ -217,7 +217,7 @@ export const ResultsTable: FC = () => {
         <div style={containerStyle}>
             {/* Header */}
             <div style={headerStyle}>
-                <h3 style={{ margin: 0, color: 'white' }}>📊 Analysis Results</h3>
+                <h3 style={{ margin: 0, color: '#f1f5f9' }}>📊 Analysis Results</h3>
                 <button onClick={handleExport} style={exportBtnStyle}>
                     📥 Export CSV
                 </button>
@@ -397,9 +397,9 @@ const containerStyle: React.CSSProperties = {
     right: 10,
     width: 450,
     maxHeight: 'calc(100vh - 150px)',
-    background: 'rgba(20, 20, 25, 0.95)',
+    background: '#1e293b', // Slate-800
     borderRadius: '8px',
-    border: '1px solid rgba(255,255,255,0.1)',
+    border: '1px solid #475569', // Slate-600
     display: 'flex',
     flexDirection: 'column',
     zIndex: 150,
@@ -411,12 +411,12 @@ const headerStyle: React.CSSProperties = {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '12px 16px',
-    borderBottom: '1px solid rgba(255,255,255,0.1)',
-    background: 'rgba(0,0,0,0.3)'
+    borderBottom: '1px solid #334155',
+    background: '#0f172a' // Slate-900
 };
 
 const exportBtnStyle: React.CSSProperties = {
-    background: '#2563eb',
+    background: '#3b82f6', // Primary Blue
     color: 'white',
     border: 'none',
     padding: '6px 12px',
@@ -427,7 +427,7 @@ const exportBtnStyle: React.CSSProperties = {
 
 const tabsStyle: React.CSSProperties = {
     display: 'flex',
-    borderBottom: '1px solid rgba(255,255,255,0.1)'
+    borderBottom: '1px solid #334155'
 };
 
 const tabStyle: React.CSSProperties = {
@@ -435,17 +435,18 @@ const tabStyle: React.CSSProperties = {
     padding: '10px',
     background: 'transparent',
     border: 'none',
-    color: 'rgba(255,255,255,0.6)',
+    color: '#94a3b8', // Slate-400
     cursor: 'pointer',
     fontSize: '12px',
-    transition: 'all 0.2s'
+    transition: 'all 0.2s',
+    borderBottom: '2px solid transparent'
 };
 
 const activeTabStyle: React.CSSProperties = {
     ...tabStyle,
-    color: 'white',
-    background: 'rgba(37, 99, 235, 0.3)',
-    borderBottom: '2px solid #2563eb'
+    color: '#f8fafc', // Slate-50
+    background: 'rgba(59, 130, 246, 0.1)',
+    borderBottom: '2px solid #3b82f6'
 };
 
 const tableContainerStyle: React.CSSProperties = {
@@ -463,18 +464,18 @@ const tableStyle: React.CSSProperties = {
 const thStyle: React.CSSProperties = {
     padding: '8px 6px',
     textAlign: 'left',
-    background: 'rgba(0,0,0,0.4)',
-    color: 'rgba(255,255,255,0.8)',
+    background: '#1e293b', // Slate-800
+    color: '#cbd5e1', // Slate-300
     fontWeight: 600,
     position: 'sticky',
     top: 0,
-    borderBottom: '1px solid rgba(255,255,255,0.1)'
+    borderBottom: '1px solid #334155'
 };
 
 const tdStyle: React.CSSProperties = {
     padding: '6px',
-    color: 'rgba(255,255,255,0.9)',
-    borderBottom: '1px solid rgba(255,255,255,0.05)',
+    color: '#f1f5f9', // Slate-100
+    borderBottom: '1px solid #334155',
     fontFamily: 'monospace'
 };
 

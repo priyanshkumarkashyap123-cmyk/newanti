@@ -19,11 +19,15 @@ import {
     Eye,
     Database,
     Crown,
-    Activity
+    Activity,
+    Cpu
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useModelStore } from '../../store/model';
 import { useUIStore, Category } from '../../store/uiStore';
+import { useUIStore, Category } from '../../store/uiStore';
 import { useSubscription } from '../../hooks/useSubscription';
+import { Tooltip } from '../ui/Tooltip';
 
 interface RibbonProps {
     activeCategory: Category;
@@ -48,33 +52,38 @@ export const EngineeringRibbon: FC<RibbonProps> = ({ activeCategory }) => {
         disabled = false,
         vertical = true,
         className = ''
+        className = '',
+        tooltip,
+        shortcut
     }: any) => (
-        <button
-            onClick={onClick}
-            disabled={disabled}
-            className={`
-                flex flex-col items-center justify-center gap-1.5 px-2 py-1.5 rounded
-                border border-transparent hover:bg-zinc-800 transition-colors
-                ${isActive ? 'bg-blue-900/40 border-blue-700/50 text-blue-200' : 'text-zinc-400'}
-                ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                ${vertical ? 'h-14 w-14 min-w-[56px]' : 'flex-row h-8 px-3 w-auto gap-2'}
-                ${className}
-            `}
-        >
-            <Icon className={`${vertical ? 'w-5 h-5' : 'w-4 h-4'} flex-shrink-0`} />
-            <span className="text-[10px] whitespace-nowrap text-center leading-tight max-w-[52px] truncate">
-                {label}
-            </span>
-        </button>
+        <Tooltip content={tooltip || label} shortcut={shortcut}>
+            <button
+                onClick={onClick}
+                disabled={disabled}
+                className={`
+                    flex flex-col items-center justify-center gap-1.5 px-2 py-1.5 rounded
+                    border border-transparent hover:bg-slate-800 transition-colors
+                    ${isActive ? 'bg-blue-900/40 border-blue-700/50 text-blue-200' : 'text-slate-400'}
+                    ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                    ${vertical ? 'h-14 w-14 min-w-[56px]' : 'flex-row h-8 px-3 w-auto gap-2'}
+                    ${className}
+                `}
+            >
+                <Icon className={`${vertical ? 'w-5 h-5' : 'w-4 h-4'} flex-shrink-0`} />
+                <span className="text-[10px] whitespace-nowrap text-center leading-tight max-w-[52px] truncate">
+                    {label}
+                </span>
+            </button>
+        </Tooltip>
     );
 
     // Group Container - Fixed label positioning
     const ToolGroup = ({ label, children }: { label: string, children: React.ReactNode }) => (
-        <div className="flex flex-col h-full border-r border-zinc-800 px-3 pb-4 pt-1">
+        <div className="flex flex-col h-full border-r border-slate-800 px-3 pb-4 pt-1">
             <div className="flex-1 flex items-center gap-1">
                 {children}
             </div>
-            <div className="text-[9px] text-zinc-500 text-center uppercase tracking-wider mt-1 select-none">
+            <div className="text-[9px] text-slate-500 text-center uppercase tracking-wider mt-1 select-none">
                 {label}
             </div>
         </div>
@@ -84,11 +93,15 @@ export const EngineeringRibbon: FC<RibbonProps> = ({ activeCategory }) => {
     const renderGeometryTab = () => (
         <>
             <ToolGroup label="Project">
-                <ToolButton icon={Save} label="Save" onClick={() => document.dispatchEvent(new CustomEvent('trigger-save'))} />
-                <ToolButton icon={FolderOpen} label="Open" onClick={() => document.dispatchEvent(new CustomEvent('trigger-cloud-open'))} />
+                <ToolButton icon={Save} label="Save" onClick={() => document.dispatchEvent(new CustomEvent('trigger-save'))} shortcut="Cmd+S" />
+                <ToolButton icon={FolderOpen} label="Open" onClick={() => document.dispatchEvent(new CustomEvent('trigger-cloud-open'))} shortcut="Cmd+O" />
                 <div className="flex flex-col gap-1">
-                    <button onClick={() => undo()} disabled={pastStates.length === 0} className="p-1 hover:bg-zinc-800 rounded disabled:opacity-30"><Undo className="w-3 h-3" /></button>
-                    <button onClick={() => redo()} disabled={futureStates.length === 0} className="p-1 hover:bg-zinc-800 rounded disabled:opacity-30"><Redo className="w-3 h-3" /></button>
+                    <Tooltip content="Undo" shortcut="Cmd+Z">
+                        <button onClick={() => undo()} disabled={pastStates.length === 0} className="p-1 hover:bg-slate-800 rounded disabled:opacity-30 text-slate-400"><Undo className="w-3 h-3" /></button>
+                    </Tooltip>
+                    <Tooltip content="Redo" shortcut="Cmd+Shift+Z">
+                        <button onClick={() => redo()} disabled={futureStates.length === 0} className="p-1 hover:bg-slate-800 rounded disabled:opacity-30 text-slate-400"><Redo className="w-3 h-3" /></button>
+                    </Tooltip>
                 </div>
                 <ToolButton
                     icon={Crown}
@@ -165,8 +178,38 @@ export const EngineeringRibbon: FC<RibbonProps> = ({ activeCategory }) => {
     );
 
     return (
-        <div className="w-full bg-zinc-900 border-b border-zinc-800 flex flex-col select-none">
-            {/* Tab Bar usually handled by parent active state, but ribbon could show tabs too */}
+        <div className="w-full bg-slate-900 border-b border-slate-800 flex flex-col select-none">
+            {/* Header / Title Bar */}
+            <div className="h-10 flex items-center justify-between px-4 border-b border-slate-800 bg-slate-950">
+                <div className="flex items-center gap-2">
+                    <Link to="/stream" className="flex items-center gap-2 group hover:opacity-80 transition-opacity">
+                        <div className="w-6 h-6 bg-gradient-to-br from-blue-600 to-purple-600 rounded flex items-center justify-center shadow-lg group-hover:shadow-blue-500/25 transition-all">
+                            <Cpu className="w-3.5 h-3.5 text-white" />
+                        </div>
+                        <span className="font-bold text-sm text-slate-200">BeamLab</span>
+                        <span className="px-1.5 py-0.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[9px] font-bold rounded tracking-wide">ULTIMATE</span>
+                    </Link>
+                </div>
+
+                {/* Center - Simple Tabs (Visual Only for now) */}
+                <div className="flex items-center gap-1">
+                    {['MODELING', 'PROPERTIES', 'LOADING', 'ANALYSIS', 'DESIGN'].map(tab => (
+                        <div
+                            key={tab}
+                            className={`px-3 py-1 rounded text-[10px] font-bold tracking-wider cursor-default ${activeCategory === tab
+                                    ? 'bg-slate-800 text-blue-400 border border-slate-700'
+                                    : 'text-slate-600'
+                                }`}
+                        >
+                            {tab}
+                        </div>
+                    ))}
+                </div>
+
+                <div className="flex items-center gap-3">
+                    <div className="text-[10px] text-slate-500 font-medium">Auto-Saved</div>
+                </div>
+            </div>
 
             {/* Tools Area */}
             <div className="h-24 flex items-center px-2 py-1 gap-1 overflow-x-auto">
@@ -183,7 +226,7 @@ export const EngineeringRibbon: FC<RibbonProps> = ({ activeCategory }) => {
 
                 {/* Fallback for other tabs */}
                 {['DESIGN'].includes(activeCategory) && (
-                    <div className="flex items-center justify-center h-full w-full text-zinc-600 text-xs italic">
+                    <div className="flex items-center justify-center h-full w-full text-slate-600 text-xs italic">
                         Tools for {activeCategory} mode coming soon
                     </div>
                 )}

@@ -743,26 +743,26 @@ export const PropertiesPanel: FC = () => {
 const panelStyle: React.CSSProperties = {
     position: 'relative',
     width: '100%',
-    background: 'rgba(20, 20, 20, 0.95)',
-    backdropFilter: 'blur(10px)',
-    border: '1px solid rgba(255,255,255,0.1)',
+    background: '#0f172a', // Navy background
+    border: '1px solid #334155', // Slate-700
     borderRadius: '8px',
     padding: '14px',
-    color: 'white',
+    color: '#f1f5f9', // Slate-100
     fontFamily: 'Inter, sans-serif',
     zIndex: 50,
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
     maxHeight: '60vh',
-    overflowY: 'auto'
+    overflowY: 'auto',
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
 };
 
 const headerWithButtonStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderBottom: '1px solid #333',
+    borderBottom: '1px solid #334155',
     paddingBottom: 8,
     marginBottom: 4
 };
@@ -776,7 +776,7 @@ const headerStyle: React.CSSProperties = {
 const minimizeButtonStyle: React.CSSProperties = {
     background: 'none',
     border: 'none',
-    color: '#888',
+    color: '#94a3b8', // Slate-400
     cursor: 'pointer',
     fontSize: '16px',
     padding: '2px 6px',
@@ -799,7 +799,7 @@ const sectionStyle: React.CSSProperties = {
 const labelStyle: React.CSSProperties = {
     fontWeight: 500,
     fontSize: 12,
-    color: '#ccc'
+    color: '#cbd5e1' // Slate-300
 };
 
 const axisLabelStyle: React.CSSProperties = {
@@ -815,9 +815,9 @@ const inputGroupStyle: React.CSSProperties = {
 };
 
 const inputStyle: React.CSSProperties = {
-    background: 'rgba(0,0,0,0.5)',
-    border: '1px solid #444',
-    color: 'white',
+    background: '#1e293b', // Slate-800
+    border: '1px solid #475569', // Slate-600
+    color: '#f8fafc', // Slate-50
     padding: '6px 8px',
     borderRadius: '4px',
     fontSize: 12,
@@ -839,14 +839,14 @@ const checkboxLabelStyle: React.CSSProperties = {
 };
 
 const dividerStyle: React.CSSProperties = {
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: '#334155', // Slate-700
     margin: '6px 0'
 };
 
 const addButtonStyle: React.CSSProperties = {
-    background: '#333',
-    color: 'white',
-    border: '1px solid #555',
+    background: '#334155',
+    color: '#f1f5f9',
+    border: '1px solid #475569',
     borderRadius: 4,
     padding: '6px 10px',
     cursor: 'pointer',

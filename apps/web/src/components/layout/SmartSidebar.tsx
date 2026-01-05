@@ -44,6 +44,7 @@ import { useModelStore } from '../../store/model';
 import { TEMPLATE_BANK } from '../../data/templates';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useNavigate } from 'react-router-dom';
+import { Tooltip } from '../ui/Tooltip';
 
 // ============================================
 // TYPES
@@ -69,17 +70,17 @@ const AccordionItem: FC<AccordionItemProps> = ({
     const [isOpen, setIsOpen] = useState(defaultOpen);
 
     return (
-        <div className="border-b border-zinc-800">
+        <div className="border-b border-slate-700">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-zinc-300 hover:bg-zinc-800/50 transition-colors"
+                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-slate-200 hover:bg-slate-800/50 transition-colors"
             >
                 {isOpen ? (
-                    <ChevronDown className="w-4 h-4 text-zinc-500" />
+                    <ChevronDown className="w-4 h-4 text-slate-400" />
                 ) : (
-                    <ChevronRight className="w-4 h-4 text-zinc-500" />
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
                 )}
-                {icon && <span className="text-zinc-400">{icon}</span>}
+                {icon && <span className="text-slate-400">{icon}</span>}
                 {title}
             </button>
             {isOpen && (
@@ -313,20 +314,21 @@ const DrawToolsPanel: FC = () => {
     return (
         <div className="grid grid-cols-2 gap-1.5">
             {tools.map((tool) => (
-                <button
-                    key={tool.id}
-                    onClick={() => setActiveTool(tool.id)}
-                    className={`
-                        flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
-                        ${activeTool === tool.id
-                            ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
-                            : 'text-zinc-300 bg-zinc-800/50 hover:bg-zinc-700/50'
-                        }
-                    `}
-                >
-                    {tool.icon}
-                    {tool.label}
-                </button>
+                <Tooltip key={tool.id} content={`Activate ${tool.label} Tool`} shortcut={tool.id === 'SELECT' ? 'V' : tool.id === 'DRAW_NODE' ? 'N' : tool.id === 'DRAW_BEAM' ? 'B' : tool.id === 'DELETE' ? 'Del' : undefined}>
+                    <button
+                        onClick={() => setActiveTool(tool.id)}
+                        className={`
+                            w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
+                            ${activeTool === tool.id
+                                ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
+                                : 'text-slate-300 bg-slate-800/50 hover:bg-slate-700/50'
+                            }
+                        `}
+                    >
+                        {tool.icon}
+                        {tool.label}
+                    </button>
+                </Tooltip>
             ))}
         </div>
     );
@@ -365,24 +367,28 @@ const EditToolsPanel: FC = () => {
                     Selection
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
-                    <button
-                        onClick={() => selectAll()}
-                        className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg text-zinc-300 bg-zinc-800/50 hover:bg-zinc-700/50"
-                    >
-                        <CheckCircle className="w-4 h-4" />
-                        Select All
-                    </button>
-                    <button
-                        onClick={() => deleteSelection()}
-                        disabled={!hasSelection}
-                        className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${hasSelection
-                            ? 'text-red-400 bg-red-500/10 hover:bg-red-500/20'
-                            : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
-                            }`}
-                    >
-                        <Trash2 className="w-4 h-4" />
-                        Delete
-                    </button>
+                    <Tooltip content="Select all elements">
+                        <button
+                            onClick={() => selectAll()}
+                            className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg text-slate-300 bg-slate-800/50 hover:bg-slate-700/50"
+                        >
+                            <CheckCircle className="w-4 h-4" />
+                            Select All
+                        </button>
+                    </Tooltip>
+                    <Tooltip content="Delete selected elements" shortcut="Del">
+                        <button
+                            onClick={() => deleteSelection()}
+                            disabled={!hasSelection}
+                            className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${hasSelection
+                                ? 'text-red-400 bg-red-500/10 hover:bg-red-500/20'
+                                : 'text-slate-500 bg-slate-800/30 cursor-not-allowed'
+                                }`}
+                        >
+                            <Trash2 className="w-4 h-4" />
+                            Delete
+                        </button>
+                    </Tooltip>
                 </div>
             </div>
 
@@ -433,17 +439,19 @@ const EditToolsPanel: FC = () => {
                 <div className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
                     Transform
                 </div>
-                <button
-                    onClick={() => setShowMoveDialog(!showMoveDialog)}
-                    disabled={!hasSelection}
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${hasSelection
-                        ? 'text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20'
-                        : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
-                        }`}
-                >
-                    <Move className="w-4 h-4" />
-                    Move Selection
-                </button>
+                <Tooltip content="Move selection by offset" shortcut="M">
+                    <button
+                        onClick={() => setShowMoveDialog(!showMoveDialog)}
+                        disabled={!hasSelection}
+                        className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${hasSelection
+                            ? 'text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20'
+                            : 'text-slate-500 bg-slate-800/30 cursor-not-allowed'
+                            }`}
+                    >
+                        <Move className="w-4 h-4" />
+                        Move Selection
+                    </button>
+                </Tooltip>
 
                 {showMoveDialog && hasSelection && (
                     <div className="mt-2 p-3 bg-zinc-800/80 rounded-lg space-y-2">
@@ -1181,14 +1189,14 @@ export const SmartSidebar: FC = () => {
     };
 
     return (
-        <div className="h-full w-64 bg-zinc-900 border-r border-zinc-800 flex flex-col overflow-hidden">
+        <div className="h-full w-64 bg-slate-900 border-r border-slate-700 flex flex-col overflow-hidden">
             {/* Header with Search Hint */}
-            <div className="px-3 py-3 border-b border-zinc-800">
+            <div className="px-3 py-3 border-b border-slate-700 bg-gradient-sidebar">
                 <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                    <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                         {activeCategory} TOOLS
                     </h2>
-                    <span className="text-[10px] text-zinc-500 font-medium">
+                    <span className="text-[10px] text-slate-500 font-medium">
                         {toolCounts[activeCategory] || 0} panels
                     </span>
                 </div>
@@ -1204,13 +1212,13 @@ export const SmartSidebar: FC = () => {
                         });
                         document.dispatchEvent(event);
                     }}
-                    className="w-full flex items-center gap-2 px-2.5 py-1.5 bg-zinc-800/60 hover:bg-zinc-800 border border-zinc-700/50 rounded-md text-zinc-400 text-xs transition-colors group"
+                    className="w-full flex items-center gap-2 px-2.5 py-1.5 bg-slate-800/60 hover:bg-slate-800 border border-slate-600/50 rounded-md text-slate-300 text-xs transition-colors group"
                 >
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                     <span className="flex-1 text-left">Search all features...</span>
-                    <kbd className="px-1.5 py-0.5 text-[10px] bg-zinc-700 rounded border border-zinc-600 group-hover:bg-zinc-600">
+                    <kbd className="px-1.5 py-0.5 text-[10px] bg-slate-700 rounded border border-slate-600 group-hover:bg-slate-600 text-slate-300">
                         ⌘K
                     </kbd>
                 </button>

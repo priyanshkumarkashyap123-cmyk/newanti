@@ -1,6 +1,6 @@
 /**
  * LandingPage - BeamLab Ultimate Landing Page
- * Professional SaaS homepage with construction yellow accent
+ * Premium Dark SaaS homepage with vibrant gradients
  */
 
 import { FC, useState } from 'react';
@@ -9,646 +9,272 @@ import { motion } from 'framer-motion';
 import { SignInButton, SignUpButton, UserButton } from '@clerk/clerk-react';
 import { useAuth, isUsingClerk } from '../providers/AuthProvider';
 import useTierAccess from '../hooks/useTierAccess';
-
-// ============================================
-// ANIMATION VARIANTS
-// ============================================
+import {
+    CheckCircle,
+    ChevronRight,
+    Menu,
+    X,
+    ArrowRight,
+    Zap,
+    Globe2,
+    Shield,
+    Layers,
+    Cpu
+} from 'lucide-react';
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
 };
 
 const staggerContainer = {
     hidden: { opacity: 0 },
     visible: {
         opacity: 1,
-        transition: { staggerChildren: 0.1, delayChildren: 0.1 }
+        transition: { staggerChildren: 0.1, delayChildren: 0.2 }
     }
 };
-
-// ============================================
-// LANDING PAGE COMPONENT
-// ============================================
 
 export const LandingPage: FC = () => {
     const navigate = useNavigate();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-    // Use unified auth hook
     const { isSignedIn, isLoaded, signOut } = useAuth();
     const isClerkEnabled = isUsingClerk();
+    const { isPro } = useTierAccess();
 
-    // Get user tier for tier-aware UI
-    const { isPro, isEnterprise, isFree } = useTierAccess();
+    if (isSignedIn) {
+        navigate('/stream');
+    } else {
+        navigate('/sign-up');
+    }
+};
 
-    const handleGetStarted = () => {
-        if (isSignedIn) {
-            navigate('/stream');  // Go to Stream Dashboard
-        } else {
-            navigate('/sign-up');
-        }
-    };
+const renderAuthButtons = () => {
+    if (!isLoaded) return null;
 
-    // Render auth buttons based on auth provider
-    const renderAuthButtons = () => {
-        if (!isLoaded) return null;
-
-        if (isSignedIn) {
-            return (
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => navigate('/dashboard')}
-                        className="flex h-10 items-center justify-center rounded-lg bg-steel-blue px-4 text-sm font-bold text-white transition-all hover:bg-steel-blue/90"
-                    >
-                        Open Dashboard
-                    </button>
-                    {isClerkEnabled ? (
-                        <UserButton afterSignOutUrl="/" />
-                    ) : (
-                        <button
-                            onClick={() => signOut()}
-                            className="text-sm font-medium text-steel-blue/80 hover:text-steel-blue"
-                        >
-                            Sign Out
-                        </button>
-                    )}
-                </div>
-            );
-        }
-
-        // Not signed in
-        if (isClerkEnabled) {
-            return (
-                <>
-                    <SignInButton mode="modal">
-                        <button className="text-sm font-bold text-steel-blue hover:underline">Log in</button>
-                    </SignInButton>
-                    <SignUpButton mode="modal">
-                        <button className="flex h-10 items-center justify-center rounded-lg bg-steel-blue px-4 text-sm font-bold text-white transition-all hover:bg-steel-blue/90 hover:shadow-md">
-                            Get Started
-                        </button>
-                    </SignUpButton>
-                </>
-            );
-        }
-
-        // In-house auth buttons
+    if (isSignedIn) {
         return (
-            <>
-                <Link to="/sign-in" className="text-sm font-bold text-steel-blue hover:underline">Log in</Link>
-                <Link
-                    to="/sign-up"
-                    className="flex h-10 items-center justify-center rounded-lg bg-steel-blue px-4 text-sm font-bold text-white transition-all hover:bg-steel-blue/90 hover:shadow-md"
+            <div className="flex items-center gap-4">
+                <button
+                    onClick={() => navigate('/app')}
+                    className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-all shadow-lg shadow-blue-500/20"
                 >
-                    Get Started
-                </Link>
-            </>
+                    Go to App <ArrowRight className="w-4 h-4" />
+                </button>
+                {isClerkEnabled ? (
+                    <UserButton afterSignOutUrl="/" />
+                ) : (
+                    <button
+                        onClick={() => signOut()}
+                        className="text-sm font-medium text-slate-400 hover:text-white transition-colors"
+                    >
+                        Sign Out
+                    </button>
+                )}
+            </div>
         );
-    };
+    }
 
     return (
-        <div className="min-h-screen bg-background-light font-display">
-            {/* ================================================
-                NAVBAR
-                ================================================ */}
-            <header className="sticky top-0 z-50 w-full border-b border-border-light bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-                <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                    {/* Logo */}
-                    <Link to="/" className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded bg-accent text-steel-blue">
-                            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>architecture</span>
-                        </div>
-                        <span className="text-xl font-bold tracking-tight text-steel-blue">BeamLab Ultimate</span>
-                    </Link>
-
-                    {/* Desktop Nav */}
-                    <nav className="hidden md:flex items-center gap-8">
-                        <a href="#features" className="text-sm font-medium text-steel-blue/80 hover:text-steel-blue transition-colors">Features</a>
-                        <a href="#pricing" className="text-sm font-medium text-steel-blue/80 hover:text-steel-blue transition-colors">Pricing</a>
-                        <Link to="/capabilities" className="text-sm font-medium text-steel-blue/80 hover:text-steel-blue transition-colors">Docs</Link>
-                    </nav>
-
-                    {/* Auth Buttons - Fixed spacing */}
-                    <div className="hidden md:flex items-center gap-6">
-                        {renderAuthButtons()}
-                    </div>
-
-                    {/* Mobile Menu */}
-                    <button
-                        className="md:hidden p-2"
-                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    >
-                        <span className="material-symbols-outlined">{mobileMenuOpen ? 'close' : 'menu'}</span>
-                    </button>
-                </div>
-
-                {/* Mobile Menu Dropdown */}
-                {mobileMenuOpen && (
-                    <div className="md:hidden bg-white border-t border-border-light py-4 px-4">
-                        <div className="flex flex-col gap-4">
-                            <a href="#features" className="text-steel-blue font-medium">Features</a>
-                            <a href="#pricing" className="text-steel-blue font-medium">Pricing</a>
-                            <Link to="/capabilities" className="text-steel-blue font-medium">Docs</Link>
-                            <hr className="border-border-light" />
-                            <button
-                                onClick={handleGetStarted}
-                                className="bg-steel-blue text-white rounded-lg px-4 py-2 font-bold w-full"
-                            >
-                                Get Started
-                            </button>
-                        </div>
-                    </div>
-                )}
-            </header>
-
-            {/* ================================================
-                HERO SECTION
-                ================================================ */}
-            <section className="relative flex min-h-[600px] flex-col justify-center overflow-hidden bg-background-light pt-16 pb-20 lg:pt-24 lg:pb-32">
-                {/* Grid Background */}
-                <div className="absolute inset-0 grid-pattern opacity-50" />
-
-                {/* Yellow Gradient */}
-                <div className="absolute right-0 top-0 -z-10 h-full w-1/2 translate-x-1/4 opacity-10 blur-3xl">
-                    <div className="h-full w-full bg-gradient-to-bl from-accent to-transparent" />
-                </div>
-
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center relative z-10">
-                    {/* Badge */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 rounded-full border border-steel-blue/10 bg-white px-3 py-1 mb-8 shadow-sm"
-                    >
-                        <span className="flex h-2 w-2 rounded-full bg-green-500" />
-                        <span className="text-xs font-semibold text-steel-blue/70 uppercase tracking-wider">v2.0 Now Available</span>
-                    </motion.div>
-
-                    {/* Headline */}
-                    <motion.h1
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="mx-auto max-w-4xl text-5xl font-bold leading-tight tracking-tight text-steel-blue sm:text-6xl lg:text-7xl"
-                    >
-                        Structural Analysis{' '}
-                        <span className="relative whitespace-nowrap text-steel-blue">
-                            <svg aria-hidden="true" className="absolute left-0 top-[85%] h-[0.35em] w-full fill-accent/50" preserveAspectRatio="none" viewBox="0 0 418 42">
-                                <path d="M203.371.916c-26.013-2.078-76.686 1.963-124.73 9.946L67.3 12.749C61.16 13.643 45.698 15.696 20.916 20.457c-13.437 2.61-3.696.536-12.261 2.308-4.303.882-8.586 1.763-12.869 2.646L0 27.63c21.841-3.837 83.189-13.313 184.073-19.167 122.42-7.1 233.15 1.166 306.924 10.375 19.336 2.416 34.405 4.544 45.214 6.386 10.809 1.842 17.202 3.09 19.181 3.743l-4.223 9.172c-1.979-.653-8.372-1.901-19.181-3.743-10.809-1.842-25.878-3.97-45.214-6.386-73.774-9.209-184.504-17.475-306.924-10.375-100.884 5.854-162.232 15.33-184.073 19.167l-4.223-2.22c4.283-.883 8.566-1.764 12.869-2.646 8.565-1.772 -1.176.302 12.261-2.308 24.782-4.761 40.244-6.814 46.384-7.708l11.341-1.887c48.044-7.983 98.717-12.024 124.73-9.946l2.126-10.59z"></path>
-                            </svg>
-                            <span className="relative">in Your Browser</span>
-                        </span>
-                    </motion.h1>
-
-                    {/* Subheadline */}
-                    <motion.p
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="mx-auto mt-6 max-w-2xl text-lg text-steel-blue/70 sm:text-xl"
-                    >
-                        Free, instant, and professional grade. Perform complex structural calculations without the heavy software downloads.
-                    </motion.p>
-
-                    {/* CTA Buttons - Tier Aware */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
-                    >
-                        {(isPro || isEnterprise) && isSignedIn ? (
-                            // Pro/Enterprise users see "Open Workspace"
-                            <button
-                                onClick={() => navigate('/dashboard')}
-                                className="group flex h-12 min-w-[200px] items-center justify-center gap-2 rounded-lg bg-steel-blue px-8 text-base font-bold text-white transition-all hover:bg-steel-blue/90 hover:scale-105 shadow-lg"
-                            >
-                                Open Workspace
-                                <span className="material-symbols-outlined transition-transform group-hover:translate-x-1" style={{ fontSize: '20px' }}>arrow_forward</span>
-                            </button>
-                        ) : (
-                            // Free users and guests see "Start Analyzing for Free"
-                            <button
-                                onClick={handleGetStarted}
-                                className="group flex h-12 min-w-[200px] items-center justify-center gap-2 rounded-lg bg-accent px-8 text-base font-bold text-steel-blue transition-all hover:bg-accent-dark hover:scale-105 shadow-lg shadow-accent/20"
-                            >
-                                Start Analyzing for Free
-                                <span className="material-symbols-outlined transition-transform group-hover:translate-x-1" style={{ fontSize: '20px' }}>arrow_forward</span>
-                            </button>
-                        )}
-
-                        {/* Show upgrade button for free users who are signed in */}
-                        {isFree && isSignedIn ? (
-                            <Link
-                                to="/pricing"
-                                className="flex h-12 min-w-[200px] items-center justify-center gap-2 rounded-lg border-2 border-accent bg-white px-8 text-base font-bold text-steel-blue transition-all hover:bg-accent/10"
-                            >
-                                <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>bolt</span>
-                                Upgrade to Pro
-                            </Link>
-                        ) : (
-                            <button className="flex h-12 min-w-[200px] items-center justify-center gap-2 rounded-lg border-2 border-steel-blue/10 bg-white px-8 text-base font-bold text-steel-blue transition-all hover:bg-gray-50">
-                                <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>play_circle</span>
-                                Watch Demo
-                            </button>
-                        )}
-                    </motion.div>
-
-                    {/* Browser Mockup */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 50 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4, duration: 0.6 }}
-                        className="relative mx-auto mt-16 max-w-5xl lg:mt-24"
-                    >
-                        <div className="relative overflow-hidden rounded-xl border border-steel-blue/10 bg-white shadow-2xl">
-                            {/* Browser Header */}
-                            <div className="flex items-center gap-1.5 border-b border-gray-100 bg-gray-50 px-4 py-3">
-                                <div className="h-3 w-3 rounded-full bg-red-400" />
-                                <div className="h-3 w-3 rounded-full bg-yellow-400" />
-                                <div className="h-3 w-3 rounded-full bg-green-400" />
-                                <div className="ml-4 h-6 w-full max-w-lg rounded-md bg-white shadow-sm border border-gray-100" />
-                            </div>
-
-                            {/* Screenshot Area */}
-                            <div className="aspect-[16/9] w-full bg-gradient-to-br from-background-dark to-surface-dark relative group overflow-hidden">
-                                {/* Placeholder Grid Pattern */}
-                                <div className="absolute inset-0 grid-pattern opacity-30" />
-
-                                {/* Mock UI Elements */}
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="text-center">
-                                        <span className="material-symbols-outlined text-6xl text-primary/60">deployed_code</span>
-                                        <p className="text-white/60 text-lg mt-4 font-medium">3D Structural Analysis</p>
-                                        <p className="text-white/40 text-sm mt-2">Click "Start Analyzing" to begin</p>
-                                    </div>
-                                </div>
-
-                                {/* Floating Property Panel Mock */}
-                                <div className="absolute right-4 top-4 w-48 bg-surface-dark/90 backdrop-blur rounded-lg shadow-lg p-4 hidden sm:block border border-border-dark">
-                                    <div className="h-2 w-20 bg-primary/40 rounded mb-3" />
-                                    <div className="space-y-2">
-                                        <div className="flex justify-between text-xs">
-                                            <span className="text-text-muted">Material</span>
-                                            <span className="text-white font-mono">Steel S355</span>
-                                        </div>
-                                        <div className="flex justify-between text-xs">
-                                            <span className="text-text-muted">Section</span>
-                                            <span className="text-white font-mono">IPE 300</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Floating Status */}
-                                <div className="absolute bottom-4 right-4 bg-primary text-white p-3 rounded-lg shadow-lg flex items-center gap-3">
-                                    <span className="material-symbols-outlined animate-spin" style={{ fontSize: '20px' }}>sync</span>
-                                    <span className="text-sm font-medium">Ready to Analyze</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Decorative Blurs */}
-                        <div className="absolute -top-12 -left-12 -z-10 h-[300px] w-[300px] rounded-full bg-accent/20 blur-3xl filter" />
-                        <div className="absolute -bottom-12 -right-12 -z-10 h-[300px] w-[300px] rounded-full bg-primary/20 blur-3xl filter" />
-                    </motion.div>
-                </div>
-            </section>
-
-
-            {/* ================================================
-                FEATURES SECTION
-                ================================================ */}
-            <section id="features" className="bg-background-light py-24 sm:py-32">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div className="mx-auto max-w-2xl text-center">
-                        <h2 className="text-3xl font-bold tracking-tight text-steel-blue sm:text-4xl">Powerful Features for Modern Engineers</h2>
-                        <p className="mt-4 text-lg text-steel-blue/70">Everything you need to design, analyze, and verify your structures, right from your web browser.</p>
-                    </div>
-
-                    <motion.div
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true }}
-                        variants={staggerContainer}
-                        className="mx-auto mt-16 max-w-7xl"
-                    >
-                        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-                            {FEATURES.map((feature) => (
-                                <motion.div
-                                    key={feature.title}
-                                    variants={fadeInUp}
-                                    className="group relative rounded-2xl border border-steel-blue/10 bg-white p-8 transition-all hover:-translate-y-1 hover:shadow-xl"
-                                >
-                                    <div className={`mb-6 inline-flex h-14 w-14 items-center justify-center rounded-xl ${feature.bgColor} group-hover:bg-accent group-hover:text-steel-blue transition-colors`}>
-                                        <span className="material-symbols-outlined text-[32px]">{feature.icon}</span>
-                                    </div>
-                                    <h3 className="text-xl font-bold text-steel-blue">{feature.title}</h3>
-                                    <p className="mt-4 text-steel-blue/70">{feature.description}</p>
-                                    <ul className="mt-6 space-y-2">
-                                        {feature.bullets.map((bullet) => (
-                                            <li key={bullet} className="flex items-center gap-2 text-sm text-steel-blue/80">
-                                                <span className="material-symbols-outlined text-green-500" style={{ fontSize: '18px' }}>check_circle</span>
-                                                {bullet}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </motion.div>
-                            ))}
-                        </div>
-                    </motion.div>
-                </div>
-            </section>
-
-            {/* ================================================
-                WHY ENGINEERS TRUST US SECTION
-                ================================================ */}
-            <section className="py-20 bg-gradient-to-b from-background-light to-white">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl font-bold tracking-tight text-steel-blue sm:text-4xl">
-                            Why Engineers Trust BeamLab
-                        </h2>
-                        <p className="mt-4 text-lg text-steel-blue/70">
-                            Built by engineers, for engineers. We understand what matters.
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {/* Verified Accuracy */}
-                        <div className="bg-white rounded-xl p-8 border border-steel-blue/10 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="p-3 rounded-full bg-green-100">
-                                    <span className="material-symbols-outlined text-green-600" style={{ fontSize: '28px' }}>verified</span>
-                                </div>
-                                <h3 className="text-xl font-bold text-steel-blue">Verified Accuracy</h3>
-                            </div>
-                            <p className="text-steel-blue/70 mb-4">
-                                Our solver is validated against standard textbook problems and NAFEMS benchmarks.
-                                We publish our verification results openly.
-                            </p>
-                            <ul className="space-y-2 text-sm text-steel-blue/80">
-                                <li className="flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-green-500" style={{ fontSize: '16px' }}>check</span>
-                                    Cantilever beam ✓
-                                </li>
-                                <li className="flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-green-500" style={{ fontSize: '16px' }}>check</span>
-                                    Simply supported ✓
-                                </li>
-                                <li className="flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-green-500" style={{ fontSize: '16px' }}>check</span>
-                                    Portal frame ✓
-                                </li>
-                            </ul>
-                        </div>
-
-                        {/* Code Compliance */}
-                        <div className="bg-white rounded-xl p-8 border border-steel-blue/10 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="p-3 rounded-full bg-blue-100">
-                                    <span className="material-symbols-outlined text-blue-600" style={{ fontSize: '28px' }}>gavel</span>
-                                </div>
-                                <h3 className="text-xl font-bold text-steel-blue">Code Compliance</h3>
-                            </div>
-                            <p className="text-steel-blue/70 mb-4">
-                                Design checks per international standards. Each check shows the clause reference
-                                so you can verify independently.
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                                <span className="px-3 py-1 bg-slate-100 rounded-full text-sm font-medium text-steel-blue">IS 456</span>
-                                <span className="px-3 py-1 bg-slate-100 rounded-full text-sm font-medium text-steel-blue">IS 800</span>
-                                <span className="px-3 py-1 bg-slate-100 rounded-full text-sm font-medium text-steel-blue">AISC 360</span>
-                                <span className="px-3 py-1 bg-slate-100 rounded-full text-sm font-medium text-steel-blue">Eurocode</span>
-                                <span className="px-3 py-1 bg-slate-100 rounded-full text-sm font-medium text-steel-blue">ACI 318</span>
-                            </div>
-                        </div>
-
-                        {/* No Lock-in */}
-                        <div className="bg-white rounded-xl p-8 border border-steel-blue/10 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="p-3 rounded-full bg-purple-100">
-                                    <span className="material-symbols-outlined text-purple-600" style={{ fontSize: '28px' }}>open_in_new</span>
-                                </div>
-                                <h3 className="text-xl font-bold text-steel-blue">No Data Lock-in</h3>
-                            </div>
-                            <p className="text-steel-blue/70 mb-4">
-                                Your models, your data. Export anytime to standard formats.
-                                Import from other software seamlessly.
-                            </p>
-                            <ul className="space-y-2 text-sm text-steel-blue/80">
-                                <li className="flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-purple-500" style={{ fontSize: '16px' }}>download</span>
-                                    Export to DXF (AutoCAD)
-                                </li>
-                                <li className="flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-purple-500" style={{ fontSize: '16px' }}>download</span>
-                                    Export to PDF reports
-                                </li>
-                                <li className="flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-purple-500" style={{ fontSize: '16px' }}>upload</span>
-                                    Import from STAAD
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* ================================================
-                PRICING SECTION
-                ================================================ */}
-            <section id="pricing" className="py-24 bg-white">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl font-bold tracking-tight text-steel-blue sm:text-4xl">
-                            Engineering-grade precision, priced for scale.
-                        </h2>
-                        <p className="mt-4 text-lg text-steel-blue/70">
-                            Choose the right plan for your structural analysis needs.
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                        {PRICING_TIERS.map((tier) => (
-                            <div
-                                key={tier.name}
-                                className={`relative flex flex-col gap-6 rounded-2xl p-8 ${tier.popular
-                                    ? 'border-2 border-accent bg-white shadow-xl transform md:-translate-y-4 z-10'
-                                    : 'border border-border-light bg-white hover:shadow-lg transition-shadow'
-                                    }`}
-                            >
-                                {tier.popular && (
-                                    <div className="absolute -top-4 left-0 right-0 flex justify-center">
-                                        <span className="bg-accent text-steel-blue text-xs font-bold px-4 py-1.5 rounded-full shadow-sm uppercase tracking-wide">
-                                            Most Popular
-                                        </span>
-                                    </div>
-                                )}
-                                <div>
-                                    <h3 className="text-xl font-bold text-steel-blue">{tier.name}</h3>
-                                    <p className="text-steel-blue/60 text-sm mt-1">{tier.description}</p>
-                                    <div className="mt-4 flex items-baseline gap-1 text-steel-blue">
-                                        <span className="text-4xl font-black tracking-tight">{tier.price}</span>
-                                        {tier.period && <span className="text-base font-bold text-steel-blue/60">/{tier.period}</span>}
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={handleGetStarted}
-                                    className={`w-full py-3 rounded-lg font-bold transition-all ${tier.popular
-                                        ? 'bg-accent hover:bg-accent-dark text-steel-blue shadow-md hover:shadow-lg'
-                                        : 'bg-steel-blue hover:bg-steel-blue/90 text-white'
-                                        }`}
-                                >
-                                    {tier.cta}
-                                </button>
-                                <ul className="space-y-3">
-                                    {tier.features.map((feature) => (
-                                        <li key={feature} className="flex items-start gap-3 text-sm text-steel-blue/80">
-                                            <span className="material-symbols-outlined text-accent" style={{ fontSize: '20px' }}>check_circle</span>
-                                            {feature}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* ================================================
-                FOOTER
-                ================================================ */}
-            <footer className="border-t border-gray-100 bg-steel-blue text-white">
-                <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-                        {/* Brand */}
-                        <div className="flex flex-col gap-4">
-                            <div className="flex items-center gap-2">
-                                <div className="flex h-8 w-8 items-center justify-center rounded bg-accent text-steel-blue">
-                                    <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>architecture</span>
-                                </div>
-                                <span className="text-xl font-bold tracking-tight">BeamLab Ultimate</span>
-                            </div>
-                            <p className="text-sm leading-6 text-slate-300 max-w-xs">
-                                Empowering civil and structural engineers with cloud-native analysis tools.
-                            </p>
-                        </div>
-
-                        {/* Links */}
-                        <div className="flex flex-col md:items-center">
-                            <div className="flex gap-8">
-                                <a href="#features" className="text-sm font-semibold text-white hover:text-accent transition-colors">Features</a>
-                                <a href="#pricing" className="text-sm font-semibold text-white hover:text-accent transition-colors">Pricing</a>
-                                <Link to="/capabilities" className="text-sm font-semibold text-white hover:text-accent transition-colors">Docs</Link>
-                                <Link to="/help" className="text-sm font-semibold text-white hover:text-accent transition-colors">Support</Link>
-                            </div>
-                        </div>
-
-                        {/* Socials */}
-                        <div className="flex flex-col md:items-end gap-4">
-                            <div className="flex space-x-6">
-                                <a href="#" className="text-slate-400 hover:text-white transition-colors">
-                                    <span className="material-symbols-outlined">mail</span>
-                                </a>
-                                <a href="#" className="text-slate-400 hover:text-white transition-colors">
-                                    <span className="material-symbols-outlined">public</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Bottom Bar with Legal Links */}
-                    <div className="mt-8 border-t border-white/10 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-                        <p className="text-xs leading-5 text-slate-400">© 2025 BeamLab Ultimate. All rights reserved.</p>
-                        <div className="flex gap-6">
-                            <Link to="/terms" className="text-xs text-slate-400 hover:text-white transition-colors">Terms of Service</Link>
-                            <Link to="/privacy" className="text-xs text-slate-400 hover:text-white transition-colors">Privacy Policy</Link>
-                        </div>
-                    </div>
-                </div>
-            </footer>
+        <div className="flex items-center gap-4">
+            <Link to="/sign-in" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
+                Log in
+            </Link>
+            <Link
+                to="/sign-up"
+                className="flex items-center gap-2 px-5 py-2 rounded-full bg-white text-slate-900 text-sm font-semibold hover:bg-slate-100 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)]"
+            >
+                Get Started
+            </Link>
         </div>
     );
 };
 
-// ============================================
-// DATA
-// ============================================
+return (
+    <div className="min-h-screen bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30">
+        {/* Navbar */}
+        <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-md">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex items-center justify-between h-16">
+                    {/* Logo */}
+                    <Link to="/" className="flex items-center gap-2 group">
+                        <div className="relative w-8 h-8 flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg shadow-lg group-hover:shadow-blue-500/25 transition-all">
+                            <Cpu className="w-5 h-5 text-white" />
+                        </div>
+                        <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+                            BeamLab Ultimate
+                        </span>
+                    </Link>
 
-const FEATURES = [
-    {
-        title: 'Professional Results Display',
-        description: 'Interactive SFD, BMD & deflection diagrams. Click any member to see forces, stresses, and utilization ratios instantly.',
-        icon: 'query_stats',
-        bgColor: 'bg-blue-100 text-blue-600',
-        bullets: ['Force diagrams (SFD/BMD)', 'Stress contours & heatmaps'],
-    },
-    {
-        title: 'Code-Verified Accuracy',
-        description: 'Solver validated against textbook problems and industry benchmarks. IS 456, IS 800, AISC 360, and Eurocode compliant.',
-        icon: 'verified',
-        bgColor: 'bg-emerald-100 text-emerald-600',
-        bullets: ['Benchmark validated', 'Design code checks'],
-    },
-    {
-        title: 'True 3D Visualization',
-        description: 'Realistic I-beams, channels, and custom sections rendered in real-time. Visualize actual steel and timber members in 3D space.',
-        icon: 'view_in_ar',
-        bgColor: 'bg-primary/20 text-primary',
-        bullets: ['Real-time deformation', 'Mode shape animation'],
-    },
-    {
-        title: 'Transparent Math',
-        description: 'No black boxes here. See the formulas, logic, and intermediate steps for every calculation, just like hand calcs.',
-        icon: 'calculate',
-        bgColor: 'bg-orange-100 text-orange-600',
-        bullets: ['Step-by-step calcs', 'Moment distribution'],
-    },
-    {
-        title: 'Instant Reports',
-        description: 'Export professional, branded PDF engineering reports in one click with diagrams, load cases, and calculation steps.',
-        icon: 'picture_as_pdf',
-        bgColor: 'bg-green-100 text-green-600',
-        bullets: ['Customizable headers', 'Vector quality diagrams'],
-    },
-    {
-        title: 'Works Everywhere',
-        description: 'Browser-based means no installation. Works on Windows, Mac, Linux, even tablets. Auto-saves your work to the cloud.',
-        icon: 'devices',
-        bgColor: 'bg-purple-100 text-purple-600',
-        bullets: ['No downloads needed', 'Auto-save & cloud sync'],
-    },
-];
+                    {/* Desktop Links */}
+                    <div className="hidden md:flex items-center gap-8">
+                        <a href="#features" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">Features</a>
+                        <a href="#pricing" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">Pricing</a>
+                        <Link to="/docs" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">Docs</Link>
+                    </div>
 
-const PRICING_TIERS = [
-    {
-        name: 'Free',
-        description: 'Perfect for students and quick checks.',
-        price: '$0',
-        period: 'mo',
-        features: ['Basic beam calculations', '2D Frame analysis', 'Community support forums'],
-        cta: 'Sign Up Free',
-        popular: false,
-    },
-    {
-        name: 'Pro',
-        description: 'For professional engineers & firms.',
-        price: '$49',
-        period: 'mo',
-        features: ['Everything in Free, plus:', 'Advanced 3D analysis engine', 'Customizable PDF reports', 'Priority email support', 'Unlimited project storage'],
-        cta: 'Start Pro Trial',
-        popular: true,
-    },
-    {
-        name: 'Enterprise',
-        description: 'Maximum power and control.',
-        price: 'Custom',
-        period: null,
-        features: ['Everything in Pro, plus:', 'API Access & Integrations', 'Multi-user management (SSO)', 'Dedicated account manager'],
-        cta: 'Contact Sales',
-        popular: false,
-    },
-];
+                    {/* Auth */}
+                    <div className="hidden md:flex items-center">
+                        {renderAuthButtons()}
+                    </div>
 
-export default LandingPage;
+                    {/* Mobile Menu Button */}
+                    <button
+                        className="md:hidden p-2 text-slate-400 hover:text-white"
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    >
+                        {mobileMenuOpen ? <X /> : <Menu />}
+                    </button>
+                </div>
+            </div>
+
+            {/* Mobile Menu */}
+            {mobileMenuOpen && (
+                <div className="md:hidden bg-slate-900 border-b border-white/5 p-4 space-y-4">
+                    <a href="#features" className="block text-slate-400 hover:text-white">Features</a>
+                    <a href="#pricing" className="block text-slate-400 hover:text-white">Pricing</a>
+                    <Link to="/docs" className="block text-slate-400 hover:text-white">Docs</Link>
+                    <hr className="border-white/10" />
+                    <button onClick={handleGetStarted} className="w-full py-2 bg-blue-600 rounded-lg font-semibold">
+                        Get Started
+                    </button>
+                </div>
+            )}
+        </nav>
+
+        {/* Hero Section */}
+        <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+            {/* Background Blobs */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
+                <div className="absolute top-20 left-10 w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-[100px] opacity-50 mix-blend-screen animate-pulse" style={{ animationDuration: '4s' }} />
+                <div className="absolute top-40 right-10 w-[400px] h-[400px] bg-purple-500/20 rounded-full blur-[100px] opacity-50 mix-blend-screen animate-pulse" style={{ animationDuration: '7s' }} />
+            </div>
+
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <motion.div
+                    initial="hidden"
+                    animate="visible"
+                    variants={fadeInUp}
+                    className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider mb-8"
+                >
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                    v2.0 Now Available
+                </motion.div>
+
+                <motion.h1
+                    initial="hidden"
+                    animate="visible"
+                    variants={fadeInUp}
+                    className="text-5xl md:text-7xl font-bold tracking-tight mb-6"
+                >
+                    Structural Analysis <br />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400">
+                        Reimagined for Web
+                    </span>
+                </motion.h1>
+
+                <motion.p
+                    initial="hidden"
+                    animate="visible"
+                    variants={fadeInUp}
+                    className="max-w-2xl mx-auto text-lg md:text-xl text-slate-400 mb-10 leading-relaxed"
+                >
+                    Perform complex finite element analysis directly in your browser.
+                    No installation required. Real-time visualization, cloud collaboration,
+                    and professional reporting.
+                </motion.p>
+
+                <motion.div
+                    initial="hidden"
+                    animate="visible"
+                    variants={fadeInUp}
+                    className="flex flex-col sm:flex-row items-center justify-center gap-4"
+                >
+                    <button
+                        onClick={handleGetStarted}
+                        className="h-12 px-8 rounded-full bg-white text-slate-950 font-bold text-base hover:bg-slate-100 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] flex items-center gap-2"
+                    >
+                        Start Analyzing Free <ArrowRight className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => navigate('/demo')}
+                        className="h-12 px-8 rounded-full bg-slate-800 border border-slate-700 text-white font-medium hover:bg-slate-700 transition-all"
+                    >
+                        View Live Demo
+                    </button>
+                </motion.div>
+
+                {/* Dashboard Preview */}
+                <motion.div
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4, duration: 0.8 }}
+                    className="mt-20 relative mx-auto max-w-5xl"
+                >
+                    <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl blur opacity-30" />
+                    <div className="relative rounded-xl border border-slate-800 bg-slate-900/50 backdrop-blur shadow-2xl overflow-hidden aspect-video">
+                        {/* Placeholder for actual screenshot */}
+                        <div className="w-full h-full flex items-center justify-center bg-slate-900/50">
+                            <span className="text-slate-500">Dashboard Preview Image</span>
+                        </div>
+                    </div>
+                </motion.div>
+            </div>
+        </section>
+
+        {/* Features Grid */}
+        <section id="features" className="py-24 bg-slate-950 relative">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center mb-16">
+                    <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">Everything you need</h2>
+                    <p className="mt-4 text-slate-400">Professional grade tools, modernized for the web era.</p>
+                </div>
+
+                <motion.div
+                    variants={staggerContainer}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                    className="grid grid-cols-1 md:grid-cols-3 gap-8"
+                >
+                    <FeatureCard
+                        icon={<Zap className="w-6 h-6 text-yellow-400" />}
+                        title="Instant Results"
+                        desc="Real-time solver feedback. See displacements and stresses update instantly as you design."
+                    />
+                    <FeatureCard
+                        icon={<Globe2 className="w-6 h-6 text-cyan-400" />}
+                        title="Cloud Native"
+                        desc="Access your projects from anywhere. Share with team members via simple links."
+                    />
+                    <FeatureCard
+                        icon={<Layers className="w-6 h-6 text-purple-400" />}
+                        title="Advanced FEM"
+                        desc="Full 6-DOF analysis with support for trusses, frames, and plates. Linear and non-linear."
+                    />
+                </motion.div>
+            </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="border-t border-slate-800 py-12 bg-slate-900/30">
+            <div className="max-w-7xl mx-auto px-4 text-center">
+                <p className="text-slate-500 text-sm">© 2024 BeamLab Ultimate. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+);
+};
+
+const FeatureCard = ({ icon, title, desc }: { icon: any, title: string, desc: string }) => (
+    <motion.div
+        variants={fadeInUp}
+        className="p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 hover:bg-slate-800/50 transition-all group"
+    >
+        <div className="w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            {icon}
+        </div>
+        <h3 className="text-xl font-bold text-slate-100 mb-2">{title}</h3>
+        <p className="text-slate-400 leading-relaxed">{desc}</p>
+    </motion.div>
+);

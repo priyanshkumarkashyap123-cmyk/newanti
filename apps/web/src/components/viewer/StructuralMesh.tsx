@@ -221,6 +221,7 @@ function createRectangleShape(dims: SectionDimensions): THREE.Shape {
 
 /**
  * Get section geometry based on type and dimensions
+ * The geometry is created CENTERED at origin, with member axis along Y
  */
 export function getSectionGeometry(
     type: SectionType,
@@ -256,8 +257,17 @@ export function getSectionGeometry(
 
     const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
 
-    // Rotate to align with Z-axis (extrusion goes along +Z by default)
-    geometry.rotateX(Math.PI / 2);
+    // The extrusion goes along +Z by default
+    // We need to:
+    // 1. Center the geometry along its length (translate by -length/2 in extrusion direction)
+    // 2. Rotate so the member axis is along Y (standard structural convention)
+
+    // First translate to center along extrusion axis (Z)
+    geometry.translate(0, 0, -length / 2);
+
+    // Then rotate so extrusion axis (Z) becomes Y-axis (member longitudinal axis)
+    // Rotate -90° around X to bring Z to Y
+    geometry.rotateX(-Math.PI / 2);
 
     return geometry;
 }
@@ -272,6 +282,22 @@ interface StructuralMemberProps {
     onSelect?: (id: string) => void;
 }
 
+/**
+ * Determines if a member is primarily vertical (column) or horizontal (beam)
+ * This affects cross-section orientation
+ */
+function getMemberOrientation(start: THREE.Vector3, end: THREE.Vector3): 'vertical' | 'horizontal' | 'inclined' {
+    const direction = new THREE.Vector3().subVectors(end, start).normalize();
+    const verticalThreshold = 0.7; // cos(45°) ≈ 0.707
+
+    if (Math.abs(direction.y) > verticalThreshold) {
+        return 'vertical';
+    } else if (Math.abs(direction.y) < 0.3) {
+        return 'horizontal';
+    }
+    return 'inclined';
+}
+
 export const StructuralMember: FC<StructuralMemberProps> = ({
     member,
     selected = false,
@@ -279,25 +305,77 @@ export const StructuralMember: FC<StructuralMemberProps> = ({
 }) => {
     const groupRef = useRef<THREE.Group>(null);
 
-    // Calculate member properties
-    const { position, quaternion, length } = useMemo(() => {
+    // Calculate member position, orientation, and length
+    const { position, matrix, length } = useMemo(() => {
         const start = new THREE.Vector3(...member.startNode.position);
         const end = new THREE.Vector3(...member.endNode.position);
 
         const memberLength = start.distanceTo(end);
         const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
 
-        // Calculate rotation to align with member direction
+        // Member direction vector
         const direction = new THREE.Vector3().subVectors(end, start).normalize();
-        const up = new THREE.Vector3(0, 1, 0);
 
-        // Create quaternion to rotate from Y-axis to member direction
-        const quat = new THREE.Quaternion();
-        quat.setFromUnitVectors(up, direction);
+        // Determine member type for proper cross-section orientation
+        const memberType = getMemberOrientation(start, end);
+
+        // Create transformation matrix
+        const mat = new THREE.Matrix4();
+
+        // We need to construct a rotation that:
+        // 1. Aligns the Y-axis (our geometry's longitudinal axis) with the member direction
+        // 2. Orients the cross-section properly based on member type
+
+        // For the cross-section (XZ plane in local coords after geometry rotation):
+        // - Beams (horizontal): Web should be vertical (resist gravity bending)
+        //   The I-beam shape has height along Y in the shape, which becomes Z after -90° X rotation
+        //   So after positioning, the "up" direction of the section should remain world-Y
+        // - Columns (vertical): Web typically faces the direction of lateral load/framing
+
+        // Create a local coordinate system
+        let localY = direction.clone(); // Member axis
+        let localZ: THREE.Vector3;
+        let localX: THREE.Vector3;
+
+        if (memberType === 'vertical') {
+            // Column: web can face X direction (typical for framing)
+            // Local X should be horizontal
+            localZ = new THREE.Vector3(0, 0, 1); // Try Z direction
+            if (Math.abs(direction.dot(localZ)) > 0.99) {
+                localZ = new THREE.Vector3(1, 0, 0); // Fall back to X
+            }
+            localX = new THREE.Vector3().crossVectors(localY, localZ).normalize();
+            localZ = new THREE.Vector3().crossVectors(localX, localY).normalize();
+        } else {
+            // Beam or inclined: web should be vertical (resist bending about major axis)
+            // Local Z should be horizontal, Local X should point "up" as much as possible
+            const worldUp = new THREE.Vector3(0, 1, 0);
+
+            // Find the "up" direction perpendicular to beam
+            localX = new THREE.Vector3().crossVectors(worldUp, direction);
+
+            if (localX.length() < 0.001) {
+                // Direction is nearly vertical, use X as reference
+                localX = new THREE.Vector3(1, 0, 0);
+            }
+            localX.normalize();
+
+            // Local Z is perpendicular to both member direction and "up"
+            localZ = new THREE.Vector3().crossVectors(direction, localX).normalize();
+
+            // Ensure right-handed coordinate system
+            localX = new THREE.Vector3().crossVectors(localY, localZ).normalize();
+        }
+
+        // Build rotation matrix from local coordinate system
+        // The geometry's local Y is the member axis (already aligned)
+        // We need to orient X and Z properly
+        mat.makeBasis(localX, localY, localZ);
+        mat.setPosition(midpoint);
 
         return {
             position: midpoint,
-            quaternion: quat,
+            matrix: mat,
             length: memberLength
         };
     }, [member.startNode.position, member.endNode.position]);
@@ -307,7 +385,8 @@ export const StructuralMember: FC<StructuralMemberProps> = ({
         return getSectionGeometry(member.sectionType, member.dimensions, length);
     }, [member.sectionType, member.dimensions, length]);
 
-    const handleClick = () => {
+    const handleClick = (e: any) => {
+        e.stopPropagation();
         if (onSelect) {
             onSelect(member.id);
         }
@@ -316,13 +395,20 @@ export const StructuralMember: FC<StructuralMemberProps> = ({
     return (
         <group
             ref={groupRef}
-            position={position}
-            quaternion={quaternion}
+            matrixAutoUpdate={false}
+            matrix={matrix}
         >
             {/* Main mesh */}
             <mesh
                 geometry={geometry}
                 onClick={handleClick}
+                onPointerOver={(e) => {
+                    e.stopPropagation();
+                    document.body.style.cursor = 'pointer';
+                }}
+                onPointerOut={() => {
+                    document.body.style.cursor = 'auto';
+                }}
             >
                 <meshStandardMaterial
                     color={selected ? '#3b82f6' : (member.color || STEEL_COLOR)}

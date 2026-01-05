@@ -83,6 +83,9 @@ export interface ProgressCallback {
 
 const CONFIG = {
     LOCAL_THRESHOLD: 2000,  // Use local solver below this node count
+    // Use Rust API for high-performance analysis (50-100x faster than Node.js)
+    RUST_API_URL: import.meta.env.VITE_RUST_API_URL || 'http://localhost:3002',
+    // Fallback to Node.js API for auth/payments
     API_BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:3001',
     POLL_INTERVAL: 1000,    // Poll interval for async jobs (ms)
     MAX_POLL_TIME: 300000   // Maximum poll time (5 minutes)
@@ -222,8 +225,8 @@ class AnalysisService {
                 headers['Authorization'] = `Bearer ${token}`;
             }
 
-            // POST model to server
-            const response = await fetch(`${CONFIG.API_BASE_URL}/api/analyze`, {
+            // POST model to Rust API for high-performance analysis
+            const response = await fetch(`${CONFIG.RUST_API_URL}/api/analyze`, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(model),

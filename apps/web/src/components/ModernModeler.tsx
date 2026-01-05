@@ -178,10 +178,11 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = ({ coll
 
     if (collapsed) {
         return (
-            <div className="w-10 h-full bg-zinc-900 border-l border-zinc-800 flex flex-col items-center py-2">
+        return (
+            <div className="w-10 h-full bg-slate-900 border-l border-slate-800 flex flex-col items-center py-2">
                 <button
                     onClick={onToggle}
-                    className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg"
+                    className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg"
                     title="Show Properties"
                 >
                     <ChevronLeft className="w-4 h-4" />
@@ -191,14 +192,14 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = ({ coll
     }
 
     return (
-        <div className="w-72 h-full bg-zinc-900 border-l border-zinc-800 flex flex-col flex-shrink-0">
-            <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-800">
-                <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+        <div className="w-72 h-full bg-slate-900 border-l border-slate-800 flex flex-col flex-shrink-0">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-slate-800">
+                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                     Properties
                 </h3>
                 <button
                     onClick={onToggle}
-                    className="p-1 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded"
+                    className="p-1 text-slate-500 hover:text-white hover:bg-slate-800 rounded"
                     title="Hide Properties"
                 >
                     <ChevronRight className="w-4 h-4" />
@@ -207,8 +208,8 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = ({ coll
             <div className="flex-1 overflow-y-auto">
                 <PropertiesPanel />
             </div>
-            <div className="p-3 border-t border-zinc-800">
-                <p className="text-[10px] text-zinc-500 text-center">
+            <div className="p-3 border-t border-slate-800">
+                <p className="text-[10px] text-slate-500 text-center">
                     {selectedIds.size === 0
                         ? 'Select an element to view properties'
                         : `${selectedIds.size} item(s) selected`
@@ -230,23 +231,23 @@ const StatusBar: FC<{ isAnalyzing: boolean }> = ({ isAnalyzing }) => {
     const { activeCategory, activeTool } = useUIStore();
 
     return (
-        <div className="h-7 bg-zinc-950 border-t border-zinc-800 flex items-center justify-between px-4 text-xs text-zinc-500 flex-shrink-0">
+        <div className="h-7 bg-slate-950 border-t border-slate-800 flex items-center justify-between px-4 text-xs text-slate-500 flex-shrink-0">
             <div className="flex items-center gap-6">
                 <span className="flex items-center gap-1.5">
                     <span className={`w-2 h-2 rounded-full ${isAnalyzing ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`} />
                     {isAnalyzing ? 'Analyzing...' : 'Ready'}
                 </span>
-                <span className="h-3 w-px bg-zinc-700" />
-                <span>Mode: <span className="text-zinc-400">{activeCategory}</span></span>
-                <span className="h-3 w-px bg-zinc-700" />
-                <span>Tool: <span className="text-zinc-400">{activeTool || 'None'}</span></span>
+                <span className="h-3 w-px bg-slate-700" />
+                <span>Mode: <span className="text-slate-400">{activeCategory}</span></span>
+                <span className="h-3 w-px bg-slate-700" />
+                <span>Tool: <span className="text-slate-400">{activeTool || 'None'}</span></span>
             </div>
             <div className="flex items-center gap-6">
-                <span>Nodes: <span className="text-zinc-400 font-mono">{nodes.size}</span></span>
-                <span className="h-3 w-px bg-zinc-700" />
-                <span>Members: <span className="text-zinc-400 font-mono">{members.size}</span></span>
-                <span className="h-3 w-px bg-zinc-700" />
-                <span>Units: <span className="text-zinc-400">kN, m</span></span>
+                <span>Nodes: <span className="text-slate-400 font-mono">{nodes.size}</span></span>
+                <span className="h-3 w-px bg-slate-700" />
+                <span>Members: <span className="text-slate-400 font-mono">{members.size}</span></span>
+                <span className="h-3 w-px bg-slate-700" />
+                <span>Units: <span className="text-slate-400">kN, m</span></span>
                 {analysisResults && (
                     <>
                         <span className="h-3 w-px bg-zinc-700" />

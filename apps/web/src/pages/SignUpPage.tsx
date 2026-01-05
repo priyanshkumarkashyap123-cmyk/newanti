@@ -1,197 +1,157 @@
 /**
  * SignUpPage - Clerk Sign Up Page
  * 
- * Uses Clerk for authentication
+ * Uses Clerk for authentication with Premium Navy Theme
  */
 
-import { useState } from 'react';
 import { SignUp } from '@clerk/clerk-react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { Cpu, Rocket, Shield, Zap } from 'lucide-react';
 
 export const SignUpPage = () => {
-    const [searchParams] = useSearchParams();
-    const [agreed, setAgreed] = useState(false);
-    const [consented, setConsented] = useState(false);
-
     return (
-        <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 flex">
+        <div className="min-h-screen bg-slate-950 flex font-sans selection:bg-blue-500/30">
             {/* Left Side - Branding */}
-            <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+            <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-slate-900 border-r border-slate-800">
                 {/* Animated Background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-blue-900/20 to-zinc-900" />
-
-                {/* Grid Pattern */}
-                <div className="absolute inset-0" style={{
-                    backgroundImage: `
-                        linear-gradient(rgba(139, 92, 246, 0.1) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(139, 92, 246, 0.1) 1px, transparent 1px)
-                    `,
-                    backgroundSize: '50px 50px'
-                }} />
+                <div className="absolute inset-0">
+                    <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-500/10 via-slate-900 to-slate-950" />
+                    <div className="absolute bottom-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-blue-500/10 via-transparent to-transparent" />
+                </div>
 
                 {/* Content */}
-                <div className="relative z-10 flex flex-col justify-between p-12 text-white">
+                <div className="relative z-10 flex flex-col justify-between p-16 text-slate-50 w-full">
                     {/* Logo */}
-                    <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center text-2xl font-bold">
-                            ⬡
+                    <Link to="/" className="flex items-center gap-3 group w-fit">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-blue-500/25 transition-all">
+                            <Cpu className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <span className="text-2xl font-bold">BeamLab</span>
-                            <span className="ml-2 px-2 py-0.5 text-xs bg-purple-500/20 text-purple-400 rounded">ULTIMATE</span>
+                            <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-300">BeamLab</span>
+                            <span className="ml-2 px-2 py-0.5 text-xs font-semibold bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-full tracking-wide">ULTIMATE</span>
                         </div>
-                    </div>
+                    </Link>
 
                     {/* Tagline */}
-                    <div className="space-y-6">
+                    <div className="space-y-8">
                         <h1 className="text-5xl font-bold leading-tight">
-                            Start Building<br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
-                                Amazing Structures
+                            Start designing <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
+                                in seconds.
                             </span>
                         </h1>
-                        <p className="text-lg text-zinc-400 max-w-md">
-                            Join thousands of engineers using BeamLab for professional structural analysis.
+                        <p className="text-lg text-slate-400 max-w-lg leading-relaxed">
+                            Join thousands of engineers building better structures with BeamLab Ultimate.
+                            Free to start, powerful enough to scale.
                         </p>
 
                         {/* Benefits */}
-                        <div className="space-y-3 pt-4">
-                            {[
-                                { icon: '✓', label: 'Free tier with 3 daily analyses' },
-                                { icon: '✓', label: 'AI-powered structure generation' },
-                                { icon: '✓', label: 'Export professional PDF reports' },
-                                { icon: '✓', label: 'No credit card required' }
-                            ].map((f, i) => (
-                                <div key={i} className="flex items-center gap-3 text-sm">
-                                    <span className="w-5 h-5 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center text-xs">
-                                        {f.icon}
-                                    </span>
-                                    <span className="text-zinc-300">{f.label}</span>
+                        <div className="grid grid-cols-1 gap-6 pt-4">
+                            <div className="flex items-start gap-4">
+                                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400 mt-1">
+                                    <Zap className="w-5 h-5" />
                                 </div>
-                            ))}
+                                <div>
+                                    <h3 className="font-semibold text-white">Instant Access</h3>
+                                    <p className="text-sm text-slate-400 mt-1">No downloads required. Works directly in your browser.</p>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-4">
+                                <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400 mt-1">
+                                    <Shield className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-white">Enterprise Security</h3>
+                                    <p className="text-sm text-slate-400 mt-1">Your data is encrypted and backed up automatically.</p>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-4">
+                                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 mt-1">
+                                    <Rocket className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-white">Always Up to Date</h3>
+                                    <p className="text-sm text-slate-400 mt-1">Get the latest analysis codes and features instantly.</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Testimonial */}
-                    <div className="bg-zinc-800/50 backdrop-blur-sm rounded-xl p-6 border border-zinc-700/50">
-                        <p className="text-zinc-300 italic mb-4">
-                            "BeamLab has transformed how I approach structural analysis. The AI assistant is incredibly helpful!"
-                        </p>
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-sm font-bold">
-                                SK
-                            </div>
-                            <div>
-                                <p className="font-medium">Structural Engineer</p>
-                                <p className="text-sm text-zinc-500">Civil Engineering Professional</p>
-                            </div>
-                        </div>
+                    {/* Footer */}
+                    <div className="flex items-center gap-6 text-sm text-slate-500 border-t border-slate-800/50 pt-8">
+                        <span>© 2024 BeamLab Ultimate</span>
+                        <Link to="/privacy" className="hover:text-slate-300 transition-colors">Privacy</Link>
+                        <Link to="/terms" className="hover:text-slate-300 transition-colors">Terms</Link>
                     </div>
                 </div>
             </div>
 
             {/* Right Side - Sign Up Form */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-                <div className="w-full max-w-md space-y-8">
+            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-slate-950 overflow-y-auto">
+                <div className="w-full max-w-md space-y-8 my-auto">
                     {/* Mobile Logo */}
                     <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
-                        <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center text-xl font-bold text-white">
-                            ⬡
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <Cpu className="w-5 h-5 text-white" />
                         </div>
-                        <span className="text-xl font-bold text-white">BeamLab</span>
+                        <span className="text-xl font-bold text-white">BeamLab Ultimate</span>
                     </div>
 
                     {/* Header */}
-                    <div className="text-center lg:text-left">
-                        <h2 className="text-3xl font-bold text-white mb-2">Create Account</h2>
-                        <p className="text-zinc-400">
-                            Start your free structural analysis journey
+                    <div className="text-center lg:text-left space-y-2">
+                        <h2 className="text-3xl font-bold text-white">Create Account</h2>
+                        <p className="text-slate-400">
+                            Get started with your free workspace today
                         </p>
                     </div>
 
                     {/* Clerk Sign Up */}
                     <div className="clerk-signup-container">
-                        {!consented ? (
-                            <div className="w-full max-w-md bg-zinc-900/50 border border-zinc-800 rounded-xl p-8 backdrop-blur-sm shadow-2xl">
-                                <h3 className="text-xl font-bold text-white mb-4">Legal Consent Required</h3>
-                                <p className="text-zinc-400 mb-6 text-sm">
-                                    Before creating an account, you must agree to our legal terms regarding the use of this engineering software.
-                                </p>
-
-                                <div className="space-y-4 mb-8">
-                                    <div className="flex items-start gap-3 p-3 bg-zinc-800/50 rounded-lg border border-zinc-700">
-                                        <input
-                                            type="checkbox"
-                                            id="terms-check"
-                                            className="mt-1 w-4 h-4 rounded border-zinc-600 bg-zinc-700 text-blue-500 focus:ring-blue-500 cursor-pointer"
-                                            checked={agreed}
-                                            onChange={(e) => setAgreed(e.target.checked)}
-                                        />
-                                        <label htmlFor="terms-check" className="text-sm text-zinc-300 cursor-pointer select-none">
-                                            I agree to the <Link to="/terms" className="text-blue-400 hover:text-blue-300 hover:underline">Terms of Service</Link> and <Link to="/privacy" className="text-blue-400 hover:text-blue-300 hover:underline">Privacy Policy</Link>. I understand this software is a computational aid only.
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <button
-                                    onClick={() => agreed && setConsented(true)}
-                                    disabled={!agreed}
-                                    className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 ${agreed
-                                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white shadow-lg shadow-purple-900/20'
-                                        : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
-                                        }`}
-                                >
-                                    Continue to Sign Up
-                                </button>
-                            </div>
-                        ) : (
-                            <SignUp
-                                appearance={{
-                                    elements: {
-                                        rootBox: 'w-full',
-                                        card: 'bg-zinc-900/50 border border-zinc-800 shadow-2xl backdrop-blur-sm',
-                                        headerTitle: 'text-white',
-                                        headerSubtitle: 'text-zinc-400',
-                                        formFieldLabel: 'text-zinc-300',
-                                        formFieldInput: 'bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500',
-                                        formButtonPrimary: 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500',
-                                        footerActionLink: 'text-purple-400 hover:text-purple-300',
-                                        identityPreviewText: 'text-white',
-                                        identityPreviewEditButton: 'text-purple-400',
-                                        socialButtonsBlockButton: 'bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700',
-                                        socialButtonsBlockButtonText: 'text-white',
-                                        dividerLine: 'bg-zinc-700',
-                                        dividerText: 'text-zinc-500',
-                                        formFieldInputShowPasswordButton: 'text-zinc-400',
-                                        otpCodeFieldInput: 'bg-zinc-800 border-zinc-700 text-white'
-                                    },
-                                    layout: {
-                                        socialButtonsPlacement: 'bottom',
-                                        showOptionalFields: false
-                                    }
-                                }}
-                                routing="path"
-                                path="/sign-up"
-                                signInUrl="/sign-in"
-                                forceRedirectUrl={searchParams.get('plan') === 'pro' ? '/app?upgrade=pro' : '/app'}
-                            />
-                        )}
+                        <SignUp
+                            appearance={{
+                                elements: {
+                                    rootBox: 'w-full',
+                                    card: 'bg-slate-900 border border-slate-800 shadow-xl rounded-xl p-0 overflow-hidden',
+                                    headerTitle: 'hidden',
+                                    headerSubtitle: 'hidden',
+                                    formFieldLabel: 'text-slate-300 font-medium text-sm',
+                                    formFieldInput: 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all',
+                                    formButtonPrimary: 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-2.5 rounded-lg shadow-lg shadow-blue-500/20 transition-all',
+                                    footerActionLink: 'text-blue-400 hover:text-blue-300 font-medium',
+                                    identityPreviewText: 'text-slate-300',
+                                    identityPreviewEditButton: 'text-blue-400 hover:text-blue-300',
+                                    socialButtonsBlockButton: 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:border-slate-600 rounded-lg transition-all',
+                                    socialButtonsBlockButtonText: 'font-medium',
+                                    dividerLine: 'bg-slate-800',
+                                    dividerText: 'text-slate-500 uppercase text-xs tracking-wider bg-slate-900 px-2',
+                                    formFieldInputShowPasswordButton: 'text-slate-400 hover:text-slate-300',
+                                    footer: 'bg-slate-900/50 p-6 border-t border-slate-800'
+                                },
+                                layout: {
+                                    socialButtonsPlacement: 'top',
+                                    showOptionalFields: false
+                                },
+                                variables: {
+                                    colorPrimary: '#3b82f6',
+                                    colorText: '#f8fafc',
+                                    colorBackground: '#0f172a',
+                                    fontFamily: 'Inter, sans-serif',
+                                    borderRadius: '0.5rem'
+                                }
+                            }}
+                            routing="path"
+                            path="/sign-up"
+                            signInUrl="/sign-in"
+                            forceRedirectUrl="/app"
+                        />
                     </div>
 
                     {/* Additional Links */}
-                    <div className="text-center space-y-4 pt-4">
-                        <Link to="/" className="text-sm text-zinc-500 hover:text-zinc-400 flex items-center justify-center gap-2">
-                            ← Back to home
+                    <div className="text-center pt-6">
+                        <Link to="/" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-300 transition-colors group">
+                            <span className="group-hover:-translate-x-1 transition-transform">←</span> Back to home
                         </Link>
                     </div>
-
-                    {/* Terms */}
-                    <p className="text-xs text-zinc-500 text-center">
-                        By signing up, you agree to our{' '}
-                        <a href="/terms" className="text-zinc-400 hover:text-zinc-300">Terms of Service</a>
-                        {' '}and{' '}
-                        <a href="/privacy" className="text-zinc-400 hover:text-zinc-300">Privacy Policy</a>
-                    </p>
                 </div>
             </div>
         </div>
