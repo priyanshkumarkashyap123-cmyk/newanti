@@ -13,4 +13,4 @@
 # --bind=0.0.0.0:8000: Azure internal routing expects port 8000
 # --timeout 600: 10 minute timeout for long analysis jobs
 echo "🚀 Starting Production Server..."
-gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app --bind=0.0.0.0:8000 --timeout 600 --access-logfile - --error-logfile -
+gunicorn -w 1 -k uvicorn.workers.UvicornWorker main:app --bind=0.0.0.0:8000 --timeout 600 --access-logfile - --error-logfile -
