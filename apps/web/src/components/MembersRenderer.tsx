@@ -112,7 +112,8 @@ export const MembersRenderer: FC<MembersRendererProps> = ({
                 endNode: endNodeData,
                 sectionType: sectionData.sectionType,
                 dimensions: sectionData.dimensions,
-                color
+                color,
+                betaAngle: member.betaAngle
             });
         }
 

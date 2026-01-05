@@ -145,6 +145,33 @@ export function getSectionDataForRendering(sectionId: string): RenderableSection
         }
     }
 
+    // Cable sections (for bridges, tension structures)
+    if (/^(CABLE|HANGER|SUSPENDER|STAY|MAIN_CABLE)/.test(normalizedId)) {
+        // Extract diameter from pattern like "CABLE_100" or "HANGER_CABLE_100DIA"
+        const diameterMatch = normalizedId.match(/(\d+)(?:mm|DIA|MMD)?/i);
+        const diameter = diameterMatch ? parseInt(diameterMatch[1]) : 100;
+        
+        return {
+            sectionType: 'CIRCLE',
+            dimensions: {
+                diameter: diameter
+            }
+        };
+    }
+
+    // Circular sections
+    if (/^CIRCLE|^CIR|^PIPE/.test(normalizedId)) {
+        const diameterMatch = normalizedId.match(/(\d+)/);
+        const diameter = diameterMatch ? parseInt(diameterMatch[1]) : 100;
+        
+        return {
+            sectionType: 'CIRCLE',
+            dimensions: {
+                diameter: diameter
+            }
+        };
+    }
+
     // Default fallback
     console.warn(`Unknown section type: ${sectionId}, using default I-beam`);
     return DEFAULT_I_BEAM;
@@ -223,6 +250,9 @@ export function inferSectionType(sectionId: string): SectionType {
     }
     if (/^(RCC|RC|\d+x\d+)/.test(id)) {
         return 'RECTANGLE';
+    }
+    if (/^(CABLE|HANGER|SUSPENDER|STAY|CIRCLE|CIR|PIPE)/.test(id)) {
+        return 'CIRCLE';
     }
 
     return 'I-BEAM'; // Default

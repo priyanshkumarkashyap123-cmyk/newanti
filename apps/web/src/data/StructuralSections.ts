@@ -246,37 +246,35 @@ const BURJ_KHALIFA_SECTIONS: Record<string, StructuralSection> = {
     grade: 'S355',
   },
   
-  // Perimeter columns
+  // Perimeter columns (Composite: Concrete-filled steel tubes)
   PERIMETER_COL_600: {
     id: 'PERIMETER_COL_600',
-    name: 'Perimeter Column 600x600x30',
-    type: 'TUBE',
+    name: 'Perimeter Column 600x600 Composite',
+    type: 'RECTANGLE',  // Changed to RECTANGLE to represent concrete
     dimensions: {
-      outerWidth: 600,
-      outerHeight: 600,
-      thickness: 30,
+      rectWidth: 600,
+      rectHeight: 600,
     },
-    E: 210e6,
-    A: 0.0684,
-    I: 0.00122,
-    weight: 537,
-    grade: 'S460',
+    E: 35e6,  // Composite modulus (concrete-filled steel)
+    A: 0.36,  // m² (solid concrete cross-section)
+    I: 0.0108,  // m⁴
+    weight: 900,  // kg/m (heavier due to concrete)
+    grade: 'Composite C80+S460',
   },
   
   PERIMETER_COL_400: {
     id: 'PERIMETER_COL_400',
-    name: 'Perimeter Column 400x400x25',
-    type: 'TUBE',
+    name: 'Perimeter Column 400x400 Composite',
+    type: 'RECTANGLE',  // Changed to RECTANGLE to represent concrete
     dimensions: {
-      outerWidth: 400,
-      outerHeight: 400,
-      thickness: 25,
+      rectWidth: 400,
+      rectHeight: 400,
     },
-    E: 210e6,
-    A: 0.0375,
-    I: 0.000248,
-    weight: 294,
-    grade: 'S460',
+    E: 35e6,  // Composite modulus
+    A: 0.16,  // m² (solid concrete cross-section)
+    I: 0.00213,  // m⁴
+    weight: 400,  // kg/m
+    grade: 'Composite C80+S460',
   },
   
   // Buttress walls (Wing walls)
@@ -293,6 +291,131 @@ const BURJ_KHALIFA_SECTIONS: Record<string, StructuralSection> = {
     I: 0.00179,
     weight: 438,
     grade: 'C80',
+  },
+
+  // Additional Burj Khalifa sections (realistic concrete and steel)
+  CORE_WALL_600x400: {
+    id: 'CORE_WALL_600x400',
+    name: 'Core Wall 600x400 RC',
+    type: 'RECTANGLE',
+    dimensions: {
+      rectWidth: 600,
+      rectHeight: 400,
+    },
+    E: 30e6,   // Concrete modulus
+    A: 0.24,
+    I: 0.0072,
+    weight: 600,
+    grade: 'C80',
+  },
+
+  CORE_WALL_400x300: {
+    id: 'CORE_WALL_400x300',
+    name: 'Core Wall 400x300 RC',
+    type: 'RECTANGLE',
+    dimensions: {
+      rectWidth: 400,
+      rectHeight: 300,
+    },
+    E: 30e6,
+    A: 0.12,
+    I: 0.0036,
+    weight: 300,
+    grade: 'C80',
+  },
+
+  CORE_BEAM_450x300: {
+    id: 'CORE_BEAM_450x300',
+    name: 'Core Beam 450x300 RC',
+    type: 'RECTANGLE',
+    dimensions: {
+      rectWidth: 450,
+      rectHeight: 300,
+    },
+    E: 30e6,
+    A: 0.135,
+    I: 0.00253,
+    weight: 338,
+    grade: 'C80',
+  },
+
+  PERIMETER_COL_800x800: {
+    id: 'PERIMETER_COL_800x800',
+    name: 'Perimeter Column 800x800 Composite',
+    type: 'RECTANGLE',
+    dimensions: {
+      rectWidth: 800,
+      rectHeight: 800,
+    },
+    E: 35e6,
+    A: 0.64,
+    I: 0.0341,
+    weight: 1600,
+    grade: 'Composite C80',
+  },
+
+  PERIMETER_COL_600x600: {
+    id: 'PERIMETER_COL_600x600',
+    name: 'Perimeter Column 600x600 Composite',
+    type: 'RECTANGLE',
+    dimensions: {
+      rectWidth: 600,
+      rectHeight: 600,
+    },
+    E: 35e6,
+    A: 0.36,
+    I: 0.0108,
+    weight: 900,
+    grade: 'Composite C80',
+  },
+
+  PERIMETER_COL_500x500: {
+    id: 'PERIMETER_COL_500x500',
+    name: 'Perimeter Column 500x500 Composite',
+    type: 'RECTANGLE',
+    dimensions: {
+      rectWidth: 500,
+      rectHeight: 500,
+    },
+    E: 35e6,
+    A: 0.25,
+    I: 0.00521,
+    weight: 625,
+    grade: 'Composite C80',
+  },
+
+  OUTRIGGER_TRUSS_800x600: {
+    id: 'OUTRIGGER_TRUSS_800x600',
+    name: 'Outrigger Truss I-800x600x40x25',
+    type: 'I-BEAM',
+    dimensions: {
+      height: 800,
+      width: 600,
+      flangeThickness: 40,
+      webThickness: 25,
+    },
+    E: 210e6,
+    A: 0.0676,
+    I: 0.00216,
+    weight: 531,
+    grade: 'S460',
+  },
+
+  BELT_TRUSS_700x500: {
+    id: 'BELT_TRUSS_700x500',
+    name: 'Belt Truss I-700x500x35x22',
+    type: 'I-BEAM',
+    dimensions: {
+      height: 700,
+      width: 500,
+      flangeThickness: 35,
+      webThickness: 22,
+    },
+    E: 210e6,
+    A: 0.0539,
+    I: 0.00132,
+    weight: 423,
+    grade: 'S460',
   },
   
   // Floor beams (Secondary beams)

@@ -58,13 +58,16 @@ export interface MemberData {
     sectionType: SectionType;
     dimensions: SectionDimensions;
     color?: string;
+    betaAngle?: number; // Rotation in degrees
 }
 
 // ============================================
 // CONSTANTS
 // ============================================
 
-const STEEL_COLOR = '#b8b8b8';
+const STEEL_COLOR = '#b8b8b8';          // Bright steel gray
+const CONCRETE_COLOR = '#c0c0c0';       // Light gray for concrete
+const CABLE_COLOR = '#606060';          // Darker gray for cables
 const EDGE_COLOR = '#333333';
 const EDGE_THRESHOLD = 15;
 
@@ -74,6 +77,24 @@ const ROLLER_SUPPORT_COLOR = '#4299e1';
 const CONNECTION_BALL_COLOR = '#718096';
 
 const MM_TO_M = 0.001; // Convert mm to meters for Three.js
+
+/**
+ * Get material color based on section type
+ */
+function getMaterialColor(sectionType: SectionType): string {
+    switch (sectionType) {
+        case 'RECTANGLE':
+            return CONCRETE_COLOR;  // Rectangular sections are typically concrete
+        case 'CIRCLE':
+            return CABLE_COLOR;     // Circular sections are cables
+        case 'I-BEAM':
+        case 'C-CHANNEL':
+        case 'L-ANGLE':
+        case 'TUBE':
+        default:
+            return STEEL_COLOR;     // I-beams, tubes, angles are steel
+    }
+}
 
 // ============================================
 // SECTION GEOMETRY GENERATORS
@@ -220,6 +241,27 @@ function createRectangleShape(dims: SectionDimensions): THREE.Shape {
 }
 
 /**
+ * Create circular shape (for cables, pipes)
+ */
+function createCircleShape(dims: SectionDimensions): THREE.Shape {
+    const diameter = (dims.diameter || 100) * MM_TO_M;
+    const radius = diameter / 2;
+
+    const shape = new THREE.Shape();
+    shape.absarc(0, 0, radius, 0, Math.PI * 2, false);
+
+    // Add inner hole if hollow
+    if (dims.innerDiameter) {
+        const innerRadius = (dims.innerDiameter * MM_TO_M) / 2;
+        const hole = new THREE.Path();
+        hole.absarc(0, 0, innerRadius, 0, Math.PI * 2, true);
+        shape.holes.push(hole);
+    }
+
+    return shape;
+}
+
+/**
  * Get section geometry based on type and dimensions
  * The geometry is created CENTERED at origin, with member axis along Y
  */
@@ -242,6 +284,9 @@ export function getSectionGeometry(
             break;
         case 'C-CHANNEL':
             shape = createCChannelShape(dimensions);
+            break;
+        case 'CIRCLE':
+            shape = createCircleShape(dimensions);
             break;
         case 'RECTANGLE':
         default:
@@ -367,6 +412,14 @@ export const StructuralMember: FC<StructuralMemberProps> = ({
             localX = new THREE.Vector3().crossVectors(localY, localZ).normalize();
         }
 
+        // Apply Beta Angle Rotation (roll around local Y axis)
+        if (member.betaAngle) {
+            const rad = member.betaAngle * (Math.PI / 180);
+            // Rotate localX and localZ around localY
+            localX.applyAxisAngle(localY, rad);
+            localZ.applyAxisAngle(localY, rad);
+        }
+
         // Build rotation matrix from local coordinate system
         // The geometry's local Y is the member axis (already aligned)
         // We need to orient X and Z properly
@@ -392,6 +445,27 @@ export const StructuralMember: FC<StructuralMemberProps> = ({
         }
     };
 
+    // Determine material color based on section type (concrete vs steel vs cable)
+    const materialColor = useMemo(() => {
+        if (selected) return '#3b82f6';  // Blue when selected
+        if (member.color) return member.color;  // Use custom color if provided
+        return getMaterialColor(member.sectionType);  // Auto-detect based on section type
+    }, [selected, member.color, member.sectionType]);
+
+    // Adjust material properties based on type
+    const materialProps = useMemo(() => {
+        if (member.sectionType === 'RECTANGLE') {
+            // Concrete - less metallic, more rough
+            return { roughness: 0.7, metalness: 0.1 };
+        } else if (member.sectionType === 'CIRCLE') {
+            // Cables - slightly metallic, smooth
+            return { roughness: 0.3, metalness: 0.7 };
+        } else {
+            // Steel - metallic, semi-rough
+            return { roughness: 0.4, metalness: 0.6 };
+        }
+    }, [member.sectionType]);
+
     return (
         <group
             ref={groupRef}
@@ -411,9 +485,9 @@ export const StructuralMember: FC<StructuralMemberProps> = ({
                 }}
             >
                 <meshStandardMaterial
-                    color={selected ? '#3b82f6' : (member.color || STEEL_COLOR)}
-                    roughness={0.4}
-                    metalness={0.6}
+                    color={materialColor}
+                    roughness={materialProps.roughness}
+                    metalness={materialProps.metalness}
                     side={THREE.DoubleSide}
                 />
                 {/* Edge highlighting for CAD-like look */}

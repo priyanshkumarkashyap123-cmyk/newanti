@@ -66,23 +66,23 @@ export interface SectionDimensions {
     width?: number;
     webThickness?: number;
     flangeThickness?: number;
-    
+
     // TUBE/BOX dimensions
     outerWidth?: number;
     outerHeight?: number;
     thickness?: number;
-    
+
     // L-ANGLE dimensions
     legWidth?: number;
     legHeight?: number;
-    
+
     // RECTANGLE/PLATE dimensions
     rectWidth?: number;
     rectHeight?: number;
-    
+
     // CIRCLE/CABLE dimensions
     diameter?: number;
-    
+
     // C-CHANNEL dimensions
     channelHeight?: number;
     channelWidth?: number;
@@ -94,11 +94,11 @@ export interface Member {
     startNodeId: string;
     endNodeId: string;
     sectionId: string;
-    
+
     // Section geometry for 3D rendering
     sectionType?: SectionType;
     dimensions?: SectionDimensions;
-    
+
     // Default properties for analysis
     E?: number; // Young's Modulus (kN/m²)
     A?: number; // Cross-sectional Area (m²)
@@ -110,7 +110,9 @@ export interface Member {
     };
     // Rigid zone offsets (for beam-column connections)
     startOffset?: { x: number; y: number; z: number };
+    startOffset?: { x: number; y: number; z: number };
     endOffset?: { x: number; y: number; z: number };
+    betaAngle?: number; // Rotation angle in degrees
 }
 
 // Member Force Results with diagram data

@@ -82,8 +82,8 @@ export interface ProgressCallback {
 // ============================================
 
 const CONFIG = {
-    LOCAL_THRESHOLD: 2000,  // Use local solver below this node count
-    // Use Rust API for high-performance analysis (50-100x faster than Node.js)
+    LOCAL_THRESHOLD: 100000,  // Use local WASM solver for almost all models (was 2000)
+    // Use Rust API for high-performance analysis (only for massive models)
     RUST_API_URL: import.meta.env.VITE_RUST_API_URL || 'http://localhost:3002',
     // Fallback to Node.js API for auth/payments
     API_BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:3001',

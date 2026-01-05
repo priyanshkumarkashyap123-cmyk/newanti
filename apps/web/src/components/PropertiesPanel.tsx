@@ -660,6 +660,18 @@ export const PropertiesPanel: FC = () => {
 
                 <hr style={dividerStyle} />
 
+                {/* Beta Angle */}
+                <div style={sectionStyle}>
+                    <label style={labelStyle}>🔄 Beta Angle (deg)</label>
+                    <NumberInput
+                        value={member.betaAngle ?? 0}
+                        onChange={(val) => updateMember(id, { betaAngle: val })}
+                        style={{ width: '100%', marginTop: 4 }}
+                    />
+                </div>
+
+                <hr style={dividerStyle} />
+
                 {/* Material Dropdown */}
                 <div style={sectionStyle}>
                     <label style={labelStyle}>🧱 Material</label>
