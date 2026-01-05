@@ -178,7 +178,6 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = ({ coll
 
     if (collapsed) {
         return (
-        return (
             <div className="w-10 h-full bg-slate-900 border-l border-slate-800 flex flex-col items-center py-2">
                 <button
                     onClick={onToggle}
