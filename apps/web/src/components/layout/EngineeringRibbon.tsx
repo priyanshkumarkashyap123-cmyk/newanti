@@ -25,7 +25,6 @@ import {
 import { Link } from 'react-router-dom';
 import { useModelStore } from '../../store/model';
 import { useUIStore, Category } from '../../store/uiStore';
-import { useUIStore, Category } from '../../store/uiStore';
 import { useSubscription } from '../../hooks/useSubscription';
 import { Tooltip } from '../ui/Tooltip';
 
@@ -51,7 +50,6 @@ export const EngineeringRibbon: FC<RibbonProps> = ({ activeCategory }) => {
         isActive = false,
         disabled = false,
         vertical = true,
-        className = ''
         className = '',
         tooltip,
         shortcut
@@ -197,8 +195,8 @@ export const EngineeringRibbon: FC<RibbonProps> = ({ activeCategory }) => {
                         <div
                             key={tab}
                             className={`px-3 py-1 rounded text-[10px] font-bold tracking-wider cursor-default ${activeCategory === tab
-                                    ? 'bg-slate-800 text-blue-400 border border-slate-700'
-                                    : 'text-slate-600'
+                                ? 'bg-slate-800 text-blue-400 border border-slate-700'
+                                : 'text-slate-600'
                                 }`}
                         >
                             {tab}
