@@ -98,12 +98,13 @@ export interface ResultData {
     type: 'result';
     success: boolean;
     displacements?: Float64Array;  // Transferable
-    reactions?: Float64Array;      // Transferable
-    memberForces?: Float64Array;   // Transferable
+    reactions?: Float64Array;      // Transferable (per DOF)
+    memberForces?: any;            // Small payload; object array for clarity
     stats: {
         assemblyTimeMs: number;
         solveTimeMs: number;
         totalTimeMs: number;
+        method?: string;
         iterations?: number;
         residual?: number;
         nnz?: number;
@@ -255,8 +256,10 @@ function assembleStiffnessMatrix(
             dofMap.push(endIdx * dofPerNode + i);
         }
 
-        // Element stiffness matrix (truss)
-        const ke = computeTrussStiffness(k, cx, cy, cz, dofPerNode);
+        // Element stiffness matrix (frame when dofPerNode>=3, else truss)
+        const ke = (dofPerNode === 3)
+            ? computeFrameStiffness(E, A, member.I, L, cx, cy, cz)
+            : computeTrussStiffness(k, cx, cy, cz, dofPerNode);
 
         // Add to global matrix
         for (let i = 0; i < ke.length; i++) {
@@ -307,6 +310,154 @@ function computeTrussStiffness(k: number, cx: number, cy: number, cz: number, do
             [-k * cz * cx, -k * cz * cy, -k * cz * cz, k * cz * cx, k * cz * cy, k * cz * cz]
         ];
     }
+}
+
+// 2D Frame (u, v, theta per node) transformed to global coordinates
+function computeFrameStiffness(E: number, A: number, I: number, L: number, cx: number, cy: number, cz: number): number[][] {
+    // Local 2D frame stiffness (6x6)
+    const EA_L = (E * A) / L;
+    const EI = E * I;
+    const L2 = L * L;
+    const L3 = L2 * L;
+
+    const kLocal = [
+        [ EA_L,        0,             0,        -EA_L,        0,             0 ],
+        [ 0,      12*EI/L3,   6*EI/L2,        0,     -12*EI/L3,   6*EI/L2 ],
+        [ 0,       6*EI/L2,    4*EI/L,       0,      -6*EI/L2,    2*EI/L ],
+        [ -EA_L,       0,             0,         EA_L,        0,             0 ],
+        [ 0,     -12*EI/L3,  -6*EI/L2,        0,      12*EI/L3,  -6*EI/L2 ],
+        [ 0,       6*EI/L2,    2*EI/L,       0,      -6*EI/L2,    4*EI/L ]
+    ];
+
+    // Direction cosines (2D projection)
+    const Lproj = Math.sqrt(cx*cx + cy*cy + cz*cz);
+    const c = cx / Lproj;
+    const s = cy / Lproj;
+
+    // Transformation matrix T (6x6)
+    const T = [
+        [ c, -s, 0, 0, 0, 0],
+        [ s,  c, 0, 0, 0, 0],
+        [ 0,  0, 1, 0, 0, 0],
+        [ 0,  0, 0, c, -s, 0],
+        [ 0,  0, 0, s,  c, 0],
+        [ 0,  0, 0, 0,  0, 1]
+    ];
+
+    // ke = T^T * kLocal * T
+    const temp: number[][] = Array.from({ length: 6 }, () => Array(6).fill(0));
+    for (let i=0;i<6;i++){
+        for (let j=0;j<6;j++){
+            for (let k=0;k<6;k++) temp[i][j] += kLocal[i][k]*T[k][j];
+        }
+    }
+
+    const kGlobal: number[][] = Array.from({ length: 6 }, () => Array(6).fill(0));
+    for (let i=0;i<6;i++){
+        for (let j=0;j<6;j++){
+            for (let k=0;k<6;k++) kGlobal[i][j] += T[k][i]*temp[k][j];
+        }
+    }
+
+    return kGlobal;
+}
+
+function computeMemberEndForces(
+    model: ModelData,
+    displacements: Float64Array,
+    nodeIndexMap: Map<string, number>
+) {
+    const { members, nodes, dofPerNode } = model;
+    const results: any[] = [];
+
+    if (dofPerNode < 3) return results;
+
+    for (const member of members) {
+        const i = nodeIndexMap.get(member.startNodeId)!;
+        const j = nodeIndexMap.get(member.endNodeId)!;
+        const n1 = nodes[i];
+        const n2 = nodes[j];
+
+        const dx = n2.x - n1.x;
+        const dy = n2.y - n1.y;
+        const dz = n2.z - n1.z;
+        const L = Math.sqrt(dx*dx + dy*dy + dz*dz);
+        const cx = dx / L;
+        const cy = dy / L;
+        const cz = dz / L;
+
+        const kGlobal = computeFrameStiffness(member.E, member.A, member.I, L, cx, cy, cz);
+
+        const dofIndices = [
+            i*dofPerNode + 0,
+            i*dofPerNode + 1,
+            i*dofPerNode + 2,
+            j*dofPerNode + 0,
+            j*dofPerNode + 1,
+            j*dofPerNode + 2,
+        ];
+
+        const uGlobal = new Float64Array(6);
+        for (let n=0;n<6;n++) uGlobal[n] = displacements[dofIndices[n]];
+
+        // Build transformation matrix T (same as in stiffness)
+        const Lproj = Math.sqrt(cx*cx + cy*cy + cz*cz);
+        const c = cx / Lproj;
+        const s = cy / Lproj;
+        const T = [
+            [ c, -s, 0, 0, 0, 0],
+            [ s,  c, 0, 0, 0, 0],
+            [ 0,  0, 1, 0, 0, 0],
+            [ 0,  0, 0, c, -s, 0],
+            [ 0,  0, 0, s,  c, 0],
+            [ 0,  0, 0, 0,  0, 1]
+        ];
+
+        const uLocal = new Float64Array(6);
+        for (let r=0;r<6;r++){
+            let sum = 0;
+            for (let cIdx=0;cIdx<6;cIdx++) sum += T[r][cIdx]*uGlobal[cIdx];
+            uLocal[r] = sum;
+        }
+
+        // Local end forces f = k_local * u_local (use local matrix from frame calc)
+        const EA_L = (member.E * member.A) / L;
+        const EI = member.E * member.I;
+        const L2 = L * L;
+        const L3 = L2 * L;
+
+        const kLocal = [
+            [ EA_L,        0,             0,        -EA_L,        0,             0 ],
+            [ 0,      12*EI/L3,   6*EI/L2,        0,     -12*EI/L3,   6*EI/L2 ],
+            [ 0,       6*EI/L2,    4*EI/L,       0,      -6*EI/L2,    2*EI/L ],
+            [ -EA_L,       0,             0,         EA_L,        0,             0 ],
+            [ 0,     -12*EI/L3,  -6*EI/L2,        0,      12*EI/L3,  -6*EI/L2 ],
+            [ 0,       6*EI/L2,    2*EI/L,       0,      -6*EI/L2,    4*EI/L ]
+        ];
+
+        const fLocal = new Float64Array(6);
+        for (let r=0;r<6;r++){
+            let sum = 0;
+            for (let cIdx=0;cIdx<6;cIdx++) sum += kLocal[r][cIdx]*uLocal[cIdx];
+            fLocal[r] = sum;
+        }
+
+        results.push({
+            id: member.id,
+            start: {
+                axial: fLocal[0],
+                shear: fLocal[1],
+                moment: fLocal[2]
+            },
+            end: {
+                axial: -fLocal[3],
+                shear: fLocal[4],
+                moment: fLocal[5]
+            }
+        });
+    }
+
+    return results;
 }
 
 // ============================================
@@ -418,6 +569,9 @@ function norm(a: Float64Array): number {
 function analyze(model: ModelData): ResultData {
     const startTime = performance.now();
 
+    // Total DOF
+    const totalDof = model.nodes.length * model.dofPerNode;
+
     try {
         // Build node index map
         const nodeIndexMap = new Map<string, number>();
@@ -427,10 +581,17 @@ function analyze(model: ModelData): ResultData {
 
         // Assemble
         const assemblyStart = performance.now();
-        const { K, F, fixedDofs } = assembleStiffnessMatrix(model, nodeIndexMap);
+        const { K: Kglobal, F: Fglobal, fixedDofs } = assembleStiffnessMatrix(model, nodeIndexMap);
 
-        // Apply BC
-        applyBoundaryConditions(K, F, fixedDofs);
+        // Clone for solving so originals can be used for reactions
+        const Ksolve = new SparseMatrix(Kglobal.rows, Kglobal.cols);
+        for (const [key, value] of (Kglobal as any).data) {
+            (Ksolve as any).data.set(key, value);
+        }
+        const Fsolve = new Float64Array(Fglobal);
+
+        // Apply BC on solve copies
+        applyBoundaryConditions(Ksolve, Fsolve, fixedDofs);
         const assemblyTime = performance.now() - assemblyStart;
 
         // Solve
@@ -442,20 +603,17 @@ function analyze(model: ModelData): ResultData {
         if (wasmReady && wasmModule) {
             sendProgress('solving', 80, 'Solving using high-performance Rust WASM solver (LU)...');
 
-            // Prepare dense matrix for WASM (if direct)
-            // Note: For very large systems, we should use sparse WASM solver
-            // Currently solve_system expects a dense flattened array
             const stiffnessArray = new Float64Array(totalDof * totalDof);
             for (let i = 0; i < totalDof; i++) {
                 for (let j = 0; j < totalDof; j++) {
-                    stiffnessArray[i * totalDof + j] = K.get(i, j);
+                    stiffnessArray[i * totalDof + j] = Ksolve.get(i, j);
                 }
             }
 
-            displacements = wasmModule.solve_system(stiffnessArray, F, totalDof);
+            displacements = wasmModule.solve_system(stiffnessArray, Fsolve, totalDof);
         } else {
             sendProgress('solving', 80, 'Solving using JavaScript iterative solver (CG)...');
-            const result = conjugateGradient(K, F, model.options);
+            const result = conjugateGradient(Ksolve, Fsolve, model.options);
             displacements = result.x;
             iterations = result.iterations;
             residual = result.residual;
@@ -465,10 +623,31 @@ function analyze(model: ModelData): ResultData {
 
         sendProgress('extracting', 95, 'Extracting results...');
 
+        // Reactions: R = K_global * u - F_global
+        let reactions: Float64Array | undefined;
+        try {
+            const Ku = Kglobal.multiply(displacements);
+            reactions = new Float64Array(totalDof);
+            for (let i = 0; i < totalDof; i++) {
+                reactions[i] = Ku[i] - Fglobal[i];
+            }
+        } catch (e) {
+            console.warn('[StructuralSolverWorker] Failed to compute reactions:', e);
+        }
+
+        // Member end forces (2D frame only)
+        let memberForces: any = [];
+        try {
+            if (model.dofPerNode >= 3) {
+                memberForces = computeMemberEndForces(model, displacements, nodeIndexMap);
+            }
+        } catch (e) {
+            console.warn('[StructuralSolverWorker] Failed to compute member forces:', e);
+        }
+
         // Calculate sparsity
-        const totalDof = model.nodes.length * model.dofPerNode;
         const totalElements = totalDof * totalDof;
-        const sparsity = 1 - (K.nnz / totalElements);
+        const sparsity = 1 - (Ksolve.nnz / totalElements);
 
         sendProgress('extracting', 100, 'Analysis complete!');
 
@@ -476,13 +655,15 @@ function analyze(model: ModelData): ResultData {
             type: 'result',
             success: true,
             displacements,
+            reactions,
+            memberForces,
             stats: {
                 assemblyTimeMs: assemblyTime,
                 solveTimeMs: solveTime,
                 totalTimeMs: performance.now() - startTime,
                 iterations,
                 residual,
-                nnz: K.nnz,
+                nnz: Ksolve.nnz,
                 sparsity,
                 method: (wasmReady && wasmModule) ? 'Rust WASM (LU)' : 'JS Conjugate Gradient'
             }
@@ -512,7 +693,7 @@ self.onmessage = (event: MessageEvent<WorkerRequest>) => {
         const result = analyze(request.model);
 
         // Use Transferable Objects for zero-copy transfer
-        const transferables: ArrayBuffer[] = [];
+        const transferables: Transferable[] = [];
 
         if (result.displacements) {
             transferables.push(result.displacements.buffer);
@@ -520,12 +701,10 @@ self.onmessage = (event: MessageEvent<WorkerRequest>) => {
         if (result.reactions) {
             transferables.push(result.reactions.buffer);
         }
-        if (result.memberForces) {
-            transferables.push(result.memberForces.buffer);
-        }
+        // memberForces is an object array (small), no transferable
 
         // Post with transferables (zero-copy)
-        self.postMessage(result, transferables);
+        self.postMessage(result, { transfer: transferables });
     }
 };
 

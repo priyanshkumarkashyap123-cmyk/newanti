@@ -44,6 +44,9 @@ import { AICommandCenter } from './components/ai';
 import { LegalConsentModal, useCheckLegalConsent } from './components/LegalConsentModal';
 import './App.css';
 
+// Performance Testing Utility - Load grid generator globally
+import './utils/generateTestGrid';
+
 
 // ============================================
 // ERROR BOUNDARY

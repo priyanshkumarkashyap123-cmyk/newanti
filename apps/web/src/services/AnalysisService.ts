@@ -57,7 +57,7 @@ export interface AnalysisResult {
     success: boolean;
     displacements?: Record<string, number[]>;
     reactions?: Record<string, number[]>;
-    memberForces?: Record<string, { axial: number }>;
+    memberForces?: Record<string, { axial: number; shear?: number; momentStart?: number; momentEnd?: number }>;
     stats?: {
         totalDof?: number;
         nnz?: number;
@@ -157,11 +157,11 @@ class AnalysisService {
                     this.worker?.removeEventListener('message', handleMessage);
 
                     if (data.success) {
-                        // Convert Float64Array to regular arrays for displacements
+                        const dofPerNode = model.dofPerNode ?? 3;
+
+                        // Displacements
                         const displacements: Record<string, number[]> = {};
                         const dispArray = data.displacements as Float64Array;
-                        const dofPerNode = model.dofPerNode || 6;
-
                         model.nodes.forEach((node, i) => {
                             const start = i * dofPerNode;
                             displacements[node.id] = Array.from(
@@ -169,9 +169,38 @@ class AnalysisService {
                             );
                         });
 
+                        // Reactions (if available)
+                        let reactions: Record<string, number[]> | undefined;
+                        if (data.reactions) {
+                            reactions = {};
+                            const reacArray = data.reactions as Float64Array;
+                            model.nodes.forEach((node, i) => {
+                                const start = i * dofPerNode;
+                                reactions![node.id] = Array.from(
+                                    reacArray.slice(start, start + dofPerNode)
+                                );
+                            });
+                        }
+
+                        // Member forces (if available)
+                        let memberForces: Record<string, { axial: number; shear?: number; momentStart?: number; momentEnd?: number }> | undefined;
+                        if (data.memberForces && Array.isArray(data.memberForces)) {
+                            memberForces = {};
+                            for (const mf of data.memberForces as any[]) {
+                                memberForces[mf.id] = {
+                                    axial: mf.start?.axial ?? 0,
+                                    shear: mf.start?.shear,
+                                    momentStart: mf.start?.moment,
+                                    momentEnd: mf.end?.moment
+                                };
+                            }
+                        }
+
                         resolve({
                             success: true,
                             displacements,
+                            reactions,
+                            memberForces,
                             stats: {
                                 ...data.stats,
                                 usedCloud: false
@@ -229,7 +258,7 @@ class AnalysisService {
                         nodes: model.nodes,
                         members: model.members,
                         loads: allLoads,
-                        dofPerNode: model.dofPerNode || 6,
+                        dofPerNode: model.dofPerNode ?? 3,
                         settings: model.settings
                     }
                 });
