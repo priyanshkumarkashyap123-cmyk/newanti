@@ -21,21 +21,21 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: false,
-    host: 'app.bheemla.local', // Domain instead of localhost
+    host: 'localhost',
     cors: true,
     hmr: {
-      host: 'app.bheemla.local',
+      host: 'localhost',
       port: 5173,
       protocol: 'http',
     },
     proxy: {
       '/api': {
-        target: 'http://api.bheemla.local:3001',
+        target: 'http://localhost:3001',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
       '/ws': {
-        target: 'ws://api.bheemla.local:3001',
+        target: 'ws://localhost:3001',
         ws: true,
         changeOrigin: true,
       },
