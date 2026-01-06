@@ -22,6 +22,8 @@ import {
 } from '@react-three/drei';
 import * as THREE from 'three';
 import { useModelStore } from '../../store/model';
+import { InstancedMembersRenderer } from './InstancedMembersRenderer';
+import { InstancedNodesRenderer } from './InstancedNodesRenderer';
 
 // ============================================
 // TYPES
@@ -193,82 +195,17 @@ const NodeMesh: FC<NodeMeshProps> = ({
 };
 
 // ============================================
-// STRUCTURE RENDERER (inside Canvas)
+// STRUCTURE RENDERER (GPU Instanced for high performance)
 // ============================================
 
 const StructureRenderer: FC = () => {
-    const nodes = useModelStore((state) => state.nodes);
-    const members = useModelStore((state) => state.members);
-    const selectedIds = useModelStore((state) => state.selectedIds);
-    const selectNode = useModelStore((state) => state.selectNode);
-    const selectMember = useModelStore((state) => state.selectMember);
-
-    const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
-    const [hoveredMemberId, setHoveredMemberId] = useState<string | null>(null);
-
-    // Handle node click with multi-select support
-    const handleNodeClick = useCallback((id: string, event?: ThreeEvent<MouseEvent>) => {
-        const multi = event?.shiftKey || event?.ctrlKey || event?.metaKey || false;
-        selectNode(id, multi);
-    }, [selectNode]);
-
-    // Handle member click with multi-select support
-    const handleMemberClick = useCallback((id: string, event?: ThreeEvent<MouseEvent>) => {
-        const multi = event?.shiftKey || event?.ctrlKey || event?.metaKey || false;
-        selectMember(id, multi);
-    }, [selectMember]);
-
-    // Build node positions map
-    const nodePositions = useMemo(() => {
-        const map = new Map<string, THREE.Vector3>();
-        nodes.forEach((node, id) => {
-            map.set(id, new THREE.Vector3(node.x, node.y, node.z));
-        });
-        return map;
-    }, [nodes]);
-
     return (
         <group>
-            {/* Render Members */}
-            {Array.from(members.entries()).map(([id, member]) => {
-                const startPos = nodePositions.get(member.startNodeId);
-                const endPos = nodePositions.get(member.endNodeId);
+            {/* GPU-accelerated instanced rendering for members */}
+            <InstancedMembersRenderer />
 
-                if (!startPos || !endPos) return null;
-
-                return (
-                    <MemberMesh
-                        key={id}
-                        id={id}
-                        startPos={startPos}
-                        endPos={endPos}
-                        isSelected={selectedIds.has(id)}
-                        isHovered={hoveredMemberId === id}
-                        onHover={setHoveredMemberId}
-                        onClick={handleMemberClick}
-                    />
-                );
-            })}
-
-            {/* Render Nodes */}
-            {Array.from(nodes.entries()).map(([id, node]) => {
-                const hasSupport = node.restraints && (
-                    node.restraints.fx || node.restraints.fy || node.restraints.fz
-                );
-
-                return (
-                    <NodeMesh
-                        key={id}
-                        id={id}
-                        position={new THREE.Vector3(node.x, node.y, node.z)}
-                        isSelected={selectedIds.has(id)}
-                        isHovered={hoveredNodeId === id}
-                        hasSupport={!!hasSupport}
-                        onHover={setHoveredNodeId}
-                        onClick={handleNodeClick}
-                    />
-                );
-            })}
+            {/* GPU-accelerated instanced rendering for nodes */}
+            <InstancedNodesRenderer />
         </group>
     );
 };
