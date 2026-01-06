@@ -54,11 +54,10 @@ let wasmReady = false;
 
 async function loadWasmModule(): Promise<void> {
     try {
-        // Dynamic import of WASM module
-        // Import solver-wasm package
-        const { default: init } = await import('solver-wasm');
-        await init();
-        wasmModule = wasm;
+        // Import the entire WASM module from backend-rust
+        wasmModule = await import('backend-rust');
+        // Initialize the WASM module
+        await wasmModule.default();
         wasmReady = true;
         self.postMessage({ type: 'wasm_ready' });
         console.log('[SolverWorker] WASM module loaded successfully');

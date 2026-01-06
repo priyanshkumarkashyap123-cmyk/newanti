@@ -7,12 +7,12 @@
  * NO backend calls - everything runs in the browser!
  */
 
-import init, { 
+import init, {
     solve_structure_wasm,
     solve_p_delta,
     analyze_buckling,
     get_solver_info
-} from 'solver-wasm';
+} from 'backend-rust';
 
 // ============================================
 // TYPE DEFINITIONS
@@ -125,7 +125,7 @@ export async function initSolver(): Promise<void> {
         await init();
         wasmInitialized = true;
         console.log('[BeamLab] WASM Solver initialized successfully ✅');
-        
+
         // Log solver capabilities
         try {
             const info = JSON.parse(get_solver_info());
@@ -166,9 +166,9 @@ export async function analyzeStructure(
     try {
         console.log('[WASM] Analyzing structure:', nodes.length, 'nodes,', elements.length, 'elements');
         console.log('[WASM] Loads:', pointLoads.length, 'point loads,', memberLoads.length, 'member loads');
-        
+
         const startTime = performance.now();
-        
+
         // Call Rust WASM function
         const result = solve_structure_wasm(
             nodes,
@@ -176,7 +176,7 @@ export async function analyzeStructure(
             pointLoads,
             memberLoads
         );
-        
+
         const endTime = performance.now();
         const solveTime = endTime - startTime;
 
@@ -240,9 +240,9 @@ export async function analyzePDelta(
     try {
         console.log('[WASM] Running P-Delta analysis...');
         console.log('[WASM] Max iterations:', maxIterations, 'Tolerance:', tolerance);
-        
+
         const startTime = performance.now();
-        
+
         const result = solve_p_delta(
             nodes,
             elements,
@@ -251,12 +251,12 @@ export async function analyzePDelta(
             maxIterations,
             tolerance
         );
-        
+
         const endTime = performance.now();
         const solveTime = endTime - startTime;
 
         console.log('[WASM] P-Delta completed in', solveTime.toFixed(2), 'ms');
-        
+
         if (result.converged !== undefined) {
             console.log('[WASM] Converged:', result.converged, 'Iterations:', result.iterations);
         }
@@ -319,16 +319,16 @@ export async function analyzeBuckling(
 
     try {
         console.log('[WASM] Running buckling analysis for', numModes, 'modes...');
-        
+
         const startTime = performance.now();
-        
+
         const result = analyze_buckling(
             nodes,
             elements,
             pointLoads,
             numModes
         );
-        
+
         const endTime = performance.now();
         const solveTime = endTime - startTime;
 
@@ -385,7 +385,7 @@ export function getSolverInfo(): SolverInfo {
     } catch (e) {
         console.warn('Failed to get solver info:', e);
     }
-    
+
     return {
         version: '1.0.0',
         capabilities: [
