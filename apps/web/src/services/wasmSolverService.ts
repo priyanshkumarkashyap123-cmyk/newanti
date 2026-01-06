@@ -322,12 +322,26 @@ export async function analyzeBuckling(
 
         const startTime = performance.now();
 
-        const result = analyze_buckling(
+        let result = analyze_buckling(
             nodes,
             elements,
             pointLoads,
             numModes
         );
+
+        // Handle case where WASM returns JSON string instead of object (stub implementation)
+        if (typeof result === 'string') {
+            try {
+                result = JSON.parse(result);
+            } catch (e) {
+                console.error('[WASM] Failed to parse buckling result:', e);
+                return {
+                    success: false,
+                    buckling_loads: [],
+                    error: 'Failed to parse buckling analysis result'
+                };
+            }
+        }
 
         const endTime = performance.now();
         const solveTime = endTime - startTime;
