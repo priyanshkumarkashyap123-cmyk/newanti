@@ -147,3 +147,43 @@ pub fn modal_analysis(nodes_val: JsValue, elements_val: JsValue, num_modes: usiz
         Err(e) => JsValue::from_str(&format!("Error: {}", e)),
     }
 }
+
+/// P-Delta analysis (stub for backward compatibility)
+#[wasm_bindgen]
+pub fn solve_p_delta(
+    _nodes_val: JsValue,
+    _elements_val: JsValue,
+    _point_loads_val: JsValue,
+    _member_loads_val: JsValue,
+    _max_iterations: usize,
+    _tolerance: f64
+) -> JsValue {
+    JsValue::from_str(r#"{"success": false, "error": "P-Delta analysis not yet implemented in backend-rust"}"#)
+}
+
+/// Buckling analysis (stub for backward compatibility)
+#[wasm_bindgen]
+pub fn analyze_buckling(
+    _nodes_val: JsValue,
+    _elements_val: JsValue,
+    _point_loads_val: JsValue,
+    _num_modes: usize
+) -> JsValue {
+    JsValue::from_str(r#"{"success": false, "error": "Buckling analysis not yet implemented in backend-rust"}"#)
+}
+
+/// Get solver version and capabilities
+#[wasm_bindgen]
+pub fn get_solver_info() -> String {
+    r#"{
+        "version": "2.0.0-rust",
+        "capabilities": [
+            "2D frame analysis",
+            "3D frame analysis",
+            "Modal analysis",
+            "Direct stiffness method",
+            "LU decomposition solver"
+        ]
+    }"#.to_string()
+}
+

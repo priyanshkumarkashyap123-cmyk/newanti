@@ -18,9 +18,19 @@ export class Renderer {
   resize(width: number, height: number): void;
 }
 
+/**
+ * Buckling analysis (stub for backward compatibility)
+ */
+export function analyze_buckling(_nodes_val: any, _elements_val: any, _point_loads_val: any, _num_modes: number): any;
+
 export function calculate_beam_capacity(b: number, d: number, fck: number, fy: number, ast: number): number;
 
 export function calculate_seismic_base_shear(zone: number, importance: number, r_factor: number, period: number, soil: number, weight: number): number;
+
+/**
+ * Get solver version and capabilities
+ */
+export function get_solver_info(): string;
 
 /**
  * Modal analysis for dynamic properties
@@ -33,6 +43,11 @@ export function set_panic_hook(): void;
  * 3D Frame analysis (new advanced solver)
  */
 export function solve_3d_frame(nodes_val: any, elements_val: any, nodal_loads_val: any, distributed_loads_val: any): any;
+
+/**
+ * P-Delta analysis (stub for backward compatibility)
+ */
+export function solve_p_delta(_nodes_val: any, _elements_val: any, _point_loads_val: any, _member_loads_val: any, _max_iterations: number, _tolerance: number): any;
 
 /**
  * 2D Frame analysis (backward compatible)
@@ -49,24 +64,27 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
+  readonly calculate_beam_capacity: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly calculate_seismic_base_shear: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
   readonly __wbg_renderer_free: (a: number, b: number) => void;
   readonly renderer_new: (a: any) => any;
   readonly renderer_render: (a: number) => [number, number];
   readonly renderer_resize: (a: number, b: number, c: number) => void;
-  readonly calculate_beam_capacity: (a: number, b: number, c: number, d: number, e: number) => number;
-  readonly calculate_seismic_base_shear: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+  readonly get_solver_info: () => [number, number];
   readonly modal_analysis: (a: any, b: any, c: number) => any;
   readonly solve_3d_frame: (a: any, b: any, c: any, d: any) => any;
   readonly solve_structure_wasm: (a: any, b: any) => any;
   readonly solve_system: (a: number, b: number, c: number, d: number, e: number) => [number, number, number];
+  readonly analyze_buckling: (a: any, b: any, c: any, d: number) => any;
   readonly set_panic_hook: () => void;
+  readonly solve_p_delta: (a: any, b: any, c: any, d: any, e: number, f: number) => any;
   readonly __wbg_aiarchitect_free: (a: number, b: number) => void;
   readonly aiarchitect_suggest_beam_size: (a: number, b: number) => [number, number];
   readonly aiarchitect_new: () => number;
-  readonly wasm_bindgen__convert__closures_____invoke__h1057b88e8295d0b8: (a: number, b: number, c: any) => void;
-  readonly wasm_bindgen__closure__destroy__hf9bdda0f49fbdd02: (a: number, b: number) => void;
   readonly wasm_bindgen__convert__closures_____invoke__he8f385b6a6d9f55c: (a: number, b: number, c: any) => void;
   readonly wasm_bindgen__closure__destroy__h5c9d28f7c75ac88f: (a: number, b: number) => void;
+  readonly wasm_bindgen__convert__closures_____invoke__h1057b88e8295d0b8: (a: number, b: number, c: any) => void;
+  readonly wasm_bindgen__closure__destroy__hf9bdda0f49fbdd02: (a: number, b: number) => void;
   readonly wasm_bindgen__convert__closures_____invoke__h201191e8bc17cbcd: (a: number, b: number, c: any, d: any) => void;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;

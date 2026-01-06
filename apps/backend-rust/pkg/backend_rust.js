@@ -242,12 +242,12 @@ if (!('encodeInto' in cachedTextEncoder)) {
 
 let WASM_VECTOR_LEN = 0;
 
-function wasm_bindgen__convert__closures_____invoke__h1057b88e8295d0b8(arg0, arg1, arg2) {
-    wasm.wasm_bindgen__convert__closures_____invoke__h1057b88e8295d0b8(arg0, arg1, arg2);
-}
-
 function wasm_bindgen__convert__closures_____invoke__he8f385b6a6d9f55c(arg0, arg1, arg2) {
     wasm.wasm_bindgen__convert__closures_____invoke__he8f385b6a6d9f55c(arg0, arg1, arg2);
+}
+
+function wasm_bindgen__convert__closures_____invoke__h1057b88e8295d0b8(arg0, arg1, arg2) {
+    wasm.wasm_bindgen__convert__closures_____invoke__h1057b88e8295d0b8(arg0, arg1, arg2);
 }
 
 function wasm_bindgen__convert__closures_____invoke__h201191e8bc17cbcd(arg0, arg1, arg2, arg3) {
@@ -356,6 +356,19 @@ export class Renderer {
 if (Symbol.dispose) Renderer.prototype[Symbol.dispose] = Renderer.prototype.free;
 
 /**
+ * Buckling analysis (stub for backward compatibility)
+ * @param {any} _nodes_val
+ * @param {any} _elements_val
+ * @param {any} _point_loads_val
+ * @param {number} _num_modes
+ * @returns {any}
+ */
+export function analyze_buckling(_nodes_val, _elements_val, _point_loads_val, _num_modes) {
+    const ret = wasm.analyze_buckling(_nodes_val, _elements_val, _point_loads_val, _num_modes);
+    return ret;
+}
+
+/**
  * @param {number} b
  * @param {number} d
  * @param {number} fck
@@ -380,6 +393,23 @@ export function calculate_beam_capacity(b, d, fck, fy, ast) {
 export function calculate_seismic_base_shear(zone, importance, r_factor, period, soil, weight) {
     const ret = wasm.calculate_seismic_base_shear(zone, importance, r_factor, period, soil, weight);
     return ret;
+}
+
+/**
+ * Get solver version and capabilities
+ * @returns {string}
+ */
+export function get_solver_info() {
+    let deferred1_0;
+    let deferred1_1;
+    try {
+        const ret = wasm.get_solver_info();
+        deferred1_0 = ret[0];
+        deferred1_1 = ret[1];
+        return getStringFromWasm0(ret[0], ret[1]);
+    } finally {
+        wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+    }
 }
 
 /**
@@ -408,6 +438,21 @@ export function set_panic_hook() {
  */
 export function solve_3d_frame(nodes_val, elements_val, nodal_loads_val, distributed_loads_val) {
     const ret = wasm.solve_3d_frame(nodes_val, elements_val, nodal_loads_val, distributed_loads_val);
+    return ret;
+}
+
+/**
+ * P-Delta analysis (stub for backward compatibility)
+ * @param {any} _nodes_val
+ * @param {any} _elements_val
+ * @param {any} _point_loads_val
+ * @param {any} _member_loads_val
+ * @param {number} _max_iterations
+ * @param {number} _tolerance
+ * @returns {any}
+ */
+export function solve_p_delta(_nodes_val, _elements_val, _point_loads_val, _member_loads_val, _max_iterations, _tolerance) {
+    const ret = wasm.solve_p_delta(_nodes_val, _elements_val, _point_loads_val, _member_loads_val, _max_iterations, _tolerance);
     return ret;
 }
 

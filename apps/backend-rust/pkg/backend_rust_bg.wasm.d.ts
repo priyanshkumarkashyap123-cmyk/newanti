@@ -1,24 +1,27 @@
 /* tslint:disable */
 /* eslint-disable */
 export const memory: WebAssembly.Memory;
+export const calculate_beam_capacity: (a: number, b: number, c: number, d: number, e: number) => number;
+export const calculate_seismic_base_shear: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
 export const __wbg_renderer_free: (a: number, b: number) => void;
 export const renderer_new: (a: any) => any;
 export const renderer_render: (a: number) => [number, number];
 export const renderer_resize: (a: number, b: number, c: number) => void;
-export const calculate_beam_capacity: (a: number, b: number, c: number, d: number, e: number) => number;
-export const calculate_seismic_base_shear: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+export const get_solver_info: () => [number, number];
 export const modal_analysis: (a: any, b: any, c: number) => any;
 export const solve_3d_frame: (a: any, b: any, c: any, d: any) => any;
 export const solve_structure_wasm: (a: any, b: any) => any;
 export const solve_system: (a: number, b: number, c: number, d: number, e: number) => [number, number, number];
+export const analyze_buckling: (a: any, b: any, c: any, d: number) => any;
 export const set_panic_hook: () => void;
+export const solve_p_delta: (a: any, b: any, c: any, d: any, e: number, f: number) => any;
 export const __wbg_aiarchitect_free: (a: number, b: number) => void;
 export const aiarchitect_suggest_beam_size: (a: number, b: number) => [number, number];
 export const aiarchitect_new: () => number;
-export const wasm_bindgen__convert__closures_____invoke__h1057b88e8295d0b8: (a: number, b: number, c: any) => void;
-export const wasm_bindgen__closure__destroy__hf9bdda0f49fbdd02: (a: number, b: number) => void;
 export const wasm_bindgen__convert__closures_____invoke__he8f385b6a6d9f55c: (a: number, b: number, c: any) => void;
 export const wasm_bindgen__closure__destroy__h5c9d28f7c75ac88f: (a: number, b: number) => void;
+export const wasm_bindgen__convert__closures_____invoke__h1057b88e8295d0b8: (a: number, b: number, c: any) => void;
+export const wasm_bindgen__closure__destroy__hf9bdda0f49fbdd02: (a: number, b: number) => void;
 export const wasm_bindgen__convert__closures_____invoke__h201191e8bc17cbcd: (a: number, b: number, c: any, d: any) => void;
 export const __wbindgen_malloc: (a: number, b: number) => number;
 export const __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
