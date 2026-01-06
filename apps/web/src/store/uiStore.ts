@@ -141,7 +141,7 @@ interface UIState {
         windLoadDialog: boolean;
         seismicLoadDialog: boolean;
         movingLoadDialog: boolean;
-        boundaryDialog: boolean;
+        boundaryConditionsDialog: boolean;
         // ASCE 7 Load Generation
         asce7SeismicDialog: boolean;
         asce7WindDialog: boolean;
@@ -155,6 +155,8 @@ interface UIState {
         pDeltaAnalysis: boolean;
         modalAnalysis: boolean;
         bucklingAnalysis: boolean;
+        selectionToolbar: boolean;
+        deadLoadGenerator: boolean;
     };
 
     // Graphics State
@@ -249,7 +251,7 @@ export const useUIStore = create<UIState>()(
                 windLoadDialog: false,
                 seismicLoadDialog: false,
                 movingLoadDialog: false,
-                boundaryDialog: false,
+                boundaryConditionsDialog: false,
                 // ASCE 7 Load Generation
                 asce7SeismicDialog: false,
                 asce7WindDialog: false,
@@ -263,6 +265,8 @@ export const useUIStore = create<UIState>()(
                 pDeltaAnalysis: false,
                 modalAnalysis: false,
                 bucklingAnalysis: false,
+                selectionToolbar: false,
+                deadLoadGenerator: false,
             },
 
             // Graphics State

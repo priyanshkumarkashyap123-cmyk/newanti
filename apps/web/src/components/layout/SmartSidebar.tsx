@@ -361,7 +361,6 @@ const EditToolsPanel: FC = () => {
 
     return (
         <div className="space-y-3">
-            {/* Selection Tools */}
             <div>
                 <div className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
                     Selection
@@ -390,6 +389,44 @@ const EditToolsPanel: FC = () => {
                         </button>
                     </Tooltip>
                 </div>
+            </div>
+
+            {/* Boundary Conditions - NEW */}
+            <div>
+                <div className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+                    Supports
+                </div>
+                <Tooltip content="Assign boundary conditions (supports/restraints) to selected nodes">
+                    <button
+                        onClick={() => useUIStore.getState().openModal('boundaryConditionsDialog')}
+                        disabled={!hasSelection}
+                        className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${hasSelection
+                            ? 'text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30'
+                            : 'text-slate-500 bg-slate-800/30 cursor-not-allowed border border-transparent'
+                            }`}
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                        Boundary Conditions
+                    </button>
+                </Tooltip>
+            </div>
+
+            {/* Advanced Selection - NEW */}
+            <div>
+                <div className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+                    Advanced Select
+                </div>
+                <Tooltip content="Select by IDs, level, axis, or section">
+                    <button
+                        onClick={() => useUIStore.getState().openModal('selectionToolbar')}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg text-purple-400 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30"
+                    >
+                        <Box className="w-4 h-4" />
+                        Selection Tools
+                    </button>
+                </Tooltip>
             </div>
 
             {/* Clipboard Tools */}
@@ -563,6 +600,14 @@ const AdvancedToolsPanel: FC = () => {
 
     const tools = [
         {
+            id: 'deadLoadGenerator',
+            label: 'Dead Load Generator',
+            description: 'Auto-calculate self-weight & floor loads',
+            color: 'text-amber-400',
+            bgColor: 'bg-amber-500/10',
+            borderColor: 'border-amber-500/30'
+        },
+        {
             id: 'loadDialog',
             label: 'Loading Manager',
             description: 'Nodal, member, floor, thermal loads',
@@ -665,7 +710,7 @@ const AdvancedToolsPanel: FC = () => {
             {tools.map((tool) => (
                 <button
                     key={tool.id}
-                    onClick={() => openModal(tool.id as 'structureWizard' | 'geometryTools' | 'interoperability' | 'railwayBridge' | 'loadDialog' | 'meshing' | 'windLoadDialog' | 'seismicLoadDialog' | 'movingLoadDialog' | 'asce7SeismicDialog' | 'asce7WindDialog' | 'loadCombinationsDialog')}
+                    onClick={() => openModal(tool.id as 'deadLoadGenerator' | 'structureWizard' | 'geometryTools' | 'interoperability' | 'railwayBridge' | 'loadDialog' | 'meshing' | 'windLoadDialog' | 'seismicLoadDialog' | 'movingLoadDialog' | 'asce7SeismicDialog' | 'asce7WindDialog' | 'loadCombinationsDialog')}
                     className={`
                         w-full flex flex-col items-start gap-1 px-3 py-2.5 text-sm rounded-lg transition-all
                         ${tool.bgColor} ${tool.color} border ${tool.borderColor}

@@ -80,6 +80,9 @@ import consentService from '../services/ConsentService';
 import { useAuth } from '../providers/AuthProvider';
 import { useSubscription } from '../hooks/useSubscription';
 import { StructureGallery } from './gallery/StructureGallery';
+import { BoundaryConditionsDialog } from './BoundaryConditionsDialog';
+import { SelectionToolbar } from './SelectionToolbar';
+import { DeadLoadGenerator } from './DeadLoadGenerator';
 
 // Command Palette for quick feature access (Cmd+K)
 import { CommandPalette, useCommandPalette } from './CommandPalette';
@@ -1502,6 +1505,24 @@ export const ModernModeler: FC = () => {
 
             {/* Moving Load Analysis (IRC 6 / AASHTO) */}
             <MovingLoadDialog />
+
+            {/* Boundary Conditions Dialog - NEW */}
+            <BoundaryConditionsDialog
+                open={modals.boundaryConditionsDialog}
+                onClose={() => closeModal('boundaryConditionsDialog')}
+            />
+
+            {/* Advanced Selection Toolbar - NEW */}
+            <SelectionToolbar
+                open={modals.selectionToolbar}
+                onClose={() => closeModal('selectionToolbar')}
+            />
+
+            {/* Dead Load Generator - NEW */}
+            <DeadLoadGenerator
+                open={modals.deadLoadGenerator}
+                onClose={() => closeModal('deadLoadGenerator')}
+            />
 
             {/* UI Dialogs */}
             <MemberSpecificationsDialog

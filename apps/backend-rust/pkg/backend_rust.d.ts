@@ -63,10 +63,10 @@ export interface InitOutput {
   readonly __wbg_aiarchitect_free: (a: number, b: number) => void;
   readonly aiarchitect_suggest_beam_size: (a: number, b: number) => [number, number];
   readonly aiarchitect_new: () => number;
-  readonly wasm_bindgen__convert__closures_____invoke__he8f385b6a6d9f55c: (a: number, b: number, c: any) => void;
-  readonly wasm_bindgen__closure__destroy__h5c9d28f7c75ac88f: (a: number, b: number) => void;
   readonly wasm_bindgen__convert__closures_____invoke__h1057b88e8295d0b8: (a: number, b: number, c: any) => void;
   readonly wasm_bindgen__closure__destroy__hf9bdda0f49fbdd02: (a: number, b: number) => void;
+  readonly wasm_bindgen__convert__closures_____invoke__he8f385b6a6d9f55c: (a: number, b: number, c: any) => void;
+  readonly wasm_bindgen__closure__destroy__h5c9d28f7c75ac88f: (a: number, b: number) => void;
   readonly wasm_bindgen__convert__closures_____invoke__h201191e8bc17cbcd: (a: number, b: number, c: any, d: any) => void;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
