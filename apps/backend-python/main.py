@@ -779,6 +779,280 @@ async def recommend_section(request: SectionRecommendationRequest):
 
 
 # ============================================
+# CUSTOM SECTION DESIGNER ENDPOINTS
+# ============================================
+
+class CustomSectionRequest(BaseModel):
+    """Request for custom section property calculation"""
+    points: List[Dict[str, float]]  # List of {x, y} coordinates
+    name: Optional[str] = "Custom Section"
+    material_density: Optional[float] = 7850.0  # kg/m³ (default: steel)
+
+
+class StandardSectionRequest(BaseModel):
+    """Request for standard shape creation"""
+    shape_type: str  # "i_beam", "channel", "angle", "rectangular", "circular", "tee"
+    dimensions: Dict[str, float]  # Dimension parameters
+    name: Optional[str] = None
+
+
+@app.post("/sections/custom/calculate", tags=["Section Design"])
+async def calculate_custom_section(request: CustomSectionRequest):
+    """
+    Calculate properties of a custom section defined by points.
+    
+    Args:
+        points: List of {x, y} coordinates defining section boundary (CCW)
+        name: Section designation
+        material_density: Material density in kg/m³ (default: 7850 for steel)
+    
+    Returns:
+        Complete section properties:
+        - Area, centroid
+        - Second moments (Ixx, Iyy, Ixy)
+        - Elastic moduli (Zxx, Zyy)
+        - Plastic moduli (Zpxx, Zpyy)
+        - Radii of gyration (rxx, ryy)
+        - Principal axes (I1, I2, angle)
+        - Weight per meter
+    
+    Example:
+        ```json
+        {
+          "points": [
+            {"x": -75, "y": -150},
+            {"x": 75, "y": -150},
+            {"x": 75, "y": 150},
+            {"x": -75, "y": 150}
+          ],
+          "name": "Custom 150x300",
+          "material_density": 7850
+        }
+        ```
+    """
+    try:
+        from analysis.section_designer import CustomSection, Point
+        
+        # Convert to Point objects
+        section_points = [Point(p['x'], p['y']) for p in request.points]
+        
+        # Create custom section
+        section = CustomSection(section_points, request.name or "Custom Section")
+        
+        # Calculate all properties
+        properties = section.get_all_properties(request.material_density or 7850.0)
+        
+        return {
+            "success": True,
+            "section": {
+                "name": section.name,
+                "points": [{"x": p.x, "y": p.y} for p in section.points],
+                "properties": properties
+            }
+        }
+    
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import traceback
+        print(f"[SECTION DESIGNER] Error: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Section calculation error: {str(e)}")
+
+
+@app.post("/sections/standard/create", tags=["Section Design"])
+async def create_standard_section(request: StandardSectionRequest):
+    """
+    Create a standard section shape with automatic property calculation.
+    
+    Args:
+        shape_type: Type of standard shape
+        dimensions: Dictionary of dimension parameters
+        name: Optional section designation
+    
+    Shape Types and Required Dimensions:
+    
+    **i_beam**:
+    - depth: Total depth (mm)
+    - width: Flange width (mm)
+    - web_thickness: Web thickness (mm)
+    - flange_thickness: Flange thickness (mm)
+    
+    **channel**:
+    - depth: Total depth (mm)
+    - width: Flange width (mm)
+    - web_thickness: Web thickness (mm)
+    - flange_thickness: Flange thickness (mm)
+    
+    **angle**:
+    - leg1: First leg length (mm)
+    - leg2: Second leg length (mm)
+    - thickness: Thickness (mm)
+    
+    **rectangular**:
+    - width: Width (mm)
+    - depth: Depth (mm)
+    
+    **circular**:
+    - diameter: Diameter (mm)
+    - segments: Number of polygon segments (default:32)
+    
+    **tee**:
+    - width: Flange width (mm)
+    - depth: Total depth (mm)
+    - web_thickness: Web thickness (mm)
+    - flange_thickness: Flange thickness (mm)
+    
+    Returns:
+        Section properties and point coordinates
+    
+    Example:
+        ```json
+        {
+          "shape_type": "i_beam",
+          "dimensions": {
+            "depth": 300,
+            "width": 150,
+            "web_thickness": 7.5,
+            "flange_thickness": 10.8
+          },
+          "name": "ISMB 300"
+        }
+        ```
+    """
+    try:
+        from analysis.section_designer import StandardShapes, CustomSection
+        
+        shape_type = request.shape_type.lower()
+        dims = request.dimensions
+        
+        # Create standard shape
+        if shape_type == "i_beam" or shape_type == "ibeam":
+            section = StandardShapes.i_beam(
+                depth=dims['depth'],
+                width=dims['width'],
+                web_thick=dims['web_thickness'],
+                flange_thick=dims['flange_thickness'],
+                name=request.name or f"I-Beam {dims['depth']}x{dims['width']}"
+            )
+        
+        elif shape_type == "channel":
+            section = StandardShapes.channel(
+                depth=dims['depth'],
+                width=dims['width'],
+                web_thick=dims['web_thickness'],
+                flange_thick=dims['flange_thickness'],
+                name=request.name or f"Channel {dims['depth']}x{dims['width']}"
+            )
+        
+        elif shape_type == "angle":
+            section = StandardShapes.angle(
+                leg1=dims['leg1'],
+                leg2=dims['leg2'],
+                thickness=dims['thickness'],
+                name=request.name or f"Angle {dims['leg1']}x{dims['leg2']}x{dims['thickness']}"
+            )
+        
+        elif shape_type == "rectangular" or shape_type == "rectangle":
+            section = StandardShapes.rectangular(
+                width=dims['width'],
+                depth=dims['depth'],
+                name=request.name or f"Rect {dims['width']}x{dims['depth']}"
+            )
+        
+        elif shape_type == "circular" or shape_type == "circle":
+            segments = dims.get('segments', 32)
+            section = StandardShapes.circular(
+                diameter=dims['diameter'],
+                segments=int(segments),
+                name=request.name or f"Circle D{dims['diameter']}"
+            )
+        
+        elif shape_type == "tee":
+            section = StandardShapes.tee(
+                width=dims['width'],
+                depth=dims['depth'],
+                web_thick=dims['web_thickness'],
+                flange_thick=dims['flange_thickness'],
+                name=request.name or f"Tee {dims['width']}x{dims['depth']}"
+            )
+        
+        else:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Unknown shape type: {shape_type}. "
+                       f"Available: i_beam, channel, angle, rectangular, circular, tee"
+            )
+        
+        # Get all properties
+        properties = section.get_all_properties()
+        
+        return {
+            "success": True,
+            "section": {
+                "name": section.name,
+                "shape_type": request.shape_type,
+                "points": [{"x": round(p.x, 2), "y": round(p.y, 2)} for p in section.points],
+                "properties": properties
+            }
+        }
+    
+    except KeyError as e:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Missing required dimension: {e}"
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        print(f"[SECTION DESIGNER] Error: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Section creation error: {str(e)}")
+
+
+@app.get("/sections/shapes/list", tags=["Section Design"])
+async def list_standard_shapes():
+    """
+    List all available standard shapes with their required dimensions.
+    
+    Returns:
+        Dictionary of shape types and their dimension requirements
+    """
+    return {
+        "success": True,
+        "shapes": {
+            "i_beam": {
+                "description": "I-beam (W-shape)",
+                "dimensions": ["depth", "width", "web_thickness", "flange_thickness"]
+            },
+            "channel": {
+                "description": "Channel (C-shape)",
+                "dimensions": ["depth", "width", "web_thickness", "flange_thickness"]
+            },
+            "angle": {
+                "description": "Angle (L-shape)",
+                "dimensions": ["leg1", "leg2", "thickness"]
+            },
+            "rectangular": {
+                "description": "Solid rectangle",
+                "dimensions": ["width", "depth"]
+            },
+            "circular": {
+                "description": "Solid circle",
+                "dimensions": ["diameter", "segments (optional)"]
+            },
+            "tee": {
+                "description": "T-section",
+                "dimensions": ["width", "depth", "web_thickness", "flange_thickness"]
+            }
+        }
+    }
+
+
+# ============================================
 # PDF REPORT GENERATION ENDPOINT
 # ============================================
 
