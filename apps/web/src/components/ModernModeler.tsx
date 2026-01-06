@@ -873,6 +873,16 @@ export const ModernModeler: FC = () => {
                         fy: l.fy,
                         fz: l.fz
                     })),
+                    memberLoads: memberLoads.map(ml => ({
+                        id: ml.id,
+                        memberId: ml.memberId,
+                        type: ml.type,
+                        w1: ml.w1,
+                        w2: ml.w2,
+                        direction: ml.direction,
+                        startPos: ml.startPos,
+                        endPos: ml.endPos
+                    })),
                     dofPerNode: 3 as const
                 };
 

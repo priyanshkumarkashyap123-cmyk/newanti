@@ -191,18 +191,51 @@ class AnalysisService {
                 reject(new Error(error.message));
             });
 
-            // Send to worker
-            this.worker.postMessage({
-                type: 'analyze',
-                requestId: `local-${Date.now()}`,
-                model: {
-                    nodes: model.nodes,
-                    members: model.members,
-                    loads: model.loads,
-                    dofPerNode: model.dofPerNode || 6,
-                    settings: model.settings
+
+            // Convert member loads to nodal loads if present
+            const sendToWorker = async () => {
+                let allLoads = [...model.loads];
+
+                // Check if model has memberLoads property
+                const modelWithMemberLoads = model as any;
+                if (modelWithMemberLoads.memberLoads && modelWithMemberLoads.memberLoads.length > 0) {
+                    console.log(`[Analysis] Converting ${modelWithMemberLoads.memberLoads.length} member loads to nodal loads...`);
+
+                    try {
+                        // Import conversion utility
+                        const { convertMemberLoadsToNodal, mergeNodalLoads } = await import('../utils/loadConversion');
+
+                        const equivalentLoads = convertMemberLoadsToNodal(
+                            modelWithMemberLoads.memberLoads,
+                            model.members,
+                            model.nodes
+                        );
+
+                        // Merge with existing nodal loads
+                        allLoads = mergeNodalLoads([...allLoads, ...equivalentLoads]);
+
+                        console.log(`[Analysis] Total nodal loads after conversion: ${allLoads.length}`);
+                    } catch (err) {
+                        console.error('[Analysis] Load conversion failed:', err);
+                        // Continue with original loads
+                    }
                 }
-            });
+
+                // Send to worker
+                this.worker!.postMessage({
+                    type: 'analyze',
+                    requestId: `local-${Date.now()}`,
+                    model: {
+                        nodes: model.nodes,
+                        members: model.members,
+                        loads: allLoads,
+                        dofPerNode: model.dofPerNode || 6,
+                        settings: model.settings
+                    }
+                });
+            };
+
+            sendToWorker();
         });
     }
 
