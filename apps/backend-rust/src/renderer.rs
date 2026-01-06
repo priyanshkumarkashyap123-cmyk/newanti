@@ -33,11 +33,16 @@ impl Renderer {
         // Use default limits instead of downlevel_webgl2_defaults to avoid
         // requesting unsupported limits like maxInterStageShaderComponents
         // The default() method provides conservative limits that work across all browsers
+        // Use downlevel defaults for wider compatibility (WebGL2)
+        // This avoids requesting limits like maxInterStageShaderComponents that may fail
+        let mut limits = wgpu::Limits::downlevel_webgl2_defaults();
+        limits.max_texture_dimension_2d = 4096; // Ensure reasonable texture size
+        
         let (device, queue) = adapter.request_device(
             &wgpu::DeviceDescriptor {
                 label: Some("BeamLab WGPU Device"),
                 required_features: wgpu::Features::empty(),
-                required_limits: wgpu::Limits::default(),
+                required_limits: limits,
             },
             None,
         ).await.map_err(|e| e.to_string())?;

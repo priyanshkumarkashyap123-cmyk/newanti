@@ -98,4 +98,61 @@ jobs:
           package: python-app.zip
 
   # Build and deploy React Frontend
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        
+      - name: Build Frontend
+        working-directory: apps/web
+        run: |
+          pnpm install
+          pnpm run build
+          
+      - name: Deploy to Azure Static Web Apps
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "apps/web"
+          output_location: "dist"
+
+  # Build and deploy Rust API (Container)
+  deploy-rust:
+    runs-on: ubuntu-latest
+    needs: [deploy-api, deploy-python] # Optional dependency
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Log in to Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: beamlabregistry.azurecr.io
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+          
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/rust-api
+          push: true
+          tags: |
+            beamlabregistry.azurecr.io/beamlab-rust:latest
+            beamlabregistry.azurecr.io/beamlab-rust:${{ github.sha }}
+            
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: beamlab-rust-api
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_RUST }}
+          images: 'beamlabregistry.azurecr.io/beamlab-rust:latest'
 

@@ -121,7 +121,12 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                     {SIDEBAR_NAV.map((item) => (
                         <button
                             key={item.id}
-                            onClick={() => setActiveNav(item.id)}
+                            onClick={() => {
+                                setActiveNav(item.id);
+                                if (item.id === 'settings') navigate('/settings-enhanced');
+                                else if (item.id === 'projects') navigate('/dashboard-enhanced');
+                                // Add other routes as needed
+                            }}
                             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${activeNav === item.id
                                 ? 'bg-primary text-white'
                                 : 'text-text-muted hover:bg-white/5 hover:text-white'
