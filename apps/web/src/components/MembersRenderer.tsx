@@ -1,6 +1,7 @@
 import { FC, useLayoutEffect, useRef, useMemo } from 'react';
 import * as THREE from 'three';
 import { Line } from '@react-three/drei';
+import { useThree } from '@react-three/fiber';
 import { useModelStore } from '../store/model';
 import { useUIStore } from '../store/uiStore';
 import { StructuralMember, type MemberData, type NodeData } from './viewer/StructuralMesh';
@@ -49,6 +50,40 @@ export const MembersRenderer: FC<MembersRendererProps> = ({
 
     const meshRef = useRef<THREE.InstancedMesh>(null);
     const idsRef = useRef<string[]>([]);
+
+    // Get camera for LOD calculations
+    const { camera } = useThree();
+
+    // Calculate structure center for distance-based LOD
+    const structureCenter = useMemo(() => {
+        if (nodes.size === 0) return new THREE.Vector3();
+
+        let sumX = 0, sumY = 0, sumZ = 0;
+        for (const node of nodes.values()) {
+            sumX += node.x;
+            sumY += node.y;
+            sumZ += node.z;
+        }
+        const count = nodes.size;
+        return new THREE.Vector3(sumX / count, sumY / count, sumZ / count);
+    }, [nodes]);
+
+    // Dynamic LOD: Adjust geometry detail based on camera distance
+    // This is THE key optimization for large structures (1000+ members)
+    const geometryDetail = useMemo(() => {
+        const distance = camera.position.distanceTo(structureCenter);
+
+        // Adaptive segment count based on distance
+        if (distance > 100) return 4;   // Very far view: minimal detail
+        if (distance > 50) return 5;    // Far view: low detail
+        if (distance > 20) return 6;    // Medium view: standard detail
+        return 8;                        // Close-up: high detail
+    }, [camera.position, structureCenter]);
+
+    // Cached geometry - reuse instead of creating new instances
+    const cylinderGeometry = useMemo(() =>
+        new THREE.CylinderGeometry(0.1, 0.1, 1, geometryDetail),
+        [geometryDetail]);
 
     // Memoize colors for performance
     const memberColors = useMemo(() => {
@@ -243,7 +278,7 @@ export const MembersRenderer: FC<MembersRendererProps> = ({
                     key={id}
                     points={[startPos, endPos]}
                     color={color}
-                    lineWidth={3}
+                    lineWidth={2} // Reduced from 3 for better performance
                     onClick={(e) => {
                         e.stopPropagation();
                         select(id, e.shiftKey || e.metaKey);
@@ -281,8 +316,11 @@ export const MembersRenderer: FC<MembersRendererProps> = ({
                         document.body.style.cursor = 'auto';
                     }}
                 >
-                    <cylinderGeometry args={[0.1, 0.1, 1, 8]} />
-                    <meshStandardMaterial vertexColors />
+                    <primitive object={cylinderGeometry} />
+                    <meshStandardMaterial
+                        vertexColors
+                        flatShading={geometryDetail <= 5} // Flat shading for low-detail models
+                    />
                 </instancedMesh>
             )}
         </group>
