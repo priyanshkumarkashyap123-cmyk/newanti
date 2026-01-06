@@ -1,0 +1,395 @@
+{
+  "bridge": {
+    "span": 50,
+    "height": 5,
+    "bays": 12,
+    "panel_width": 4.166666666666667
+  },
+  "loading": {
+    "dead_load": 250.00000000000006,
+    "live_load": 100,
+    "impact_factor": 1.25,
+    "total": 350.00000000000006
+  },
+  "geometry": {
+    "nodes": 26,
+    "members": 36
+  },
+  "analysis": {
+    "max_tension": 487.1635974802923,
+    "max_compression": -444.80154552548424
+  },
+  "design": {
+    "total_weight": 1654.2988147186516,
+    "weight_per_meter": 33.08597629437303,
+    "average_utilization": 0.7484716959248044,
+    "sections_used": 8
+  },
+  "members": [
+    {
+      "member": "TC0",
+      "force": -36.45833333333336,
+      "length": 4.437929252408461,
+      "section": "ISA 125×125×10",
+      "area": 24.2,
+      "weight": 84.32065579576076,
+      "utilization": 0.4736598787267111,
+      "status": "OK"
+    },
+    {
+      "member": "TC1",
+      "force": -109.37500000000003,
+      "length": 4.350127712046063,
+      "section": "ISA 150×150×12",
+      "area": 34.8,
+      "weight": 118.75848653885751,
+      "utilization": 0.6432869409487879,
+      "status": "OK"
+    },
+    {
+      "member": "TC2",
+      "force": -182.29166666666674,
+      "length": 4.278589389097045,
+      "section": "2-ISA 150×150×12",
+      "area": 69.6,
+      "weight": 233.61098064469863,
+      "utilization": 1.0371717753319736,
+      "status": "OK"
+    },
+    {
+      "member": "TC3",
+      "force": -255.20833333333343,
+      "length": 4.224140646040431,
+      "section": "NONE",
+      "area": 0,
+      "weight": 0,
+      "utilization": 0,
+      "status": "FAILED"
+    },
+    {
+      "member": "TC4",
+      "force": -328.1250000000001,
+      "length": 4.187448175467039,
+      "section": "NONE",
+      "area": 0,
+      "weight": 0,
+      "utilization": 0,
+      "status": "FAILED"
+    },
+    {
+      "member": "TC5",
+      "force": -401.0416666666668,
+      "length": 4.168980838834341,
+      "section": "NONE",
+      "area": 0,
+      "weight": 0,
+      "utilization": 0,
+      "status": "FAILED"
+    },
+    {
+      "member": "TC6",
+      "force": -401.0416666666667,
+      "length": 4.168980838834345,
+      "section": "NONE",
+      "area": 0,
+      "weight": 0,
+      "utilization": 0,
+      "status": "FAILED"
+    },
+    {
+      "member": "TC7",
+      "force": -328.1250000000001,
+      "length": 4.187448175467039,
+      "section": "NONE",
+      "area": 0,
+      "weight": 0,
+      "utilization": 0,
+      "status": "FAILED"
+    },
+    {
+      "member": "TC8",
+      "force": -255.20833333333326,
+      "length": 4.2241406460404285,
+      "section": "NONE",
+      "area": 0,
+      "weight": 0,
+      "utilization": 0,
+      "status": "FAILED"
+    },
+    {
+      "member": "TC9",
+      "force": -182.29166666666666,
+      "length": 4.27858938909705,
+      "section": "2-ISA 150×150×12",
+      "area": 69.6,
+      "weight": 233.61098064469894,
+      "utilization": 1.0371717753319756,
+      "status": "OK"
+    },
+    {
+      "member": "TC10",
+      "force": -109.37500000000003,
+      "length": 4.35012771204606,
+      "section": "ISA 150×150×12",
+      "area": 34.8,
+      "weight": 118.75848653885744,
+      "utilization": 0.6432869409487872,
+      "status": "OK"
+    },
+    {
+      "member": "TC11",
+      "force": -36.458333333333215,
+      "length": 4.437929252408458,
+      "section": "ISA 125×125×10",
+      "area": 24.2,
+      "weight": 84.3206557957607,
+      "utilization": 0.4736598787267087,
+      "status": "OK"
+    },
+    {
+      "member": "BC0",
+      "force": 36.45833333333336,
+      "length": 4.166666666666667,
+      "section": "ISA 40×40×5",
+      "area": 3.79,
+      "weight": 12.375000000000002,
+      "utilization": 0.42326297273526853,
+      "status": "OK"
+    },
+    {
+      "member": "BC1",
+      "force": 109.37500000000003,
+      "length": 4.166666666666667,
+      "section": "ISA 50×50×6",
+      "area": 5.7700000000000005,
+      "weight": 18.875000000000004,
+      "utilization": 0.8340554592720973,
+      "status": "OK"
+    },
+    {
+      "member": "BC2",
+      "force": 182.29166666666674,
+      "length": 4.166666666666666,
+      "section": "ISA 75×75×8",
+      "area": 11.5,
+      "weight": 37.62499999999999,
+      "utilization": 0.6974637681159424,
+      "status": "OK"
+    },
+    {
+      "member": "BC3",
+      "force": 255.20833333333343,
+      "length": 4.166666666666668,
+      "section": "ISA 75×75×8",
+      "area": 11.5,
+      "weight": 37.62500000000001,
+      "utilization": 0.9764492753623193,
+      "status": "OK"
+    },
+    {
+      "member": "BC4",
+      "force": 328.1250000000001,
+      "length": 4.166666666666668,
+      "section": "ISA 100×100×10",
+      "area": 19.3,
+      "weight": 62.916666666666686,
+      "utilization": 0.7480569948186532,
+      "status": "OK"
+    },
+    {
+      "member": "BC5",
+      "force": 401.0416666666668,
+      "length": 4.166666666666664,
+      "section": "ISA 100×100×10",
+      "area": 19.3,
+      "weight": 62.91666666666663,
+      "utilization": 0.9142918825561317,
+      "status": "OK"
+    },
+    {
+      "member": "BC6",
+      "force": 401.0416666666667,
+      "length": 4.166666666666668,
+      "section": "ISA 100×100×10",
+      "area": 19.3,
+      "weight": 62.916666666666686,
+      "utilization": 0.9142918825561314,
+      "status": "OK"
+    },
+    {
+      "member": "BC7",
+      "force": 328.1250000000001,
+      "length": 4.166666666666668,
+      "section": "ISA 100×100×10",
+      "area": 19.3,
+      "weight": 62.916666666666686,
+      "utilization": 0.7480569948186532,
+      "status": "OK"
+    },
+    {
+      "member": "BC8",
+      "force": 255.20833333333326,
+      "length": 4.166666666666664,
+      "section": "ISA 75×75×8",
+      "area": 11.5,
+      "weight": 37.62499999999998,
+      "utilization": 0.9764492753623186,
+      "status": "OK"
+    },
+    {
+      "member": "BC9",
+      "force": 182.29166666666666,
+      "length": 4.166666666666671,
+      "section": "ISA 75×75×8",
+      "area": 11.5,
+      "weight": 37.62500000000004,
+      "utilization": 0.697463768115942,
+      "status": "OK"
+    },
+    {
+      "member": "BC10",
+      "force": 109.37500000000003,
+      "length": 4.166666666666664,
+      "section": "ISA 50×50×6",
+      "area": 5.7700000000000005,
+      "weight": 18.87499999999999,
+      "utilization": 0.8340554592720973,
+      "status": "OK"
+    },
+    {
+      "member": "BC11",
+      "force": 36.458333333333215,
+      "length": 4.166666666666664,
+      "section": "ISA 40×40×5",
+      "area": 3.79,
+      "weight": 12.374999999999993,
+      "utilization": 0.42326297273526686,
+      "status": "OK"
+    },
+    {
+      "member": "D0_UR",
+      "force": 487.1635974802923,
+      "length": 4.437929252408461,
+      "section": "ISA 125×125×10",
+      "area": 24.2,
+      "weight": 84.32065579576076,
+      "utilization": 0.8857519954187133,
+      "status": "OK"
+    },
+    {
+      "member": "D1_DR",
+      "force": -444.80154552548424,
+      "length": 4.437929252408461,
+      "section": "NONE",
+      "area": 0,
+      "weight": 0,
+      "utilization": 0,
+      "status": "FAILED"
+    },
+    {
+      "member": "D2_UR",
+      "force": 207.09861090981522,
+      "length": 5.605676686280712,
+      "section": "ISA 75×75×8",
+      "area": 11.5,
+      "weight": 50.61926047711483,
+      "utilization": 0.7923772939158148,
+      "status": "OK"
+    },
+    {
+      "member": "D3_DR",
+      "force": -185.29875712983474,
+      "length": 5.605676686280714,
+      "section": "NONE",
+      "area": 0,
+      "weight": 0,
+      "utilization": 0,
+      "status": "FAILED"
+    },
+    {
+      "member": "D4_UR",
+      "force": 144.05538214520138,
+      "length": 6.402461428675617,
+      "section": "ISA 65×65×6",
+      "area": 7.6000000000000005,
+      "weight": 38.15867011490668,
+      "utilization": 0.8340048439985344,
+      "status": "OK"
+    },
+    {
+      "member": "D5_DR",
+      "force": -124.84799785917448,
+      "length": 6.402461428675615,
+      "section": "NONE",
+      "area": 0,
+      "weight": 0,
+      "utilization": 0,
+      "status": "FAILED"
+    },
+    {
+      "member": "D6_UR",
+      "force": 105.64061357314768,
+      "length": 6.4024614286756165,
+      "section": "ISA 50×50×6",
+      "area": 5.7700000000000005,
+      "weight": 29.003150271900545,
+      "utilization": 0.8055783357397744,
+      "status": "OK"
+    },
+    {
+      "member": "D7_DR",
+      "force": -86.43322928712085,
+      "length": 6.4024614286756165,
+      "section": "NONE",
+      "area": 0,
+      "weight": 0,
+      "utilization": 0,
+      "status": "FAILED"
+    },
+    {
+      "member": "D8_UR",
+      "force": 76.29948822993188,
+      "length": 5.605676686280711,
+      "section": "ISA 40×40×5",
+      "area": 3.79,
+      "weight": 16.648859758253714,
+      "utilization": 0.8857988079464388,
+      "status": "OK"
+    },
+    {
+      "member": "D9_DR",
+      "force": -54.4996344499514,
+      "length": 5.605676686280716,
+      "section": "NONE",
+      "area": 0,
+      "weight": 0,
+      "utilization": 0,
+      "status": "FAILED"
+    },
+    {
+      "member": "D10_UR",
+      "force": 63.543077932212064,
+      "length": 4.437929252408458,
+      "section": "ISA 40×40×5",
+      "area": 3.79,
+      "weight": 13.18064987965312,
+      "utilization": 0.7377032794240979,
+      "status": "OK"
+    },
+    {
+      "member": "D11_DR",
+      "force": -21.181025977403948,
+      "length": 4.437929252408458,
+      "section": "ISA 125×125×10",
+      "area": 24.2,
+      "weight": 84.3206557957607,
+      "utilization": 0.2751799459409679,
+      "status": "OK"
+    }
+  ],
+  "validation": {
+    "passed": 1,
+    "warnings": 1,
+    "failed": 2
+  }
+}
