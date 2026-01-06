@@ -430,6 +430,44 @@ class AnalysisService {
     }
 
     /**
+     * Run non-linear analysis (P-Delta, Geometric Non-linearity)
+     */
+    async runNonLinearAnalysis(
+        model: ModelData,
+        settings: { type: 'p_delta' | 'geometric' | 'material'; iterations?: number; tolerance?: number },
+        token?: string | null
+    ): Promise<AnalysisResult> {
+        // Non-linear always runs on cloud due to complexity
+        try {
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            // Route to Python backend non-linear endpoint
+            const PYTHON_API_URL = import.meta.env.VITE_PYTHON_API_URL || 'http://localhost:8081';
+            const response = await fetch(`${PYTHON_API_URL}/analysis/nonlinear/run`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    model,
+                    settings
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                return { success: false, error: error.detail || 'Non-linear analysis failed' };
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Non-linear analysis error:', error);
+            return { success: false, error: error instanceof Error ? error.message : 'Network error' };
+        }
+    }
+
+    /**
      * Local model validation
      */
     private validateModelLocal(model: ModelData): { valid: boolean; errors: string[] } {

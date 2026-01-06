@@ -27,6 +27,7 @@ class DesignMember(BaseModel):
     cover: float = 25     # mm
 
 class ConcreteDesignRequest(BaseModel):
+    code: str = "IS456" # IS456 or ACI318-19
     members: List[DesignMember]
 
 # Response Models
@@ -54,6 +55,64 @@ class MemberResult(BaseModel):
 async def check_concrete_members(request: ConcreteDesignRequest):
     results = []
     
+    from design import DesignFactory, DesignMember as DesignMemberGeneric
+    
+    # Generic Code Path (ACI 318, etc)
+    if request.code != "IS456":
+        designer = DesignFactory.get_code(request.code)
+        if not designer:
+            raise HTTPException(status_code=400, detail=f"Design code {request.code} not supported")
+            
+        for m in request.members:
+            # Convert to generic member
+            gm = DesignMemberGeneric(
+                id=m.id,
+                section_name=f"{m.width}x{m.depth}",
+                section_properties={'width': m.width, 'depth': m.depth, 'area': m.width*m.depth},
+                length=m.length,
+                material={'fck': m.fck, 'yield_strength': m.fy},
+                forces={'P': m.forces.axial, 'Vy': m.forces.shearY, 'Vz': m.forces.shearZ, 'Mz': m.forces.momentZ, 'My': m.forces.momentY},
+                unbraced_length_major=m.length,
+                unbraced_length_minor=m.length,
+                unbraced_length_ltb=m.length,
+                effective_length_factor_major=m.effective_length_factor,
+                effective_length_factor_minor=m.effective_length_factor
+            )
+            
+            res = designer.check_member(gm)
+            
+            # Convert DesignResult to API MemberResult
+            api_checks = []
+            for k, v in res.ratios.items() if hasattr(res, 'ratios') else {}:
+                 # If DesignResult has ratios dict?
+                 # Wait, generic DesignResult has single 'ratio' and 'capacity' dict.
+                 # Let's just create one check
+                 pass
+            
+            # Since generic DesignResult structure is slightly different (one overall ratio),
+            # we adapt it.
+            api_checks = [
+                DesignCheckResult(
+                    name=res.governing_check,
+                    demand=0, # Detail not always exposed in top level
+                    capacity=0,
+                    ratio=res.ratio,
+                    unit="",
+                    status=res.status.lower()
+                )
+            ]
+            
+            results.append(MemberResult(
+                memberId=str(m.id),
+                status=res.status.lower(),
+                overallRatio=res.ratio,
+                checks=api_checks,
+                details={'log': res.calculation_log}
+            ))
+            
+        return results
+
+    # Existing IS456 Logic
     for m in request.members:
         try:
             designer = IS456Designer(fck=m.fck, fy=m.fy)

@@ -446,6 +446,154 @@ class StandardShapes:
         
         return CustomSection(points, name)
 
+    @staticmethod
+    def built_up_i(depth: float, top_width: float, bot_width: float, 
+                   web_thick: float, top_thick: float, bot_thick: float, 
+                   name: str = "Built-up I") -> CustomSection:
+        """Create Built-up I-section (Plate Girder)"""
+        d = depth
+        bft = top_width
+        bfb = bot_width
+        tw = web_thick
+        tft = top_thick
+        tfb = bot_thick
+        
+        # Centered vertically for initial points
+        y_bot = -d/2
+        y_top = d/2
+        
+        points = [
+            Point(-bfb/2, y_bot),
+            Point(bfb/2, y_bot),
+            Point(bfb/2, y_bot + tfb),
+            Point(tw/2, y_bot + tfb),
+            Point(tw/2, y_top - tft),
+            Point(bft/2, y_top - tft),
+            Point(bft/2, y_top),
+            Point(-bft/2, y_top),
+            Point(-bft/2, y_top - tft),
+            Point(-tw/2, y_top - tft),
+            Point(-tw/2, y_bot + tfb),
+            Point(-bfb/2, y_bot + tfb),
+        ]
+        
+        return CustomSection(points, name)
+
+    @staticmethod
+    def composite_beam(depth: float, width: float, web_thick: float, flange_thick: float,
+                       slab_width: float, slab_thick: float, modular_ratio: float = 8.0,
+                       name: str = "Composite Beam") -> CustomSection:
+        """
+        Create Composite Beam (I-section + Concrete Slab).
+        Transformed section method: Slab width reduced by modular ratio n.
+        """
+        # Steel I-Beam
+        d = depth
+        bf = width
+        tw = web_thick
+        tf = flange_thick
+        
+        # Effective slab width (transformed to steel)
+        be = slab_width / modular_ratio
+        ts = slab_thick
+        
+        # We model this as a single polygon for geometric properties.
+        # Note: This simplifies the interface (assuming monolithic). 
+        # Real composite action checks are more complex, but this gives geometric props.
+        
+        points = [
+            # I-Beam Bottom Flange
+            Point(-bf/2, 0),
+            Point(bf/2, 0),
+            Point(bf/2, tf),
+            # Web
+            Point(tw/2, tf),
+            Point(tw/2, d - tf),
+            # Top Flange
+            Point(bf/2, d - tf),
+            Point(bf/2, d),
+            # Slab (Transformed) - Sitting on top
+            Point(be/2, d),
+            Point(be/2, d + ts),
+            Point(-be/2, d + ts),
+            Point(-be/2, d),
+            # Top Flange (Left)
+            Point(-bf/2, d),
+            Point(-bf/2, d - tf),
+            # Web (Left)
+            Point(-tw/2, d - tf),
+            Point(-tw/2, tf),
+            # Bottom Flange (Left)
+            Point(-bf/2, tf),
+        ]
+        
+        return CustomSection(points, name)
+
+    @staticmethod
+    def lipped_channel(depth: float, width: float, thickness: float, lip: float,
+                       name: str = "Lipped Channel") -> CustomSection:
+        """Create Cold-Formed Lipped Channel (C-section with lips)"""
+        d = depth
+        b = width
+        t = thickness
+        c = lip
+        
+        # Outer dimensions
+        # Starting from bottom right lip tip, going CW
+        
+        # Simplified thin-walled centerline model or outer boundary?
+        # Using outer boundary for consistent Area calculation
+        
+        # Coordinates relative to bottom-left corner (0,0) roughly
+        
+        points = [
+            Point(b, d - c), # Top lip tip
+            Point(b - t, d - c),
+            Point(b - t, d - t),
+            Point(t, d - t),
+            Point(t, t),
+            Point(b - t, t),
+            Point(b - t, c),
+            Point(b, c),
+            Point(b, 0),# Bottom outer corner
+            Point(0, 0), # Bottom left outer
+            Point(0, d), # Top left outer
+            Point(b, d) # Top right outer
+        ]
+        
+        # Re-ordering to be valid CCW polygon
+        # Let's trace carefully:
+        # Start Bottom-Right Outer (b, 0)
+        # Top-Right Outer (b, d)
+        # Top-Left Outer (0, d)
+        # Bottom-Left Outer (0, 0)
+        # ... Wait, C-shape is open. CustomSection requires closed polygon.
+        # This defines the solid cross-section area.
+        
+        points = [
+            Point(b, 0),          # 1. Bottom Right Outer
+            Point(b, c),          # 2. Bottom Lip Tip Outer
+            Point(b - t, c),      # 3. Bottom Lip Tip Inner
+            Point(b - t, t),      # 4. Bottom Flange Inner
+            Point(t, t),          # 5. Web Inner Bottom
+            Point(t, d - t),      # 6. Web Inner Top
+            Point(b - t, d - t),  # 7. Top Flange Inner
+            Point(b - t, d - c),  # 8. Top Lip Tip Inner
+            Point(b, d - c),      # 9. Top Lip Tip Outer
+            Point(b, d),          # 10. Top Right Outer
+            Point(0, d),          # 11. Top Left Outer
+            Point(0, 0)           # 12. Bottom Left Outer
+        ]
+        
+        # Reverse to ensure CCW (Standard is CCW)
+        # Current (0,0) -> (b,0) is CCW? No.
+        # (0,0) is bottom-left. (b,0) is bottom-right.
+        # This path (1->12) goes 1(BR) -> ... -> 12(BL). This is Clockwise around the shape.
+        # So we reverse it.
+        points.reverse()
+        
+        return CustomSection(points, name)
+
 
 # Example usage
 if __name__ == "__main__":

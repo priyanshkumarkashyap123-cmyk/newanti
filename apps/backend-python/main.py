@@ -988,16 +988,48 @@ async def create_standard_section(request: StandardSectionRequest):
                 flange_thick=dims['flange_thickness'],
                 name=request.name or f"Tee {dims['width']}x{dims['depth']}"
             )
+            
+        elif shape_type == "built_up_i":
+            section = StandardShapes.built_up_i(
+                depth=dims['depth'],
+                top_width=dims['top_width'],
+                bot_width=dims['bot_width'],
+                web_thick=dims['web_thickness'],
+                top_thick=dims['top_thickness'],
+                bot_thick=dims['bot_thickness'],
+                name=request.name or "Built-up I-Section"
+            )
+
+        elif shape_type == "composite_beam":
+            section = StandardShapes.composite_beam(
+                depth=dims['depth'],
+                width=dims['width'],
+                web_thick=dims['web_thickness'],
+                flange_thick=dims['flange_thickness'],
+                slab_width=dims['slab_width'],
+                slab_thick=dims['slab_thickness'],
+                modular_ratio=dims.get('modular_ratio', 8.0),
+                name=request.name or "Composite Beam"
+            )
+
+        elif shape_type == "lipped_channel":
+            section = StandardShapes.lipped_channel(
+                depth=dims['depth'],
+                width=dims['width'],
+                thickness=dims['thickness'],
+                lip=dims['lip'],
+                name=request.name or "Lipped Channel"
+            )
         
         else:
             raise HTTPException(
                 status_code=400, 
                 detail=f"Unknown shape type: {shape_type}. "
-                       f"Available: i_beam, channel, angle, rectangular, circular, tee"
+                       f"Available: i_beam, channel, angle, rectangular, circular, tee, built_up_i, composite_beam, lipped_channel"
             )
         
         # Get all properties
-        properties = section.get_all_properties()
+        properties = section.get_all_properties(request.material_density or 7850.0)
         
         return {
             "success": True,
@@ -1010,10 +1042,7 @@ async def create_standard_section(request: StandardSectionRequest):
         }
     
     except KeyError as e:
-        raise HTTPException(
-            status_code=400, 
-            detail=f"Missing required dimension: {e}"
-        )
+        raise HTTPException(status_code=400, detail=f"Missing dimension: {str(e)}")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except HTTPException:

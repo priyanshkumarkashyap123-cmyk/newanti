@@ -66,6 +66,9 @@ export function SectionDesignerDialog({ open, onClose, onSave }: SectionDesigner
         { value: 'rectangular', label: 'Rectangle' },
         { value: 'circular', label: 'Circle' },
         { value: 'tee', label: 'T-Section' },
+        { value: 'built_up_i', label: 'Built-up I-Section (Plate Girder)' },
+        { value: 'composite_beam', label: 'Composite Beam (Steel+Concrete)' },
+        { value: 'lipped_channel', label: 'Lipped Channel (Cold Formed)' },
     ];
 
     // Dimension fields for each shape type
@@ -100,6 +103,29 @@ export function SectionDesignerDialog({ open, onClose, onSave }: SectionDesigner
             { name: 'web_thickness', label: 'Web Thickness', unit: 'mm' },
             { name: 'flange_thickness', label: 'Flange Thickness', unit: 'mm' },
         ],
+        built_up_i: [
+            { name: 'depth', label: 'Total Depth', unit: 'mm' },
+            { name: 'top_width', label: 'Top Fl Width', unit: 'mm' },
+            { name: 'bot_width', label: 'Bot Fl Width', unit: 'mm' },
+            { name: 'web_thickness', label: 'Web Thick', unit: 'mm' },
+            { name: 'top_thickness', label: 'Top Fl Thick', unit: 'mm' },
+            { name: 'bot_thickness', label: 'Bot Fl Thick', unit: 'mm' },
+        ],
+        composite_beam: [
+            { name: 'depth', label: 'Steel Depth', unit: 'mm' },
+            { name: 'width', label: 'Steel Fl Width', unit: 'mm' },
+            { name: 'web_thickness', label: 'Web Thick', unit: 'mm' },
+            { name: 'flange_thickness', label: 'Flange Thick', unit: 'mm' },
+            { name: 'slab_width', label: 'Slab Width', unit: 'mm' },
+            { name: 'slab_thickness', label: 'Slab Thick', unit: 'mm' },
+            { name: 'modular_ratio', label: 'Mod Ratio (n)', unit: '' }
+        ],
+        lipped_channel: [
+            { name: 'depth', label: 'Depth', unit: 'mm' },
+            { name: 'width', label: 'Width', unit: 'mm' },
+            { name: 'thickness', label: 'Thickness', unit: 'mm' },
+            { name: 'lip', label: 'Lip Length', unit: 'mm' },
+        ]
     };
 
     // Calculate section properties
@@ -237,6 +263,9 @@ export function SectionDesignerDialog({ open, onClose, onSave }: SectionDesigner
             rectangular: { width: 200, depth: 400 },
             circular: { diameter: 200 },
             tee: { width: 150, depth: 200, web_thickness: 8, flange_thickness: 12 },
+            built_up_i: { depth: 500, top_width: 250, bot_width: 250, web_thickness: 10, top_thickness: 16, bot_thickness: 16 },
+            composite_beam: { depth: 400, width: 200, web_thickness: 8, flange_thickness: 14, slab_width: 1000, slab_thickness: 120, modular_ratio: 8 },
+            lipped_channel: { depth: 200, width: 75, thickness: 2, lip: 20 },
         };
 
         setDimensions(defaults[shapeType] || {});

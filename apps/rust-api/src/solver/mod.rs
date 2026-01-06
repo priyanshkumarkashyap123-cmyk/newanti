@@ -26,6 +26,7 @@ use std::time::Instant;
 pub mod cable;
 pub mod pdelta;
 pub mod dynamics;
+pub mod seismic;
 
 // Re-export key types
 pub use cable::{CableElement, CableMaterial};
@@ -34,6 +35,11 @@ pub use dynamics::{
     ModalSolver, ModalConfig, ModalResult, MassMatrixType,
     TimeHistorySolver, TimeHistoryConfig, TimeHistoryResult,
     DampingModel, IntegrationMethod,
+};
+pub use seismic::{
+    ResponseSpectrumSolver, ResponseSpectrumConfig, ResponseSpectrumResult,
+    SeismicCode, SeismicZone, SoilType, ImportanceFactor, ResponseReduction,
+    CombinationMethod, StoryForce,
 };
 
 /// Input node for analysis

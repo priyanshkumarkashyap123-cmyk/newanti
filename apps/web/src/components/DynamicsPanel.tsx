@@ -23,6 +23,8 @@ export function DynamicsPanel() {
     const [importance, setImportance] = useState(1.0);
     const [reduction, setReduction] = useState(5.0); // SMRF
     const [soil, setSoil] = useState(2); // Medium
+    const [scaleX, setScaleX] = useState(1.0);
+    const [scaleZ, setScaleZ] = useState(1.0);
     const [seismicResult, setSeismicResult] = useState<any>(null);
 
     const handleRunAnalysis = async () => {
@@ -51,7 +53,7 @@ export function DynamicsPanel() {
         if (!results) return;
         try {
             const res = await ClientDesignService.runResponseSpectrum(results, {
-                zone, importance, reduction, soil
+                zone, importance, reduction, soil, scaleX, scaleZ
             });
             if (res && res.success) {
                 setSeismicResult(res);
@@ -176,6 +178,14 @@ export function DynamicsPanel() {
                                             <SelectItem value="3">Soft</SelectItem>
                                         </SelectContent>
                                     </Select>
+                                </div>
+                                <div>
+                                    <Label>Scale X</Label>
+                                    <Input type="number" step="0.1" value={scaleX} onChange={e => setScaleX(parseFloat(e.target.value))} />
+                                </div>
+                                <div>
+                                    <Label>Scale Z</Label>
+                                    <Input type="number" step="0.1" value={scaleZ} onChange={e => setScaleZ(parseFloat(e.target.value))} />
                                 </div>
                             </div>
 

@@ -103,6 +103,14 @@ export class ClientDesignService {
                 params.reduction,
                 params.soil
             );
+
+            // Apply direction scaling factors (Post-processing)
+            // Ideally this should be in the solver, but we apply it here for now
+            if (res && res.success) {
+                if (params.scaleX !== undefined) res.base_shear_x *= params.scaleX;
+                if (params.scaleZ !== undefined) res.base_shear_z *= params.scaleZ;
+            }
+
             return res;
         } catch (e) {
             console.error("Seismic Analysis Failed:", e);
