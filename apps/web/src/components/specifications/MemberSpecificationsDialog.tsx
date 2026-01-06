@@ -90,14 +90,19 @@ export const MemberSpecificationsDialog: FC<MemberSpecificationsDialogProps> = (
             });
         }
 
+        const updates = new Map();
         idsToUpdate.forEach(id => {
-            updateMember(id, {
+            updates.set(id, {
                 releases: { ...releases },
                 startOffset: { ...offsets.start },
                 endOffset: { ...offsets.end },
                 betaAngle
             });
         });
+
+        // Batch update
+        const updateMembers = useModelStore.getState().updateMembers;
+        updateMembers(updates);
 
         onClose();
     };

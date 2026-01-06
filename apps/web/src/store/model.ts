@@ -255,8 +255,12 @@ interface ModelState {
     removeMember: (id: string) => void;
     addNodes: (nodes: Node[]) => void;      // Bulk add nodes
     addMembers: (members: Member[]) => void; // Bulk add members
+    updateNodes: (updates: Map<string, Partial<Node>>) => void; // Batch update nodes
+    updateMembers: (updates: Map<string, Partial<Member>>) => void; // Batch update members
     splitMemberById: (memberId: string, ratio: number) => void; // Insert node in member
     mergeNodes: (nodeId1: string, nodeId2: string) => void; // Merge two nodes
+    renumberNodes: () => void; // Renumber all nodes from N1
+    renumberMembers: () => void; // Renumber all members from M1
 }
 
 // Helper to convert Map to Record for DevTools display
@@ -466,6 +470,34 @@ export const useModelStore = create<ModelState>()(
                         const newNodes = new Map(state.nodes);
                         newNodes.set(id, { ...node, ...updates });
                         return { nodes: newNodes };
+                    }),
+
+                updateNodes: (updates) =>
+                    set((state) => {
+                        const newNodes = new Map(state.nodes);
+                        let changed = false;
+                        updates.forEach((update, id) => {
+                            const node = newNodes.get(id);
+                            if (node) {
+                                newNodes.set(id, { ...node, ...update });
+                                changed = true;
+                            }
+                        });
+                        return changed ? { nodes: newNodes } : state;
+                    }),
+
+                updateMembers: (updates) =>
+                    set((state) => {
+                        const newMembers = new Map(state.members);
+                        let changed = false;
+                        updates.forEach((update, id) => {
+                            const member = newMembers.get(id);
+                            if (member) {
+                                newMembers.set(id, { ...member, ...update });
+                                changed = true;
+                            }
+                        });
+                        return changed ? { members: newMembers } : state;
                     }),
 
                 // ============================================
@@ -931,9 +963,106 @@ export const useModelStore = create<ModelState>()(
                             }
                         });
 
-                        return { nodes: newNodes, members: newMembers };
                     })
+            }),
+
+            renumberNodes: () =>
+            set((state) => {
+                const sortedNodes = Array.from(state.nodes.values()).sort((a, b) => {
+                    if (Math.abs(a.y - b.y) > 0.001) return a.y - b.y; // Y (Elevation) first
+                    if (Math.abs(a.z - b.z) > 0.001) return a.z - b.z; // Then Z
+                    return a.x - b.x; // Then X
+                });
+
+                const newNodes = new Map<string, Node>();
+                const idMap = new Map<string, string>(); // old -> new
+                const newSelected = new Set(state.selectedIds);
+                let counter = 1;
+
+                // Renumber nodes
+                sortedNodes.forEach(node => {
+                    const newId = `N${counter++}`;
+                    idMap.set(node.id, newId);
+                    newNodes.set(newId, { ...node, id: newId });
+
+                    // Update selection
+                    if (state.selectedIds.has(node.id)) {
+                        newSelected.delete(node.id);
+                        newSelected.add(newId);
+                    }
+                });
+
+                // Update member references
+                const newMembers = new Map(state.members);
+                newMembers.forEach((member, mId) => {
+                    const newStart = idMap.get(member.startNodeId);
+                    const newEnd = idMap.get(member.endNodeId);
+                    if (newStart && newEnd) {
+                        newMembers.set(mId, {
+                            ...member,
+                            startNodeId: newStart,
+                            endNodeId: newEnd
+                        });
+                    }
+                });
+
+                // Update nodal loads
+                const newLoads = state.loads.map(load => ({
+                    ...load,
+                    nodeId: idMap.get(load.nodeId) || load.nodeId
+                }));
+
+                return {
+                    nodes: newNodes,
+                    members: newMembers,
+                    loads: newLoads,
+                    selectedIds: newSelected,
+                    nextNodeNumber: counter,
+                    analysisResults: null // Invalidate results
+                };
+            }),
+
+            renumberMembers: () =>
+            set((state) => {
+                // Sort by start node ID number (heuristic)
+                const sortedMembers = Array.from(state.members.values()).sort((a, b) => {
+                    // Extract number from N1, N2...
+                    const n1 = parseInt(a.startNodeId.substring(1)) || 0;
+                    const n2 = parseInt(b.startNodeId.substring(1)) || 0;
+                    return n1 - n2;
+                });
+
+                const newMembers = new Map<string, Member>();
+                const idMap = new Map<string, string>();
+                const newSelected = new Set(state.selectedIds);
+                let counter = 1;
+
+                sortedMembers.forEach(member => {
+                    const newId = `M${counter++}`;
+                    idMap.set(member.id, newId);
+                    newMembers.set(newId, { ...member, id: newId });
+
+                    if (state.selectedIds.has(member.id)) {
+                        newSelected.delete(member.id);
+                        newSelected.add(newId);
+                    }
+                });
+
+                // Update member loads
+                const newMemberLoads = state.memberLoads.map(load => ({
+                    ...load,
+                    memberId: idMap.get(load.memberId) || load.memberId
+                }));
+
+                return {
+                    members: newMembers,
+                    memberLoads: newMemberLoads,
+                    selectedIds: newSelected,
+                    nextMemberNumber: counter,
+                    analysisResults: null
+                };
             })
+
         ),
         {
             name: 'StructuralModel',

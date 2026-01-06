@@ -715,3 +715,7 @@ mod tests {
 pub mod cable;
 pub use cable::{CableMaterial, CableElement, CableSystem};
 
+// P-Delta analysis module
+pub mod pdelta;
+pub use pdelta::{PDeltaSolver, PDeltaConfig, PDeltaResult, MemberGeometry, ConvergenceCriteria};
+

@@ -111,10 +111,15 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
 
         if (!restraintsToApply) return;
 
-        // Apply to all selected nodes
+        // Prepare batch updates
+        const updates = new Map();
         selectedNodes.forEach(node => {
-            updateNode(node.id, { restraints: { ...restraintsToApply } });
+            updates.set(node.id, { restraints: { ...restraintsToApply } });
         });
+
+        // Batch update
+        const updateNodes = useModelStore.getState().updateNodes;
+        updateNodes(updates);
 
         onClose();
     };
@@ -172,8 +177,8 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
                                             key={type}
                                             onClick={() => setSelectedType(type)}
                                             className={`p-4 rounded-lg border-2 transition-all text-left ${selectedType === type
-                                                    ? 'border-blue-500 bg-blue-500/20 shadow-lg shadow-blue-500/20'
-                                                    : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
+                                                ? 'border-blue-500 bg-blue-500/20 shadow-lg shadow-blue-500/20'
+                                                : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-3">
@@ -287,8 +292,8 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
                         onClick={handleApply}
                         disabled={!hasSelection}
                         className={`px-6 py-2 rounded-lg font-medium transition-all ${hasSelection
-                                ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30'
-                                : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                            ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30'
+                            : 'bg-slate-700 text-slate-500 cursor-not-allowed'
                             }`}
                     >
                         Apply to {selectedNodes.length} Node{selectedNodes.length !== 1 ? 's' : ''}

@@ -502,6 +502,128 @@ pub mod is_875 {
 }
 
 // ============================================
+// AISC 360-16 - STEEL DESIGN (LRFD)
+// ============================================
+
+pub mod aisc360 {
+    use super::*;
+    use std::f64::consts::PI;
+
+    #[derive(Serialize, Deserialize, Debug, Clone)]
+    pub struct AISCSection {
+        pub area: f64,    // in²
+        pub d: f64,       // depth (in)
+        pub bf: f64,      // flange width (in)
+        pub tw: f64,      // web thickness (in)
+        pub tf: f64,      // flange thickness (in)
+        pub rx: f64,      // radius of gyration x (in)
+        pub ry: f64,      // radius of gyration y (in)
+        pub zx: f64,      // plastic modulus x (in³)
+        pub zy: f64,      // plastic modulus y (in³)
+        pub sx: f64,      // elastic modulus x (in³)
+        pub sy: f64,      // elastic modulus y (in³)
+        pub j: f64,       // torsional constant (in⁴)
+        pub cw: f64,      // warping constant (in⁶)
+    }
+
+    /// LRFD Resistance Factors
+    const PHI_T: f64 = 0.90; // Tension
+    const PHI_C: f64 = 0.90; // Compression
+    const PHI_B: f64 = 0.90; // Flexure
+    const PHI_V: f64 = 0.90; // Shear
+
+    /// Tension Capacity (phiPn) - Yielding (Chapter D)
+    pub fn tension_yielding(ag: f64, fy: f64) -> f64 {
+        PHI_T * fy * ag
+    }
+
+    /// Compression Capacity (phiPn) - Flexural Buckling (Chapter E)
+    pub fn compression_capacity(
+        section: &AISCSection, 
+        fy: f64, 
+        E: f64, 
+        lc_x: f64, // Effective length x (in)
+        lc_y: f64  // Effective length y (in)
+    ) -> f64 {
+        // E3. Flexural Buckling
+        let slenderness_x = lc_x / section.rx;
+        let slenderness_y = lc_y / section.ry;
+        let lc_r = slenderness_x.max(slenderness_y);
+
+        let fe = (PI.powi(2) * E) / lc_r.powi(2);
+
+        let fcr = if lc_r <= 4.71 * (E / fy).sqrt() {
+            // Inelastic buckling
+            (0.658f64.powf(fy / fe)) * fy
+        } else {
+            // Elastic buckling
+            0.877 * fe
+        };
+
+        PHI_C * fcr * section.area
+    }
+
+    /// Flexural Capacity (phiMn) - Major Axis (Chapter F)
+    /// Assumes Compact Doubly Symmetric I-Shape
+    pub fn flexural_capacity_major(
+        section: &AISCSection,
+        fy: f64,
+        E: f64,
+        lb: f64, // Unbraced length (in)
+        cb: f64
+    ) -> f64 {
+        // F2. Yielding (Plastic Moment)
+        let mp = fy * section.zx;
+        
+        // Lateral-Torsional Buckling (LTB)
+        // Limiting lengths Lp and Lr
+        let rts = (section.ry.sqrt() * section.cw.sqrt()).sqrt() / 0.8; // Approx if rts not given? 
+        // Accurate rts formula: sqrt(sqrt(Iy*Cw)/Sx) ? No, rts^2 = sqrt(IyCw)/Sx is approx
+        // Let's use simplified rts approx if not passed: rts approx 1.25 Ry roughly for W-shapes.
+        // Actually we can compute rts from properties if we had I_y and Cw.
+        // rts = sqrt( sqrt(Iy * Cw) / Sx )
+        // Using property struct directly.
+        // But Section struct above has Cw. So use it.
+        // Note: Iy = Ay * ry^2 ... we have ry.
+        let iy = section.area * section.ry.powi(2); // very rough approx if Ay not separate? Ah, ry is for whole section.
+        let rts_sq = (iy * section.cw).sqrt() / section.sx;
+        let rts = rts_sq.sqrt(); 
+
+        let lp = 1.76 * section.ry * (E / fy).sqrt();
+        
+        let h0 = section.d - section.tf; // dist between flange centroids approx
+        let j = section.j;
+        let sx = section.sx;
+        
+        // Lr formula (F2-6)
+        let c = 1.0; // For doubly symmetric I-shape
+        let term1 = 1.95 * rts * (E / (0.7 * fy));
+        let term2 = (j * c) / (sx * h0);
+        let term3 = (j * c / (sx * h0)).powi(2) + 6.76 * (0.7 * fy / E).powi(2);
+        let lr = term1 * (term2 + term3.sqrt()).sqrt();
+
+        let mn = if lb <= lp {
+            // Zone 1: Plastic yielding
+            mp
+        } else if lb > lr {
+            // Zone 3: Elastic LTB
+            let fcr = (cb * PI.powi(2) * E) / (lb / rts).powi(2) * 
+                     (1.0 + 0.078 * (j * c / (sx * h0)) * (lb / rts).powi(2)).sqrt();
+            fcr * sx
+        } else {
+            // Zone 2: Inelastic LTB
+            // Mn = Cb * [Mp - (Mp - 0.7FySx)((Lb-Lp)/(Lr-Lp))] <= Mp
+            let factor = (lb - lp) / (lr - lp);
+            let m_residual = 0.7 * fy * sx;
+            cb * (mp - (mp - m_residual) * factor)
+        };
+
+        let mn_final = mn.min(mp);
+        PHI_B * mn_final
+    }
+}
+
+// ============================================
 // WASM BINDINGS
 // ============================================
 
@@ -541,4 +663,30 @@ pub fn calculate_seismic_base_shear(
     let sa_g = is_1893::spectral_acceleration(period, soil_enum, 0.05);
     let ah = is_1893::design_horizontal_coefficient(zone_enum, importance, r_factor, sa_g);
     is_1893::base_shear(ah, weight)
+}
+
+#[wasm_bindgen]
+pub fn calculate_aisc_capacity(
+    d: f64, bf: f64, tw: f64, tf: f64, 
+    rx: f64, ry: f64, zx: f64, zy: f64, sx: f64, sy: f64,
+    j: f64, cw: f64, ag: f64,
+    fy: f64, E: f64,
+    lb: f64, lc_x: f64, lc_y: f64, cb: f64
+) -> JsValue {
+    let section = aisc360::AISCSection {
+        d, bf, tw, tf, rx, ry, zx, zy, sx, sy, j, cw, area: ag
+    };
+    
+    let pn_comp = aisc360::compression_capacity(&section, fy, E, lc_x, lc_y);
+    let mn_flex = aisc360::flexural_capacity_major(&section, fy, E, lb, cb);
+    let pn_tens = aisc360::tension_yielding(ag, fy);
+    
+    // Return Object { Pn_c, Mn, Pn_t }
+    let result = serde_json::json!({
+        "Pn_compression": pn_comp,
+        "Mn_major": mn_flex,
+        "Pn_tension": pn_tens
+    });
+    
+    serde_wasm_bindgen::to_value(&result).unwrap()
 }

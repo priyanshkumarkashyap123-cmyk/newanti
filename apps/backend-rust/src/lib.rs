@@ -9,7 +9,11 @@ use serde_wasm_bindgen;
 use serde::{Deserialize, Serialize};
 
 // Re-export design code calculations
-pub use design_codes::{calculate_beam_capacity, calculate_seismic_base_shear};
+pub use design_codes::{
+    calculate_beam_capacity, 
+    calculate_seismic_base_shear,
+    calculate_aisc_capacity 
+};
 
 #[wasm_bindgen]
 extern "C" {
@@ -130,22 +134,55 @@ pub fn solve_3d_frame(
 
 /// Modal analysis for dynamic properties
 #[wasm_bindgen]
+/// Modal analysis for dynamic properties
+#[wasm_bindgen]
 pub fn modal_analysis(nodes_val: JsValue, elements_val: JsValue, num_modes: usize) -> JsValue {
     let nodes: Vec<solver_3d::Node3D> = match serde_wasm_bindgen::from_value(nodes_val) {
         Ok(v) => v,
-        Err(e) => return JsValue::from_str(&format!("Error: {}", e)),
+        Err(e) => return JsValue::from_str(&format!("Error parsing nodes: {}", e)),
     };
     
     let elements: Vec<solver_3d::Element3D> = match serde_wasm_bindgen::from_value(elements_val) {
         Ok(v) => v,
-        Err(e) => return JsValue::from_str(&format!("Error: {}", e)),
+        Err(e) => return JsValue::from_str(&format!("Error parsing elements: {}", e)),
     };
     
+    // Call the solver
     match solver_3d::modal_analysis(nodes, elements, num_modes) {
-        Ok(result) => serde_wasm_bindgen::to_value(&result)
-            .unwrap_or_else(|e| JsValue::from_str(&format!("Error: {}", e))),
-        Err(e) => JsValue::from_str(&format!("Error: {}", e)),
+        Ok(result) => {
+             match serde_wasm_bindgen::to_value(&result) {
+                 Ok(val) => val,
+                 Err(e) => JsValue::from_str(&format!("Error serializing modal result: {}", e)),
+             }
+        },
+        Err(e) => JsValue::from_str(&format!("Modal Analysis Error: {}", e)),
     }
+}
+
+/// Response Spectrum Analysis (Seismic)
+#[wasm_bindgen]
+pub fn solve_response_spectrum(
+    modal_result_val: JsValue,
+    zone_factor: f64,
+    importance_factor: f64,
+    response_reduction: f64,
+    soil_type: u8
+) -> JsValue {
+    let modal_results: crate::dynamics::ModalResult = match serde_wasm_bindgen::from_value(modal_result_val) {
+        Ok(v) => v,
+        Err(e) => return JsValue::from_str(&format!("Error parsing modal results: {}", e)),
+    };
+    
+    let result = crate::dynamics::calculate_response_spectrum(
+        &modal_results,
+        zone_factor,
+        importance_factor,
+        response_reduction,
+        soil_type
+    );
+    
+    serde_wasm_bindgen::to_value(&result)
+        .unwrap_or_else(|e| JsValue::from_str(&format!("Error serializing seismic result: {}", e)))
 }
 
 /// P-Delta analysis (stub for backward compatibility)
@@ -176,11 +213,13 @@ pub fn analyze_buckling(
 #[wasm_bindgen]
 pub fn get_solver_info() -> String {
     r#"{
-        "version": "2.0.0-rust",
+        "version": "2.1.0-rust-hybrid",
         "capabilities": [
             "2D frame analysis",
             "3D frame analysis",
-            "Modal analysis",
+            "Plate/Shell Finite Elements (DKQ)",
+            "AISC 360-16 LRFD Design",
+            "Indian Standard Design (IS456/IS800)",
             "Direct stiffness method",
             "LU decomposition solver"
         ]
