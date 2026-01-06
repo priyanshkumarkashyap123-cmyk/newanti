@@ -20,7 +20,9 @@ import {
     Database,
     Crown,
     Activity,
-    Cpu
+    Cpu,
+    Anchor,
+    Weight
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useModelStore } from '../../store/model';
@@ -122,8 +124,12 @@ export const EngineeringRibbon: FC<RibbonProps> = ({ activeCategory }) => {
             </ToolGroup>
 
             <ToolGroup label="Selection">
-                <ToolButton icon={MousePointer2} label="Node Cursor" onClick={() => setTool('select')} isActive={activeTool === 'select'} />
-                <ToolButton icon={Move3d} label="Beam Cursor" onClick={() => setTool('select')} isActive={activeTool === 'select'} />
+                <ToolButton icon={MousePointer2} label="Select" onClick={() => setTool('select')} isActive={activeTool === 'select'} shortcut="V" />
+                <ToolButton icon={Grid} label="Advanced" onClick={() => openModal('selectionToolbar')} tooltip="Selection Toolbar" />
+            </ToolGroup>
+
+            <ToolGroup label="Supports">
+                <ToolButton icon={Anchor} label="Boundary" onClick={() => openModal('boundaryConditionsDialog')} tooltip="Boundary Conditions" />
             </ToolGroup>
         </>
     );
@@ -147,6 +153,9 @@ export const EngineeringRibbon: FC<RibbonProps> = ({ activeCategory }) => {
             <ToolGroup label="Apply">
                 <ToolButton icon={Download} label="Nodal Load" onClick={() => setTool('load')} isActive={activeTool === 'load'} />
                 <ToolButton icon={Spline} label="Member Load" onClick={() => setTool('memberLoad')} isActive={activeTool === 'memberLoad'} />
+            </ToolGroup>
+            <ToolGroup label="Generate">
+                <ToolButton icon={Weight} label="Dead Load" onClick={() => openModal('deadLoadGenerator')} tooltip="Dead Load Generator" />
             </ToolGroup>
         </>
     );

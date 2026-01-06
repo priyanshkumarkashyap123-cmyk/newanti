@@ -9,7 +9,7 @@ import {
     BarChart3,
     Ruler
 } from 'lucide-react';
-import { Category } from '../../store/uiStore';
+import { Category, useUIStore } from '../../store/uiStore';
 
 interface WorkflowSidebarProps {
     activeCategory: Category;
@@ -21,13 +21,14 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
     activeCategory,
     onCategoryChange
 }) => {
+    const { openModal } = useUIStore();
 
     const workflowItems = [
         { id: 'MODELING', label: 'Geometry', icon: Box, subtext: 'Nodes & Beams' },
         { id: 'PROPERTIES', label: 'Properties', icon: Layers, subtext: 'Sections' },
         { id: 'MATERIALS', label: 'Materials', icon: Database, subtext: 'Concrete/Steel' }, // New category mapping needed
         { id: 'SPECS', label: 'Specifications', icon: Settings, subtext: 'Releases' },      // New category mapping needed
-        { id: 'SUPPORTS', label: 'Supports', icon: Anchor, subtext: 'Restraints' },         // New category mapping needed
+        { id: 'SUPPORTS', label: 'Supports', icon: Anchor, subtext: 'Restraints' },         // NEW: Opens boundary dialog
         { id: 'LOADING', label: 'Loading', icon: Download, subtext: 'Load Cases' },
         { id: 'ANALYSIS', label: 'Analysis', icon: BarChart3, subtext: 'Run Solver' },
         { id: 'DESIGN', label: 'Design', icon: Ruler, subtext: 'Code Check' },
@@ -35,6 +36,12 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
 
     // Helper to map UI ID to Store Category
     const handleClick = (id: string) => {
+        // Special handling for SUPPORTS - opens boundary conditions dialog
+        if (id === 'SUPPORTS') {
+            openModal('boundaryConditionsDialog');
+            return;
+        }
+
         // Map specific workflow steps to general store categories for now
         // This preserves compatibility while giving granular UI
         let category: Category = 'MODELING';
@@ -44,7 +51,6 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
             case 'PROPERTIES':
             case 'MATERIALS':
             case 'SPECS':
-            case 'SUPPORTS':
                 category = 'PROPERTIES'; break;
             case 'LOADING': category = 'LOADING'; break;
             case 'ANALYSIS': category = 'ANALYSIS'; break;
