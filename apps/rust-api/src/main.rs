@@ -91,6 +91,8 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/analysis/modal", post(handlers::analysis::modal_analysis))
         .route("/api/analysis/time-history", post(handlers::analysis::time_history_analysis))
         .route("/api/analysis/seismic", post(handlers::analysis::seismic_analysis))
+        // OpenAPI spec route for clients/tools
+        .route("/api/openapi.yaml", get(handlers::openapi::serve_openapi))
         
         // Legacy advanced analysis endpoints
         .route("/api/advanced/pdelta", post(handlers::advanced::pdelta_analysis))

@@ -7,3 +7,4 @@ pub mod structures;
 pub mod sections;
 pub mod design;
 pub mod metrics;
+pub mod openapi;
