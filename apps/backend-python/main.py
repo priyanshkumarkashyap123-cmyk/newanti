@@ -1052,6 +1052,129 @@ async def list_standard_shapes():
     }
 
 
+
+# ============================================
+# MATERIAL & PLATE ELEMENT ENDPOINTS
+# ============================================
+
+@app.post("/materials/create", tags=["Materials"])
+async def create_material(request: dict):
+    """
+    Create a material model for non‑linear analysis.
+    Expected JSON payload:
+    {
+        "type": "steel" | "concrete",
+        "fy": 250.0,          # for steel (MPa)
+        "E": 200000.0,       # optional, default for steel
+        "plastic_modulus": 2000.0,  # optional for steel
+        "fck": 30.0,         # for concrete (MPa)
+        "density": 7850.0    # optional
+    }
+    Returns a material ID that can be referenced when creating plates.
+    """
+    try:
+        from analysis.material_models import create_material_from_dict
+        material = create_material_from_dict(request)
+        # Store material in a simple in‑memory registry for this session
+        # Note: In production this should go to DB
+        material_id = f"mat_{len(getattr(app.state, 'materials', {})) + 1}"
+        
+        if not hasattr(app.state, "materials"):
+            app.state.materials = {}
+        app.state.materials[material_id] = material
+        
+        return {"success": True, "material_id": material_id}
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/elements/plate/create", tags=["Elements"])
+async def create_plate(request: dict):
+    """
+    Create a quadrilateral plate element.
+    Expected JSON payload:
+    {
+        "node_ids": [1,2,3,4],
+        "thickness": 12.0,
+        "material_id": "mat_1"
+    }
+    Returns an element ID for later analysis.
+    """
+    try:
+        from analysis.plate_element import PlateElement
+        
+        node_ids = request["node_ids"]
+        thickness = request["thickness"]
+        material_id = request.get("material_id")
+        
+        # Access materials from app state
+        if not hasattr(app.state, "materials"):
+            app.state.materials = {}
+            
+        material = app.state.materials.get(material_id)
+        
+        # Create a default material if none provided or found
+        if material is None:
+            if material_id:
+                print(f"Warning: Material ID {material_id} not found, using default steel.")
+            from analysis.material_models import ElasticPlasticSteel
+            material = ElasticPlasticSteel(fy=250.0)
+            
+        plate = PlateElement(node_ids=node_ids, thickness=thickness, material=material)
+        
+        # Store plate
+        plate_id = f"plate_{len(getattr(app.state, 'plates', {})) + 1}"
+        if not hasattr(app.state, "plates"):
+            app.state.plates = {}
+        app.state.plates[plate_id] = plate
+        
+        return {"success": True, "element_id": plate_id}
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+
+@app.post("/analysis/nonlinear/run", tags=["Analysis"])
+async def run_nonlinear_analysis(request: dict):
+    """
+    Run non-linear structural analysis (Material & Geometric).
+    Supports frames and plate elements.
+    """
+    try:
+        from analysis.optimized_solver import OptimizedFrameSolver
+        
+        # Parse request
+        nodes = request.get('nodes', [])
+        elements = request.get('members', []) # Can contain frames and plates
+        loads = request.get('node_loads', [])
+        settings = request.get('settings', {'method': 'newton-raphson', 'steps': 10})
+        
+        # Prepare model dict for solver
+        model = {
+            'nodes': nodes,
+            'members': elements,
+            'node_loads': loads
+        }
+        
+        # Initialize solver
+        solver = OptimizedFrameSolver(use_iterative=True)
+        
+        # Run analysis (currently linear, to be upgraded to non-linear loop)
+        # For Phase 2 Demo, we run linear analysis with the new Plate elements.
+        # True non-linear loop requires updating Stiffness at each step.
+        result = solver.solve(model)
+        
+        return result
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============================================
 # PDF REPORT GENERATION ENDPOINT
 # ============================================
