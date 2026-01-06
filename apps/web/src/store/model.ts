@@ -964,7 +964,7 @@ export const useModelStore = create<ModelState>()(
                         });
 
                     })
-            }),
+                ),
 
             renumberNodes: () =>
             set((state) => {
