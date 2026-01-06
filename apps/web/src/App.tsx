@@ -8,7 +8,7 @@ import { Component, ReactNode, ErrorInfo, useState } from 'react';
 
 // Pages
 import { LandingPage } from './pages/LandingPage';
-import LandingPageEnhanced from './pages/LandingPageEnhanced';
+
 import { Dashboard } from './pages/Dashboard';
 import DashboardEnhanced from './pages/DashboardEnhanced';
 import { StreamDashboard } from './pages/StreamDashboard';
@@ -27,6 +27,7 @@ import { ReportsPage } from './pages/ReportsPage';
 import ReportViewerEnhanced from './pages/ReportViewerEnhanced';
 import { WorkspaceDemo } from './pages/WorkspaceDemo';
 import { RustWasmDemo } from './pages/RustWasmDemo';
+import { WorkerValidation } from './components/WorkerValidation';
 // Layouts
 import { WorkspaceLayout } from './layouts/WorkspaceLayout';
 import { RequireAuth } from './components/layout/RequireAuth';
@@ -306,7 +307,7 @@ function App() {
     // This fixes the scroll issue on landing pages as the modal locks body scroll
     const publicPaths = [
         '/',
-        '/landing-enhanced',
+
         '/pricing',
         '/capabilities',
         '/help',
@@ -318,7 +319,8 @@ function App() {
         '/reset-password',
         '/workspace-demo',
         '/rust-wasm-demo',
-        '/demo'
+        '/demo',
+        '/worker-test'
     ];
 
     // Check if current path is public (exact match or starts with for sub-routes)
@@ -342,7 +344,7 @@ function App() {
                 <Route path="/" element={<LandingPage />} />
 
                 {/* Enhanced Landing Page - NEW Advanced Template */}
-                <Route path="/landing-enhanced" element={<LandingPageEnhanced />} />
+
 
                 {/* Stream Dashboard - Main Entry Point */}
                 {/* Stream Dashboard - Main Entry Point */}
@@ -441,6 +443,9 @@ function App() {
 
                 {/* Rust WASM Performance Demo */}
                 <Route path="/rust-wasm-demo" element={<RustWasmDemo />} />
+
+                {/* Worker Validation Route */}
+                <Route path="/worker-test" element={<WorkerValidation />} />
 
                 {/* Workspace Routes */}
                 {/* Workspace Routes */}

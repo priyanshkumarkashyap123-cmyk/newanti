@@ -197,9 +197,9 @@ pub async fn modal_analysis(
         ));
     }
 
-    // Convert to DMatrix
-    let K = DMatrix::from_row_slice(n, n, &req.stiffness_matrix);
-    let M = DMatrix::from_row_slice(n, n, &req.mass_matrix);
+    // Convert to DMatrix (snake_case to satisfy lints)
+    let k = DMatrix::from_row_slice(n, n, &req.stiffness_matrix);
+    let m = DMatrix::from_row_slice(n, n, &req.mass_matrix);
 
     // Configure modal solver
     let mass_type = match req.mass_type.to_lowercase().as_str() {
@@ -216,7 +216,7 @@ pub async fn modal_analysis(
 
     // Run modal analysis
     let solver = ModalSolver::new(config);
-    let result = solver.analyze(&K, &M)
+    let result = solver.analyze(&k, &m)
         .map_err(|e| ApiError::AnalysisFailed(e))?;
 
     // Convert frequencies to Hz
@@ -342,9 +342,9 @@ pub async fn time_history_analysis(
         return Err(ApiError::InvalidInput("Force vector dimension mismatch".into()));
     }
 
-    // Convert to DMatrix/DVector
-    let K = DMatrix::from_row_slice(n, n, &req.stiffness_matrix);
-    let M = DMatrix::from_row_slice(n, n, &req.mass_matrix);
+    // Convert to DMatrix/DVector (snake_case to satisfy lints)
+    let k = DMatrix::from_row_slice(n, n, &req.stiffness_matrix);
+    let m = DMatrix::from_row_slice(n, n, &req.mass_matrix);
     
     // Convert force history to Vec<DVector>
     let force_history: Vec<DVector<f64>> = req.force_history
@@ -393,7 +393,7 @@ pub async fn time_history_analysis(
 
     // Run time-history analysis
     let solver = TimeHistorySolver::new(config);
-    let result = solver.analyze(&K, &M, &force_history, u0.as_ref(), v0.as_ref())
+    let result = solver.analyze(&k, &m, &force_history, u0.as_ref(), v0.as_ref())
         .map_err(|e| ApiError::AnalysisFailed(e))?;
 
     // TimeHistoryResult already has Vec<DVector<f64>>, convert to Vec<Vec<f64>>
