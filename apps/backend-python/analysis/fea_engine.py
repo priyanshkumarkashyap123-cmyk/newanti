@@ -139,6 +139,19 @@ class DistributedLoadInput:
 
 
 @dataclass
+class PlateInput:
+    """Plate element input"""
+    id: str
+    node_ids: List[str]     # 3 or 4 node IDs
+    thickness: float        # m
+    material_id: Optional[str] = None
+    E: float = 200e6        # Young's modulus (kN/m²)
+    nu: float = 0.3         # Poisson's ratio
+    # Optional load (pressure)
+    pressure: float = 0.0   # kN/m² (Global Y or user defined?)
+
+
+@dataclass
 class NodeLoadInput:
     """Direct load on node"""
     node_id: str
@@ -161,6 +174,7 @@ class ModelInput:
     """Complete model from frontend"""
     nodes: List[NodeInput]
     members: List[MemberInput]
+    plates: List[PlateInput] = field(default_factory=list)
     node_loads: List[NodeLoadInput] = field(default_factory=list)
     point_loads: List[PointLoadInput] = field(default_factory=list)
     distributed_loads: List[DistributedLoadInput] = field(default_factory=list)
@@ -416,6 +430,50 @@ class FEAEngine:
                     J,
                     A
                 )
+        
+        # ============================================
+        # 2b. ADD PLATES
+        # ============================================
+        for i, plate in enumerate(model_input.plates):
+            plate_name = f"P{i+1}"
+            
+            # Get node names
+            nodes = [self.node_map.get(nid) for nid in plate.node_ids]
+            if not all(nodes):
+                continue
+                
+            # PyNite Plate Implementation
+            # Depending on version this might differ, assuming typical add_plate signature
+            # add_plate(name, node_i, node_j, node_m, node_n, t, E, nu)
+            if len(nodes) == 4:
+                try:
+                    if hasattr(self.model, 'add_plate'):
+                         self.model.add_plate(
+                            plate_name,
+                            nodes[0], nodes[1], nodes[2], nodes[3],
+                            plate.thickness,
+                            plate.E,
+                            plate.nu
+                        )
+                    elif hasattr(self.model, 'add_quad'): # Alternate naming
+                         self.model.add_quad(
+                            plate_name,
+                            nodes[0], nodes[1], nodes[2], nodes[3],
+                            plate.thickness,
+                            plate.E,
+                            plate.nu
+                        )
+                except Exception as e:
+                    print(f"Failed to add plate {plate.id}: {e}")
+            elif len(nodes) == 3:
+                # Triangle
+                pass # Implement if PyNite supports triangles
+                
+            # Apply Pressure
+            if plate.pressure != 0:
+                # Assuming PyNite has add_plate_load (check docs/source if possible)
+                if hasattr(self.model, 'add_plate_surface_pressure'):
+                    self.model.add_plate_surface_pressure(plate_name, plate.pressure, case=model_input.load_case)
         
         # ============================================
         # 3. ADD LOAD CASE

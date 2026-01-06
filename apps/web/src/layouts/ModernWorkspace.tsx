@@ -35,6 +35,7 @@ import {
     ScanLine
 } from 'lucide-react';
 import { useUIStore, Category } from '../store/uiStore';
+import beamLabLogo from '../assets/beamlab_logo.png';
 
 // ============================================
 // TYPES
@@ -340,78 +341,71 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
     return (
         <div className="h-screen w-screen flex flex-col bg-zinc-950 text-white overflow-hidden">
             {/* Top Bar - Umbrella Switcher */}
+            {/* Top Bar - Umbrella Switcher */}
             <header className="h-12 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between px-4 flex-shrink-0">
-                import beamLabLogo from '../assets/beamlab_logo.png';
-
-                // ... (rest of imports)
-
-                // ...
-
-                {/* Top Bar - Umbrella Switcher */}
-                <header className="h-12 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between px-4 flex-shrink-0">
-                    {/* Logo */}
-                    <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
-                            <img src={beamLabLogo} alt="BeamLab Logo" className="w-8 h-8 object-contain" />
-                            <span className="font-bold text-lg">BeamLab</span>
-                            <span className="text-[10px] font-bold px-1.5 py-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded">
-                                PRO
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Umbrella Tabs */}
-                    <UmbrellaSwitcher />
-
-                    {/* Right actions */}
+                {/* Logo */}
+                <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2">
-                        <button className="px-3 py-1.5 text-xs text-zinc-400 hover:text-white transition-colors">
-                            Settings
-                        </button>
+                        <img src={beamLabLogo} alt="BeamLab Logo" className="w-8 h-8 object-contain" />
+                        <span className="font-bold text-lg">BeamLab</span>
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded">
+                            PRO
+                        </span>
                     </div>
-                </header>
-
-                {/* Main Content Area */}
-                <div className="flex-1 flex overflow-hidden">
-                    <PanelGroup direction="horizontal">
-                        {/* Left Panel - Context Sidebar */}
-                        <Panel
-                            defaultSize={18}
-                            minSize={12}
-                            maxSize={30}
-                            collapsible
-                        >
-                            <ContextSidebar />
-                        </Panel>
-
-                        <ResizeHandle direction="horizontal" />
-
-                        {/* Center - 3D Canvas */}
-                        <Panel minSize={40}>
-                            <div className="h-full bg-zinc-950 relative">
-                                {children}
-                            </div>
-                        </Panel>
-
-                        <ResizeHandle direction="horizontal" />
-
-                        {/* Right Panel - Inspector */}
-                        <Panel
-                            defaultSize={20}
-                            minSize={15}
-                            maxSize={35}
-                            collapsible
-                        >
-                            <InspectorPanel
-                                collapsed={!propertiesPanelOpen}
-                                onToggle={togglePropertiesPanel}
-                            />
-                        </Panel>
-                    </PanelGroup>
                 </div>
 
-                {/* Bottom Bar - Status */}
-                <StatusBar />
+                {/* Umbrella Tabs */}
+                <UmbrellaSwitcher />
+
+                {/* Right actions */}
+                <div className="flex items-center gap-2">
+                    <button className="px-3 py-1.5 text-xs text-zinc-400 hover:text-white transition-colors">
+                        Settings
+                    </button>
+                </div>
+            </header>
+
+            {/* Main Content Area */}
+            <div className="flex-1 flex overflow-hidden">
+                <PanelGroup direction="horizontal">
+                    {/* Left Panel - Context Sidebar */}
+                    <Panel
+                        defaultSize={18}
+                        minSize={12}
+                        maxSize={30}
+                        collapsible
+                    >
+                        <ContextSidebar />
+                    </Panel>
+
+                    <ResizeHandle direction="horizontal" />
+
+                    {/* Center - 3D Canvas */}
+                    <Panel minSize={40}>
+                        <div className="h-full bg-zinc-950 relative">
+                            {children}
+                        </div>
+                    </Panel>
+
+                    <ResizeHandle direction="horizontal" />
+
+                    {/* Right Panel - Inspector */}
+                    <Panel
+                        defaultSize={20}
+                        minSize={15}
+                        maxSize={35}
+                        collapsible
+                    >
+                        <InspectorPanel
+                            collapsed={!propertiesPanelOpen}
+                            onToggle={togglePropertiesPanel}
+                        />
+                    </Panel>
+                </PanelGroup>
+            </div>
+
+            {/* Bottom Bar - Status */}
+            <StatusBar />
         </div>
     );
 };

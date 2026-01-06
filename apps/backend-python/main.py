@@ -343,18 +343,19 @@ class NodeLoadInput(BaseModel):
     my: Optional[float] = 0
     mz: Optional[float] = 0
 
-class MemberDistLoadInput(BaseModel):
-    memberId: str
-    direction: Optional[str] = "Fy"
-    w1: float
-    w2: Optional[float] = None  # If None, uses w1 (UDL)
-    startPos: Optional[float] = 0
-    endPos: Optional[float] = 1
-    isRatio: Optional[bool] = True
+
+class FramePlateInput(BaseModel):
+    id: str
+    nodeIds: ListType[str]
+    thickness: float
+    E: Optional[float] = 200e6
+    nu: Optional[float] = 0.3
+    pressure: Optional[float] = 0.0
 
 class FrameAnalysisRequest(BaseModel):
     nodes: ListType[FrameNodeInput]
     members: ListType[FrameMemberInput]
+    plates: Optional[ListType[FramePlateInput]] = []
     node_loads: Optional[ListType[NodeLoadInput]] = []
     distributed_loads: Optional[ListType[MemberDistLoadInput]] = []
 
@@ -373,7 +374,7 @@ async def analyze_3d_frame(request: FrameAnalysisRequest):
     try:
         from analysis.fea_engine import analyze_frame
         
-        print(f"[FEA] Received analysis request: {len(request.nodes)} nodes, {len(request.members)} members")
+        print(f"[FEA] Received analysis request: {len(request.nodes)} nodes, {len(request.members)} members, {len(request.plates)} plates")
         
         # Convert to dict format
         model_dict = {
@@ -400,6 +401,17 @@ async def analyze_3d_frame(request: FrameAnalysisRequest):
                     "A": m.A or 0.01
                 }
                 for m in request.members
+            ],
+            "plates": [
+                {
+                    "id": p.id,
+                    "node_ids": p.nodeIds,
+                    "thickness": p.thickness,
+                    "E": p.E or 200e6,
+                    "nu": p.nu or 0.3,
+                    "pressure": p.pressure or 0.0
+                }
+                for p in (request.plates or [])
             ],
             "node_loads": [
                 {

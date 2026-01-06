@@ -435,14 +435,24 @@ export function SectionDesignerDialog({ open, onClose, onSave }: SectionDesigner
                     </div>
                 </div>
 
-                <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={onClose}>
-                        Cancel
-                    </Button>
-                    <Button onClick={handleSave} disabled={!properties}>
-                        <Save className="w-4 h-4 mr-2" />
-                        Save Section
-                    </Button>
+                <div className="flex justify-between w-full">
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="sm">
+                            <Upload className="w-4 h-4 mr-2" /> Import DXF
+                        </Button>
+                        <Button variant="outline" size="sm">
+                            <Download className="w-4 h-4 mr-2" /> Export
+                        </Button>
+                    </div>
+                    <div className="flex gap-2">
+                        <Button variant="outline" onClick={onClose}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleSave} disabled={!properties}>
+                            <Save className="w-4 h-4 mr-2" />
+                            Save Section
+                        </Button>
+                    </div>
                 </div>
             </DialogContent>
         </Dialog>

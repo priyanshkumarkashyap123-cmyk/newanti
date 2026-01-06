@@ -10,6 +10,9 @@
 //! - Sparse matrix assembly and solving
 //! - Multi-threaded matrix assembly with Rayon
 //! - SIMD-accelerated linear algebra
+//! - Dynamic analysis (modal, time-history)
+//! - P-Delta geometric nonlinearity
+//! - Cable elements with catenary
 
 use nalgebra::{DMatrix, DVector, Matrix6, Vector3, Vector6};
 use nalgebra_sparse::{CooMatrix, CsrMatrix};
@@ -18,6 +21,20 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Instant;
+
+// Advanced analysis modules
+pub mod cable;
+pub mod pdelta;
+pub mod dynamics;
+
+// Re-export key types
+pub use cable::{CableElement, CableMaterial};
+pub use pdelta::{PDeltaSolver, PDeltaConfig, PDeltaResult, MemberGeometry};
+pub use dynamics::{
+    ModalSolver, ModalConfig, ModalResult, MassMatrixType,
+    TimeHistorySolver, TimeHistoryConfig, TimeHistoryResult,
+    DampingModel, IntegrationMethod,
+};
 
 /// Input node for analysis
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -710,12 +727,3 @@ mod tests {
         println!("Analysis time: {} ms", result.performance.total_time_ms);
     }
 }
-
-// Cable element module
-pub mod cable;
-pub use cable::{CableMaterial, CableElement, CableSystem};
-
-// P-Delta analysis module
-pub mod pdelta;
-pub use pdelta::{PDeltaSolver, PDeltaConfig, PDeltaResult, MemberGeometry, ConvergenceCriteria};
-

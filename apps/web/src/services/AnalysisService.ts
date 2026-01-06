@@ -12,9 +12,19 @@
 // TYPES
 // ============================================
 
+
+export interface PlateData {
+    id: string;
+    nodeIds: string[];
+    thickness: number;
+    E?: number;
+    nu?: number;
+}
+
 export interface ModelData {
     nodes: NodeData[];
     members: MemberData[];
+    plates?: PlateData[];
     loads: LoadData[];
     dofPerNode?: 2 | 3 | 6;
     settings?: {
@@ -58,6 +68,7 @@ export interface AnalysisResult {
     displacements?: Record<string, number[]>;
     reactions?: Record<string, number[]>;
     memberForces?: Record<string, { axial: number; shear?: number; momentStart?: number; momentEnd?: number }>;
+    plateResults?: Record<string, { stress: number }>; // Placeholder
     stats?: {
         totalDof?: number;
         nnz?: number;

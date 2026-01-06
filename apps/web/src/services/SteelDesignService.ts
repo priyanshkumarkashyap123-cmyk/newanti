@@ -521,6 +521,79 @@ export function formatDesignResult(result: DesignResult): string {
     return `${statusIcon} ${result.checkType}: ${(result.ratio * 100).toFixed(1)}% (${result.status})`;
 }
 
+
+// ============================================
+// API INTEGRATION
+// ============================================
+
+export async function designSteelMembers(members: SteelDesignResults[], code: 'AISC360' | 'IS800' = 'AISC360'): Promise<SteelDesignResults[]> {
+    try {
+        const payload = {
+            members: members.map(m => ({
+                id: m.memberId,
+                code: code,
+                grade: typeof m.material.name === 'string' ? m.material.name : 'E250',
+                fy: m.material.fy || 250,
+                fu: m.material.fu || 410,
+                length: 1000, // Placeholder, should come from geometry
+                effective_length_factor_y: 1.0,
+                effective_length_factor_z: 1.0,
+                section: {
+                    area: m.section.A,
+                    Ixx: m.section.Ixx,
+                    Iyy: m.section.Iyy,
+                    J: m.section.J || 0,
+                    Zz: m.section.Zx, // Mapping Sx to Zz (Elastic)
+                    Zy: m.section.Sy,
+                    Zpz: m.section.Zx, // Mapping Zx to Zpz (Plastic - assumption for API mapping)
+                    Zpy: m.section.Zy,
+                    ry: m.section.ry,
+                    rz: m.section.rx || 0, // Swap?
+                    depth: m.section.d,
+                    width: m.section.bf || m.section.b || 0,
+                    tf: m.section.tf || 0,
+                    tw: m.section.tw || 0
+                },
+                forces: m.forces
+            }))
+        };
+
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+        // Note: Calls Node API which proxies to Python, or Python directly if configured.
+        // Assuming Node API proxies /design/steel/check to Python.
+
+        const response = await fetch(`${API_URL}/design/steel/check`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error('Design API failed');
+
+        const results = await response.json();
+
+        // Merge API results back into local results structure
+        // (This is a simplified merge, ideally strict mapping)
+        return members.map(m => {
+            const apiResult = results.find((r: any) => r.memberId === m.memberId);
+            if (!apiResult) return m;
+
+            // Map API checks to local structure
+            // ... implementation would go here ...
+            // For now, return original with status updated
+            return {
+                ...m,
+                overallStatus: apiResult.status.toUpperCase(),
+                criticalRatio: apiResult.overallRatio
+            };
+        });
+
+    } catch (e) {
+        console.error("Steel Design API Error:", e);
+        return members; // Fallback to local
+    }
+}
+
 export default {
     checkTension,
     checkCompression,
@@ -529,5 +602,6 @@ export default {
     checkCombined,
     performSteelDesignCheck,
     getSectionClassification,
-    formatDesignResult
+    formatDesignResult,
+    designSteelMembers
 };

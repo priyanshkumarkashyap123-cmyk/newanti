@@ -112,7 +112,7 @@ export const LandingPage: FC = () => {
                         <div className="hidden md:flex items-center gap-8">
                             <a href="#features" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">Features</a>
                             <a href="#pricing" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">Pricing</a>
-                            <Link to="/docs" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">Docs</Link>
+                            <Link to="/help" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">Docs</Link>
                         </div>
 
                         {/* Auth */}
@@ -135,7 +135,7 @@ export const LandingPage: FC = () => {
                     <div className="md:hidden bg-slate-900 border-b border-white/5 p-4 space-y-4">
                         <a href="#features" className="block text-slate-400 hover:text-white">Features</a>
                         <a href="#pricing" className="block text-slate-400 hover:text-white">Pricing</a>
-                        <Link to="/docs" className="block text-slate-400 hover:text-white">Docs</Link>
+                        <Link to="/help" className="block text-slate-400 hover:text-white">Docs</Link>
                         <hr className="border-white/10" />
                         <button onClick={handleGetStarted} className="w-full py-2 bg-blue-600 rounded-lg font-semibold">
                             Get Started

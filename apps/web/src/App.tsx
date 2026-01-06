@@ -3,7 +3,7 @@
  * Routes between Landing, Dashboard, and Workspace
  */
 
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Component, ReactNode, ErrorInfo, useState } from 'react';
 
 // Pages
@@ -300,8 +300,36 @@ function App() {
     const { hasConsent } = useCheckLegalConsent();
     const [consentAccepted, setConsentAccepted] = useState(false);
 
+    const location = useLocation();
+
+    // Define public paths where consent modal should NOT appear
+    // This fixes the scroll issue on landing pages as the modal locks body scroll
+    const publicPaths = [
+        '/',
+        '/landing-enhanced',
+        '/pricing',
+        '/capabilities',
+        '/help',
+        '/privacy',
+        '/terms',
+        '/sign-in',
+        '/sign-up',
+        '/forgot-password',
+        '/reset-password',
+        '/workspace-demo',
+        '/rust-wasm-demo',
+        '/demo'
+    ];
+
+    // Check if current path is public (exact match or starts with for sub-routes)
+    const isPublicPath = publicPaths.some(path =>
+        location.pathname === path ||
+        (path !== '/' && location.pathname.startsWith(path + '/'))
+    );
+
     // Show legal consent modal if user hasn't agreed yet (hasConsent === null means still loading)
-    const showConsentModal = hasConsent === false && !consentAccepted;
+    // AND we are NOT on a public page
+    const showConsentModal = hasConsent === false && !consentAccepted && !isPublicPath;
 
     const handleAcceptConsent = () => {
         setConsentAccepted(true);

@@ -106,7 +106,7 @@ export const LandingPageEnhanced: FC = () => {
                     <nav className="hidden md:flex items-center gap-8">
                         <a href="#features" className="text-sm font-medium text-steel-blue/80 hover:text-steel-blue transition-colors">Features</a>
                         <a href="#pricing" className="text-sm font-medium text-steel-blue/80 hover:text-steel-blue transition-colors">Pricing</a>
-                        <Link to="/capabilities" className="text-sm font-medium text-steel-blue/80 hover:text-steel-blue transition-colors">Docs</Link>
+                        <Link to="/help" className="text-sm font-medium text-steel-blue/80 hover:text-steel-blue transition-colors">Docs</Link>
                     </nav>
 
                     <div className="hidden md:flex items-center gap-4">
@@ -126,7 +126,7 @@ export const LandingPageEnhanced: FC = () => {
                         <div className="flex flex-col gap-4">
                             <a href="#features" className="text-steel-blue font-medium">Features</a>
                             <a href="#pricing" className="text-steel-blue font-medium">Pricing</a>
-                            <Link to="/capabilities" className="text-steel-blue font-medium">Docs</Link>
+                            <Link to="/help" className="text-steel-blue font-medium">Docs</Link>
                             <hr className="border-border-light" />
                             <button
                                 onClick={handleGetStarted}
@@ -193,7 +193,10 @@ export const LandingPageEnhanced: FC = () => {
                             Start Analyzing for Free
                             <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
                         </button>
-                        <button className="flex h-14 min-w-[220px] items-center justify-center gap-2 rounded-xl border-2 border-steel-blue/20 bg-white px-8 text-base font-bold text-steel-blue transition-all hover:bg-gray-50 hover:border-steel-blue/40">
+                        <button
+                            onClick={() => navigate('/demo')}
+                            className="flex h-14 min-w-[220px] items-center justify-center gap-2 rounded-xl border-2 border-steel-blue/20 bg-white px-8 text-base font-bold text-steel-blue transition-all hover:bg-gray-50 hover:border-steel-blue/40"
+                        >
                             <span className="material-symbols-outlined">play_circle</span>
                             Watch Demo
                         </button>
@@ -370,7 +373,7 @@ export const LandingPageEnhanced: FC = () => {
                             <ul className="space-y-3 text-sm">
                                 <li><a href="#features" className="text-slate-300 hover:text-white transition-colors">Features</a></li>
                                 <li><a href="#pricing" className="text-slate-300 hover:text-white transition-colors">Pricing</a></li>
-                                <li><Link to="/capabilities" className="text-slate-300 hover:text-white transition-colors">Documentation</Link></li>
+                                <li><Link to="/help" className="text-slate-300 hover:text-white transition-colors">Documentation</Link></li>
                                 <li><Link to="/workspace-demo" className="text-slate-300 hover:text-white transition-colors">Workspace Demo</Link></li>
                             </ul>
                         </div>
@@ -379,9 +382,9 @@ export const LandingPageEnhanced: FC = () => {
                             <h4 className="font-bold mb-4">Company</h4>
                             <ul className="space-y-3 text-sm">
                                 <li><Link to="/privacy" className="text-slate-300 hover:text-white transition-colors">Privacy Policy</Link></li>
-                                <li><a href="#" className="text-slate-300 hover:text-white transition-colors">Terms of Service</a></li>
+                                <li><Link to="/terms" className="text-slate-300 hover:text-white transition-colors">Terms of Service</Link></li>
                                 <li><Link to="/help" className="text-slate-300 hover:text-white transition-colors">Help Center</Link></li>
-                                <li><a href="#" className="text-slate-300 hover:text-white transition-colors">Contact Us</a></li>
+                                <li><Link to="/help" className="text-slate-300 hover:text-white transition-colors">Contact Us</Link></li>
                             </ul>
                         </div>
                     </div>
