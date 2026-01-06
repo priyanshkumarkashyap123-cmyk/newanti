@@ -1,80 +1,10 @@
-"""
-design - Structural Design Code Modules for BeamLab Ultimate
+from .framework import DesignFactory, DesignCode, DesignMember, DesignResult
+from .aisc360_16 import AISC360_16
+from .eurocode3 import Eurocode3
 
-Modules:
-- steel.is800: IS 800:2007 Limit State Method Steel Design
-- steel.aisc360: AISC 360-16 Steel Design  
-- concrete.is456: IS 456:2000 Reinforced Concrete Design
-- connections: Steel Connection Design
-- foundation: Foundation Design
-"""
+# Register available codes
+DesignFactory.register("AISC360-16", AISC360_16)
+DesignFactory.register("Eurocode3", Eurocode3)
 
-from .steel.is800 import (
-    SectionClass,
-    SteelDesignResult,
-    IS800Designer,
-)
-
-from .steel.aisc360 import (
-    AISC360Designer,
-    DesignMethod,
-)
-
-from .concrete.is456 import (
-    IS456Designer,
-    ConcreteGrade,
-    RebarGrade,
-    BeamDesignResult,
-    ColumnDesignResult,
-)
-
-from .connections.steel_joints import (
-    BoltGrade,
-    WeldType,
-    BoltedConnection,
-    WeldedConnection,
-    BasePlate,
-    ConnectionDesigner,
-)
-
-from .foundation.footing import (
-    SoilType,
-    SoilProfile,
-    ColumnLoad,
-    IsolatedFooting,
-    CombinedFooting,
-    MatFoundation,
-    FootingDesignResult,
-    FoundationDesigner,
-)
-
-__all__ = [
-    # Steel
-    'SectionClass',
-    'SteelDesignResult',
-    'IS800Designer',
-    'AISC360Designer',
-    'DesignMethod',
-    # Concrete
-    'IS456Designer',
-    'ConcreteGrade',
-    'RebarGrade',
-    'BeamDesignResult',
-    'ColumnDesignResult',
-    # Connections
-    'BoltGrade',
-    'WeldType',
-    'BoltedConnection',
-    'WeldedConnection',
-    'BasePlate',
-    'ConnectionDesigner',
-    # Foundation
-    'SoilType',
-    'SoilProfile',
-    'ColumnLoad',
-    'IsolatedFooting',
-    'CombinedFooting',
-    'MatFoundation',
-    'FootingDesignResult',
-    'FoundationDesigner',
-]
+# Export key classes
+__all__ = ['DesignFactory', 'DesignCode', 'DesignMember', 'DesignResult']

@@ -1175,6 +1175,92 @@ async def run_nonlinear_analysis(request: dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
+# ============================================
+# STRUCTURAL DESIGN ENDPOINTS
+# ============================================
+
+@app.post("/design/check", tags=["Design"])
+async def check_design(request: dict):
+    """
+    Perform code checking (AISC, Eurocode, etc.) on structure.
+    
+    Expected JSON payload:
+    {
+        "code": "AISC360-16",
+        "method": "LRFD",
+        "members": [
+            {
+               "member_id": 1,
+               "section_name": "ISMB300",
+               "section_properties": { ... },
+               "length": 5000,
+               "material": { "Fy": 250, "E": 200000 },
+               "forces": {"P": -500, "Mz": 45, "My": 0},
+               "unbraced_length_major": 5000,
+               "unbraced_length_minor": 5000,
+               "unbraced_length_ltb": 5000
+            }
+        ]
+    }
+    """
+    try:
+        from design import DesignFactory, DesignMember
+        
+        code_name = request.get("code", "AISC360-16")
+        code = DesignFactory.get_code(code_name)
+        
+        if not code:
+            raise HTTPException(status_code=400, detail=f"Design code '{code_name}' not supported")
+            
+        results = {}
+        
+        for m_data in request.get("members", []):
+            try:
+                # Create DesignMember
+                member = DesignMember(
+                    id=m_data["member_id"],
+                    section_name=m_data.get("section_name", "Unknown"),
+                    section_properties=m_data.get("section_properties", {}),
+                    length=m_data.get("length", 0.0),
+                    material=m_data.get("material", {}),
+                    forces=m_data.get("forces", {}),
+                    unbraced_length_major=m_data.get("unbraced_length_major", m_data.get("length")),
+                    unbraced_length_minor=m_data.get("unbraced_length_minor", m_data.get("length")),
+                    unbraced_length_ltb=m_data.get("unbraced_length_ltb", m_data.get("length")),
+                    effective_length_factor_major=m_data.get("Kx", 1.0),
+                    effective_length_factor_minor=m_data.get("Ky", 1.0),
+                    cb=m_data.get("Cb", 1.0)
+                )
+                
+                # Run Check
+                res = code.check_member(member)
+                
+                # Simplify result for JSON response
+                results[member.id] = {
+                    "ratio": res.ratio,
+                    "status": res.status,
+                    "governing": res.governing_check,
+                    "capacity": res.capacity,
+                    "log": res.calculation_log
+                }
+                
+            except Exception as item_err:
+                print(f"Error checking member {m_data.get('member_id')}: {item_err}")
+                results[m_data.get("member_id")] = {"error": str(item_err), "status": "ERROR"}
+        
+        return {
+            "success": True, 
+            "code": code.code_name,
+            "results": results
+        }
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============================================
 # PDF REPORT GENERATION ENDPOINT
 # ============================================
