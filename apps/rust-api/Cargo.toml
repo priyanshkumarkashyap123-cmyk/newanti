@@ -6,6 +6,10 @@ authors = ["BeamLab Team"]
 description = "High-performance Rust backend for BeamLab structural analysis"
 license = "MIT"
 
+[lib]
+name = "rust_api"
+path = "src/lib.rs"
+
 [[bin]]
 name = "beamlab-rust-api"
 path = "src/main.rs"

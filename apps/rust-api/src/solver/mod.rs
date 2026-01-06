@@ -710,3 +710,8 @@ mod tests {
         println!("Analysis time: {} ms", result.performance.total_time_ms);
     }
 }
+
+// Cable element module
+pub mod cable;
+pub use cable::{CableMaterial, CableElement, CableSystem};
+
