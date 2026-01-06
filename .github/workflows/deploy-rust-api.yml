@@ -31,8 +31,6 @@ jobs:
           tags: |
             beamlabregistry.azurecr.io/beamlab-rust:latest
             beamlabregistry.azurecr.io/beamlab-rust:${{ github.sha }}
-          cache-from: type=registry,ref=beamlabregistry.azurecr.io/beamlab-rust:buildcache
-          cache-to: type=registry,ref=beamlabregistry.azurecr.io/beamlab-rust:buildcache,mode=max
       
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
