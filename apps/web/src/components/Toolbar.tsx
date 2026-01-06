@@ -1,7 +1,7 @@
 
 import { FC, useState } from 'react';
 import { useModelStore } from '../store/model';
-import { runLocalAnalysis } from '../api/localAnalysis';
+import useStructuralSolver from '../hooks/useStructuralSolver';
 import { ReportGenerator } from '../utils/ReportGenerator';
 import { useIsSignedIn } from '../providers/AuthProvider';
 import { useSubscription } from '../hooks/useSubscription';
@@ -27,7 +27,9 @@ export const Toolbar: FC = () => {
     // Subscription for feature gating
     const { subscription, canAccess } = useSubscription();
 
-    const handleAnalyze = () => {
+    const { analyze, prepareModel } = useStructuralSolver();
+
+    const handleAnalyze = async () => {
         // Security: Require login before analysis
         if (!isSignedIn) {
             const shouldLogin = window.confirm(
@@ -40,9 +42,92 @@ export const Toolbar: FC = () => {
         }
 
         setMessage(null);
-        const result = runLocalAnalysis();
-        setMessage(result.message);
-        setTimeout(() => setMessage(null), 5000);
+        // Sync store loading state
+        useModelStore.getState().setIsAnalyzing(true);
+
+        try {
+            // 1. Prepare Data
+            // We need to capture the arrays used for input so we can map results back correctly
+            // (Worker returns arrays, we need Maps with IDs)
+            const state = useModelStore.getState();
+            const nodesArray = Array.from(state.nodes.values());
+            const membersArray = Array.from(state.members.values());
+            const loadsArray = state.loads;
+
+            const modelData = prepareModel(
+                nodesArray,
+                membersArray,
+                loadsArray
+            );
+
+            // 2. Run Analysis (Worker)
+            const result = await analyze(modelData, (progress) => {
+                setMessage(`${progress.message} (${progress.percent}%)`);
+            });
+
+            if (result.success && result.displacements) {
+                // 3. Map Results back to Store format
+                // Displacements key: nodeId -> { dx, dy, ... }
+                const displacementMap = new Map();
+                const reactionMap = new Map(); // TODO: Worker should calculate reactions
+
+                // The worker preserves node order from input array
+                nodesArray.forEach((node, index) => {
+                    const offset = index * 6; // 6 DOF
+                    if (result.displacements && offset < result.displacements.length) {
+                        displacementMap.set(node.id, {
+                            dx: result.displacements[offset + 0] || 0,
+                            dy: result.displacements[offset + 1] || 0,
+                            dz: result.displacements[offset + 2] || 0,
+                            rx: result.displacements[offset + 3] || 0,
+                            ry: result.displacements[offset + 4] || 0,
+                            rz: result.displacements[offset + 5] || 0
+                        });
+                    }
+
+                    // Placeholders for reactions (if calculated)
+                    if (result.reactions && offset < result.reactions.length) {
+                        reactionMap.set(node.id, {
+                            fx: result.reactions[offset + 0] || 0,
+                            fy: result.reactions[offset + 1] || 0,
+                            fz: result.reactions[offset + 2] || 0,
+                            mx: result.reactions[offset + 3] || 0,
+                            my: result.reactions[offset + 4] || 0,
+                            mz: result.reactions[offset + 5] || 0
+                        });
+                    }
+                });
+
+                // Member Forces (if computed)
+                const memberForcesMap = new Map();
+                if (result.memberForces && Array.isArray(result.memberForces)) {
+                    result.memberForces.forEach((mf: any) => {
+                        memberForcesMap.set(mf.id, mf);
+                    });
+                }
+
+                state.setAnalysisResults({
+                    displacements: displacementMap,
+                    reactions: reactionMap,
+                    memberForces: memberForcesMap
+                });
+
+                setMessage(`✅ Analysis Complete! (${result.stats.totalTimeMs.toFixed(0)}ms)`);
+                state.setShowResults(true);
+                state.setShowDeflectedShape(true);
+            } else {
+                throw new Error(result.error || 'Unknown analysis error');
+            }
+
+        } catch (error) {
+            console.error('Analysis failed:', error);
+            setMessage(`❌ Error: ${error instanceof Error ? error.message : 'Analysis failed'}`);
+        } finally {
+            useModelStore.getState().setIsAnalyzing(false);
+            setTimeout(() => {
+                if (message?.startsWith('✅')) setMessage(null);
+            }, 5000);
+        }
     };
 
     const handleExportPDF = () => {

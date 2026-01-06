@@ -12,6 +12,9 @@ use thiserror::Error;
 pub enum ApiError {
     #[error("Invalid request: {0}")]
     BadRequest(String),
+    
+    #[error("Invalid input: {0}")]
+    InvalidInput(String),
 
     #[error("Not found: {0}")]
     NotFound(String),
@@ -42,6 +45,7 @@ impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
         let (status, error_message) = match &self {
             ApiError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg.clone()),
+            ApiError::InvalidInput(msg) => (StatusCode::BAD_REQUEST, msg.clone()),
             ApiError::NotFound(msg) => (StatusCode::NOT_FOUND, msg.clone()),
             ApiError::Unauthorized => (StatusCode::UNAUTHORIZED, "Unauthorized".to_string()),
             ApiError::RateLimited => (StatusCode::TOO_MANY_REQUESTS, "Rate limit exceeded".to_string()),

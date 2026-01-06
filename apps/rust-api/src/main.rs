@@ -87,7 +87,12 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/analyze/batch", post(handlers::analysis::batch_analyze))
         .route("/api/analyze/stream", post(handlers::analysis::stream_analyze))
         
-        // Advanced analysis
+        // Advanced analysis with Rust solver integration
+        .route("/api/analysis/modal", post(handlers::analysis::modal_analysis))
+        .route("/api/analysis/time-history", post(handlers::analysis::time_history_analysis))
+        .route("/api/analysis/seismic", post(handlers::analysis::seismic_analysis))
+        
+        // Legacy advanced analysis endpoints
         .route("/api/advanced/pdelta", post(handlers::advanced::pdelta_analysis))
         .route("/api/advanced/modal", post(handlers::advanced::modal_analysis))
         .route("/api/advanced/buckling", post(handlers::advanced::buckling_analysis))

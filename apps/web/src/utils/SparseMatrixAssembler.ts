@@ -4,15 +4,8 @@
  * Efficiently assembles the global stiffness matrix in Coordinate Format (COO)
  * for the WASM sparse solver.
  * 
- * Key Features:
- * - Calculates local stiffness matrices for 3D frame elements
- * - Transforms to global coordinates
- * - Outputs sparse entries {row, col, value} directly
- * - Avoids creating any dense n x n matrices (crucial for 50k+ elements)
+ * Decoupled from store for Web Worker usage.
  */
-
-import * as THREE from 'three';
-import { ModelState } from '../store/model';
 
 // ============================================
 // TYPES
@@ -31,6 +24,37 @@ export interface SparseAssemblerOutput {
     nodeMapping: Map<string, number>; // Maps node ID to DOF index start
 }
 
+// Generic Input Interface (compatible with Worker ModelData)
+export interface AssemblerInput {
+    nodes: Array<{
+        id: string;
+        x: number;
+        y: number;
+        z: number;
+        restraints?: {
+            fx: boolean; fy: boolean; fz: boolean;
+            mx: boolean; my: boolean; mz: boolean;
+        };
+    }>;
+    members: Array<{
+        id: string;
+        startNodeId: string;
+        endNodeId: string;
+        E?: number;
+        A?: number;
+        I?: number;     // for Iy and Iz if same
+        Iy?: number;
+        Iz?: number;
+        J?: number;
+        betaAngle?: number;
+    }>;
+    loads: Array<{
+        nodeId: string;
+        fx?: number; fy?: number; fz?: number;
+        mx?: number; my?: number; mz?: number;
+    }>;
+}
+
 // ============================================
 // CONSTANTS
 // ============================================
@@ -38,7 +62,7 @@ export interface SparseAssemblerOutput {
 const DOF_PER_NODE = 6; // 3D Frame: x, y, z, rx, ry, rz
 
 // ============================================
-// HELPERS
+// HELPERS (Pure functions)
 // ============================================
 
 /**
@@ -150,8 +174,6 @@ function getTransformationMatrix(
     const cz = dz / L;
 
     // Build rotation matrix R (3x3)
-    // Need to handle vertical members specifically
-
     let r11, r12, r13;
     let r21, r22, r23;
     let r31, r32, r33;
@@ -162,7 +184,6 @@ function getTransformationMatrix(
 
     if (Math.abs(cx) < 1e-5 && Math.abs(cz) < 1e-5) {
         // Vertical member (along global Y)
-        // Orientation depends on Y direction
         if (cy > 0) {
             r21 = 0; r22 = 0; r23 = -1;
             r31 = -1; r32 = 0; r33 = 0;
@@ -182,15 +203,11 @@ function getTransformationMatrix(
         r33 = cx / D;
     }
 
-    // Apply Beta Angle rotation (roll about local x)
+    // Apply Beta Angle rotation
     if (betaAngle !== 0) {
         const rad = betaAngle * Math.PI / 180;
         const c = Math.cos(rad);
         const s = Math.sin(rad);
-
-        // Rotate local y and z axes
-        // New R = R * R_beta
-        // R_beta = [1 0 0; 0 c s; 0 -s c]
 
         const r21_n = r21 * c + r31 * s;
         const r22_n = r22 * c + r32 * s;
@@ -204,9 +221,7 @@ function getTransformationMatrix(
         r31 = r31_n; r32 = r32_n; r33 = r33_n;
     }
 
-    // Fill 12x12 T matrix (4 blocks of 3x3 R)
-    // T = diag(R, R, R, R)
-
+    // Fill 12x12 T matrix
     for (let i = 0; i < 4; i++) {
         const offset = i * 3 * 12 + i * 3;
         T[offset + 0 * 12 + 0] = r11; T[offset + 0 * 12 + 1] = r12; T[offset + 0 * 12 + 2] = r13;
@@ -226,46 +241,48 @@ export class SparseMatrixAssembler {
     /**
      * Assemble the global stiffness matrix and force vector
      */
-    static assemble(state: ModelState): SparseAssemblerOutput {
-        const nodes = Array.from(state.nodes.values());
-        const members = Array.from(state.members.values());
+    static assemble(input: AssemblerInput): SparseAssemblerOutput {
+        const { nodes, members, loads } = input;
 
         // 1. Map nodes to DOF indices
         // ==========================
         const nodeMapping = new Map<string, number>();
+        // Fast lookup map
+        const nodeMap = new Map<string, typeof nodes[0]>();
+
         nodes.forEach((node, index) => {
             nodeMapping.set(node.id, index * DOF_PER_NODE);
+            nodeMap.set(node.id, node);
         });
 
         const totalDOF = nodes.length * DOF_PER_NODE;
-        const forces = new Float64Array(totalDOF); // Using TypedArray for performance
-
-        // We accumulate entries in a flat array first, then process
+        const forces = new Float64Array(totalDOF);
         const entries: SparseEntry[] = [];
 
         // 2. Assemble Member Stiffness
         // ==========================
 
-        const tempKg = new Float64Array(144); // Reuse for global stiffness
+        const membersCount = members.length;
 
-        members.forEach(member => {
-            const startNode = state.nodes.get(member.startNodeId);
-            const endNode = state.nodes.get(member.endNodeId);
+        for (let m = 0; m < membersCount; m++) {
+            const member = members[m];
+            const startNode = nodeMap.get(member.startNodeId);
+            const endNode = nodeMap.get(member.endNodeId);
 
-            if (!startNode || !endNode) return;
+            if (!startNode || !endNode) continue;
 
             // Material & Section Properties (with defaults)
             const E = member.E || 200e9; // 200 GPa
-            const G = 77e9; // Shear modulus approx for steel
+            const G = 77e9; // Shear modulus
             const A = member.A || 0.01;
-            const Iy = member.I || 0.0001; // Should be distinct if available
-            const Iz = member.I || 0.0001;
-            const J = (Iy + Iz); // Torsional constant approx
+            const Iy = member.Iy || member.I || 0.0001;
+            const Iz = member.Iz || member.I || 0.0001;
+            const J = member.J || (Iy + Iz);
 
             const dx = endNode.x - startNode.x;
             const dy = endNode.y - startNode.y;
             const dz = endNode.z - startNode.z;
-            const L = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            const L = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1e-9;
 
             // 1. Calculate Local K (12x12)
             const Kl = getLocalStiffnessMatrix(E, G, A, Iy, Iz, J, L);
@@ -278,12 +295,6 @@ export class SparseMatrixAssembler {
             );
 
             // 3. Transform to Global: Kg = T' * Kl * T
-            // This is the expensive part (matrix multiplication)
-            // We can optimize by hardcoding or using simplified loops
-
-            // Optimized multiplication: Kg = T_transpose * (Kl * T)
-
-            // Temporary buffer for Kl * T
             const Kl_T = new Float64Array(144);
 
             // Kl * T
@@ -302,16 +313,13 @@ export class SparseMatrixAssembler {
                 for (let j = 0; j < 12; j++) {
                     let sum = 0;
                     for (let k = 0; k < 12; k++) {
-                        // T' at [i, k] is T [k, i]
                         sum += T[k * 12 + i] * Kl_T[k * 12 + j];
                     }
 
-                    // Add to sparse entries if non-zero
                     if (Math.abs(sum) > 1e-10) {
                         const startDofIndex = nodeMapping.get(member.startNodeId)!;
                         const endDofIndex = nodeMapping.get(member.endNodeId)!;
 
-                        // Map local indices (0-11) to global DOF indices
                         const globalRow = (i < 6) ? startDofIndex + i : endDofIndex + (i - 6);
                         const globalCol = (j < 6) ? startDofIndex + j : endDofIndex + (j - 6);
 
@@ -323,19 +331,15 @@ export class SparseMatrixAssembler {
                     }
                 }
             }
-        });
+        }
 
         // 3. Apply Boundary Conditions
         // ==========================
-        // For fixed DOFs, we use the "penalty method" or "big number method"
-        // Simply adding a large number to diagonal elements of fixed DOFs
-
-        const PENALTY = 1e15;
+        const PENALTY = 1e16;
 
         nodes.forEach(node => {
             if (node.restraints) {
                 const startDof = nodeMapping.get(node.id)!;
-
                 if (node.restraints.fx) entries.push({ row: startDof + 0, col: startDof + 0, value: PENALTY });
                 if (node.restraints.fy) entries.push({ row: startDof + 1, col: startDof + 1, value: PENALTY });
                 if (node.restraints.fz) entries.push({ row: startDof + 2, col: startDof + 2, value: PENALTY });
@@ -347,8 +351,7 @@ export class SparseMatrixAssembler {
 
         // 4. Assemble Load Vector
         // =======================
-
-        state.loads.forEach(load => {
+        loads.forEach(load => {
             const startDof = nodeMapping.get(load.nodeId);
             if (startDof !== undefined) {
                 if (load.fx) forces[startDof + 0] += load.fx;
@@ -359,9 +362,6 @@ export class SparseMatrixAssembler {
                 if (load.mz) forces[startDof + 5] += load.mz;
             }
         });
-
-        // Also need to handle member loads (convert to equivalent nodal loads)
-        // ... (Simplified for initial implementation)
 
         return {
             entries,
