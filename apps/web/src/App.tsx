@@ -28,6 +28,9 @@ import ReportViewerEnhanced from './pages/ReportViewerEnhanced';
 import { WorkspaceDemo } from './pages/WorkspaceDemo';
 import { RustWasmDemo } from './pages/RustWasmDemo';
 import { WorkerValidation } from './components/WorkerValidation';
+import { ModalAnalysisPanel } from './components/analysis/ModalAnalysisPanel';
+import { TimeHistoryPanel } from './components/analysis/TimeHistoryPanel';
+import { SeismicAnalysisPanel } from './components/analysis/SeismicAnalysisPanel';
 // Layouts
 import { WorkspaceLayout } from './layouts/WorkspaceLayout';
 import { RequireAuth } from './components/layout/RequireAuth';
@@ -446,6 +449,11 @@ function App() {
 
                 {/* Worker Validation Route */}
                 <Route path="/worker-test" element={<WorkerValidation />} />
+
+                {/* Advanced Analysis Panels (API-backed MVP) */}
+                <Route path="/analysis/modal" element={<ModalAnalysisPanel isOpen={true} onClose={() => {}} />} />
+                <Route path="/analysis/time-history" element={<TimeHistoryPanel />} />
+                <Route path="/analysis/seismic" element={<SeismicAnalysisPanel />} />
 
                 {/* Workspace Routes */}
                 {/* Workspace Routes */}

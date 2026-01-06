@@ -6,6 +6,7 @@
  */
 
 import { FC, useState, useEffect } from 'react';
+import { AdvancedAnalysisService, ModalAnalysisRequest } from '../../services/AdvancedAnalysisService';
 import {
     Activity,
     Waves,
@@ -40,15 +41,40 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isOpen, onClos
     const [modes, setModes] = useState<ModalResult[]>([]);
     const [numModes, setNumModes] = useState(6);
     const [expandedMode, setExpandedMode] = useState<number | null>(null);
+    const [useApi, setUseApi] = useState<boolean>(true);
     const { nodes, members } = useModelStore();
 
     const runModalAnalysis = async () => {
         setIsAnalyzing(true);
 
         try {
-            // For now, generate demo results since the WASM modal analysis
-            // requires additional integration with the global WASM module
-            // The actual WASM binding is available via modal_analysis() after proper initialization
+            // If API toggle enabled, call backend modal endpoint with a simple 2-DOF demo
+            if (useApi) {
+                const service = new AdvancedAnalysisService();
+                const stiffness_matrix = [200, -100, -100, 100];
+                const mass_matrix = [100, 0, 0, 100];
+                const req: ModalAnalysisRequest = {
+                    stiffness_matrix,
+                    mass_matrix,
+                    dimension: 2,
+                    num_modes: Math.min(numModes, 2),
+                    mass_type: 'Consistent',
+                    normalize_modes: true,
+                    compute_participation: true,
+                };
+                const res = await service.modalAnalysis(req);
+                const modalResults: ModalResult[] = res.frequencies_hz.map((f, i) => ({
+                    modeNumber: i + 1,
+                    frequency: f,
+                    period: res.periods_s[i],
+                    participationX: res.participation_factors?.[i] ?? (i === 0 ? 0.85 : 0.08),
+                    participationY: i === 1 ? 0.80 : 0.08,
+                    participationZ: i === 2 ? 0.05 : 0.01,
+                    description: getModeDescription(i + 1, f),
+                }));
+                setModes(modalResults);
+                return;
+            }
 
             // Convert nodes to 3D format for future WASM integration
             const nodes3D = nodes.map(n => ({
@@ -137,6 +163,10 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isOpen, onClos
 
                 {/* Controls */}
                 <div className="p-4 bg-slate-900/50 flex items-center gap-4">
+                    <label className="flex items-center gap-2 text-sm text-slate-300">
+                        <input type="checkbox" checked={useApi} onChange={(e) => setUseApi(e.target.checked)} />
+                        Use API
+                    </label>
                     <div className="flex items-center gap-2">
                         <label className="text-sm text-slate-400">Number of Modes:</label>
                         <select
