@@ -12,18 +12,28 @@
 // IMPORTS
 // ============================================
 
-// WASM Module import (dynamic)
+// WASM Module import (dynamic from public folder)
 let wasmModule: any = null;
 let wasmReady = false;
 
 async function loadWasm(): Promise<void> {
     try {
-        // Import the entire WASM module
-        wasmModule = await import('solver-wasm');
-        // Initialize the WASM module
-        await wasmModule.default();
+        // Import the WASM glue code from public folder
+        // This uses the wasm-pack "web" target which exports an init() function
+        const response = await fetch('/solver_wasm_bg.wasm');
+        if (!response.ok) {
+            throw new Error(`Failed to fetch WASM: ${response.status}`);
+        }
+        const wasmBytes = await response.arrayBuffer();
+
+        // Use the bundled solver_wasm.js for initialization
+        // Instead, we dynamically import the glue code which resolves the WASM file
+        wasmModule = await import('/solver_wasm.js');
+
+        // Initialize with the fetched bytes
+        await wasmModule.default(wasmBytes);
         wasmReady = true;
-        console.log('[StructuralSolverWorker] WASM Solver Module Loaded (solver-wasm)');
+        console.log('[StructuralSolverWorker] WASM Solver Module Loaded from public folder');
     } catch (error) {
         console.warn('[StructuralSolverWorker] WASM Solver not available, using JS fallback:', error);
     }

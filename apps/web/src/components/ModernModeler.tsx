@@ -71,8 +71,6 @@ import { AdvancedAnalysisDialog } from './AdvancedAnalysisDialog';
 import { DesignCodesDialog } from './DesignCodesDialog';
 import { ModelingToolbar } from './toolbar/ModelingToolbar';
 import { ModalAnalysisPanel } from './analysis/ModalAnalysisPanel';
-import { LegalConsentModal, useCheckLegalConsent } from './LegalConsentModal';
-import { CheckpointLegalModal } from './CheckpointLegalModal';
 import { ExportDialog } from './ExportDialog';
 import { ActionToast, type ToastType } from './ui/ActionToast';
 import type { Node, Member } from '../store/model';
@@ -488,10 +486,6 @@ export const ModernModeler: FC = () => {
     const [showQuickStart, setShowQuickStart] = useState(false);
     const [showProjectDetails, setShowProjectDetails] = useState(false);
     const [isNewProject, setIsNewProject] = useState(false);
-    const [showLegalConsent, setShowLegalConsent] = useState(false);
-    const [pendingAction, setPendingAction] = useState<'analysis' | 'design' | 'pdf_export' | null>(null);
-    const [currentCheckpointType, setCurrentCheckpointType] = useState<'analysis' | 'design' | 'pdf_export'>('analysis');
-    const { hasConsent } = useCheckLegalConsent();
 
 
     // Handler for new project from QuickStart
@@ -625,14 +619,9 @@ export const ModernModeler: FC = () => {
             return;
         }
 
-        // STEP 2: Check legal consent for analysis
-        setPendingAction('analysis');
-        setCurrentCheckpointType('analysis');
-        setShowLegalConsent(true);
-
-        // Don't proceed with actual analysis yet
-        return;
-    }, [nodes, members]);
+        // Run analysis directly (Clerk handles legal consent at sign-up)
+        executeAnalysis();
+    }, [nodes, members, executeAnalysis]);
 
     // Analysis Event Listeners - Listen for ribbon triggers
     useEffect(() => {
@@ -1062,7 +1051,7 @@ export const ModernModeler: FC = () => {
             setIsAnalyzingLocal(false);
             setIsAnalyzing(false);
         }
-    }, [nodes, members, loads, memberLoads, setAnalysisResults, setIsAnalyzing, hasConsent]);
+    }, [nodes, members, loads, memberLoads, setAnalysisResults, setIsAnalyzing]);
 
     // Listener for Ribbon Analysis Trigger
     useEffect(() => {
@@ -1412,38 +1401,6 @@ export const ModernModeler: FC = () => {
                 isNewProject={isNewProject}
             />
 
-            {/* Checkpoint Legal Modals for different actions */}
-            {showLegalConsent && (
-                <CheckpointLegalModal
-                    open={showLegalConsent}
-                    checkpointType={currentCheckpointType}
-                    onAccept={() => {
-                        setShowLegalConsent(false);
-
-                        // Record consent and execute pending action
-                        if (pendingAction === 'analysis') {
-                            consentService.recordConsent(`user-${Date.now()}`, 'analysis');
-                            setTimeout(() => executeAnalysis(), 100);
-                        } else if (pendingAction === 'design') {
-                            consentService.recordConsent(`user-${Date.now()}`, 'design');
-                            // Trigger design check
-                            document.dispatchEvent(new CustomEvent('trigger-design'));
-                        } else if (pendingAction === 'pdf_export') {
-                            consentService.recordConsent(`user-${Date.now()}`, 'pdf_export');
-                            // Trigger PDF export
-                            document.dispatchEvent(new CustomEvent('trigger-pdf-export'));
-                        }
-                        setPendingAction(null);
-                    }}
-                    onDecline={() => {
-                        setShowLegalConsent(false);
-                        setPendingAction(null);
-                        showNotification('info', `${currentCheckpointType} requires legal consent to proceed`);
-                    }}
-                    canClose={true}
-                />
-            )}
-
             {/* Global Dialogs triggered by Ribbon */}
             <StructureWizard isOpen={modals.structureWizard} onClose={() => closeModal('structureWizard')} onGenerate={(structure) => {
                 // Convert generated structure to model format
@@ -1577,17 +1534,6 @@ export const ModernModeler: FC = () => {
             {/* Load Combinations Dialog */}
             <LoadCombinationsDialog />
 
-            {/* Legal Consent Modal - Required before analysis */}
-            <LegalConsentModal
-                open={showLegalConsent}
-                onAccept={() => {
-                    setShowLegalConsent(false);
-                    // Re-run analysis after consent is given
-                    setTimeout(() => executeAnalysis(), 100);
-                }}
-                canClose={false}
-            />
-
             {/* Structural Validation Dialog - Shows errors BEFORE analysis */}
             <ValidationDialog
                 isOpen={showValidationDialog}
@@ -1596,10 +1542,8 @@ export const ModernModeler: FC = () => {
                 warnings={structuralValidationWarnings}
                 onProceedAnyway={() => {
                     setShowValidationDialog(false);
-                    // User wants to proceed despite warnings - show legal consent
-                    setPendingAction('analysis');
-                    setCurrentCheckpointType('analysis');
-                    setShowLegalConsent(true);
+                    // User wants to proceed despite warnings - run analysis
+                    setTimeout(() => executeAnalysis(), 100);
                 }}
             />
 

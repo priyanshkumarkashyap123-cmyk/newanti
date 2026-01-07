@@ -22,6 +22,8 @@ import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import TermsPage from './pages/TermsPage';
+import { TermsOfServicePage } from './pages/TermsOfServicePage';
+import { PrivacyPolicyPageNew } from './pages/PrivacyPolicyPageNew';
 import { HelpPage } from './pages/HelpPage';
 import { ContactPage } from './pages/ContactPage';
 import { AboutPage } from './pages/AboutPage';
@@ -416,11 +418,13 @@ function App() {
                 {/* Reset Password */}
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-                {/* Privacy Policy */}
-                <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                {/* Privacy Policy - New comprehensive page for Clerk */}
+                <Route path="/privacy-policy" element={<PrivacyPolicyPageNew />} />
+                <Route path="/privacy" element={<Navigate to="/privacy-policy" replace />} />
 
-                {/* Terms of Service */}
-                <Route path="/terms" element={<TermsPage />} />
+                {/* Terms of Service - New comprehensive page for Clerk */}
+                <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+                <Route path="/terms" element={<Navigate to="/terms-of-service" replace />} />
 
                 {/* Help & Tutorials */}
                 <Route path="/help" element={<HelpPage />} />
