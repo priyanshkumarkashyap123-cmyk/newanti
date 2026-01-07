@@ -115,35 +115,63 @@ router.get('/subscription', requireAuth(), async (req: Request, res: Response) =
     try {
         const { userId, email: authEmail } = getAuth(req);
         if (!userId) {
-            return res.status(401).json({ success: false, error: 'Unauthorized' });
+            // Return free tier for unauthenticated users instead of 401
+            return res.json({
+                success: true,
+                data: {
+                    tier: 'free',
+                    isLoading: false,
+                    expiresAt: null,
+                    subscription: null,
+                    features: {
+                        maxProjects: 3,
+                        pdfExport: false,
+                        aiAssistant: false,
+                        advancedDesignCodes: false,
+                        teamMembers: 1,
+                        prioritySupport: false,
+                        apiAccess: false
+                    },
+                    limits: TIER_LIMITS['free']
+                }
+            });
         }
 
-        let userEmail: string = '';
+        let userEmail: string = authEmail || '';
         let dbTier: 'free' | 'pro' | 'enterprise' = 'free';
         let subscriptionData = null;
 
-        if (USE_CLERK) {
-            // Clerk auth: lookup by clerkId
-            const user = await User.findOne({ clerkId: userId });
-            userEmail = user?.email || '';
-            dbTier = user?.tier || 'free';
+        try {
+            if (USE_CLERK) {
+                // Clerk auth: lookup by clerkId
+                const user = await User.findOne({ clerkId: userId });
+                if (user) {
+                    userEmail = user.email || userEmail;
+                    dbTier = user.tier || 'free';
 
-            // Get subscription details if exists
-            if (user?.subscription) {
-                const subscription = await Subscription.findById(user.subscription);
-                if (subscription) {
-                    subscriptionData = {
-                        status: subscription.status,
-                        currentPeriodEnd: subscription.currentPeriodEnd,
-                        cancelAtPeriodEnd: subscription.cancelAtPeriodEnd
-                    };
+                    // Get subscription details if exists
+                    if (user.subscription) {
+                        const subscription = await Subscription.findById(user.subscription);
+                        if (subscription) {
+                            subscriptionData = {
+                                status: subscription.status,
+                                currentPeriodEnd: subscription.currentPeriodEnd,
+                                cancelAtPeriodEnd: subscription.cancelAtPeriodEnd
+                            };
+                        }
+                    }
+                }
+            } else {
+                // In-house auth: lookup by _id
+                const user = await UserModel.findById(userId);
+                if (user) {
+                    userEmail = user.email || authEmail || '';
+                    dbTier = user.subscriptionTier || 'free';
                 }
             }
-        } else {
-            // In-house auth: lookup by _id
-            const user = await UserModel.findById(userId);
-            userEmail = user?.email || authEmail || '';
-            dbTier = user?.subscriptionTier || 'free';
+        } catch (dbError) {
+            console.warn('[Subscription] Database lookup failed, using defaults:', dbError);
+            // Continue with defaults
         }
 
         // Use getEffectiveTier to check for master user elevation
