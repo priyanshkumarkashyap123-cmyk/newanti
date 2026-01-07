@@ -268,7 +268,7 @@ const StatusBar: FC<{ isAnalyzing: boolean }> = ({ isAnalyzing }) => {
 
 export const ModernModeler: FC = () => {
     const { getToken, userId, user } = useAuth();
-    const { subscription } = useSubscription();
+    const { subscription, refreshSubscription } = useSubscription();
     const { openPayment } = useRazorpayPayment();
     const { isFree } = useTierAccess();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -277,7 +277,12 @@ export const ModernModeler: FC = () => {
     useEffect(() => {
         const upgrade = searchParams.get('upgrade');
         if (upgrade === 'pro' && isFree && userId && user?.email) {
-            openPayment(userId, user.email, 'monthly');
+            (async () => {
+                const success = await openPayment(userId, user.email, 'monthly');
+                if (success) {
+                    await refreshSubscription();
+                }
+            })();
             // Clean URL
             setSearchParams(prev => {
                 const newParams = new URLSearchParams(prev);
@@ -285,18 +290,21 @@ export const ModernModeler: FC = () => {
                 return newParams;
             });
         }
-    }, [searchParams, isFree, userId, user, openPayment, setSearchParams]);
+    }, [searchParams, isFree, userId, user, openPayment, setSearchParams, refreshSubscription]);
 
     // Listen for manual upgrade trigger from Ribbon
     useEffect(() => {
-        const handleUpgradeTrigger = () => {
+        const handleUpgradeTrigger = async () => {
             if (userId && user?.email) {
-                openPayment(userId, user.email, 'monthly');
+                const success = await openPayment(userId, user.email, 'monthly');
+                if (success) {
+                    await refreshSubscription();
+                }
             }
         };
         document.addEventListener('trigger-upgrade', handleUpgradeTrigger);
         return () => document.removeEventListener('trigger-upgrade', handleUpgradeTrigger);
-    }, [userId, user, openPayment]);
+    }, [userId, user, openPayment, refreshSubscription]);
 
 
 
@@ -572,7 +580,8 @@ export const ModernModeler: FC = () => {
             }
 
             // Call stress calculation API
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/stress/calculate`, {
+            const PYTHON_API = import.meta.env.VITE_PYTHON_API_URL || 'https://beamlab-backend-python.azurewebsites.net';
+            const response = await fetch(`${PYTHON_API}/stress/calculate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

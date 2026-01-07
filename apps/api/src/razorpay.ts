@@ -177,7 +177,11 @@ export class RazorpayBillingService {
      */
     private static async handleSubscriptionCharged(payload: RazorpayWebhookPayload): Promise<void> {
         const subscriptionId = payload.subscription?.entity?.id;
-        if (!subscriptionId) return;
+        console.log(`[Razorpay] 📥 Processing subscription.charged: ${subscriptionId}`);
+        if (!subscriptionId) {
+            console.warn('[Razorpay] ⚠️ No subscription ID in payload');
+            return;
+        }
 
         // Find subscription in database
         const subscription = await Subscription.findOne({

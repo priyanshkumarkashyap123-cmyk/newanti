@@ -55,6 +55,18 @@ export default defineConfig({
     minify: 'esbuild',
     target: 'esnext',
     rollupOptions: {
+      // Suppress warnings about unresolved dynamic imports for workers
+      onwarn(warning, warn) {
+        // Ignore dynamic import warnings for worker files
+        if (warning.code === 'UNRESOLVED_IMPORT' && warning.message?.includes('Worker')) {
+          return;
+        }
+        // Ignore MODULE_LEVEL_DIRECTIVE warnings from third-party modules
+        if (warning.code === 'MODULE_LEVEL_DIRECTIVE') {
+          return;
+        }
+        warn(warning);
+      },
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],

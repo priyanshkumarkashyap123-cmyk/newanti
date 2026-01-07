@@ -6,6 +6,9 @@
 import { FC, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useRazorpayPayment } from '../components/RazorpayPayment';
+import { useAuth } from '../providers/AuthProvider';
+import { useSubscription } from '../hooks/useSubscription';
 
 // ============================================
 // PRICING DATA
@@ -115,6 +118,12 @@ const FAQ_ITEMS = [
 export const PricingPage: FC = () => {
     const navigate = useNavigate();
     const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+    const [upgradeError, setUpgradeError] = useState<string | null>(null);
+
+    // Razorpay payment integration
+    const { openPayment, loading: paymentLoading } = useRazorpayPayment();
+    const { isSignedIn, user } = useAuth();
+    const { refreshSubscription } = useSubscription();
 
     const getPrice = (tier: PricingTier) => {
         if (tier.name === 'Free' || tier.name === 'Enterprise') return tier.price;
@@ -122,6 +131,47 @@ export const PricingPage: FC = () => {
             return '₹599'; // 20% discount
         }
         return tier.price;
+    };
+
+    // Handle upgrade button click
+    const handleUpgradeClick = async (tier: PricingTier) => {
+        setUpgradeError(null);
+
+        // Free plan - just navigate to sign up
+        if (tier.name === 'Free') {
+            navigate(tier.ctaLink);
+            return;
+        }
+
+        // Enterprise - navigate to contact
+        if (tier.name === 'Enterprise') {
+            navigate(tier.ctaLink);
+            return;
+        }
+
+        // Pro plan - trigger Razorpay checkout
+        if (!isSignedIn || !user) {
+            // User not signed in, navigate to sign up with plan param
+            navigate('/sign-up?plan=pro');
+            return;
+        }
+
+        try {
+            const success = await openPayment(
+                user.id,
+                user.email || '',
+                billingPeriod
+            );
+            if (success) {
+                // Payment successful - refresh subscription state and navigate
+                await refreshSubscription();
+                navigate('/dashboard-enhanced?payment=success');
+            }
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Payment failed';
+            setUpgradeError(message);
+            console.error('Payment error:', error);
+        }
     };
 
     return (
@@ -227,15 +277,16 @@ export const PricingPage: FC = () => {
 
                                 {/* CTA Button */}
                                 <button
-                                    onClick={() => navigate(tier.ctaLink)}
-                                    className={`w-full py-3 px-4 rounded-lg text-sm font-bold transition-all ${tier.popular
+                                    onClick={() => handleUpgradeClick(tier)}
+                                    disabled={paymentLoading && tier.name === 'Pro'}
+                                    className={`w-full py-3 px-4 rounded-lg text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-wait ${tier.popular
                                         ? 'bg-accent hover:bg-accent/90 text-steel-blue shadow-md hover:shadow-lg'
                                         : tier.name === 'Enterprise'
                                             ? 'bg-steel-blue hover:bg-steel-blue/90 text-white'
                                             : 'bg-gray-100 hover:bg-gray-200 text-steel-blue'
                                         }`}
                                 >
-                                    {tier.cta}
+                                    {paymentLoading && tier.name === 'Pro' ? 'Processing...' : tier.cta}
                                 </button>
 
                                 {/* Features */}

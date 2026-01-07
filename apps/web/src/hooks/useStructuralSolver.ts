@@ -93,10 +93,16 @@ export function useStructuralSolver() {
      */
     const getWorker = useCallback((): Worker => {
         if (!workerRef.current) {
-            workerRef.current = new Worker(
-                new URL('../workers/StructuralSolverWorker.ts', import.meta.url),
-                { type: 'module' }
-            );
+            try {
+                // Use Vite's worker import syntax
+                workerRef.current = new Worker(
+                    new URL('../workers/StructuralSolverWorker.ts', import.meta.url),
+                    { type: 'module', name: 'structural-solver' }
+                );
+            } catch (e) {
+                console.error('[useStructuralSolver] Failed to create worker:', e);
+                throw new Error('Web Worker initialization failed');
+            }
         }
         return workerRef.current;
     }, []);
