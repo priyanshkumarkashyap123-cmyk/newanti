@@ -1,5 +1,5 @@
-# Build stage - use Rust official image
-FROM rust:1.83-slim-bookworm AS builder
+# Build stage - use Rust nightly for edition2024 support
+FROM rustlang/rust:nightly-slim AS builder
 
 WORKDIR /app
 
