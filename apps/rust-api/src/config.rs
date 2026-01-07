@@ -30,10 +30,12 @@ impl Config {
             _ => Environment::Development,
         };
 
-        let port = std::env::var("RUST_API_PORT")
-            .unwrap_or_else(|_| "3002".into())
+        // Try PORT first (Azure standard), fallback to RUST_API_PORT, then default
+        let port = std::env::var("PORT")
+            .or_else(|_| std::env::var("RUST_API_PORT"))
+            .unwrap_or_else(|_| "8080".into())
             .parse()
-            .context("Invalid RUST_API_PORT")?;
+            .context("Invalid PORT")?;
 
         let mongodb_uri = std::env::var("MONGODB_URI")
             .unwrap_or_else(|_| "mongodb://localhost:27017/beamlab".into());

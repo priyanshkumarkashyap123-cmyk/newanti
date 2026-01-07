@@ -34,10 +34,11 @@ FROM debian:bookworm-slim
 
 WORKDIR /app
 
-# Install runtime dependencies
+# Install runtime dependencies including curl for health checks
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     libssl3 \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy binary from builder
@@ -49,13 +50,15 @@ RUN useradd -r -s /bin/false beamlab && \
 
 USER beamlab
 
-# Expose port
+# Expose port (Azure uses 8080 by default, but we configure via env)
+EXPOSE 8080
 EXPOSE 3002
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:3002/health || exit 1
+    CMD curl -f http://localhost:${PORT:-8080}/health || exit 1
 
 # Run the server
 ENV RUST_LOG=beamlab_api=info,tower_http=info
+ENV PORT=8080
 CMD ["./beamlab-rust-api"]
