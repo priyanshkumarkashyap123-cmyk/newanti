@@ -4,6 +4,13 @@
     "type": "module",
     "main": "./pkg/solver_wasm.js",
     "types": "./pkg/solver_wasm.d.ts",
+    "exports": {
+        ".": {
+            "import": "./pkg/solver_wasm.js",
+            "types": "./pkg/solver_wasm.d.ts"
+        },
+        "./pkg/*": "./pkg/*"
+    },
     "files": [
         "pkg"
     ],

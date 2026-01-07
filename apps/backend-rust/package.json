@@ -4,6 +4,13 @@
     "type": "module",
     "main": "./pkg/backend_rust.js",
     "types": "./pkg/backend_rust.d.ts",
+    "exports": {
+        ".": {
+            "import": "./pkg/backend_rust.js",
+            "types": "./pkg/backend_rust.d.ts"
+        },
+        "./pkg/*": "./pkg/*"
+    },
     "files": [
         "pkg"
     ],
