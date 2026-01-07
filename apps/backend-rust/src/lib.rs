@@ -3,6 +3,8 @@ pub mod solver_3d;
 pub mod design_codes;
 pub mod renderer;
 pub mod ai_architect;
+pub mod dynamics;
+pub mod plate_element;
 use nalgebra::{DMatrix, DVector};
 use wasm_bindgen::prelude::*;
 use serde_wasm_bindgen;

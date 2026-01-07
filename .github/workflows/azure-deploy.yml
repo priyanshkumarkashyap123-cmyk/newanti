@@ -113,6 +113,8 @@ jobs:
         
       - name: Build Frontend
         working-directory: apps/web
+        env:
+          NODE_OPTIONS: "--max-old-space-size=8192"
         run: |
           pnpm install
           pnpm run build

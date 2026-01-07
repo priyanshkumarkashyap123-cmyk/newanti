@@ -18,8 +18,7 @@
 use nalgebra::{DMatrix, DVector, Matrix6, Vector6};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-mod plate_element;
-use plate_element::PlateElement;
+use crate::plate_element::PlateElement;
 
 // ============================================
 // STRUCTURAL ELEMENTS

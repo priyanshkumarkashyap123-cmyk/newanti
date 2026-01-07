@@ -64,6 +64,7 @@ jobs:
       - name: Build Frontend
         working-directory: apps/web
         env:
+          NODE_OPTIONS: "--max-old-space-size=8192"
           VITE_API_URL: https://beamlab-backend-node.azurewebsites.net
           VITE_PYTHON_API_URL: https://beamlab-backend-python.azurewebsites.net
           VITE_USE_CLERK: "true"
