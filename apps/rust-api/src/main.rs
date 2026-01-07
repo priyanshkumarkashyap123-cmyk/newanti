@@ -38,24 +38,54 @@ pub struct AppState {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    // Initialize tracing (logging)
+    // Initialize tracing (logging) - ensure it flushes to stdout
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
-            std::env::var("RUST_LOG").unwrap_or_else(|_| "beamlab_api=debug,tower_http=debug".into()),
+            std::env::var("RUST_LOG").unwrap_or_else(|_| "beamlab_api=info,tower_http=info".into()),
         ))
         .with(tracing_subscriber::fmt::layer())
         .init();
 
+    tracing::info!("========================================");
+    tracing::info!("🚀 BeamLab Rust API v2.1.0 starting...");
+    tracing::info!("========================================");
+
     // Load configuration
     dotenvy::dotenv().ok();
-    let config = Config::from_env()?;
+    
+    tracing::info!("📋 Loading configuration from environment...");
+    let config = match Config::from_env() {
+        Ok(cfg) => {
+            tracing::info!("✅ Configuration loaded successfully");
+            tracing::info!("   Port: {}", cfg.port);
+            tracing::info!("   Environment: {:?}", cfg.environment);
+            tracing::info!("   Frontend URL: {}", cfg.frontend_url);
+            cfg
+        }
+        Err(e) => {
+            tracing::error!("❌ Failed to load configuration: {}", e);
+            return Err(e);
+        }
+    };
 
-    tracing::info!("🚀 BeamLab Rust API v2.1.0 starting...");
     tracing::info!("📊 Using {} worker threads", rayon::current_num_threads());
 
-    // Connect to MongoDB
-    let db = Database::connect(&config.mongodb_uri).await?;
-    tracing::info!("✅ Connected to MongoDB");
+    // Connect to MongoDB with retry logic
+    tracing::info!("🔌 Connecting to MongoDB...");
+    tracing::info!("   URI: {}...", &config.mongodb_uri.chars().take(30).collect::<String>());
+    
+    let db = match Database::connect(&config.mongodb_uri).await {
+        Ok(db) => {
+            tracing::info!("✅ Connected to MongoDB successfully");
+            db
+        }
+        Err(e) => {
+            tracing::error!("❌ Failed to connect to MongoDB: {}", e);
+            tracing::error!("   Full error: {:?}", e);
+            tracing::error!("   This is a fatal error - database is required");
+            return Err(e);
+        }
+    };
 
     // Create shared application state
     let state = Arc::new(AppState {

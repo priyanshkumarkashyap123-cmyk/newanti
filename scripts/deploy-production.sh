@@ -30,7 +30,10 @@ REQUIRED_VARS=(
     "MONGODB_URI"
     "CLERK_SECRET_KEY"
     "GEMINI_API_KEY"
-    "JWT_SECRET"
+    "JWT_SECRET",
+    "RAZORPAY_KEY_ID",
+    "RAZORPAY_KEY_SECRET",
+    "RAZORPAY_WEBHOOK_SECRET"
 )
 
 for var in "${REQUIRED_VARS[@]}"; do
@@ -148,7 +151,10 @@ az webapp config appsettings set \
         MONGODB_URI="$MONGODB_URI" \
         FRONTEND_URL=https://beamlabultimate.tech \
         RUST_API_URL=https://${RUST_API_APP}.azurewebsites.net \
-        PYTHON_API_URL=https://beamlab-backend-python.azurewebsites.net
+        PYTHON_API_URL=https://beamlab-backend-python.azurewebsites.net \
+        RAZORPAY_KEY_ID="$RAZORPAY_KEY_ID" \
+        RAZORPAY_KEY_SECRET="$RAZORPAY_KEY_SECRET" \
+        RAZORPAY_WEBHOOK_SECRET="$RAZORPAY_WEBHOOK_SECRET"
 
 echo -e "${GREEN}✅ Node.js API configured${NC}"
 echo ""
