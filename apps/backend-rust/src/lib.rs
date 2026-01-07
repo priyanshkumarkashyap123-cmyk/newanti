@@ -1,7 +1,7 @@
 mod solver;
 pub mod solver_3d;
 pub mod design_codes;
-pub mod renderer;
+// pub mod renderer; // Disabled temporarily - wgpu 0.19 API incompatibility on WASM
 pub mod ai_architect;
 pub mod dynamics;
 pub mod plate_element;
@@ -134,8 +134,6 @@ pub fn solve_3d_frame(
     }
 }
 
-/// Modal analysis for dynamic properties
-#[wasm_bindgen]
 /// Modal analysis for dynamic properties
 #[wasm_bindgen]
 pub fn modal_analysis(nodes_val: JsValue, elements_val: JsValue, num_modes: usize) -> JsValue {

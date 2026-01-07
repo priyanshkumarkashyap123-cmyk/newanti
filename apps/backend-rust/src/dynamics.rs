@@ -149,7 +149,7 @@ pub fn solve_eigenvalues(
             // m_inv_sqrt[(i, i)] = 1.0 / (1e-6).sqrt(); 
             // Better: If diagonal is zero, it might be a static slave DOF.
             // Let's skip dynamics for those or set small mass.
-            m_inv_sqrt[(i, i)] = 1.0 / (1e-3).sqrt(); // Small fictitious mass
+            m_inv_sqrt[(i, i)] = 1.0 / (1e-3_f64).sqrt(); // Small fictitious mass
         }
     }
     
@@ -178,7 +178,7 @@ pub fn solve_eigenvalues(
     let count = num_modes.min(modes.len());
     let mut frequencies = Vec::new();
     let mut periods = Vec::new();
-    let mut mode_shapes_vec = Vec::new();
+    let mut mode_shapes_vec: Vec<HashMap<String, Vec<f64>>> = Vec::new();
     
     for k in 0..count {
         let (lambda, idx) = modes[k];

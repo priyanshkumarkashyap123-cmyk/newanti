@@ -158,23 +158,8 @@ pub struct MemberForces {
     pub max_torsion: f64,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ModalResult {
-    pub success: bool,
-    pub error: Option<String>,
-    
-    /// Natural frequencies [Hz]
-    pub frequencies: Vec<f64>,
-    
-    /// Natural periods [s]
-    pub periods: Vec<f64>,
-    
-    /// Mode shapes: mode_number -> node_id -> [ux, uy, uz, θx, θy, θz]
-    pub mode_shapes: Vec<HashMap<String, Vec<f64>>>,
-    
-    /// Modal participation factors
-    pub participation_factors: Vec<[f64; 3]>,  // [X, Y, Z] for each mode
-}
+// ModalResult is now defined in dynamics.rs module
+pub use crate::dynamics::ModalResult;
 
 // ============================================
 // 3D FRAME ANALYSIS
@@ -743,6 +728,7 @@ pub fn modal_analysis(
     
     // [Simulated Result for MVP until dynamics.rs is fully fleshed out with eigenvectors return]
     // Since dynamics.rs is a placeholder, we return the dummy result for now.
+    // raw_result is already of type dynamics::ModalResult
     
     Ok(raw_result)
 }
