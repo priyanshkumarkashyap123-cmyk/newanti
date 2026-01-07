@@ -529,8 +529,9 @@ export function formatDesignResult(result: DesignResult): string {
 export async function designSteelMembers(members: SteelDesignResults[], code: 'AISC360' | 'IS800' = 'AISC360'): Promise<SteelDesignResults[]> {
     try {
         // Use Rust API for steel design (10x faster than Python)
-        const RUST_API = import.meta.env.VITE_RUST_API_URL || 'http://localhost:8000';
-        
+        // Use Rust API for steel design (10x faster than Python)
+        const RUST_API = import.meta.env.VITE_API_URL || 'https://beamlab-backend-node.azurewebsites.net';
+
         const payload = {
             members: members.map(m => ({
                 id: m.memberId,
@@ -609,7 +610,7 @@ export async function optimizeMember(
         momentZ: number;
     }
 ): Promise<{ section: any; ratio: number; weight: number } | null> {
-    const PYTHON_API = import.meta.env.VITE_PYTHON_API_URL || "http://localhost:3002";
+    const PYTHON_API = import.meta.env.VITE_PYTHON_API_URL || "https://beamlab-backend-python.azurewebsites.net";
     try {
         const response = await fetch(`${PYTHON_API}/design/optimize`, {
             method: 'POST',

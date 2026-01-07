@@ -63,7 +63,7 @@ export function SplitMemberDialog({ isOpen, onClose, memberId }: SplitMemberDial
             if (reference === 'end') ratio = 1 - ratio;
         } else if (method === 'distance') {
             if (length === 0) return;
-            let dist = Math.max(0.001, Math.min(length - 0.001, numValue));
+            const dist = Math.max(0.001, Math.min(length - 0.001, numValue));
             ratio = dist / length;
             if (reference === 'end') ratio = 1 - ratio;
         }

@@ -9,9 +9,10 @@
 // ============================================
 
 // Use Rust API for templates (100x faster than Python)
-const RUST_API = import.meta.env['VITE_RUST_API_URL'] || "http://localhost:8000";
+// Use Rust API for templates (100x faster than Python)
+const RUST_API = import.meta.env['VITE_API_URL'] || "https://beamlab-backend-node.azurewebsites.net";
 // Fallback to Python for AI features (Gemini)
-const PYTHON_API = import.meta.env['VITE_PYTHON_API_URL'] || "http://localhost:8081";
+const PYTHON_API = import.meta.env['VITE_PYTHON_API_URL'] || "https://beamlab-backend-python.azurewebsites.net";
 
 // ============================================
 // TYPES

@@ -9,7 +9,7 @@
  * - Report generation
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://beamlab-backend-node.azurewebsites.net';
 
 // ============================================
 // COMMON TYPES
@@ -128,7 +128,7 @@ export function exportJSON(model: StructuralModel): string {
  */
 export function importJSON(content: string): StructuralModel {
     const data = JSON.parse(content);
-    
+
     // Validate required fields
     if (!Array.isArray(data.nodes)) {
         throw new Error('Invalid JSON: missing nodes array');
@@ -136,7 +136,7 @@ export function importJSON(content: string): StructuralModel {
     if (!Array.isArray(data.members)) {
         throw new Error('Invalid JSON: missing members array');
     }
-    
+
     return data as StructuralModel;
 }
 
@@ -196,7 +196,7 @@ export function parseDXFLocally(content: string): {
     for (let i = 1; i < lineBlocks.length; i++) {
         const block = lineBlocks[i];
         const codes = block.match(/\n\s*(\d+)\n\s*([^\n]+)/g) || [];
-        
+
         const values: Record<string, string> = {};
         for (const code of codes) {
             const match = code.match(/(\d+)\n\s*([^\n]+)/);
@@ -234,7 +234,7 @@ export function dxfLinesToModel(
     const nodeMap = new Map<string, ModelNode>();
     const members: ModelMember[] = [];
 
-    const getNodeKey = (x: number, y: number, z: number) => 
+    const getNodeKey = (x: number, y: number, z: number) =>
         `${x.toFixed(3)},${y.toFixed(3)},${z.toFixed(3)}`;
 
     const getOrCreateNode = (x: number, y: number, z: number): ModelNode => {
@@ -249,7 +249,7 @@ export function dxfLinesToModel(
     lines.forEach((line, idx) => {
         const startNode = getOrCreateNode(line.x1, line.y1, line.z1);
         const endNode = getOrCreateNode(line.x2, line.y2, line.z2);
-        
+
         members.push({
             id: `M${idx + 1}`,
             startNodeId: startNode.id,
@@ -283,10 +283,10 @@ export function exportToCSV(
     headers: string[]
 ): string {
     const rows: string[] = [];
-    
+
     // Header row
     rows.push(headers.join(','));
-    
+
     // Data rows
     for (const row of data) {
         const values = headers.map((h) => {
@@ -297,7 +297,7 @@ export function exportToCSV(
         });
         rows.push(values.join(','));
     }
-    
+
     return rows.join('\n');
 }
 

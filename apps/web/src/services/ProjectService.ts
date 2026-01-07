@@ -17,14 +17,14 @@ export interface Project {
     isPublic: boolean;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://beamlab-backend-node.azurewebsites.net';
 
 export const ProjectService = {
     /**
      * List all projects for current user
      */
     async listProjects(token: string): Promise<Project[]> {
-        const result = await fetchJson<{projects: Project[]}>(`${API_BASE_URL}/api/project`, {
+        const result = await fetchJson<{ projects: Project[] }>(`${API_BASE_URL}/api/project`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             },
@@ -42,7 +42,7 @@ export const ProjectService = {
      * Get specific project details
      */
     async getProject(id: string, token: string): Promise<Project> {
-        const result = await fetchJson<{project: Project}>(`${API_BASE_URL}/api/project/${id}`, {
+        const result = await fetchJson<{ project: Project }>(`${API_BASE_URL}/api/project/${id}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             },

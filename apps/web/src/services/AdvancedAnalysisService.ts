@@ -97,7 +97,7 @@ export class AdvancedAnalysisService {
   constructor() {
     const rustApi = (import.meta as any).env?.VITE_RUST_API_URL;
     const apiUrl = (import.meta as any).env?.VITE_API_URL;
-    const base = rustApi || apiUrl || 'http://localhost:8000';
+    const base = rustApi || apiUrl || 'https://beamlab-backend-node.azurewebsites.net';
     this.baseUrl = `${base}/api/analysis`;
   }
 
@@ -105,7 +105,7 @@ export class AdvancedAnalysisService {
     const result = await postJson<ModalAnalysisResponse>(`${this.baseUrl}/modal`, req, {
       timeout: 30000 // 30 seconds for modal analysis
     });
-    
+
     if (!result.success) {
       throw new Error(`Modal analysis failed: ${result.error || 'Unknown error'}`);
     }
@@ -116,7 +116,7 @@ export class AdvancedAnalysisService {
     const result = await postJson<TimeHistoryResponse>(`${this.baseUrl}/time-history`, req, {
       timeout: 60000 // 60 seconds for time-history
     });
-    
+
     if (!result.success) {
       throw new Error(`Time-history analysis failed: ${result.error || 'Unknown error'}`);
     }
@@ -127,7 +127,7 @@ export class AdvancedAnalysisService {
     const result = await postJson<SeismicAnalysisResponse>(`${this.baseUrl}/seismic`, req, {
       timeout: 30000 // 30 seconds for seismic
     });
-    
+
     if (!result.success) {
       throw new Error(`Seismic analysis failed: ${result.error || 'Unknown error'}`);
     }

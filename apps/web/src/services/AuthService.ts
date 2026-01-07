@@ -5,7 +5,7 @@
  * Works alongside authStore for state management.
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://beamlab-backend-node.azurewebsites.net';
 
 // ============================================
 // TYPES

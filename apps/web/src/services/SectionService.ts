@@ -35,7 +35,7 @@ export interface SectionRecommendationRequest {
 }
 
 // API URL (default to Node proxy or direct Python)
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_URL = import.meta.env.VITE_API_URL || 'https://beamlab-backend-node.azurewebsites.net';
 
 class SectionService {
 
@@ -46,7 +46,7 @@ class SectionService {
         const result = await postJson(`${API_URL}/sections/custom/calculate`, request, {
             timeout: 20000 // 20 seconds for complex calculations
         });
-        
+
         if (!result.success) {
             throw new Error(result.error || 'Failed to calculate section');
         }
@@ -60,7 +60,7 @@ class SectionService {
         const result = await postJson(`${API_URL}/sections/standard/create`, request, {
             timeout: 15000
         });
-        
+
         if (!result.success) {
             throw new Error(result.error || 'Failed to create section');
         }
@@ -74,7 +74,7 @@ class SectionService {
         const result = await postJson(`${API_URL}/sections/recommend`, request, {
             timeout: 15000
         });
-        
+
         if (!result.success) {
             throw new Error(result.error || 'Failed to get recommendations');
         }

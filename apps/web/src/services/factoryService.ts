@@ -10,7 +10,7 @@
 
 // Python backend URL - defaults to localhost:8000 for development
 // In production, set VITE_PYTHON_API_URL environment variable
-const API_URL = import.meta.env.VITE_PYTHON_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_PYTHON_API_URL || "https://beamlab-backend-python.azurewebsites.net";
 
 // ============================================
 // TYPES

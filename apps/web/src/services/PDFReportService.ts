@@ -69,7 +69,7 @@ export const generateDesignReport = (
     // ANALYSIS RESULTS (FORCES)
     // ============================================
     if (analysisResults) {
-        let finalY = (doc as any).lastAutoTable.finalY + 15;
+        const finalY = (doc as any).lastAutoTable.finalY + 15;
         doc.setFontSize(14);
         doc.text("2. Analysis Results (Member Forces)", 14, finalY);
 

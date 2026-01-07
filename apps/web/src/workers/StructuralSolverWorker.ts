@@ -505,15 +505,15 @@ function conjugateGradient(
     const diagonal = K.getDiagonal();
 
     // r = F - K*x (x=0 so r = F)
-    let r = new Float64Array(F);
+    const r = new Float64Array(F);
 
     // z = M^-1 * r (Jacobi preconditioner)
-    let z = new Float64Array(n);
+    const z = new Float64Array(n);
     for (let i = 0; i < n; i++) {
         z[i] = diagonal[i] !== 0 ? r[i] / diagonal[i] : r[i];
     }
 
-    let p = new Float64Array(z);
+    const p = new Float64Array(z);
     let rzOld = dot(r, z);
 
     const bNorm = norm(F) || 1;
@@ -604,7 +604,7 @@ function analyze(model: ModelData): ResultData {
         // 2. SOLVE
         // ========
         let displacements: Float64Array;
-        let stats: any = {};
+        const stats: any = {};
         const solveStart = performance.now();
 
         if (wasmReady && wasmModule && wasmModule.solve_sparse_system_json) {

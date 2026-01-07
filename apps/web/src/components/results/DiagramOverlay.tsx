@@ -106,8 +106,8 @@ export const calculateLocalAxes = (start: THREE.Vector3, end: THREE.Vector3, bet
     const L = start.distanceTo(end);
 
     // Initial Local Z and Y (without beta)
-    let localY = new THREE.Vector3();
-    let localZ = new THREE.Vector3();
+    const localY = new THREE.Vector3();
+    const localZ = new THREE.Vector3();
 
     // Check if vertical
     const isVertical = Math.abs(dir.y) > 0.999;

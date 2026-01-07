@@ -378,7 +378,7 @@ export const StructuralMember: FC<StructuralMemberProps> = ({
         // - Columns (vertical): Web typically faces the direction of lateral load/framing
 
         // Create a local coordinate system
-        let localY = direction.clone(); // Member axis
+        const localY = direction.clone(); // Member axis
         let localZ: THREE.Vector3;
         let localX: THREE.Vector3;
 

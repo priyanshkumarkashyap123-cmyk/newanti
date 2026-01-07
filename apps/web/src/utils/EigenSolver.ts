@@ -279,7 +279,7 @@ export class EigenSolver {
     private findMultipleEigenvalues(A: number[][], numModes: number): Array<{ eigenvalue: number; eigenvector: number[] }> {
         const results: Array<{ eigenvalue: number; eigenvector: number[] }> = [];
         const n = A.length;
-        let currentA = A.map(row => [...row]);
+        const currentA = A.map(row => [...row]);
 
         for (let mode = 0; mode < numModes && mode < n; mode++) {
             const result = this.powerIteration(currentA);

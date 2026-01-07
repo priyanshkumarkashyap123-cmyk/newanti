@@ -195,10 +195,10 @@ const WindLoadDialog: React.FC = () => {
         
         // External pressure coefficients (Cpe) - Simplified for rectangular buildings
         const heightWidthRatio = params.buildingHeight / params.buildingWidth;
-        let cpeWindward = 0.8;
-        let cpeLeeward = heightWidthRatio > 2 ? -0.6 : heightWidthRatio > 1 ? -0.5 : -0.4;
-        let cpeSide = -0.8;
-        let cpeRoof = heightWidthRatio > 1 ? -0.9 : -0.7;
+        const cpeWindward = 0.8;
+        const cpeLeeward = heightWidthRatio > 2 ? -0.6 : heightWidthRatio > 1 ? -0.5 : -0.4;
+        const cpeSide = -0.8;
+        const cpeRoof = heightWidthRatio > 1 ? -0.9 : -0.7;
         
         // Internal pressure coefficient (Cpi)
         let cpiPositive = 0.0;

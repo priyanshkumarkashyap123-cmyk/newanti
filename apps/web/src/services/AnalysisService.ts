@@ -95,9 +95,9 @@ export interface ProgressCallback {
 const CONFIG = {
     LOCAL_THRESHOLD: 100000,  // Use local WASM solver for almost all models (was 2000)
     // Use Rust API for high-performance analysis (only for massive models)
-    RUST_API_URL: import.meta.env.VITE_RUST_API_URL || 'http://localhost:3002',
+    RUST_API_URL: import.meta.env.VITE_API_URL || 'https://beamlab-backend-node.azurewebsites.net',
     // Fallback to Node.js API for auth/payments
-    API_BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:3001',
+    API_BASE_URL: import.meta.env.VITE_API_URL || 'https://beamlab-backend-node.azurewebsites.net',
     POLL_INTERVAL: 1000,    // Poll interval for async jobs (ms)
     MAX_POLL_TIME: 300000   // Maximum poll time (5 minutes)
 };
@@ -416,7 +416,7 @@ class AnalysisService {
                     pollCount = 0;
                 } catch (fetchError) {
                     clearTimeout(timeoutId);
-                    
+
                     if (fetchError instanceof TypeError && fetchError.message.includes('Failed to fetch')) {
                         console.warn('Network error, will retry...');
                     } else if (fetchError instanceof DOMException && fetchError.name === 'AbortError') {
@@ -434,7 +434,7 @@ class AnalysisService {
             // Exponential backoff with max
             pollCount++;
             pollInterval = Math.min(maxPollInterval, CONFIG.POLL_INTERVAL * Math.pow(1.5, Math.min(pollCount, 3)));
-            
+
             // Wait before next poll
             await new Promise(resolve => setTimeout(resolve, pollInterval));
         }
@@ -486,8 +486,8 @@ class AnalysisService {
             }
 
             // Route to Rust backend P-Delta solver (20x faster than Python)
-            const RUST_API_URL = import.meta.env.VITE_RUST_API_URL || 'http://localhost:8000';
-            const response = await fetch(`${RUST_API_URL}/api/advanced/pdelta`, {
+            const API_URL = import.meta.env.VITE_API_URL || 'https://beamlab-backend-node.azurewebsites.net';
+            const response = await fetch(`${API_URL}/api/advanced/pdelta`, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify({
