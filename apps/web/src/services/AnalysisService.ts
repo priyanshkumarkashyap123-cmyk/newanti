@@ -338,7 +338,7 @@ class AnalysisService {
     }
 
     /**
-     * Poll for async job results
+     * Poll for async job results with exponential backoff and timeout
      */
     private async pollForResults(
         jobId: string,
@@ -347,6 +347,9 @@ class AnalysisService {
         token?: string | null
     ): Promise<AnalysisResult> {
         const startTime = Date.now();
+        let pollCount = 0;
+        let pollInterval = CONFIG.POLL_INTERVAL;
+        const maxPollInterval = 5000; // Max 5 seconds between polls
 
         while (Date.now() - startTime < CONFIG.MAX_POLL_TIME) {
             if (signal?.aborted) {
@@ -359,46 +362,84 @@ class AnalysisService {
                     headers['Authorization'] = `Bearer ${token}`;
                 }
 
-                const response = await fetch(
-                    `${CONFIG.API_BASE_URL}/api/analyze/job/${jobId}`,
-                    {
-                        signal,
-                        headers
+                // Create abort controller for fetch with 10s timeout
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+                try {
+                    const response = await fetch(
+                        `${CONFIG.API_BASE_URL}/api/analyze/job/${jobId}`,
+                        {
+                            signal: controller.signal,
+                            headers,
+                            cache: 'no-store'
+                        }
+                    );
+
+                    clearTimeout(timeoutId);
+
+                    if (!response.ok) {
+                        // Log but don't crash on temporary errors
+                        if (response.status >= 500) {
+                            console.warn(`Server error fetching job status: ${response.status}`);
+                        } else if (response.status === 404) {
+                            return { success: false, error: 'Job not found' };
+                        }
+                        throw new Error(`HTTP ${response.status}`);
                     }
-                );
 
-                if (!response.ok) {
-                    throw new Error('Failed to fetch job status');
+                    const data = await response.json();
+                    const job = data.job;
+
+                    if (!job) {
+                        throw new Error('Invalid job response');
+                    }
+
+                    if (job.status === 'completed') {
+                        onProgress?.('complete', 100, 'Analysis complete!');
+                        return {
+                            ...job.result,
+                            stats: { ...job.result?.stats, usedCloud: true }
+                        };
+                    }
+
+                    if (job.status === 'failed') {
+                        return { success: false, error: job.error || 'Analysis failed' };
+                    }
+
+                    // Update progress - ensure valid range
+                    const progress = Math.min(99, Math.max(10, job.progress || 30));
+                    onProgress?.('solving', progress, `Processing... ${job.status}`);
+
+                    // Reset poll interval on success
+                    pollInterval = CONFIG.POLL_INTERVAL;
+                    pollCount = 0;
+                } catch (fetchError) {
+                    clearTimeout(timeoutId);
+                    
+                    if (fetchError instanceof TypeError && fetchError.message.includes('Failed to fetch')) {
+                        console.warn('Network error, will retry...');
+                    } else if (fetchError instanceof DOMException && fetchError.name === 'AbortError') {
+                        console.warn('Fetch timeout, retrying...');
+                    } else {
+                        console.error('Poll fetch error:', fetchError);
+                    }
+                    // Continue polling on network errors
                 }
-
-                const data = await response.json();
-                const job = data.job;
-
-                if (job.status === 'completed') {
-                    onProgress?.('complete', 100, 'Analysis complete!');
-                    return {
-                        ...job.result,
-                        stats: { ...job.result?.stats, usedCloud: true }
-                    };
-                }
-
-                if (job.status === 'failed') {
-                    return { success: false, error: job.error };
-                }
-
-                // Update progress
-                const progress = job.progress || 30;
-                onProgress?.('solving', progress, `Processing... ${job.status}`);
-
             } catch (error) {
                 console.error('Poll error:', error);
+                // Don't throw - continue polling
             }
 
+            // Exponential backoff with max
+            pollCount++;
+            pollInterval = Math.min(maxPollInterval, CONFIG.POLL_INTERVAL * Math.pow(1.5, Math.min(pollCount, 3)));
+            
             // Wait before next poll
-            await new Promise(resolve => setTimeout(resolve, CONFIG.POLL_INTERVAL));
+            await new Promise(resolve => setTimeout(resolve, pollInterval));
         }
 
-        return { success: false, error: 'Analysis timed out' };
+        return { success: false, error: 'Analysis timed out after 5 minutes' };
     }
 
     /**

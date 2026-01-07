@@ -110,7 +110,7 @@ export interface Member {
     };
     // Rigid zone offsets (for beam-column connections)
     startOffset?: { x: number; y: number; z: number };
-    startOffset?: { x: number; y: number; z: number };
+
     endOffset?: { x: number; y: number; z: number };
     betaAngle?: number; // Rotation angle in degrees
 }
@@ -963,107 +963,107 @@ export const useModelStore = create<ModelState>()(
                             }
                         });
 
-                    })
-                ),
+                        return { nodes: newNodes, members: newMembers };
+                    }),
 
-            renumberNodes: () =>
-            set((state) => {
-                const sortedNodes = Array.from(state.nodes.values()).sort((a, b) => {
-                    if (Math.abs(a.y - b.y) > 0.001) return a.y - b.y; // Y (Elevation) first
-                    if (Math.abs(a.z - b.z) > 0.001) return a.z - b.z; // Then Z
-                    return a.x - b.x; // Then X
-                });
-
-                const newNodes = new Map<string, Node>();
-                const idMap = new Map<string, string>(); // old -> new
-                const newSelected = new Set(state.selectedIds);
-                let counter = 1;
-
-                // Renumber nodes
-                sortedNodes.forEach(node => {
-                    const newId = `N${counter++}`;
-                    idMap.set(node.id, newId);
-                    newNodes.set(newId, { ...node, id: newId });
-
-                    // Update selection
-                    if (state.selectedIds.has(node.id)) {
-                        newSelected.delete(node.id);
-                        newSelected.add(newId);
-                    }
-                });
-
-                // Update member references
-                const newMembers = new Map(state.members);
-                newMembers.forEach((member, mId) => {
-                    const newStart = idMap.get(member.startNodeId);
-                    const newEnd = idMap.get(member.endNodeId);
-                    if (newStart && newEnd) {
-                        newMembers.set(mId, {
-                            ...member,
-                            startNodeId: newStart,
-                            endNodeId: newEnd
+                renumberNodes: () =>
+                    set((state) => {
+                        const sortedNodes = Array.from(state.nodes.values()).sort((a, b) => {
+                            if (Math.abs(a.y - b.y) > 0.001) return a.y - b.y; // Y (Elevation) first
+                            if (Math.abs(a.z - b.z) > 0.001) return a.z - b.z; // Then Z
+                            return a.x - b.x; // Then X
                         });
-                    }
-                });
 
-                // Update nodal loads
-                const newLoads = state.loads.map(load => ({
-                    ...load,
-                    nodeId: idMap.get(load.nodeId) || load.nodeId
-                }));
+                        const newNodes = new Map<string, Node>();
+                        const idMap = new Map<string, string>(); // old -> new
+                        const newSelected = new Set(state.selectedIds);
+                        let counter = 1;
 
-                return {
-                    nodes: newNodes,
-                    members: newMembers,
-                    loads: newLoads,
-                    selectedIds: newSelected,
-                    nextNodeNumber: counter,
-                    analysisResults: null // Invalidate results
-                };
-            }),
+                        // Renumber nodes
+                        sortedNodes.forEach(node => {
+                            const newId = `N${counter++}`;
+                            idMap.set(node.id, newId);
+                            newNodes.set(newId, { ...node, id: newId });
 
-            renumberMembers: () =>
-            set((state) => {
-                // Sort by start node ID number (heuristic)
-                const sortedMembers = Array.from(state.members.values()).sort((a, b) => {
-                    // Extract number from N1, N2...
-                    const n1 = parseInt(a.startNodeId.substring(1)) || 0;
-                    const n2 = parseInt(b.startNodeId.substring(1)) || 0;
-                    return n1 - n2;
-                });
+                            // Update selection
+                            if (state.selectedIds.has(node.id)) {
+                                newSelected.delete(node.id);
+                                newSelected.add(newId);
+                            }
+                        });
 
-                const newMembers = new Map<string, Member>();
-                const idMap = new Map<string, string>();
-                const newSelected = new Set(state.selectedIds);
-                let counter = 1;
+                        // Update member references
+                        const newMembers = new Map(state.members);
+                        newMembers.forEach((member, mId) => {
+                            const newStart = idMap.get(member.startNodeId);
+                            const newEnd = idMap.get(member.endNodeId);
+                            if (newStart && newEnd) {
+                                newMembers.set(mId, {
+                                    ...member,
+                                    startNodeId: newStart,
+                                    endNodeId: newEnd
+                                });
+                            }
+                        });
 
-                sortedMembers.forEach(member => {
-                    const newId = `M${counter++}`;
-                    idMap.set(member.id, newId);
-                    newMembers.set(newId, { ...member, id: newId });
+                        // Update nodal loads
+                        const newLoads = state.loads.map(load => ({
+                            ...load,
+                            nodeId: idMap.get(load.nodeId) || load.nodeId
+                        }));
 
-                    if (state.selectedIds.has(member.id)) {
-                        newSelected.delete(member.id);
-                        newSelected.add(newId);
-                    }
-                });
+                        return {
+                            nodes: newNodes,
+                            members: newMembers,
+                            loads: newLoads,
+                            selectedIds: newSelected,
+                            nextNodeNumber: counter,
+                            analysisResults: null // Invalidate results
+                        };
+                    }),
 
-                // Update member loads
-                const newMemberLoads = state.memberLoads.map(load => ({
-                    ...load,
-                    memberId: idMap.get(load.memberId) || load.memberId
-                }));
+                renumberMembers: () =>
+                    set((state) => {
+                        // Sort by start node ID number (heuristic)
+                        const sortedMembers = Array.from(state.members.values()).sort((a, b) => {
+                            // Extract number from N1, N2...
+                            const n1 = parseInt(a.startNodeId.substring(1)) || 0;
+                            const n2 = parseInt(b.startNodeId.substring(1)) || 0;
+                            return n1 - n2;
+                        });
 
-                return {
-                    members: newMembers,
-                    memberLoads: newMemberLoads,
-                    selectedIds: newSelected,
-                    nextMemberNumber: counter,
-                    analysisResults: null
-                };
-            })
+                        const newMembers = new Map<string, Member>();
+                        const idMap = new Map<string, string>();
+                        const newSelected = new Set(state.selectedIds);
+                        let counter = 1;
 
-        ),
+                        sortedMembers.forEach(member => {
+                            const newId = `M${counter++}`;
+                            idMap.set(member.id, newId);
+                            newMembers.set(newId, { ...member, id: newId });
+
+                            if (state.selectedIds.has(member.id)) {
+                                newSelected.delete(member.id);
+                                newSelected.add(newId);
+                            }
+                        });
+
+                        // Update member loads
+                        const newMemberLoads = state.memberLoads.map(load => ({
+                            ...load,
+                            memberId: idMap.get(load.memberId) || load.memberId
+                        }));
+
+                        return {
+                            members: newMembers,
+                            memberLoads: newMemberLoads,
+                            selectedIds: newSelected,
+                            nextMemberNumber: counter,
+                            analysisResults: null
+                        };
+                    })
+
+            })),
         {
             name: 'StructuralModel',
             // Optional: Serializer for better Map visibility in Redux DevTools
@@ -1101,11 +1101,34 @@ export const saveProjectToStorage = (): boolean => {
             projectInfo: state.projectInfo,
             nodes: Array.from(state.nodes.entries()),
             members: Array.from(state.members.entries()),
-            loads: state.loads,
-            memberLoads: state.memberLoads,
+            loads: state.loads || [],
+            memberLoads: state.memberLoads || [],
             savedAt: new Date().toISOString()
         };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(projectData));
+
+        // Validate data before saving
+        if (projectData.nodes.length === 0) {
+            console.warn('Attempting to save empty project');
+        }
+
+        const jsonString = JSON.stringify(projectData);
+
+        // Check approximate size (localStorage typically 5-10MB limit)
+        if (jsonString.length > 5 * 1024 * 1024) {
+            console.error('Project too large to save locally');
+            return false;
+        }
+
+        try {
+            localStorage.setItem(STORAGE_KEY, jsonString);
+        } catch (quotaError) {
+            if (quotaError instanceof DOMException && (quotaError as any).code === 22) {
+                console.error('localStorage quota exceeded - clear some projects');
+                return false;
+            }
+            throw quotaError;
+        }
+
         return true;
     } catch (e) {
         console.error('Failed to save project:', e);
@@ -1121,42 +1144,85 @@ export const loadProjectFromStorage = (): boolean => {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (!stored) return false;
 
-        const data: SavedProjectData = JSON.parse(stored);
+        // Validate JSON before parsing
+        let data: SavedProjectData;
+        try {
+            data = JSON.parse(stored);
+        } catch (parseError) {
+            console.error('Corrupted localStorage data, clearing...');
+            localStorage.removeItem(STORAGE_KEY);
+            return false;
+        }
+
+        // Validate essential fields
+        if (!data.projectInfo || !Array.isArray(data.nodes) || !Array.isArray(data.members)) {
+            console.error('Invalid project data structure');
+            return false;
+        }
 
         const state = useModelStore.getState();
 
-        // Restore nodes
+        // Restore nodes with error handling
         const nodesMap = new Map<string, Node>();
-        data.nodes.forEach(([id, node]) => nodesMap.set(id, node));
+        try {
+            data.nodes.forEach(([id, node]) => {
+                if (id && node && typeof node.x === 'number' && typeof node.y === 'number' && typeof node.z === 'number') {
+                    nodesMap.set(id, node);
+                }
+            });
+        } catch (nodeError) {
+            console.error('Error restoring nodes:', nodeError);
+        }
 
-        // Restore members
+        // Restore members with error handling
         const membersMap = new Map<string, Member>();
-        data.members.forEach(([id, member]) => membersMap.set(id, member));
+        try {
+            data.members.forEach(([id, member]) => {
+                if (id && member && member.startNodeId && member.endNodeId) {
+                    membersMap.set(id, member);
+                }
+            });
+        } catch (memberError) {
+            console.error('Error restoring members:', memberError);
+        }
 
-        // Calculate next IDs
+        // Calculate next IDs with safety checks
         let maxNodeNum = 0;
         let maxMemberNum = 0;
 
-        nodesMap.forEach((_, id) => {
-            const match = id.match(/^N(\d+)$/);
-            if (match) maxNodeNum = Math.max(maxNodeNum, parseInt(match[1]));
-        });
+        try {
+            nodesMap.forEach((_, id) => {
+                const match = id?.match?.(/^N(\d+)$/);
+                if (match && match[1]) {
+                    maxNodeNum = Math.max(maxNodeNum, parseInt(match[1], 10) || 0);
+                }
+            });
 
-        membersMap.forEach((_, id) => {
-            const match = id.match(/^M(\d+)$/);
-            if (match) maxMemberNum = Math.max(maxMemberNum, parseInt(match[1]));
-        });
+            membersMap.forEach((_, id) => {
+                const match = id?.match?.(/^M(\d+)$/);
+                if (match && match[1]) {
+                    maxMemberNum = Math.max(maxMemberNum, parseInt(match[1], 10) || 0);
+                }
+            });
+        } catch (idError) {
+            console.error('Error calculating next IDs:', idError);
+        }
 
-        // Update store
+        // Validate loaded data
+        if (nodesMap.size === 0 && data.nodes.length > 0) {
+            console.warn('No valid nodes loaded');
+        }
+
+        // Update store with loaded data
         useModelStore.setState({
             projectInfo: {
                 ...data.projectInfo,
-                date: new Date(data.projectInfo.date)
+                date: data.projectInfo.date instanceof Date ? data.projectInfo.date : new Date(data.projectInfo.date || Date.now())
             },
             nodes: nodesMap,
             members: membersMap,
-            loads: data.loads,
-            memberLoads: data.memberLoads,
+            loads: Array.isArray(data.loads) ? data.loads : [],
+            memberLoads: Array.isArray(data.memberLoads) ? data.memberLoads : [],
             nextNodeNumber: maxNodeNum + 1,
             nextMemberNumber: maxMemberNum + 1,
             selectedIds: new Set(),

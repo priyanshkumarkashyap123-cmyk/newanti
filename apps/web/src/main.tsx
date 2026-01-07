@@ -3,7 +3,12 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './providers/AuthProvider';
 import { SubscriptionProvider } from './hooks/useSubscription';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { safeguards } from './utils/productionSafeguards';
 import './index.css';
+
+// Initialize production safeguards (global error handlers, performance monitoring)
+safeguards.initialize();
 
 // Debug log
 console.log('🚀 main.tsx starting...');
@@ -24,15 +29,21 @@ const initializeApp = async () => {
         
         // Use unified AuthProvider which handles both Clerk and in-house auth
         // SubscriptionProvider provides subscription/tier context for feature gating
+        // ErrorBoundary catches and displays any runtime errors gracefully
         createRoot(rootElement).render(
             <StrictMode>
-                <BrowserRouter>
-                    <AuthProvider>
-                        <SubscriptionProvider>
-                            <App />
-                        </SubscriptionProvider>
-                    </AuthProvider>
-                </BrowserRouter>
+                <ErrorBoundary onError={(error, errorInfo) => {
+                    console.error('🔴 App Error Caught:', error);
+                    console.error('📍 Component Stack:', errorInfo?.componentStack);
+                }}>
+                    <BrowserRouter>
+                        <AuthProvider>
+                            <SubscriptionProvider>
+                                <App />
+                            </SubscriptionProvider>
+                        </AuthProvider>
+                    </BrowserRouter>
+                </ErrorBoundary>
             </StrictMode>
         );
         

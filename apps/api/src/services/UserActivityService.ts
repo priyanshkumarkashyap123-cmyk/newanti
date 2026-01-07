@@ -9,6 +9,10 @@
  */
 
 import { User, IUser, isMasterUser } from '../models.js';
+import mongoose from 'mongoose';
+
+// Helper to check if DB is connected
+const isConnected = () => mongoose.connection.readyState === 1;
 
 // ============================================
 // TIER LIMITS
@@ -56,6 +60,7 @@ export class UserActivityService {
      * Record user login
      */
     static async recordLogin(clerkId: string): Promise<IUser | null> {
+        if (!isConnected()) return null;
         try {
             const user = await User.findOneAndUpdate(
                 { clerkId },
@@ -81,6 +86,7 @@ export class UserActivityService {
      * Check if user can run analysis (based on daily limit for free tier)
      */
     static async canRunAnalysis(clerkId: string): Promise<{ allowed: boolean; reason?: string; remaining?: number }> {
+        if (!isConnected()) return { allowed: true }; // Fail open if DB down
         try {
             const user = await User.findOne({ clerkId });
             if (!user) {
@@ -127,6 +133,7 @@ export class UserActivityService {
      * Record analysis run
      */
     static async recordAnalysis(clerkId: string, metadata?: Record<string, unknown>): Promise<IUser | null> {
+        if (!isConnected()) return null;
         try {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -165,6 +172,7 @@ export class UserActivityService {
      * Record PDF export
      */
     static async recordExport(clerkId: string): Promise<IUser | null> {
+        if (!isConnected()) return null;
         try {
             return await User.findOneAndUpdate(
                 { clerkId },
@@ -200,6 +208,7 @@ export class UserActivityService {
         };
         recentActivity: Array<{ action: string; timestamp: Date }>;
     } | null> {
+        if (!isConnected()) return null;
         try {
             const user = await User.findOne({ clerkId }).populate('projects');
             if (!user) return null;
@@ -243,6 +252,7 @@ export class UserActivityService {
         allowed: boolean;
         reason?: string;
     }> {
+        if (!isConnected()) return { allowed: true }; // Fail open
         try {
             const user = await User.findOne({ clerkId });
             if (!user) {
@@ -281,6 +291,7 @@ export class UserActivityService {
      * Create or get user
      */
     static async getOrCreateUser(clerkId: string, email: string): Promise<IUser | null> {
+        if (!isConnected()) return null;
         try {
             let user = await User.findOne({ clerkId });
             const isMaster = isMasterUser(email);

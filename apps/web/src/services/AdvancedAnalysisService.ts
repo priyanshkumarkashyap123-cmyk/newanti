@@ -1,3 +1,5 @@
+import { postJson } from '../utils/fetchUtils';
+
 export interface ModalAnalysisRequest {
   stiffness_matrix: number[];
   mass_matrix: number[];
@@ -100,41 +102,35 @@ export class AdvancedAnalysisService {
   }
 
   async modalAnalysis(req: ModalAnalysisRequest): Promise<ModalAnalysisResponse> {
-    const response = await fetch(`${this.baseUrl}/modal`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(req),
+    const result = await postJson<ModalAnalysisResponse>(`${this.baseUrl}/modal`, req, {
+      timeout: 30000 // 30 seconds for modal analysis
     });
-    if (!response.ok) {
-      const err = await response.text();
-      throw new Error(`Modal analysis failed: ${err}`);
+    
+    if (!result.success) {
+      throw new Error(`Modal analysis failed: ${result.error || 'Unknown error'}`);
     }
-    return response.json();
+    return result.data!;
   }
 
   async timeHistoryAnalysis(req: TimeHistoryRequest): Promise<TimeHistoryResponse> {
-    const response = await fetch(`${this.baseUrl}/time-history`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(req),
+    const result = await postJson<TimeHistoryResponse>(`${this.baseUrl}/time-history`, req, {
+      timeout: 60000 // 60 seconds for time-history
     });
-    if (!response.ok) {
-      const err = await response.text();
-      throw new Error(`Time-history analysis failed: ${err}`);
+    
+    if (!result.success) {
+      throw new Error(`Time-history analysis failed: ${result.error || 'Unknown error'}`);
     }
-    return response.json();
+    return result.data!;
   }
 
   async seismicAnalysis(req: SeismicAnalysisRequest): Promise<SeismicAnalysisResponse> {
-    const response = await fetch(`${this.baseUrl}/seismic`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(req),
+    const result = await postJson<SeismicAnalysisResponse>(`${this.baseUrl}/seismic`, req, {
+      timeout: 30000 // 30 seconds for seismic
     });
-    if (!response.ok) {
-      const err = await response.text();
-      throw new Error(`Seismic analysis failed: ${err}`);
+    
+    if (!result.success) {
+      throw new Error(`Seismic analysis failed: ${result.error || 'Unknown error'}`);
     }
-    return response.json();
+    return result.data!;
   }
 }

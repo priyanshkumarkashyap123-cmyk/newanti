@@ -139,7 +139,7 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
         if (!nodeIds.length) return;
 
         setLoadCases(prev => {
-            const currentCase = prev.get(selectedLoadCase) || createDefaultLoadCase(selectedLoadCase);
+            const currentCase = prev.get(selectedLoadCase) || createDefaultLoadCase(selectedLoadCase as LoadCaseType);
 
             const newLoads = nodeIds.map(nodeId => ({
                 id: generateLoadId('nodal'),
@@ -161,7 +161,7 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
         if (!memberIds.length) return;
 
         setLoadCases(prev => {
-            const currentCase = prev.get(selectedLoadCase) || createDefaultLoadCase(selectedLoadCase);
+            const currentCase = prev.get(selectedLoadCase) || createDefaultLoadCase(selectedLoadCase as LoadCaseType);
 
             const newLoads = memberIds.map(memberId => {
                 let load: Partial<MemberLoad> = {
@@ -212,7 +212,7 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
 
     const addFloorLoad = useCallback(() => {
         setLoadCases(prev => {
-            const currentCase = prev.get(selectedLoadCase) || createDefaultLoadCase(selectedLoadCase);
+            const currentCase = prev.get(selectedLoadCase) || createDefaultLoadCase(selectedLoadCase as LoadCaseType);
             const newLoad: FloorLoad = {
                 id: generateLoadId('floor'),
                 pressure: -5,
@@ -231,7 +231,7 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
         if (!memberIds.length) return;
 
         setLoadCases(prev => {
-            const currentCase = prev.get(selectedLoadCase) || createDefaultLoadCase(selectedLoadCase);
+            const currentCase = prev.get(selectedLoadCase) || createDefaultLoadCase(selectedLoadCase as LoadCaseType);
             const newLoads = memberIds.map(memberId => ({
                 id: generateLoadId('temp'),
                 memberId,
@@ -249,7 +249,7 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
         if (!memberIds.length) return;
 
         setLoadCases(prev => {
-            const currentCase = prev.get(selectedLoadCase) || createDefaultLoadCase(selectedLoadCase);
+            const currentCase = prev.get(selectedLoadCase) || createDefaultLoadCase(selectedLoadCase as LoadCaseType);
             const newLoads = memberIds.map(memberId => ({
                 id: generateLoadId('ps'),
                 memberId,
@@ -331,8 +331,34 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
                 // Nodal Loads
                 currentCase.nodalLoads.forEach(load => storeAddLoad(load));
 
-                // Member Loads
-                currentCase.memberLoads.forEach(load => storeAddMemberLoad(load));
+                // Member Loads - convert types to match store
+                currentCase.memberLoads.forEach(load => {
+                    // Convert from types/loads.ts MemberLoad to store/model.ts MemberLoad
+                    const storeLoad: any = {
+                        id: load.id || generateLoadId('member'),
+                        memberId: load.memberId,
+                        type: load.type === 'uniform' ? 'UDL' : load.type === 'trapezoidal' ? 'UVL' : load.type,
+                        direction: 'direction' in load ? load.direction : 'global_y',
+                        startPos: 'startPos' in load ? load.startPos : 0,
+                        endPos: 'endPos' in load ? load.endPos : 1
+                    };
+                    
+                    if (load.type === 'uniform') {
+                        storeLoad.w1 = load.w;
+                        storeLoad.w2 = load.w;
+                    } else if (load.type === 'trapezoidal') {
+                        storeLoad.w1 = load.w1;
+                        storeLoad.w2 = load.w2;
+                    } else if (load.type === 'point') {
+                        storeLoad.P = load.P;
+                        storeLoad.a = load.a || 0.5;
+                    } else if (load.type === 'moment') {
+                        storeLoad.M = load.M;
+                        storeLoad.a = load.a || 0.5;
+                    }
+                    
+                    storeAddMemberLoad(storeLoad);
+                });
 
                 // Note: Floor/Temp/Prestress not in store actions yet (from model.ts view), or maybe just missed
                 // Assuming they are handled or will be handled. model.ts showed addMemberLoad/addLoad only.

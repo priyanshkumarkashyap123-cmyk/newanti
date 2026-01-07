@@ -24,7 +24,8 @@ import {
     performSteelDesignCheck,
     SteelDesignResults,
     formatDesignResult,
-    DesignParameters
+    DesignParameters,
+    optimizeMember
 } from '../services/SteelDesignService';
 import { StatusBadge } from './ui/StatusBadge';
 
@@ -187,6 +188,65 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
             }
         });
         setDesignConfigs(newConfigs);
+    };
+
+    const handleOptimize = async () => {
+        if (selectedIds.size === 0 || !analysisResults) return;
+
+        const newConfigs = new Map(designConfigs);
+        let optimizedCount = 0;
+
+        for (const id of selectedIds) {
+            if (!members.has(id)) continue;
+            const forces = analysisResults.memberForces.get(id);
+            if (!forces) continue;
+
+            const config = getDesignConfig(id);
+            const length = memberLengths.get(id) || 3000;
+
+            // Optimizing currently assumes I-Beam for simplicity or existing type
+            // We use the shape type of the CURRENTLY assigned (or default) section
+            const shapeType = config.section.type || "I-BEAM";
+
+            try {
+                const result = await optimizeMember(
+                    'AISC360-16',
+                    shapeType,
+                    {
+                        length,
+                        fy: config.material.fy || 250,
+                        E: config.material.E || 200000
+                    },
+                    {
+                        axial: forces.axial,
+                        shearY: forces.shearY,
+                        shearZ: forces.shearZ,
+                        momentY: forces.momentY,
+                        momentZ: forces.momentZ
+                    }
+                );
+
+                if (result && result.section) {
+                    // Try to match with existing loaded sections to ensure compatibility
+                    // Or fallback to the object returned if compatible
+                    const existing = STEEL_SECTIONS.find(s => s.name === result.section.name);
+                    if (existing) {
+                        newConfigs.set(id, {
+                            ...config,
+                            section: existing
+                        });
+                        optimizedCount++;
+                    }
+                }
+            } catch (e) {
+                console.error(`Failed to optimize member ${id}`, e);
+            }
+        }
+
+        if (optimizedCount > 0) {
+            setDesignConfigs(newConfigs);
+            // Optionally notify user
+        }
     };
 
     if (!isOpen) return null;
@@ -427,7 +487,16 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                                         disabled={selectedIds.size === 0}
                                         className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
                                     >
-                                        Apply to Selected ({selectedIds.size})
+                                        Apply ({selectedIds.size})
+                                    </button>
+                                    <button
+                                        onClick={handleOptimize}
+                                        disabled={selectedIds.size === 0 || !analysisResults}
+                                        className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-green-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-500 transition-colors flex items-center justify-center gap-2"
+                                        title="Auto-select lightest passing section"
+                                    >
+                                        <span className="material-symbols-outlined text-[16px]">auto_fix_high</span>
+                                        Auto-Select
                                     </button>
                                     <button
                                         onClick={() => {

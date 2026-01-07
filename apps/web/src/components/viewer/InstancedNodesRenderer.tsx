@@ -46,7 +46,7 @@ interface NodeInstanceData {
 // ============================================
 
 export const InstancedNodesRenderer: React.FC = () => {
-    const meshRef = useRef < THREE.Instance dMesh> (null);
+    const meshRef = useRef<THREE.InstancedMesh>(null);
     const [hoveredInstanceId, setHoveredInstanceId] = useState<number | null>(null);
 
     // Zustand store selectors

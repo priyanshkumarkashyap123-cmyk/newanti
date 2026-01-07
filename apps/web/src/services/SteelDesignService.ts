@@ -594,6 +594,52 @@ export async function designSteelMembers(members: SteelDesignResults[], code: 'A
     }
 }
 
+
+export async function optimizeMember(
+    code: string,
+    shapeType: string,
+    memberParams: any,
+    forces: {
+        axial: number;
+        shearY: number;
+        shearZ: number;
+        torsion?: number;
+        momentY: number;
+        momentZ: number;
+    }
+): Promise<{ section: any; ratio: number; weight: number } | null> {
+    const PYTHON_API = import.meta.env.VITE_PYTHON_API_URL || "http://localhost:3002";
+    try {
+        const response = await fetch(`${PYTHON_API}/design/optimize`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                code,
+                shape_type: shapeType,
+                member_params: memberParams,
+                forces
+            })
+        });
+
+        if (!response.ok) return null;
+
+        const data = await response.json();
+        if (data.success) {
+            return {
+                section: data.optimal_section,
+                ratio: data.ratio,
+                weight: data.weight
+            };
+        }
+        return null;
+    } catch (e) {
+        console.error("Optimization failed", e);
+        return null;
+    }
+}
+
 export default {
     checkTension,
     checkCompression,
@@ -603,5 +649,7 @@ export default {
     performSteelDesignCheck,
     getSectionClassification,
     formatDesignResult,
-    designSteelMembers
+    designSteelMembers,
+    optimizeMember
 };
+

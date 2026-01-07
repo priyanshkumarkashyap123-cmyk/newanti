@@ -1,11 +1,22 @@
 import { Router, Request, Response } from 'express';
 import { Consent } from '../models.js';
+import mongoose from 'mongoose';
 
 const router: Router = Router();
 
 // POST /api/consent/record
 router.post('/record', async (req: Request, res: Response) => {
     try {
+        // Fail silently if DB is not connected
+        if (mongoose.connection.readyState !== 1) {
+            console.warn('[Consent] Database disconnected, skipping consent record');
+            return res.status(200).json({
+                success: true,
+                message: 'Consent acknowledged (DB offline)',
+                data: null
+            });
+        }
+
         const { userId, consentType, termsVersion, userAgent } = req.body;
         // Extract IP from request if not provided in body
         const ipAddress = req.body.ipAddress || req.ip || req.headers['x-forwarded-for'] || 'unknown';

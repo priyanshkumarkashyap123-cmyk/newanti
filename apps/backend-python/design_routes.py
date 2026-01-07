@@ -203,6 +203,48 @@ async def check_concrete_members(request: ConcreteDesignRequest):
             ))
             
 # ============================================
+# OPTIMIZATION
+# ============================================
+
+from fastapi import Request
+from fastapi.responses import JSONResponse
+
+@router.post("/optimize")
+async def optimize_section(request: Request):
+    """
+    Find lightest section that passes design checks.
+    """
+    try:
+        data = await request.json()
+        code = data.get("code", "AISC360-16")
+        shape_type = data.get("shape_type", "I-BEAM")
+        member_params = data.get("member_params", {})
+        forces = data.get("forces", {})
+        
+        # Import internally to avoid circular deps
+        from design.optimizer import SectionOptimizer
+        
+        result = SectionOptimizer.find_optimal_section(code, shape_type, member_params, forces)
+        
+        if result:
+            return JSONResponse({
+                "success": True, 
+                "optimal_section": result["section"], 
+                "ratio": result["ratio"],
+                "weight": result["weight"]
+            })
+        else:
+             return JSONResponse({
+                "success": False, 
+                "message": "No passing section found"
+            })
+            
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ============================================
 # STEEL DESIGN
 # ============================================
 
