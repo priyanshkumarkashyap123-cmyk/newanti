@@ -1,7 +1,7 @@
 mod solver;
 pub mod solver_3d;
 pub mod design_codes;
-// pub mod renderer; // Disabled temporarily - wgpu 0.19 API incompatibility on WASM
+pub mod renderer; // Stubbed for WASM compatibility (Three.js used for actual rendering)
 pub mod ai_architect;
 pub mod dynamics;
 pub mod plate_element;
