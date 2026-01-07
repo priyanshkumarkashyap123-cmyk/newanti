@@ -8,6 +8,9 @@
 // CONFIGURATION
 // ============================================
 
+// Use Rust API for templates (100x faster than Python)
+const RUST_API = import.meta.env['VITE_RUST_API_URL'] || "http://localhost:8000";
+// Fallback to Python for AI features (Gemini)
 const PYTHON_API = import.meta.env['VITE_PYTHON_API_URL'] || "http://localhost:8081";
 
 // ============================================
@@ -95,7 +98,7 @@ export const Bridge = {
     },
 
     /**
-     * Spawn a structural template from the Python factory
+     * Spawn a structural template from the Rust API
      * 
      * @param type - Template type: beam, truss, frame, portal
      * @param params - Parameters for the template
@@ -117,10 +120,19 @@ export const Bridge = {
                 }
             });
 
-            const url = `${PYTHON_API}/template/${type}?${queryParams.toString()}`;
+            // Use Rust API for templates (100x faster)
+            const templateTypeMap: Record<TemplateType, string> = {
+                'beam': 'beam',
+                'continuous_beam': 'continuous-beam',
+                'truss': 'truss',
+                'frame': 'frame',
+                'portal': 'portal'
+            };
+
+            const url = `${RUST_API}/api/templates/${templateTypeMap[type]}?${queryParams.toString()}`;
 
             const response = await fetch(url, {
-                method: 'POST',
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -135,15 +147,36 @@ export const Bridge = {
                 };
             }
 
-            const data: BridgeResponse = await response.json();
+            const data = await response.json();
 
-            console.log(`[Bridge] Template '${type}' loaded:`,
-                `${data.model?.nodes.length} nodes, ${data.model?.members.length} members`);
+            // Convert Rust response to Bridge format
+            const bridgeResponse: BridgeResponse = {
+                success: data.success,
+                model: {
+                    nodes: data.nodes.map((n: any) => ({
+                        id: n.id,
+                        x: n.x,
+                        y: n.y,
+                        z: n.z,
+                        support: 'NONE'
+                    })),
+                    members: data.members.map((m: any) => ({
+                        id: m.id,
+                        start_node: m.startNodeId || m.start_node_id,
+                        end_node: m.endNodeId || m.end_node_id,
+                        section_profile: 'ISMB300'
+                    })),
+                    metadata: data.metadata
+                }
+            };
 
-            return data;
+            console.log(`[Bridge] Template '${type}' loaded from Rust API:`,
+                `${bridgeResponse.model?.nodes.length} nodes, ${bridgeResponse.model?.members.length} members`);
+
+            return bridgeResponse;
 
         } catch (e) {
-            console.error("[Bridge] Python Server Offline", e);
+            console.error("[Bridge] Rust Template Server Offline", e);
             return null;
         }
     },

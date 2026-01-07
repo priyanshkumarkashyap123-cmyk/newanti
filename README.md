@@ -2,6 +2,9 @@
 
 A professional-grade structural engineering platform with AI-powered model generation and advanced finite element analysis.
 
+> **Current Version**: 2.1.0 (Production Ready)  
+> **Changelog**: [CHANGELOG.md](./CHANGELOG.md)
+
 ## 🎯 Key Features
 
 ### Advanced Structural Analysis

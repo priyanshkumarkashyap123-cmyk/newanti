@@ -27,6 +27,9 @@ import {
     DesignParameters,
     optimizeMember
 } from '../services/SteelDesignService';
+import { generateDesignReport } from '../services/PDFReportService';
+import { generateDXF, downloadDXF } from '../services/DXFExportService';
+import { generateIFC, downloadIFC } from '../services/IFCExportService';
 import { StatusBadge } from './ui/StatusBadge';
 
 // ============================================
@@ -188,6 +191,41 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
             }
         });
         setDesignConfigs(newConfigs);
+    };
+
+    const handleExportPDF = () => {
+        if (!analysisResults) return;
+
+        // Convert members Map to array for report
+        const memberList = Array.from(members.values());
+        const nodeList = Array.from(nodes.values());
+
+        generateDesignReport(
+            {
+                name: "BeamLab Project", // TODO: Get actual project name
+                engineer: "Engineer",    // TODO: Get actual user name
+                date: new Date().toLocaleDateString(),
+                description: "Automated Design Report"
+            },
+            memberList,
+            nodeList,
+            analysisResults,
+            designResults
+        );
+    };
+
+    const handleExportDXF = () => {
+        const dxfContent = generateDXF(nodes, members);
+        downloadDXF(dxfContent, "BeamLab_Model.dxf");
+    };
+
+    const handleExportIFC = () => {
+        const ifcContent = generateIFC(
+            { name: "BeamLab Project", author: "Engineer" },
+            nodes,
+            members
+        );
+        downloadIFC(ifcContent, "BeamLab_Model.ifc");
     };
 
     const handleOptimize = async () => {
@@ -581,18 +619,26 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
             <div className="p-4 border-t border-border-dark bg-zinc-900/50">
                 <div className="flex gap-2">
                     <button
-                        onClick={() => {/* Export functionality */ }}
+                        onClick={handleExportDXF}
                         className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-zinc-700 text-white hover:bg-zinc-600 transition-colors flex items-center justify-center gap-2"
                     >
                         <span className="material-symbols-outlined text-[16px]">download</span>
-                        Export Report
+                        DXF
                     </button>
                     <button
-                        onClick={() => {/* Generate PDF */ }}
-                        className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+                        onClick={handleExportIFC}
+                        className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-zinc-700 text-white hover:bg-zinc-600 transition-colors flex items-center justify-center gap-2"
+                    >
+                        <span className="material-symbols-outlined text-[16px]">domain</span>
+                        IFC
+                    </button>
+                    <button
+                        onClick={handleExportPDF}
+                        disabled={!analysisResults}
+                        className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
                     >
                         <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
-                        PDF Report
+                        Report
                     </button>
                 </div>
             </div>

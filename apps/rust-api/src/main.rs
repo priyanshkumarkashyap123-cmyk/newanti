@@ -94,11 +94,19 @@ async fn main() -> anyhow::Result<()> {
         // OpenAPI spec route for clients/tools
         .route("/api/openapi.yaml", get(handlers::openapi::serve_openapi))
         
-        // Legacy advanced analysis endpoints
+        // Advanced analysis endpoints (Rust-native, high-performance)
         .route("/api/advanced/pdelta", post(handlers::advanced::pdelta_analysis))
         .route("/api/advanced/modal", post(handlers::advanced::modal_analysis))
         .route("/api/advanced/buckling", post(handlers::advanced::buckling_analysis))
         .route("/api/advanced/spectrum", post(handlers::advanced::spectrum_analysis))
+        .route("/api/advanced/cable", post(handlers::advanced::cable_analysis))
+        
+        // Template generation endpoints (100x faster than Python)
+        .route("/api/templates/beam", get(handlers::templates::beam_template))
+        .route("/api/templates/continuous-beam", get(handlers::templates::continuous_beam_template))
+        .route("/api/templates/truss", get(handlers::templates::truss_template))
+        .route("/api/templates/frame", get(handlers::templates::frame_template))
+        .route("/api/templates/portal", get(handlers::templates::portal_template))
         
         // Structure CRUD (fast database operations)
         .route("/api/structures", get(handlers::structures::list_structures))

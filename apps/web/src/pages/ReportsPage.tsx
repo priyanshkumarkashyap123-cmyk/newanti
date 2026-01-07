@@ -8,10 +8,13 @@
 import { Link } from 'react-router-dom';
 import {
     Download, Printer, Share2, Calculator, TableProperties,
-    Check, X, FileText, ChevronLeft, Bell, Zap, Cpu, Building2, Calendar
+    Check, X, FileText, ChevronLeft, Bell, Zap, Cpu, Building2, Calendar, Layout, FileCode
 } from 'lucide-react';
 import { useModelStore } from '../store/model';
 import { useAuth } from '../providers/AuthProvider';
+import { generateDesignReport } from '../services/PDFReportService';
+import { generateDXF, downloadDXF } from '../services/DXFExportService';
+import { generateIFC, downloadIFC } from '../services/IFCExportService';
 
 export const ReportsPage = () => {
     // Connect to real data store
@@ -28,6 +31,39 @@ export const ReportsPage = () => {
 
     const handlePrint = () => {
         window.print();
+    };
+
+    const handleExportPDF = () => {
+        // Generate professional PDF
+        const memberList = Array.from(members.values());
+        const nodeList = Array.from(nodes.values());
+
+        generateDesignReport(
+            {
+                name: "BeamLab Project",
+                engineer: userName,
+                date: currentDate,
+                description: "Analysis Report"
+            },
+            memberList,
+            nodeList,
+            analysisResults,
+            new Map() // Design results not available globally yet
+        );
+    };
+
+    const handleExportDXF = () => {
+        const dxfContent = generateDXF(nodes, members);
+        downloadDXF(dxfContent, "BeamLab_Model.dxf");
+    };
+
+    const handleExportIFC = () => {
+        const ifcContent = generateIFC(
+            { name: "BeamLab Project", author: userName },
+            nodes,
+            members
+        );
+        downloadIFC(ifcContent, "BeamLab_Model.ifc");
     };
 
     return (
@@ -248,6 +284,26 @@ export const ReportsPage = () => {
                         Share
                     </button>
                 </div>
+            </div>
+
+            {/* Export Floating Action Bar */}
+            <div className="fixed bottom-6 right-6 z-40 print:hidden flex flex-col gap-3">
+                <button
+                    onClick={handleExportDXF}
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-600 dark:text-gray-300 font-medium text-sm"
+                    title="Export DXF (AutoCAD)"
+                >
+                    <Layout className="w-5 h-5 text-fuchsia-600" />
+                    <span className="hidden md:inline">DXF</span>
+                </button>
+                <button
+                    onClick={handleExportIFC}
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-600 dark:text-gray-300 font-medium text-sm"
+                    title="Export IFC (BIM)"
+                >
+                    <FileCode className="w-5 h-5 text-amber-600" />
+                    <span className="hidden md:inline">IFC</span>
+                </button>
             </div>
         </div>
     );

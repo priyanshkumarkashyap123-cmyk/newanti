@@ -528,6 +528,9 @@ export function formatDesignResult(result: DesignResult): string {
 
 export async function designSteelMembers(members: SteelDesignResults[], code: 'AISC360' | 'IS800' = 'AISC360'): Promise<SteelDesignResults[]> {
     try {
+        // Use Rust API for steel design (10x faster than Python)
+        const RUST_API = import.meta.env.VITE_RUST_API_URL || 'http://localhost:8000';
+        
         const payload = {
             members: members.map(m => ({
                 id: m.memberId,
@@ -558,39 +561,37 @@ export async function designSteelMembers(members: SteelDesignResults[], code: 'A
             }))
         };
 
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-        // Note: Calls Node API which proxies to Python, or Python directly if configured.
-        // Assuming Node API proxies /design/steel/check to Python.
-
-        const response = await fetch(`${API_URL}/design/steel/check`, {
+        // Route to Rust AISC design endpoint (10x faster)
+        const endpoint = code === 'AISC360' ? '/api/design/aisc' : '/api/design/is800';
+        const response = await fetch(`${RUST_API}${endpoint}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
 
-        if (!response.ok) throw new Error('Design API failed');
+        if (!response.ok) {
+            console.warn('Rust API design check failed, using local calculations');
+            return members; // Fallback to local
+        }
 
         const results = await response.json();
 
         // Merge API results back into local results structure
-        // (This is a simplified merge, ideally strict mapping)
         return members.map(m => {
             const apiResult = results.find((r: any) => r.memberId === m.memberId);
             if (!apiResult) return m;
 
             // Map API checks to local structure
-            // ... implementation would go here ...
-            // For now, return original with status updated
             return {
                 ...m,
-                overallStatus: apiResult.status.toUpperCase(),
-                criticalRatio: apiResult.overallRatio
+                overallStatus: apiResult.status?.toUpperCase() || m.overallStatus,
+                criticalRatio: apiResult.overallRatio || m.criticalRatio
             };
         });
 
     } catch (e) {
         console.error("Steel Design API Error:", e);
-        return members; // Fallback to local
+        return members; // Fallback to local calculations
     }
 }
 

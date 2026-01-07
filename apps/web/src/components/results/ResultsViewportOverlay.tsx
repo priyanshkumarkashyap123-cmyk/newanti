@@ -12,155 +12,21 @@
  */
 
 import React, { FC, useState, useMemo, useCallback } from 'react';
-import { Html, Line, Text } from '@react-three/drei';
-import * as THREE from 'three';
+import { DiagramOverlay, DiagramType, DiagramData } from './DiagramOverlay';
 import { useModelStore } from '../../store/model';
 import StressContourRenderer, { MemberStressData, StressType } from './StressContourRenderer';
 
-// ============================================
-// TYPES
-// ============================================
-
-interface CriticalPoint {
-    x: number;
-    y: number;
-    z: number;
-    value: number;
-    type: 'max' | 'min' | 'zero';
-    label: string;
-}
-
-interface DiagramValueLabel {
-    position: THREE.Vector3;
-    value: number;
-    unit: string;
-    color: string;
-}
-
 type DiagramDisplayType = 'SFD' | 'BMD' | 'AFD' | 'DEFLECTION' | 'STRESS';
 
-// ============================================
-// COLOR UTILITIES
-// ============================================
-
-const getValueColor = (value: number, maxAbs: number): string => {
-    if (maxAbs === 0) return '#808080';
-    const ratio = value / maxAbs;
-
-    // Blue (negative) -> White (zero) -> Red (positive)
-    if (ratio >= 0) {
-        const intensity = Math.min(1, ratio);
-        const r = 255;
-        const g = Math.round(255 * (1 - intensity));
-        const b = Math.round(255 * (1 - intensity));
-        return `rgb(${r}, ${g}, ${b})`;
-    } else {
-        const intensity = Math.min(1, -ratio);
-        const r = Math.round(255 * (1 - intensity));
-        const g = Math.round(255 * (1 - intensity));
-        const b = 255;
-        return `rgb(${r}, ${g}, ${b})`;
+// Utility to map display type to specific diagram type
+const mapDiagramType = (type: DiagramDisplayType): DiagramType => {
+    switch (type) {
+        case 'SFD': return 'SFD';
+        case 'BMD': return 'BMD';
+        case 'AFD': return 'Axial';
+        case 'DEFLECTION': return 'deflection';
+        default: return 'BMD';
     }
-};
-
-const getStressColor = (utilization: number): string => {
-    if (utilization <= 0.5) {
-        // Green to Yellow
-        const t = utilization / 0.5;
-        return `rgb(${Math.round(t * 255)}, 255, 0)`;
-    } else if (utilization <= 0.8) {
-        // Yellow to Orange
-        const t = (utilization - 0.5) / 0.3;
-        return `rgb(255, ${Math.round(255 - t * 100)}, 0)`;
-    } else if (utilization <= 1.0) {
-        // Orange to Red
-        const t = (utilization - 0.8) / 0.2;
-        return `rgb(255, ${Math.round(155 - t * 155)}, 0)`;
-    } else {
-        // Over capacity - Magenta
-        return '#ff00ff';
-    }
-};
-
-// ============================================
-// VALUE LABEL COMPONENT (3D)
-// ============================================
-
-interface ValueLabel3DProps {
-    position: [number, number, number];
-    value: number;
-    unit: string;
-    color?: string;
-    size?: number;
-}
-
-const ValueLabel3D: FC<ValueLabel3DProps> = ({
-    position,
-    value,
-    unit,
-    color = '#ffffff',
-    size = 0.12
-}) => {
-    const displayValue = Math.abs(value) < 0.01 ? '0' : value.toFixed(2);
-    const text = `${displayValue} ${unit}`;
-
-    return (
-        <Text
-            position={position}
-            fontSize={size}
-            color={color}
-            anchorX="center"
-            anchorY="middle"
-            outlineWidth={0.02}
-            outlineColor="#000000"
-        >
-            {text}
-        </Text>
-    );
-};
-
-// ============================================
-// CRITICAL POINT MARKER
-// ============================================
-
-interface CriticalPointMarkerProps {
-    point: CriticalPoint;
-    scale?: number;
-}
-
-const CriticalPointMarker: FC<CriticalPointMarkerProps> = ({ point, scale = 1 }) => {
-    const color = point.type === 'max' ? '#ff4444' :
-        point.type === 'min' ? '#4444ff' : '#44ff44';
-
-    return (
-        <group position={[point.x, point.y, point.z]}>
-            {/* Diamond marker */}
-            <mesh rotation={[0, 0, Math.PI / 4]} scale={0.08 * scale}>
-                <boxGeometry args={[1, 1, 0.2]} />
-                <meshBasicMaterial color={color} />
-            </mesh>
-
-            {/* Value label */}
-            <Html
-                position={[0, 0.2, 0]}
-                center
-                style={{
-                    background: 'rgba(0, 0, 0, 0.8)',
-                    color: color,
-                    padding: '2px 6px',
-                    borderRadius: '3px',
-                    fontSize: '10px',
-                    fontWeight: 'bold',
-                    fontFamily: 'monospace',
-                    whiteSpace: 'nowrap',
-                    border: `1px solid ${color}`,
-                    pointerEvents: 'none'
-                }}
-            >
-                {point.label}
-            </Html>
-        </group>
-    );
 };
 
 // ============================================
@@ -192,236 +58,32 @@ export const MemberDiagramOverlay: FC<MemberDiagramOverlayProps> = ({
     const startNode = member ? nodes.get(member.startNodeId) : null;
     const endNode = member ? nodes.get(member.endNodeId) : null;
 
-    // Calculate diagram geometry and labels
-    const diagramData = useMemo(() => {
-        if (!member || !startNode || !endNode || !analysisResults) {
-            return null;
-        }
+    if (!member || !startNode || !endNode || !analysisResults) return null;
 
-        const memberForces = analysisResults.memberForces.get(memberId);
-        if (!memberForces) return null;
+    const memberForces = analysisResults.memberForces.get(memberId);
+    if (!memberForces || !memberForces.diagramData) return null;
 
-        // Calculate member geometry
-        const start = new THREE.Vector3(startNode.x, startNode.y, startNode.z);
-        const end = new THREE.Vector3(endNode.x, endNode.y, endNode.z);
-        const length = start.distanceTo(end);
-
-        if (length < 0.001) return null;
-
-        const direction = end.clone().sub(start).normalize();
-
-        // Perpendicular direction for diagram offset
-        const up = new THREE.Vector3(0, 1, 0);
-        let perpendicular = new THREE.Vector3().crossVectors(direction, up);
-        if (perpendicular.length() < 0.01) {
-            perpendicular = new THREE.Vector3(1, 0, 0);
-        }
-        perpendicular.normalize();
-
-        // Get values based on diagram type
-        let startValue = 0, endValue = 0;
-        let unit = '';
-
-        switch (diagramType) {
-            case 'SFD':
-                startValue = memberForces.shearY;
-                endValue = -memberForces.shearY; // Linear for UDL
-                unit = 'kN';
-                break;
-            case 'BMD':
-                startValue = memberForces.momentZ;
-                endValue = -memberForces.momentZ;
-                unit = 'kNm';
-                break;
-            case 'AFD':
-                startValue = memberForces.axial;
-                endValue = memberForces.axial;
-                unit = 'kN';
-                break;
-            default:
-                return null;
-        }
-
-        // Generate diagram points (parabolic for BMD with UDL)
-        const numPoints = 21;
-        const points: THREE.Vector3[] = [];
-        const values: number[] = [];
-        const maxAbs = Math.max(Math.abs(startValue), Math.abs(endValue)) || 1;
-
-        for (let i = 0; i <= numPoints - 1; i++) {
-            const t = i / (numPoints - 1);
-            const pos = start.clone().lerp(end, t);
-
-            // Interpolate value (parabolic for BMD, linear for SFD)
-            let value: number;
-            if (diagramType === 'BMD') {
-                // Parabolic shape for UDL
-                value = startValue + (endValue - startValue) * t +
-                    4 * (startValue + endValue) / 2 * t * (1 - t);
-            } else {
-                // Linear for SFD
-                value = startValue + (endValue - startValue) * t;
-            }
-
-            values.push(value);
-
-            // Offset position by value
-            const offsetPos = pos.clone().addScaledVector(perpendicular, value * scale);
-            points.push(offsetPos);
-        }
-
-        // Find critical points
-        const criticalPoints: CriticalPoint[] = [];
-        let maxVal = values[0], minVal = values[0], maxIdx = 0, minIdx = 0;
-
-        for (let i = 0; i < values.length; i++) {
-            if (values[i] > maxVal) { maxVal = values[i]; maxIdx = i; }
-            if (values[i] < minVal) { minVal = values[i]; minIdx = i; }
-        }
-
-        if (Math.abs(maxVal) > 0.01) {
-            criticalPoints.push({
-                x: points[maxIdx].x,
-                y: points[maxIdx].y,
-                z: points[maxIdx].z,
-                value: maxVal,
-                type: 'max',
-                label: `${maxVal.toFixed(2)} ${unit}`
-            });
-        }
-
-        if (Math.abs(minVal) > 0.01 && minIdx !== maxIdx) {
-            criticalPoints.push({
-                x: points[minIdx].x,
-                y: points[minIdx].y,
-                z: points[minIdx].z,
-                value: minVal,
-                type: 'min',
-                label: `${minVal.toFixed(2)} ${unit}`
-            });
-        }
-
-        // Generate fill vertices (for colored fill)
-        const fillVertices: number[] = [];
-        const fillColors: number[] = [];
-
-        for (let i = 0; i < points.length - 1; i++) {
-            const p1 = points[i];
-            const p2 = points[i + 1];
-            const b1 = start.clone().lerp(end, i / (numPoints - 1));
-            const b2 = start.clone().lerp(end, (i + 1) / (numPoints - 1));
-
-            // Triangle 1
-            fillVertices.push(b1.x, b1.y, b1.z);
-            fillVertices.push(p1.x, p1.y, p1.z);
-            fillVertices.push(p2.x, p2.y, p2.z);
-
-            // Triangle 2
-            fillVertices.push(b1.x, b1.y, b1.z);
-            fillVertices.push(p2.x, p2.y, p2.z);
-            fillVertices.push(b2.x, b2.y, b2.z);
-
-            // Colors based on value
-            const color1 = new THREE.Color(getValueColor(values[i], maxAbs));
-            const color2 = new THREE.Color(getValueColor(values[i + 1], maxAbs));
-
-            for (let j = 0; j < 3; j++) {
-                fillColors.push(color1.r, color1.g, color1.b);
-            }
-            for (let j = 0; j < 3; j++) {
-                fillColors.push(color2.r, color2.g, color2.b);
-            }
-        }
-
-        return {
-            points,
-            values,
-            criticalPoints,
-            fillVertices: new Float32Array(fillVertices),
-            fillColors: new Float32Array(fillColors),
-            start,
-            end,
-            unit,
-            maxAbs
-        };
-    }, [member, startNode, endNode, analysisResults, memberId, diagramType, scale]);
-
-    if (!diagramData) return null;
-
-    const { points, criticalPoints, fillVertices, fillColors, start, end, unit } = diagramData;
-    const lineColor = diagramType === 'BMD' ? '#ff8800' :
-        diagramType === 'SFD' ? '#00aaff' : '#00ff00';
+    const diagramData: DiagramData = {
+        ...memberForces.diagramData,
+        // Legacy fields for DiagramOverlay compatibility
+        shear_values: memberForces.diagramData.shear_y,
+        moment_values: memberForces.diagramData.moment_z,
+        deflection_values: memberForces.diagramData.deflection_y
+    };
 
     return (
-        <group>
-            {/* Baseline */}
-            <Line
-                points={[start.toArray() as [number, number, number], end.toArray() as [number, number, number]]}
-                color="#666666"
-                lineWidth={1}
-                dashed
-                dashSize={0.1}
-                gapSize={0.1}
-            />
-
-            {/* Filled diagram */}
-            {showFill && fillVertices.length > 0 && (
-                <mesh>
-                    <bufferGeometry>
-                        <bufferAttribute
-                            attach="attributes-position"
-                            count={fillVertices.length / 3}
-                            array={fillVertices}
-                            itemSize={3}
-                        />
-                        <bufferAttribute
-                            attach="attributes-color"
-                            count={fillColors.length / 3}
-                            array={fillColors}
-                            itemSize={3}
-                        />
-                    </bufferGeometry>
-                    <meshBasicMaterial
-                        vertexColors
-                        transparent
-                        opacity={0.4}
-                        side={THREE.DoubleSide}
-                    />
-                </mesh>
-            )}
-
-            {/* Diagram outline */}
-            <Line
-                points={points.map(p => p.toArray() as [number, number, number])}
-                color={lineColor}
-                lineWidth={2}
-            />
-
-            {/* Critical point markers */}
-            {showCriticalPoints && criticalPoints.map((cp, idx) => (
-                <CriticalPointMarker key={idx} point={cp} />
-            ))}
-
-            {/* End value labels */}
-            {showLabels && diagramData.values.length > 0 && (
-                <>
-                    <ValueLabel3D
-                        position={[start.x, start.y + 0.15, start.z]}
-                        value={diagramData.values[0]}
-                        unit={unit}
-                        color={lineColor}
-                        size={0.1}
-                    />
-                    <ValueLabel3D
-                        position={[end.x, end.y + 0.15, end.z]}
-                        value={diagramData.values[diagramData.values.length - 1]}
-                        unit={unit}
-                        color={lineColor}
-                        size={0.1}
-                    />
-                </>
-            )}
-        </group>
+        <DiagramOverlay
+            startPosition={[startNode.x, startNode.y, startNode.z]}
+            endPosition={[endNode.x, endNode.y, endNode.z]}
+            data={diagramData}
+            type={mapDiagramType(diagramType)}
+            scale={scale}
+            visible={true}
+            offset={0}
+            betaAngle={member.betaAngle || 0}
+            showLabels={showLabels}
+            showCriticalPoints={showCriticalPoints}
+        />
     );
 };
 

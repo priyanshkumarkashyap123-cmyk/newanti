@@ -112,6 +112,97 @@ pub async fn pdelta_analysis(
 }
 
 // ============================================
+// CABLE ANALYSIS
+// ============================================
+
+use crate::solver::cable::{CableElement, CableMaterial};
+
+#[derive(Debug, Deserialize)]
+pub struct CableAnalysisRequest {
+    pub node_a: [f64; 3],
+    pub node_b: [f64; 3],
+    pub diameter_mm: f64,
+    pub material_type: String,  // "steel" or "cfrp"
+    pub horizontal_tension: Option<f64>,  // N (if specified)
+    pub load_per_length: Option<f64>,  // N/m (additional load)
+}
+
+#[derive(Debug, Serialize)]
+pub struct CableAnalysisResponse {
+    pub success: bool,
+    pub cable_length_m: f64,
+    pub tension_n: f64,
+    pub sag_m: f64,
+    pub strain: f64,
+    pub stress_mpa: f64,
+    pub utilization_ratio: f64,
+    pub is_safe: bool,
+    pub effective_modulus_gpa: f64,
+    pub performance_ms: f64,
+}
+
+/// POST /api/advanced/cable - Cable catenary analysis
+pub async fn cable_analysis(
+    State(_state): State<Arc<AppState>>,
+    Json(req): Json<CableAnalysisRequest>,
+) -> ApiResult<Json<CableAnalysisResponse>> {
+    let start = std::time::Instant::now();
+
+    // Create material
+    let material = match req.material_type.to_lowercase().as_str() {
+        "cfrp" | "carbon" | "carbon_fiber" => CableMaterial::cfrp_cable(req.diameter_mm),
+        _ => CableMaterial::steel_cable(req.diameter_mm),
+    };
+
+    // Create cable element
+    let mut cable = CableElement::new(req.node_a, req.node_b, material);
+    
+    // Update state to calculate tension
+    cable.update_state(req.node_a, req.node_b);
+
+    // Calculate catenary sag
+    let horizontal_span = ((req.node_b[0] - req.node_a[0]).powi(2) + 
+                          (req.node_b[2] - req.node_a[2]).powi(2)).sqrt();
+    let (sag, h_tension, cable_length) = cable.calculate_catenary_sag(horizontal_span);
+
+    // Calculate stress and utilization
+    let stress_pa = cable.tension / material.area;
+    let stress_mpa = stress_pa / 1e6;
+    let utilization = stress_pa / material.tensile_strength;
+    let is_safe = utilization < 1.0;
+
+    // Calculate strain
+    let strain = (cable.current_length - cable.unstressed_length) / cable.unstressed_length;
+
+    // Effective modulus (Ernst's formula for sagged cables)
+    let w = material.unit_weight;
+    let L = cable_length;
+    let E = material.elastic_modulus;
+    let A = material.area;
+    let H = cable.tension;
+    let effective_modulus = if H > 0.0 {
+        E / (1.0 + (w * L).powi(2) * A * E / (12.0 * H.powi(3)))
+    } else {
+        E
+    };
+
+    let performance_ms = start.elapsed().as_secs_f64() * 1000.0;
+
+    Ok(Json(CableAnalysisResponse {
+        success: true,
+        cable_length_m: cable_length,
+        tension_n: cable.tension,
+        sag_m: sag,
+        strain,
+        stress_mpa,
+        utilization_ratio: utilization,
+        is_safe,
+        effective_modulus_gpa: effective_modulus / 1e9,
+        performance_ms,
+    }))
+}
+
+// ============================================
 // MODAL (EIGENVALUE) ANALYSIS
 // ============================================
 

@@ -3,6 +3,8 @@
  * ProjectService - Manage User Projects
  */
 
+import { fetchJson, postJson } from '../utils/fetchUtils';
+
 export interface Project {
     _id: string;
     id?: string; // For compatibility
@@ -22,36 +24,36 @@ export const ProjectService = {
      * List all projects for current user
      */
     async listProjects(token: string): Promise<Project[]> {
-        const response = await fetch(`${API_BASE_URL}/api/project`, {
+        const result = await fetchJson<{projects: Project[]}>(`${API_BASE_URL}/api/project`, {
             headers: {
                 'Authorization': `Bearer ${token}`
-            }
+            },
+            timeout: 10000
         });
 
-        if (!response.ok) {
-            throw new Error('Failed to fetch projects');
+        if (!result.success) {
+            throw new Error(result.error || 'Failed to fetch projects');
         }
 
-        const data = await response.json();
-        return data.projects || [];
+        return result.data?.projects || [];
     },
 
     /**
      * Get specific project details
      */
     async getProject(id: string, token: string): Promise<Project> {
-        const response = await fetch(`${API_BASE_URL}/api/project/${id}`, {
+        const result = await fetchJson<{project: Project}>(`${API_BASE_URL}/api/project/${id}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
-            }
+            },
+            timeout: 10000
         });
 
-        if (!response.ok) {
-            throw new Error('Failed to fetch project');
+        if (!result.success) {
+            throw new Error(result.error || 'Failed to fetch project');
         }
 
-        const data = await response.json();
-        return data.project;
+        return result.data!.project;
     },
 
     /**

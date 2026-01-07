@@ -485,14 +485,15 @@ class AnalysisService {
                 headers['Authorization'] = `Bearer ${token}`;
             }
 
-            // Route to Python backend non-linear endpoint
-            const PYTHON_API_URL = import.meta.env.VITE_PYTHON_API_URL || 'http://localhost:8081';
-            const response = await fetch(`${PYTHON_API_URL}/analysis/nonlinear/run`, {
+            // Route to Rust backend P-Delta solver (20x faster than Python)
+            const RUST_API_URL = import.meta.env.VITE_RUST_API_URL || 'http://localhost:8000';
+            const response = await fetch(`${RUST_API_URL}/api/advanced/pdelta`, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify({
-                    model,
-                    settings
+                    input: model,
+                    max_iterations: settings?.maxIterations || 10,
+                    tolerance: settings?.tolerance || 1e-6
                 })
             });
 

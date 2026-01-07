@@ -4,6 +4,8 @@
  * Connecting to Python Backend implementation of Section Designer
  */
 
+import { postJson, fetchJson } from '../utils/fetchUtils';
+
 export interface Point {
     x: number;
     y: number;
@@ -41,69 +43,42 @@ class SectionService {
      * Calculate properties for a custom polygon section
      */
     async calculateCustomSection(request: CustomSectionRequest) {
-        try {
-            const response = await fetch(`${API_URL}/sections/custom/calculate`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(request)
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.detail || 'Failed to calculate section');
-            }
-
-            return await response.json();
-        } catch (error) {
-            console.error('Custom Section Error:', error);
-            throw error;
+        const result = await postJson(`${API_URL}/sections/custom/calculate`, request, {
+            timeout: 20000 // 20 seconds for complex calculations
+        });
+        
+        if (!result.success) {
+            throw new Error(result.error || 'Failed to calculate section');
         }
+        return result.data;
     }
 
     /**
      * Create standard section with properties
      */
     async createStandardSection(request: StandardSectionRequest) {
-        try {
-            const response = await fetch(`${API_URL}/sections/standard/create`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(request)
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.detail || 'Failed to create standard section');
-            }
-
-            return await response.json();
-        } catch (error) {
-            console.error('Standard Section Error:', error);
-            throw error;
+        const result = await postJson(`${API_URL}/sections/standard/create`, request, {
+            timeout: 15000
+        });
+        
+        if (!result.success) {
+            throw new Error(result.error || 'Failed to create section');
         }
+        return result.data;
     }
 
     /**
      * Get section recommendations based on load
      */
     async getRecommendedSections(request: SectionRecommendationRequest) {
-        try {
-            const response = await fetch(`${API_URL}/sections/recommend`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(request)
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.detail || 'Failed to get recommendations');
-            }
-
-            return await response.json();
-        } catch (error) {
-            console.error('Recommendation Error:', error);
-            throw error;
+        const result = await postJson(`${API_URL}/sections/recommend`, request, {
+            timeout: 15000
+        });
+        
+        if (!result.success) {
+            throw new Error(result.error || 'Failed to get recommendations');
         }
+        return result.data;
     }
 
     /**

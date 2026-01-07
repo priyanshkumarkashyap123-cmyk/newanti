@@ -22,10 +22,12 @@ from analysis.solvers.nonlinear import GeometricStiffnessMatrix
 try:
     try:
         from PyNite import FEModel3D
+        from PyNite.Section import Section
         import PyNite
     except ImportError:
         # Fallback for case-sensitive filesystems where package might be named 'Pynite'
         from Pynite import FEModel3D
+        from Pynite.Section import Section
         import Pynite as PyNite
         
     PYNITE_AVAILABLE = True
@@ -111,9 +113,9 @@ class MemberInput:
     J: float = 1e-5         # Torsional constant (m⁴)
     A: float = 0.01         # Cross-sectional area (m²)
     Fy: float = 345e3       # Yield stress (kN/m²) - for τ_b calculation
-    # Shear areas for Timoshenko beam theory (optional)
     Asy: Optional[float] = None  # Shear area in y-direction (m²)
     Asz: Optional[float] = None  # Shear area in z-direction (m²)
+    beta_angle: float = 0.0      # Rotation angle in degrees
 
 
 @dataclass
@@ -396,26 +398,34 @@ class FEAEngine:
             Iy = member.Iy if member.Iy is not None else 1e-4
             Iz = member.Iz if member.Iz is not None else 1e-4
             J = member.J if member.J is not None else 1e-5
+            Fy = member.Fy if member.Fy is not None else 345e3
+            beta_angle = member.beta_angle if member.beta_angle is not None else 0.0
             
             # Compatibility Logic for PyNite v1 vs v2
             if has_add_material and has_add_section:
-                # PyNite v2.x Approach
                 mat_name = f"Mat_{i+1}"
                 nu = 0.3  # Poisson's ratio for steel
                 rho = 7850 / 1e9  # kg/mm³
-                self.model.add_material(mat_name, E_axial, G, nu, rho)
+                self.model.add_material(mat_name, E_axial, G, nu, rho, Fy)
                 
                 sect_name = f"Sect_{i+1}"
-                self.model.add_section(sect_name, A, Iy, Iz, J)
+                section = Section(self.model, sect_name, A, Iy, Iz, J, mat_name)
+                self.model.add_section(sect_name, section)
                 
-                # PyNite 2.x API: add_member(name, i_node, j_node, material_name, section_name)
+                # PyNite 2.x API: add_member(name, i_node, j_node, material_name, section_name=...)
                 self.model.add_member(
                     member_name,
                     start_name,
                     end_name,
                     mat_name,
-                    sect_name
+                    section_name=sect_name
                 )
+                
+                # Apply Beta Angle (Rotation)
+                if hasattr(self.model, 'members'):
+                     self.model.members[member_name].beta = beta_angle
+                else:
+                     self.model.Members[member_name].beta = beta_angle
             else:
                 # PyNite v1.x Approach (Older API)
                 # add_member(name, i_node, j_node, E, G, Iy, Iz, J, A)
@@ -645,7 +655,10 @@ class FEAEngine:
         results = []
         
         for frontend_id, pynite_name in self.node_map.items():
-            node = self.model.nodes[pynite_name]
+            if hasattr(self.model, 'nodes'):
+                node = self.model.nodes[pynite_name]
+            else:
+                node = self.model.Nodes[pynite_name]
             
             # Displacements
             displacement = {
@@ -752,25 +765,41 @@ class FEAEngine:
             deflection_z = []
             
             for x in x_values:
+                # Safely extract each component
                 try:
                     shear_y.append(round(member.shear('Fy', x, 'LC1'), 4))
+                except: shear_y.append(0)
+                
+                try:
                     shear_z.append(round(member.shear('Fz', x, 'LC1'), 4))
+                except: shear_z.append(0)
+                
+                try:
                     moment_y.append(round(member.moment('My', x, 'LC1'), 4))
+                except: moment_y.append(0)
+                
+                try:
                     moment_z.append(round(member.moment('Mz', x, 'LC1'), 4))
+                except: moment_z.append(0)
+                
+                try:
                     axial.append(round(member.axial(x, 'LC1'), 4))
-                    torsion.append(round(member.torsion(x, 'LC1'), 4))
-                    deflection_y.append(round(member.deflection('dy', x, 'LC1') * 1000, 4))  # mm
-                    deflection_z.append(round(member.deflection('dz', x, 'LC1') * 1000, 4))  # mm
-                except Exception:
-                    # If extraction fails, use zeros
-                    shear_y.append(0)
-                    shear_z.append(0)
-                    moment_y.append(0)
-                    moment_z.append(0)
-                    axial.append(0)
-                    torsion.append(0)
-                    deflection_y.append(0)
-                    deflection_z.append(0)
+                except: axial.append(0)
+                
+                try:
+                    if hasattr(member, 'torsion'):
+                        torsion.append(round(member.torsion(x, 'LC1'), 4))
+                    else:
+                        torsion.append(0)
+                except: torsion.append(0)
+                
+                try:
+                    deflection_y.append(round(member.deflection('dy', x, 'LC1') * 1000, 4))
+                except: deflection_y.append(0)
+                
+                try:
+                    deflection_z.append(round(member.deflection('dz', x, 'LC1') * 1000, 4))
+                except: deflection_z.append(0)
             
             # Calculate maximums
             max_shear_y = max(abs(min(shear_y)), abs(max(shear_y)))
@@ -889,6 +918,7 @@ def analyze_frame(model_dict: Dict[str, Any]) -> Dict[str, Any]:
                 Fy=m.get('Fy', 345e3),  # Yield stress for τ_b
                 Asy=m.get('Asy'),  # Shear area y
                 Asz=m.get('Asz'),  # Shear area z
+                beta_angle=m.get('betaAngle', 0.0),
             )
             for m in model_dict.get('members', [])
         ]
@@ -921,7 +951,6 @@ def analyze_frame(model_dict: Dict[str, Any]) -> Dict[str, Any]:
             DistributedLoadInput(
                 member_id=l['memberId'],
                 direction=l.get('direction', 'Fy'),
-                magnitude=l.get('magnitude', 0),
                 w1=l.get('w1', l.get('magnitude', 0)),
                 w2=l.get('w2', l.get('magnitude', 0)),
                 start_pos=l.get('startPos', 0),

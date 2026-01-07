@@ -11,7 +11,7 @@
 
 import { FC, useMemo, useState, useCallback, useRef } from 'react';
 import { ThreeEvent } from '@react-three/fiber';
-import { Html, Line } from '@react-three/drei';
+import { Html, Line, Text } from '@react-three/drei';
 import * as THREE from 'three';
 
 // ============================================
@@ -25,12 +25,21 @@ export interface DiagramPoint {
 
 export interface DiagramData {
     x_values: number[];
-    shear_values: number[];
-    moment_values: number[];
+    shear_values?: number[]; // Legacy
+    moment_values?: number[]; // Legacy
     deflection_values?: number[];
+    // Extended properties for 3D robustness
+    shear_y?: number[];
+    shear_z?: number[];
+    moment_y?: number[];
+    moment_z?: number[];
+    axial?: number[];
+    torsion?: number[];
+    deflection_y?: number[];
+    deflection_z?: number[];
 }
 
-export type DiagramType = 'BMD' | 'SFD' | 'deflection';
+export type DiagramType = 'BMD' | 'SFD' | 'deflection' | 'ShearY' | 'ShearZ' | 'MomentY' | 'MomentZ' | 'Axial' | 'Torsion' | 'DeflectionY' | 'DeflectionZ';
 
 interface DiagramOverlayProps {
     /** Member start position [x, y, z] */
@@ -47,7 +56,12 @@ interface DiagramOverlayProps {
     visible?: boolean;
     /** Offset perpendicular to beam (for multiple diagrams) */
     offset?: number;
+    /** Member rotation angle in degrees */
+    betaAngle?: number;
+    showLabels?: boolean;
+    showCriticalPoints?: boolean;
 }
+
 
 // ============================================
 // CONSTANTS
@@ -84,25 +98,92 @@ const getValueColor = (value: number, maxAbsValue: number): THREE.Color => {
 /**
  * Create a BufferGeometry for the filled diagram
  */
+/**
+ * Calculate Local Axes based on start, end, and beta angle
+ */
+export const calculateLocalAxes = (start: THREE.Vector3, end: THREE.Vector3, betaAngleDeg: number) => {
+    const dir = new THREE.Vector3().subVectors(end, start).normalize();
+    const L = start.distanceTo(end);
+
+    // Initial Local Z and Y (without beta)
+    let localY = new THREE.Vector3();
+    let localZ = new THREE.Vector3();
+
+    // Check if vertical
+    const isVertical = Math.abs(dir.y) > 0.999;
+
+    if (isVertical) {
+        // Vertical member
+        // For PyNite/Standard: 
+        // If Y is up (Global Y), Local y is -Global X, Local z is +Global Z
+        // If Y is down, Local y is +Global X, Local z is +Global Z
+        if (dir.y > 0) {
+            localZ.set(0, 0, 1); // Global Z
+            localY.set(-1, 0, 0); // -Global X
+        } else {
+            localZ.set(0, 0, 1); // Global Z
+            localY.set(1, 0, 0); // +Global X
+        }
+    } else {
+        // Horizontal/Inclined member
+        // Local z = GlobalY cross dir
+        // Local y = dir cross Local z
+        const globalY = new THREE.Vector3(0, 1, 0);
+        localZ.crossVectors(dir, globalY).normalize();
+        localY.crossVectors(localZ, dir).normalize();
+    }
+
+    // Apply Beta Angle (Rotation about Local X / dir)
+    if (betaAngleDeg !== 0) {
+        const rad = THREE.MathUtils.degToRad(betaAngleDeg);
+        localY.applyAxisAngle(dir, rad);
+        localZ.applyAxisAngle(dir, rad);
+    }
+
+    return { localX: dir, localY, localZ };
+};
+
+/**
+ * Create a BufferGeometry for the filled diagram
+ */
 const createDiagramGeometry = (
     startPos: THREE.Vector3,
     endPos: THREE.Vector3,
     values: number[],
     xValues: number[],
     scale: number,
-    offset: number
+    offset: number,
+    type: DiagramType,
+    betaAngle: number
 ): { geometry: THREE.BufferGeometry; colors: Float32Array } => {
-    const beamLength = startPos.distanceTo(endPos);
-    const beamDirection = new THREE.Vector3().subVectors(endPos, startPos).normalize();
 
-    // Perpendicular direction (for diagram offset)
-    const up = new THREE.Vector3(0, 1, 0);
-    const perpendicular = new THREE.Vector3().crossVectors(beamDirection, up).normalize();
+    // Calculate 3D Orientation
+    const { localX, localY, localZ } = calculateLocalAxes(startPos, endPos, betaAngle);
 
-    // If beam is vertical, use different perpendicular
-    if (perpendicular.length() < 0.01) {
-        perpendicular.set(1, 0, 0);
+    // Determine Plot Vector (Direction of the diagram height)
+    let plotVector = localY.clone(); // Default to major axis (XY plane)
+
+    switch (type) {
+        case 'ShearZ':
+        case 'MomentY':
+        case 'DeflectionZ':
+            plotVector = localZ.clone(); // Minor axis plane (XZ)
+            break;
+        case 'ShearY':
+        case 'MomentZ':
+        case 'DeflectionY':
+        case 'BMD':
+        case 'SFD':
+        case 'deflection':
+        default:
+            plotVector = localY.clone();
+            break;
     }
+
+    // Perpendicular vector for offset is usually the same as plot vector
+    // Or do we offset "out" of the member?
+    // Usually offset is in the same direction as the plot
+    const offsetVector = plotVector.clone();
 
     const numPoints = values.length;
     const vertices: number[] = [];
@@ -119,14 +200,15 @@ const createDiagramGeometry = (
         const value = values[i] ?? 0;
         const scaledValue = value * scale;
 
-        // Base point (on beam line)
-        const basePoint = new THREE.Vector3()
-            .addVectors(startPos, beamDirection.clone().multiplyScalar(xVal))
-            .add(perpendicular.clone().multiplyScalar(offset));
+        // Base point (on beam line + offset)
+        // Position along beam: start + localX * xVal
+        const pointOnBeam = startPos.clone().add(localX.clone().multiplyScalar(xVal));
 
-        // Top point (offset by diagram value in Y direction)
-        const topPoint = basePoint.clone();
-        topPoint.y += scaledValue;
+        // Apply offset
+        const basePoint = pointOnBeam.clone().add(offsetVector.clone().multiplyScalar(offset));
+
+        // Top point (base + value * plotVector)
+        const topPoint = basePoint.clone().add(plotVector.clone().multiplyScalar(scaledValue));
 
         // Get color for this value
         const color = getValueColor(value, maxAbsValue);
@@ -159,6 +241,44 @@ const createDiagramGeometry = (
 
     return { geometry, colors: new Float32Array(colors) };
 };
+
+// ============================================
+// VALUE LABEL COMPONENT
+// ============================================
+
+interface ValueLabelProps {
+    position: THREE.Vector3;
+    value: number;
+    unit?: string;
+    color: string;
+}
+
+const ValueLabel: FC<ValueLabelProps> = ({ position, value, unit = '', color }) => {
+    return (
+        <Text
+            position={position}
+            fontSize={0.2}
+            color={color}
+            anchorX="center"
+            anchorY="bottom"
+            outlineWidth={0.02}
+            outlineColor="#000000"
+        >
+            {`${value.toFixed(2)} ${unit}`}
+        </Text>
+    );
+};
+
+// ============================================
+// MARKER COMPONENT
+// ============================================
+
+const CriticalPointMarker: FC<{ position: THREE.Vector3; color: string }> = ({ position, color }) => (
+    <mesh position={position}>
+        <sphereGeometry args={[0.08, 16, 16]} />
+        <meshBasicMaterial color={color} />
+    </mesh>
+);
 
 // ============================================
 // SCANNER LINE COMPONENT
@@ -246,7 +366,10 @@ export const DiagramOverlay: FC<DiagramOverlayProps> = ({
     type,
     scale = 0.05,
     visible = true,
-    offset = 0
+    offset = 0,
+    betaAngle = 0,
+    showLabels = false,
+    showCriticalPoints = false
 }) => {
     const meshRef = useRef<THREE.Mesh>(null);
     const [hoverInfo, setHoverInfo] = useState<{
@@ -260,9 +383,19 @@ export const DiagramOverlay: FC<DiagramOverlayProps> = ({
     // Get values based on diagram type
     const values = useMemo(() => {
         switch (type) {
-            case 'BMD': return data.moment_values;
-            case 'SFD': return data.shear_values;
-            case 'deflection': return data.deflection_values || [];
+            case 'BMD': return data.moment_values; // Legacy alias for Major Axis Moment
+            case 'SFD': return data.shear_values;  // Legacy alias for Major Shear
+            case 'deflection': return data.deflection_values || data.deflection_y || [];
+
+            case 'ShearY': return data.shear_y || data.shear_values;
+            case 'ShearZ': return data.shear_z || [];
+            case 'MomentY': return data.moment_y || [];
+            case 'MomentZ': return data.moment_z || data.moment_values;
+            case 'DeflectionY': return data.deflection_y || [];
+            case 'DeflectionZ': return data.deflection_z || [];
+            case 'Axial': return data.axial || [];
+            case 'Torsion': return data.torsion || [];
+
             default: return data.moment_values;
         }
     }, [data, type]);
@@ -270,13 +403,55 @@ export const DiagramOverlay: FC<DiagramOverlayProps> = ({
     const startPos = useMemo(() => new THREE.Vector3(...startPosition), [startPosition]);
     const endPos = useMemo(() => new THREE.Vector3(...endPosition), [endPosition]);
 
-    // Create diagram geometry
-    const { geometry } = useMemo(() => {
+    // Create diagram geometry and identifying key points
+    const { geometry, startPoint, endPoint, maxPoint, minPoint } = useMemo(() => {
         if (!values.length || !data.x_values.length) {
-            return { geometry: new THREE.BufferGeometry(), colors: new Float32Array() };
+            return {
+                geometry: new THREE.BufferGeometry(),
+                colors: new Float32Array(),
+                startPoint: startPos,
+                endPoint: endPos,
+                maxPoint: null,
+                minPoint: null
+            };
         }
-        return createDiagramGeometry(startPos, endPos, values, data.x_values, scale, offset);
-    }, [startPos, endPos, values, data.x_values, scale, offset]);
+
+        // We modify createDiagramGeometry to return key points logic here since we can't easily change return type of helper without breaking
+        // Actually, let's calculate key points here using generated geometry loop logic
+        const geoData = createDiagramGeometry(startPos, endPos, values, data.x_values, scale, offset, type, betaAngle);
+
+        // Find max/min indices
+        let maxVal = -Infinity, minVal = Infinity, maxIdx = -1, minIdx = -1;
+        values.forEach((v, i) => {
+            if (v > maxVal) { maxVal = v; maxIdx = i; }
+            if (v < minVal) { minVal = v; minIdx = i; }
+        });
+
+        // Determine positions of Start, End, Max, Min
+        // Need to replicate position calculation... 
+        const { localX, localY, localZ } = calculateLocalAxes(startPos, endPos, betaAngle);
+
+        let plotVector = localY.clone();
+        if (type === 'ShearZ' || type === 'MomentY' || type === 'DeflectionZ') plotVector = localZ.clone();
+
+        const getPoint = (idx: number) => {
+            if (idx < 0 || idx >= data.x_values.length) return null;
+            const xVal = data.x_values[idx];
+            const val = values[idx];
+            const pointOnBeam = startPos.clone().add(localX.clone().multiplyScalar(xVal));
+            const basePoint = pointOnBeam.clone().add(plotVector.clone().multiplyScalar(offset)); // Using plotVector as offset vector simplified
+            return basePoint.add(plotVector.clone().multiplyScalar(val * scale));
+        };
+
+        return {
+            ...geoData,
+            startPoint: getPoint(0),
+            endPoint: getPoint(values.length - 1),
+            maxPoint: (maxIdx >= 0 && Math.abs(maxVal) > 0.001) ? { pos: getPoint(maxIdx)!, val: maxVal } : null,
+            minPoint: (minIdx >= 0 && Math.abs(minVal) > 0.001) ? { pos: getPoint(minIdx)!, val: minVal } : null
+        };
+
+    }, [startPos, endPos, values, data.x_values, scale, offset, type, betaAngle]);
 
     // Calculate max height for scanner line
     const maxHeight = useMemo(() => {
@@ -353,7 +528,33 @@ export const DiagramOverlay: FC<DiagramOverlayProps> = ({
                 />
             </lineSegments>
 
-            {/* Scanner Line & Tooltip */}
+            {/* Show Labels */}
+            {showLabels && startPoint && endPoint && values.length > 0 && (
+                <>
+                    <ValueLabel position={startPoint.clone().add(new THREE.Vector3(0, 0.2, 0))} value={values[0]} color="#ffffff" />
+                    <ValueLabel position={endPoint.clone().add(new THREE.Vector3(0, 0.2, 0))} value={values[values.length - 1]} color="#ffffff" />
+                </>
+            )}
+
+            {/* Show Critical Points */}
+            {showCriticalPoints && (
+                <>
+                    {maxPoint && (
+                        <>
+                            <CriticalPointMarker position={maxPoint.pos} color="#ff4444" />
+                            {showLabels && <ValueLabel position={maxPoint.pos.clone().add(new THREE.Vector3(0, 0.2, 0))} value={maxPoint.val} color="#ff4444" />}
+                        </>
+                    )}
+                    {minPoint && minPoint.pos && (!maxPoint || minPoint.pos.distanceTo(maxPoint.pos) > 0.5) && (
+                        <>
+                            <CriticalPointMarker position={minPoint.pos} color="#4444ff" />
+                            {showLabels && <ValueLabel position={minPoint.pos.clone().add(new THREE.Vector3(0, 0.2, 0))} value={minPoint.val} color="#4444ff" />}
+                        </>
+                    )}
+                </>
+            )}
+
+            {/* Empty Scanner Line & Tooltip Anchor */}
             {hoverInfo && (
                 <>
                     <ScannerLine

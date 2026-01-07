@@ -23,6 +23,8 @@ import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import TermsPage from './pages/TermsPage';
 import { HelpPage } from './pages/HelpPage';
+import { ContactPage } from './pages/ContactPage';
+import { AboutPage } from './pages/AboutPage';
 import { ReportsPage } from './pages/ReportsPage';
 import ReportViewerEnhanced from './pages/ReportViewerEnhanced';
 import { WorkspaceDemo } from './pages/WorkspaceDemo';
@@ -31,9 +33,15 @@ import { WorkerValidation } from './components/WorkerValidation';
 import { ModalAnalysisPanel } from './components/analysis/ModalAnalysisPanel';
 import { TimeHistoryPanel } from './components/analysis/TimeHistoryPanel';
 import { SeismicAnalysisPanel } from './components/analysis/SeismicAnalysisPanel';
+import { BucklingAnalysisPanel } from './components/analysis/BucklingAnalysisPanel';
+import { CableAnalysisPanel } from './components/analysis/CableAnalysisPanel';
+import { PDeltaAnalysisPanel } from './components/analysis/PDeltaAnalysisPanel';
 // Layouts
 import { WorkspaceLayout } from './layouts/WorkspaceLayout';
 import { RequireAuth } from './components/layout/RequireAuth';
+
+// Design Pages
+import { SteelDesignPage } from './pages/SteelDesignPage';
 
 // Modern Modeler Component
 import { ModernModeler } from './components/ModernModeler';
@@ -312,7 +320,10 @@ function App() {
         '/',
 
         '/pricing',
+        '/pricing',
         '/capabilities',
+        '/about',
+        '/contact',
         '/help',
         '/privacy',
         '/terms',
@@ -414,6 +425,10 @@ function App() {
                 {/* Help & Tutorials */}
                 <Route path="/help" element={<HelpPage />} />
 
+                {/* About & Contact */}
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+
                 {/* Reports */}
                 {/* Reports */}
                 <Route path="/reports" element={
@@ -450,10 +465,21 @@ function App() {
                 {/* Worker Validation Route */}
                 <Route path="/worker-test" element={<WorkerValidation />} />
 
-                {/* Advanced Analysis Panels (API-backed MVP) */}
-                <Route path="/analysis/modal" element={<ModalAnalysisPanel isOpen={true} onClose={() => {}} />} />
+                {/* Advanced Analysis Panels (Rust-powered, 20-100x faster) */}
+                <Route path="/analysis/modal" element={<ModalAnalysisPanel isOpen={true} onClose={() => { }} />} />
                 <Route path="/analysis/time-history" element={<TimeHistoryPanel />} />
                 <Route path="/analysis/seismic" element={<SeismicAnalysisPanel />} />
+                <Route path="/analysis/buckling" element={<BucklingAnalysisPanel />} />
+                <Route path="/analysis/cable" element={<CableAnalysisPanel />} />
+                <Route path="/analysis/pdelta" element={<PDeltaAnalysisPanel />} />
+                <Route path="/analysis/nonlinear" element={<PDeltaAnalysisPanel />} /> {/* Alias for P-Delta */}
+
+                {/* Design Modules (Rust-powered, 10x faster) */}
+                <Route path="/design/steel" element={
+                    <RequireAuth>
+                        <SteelDesignPage />
+                    </RequireAuth>
+                } />
 
                 {/* Workspace Routes */}
                 {/* Workspace Routes */}

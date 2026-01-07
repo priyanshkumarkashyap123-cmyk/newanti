@@ -4,6 +4,7 @@ import { Line } from '@react-three/drei';
 import { useModelStore } from '../store/model';
 import { MemberForcesCalculator, type ForcePoint } from '../utils/MemberForcesCalculator';
 import { MatrixUtils } from '../utils/MatrixUtils';
+import { calculateLocalAxes } from './results/DiagramOverlay';
 
 export type DiagramType = 'MZ' | 'FY' | 'MY' | 'FZ' | 'FX' | 'TX';
 
@@ -53,17 +54,12 @@ export const DiagramRenderer: FC<DiagramRendererProps> = ({
             endNode.z - startNode.z
         ).normalize();
 
-        // Perpendicular vector for diagram offset (in local Y)
-        // Cross with global Z to get local Y, or use global Y if parallel
-        const globalZ = new THREE.Vector3(0, 0, 1);
-        let localY = new THREE.Vector3().crossVectors(dir, globalZ);
-
-        if (localY.length() < 0.01) {
-            // Member is nearly vertical along Z, use global Y instead
-            localY = new THREE.Vector3(0, 1, 0);
-        } else {
-            localY.normalize();
-        }
+        // Calculate 3D Orientation
+        const { localY, localZ } = calculateLocalAxes(
+            new THREE.Vector3(startNode.x, startNode.y, startNode.z),
+            new THREE.Vector3(endNode.x, endNode.y, endNode.z),
+            member.betaAngle || 0
+        );
 
         // Check if we have actual PyNite diagram data
         const pyniteDiagram = memberForces.diagramData;
@@ -81,9 +77,11 @@ export const DiagramRenderer: FC<DiagramRendererProps> = ({
 
             return {
                 forcePoints,
+
                 L,
                 dir,
                 localY,
+                localZ,
                 startPos: new THREE.Vector3(startNode.x, startNode.y, startNode.z)
             };
         }
@@ -111,6 +109,7 @@ export const DiagramRenderer: FC<DiagramRendererProps> = ({
             L,
             dir,
             localY,
+            localZ,
             startPos: new THREE.Vector3(startNode.x, startNode.y, startNode.z)
         };
     }, [member, startNode, endNode, analysisResults, memberId]);
@@ -121,8 +120,14 @@ export const DiagramRenderer: FC<DiagramRendererProps> = ({
             return { linePoints: [] as THREE.Vector3[], fillShape: null };
         }
 
-        const { forcePoints, L, dir, localY, startPos } = diagramData;
+        const { forcePoints, L, dir, localY, localZ, startPos } = diagramData;
         const points: THREE.Vector3[] = [];
+
+        // Determine correct plot vector (plane)
+        let plotVector = localY.clone();
+        if (type === 'MY' || type === 'FZ') {
+            plotVector = localZ.clone();
+        }
 
         // Get value based on diagram type
         const getValue = (p: ForcePoint): number => {
@@ -146,9 +151,9 @@ export const DiagramRenderer: FC<DiagramRendererProps> = ({
                 .copy(startPos)
                 .addScaledVector(dir, fp.x);
 
-            // Offset position by value
+            // Offset position by value in the correct plane
             const offsetPos = basePos.clone()
-                .addScaledVector(localY, value * scale);
+                .addScaledVector(plotVector, value * scale);
 
             points.push(offsetPos);
         }
@@ -183,7 +188,13 @@ export const DiagramRenderer: FC<DiagramRendererProps> = ({
         return null;
     }
 
-    const { dir, localY, startPos, L } = diagramData;
+    const { dir, localY, localZ } = diagramData;
+
+    // Determine correct plot vector (plane)
+    let plotVector = localY.clone();
+    if (type === 'MY' || type === 'FZ') {
+        plotVector = localZ.clone();
+    }
 
     // Calculate rotation to align fill shape with member
     const fillRotation = useMemo(() => {
@@ -192,8 +203,8 @@ export const DiagramRenderer: FC<DiagramRendererProps> = ({
 
         // Local X = member direction
         const localX = dir.clone();
-        // Local Y = perpendicular (diagram offset direction)
-        const localYDir = localY.clone();
+        // Local Y = diagram offset direction
+        const localYDir = plotVector.clone();
         // Local Z = cross product
         const localZDir = new THREE.Vector3().crossVectors(localX, localYDir);
 
@@ -203,7 +214,7 @@ export const DiagramRenderer: FC<DiagramRendererProps> = ({
         euler.setFromRotationMatrix(matrix);
 
         return euler;
-    }, [dir, localY]);
+    }, [dir, plotVector]);
 
     return (
         <group>
