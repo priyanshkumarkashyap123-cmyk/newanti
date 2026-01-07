@@ -188,7 +188,7 @@ export const DiagramRenderer: FC<DiagramRendererProps> = ({
         return null;
     }
 
-    const { dir, localY, localZ } = diagramData;
+    const { dir, localY, localZ, startPos, L } = diagramData;
 
     // Determine correct plot vector (plane)
     let plotVector = localY.clone();

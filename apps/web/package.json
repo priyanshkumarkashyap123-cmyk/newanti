@@ -12,8 +12,6 @@
         "type-check": "tsc --noEmit"
     },
     "dependencies": {
-        "solver-wasm": "workspace:*",
-        "backend-rust": "workspace:*",
         "@clerk/clerk-react": "^5.59.0",
         "@monaco-editor/react": "^4.7.0",
         "@radix-ui/react-accordion": "^1.2.12",
@@ -33,6 +31,7 @@
         "@tanstack/react-table": "^8.21.3",
         "@tanstack/react-virtual": "^3.13.13",
         "autoprefixer": "^10.4.23",
+        "backend-rust": "workspace:*",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "date-fns": "^4.1.0",
@@ -47,6 +46,7 @@
         "react-resizable-panels": "^4.0.16",
         "react-router-dom": "^7.11.0",
         "socket.io-client": "^4.8.1",
+        "solver-wasm": "workspace:*",
         "tailwind-merge": "^3.4.0",
         "tailwindcss": "^4.1.18",
         "three": "^0.170.0",
@@ -62,6 +62,8 @@
         "@vitejs/plugin-react": "^4.3.4",
         "eslint": "^9.15.0",
         "typescript": "^5.6.3",
-        "vite": "^5.4.11"
+        "vite": "^5.4.11",
+        "vite-plugin-top-level-await": "^1.6.0",
+        "vite-plugin-wasm": "^3.5.0"
     }
 }

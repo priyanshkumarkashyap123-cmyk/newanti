@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useModelStore } from '../store/model';
 import { useAuth } from '../providers/AuthProvider';
+import beamLabLogo from '../assets/beamlab_logo.png';
 import { generateDesignReport } from '../services/PDFReportService';
 import { generateDXF, downloadDXF } from '../services/DXFExportService';
 import { generateIFC, downloadIFC } from '../services/IFCExportService';
@@ -72,8 +73,8 @@ export const ReportsPage = () => {
             <header className="sticky top-0 z-50 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-950/90 backdrop-blur-md px-6 py-3 print:hidden">
                 <div className="flex items-center gap-4">
                     <Link to="/" className="flex items-center gap-3 group">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-blue-500/25 transition-all">
-                            <Cpu className="w-5 h-5 text-white" />
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-blue-500/25 transition-all overflow-hidden">
+                            <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-cover" />
                         </div>
                         <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">BeamLab Ultimate</h2>
                     </Link>
@@ -119,8 +120,8 @@ export const ReportsPage = () => {
                     <div className="flex flex-wrap justify-between items-start border-b-2 border-slate-100 pb-8 mb-8">
                         <div className="flex flex-col gap-4">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-slate-900 rounded-lg flex items-center justify-center print:border print:border-slate-300">
-                                    <Cpu className="w-6 h-6 text-white" />
+                                <div className="w-10 h-10 rounded-lg flex items-center justify-center print:border print:border-slate-300 overflow-hidden">
+                                    <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-cover" />
                                 </div>
                                 <div>
                                     <h1 className="text-3xl font-black tracking-tight text-slate-900 leading-none">BeamLab</h1>

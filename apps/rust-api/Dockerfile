@@ -14,7 +14,8 @@ COPY Cargo.toml Cargo.lock ./
 
 # Create dummy source for dependency caching
 RUN mkdir src && \
-    echo "fn main() {}" > src/main.rs
+    echo "fn main() {}" > src/main.rs && \
+    echo "" > src/lib.rs
 
 # Build dependencies only (cached layer)
 RUN cargo build --release && rm -rf src

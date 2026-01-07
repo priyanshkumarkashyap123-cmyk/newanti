@@ -10,6 +10,7 @@ import { UserButton } from '@clerk/clerk-react';
 import { useAuth, isUsingClerk } from '../providers/AuthProvider';
 import { useUserRegistration } from '../hooks/useUserRegistration';
 import { StatusBadge } from '../components/ui';
+import beamLabLogo from '../assets/beamlab_logo.png';
 
 // ============================================
 // TYPES
@@ -109,8 +110,8 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                 {/* Logo */}
                 <div className="h-16 flex items-center px-6 border-b border-border-dark">
                     <Link to="/" className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded bg-accent text-steel-blue">
-                            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>architecture</span>
+                        <div className="flex h-8 w-8 items-center justify-center rounded overflow-hidden">
+                            <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-cover" />
                         </div>
                         <span className="text-lg font-bold text-white">BeamLab</span>
                     </Link>

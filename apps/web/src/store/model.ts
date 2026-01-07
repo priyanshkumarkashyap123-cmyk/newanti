@@ -966,61 +966,60 @@ export const useModelStore = create<ModelState>()(
                         return { nodes: newNodes, members: newMembers };
                     }),
 
-                renumberNodes: () =>
-                    set((state) => {
-                        const sortedNodes = Array.from(state.nodes.values()).sort((a, b) => {
-                            if (Math.abs(a.y - b.y) > 0.001) return a.y - b.y; // Y (Elevation) first
-                            if (Math.abs(a.z - b.z) > 0.001) return a.z - b.z; // Then Z
-                            return a.x - b.x; // Then X
-                        });
+                renumberNodes: () => set((state) => {
+                    const sortedNodes = Array.from(state.nodes.values()).sort((a, b) => {
+                        if (Math.abs(a.y - b.y) > 0.001) return a.y - b.y; // Y (Elevation) first
+                        if (Math.abs(a.z - b.z) > 0.001) return a.z - b.z; // Then Z
+                        return a.x - b.x; // Then X
+                    });
 
-                        const newNodes = new Map<string, Node>();
-                        const idMap = new Map<string, string>(); // old -> new
-                        const newSelected = new Set(state.selectedIds);
-                        let counter = 1;
+                    const newNodes = new Map<string, Node>();
+                    const idMap = new Map<string, string>(); // old -> new
+                    const newSelected = new Set(state.selectedIds);
+                    let counter = 1;
 
-                        // Renumber nodes
-                        sortedNodes.forEach(node => {
-                            const newId = `N${counter++}`;
-                            idMap.set(node.id, newId);
-                            newNodes.set(newId, { ...node, id: newId });
+                    // Renumber nodes
+                    sortedNodes.forEach(node => {
+                        const newId = `N${counter++}`;
+                        idMap.set(node.id, newId);
+                        newNodes.set(newId, { ...node, id: newId });
 
-                            // Update selection
-                            if (state.selectedIds.has(node.id)) {
-                                newSelected.delete(node.id);
-                                newSelected.add(newId);
-                            }
-                        });
+                        // Update selection
+                        if (state.selectedIds.has(node.id)) {
+                            newSelected.delete(node.id);
+                            newSelected.add(newId);
+                        }
+                    });
 
-                        // Update member references
-                        const newMembers = new Map(state.members);
-                        newMembers.forEach((member, mId) => {
-                            const newStart = idMap.get(member.startNodeId);
-                            const newEnd = idMap.get(member.endNodeId);
-                            if (newStart && newEnd) {
-                                newMembers.set(mId, {
-                                    ...member,
-                                    startNodeId: newStart,
-                                    endNodeId: newEnd
-                                });
-                            }
-                        });
+                    // Update member references
+                    const newMembers = new Map(state.members);
+                    newMembers.forEach((member, mId) => {
+                        const newStart = idMap.get(member.startNodeId);
+                        const newEnd = idMap.get(member.endNodeId);
+                        if (newStart && newEnd) {
+                            newMembers.set(mId, {
+                                ...member,
+                                startNodeId: newStart,
+                                endNodeId: newEnd
+                            });
+                        }
+                    });
 
-                        // Update nodal loads
-                        const newLoads = state.loads.map(load => ({
-                            ...load,
-                            nodeId: idMap.get(load.nodeId) || load.nodeId
-                        }));
+                    // Update nodal loads
+                    const newLoads = state.loads.map(load => ({
+                        ...load,
+                        nodeId: idMap.get(load.nodeId) || load.nodeId
+                    }));
 
-                        return {
-                            nodes: newNodes,
-                            members: newMembers,
-                            loads: newLoads,
-                            selectedIds: newSelected,
-                            nextNodeNumber: counter,
-                            analysisResults: null // Invalidate results
-                        };
-                    }),
+                    return {
+                        nodes: newNodes,
+                        members: newMembers,
+                        loads: newLoads,
+                        selectedIds: newSelected,
+                        nextNodeNumber: counter,
+                        analysisResults: null // Invalidate results
+                    };
+                }),
 
                 renumberMembers: () =>
                     set((state) => {

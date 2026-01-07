@@ -10,18 +10,20 @@ import { motion } from 'framer-motion';
 import { SignInButton, SignUpButton, UserButton } from '@clerk/clerk-react';
 import { useAuth, isUsingClerk } from '../providers/AuthProvider';
 import {
+    CheckCircle,
+    ChevronRight,
     Menu,
     X,
     ArrowRight,
     Zap,
     Globe2,
+    Shield,
     Layers,
     Cpu,
-    CheckCircle,
-    Shield,
-    Terminal,
-    Play
+    Play,
+    Terminal
 } from 'lucide-react';
+import beamLabLogo from '../assets/beamlab_logo.png';
 
 // Animation variants
 const fadeInUp = {
@@ -101,8 +103,8 @@ export const LandingPage: FC = () => {
                     <div className="flex items-center justify-between h-16">
                         {/* Logo */}
                         <Link to="/" className="flex items-center gap-2 group">
-                            <div className="relative w-8 h-8 flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg shadow-lg group-hover:shadow-blue-500/25 transition-all">
-                                <Cpu className="w-5 h-5 text-white" />
+                            <div className="relative w-8 h-8 flex items-center justify-center rounded-lg shadow-lg group-hover:shadow-blue-500/25 transition-all overflow-hidden">
+                                <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-cover" />
                             </div>
                             <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
                                 BeamLab Ultimate
@@ -302,7 +304,7 @@ export const LandingPage: FC = () => {
                                     <span className="text-4xl font-bold text-white">{tier.price}</span>
                                     {tier.period && <span className="text-slate-500 ml-1">/{tier.period}</span>}
                                 </div>
-                                
+
                                 <button
                                     onClick={handleGetStarted}
                                     className={`w-full py-3 rounded-xl font-bold text-sm transition-all mb-8 ${tier.popular
@@ -327,7 +329,7 @@ export const LandingPage: FC = () => {
                 </div>
             </section>
 
-             {/* CTA Section */}
+            {/* CTA Section */}
             <section className="py-24 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-900/20 to-purple-900/20" />
                 <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
@@ -337,14 +339,14 @@ export const LandingPage: FC = () => {
                     <p className="text-xl text-slate-300 mb-10">
                         Join thousands of engineers using BeamLab Ultimate for their structural analysis needs.
                     </p>
-                     <button
+                    <button
                         onClick={handleGetStarted}
                         className="inline-flex items-center gap-3 h-14 px-10 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-full text-lg font-bold transition-all hover:scale-105 shadow-2xl shadow-blue-500/20"
                     >
                         Get Started Free
                         <ArrowRight className="w-5 h-5" />
                     </button>
-                     <p className="text-slate-500 text-sm mt-6">No credit card required • Free forever plan available</p>
+                    <p className="text-slate-500 text-sm mt-6">No credit card required • Free forever plan available</p>
                 </div>
             </section>
 
@@ -353,18 +355,18 @@ export const LandingPage: FC = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
                         <div className="col-span-2">
-                             <div className="flex items-center gap-2 mb-6">
+                            <div className="flex items-center gap-2 mb-6">
                                 <div className="w-8 h-8 flex items-center justify-center bg-slate-800 rounded-lg">
                                     <Cpu className="w-5 h-5 text-blue-400" />
                                 </div>
                                 <span className="text-xl font-bold text-white">BeamLab Ultimate</span>
                             </div>
                             <p className="text-slate-400 text-sm max-w-sm leading-relaxed">
-                                Professional structural analysis software, reimagined for the modern web. 
+                                Professional structural analysis software, reimagined for the modern web.
                                 Fast, accurate, and accessible anywhere.
                             </p>
                         </div>
-                        
+
                         <div>
                             <h4 className="font-bold text-white mb-4">Product</h4>
                             <ul className="space-y-3 text-sm">
@@ -374,8 +376,8 @@ export const LandingPage: FC = () => {
                                 <li><Link to="/workspace-demo" className="text-slate-400 hover:text-white transition-colors">Workspace Demo</Link></li>
                             </ul>
                         </div>
-                        
-                         <div>
+
+                        <div>
                             <h4 className="font-bold text-white mb-4">Company</h4>
                             <ul className="space-y-3 text-sm">
                                 <li><Link to="/privacy" className="text-slate-400 hover:text-white transition-colors">Privacy Policy</Link></li>
@@ -384,7 +386,7 @@ export const LandingPage: FC = () => {
                             </ul>
                         </div>
                     </div>
-                    
+
                     <div className="pt-8 border-t border-slate-900 flex flex-col md:flex-row justify-between items-center gap-4">
                         <p className="text-slate-500 text-sm">© 2025 BeamLab Ultimate. All rights reserved.</p>
                         <p className="text-slate-600 text-xs">Built for structural engineers.</p>
