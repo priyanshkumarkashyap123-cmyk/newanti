@@ -15,7 +15,7 @@ console_error_panic_hook = "0.1"
 js-sys = "0.3"
 nalgebra = { version = "0.33", features = ["sparse", "serde-serialize"] }
 serde-wasm-bindgen = "0.6"
-wgpu = "0.19"
+# wgpu removed - using Three.js for rendering, stub in renderer.rs
 wasm-bindgen-futures = "0.4"
 # burn = { version = "0.12", features = ["wgpu"] }
 petgraph = "0.6"

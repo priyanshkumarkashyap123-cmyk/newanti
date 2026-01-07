@@ -39,12 +39,6 @@ jobs:
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
-      - name: Build WASM Solver Package
-        working-directory: packages/solver-wasm
-        run: |
-          wasm-pack build --target web
-          ls -la pkg/
-      
       - name: Build Backend Rust WASM
         working-directory: apps/backend-rust
         run: |
@@ -53,8 +47,6 @@ jobs:
       
       - name: Verify WASM packages exist
         run: |
-          echo "Checking solver-wasm pkg..."
-          ls -la packages/solver-wasm/pkg/
           echo "Checking backend-rust pkg..."
           ls -la apps/backend-rust/pkg/
 
