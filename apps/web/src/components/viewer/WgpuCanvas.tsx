@@ -5,17 +5,36 @@
  * on complex structural models.
  * 
  * Falls back to WebGL automatically if WebGPU is not supported.
+ * 
+ * NOTE: Temporarily disabled until wgpu 0.19 API is updated
  */
 
-import { FC, useEffect, useRef, useState } from 'react';
-import init, { Renderer } from 'backend-rust';
-import { useUIStore } from '../../store/uiStore';
+import { FC } from 'react';
+// import init, { Renderer } from 'backend-rust';
+// import { useUIStore } from '../../store/uiStore';
 
 interface WgpuCanvasProps {
     className?: string;
 }
 
 export const WgpuCanvas: FC<WgpuCanvasProps> = ({ className }) => {
+    // Temporarily disabled - renderer module commented out in backend-rust
+    return (
+        <div className={className} style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            background: '#1a1a1a',
+            color: '#888'
+        }}>
+            <p>WebGPU renderer temporarily unavailable - using WebGL fallback</p>
+        </div>
+    );
+};
+
+// Original implementation commented out until renderer module is re-enabled
+/*
+export const WgpuCanvasOriginal: FC<WgpuCanvasProps> = ({ className }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const rendererRef = useRef<Renderer | null>(null);
     const [isReady, setIsReady] = useState(false);
@@ -167,3 +186,4 @@ export const WgpuCanvas: FC<WgpuCanvasProps> = ({ className }) => {
 };
 
 export default WgpuCanvas;
+*/
