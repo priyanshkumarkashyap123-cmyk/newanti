@@ -22,7 +22,7 @@ use axum::{
 use std::sync::Arc;
 use tower_http::{
     compression::CompressionLayer,
-    cors::{Any, CorsLayer},
+    cors::CorsLayer,
     limit::RequestBodyLimitLayer,
     trace::TraceLayer,
 };
@@ -95,8 +95,8 @@ async fn main() -> anyhow::Result<()> {
     });
 
     // Build CORS layer
-    // Note: When allow_credentials(true) is set, we cannot use Any for headers
-    // We must explicitly list allowed headers for CORS security
+    // Note: When allow_credentials(true) is set, we cannot use Any for headers or methods
+    // We must explicitly list allowed headers and methods for CORS security
     let cors = CorsLayer::new()
         .allow_origin([
             "http://localhost:5173".parse().unwrap(),
@@ -104,7 +104,14 @@ async fn main() -> anyhow::Result<()> {
             "https://beamlabultimate.tech".parse().unwrap(),
             "https://www.beamlabultimate.tech".parse().unwrap(),
         ])
-        .allow_methods(Any)
+        .allow_methods([
+            http::Method::GET,
+            http::Method::POST,
+            http::Method::PUT,
+            http::Method::DELETE,
+            http::Method::OPTIONS,
+            http::Method::PATCH,
+        ])
         .allow_headers([
             http::header::CONTENT_TYPE,
             http::header::AUTHORIZATION,
