@@ -44,24 +44,20 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy binary from builder
+# Copy binary from builder and make executable
 COPY --from=builder /app/target/release/beamlab-rust-api /app/beamlab-rust-api
+RUN chmod +x /app/beamlab-rust-api
 
-# Create non-root user
-RUN useradd -r -s /bin/false beamlab && \
-    chown -R beamlab:beamlab /app
-
-USER beamlab
-
-# Expose port (Azure uses 8080 by default, but we configure via env)
+# Expose port (Azure uses 8080 by default)
 EXPOSE 8080
-EXPOSE 3002
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:${PORT:-8080}/health || exit 1
+# Remove Docker health check - Azure has its own
+# HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+#     CMD curl -f http://localhost:${PORT:-8080}/health || exit 1
 
-# Run the server
+# Run the server as root (Azure requirement for some scenarios)
 ENV RUST_LOG=beamlab_api=info,tower_http=info
 ENV PORT=8080
-CMD ["./beamlab-rust-api"]
+
+# Use shell form to see startup logs
+CMD /app/beamlab-rust-api

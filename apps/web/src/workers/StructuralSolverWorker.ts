@@ -31,9 +31,9 @@ async function loadWasm(): Promise<void> {
         }
         const wasmBytes = await response.arrayBuffer();
 
-        // Use the bundled solver_wasm.js for initialization
-        // Instead, we dynamically import the glue code which resolves the WASM file
-        wasmModule = await import('/solver_wasm.js');
+        // Use the bundled solver_wasm.js from src/libs
+        // Vite will bundle this correctly
+        wasmModule = await import('../libs/solver_wasm');
 
         // Initialize with the fetched bytes
         await wasmModule.default(wasmBytes);
