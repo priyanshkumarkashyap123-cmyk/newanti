@@ -20,6 +20,21 @@ LOCATION="eastus"
 WEB_APP_NAME="beamlab-web"
 BACKEND_NAME="beamlab-api"
 PYTHON_BACKEND_NAME="beamlab-python"
+REQUIRED_VARS=(
+    "RAZORPAY_KEY_ID"
+    "RAZORPAY_KEY_SECRET"
+    "RAZORPAY_WEBHOOK_SECRET"
+    "MONGODB_URI"
+    "CLERK_SECRET_KEY"
+)
+
+for var in "${REQUIRED_VARS[@]}"; do
+    if [ -z "${!var}" ]; then
+        echo -e "${RED}Error: Environment variable $var is not set.${NC}"
+        echo "Please export it before running this script."
+        exit 1
+    fi
+done
 
 echo ""
 echo "📦 Step 1: Building WASM Solver with Advanced Features..."
@@ -245,6 +260,11 @@ az containerapp create \
     --ingress external \
     --env-vars \
         "NODE_ENV=production" \
+        "MONGODB_URI=$MONGODB_URI" \
+        "CLERK_SECRET_KEY=$CLERK_SECRET_KEY" \
+        "RAZORPAY_KEY_ID=$RAZORPAY_KEY_ID" \
+        "RAZORPAY_KEY_SECRET=$RAZORPAY_KEY_SECRET" \
+        "RAZORPAY_WEBHOOK_SECRET=$RAZORPAY_WEBHOOK_SECRET" \
     --output none
 
 BACKEND_URL=$(az containerapp show --name $BACKEND_NAME --resource-group $RESOURCE_GROUP --query "properties.configuration.ingress.fqdn" -o tsv)

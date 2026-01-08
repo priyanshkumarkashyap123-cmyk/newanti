@@ -4,7 +4,7 @@ import { Line } from '@react-three/drei';
 import { useModelStore } from '../store/model';
 import { MemberForcesCalculator, type ForcePoint } from '../utils/MemberForcesCalculator';
 import { MatrixUtils } from '../utils/MatrixUtils';
-import { calculateLocalAxes } from './results/DiagramOverlay';
+import { calculateLocalAxes } from './results/DiagramUtils';
 
 export type DiagramType = 'MZ' | 'FY' | 'MY' | 'FZ' | 'FX' | 'TX';
 

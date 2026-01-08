@@ -13,8 +13,13 @@
 // ============================================
 
 // WASM Module import (dynamic from public folder)
+// WASM Module import (dynamic from public folder)
 let wasmModule: any = null;
 let wasmReady = false;
+
+// Import Truss Solvers
+import { computeTruss2DStiffness, computeTruss2DMemberForces } from '../solvers/elements/compute-truss-2d';
+import { computeTruss3DStiffness, computeTruss3DMemberForces, computeMemberGeometry3D } from '../solvers/elements/compute-truss-3d';
 
 async function loadWasm(): Promise<void> {
     try {
@@ -77,6 +82,7 @@ export interface MemberData {
     E: number;
     A: number;
     I: number;
+    type?: 'frame' | 'truss'; // Default to 'frame' if undefined
 }
 
 export interface LoadData {
@@ -266,10 +272,127 @@ function assembleStiffnessMatrix(
             dofMap.push(endIdx * dofPerNode + i);
         }
 
-        // Element stiffness matrix (frame when dofPerNode>=3, else truss)
-        const ke = (dofPerNode === 3)
-            ? computeFrameStiffness(E, A, member.I, L, cx, cy, cz)
-            : computeTrussStiffness(k, cx, cy, cz, dofPerNode);
+        // Element stiffness matrix selection
+        let ke: number[][];
+        const type = member.type || 'frame'; // Default to frame
+
+        if (dofPerNode === 2) {
+            // 2D Analysis
+            if (type === 'truss') {
+                // Truss 2D (4x4)
+                // Need angle for 2D truss. cx, cy give direction. angle = atan2(dy, dx)
+                const angle = Math.atan2(dy, dx);
+                ke = computeTruss2DStiffness(E, A, L, angle);
+            } else {
+                // Frame 2D (6x6) - but current worker treats it differently?
+                // The worker's computeFrameStiffness returns 6x6. 
+                // If dofPerNode=2, we need 2D truss or similar?
+                // Wait, existing code had:
+                // const ke = (dofPerNode === 3) ? computeFrameStiffness... : computeTrussStiffness...
+                // Actually dofPerNode=3 (u,v,theta) is Frame 2D. 
+                // dofPerNode=2 (u,v) is Truss 2D.
+
+                // If user requests 2 DOF per node, it MUST be a truss or similar (no rotation)
+                // So default to truss logic for dof=2?
+                // Or maybe Frame 2D without rotation? (Unlikely)
+                // Let's stick to explicit type check or fallback
+
+                // Re-using exiting logic for 'truss' check:
+                ke = computeTruss2DStiffness(E, A, L, Math.atan2(dy, dx));
+            }
+        } else if (dofPerNode === 3) {
+            // 2D Frame (u, v, theta) - 6x6 matrix (3 dof * 2 nodes)
+            if (type === 'truss') {
+                // Truss in 2D Frame system (still just axial)
+                // We simply expand 4x4 to 6x6 with zeros for rotation
+                // This requires mapping logic.
+                // For now, let's keep it simple: Truss elements in Frame model
+                const angle = Math.atan2(dy, dx);
+                const kTruss = computeTruss2DStiffness(E, A, L, angle); // 4x4
+
+                // Expand to 6x6
+                // Indices in 6x6: u1, v1, th1, u2, v2, th2 (0,1,2, 3,4,5)
+                // Indices in 4x4: u1, v1, u2, v2 (0,1, 2,3)
+                ke = Array(6).fill(0).map(() => Array(6).fill(0));
+
+                const map = [0, 1, -1, 3, 4, -1]; // -1 means skip (theta)
+                // Wait, manual mapping is better
+                // 4x4: [0,0]->[0,0], [0,1]->[0,1], [0,2]->[0,3], [0,3]->[0,4]
+                // Row/Col 0 (u1) -> 0
+                // Row/Col 1 (v1) -> 1
+                // Row/Col 2 (u2) -> 3
+                // Row/Col 3 (v2) -> 4
+
+                const idxMap = [0, 1, 3, 4];
+                for (let r = 0; r < 4; r++) {
+                    for (let c = 0; c < 4; c++) {
+                        ke[idxMap[r]][idxMap[c]] = kTruss[r][c];
+                    }
+                }
+            } else {
+                // Frame 2D
+                ke = computeFrameStiffness(E, A, member.I, L, cx, cy, cz);
+            }
+        } else if (dofPerNode === 6) {
+            // 3D Frame Space
+            if (type === 'truss') {
+                // Truss 3D (6x6 translational, zero rotational)
+                // computeTruss3DStiffness returns 6x6 for [u1,v1,w1, u2,v2,w2]
+                // We need 12x12 for [u1,v1,w1,rx1,ry1,rz1, ...]
+                const kTruss3D = computeTruss3DStiffness(E, A, L, cx, cy, cz); // 6x6
+
+                ke = Array(12).fill(0).map(() => Array(12).fill(0));
+
+                // Map 6x6 to 12x12
+                // 3D Truss indices: 0,1,2 (node1 trans), 3,4,5 (node2 trans)
+                // 3D Frame indices: 0,1,2 (n1 trans), 3,4,5 (n1 rot), 6,7,8 (n2 trans), 9,10,11 (n2 rot)
+                // Source 0..2 -> Dest 0..2
+                // Source 3..5 -> Dest 6..8
+
+                const destIndices = [0, 1, 2, 6, 7, 8];
+                for (let r = 0; r < 6; r++) {
+                    for (let c = 0; c < 6; c++) {
+                        ke[destIndices[r]][destIndices[c]] = kTruss3D[r][c];
+                    }
+                }
+
+            } else {
+                // Frame 3D (Not fully implemented in JS logic inline, assuming external or fallback)
+                // The existing code didn't handle 6 DOF inline fully (computeFrameStiffness is 2D projection)
+                // But let's assume valid fallback or error.
+                // Ideally Frame 3D should be supported, but we are adding Truss 3D.
+                // For now, if Frame 3D is requested in JS worker, we probably default to some logic?
+                // Existing code logic for dofPerNode didn't cover 6? 
+                // It had `dofPerNode === 3` check then else `computeTrussStiffness` which handled 3D?
+                // Lines 303-323 define `computeTrussStiffness` which handles 2D or 3D truss.
+                // So previously strict Truss 3D was the default fallback for high DOF?
+                // We will maintain backward compat: if 6 DOF and no type, maybe it was a truss?
+                // But safest is to trust explicit type.
+
+                // If type is frame, we don't have JS 3D frame solver here (it's complex).
+                // We rely on WASM for 3D frames.
+                // But for Truss 3D, we use our new function.
+
+                // Let's use old Truss logic if type other than 'truss' isn't supported?
+                // Or simple placeholder.
+                // Actually, let's use the new Truss 3D logic if type is truss OR default (for now, safe for 3D lattice).
+                // But Frame 3D needs bending.
+
+                // Using new Truss 3D for 'truss' type.
+                const kTruss3D = computeTruss3DStiffness(E, A, L, cx, cy, cz);
+                // Map to 12x12
+                ke = Array(12).fill(0).map(() => Array(12).fill(0));
+                const destIndices = [0, 1, 2, 6, 7, 8];
+                for (let r = 0; r < 6; r++) {
+                    for (let c = 0; c < 6; c++) {
+                        ke[destIndices[r]][destIndices[c]] = kTruss3D[r][c];
+                    }
+                }
+            }
+        } else {
+            // Fallback
+            ke = computeTrussStiffness(k, cx, cy, cz, dofPerNode);
+        }
 
         // Add to global matrix
         for (let i = 0; i < ke.length; i++) {
@@ -396,75 +519,125 @@ function computeMemberEndForces(
         const cy = dy / L;
         const cz = dz / L;
 
-        const kGlobal = computeFrameStiffness(member.E, member.A, member.I, L, cx, cy, cz);
+        if (member.type === 'truss') {
+            // TRUSS FORCE CALCULATION
+            // Extract relevant displacements based on dofPerNode
+            if (dofPerNode === 2) {
+                const u1 = [displacements[i * 2], displacements[i * 2 + 1]];
+                const u2 = [displacements[j * 2], displacements[j * 2 + 1]];
+                // Need angle
+                const angle = Math.atan2(dy, dx);
+                // 2D Truss Forces require global displacements for 4 DOF?
+                // computeTruss2DMemberForces expects [u1, v1, u2, v2]
+                const uGlobal = [...u1, ...u2];
+                const forceData = computeTruss2DMemberForces(uGlobal, member.E, member.A, L, angle);
 
-        const dofIndices = [
-            i * dofPerNode + 0,
-            i * dofPerNode + 1,
-            i * dofPerNode + 2,
-            j * dofPerNode + 0,
-            j * dofPerNode + 1,
-            j * dofPerNode + 2,
-        ];
+                results.push({
+                    id: member.id,
+                    start: { axial: forceData.axialForce, shear: 0, moment: 0 },
+                    end: { axial: -forceData.axialForce, shear: 0, moment: 0 }
+                });
+            } else {
+                // 3D or mixed (use 3D logic for generality if geometric)
+                // Extract translational DOFs
+                // Node i: indices 0,1,2
+                // Node j: indices 0,1,2 (relative to node start)
+                let u1, u2;
+                if (dofPerNode >= 3) {
+                    // 3D Frame/Truss
+                    const baseI = i * dofPerNode;
+                    const baseJ = j * dofPerNode;
+                    u1 = [displacements[baseI], displacements[baseI + 1], dofPerNode >= 3 ? displacements[baseI + 2] : 0];
+                    u2 = [displacements[baseJ], displacements[baseJ + 1], dofPerNode >= 3 ? displacements[baseJ + 2] : 0];
+                } else {
+                    // Should not happen here
+                    u1 = [0, 0, 0]; u2 = [0, 0, 0];
+                }
 
-        const uGlobal = new Float64Array(6);
-        for (let n = 0; n < 6; n++) uGlobal[n] = displacements[dofIndices[n]];
+                const forceData = computeTruss3DMemberForces(u1, u2, member.E, member.A, L, cx, cy, cz);
 
-        // Build transformation matrix T (same as in stiffness)
-        const Lproj = Math.sqrt(cx * cx + cy * cy + cz * cz);
-        const c = cx / Lproj;
-        const s = cy / Lproj;
-        const T = [
-            [c, -s, 0, 0, 0, 0],
-            [s, c, 0, 0, 0, 0],
-            [0, 0, 1, 0, 0, 0],
-            [0, 0, 0, c, -s, 0],
-            [0, 0, 0, s, c, 0],
-            [0, 0, 0, 0, 0, 1]
-        ];
-
-        const uLocal = new Float64Array(6);
-        for (let r = 0; r < 6; r++) {
-            let sum = 0;
-            for (let cIdx = 0; cIdx < 6; cIdx++) sum += T[r][cIdx] * uGlobal[cIdx];
-            uLocal[r] = sum;
-        }
-
-        // Local end forces f = k_local * u_local (use local matrix from frame calc)
-        const EA_L = (member.E * member.A) / L;
-        const EI = member.E * member.I;
-        const L2 = L * L;
-        const L3 = L2 * L;
-
-        const kLocal = [
-            [EA_L, 0, 0, -EA_L, 0, 0],
-            [0, 12 * EI / L3, 6 * EI / L2, 0, -12 * EI / L3, 6 * EI / L2],
-            [0, 6 * EI / L2, 4 * EI / L, 0, -6 * EI / L2, 2 * EI / L],
-            [-EA_L, 0, 0, EA_L, 0, 0],
-            [0, -12 * EI / L3, -6 * EI / L2, 0, 12 * EI / L3, -6 * EI / L2],
-            [0, 6 * EI / L2, 2 * EI / L, 0, -6 * EI / L2, 4 * EI / L]
-        ];
-
-        const fLocal = new Float64Array(6);
-        for (let r = 0; r < 6; r++) {
-            let sum = 0;
-            for (let cIdx = 0; cIdx < 6; cIdx++) sum += kLocal[r][cIdx] * uLocal[cIdx];
-            fLocal[r] = sum;
-        }
-
-        results.push({
-            id: member.id,
-            start: {
-                axial: fLocal[0],
-                shear: fLocal[1],
-                moment: fLocal[2]
-            },
-            end: {
-                axial: -fLocal[3],
-                shear: fLocal[4],
-                moment: fLocal[5]
+                results.push({
+                    id: member.id,
+                    start: { axial: forceData.axialForce, shear: 0, moment: 0 },
+                    end: { axial: -forceData.axialForce, shear: 0, moment: 0 }
+                });
             }
-        });
+        } else {
+            // FRAME FORCE CALCULATION (Existing 2D Frame logic)
+            // Only valid for 2D Frame (dof=3) roughly in this code
+            // For 6 DOF, this old logic uses "computeFrameStiffness" which is 2D projection.
+            // We leave it as is for legacy/2D support, but wrapping it block.
+
+            const kGlobal = computeFrameStiffness(member.E, member.A, member.I, L, cx, cy, cz);
+
+            const dofIndices = [
+                i * dofPerNode + 0,
+                i * dofPerNode + 1,
+                i * dofPerNode + 2,
+                j * dofPerNode + 0,
+                j * dofPerNode + 1,
+                j * dofPerNode + 2,
+            ];
+
+            const uGlobal = new Float64Array(6);
+            for (let n = 0; n < 6; n++) uGlobal[n] = displacements[dofIndices[n]];
+
+            // Build transformation matrix T (same as in stiffness)
+            const Lproj = Math.sqrt(cx * cx + cy * cy + cz * cz);
+            const c = cx / Lproj;
+            const s = cy / Lproj;
+            const T = [
+                [c, -s, 0, 0, 0, 0],
+                [s, c, 0, 0, 0, 0],
+                [0, 0, 1, 0, 0, 0],
+                [0, 0, 0, c, -s, 0],
+                [0, 0, 0, s, c, 0],
+                [0, 0, 0, 0, 0, 1]
+            ];
+
+            const uLocal = new Float64Array(6);
+            for (let r = 0; r < 6; r++) {
+                let sum = 0;
+                for (let cIdx = 0; cIdx < 6; cIdx++) sum += T[r][cIdx] * uGlobal[cIdx];
+                uLocal[r] = sum;
+            }
+
+            // Local end forces f = k_local * u_local (use local matrix from frame calc)
+            const EA_L = (member.E * member.A) / L;
+            const EI = member.E * member.I;
+            const L2 = L * L;
+            const L3 = L2 * L;
+
+            const kLocal = [
+                [EA_L, 0, 0, -EA_L, 0, 0],
+                [0, 12 * EI / L3, 6 * EI / L2, 0, -12 * EI / L3, 6 * EI / L2],
+                [0, 6 * EI / L2, 4 * EI / L, 0, -6 * EI / L2, 2 * EI / L],
+                [-EA_L, 0, 0, EA_L, 0, 0],
+                [0, -12 * EI / L3, -6 * EI / L2, 0, 12 * EI / L3, -6 * EI / L2],
+                [0, 6 * EI / L2, 2 * EI / L, 0, -6 * EI / L2, 4 * EI / L]
+            ];
+
+            const fLocal = new Float64Array(6);
+            for (let r = 0; r < 6; r++) {
+                let sum = 0;
+                for (let cIdx = 0; cIdx < 6; cIdx++) sum += kLocal[r][cIdx] * uLocal[cIdx];
+                fLocal[r] = sum;
+            }
+
+            results.push({
+                id: member.id,
+                start: {
+                    axial: fLocal[0],
+                    shear: fLocal[1],
+                    moment: fLocal[2]
+                },
+                end: {
+                    axial: -fLocal[3],
+                    shear: fLocal[4],
+                    moment: fLocal[5]
+                }
+            });
+        }
     }
 
     return results;
@@ -606,6 +779,30 @@ function analyze(model: ModelData): ResultData {
         let displacements: Float64Array;
         const stats: any = {};
         const solveStart = performance.now();
+
+        // Check for missing diagonals (common cause of singularity)
+        const diag = new Float64Array(dof);
+        for (const entry of entries) {
+            if (entry.row === entry.col) {
+                diag[entry.row] += entry.value;
+            }
+        }
+
+        let zeroDiagonals = 0;
+        const zeroIndices = [];
+        for (let i = 0; i < dof; i++) {
+            if (Math.abs(diag[i]) < 1e-9) {
+                zeroDiagonals++;
+                if (zeroIndices.length < 10) zeroIndices.push(i);
+            }
+        }
+
+        if (zeroDiagonals > 0) {
+            console.error(`[Worker] Matrix Singularity Warning: ${zeroDiagonals} zero diagonals found!`, zeroIndices);
+            sendProgress('solving', 0, `Warning: ${zeroDiagonals} zero diagonals detected (Potential instability)`);
+        } else {
+            console.log('[Worker] Matrix sanity check passed. All diagonals non-zero.');
+        }
 
         if (wasmReady && wasmModule && wasmModule.solve_sparse_system_json) {
             // WASM PATH (Sparse)

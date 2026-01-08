@@ -609,43 +609,6 @@ export const ModernModeler: FC = () => {
         }
     }, [currentStressType, nodes]);
 
-    // Run analysis
-    const handleRunAnalysis = useCallback(async () => {
-        // STEP 1: Validate structure BEFORE anything else
-        const validationResult = validateStructure(nodes, members);
-
-        if (!validationResult.valid || validationResult.errors.length > 0 || validationResult.warnings.length > 0) {
-            // Show validation dialog with errors/warnings
-            setStructuralValidationErrors(validationResult.errors);
-            setStructuralValidationWarnings(validationResult.warnings);
-            setShowValidationDialog(true);
-
-            // If there are critical errors, don't proceed
-            if (!validationResult.valid) {
-                return;
-            }
-            // If only warnings, dialog will let user proceed
-            return;
-        }
-
-        // Run analysis directly (Clerk handles legal consent at sign-up)
-        executeAnalysis();
-    }, [nodes, members, executeAnalysis]);
-
-    // Analysis Event Listeners - Listen for ribbon triggers
-    useEffect(() => {
-        const onAnalysis = () => handleRunAnalysis();
-        const onModal = () => setShowModalAnalysis(true);
-
-        document.addEventListener('trigger-analysis', onAnalysis);
-        document.addEventListener('trigger-modal-analysis', onModal);
-
-        return () => {
-            document.removeEventListener('trigger-analysis', onAnalysis);
-            document.removeEventListener('trigger-modal-analysis', onModal);
-        };
-    }, [handleRunAnalysis]);
-
     // Actual analysis execution (called after consent)
     const executeAnalysis = useCallback(async () => {
 
@@ -1061,6 +1024,44 @@ export const ModernModeler: FC = () => {
             setIsAnalyzing(false);
         }
     }, [nodes, members, loads, memberLoads, setAnalysisResults, setIsAnalyzing]);
+
+    // Run analysis
+    const handleRunAnalysis = useCallback(async () => {
+        // STEP 1: Validate structure BEFORE anything else
+        const validationResult = validateStructure(nodes, members);
+
+        if (!validationResult.valid || validationResult.errors.length > 0 || validationResult.warnings.length > 0) {
+            // Show validation dialog with errors/warnings
+            setStructuralValidationErrors(validationResult.errors);
+            setStructuralValidationWarnings(validationResult.warnings);
+            setShowValidationDialog(true);
+
+            // If there are critical errors, don't proceed
+            if (!validationResult.valid) {
+                return;
+            }
+            // If only warnings, dialog will let user proceed
+            return;
+        }
+
+        // Run analysis directly (Clerk handles legal consent at sign-up)
+        executeAnalysis();
+    }, [nodes, members, executeAnalysis]);
+
+    // Analysis Event Listeners - Listen for ribbon triggers
+    useEffect(() => {
+        const onAnalysis = () => handleRunAnalysis();
+        const onModal = () => setShowModalAnalysis(true);
+
+        document.addEventListener('trigger-analysis', onAnalysis);
+        document.addEventListener('trigger-modal-analysis', onModal);
+
+        return () => {
+            document.removeEventListener('trigger-analysis', onAnalysis);
+            document.removeEventListener('trigger-modal-analysis', onModal);
+        };
+    }, [handleRunAnalysis]);
+
 
     // Listener for Ribbon Analysis Trigger
     useEffect(() => {
