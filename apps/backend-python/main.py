@@ -165,6 +165,14 @@ async def health_check():
 
 app.include_router(ai_router)
 
+# PINN Solver Routes (Physics-Informed Neural Networks)
+try:
+    from pinn_routes import router as pinn_router
+    app.include_router(pinn_router, prefix="/pinn", tags=["PINN Solver"])
+    print("[STARTUP] PINN solver routes registered at /pinn/*")
+except ImportError as e:
+    print(f"[STARTUP] PINN solver not available (install jax): {e}")
+
 # ============================================
 # MESHING ENDPOINTS
 # ============================================
@@ -475,6 +483,143 @@ async def analyze_3d_frame(request: FrameAnalysisRequest):
         print(f"[FEA] Exception: {e}")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Analysis error: {str(e)}")
+
+
+# ============================================
+# LARGE MODEL ANALYSIS ENDPOINT (High-Performance Sparse)
+# ============================================
+
+class LargeFrameAnalysisRequest(BaseModel):
+    """Request for large model analysis using sparse solvers"""
+    nodes: ListType[FrameNodeInput]
+    members: ListType[FrameMemberInput]
+    node_loads: Optional[ListType[NodeLoadInput]] = []
+    method: Optional[str] = "auto"  # "auto", "superlu", "cg", "gmres"
+
+@app.post("/analyze/large-frame", tags=["Analysis"])
+async def analyze_large_frame(request: LargeFrameAnalysisRequest):
+    """
+    High-performance analysis for large structural models (5k-100k+ nodes).
+    
+    Uses SciPy sparse matrix solvers:
+    - SuperLU direct solver for models up to ~50k DOF
+    - Preconditioned Conjugate Gradient for larger models
+    
+    **Performance targets:**
+    - 10k nodes: ~100-500ms
+    - 50k nodes: ~1-5s
+    - 100k nodes: ~5-15s
+    
+    Returns:
+    - Node displacements
+    - Solve time and method used
+    - Residual norm for verification
+    """
+    import traceback
+    import time
+    
+    start_time = time.perf_counter()
+    
+    try:
+        from analysis.sparse_solver import analyze_large_frame as solve_large
+        
+        n_nodes = len(request.nodes)
+        n_members = len(request.members)
+        n_dof = n_nodes * 6
+        
+        print(f"[SPARSE] Large model analysis: {n_nodes} nodes ({n_dof} DOF), {n_members} members")
+        
+        # Convert to dict format
+        nodes = [
+            {"id": n.id, "x": n.x, "y": n.y, "z": n.z, "support": n.support or "none"}
+            for n in request.nodes
+        ]
+        
+        members = [
+            {
+                "id": m.id,
+                "start_node_id": m.startNodeId,
+                "end_node_id": m.endNodeId,
+                "E": m.E or 200e9,
+                "G": m.G or 77e9,
+                "Iy": m.Iy or 1e-4,
+                "Iz": m.Iz or 1e-4,
+                "J": m.J or 1e-5,
+                "A": m.A or 0.01
+            }
+            for m in request.members
+        ]
+        
+        loads = [
+            {
+                "node_id": l.nodeId,
+                "fx": l.fx or 0,
+                "fy": l.fy or 0,
+                "fz": l.fz or 0,
+                "mx": l.mx or 0,
+                "my": l.my or 0,
+                "mz": l.mz or 0
+            }
+            for l in (request.node_loads or [])
+        ]
+        
+        # Get fixed DOFs from supports
+        fixed_dofs = []
+        node_map = {n.id: i for i, n in enumerate(request.nodes)}
+        for n in request.nodes:
+            if n.support and n.support.lower() != "none":
+                base_dof = node_map[n.id] * 6
+                support = n.support.lower()
+                if support == "fixed":
+                    fixed_dofs.extend(range(base_dof, base_dof + 6))
+                elif support in ("pinned", "pin"):
+                    fixed_dofs.extend([base_dof, base_dof + 1, base_dof + 2])
+                elif support == "roller":
+                    fixed_dofs.append(base_dof + 1)  # Y only
+        
+        # Run sparse analysis
+        result = solve_large(
+            nodes=nodes,
+            members=members,
+            loads=loads,
+            fixed_dofs=fixed_dofs,
+            method=request.method or "auto"
+        )
+        
+        total_time = (time.perf_counter() - start_time) * 1000
+        
+        if not result['success']:
+            print(f"[SPARSE] Analysis failed: {result.get('error')}")
+            raise HTTPException(status_code=400, detail=result.get('error', 'Sparse solver failed'))
+        
+        print(f"[SPARSE] Analysis complete in {result['solve_time_ms']:.1f}ms (total: {total_time:.1f}ms)")
+        print(f"[SPARSE] Method: {result.get('method')}, Iterations: {result.get('iterations', 'N/A')}")
+        
+        return {
+            "success": True,
+            "displacements": result['displacements'],
+            "stats": {
+                "solve_time_ms": result['solve_time_ms'],
+                "total_time_ms": total_time,
+                "method": result.get('method'),
+                "iterations": result.get('iterations', 0),
+                "residual_norm": result.get('residual_norm', 0),
+                "n_nodes": n_nodes,
+                "n_members": n_members,
+                "n_dof": n_dof
+            }
+        }
+        
+    except ImportError as e:
+        print(f"[SPARSE] ImportError: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Sparse solver import error: {str(e)}")
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[SPARSE] Exception: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Large model analysis error: {str(e)}")
 
 
 # ============================================
