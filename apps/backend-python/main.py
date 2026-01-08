@@ -352,6 +352,16 @@ class FramePlateInput(BaseModel):
     nu: Optional[float] = 0.3
     pressure: Optional[float] = 0.0
 
+class MemberDistLoadInput(BaseModel):
+    """Distributed load on a frame member"""
+    memberId: str
+    direction: str = "Fy"  # Fx, Fy, Fz for local axes
+    w1: float = 0  # Start value (kN/m)
+    w2: Optional[float] = None  # End value for trapezoidal (defaults to w1)
+    x1: Optional[float] = 0  # Start position (0-1 fraction)
+    x2: Optional[float] = 1  # End position (0-1 fraction)
+    case: str = "D"  # Load case
+
 class FrameAnalysisRequest(BaseModel):
     nodes: ListType[FrameNodeInput]
     members: ListType[FrameMemberInput]

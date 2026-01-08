@@ -16,25 +16,31 @@ pub struct Database {
 }
 
 impl Database {
-    /// Connect to MongoDB
+    /// Connect to MongoDB with connection timeout
     pub async fn connect(uri: &str) -> Result<Self> {
+        use std::time::Duration;
+        
         let mut client_options = ClientOptions::parse(uri)
             .await
             .context("Failed to parse MongoDB URI")?;
         
         client_options.app_name = Some("BeamLab-Rust-API".to_string());
         client_options.max_pool_size = Some(100);
-        client_options.min_pool_size = Some(10);
+        client_options.min_pool_size = Some(5);
+        client_options.connect_timeout = Some(Duration::from_secs(30));
+        client_options.server_selection_timeout = Some(Duration::from_secs(30));
         
         let client = Client::with_options(client_options)
             .context("Failed to create MongoDB client")?;
         
-        // Ping to verify connection
-        client
-            .database("admin")
-            .run_command(doc! { "ping": 1 }, None)
-            .await
-            .context("Failed to ping MongoDB")?;
+        // Ping to verify connection with timeout
+        tokio::time::timeout(
+            Duration::from_secs(30),
+            client.database("admin").run_command(doc! { "ping": 1 }, None)
+        )
+        .await
+        .context("MongoDB ping timeout")?
+        .context("Failed to ping MongoDB")?;
         
         let db = client.database("beamlab");
         
