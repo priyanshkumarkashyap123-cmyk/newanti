@@ -6,11 +6,10 @@ pub mod ai_architect;
 pub mod dynamics;
 pub mod plate_element;
 use nalgebra::{DMatrix, DVector};
+use nalgebra_sparse::{CooMatrix, CsrMatrix};
 use wasm_bindgen::prelude::*;
 use serde_wasm_bindgen;
 use serde::{Deserialize, Serialize};
-use nalgebra::sparse::{CooMatrix, CsrMatrix};
-use nalgebra::{DMatrix, DVector};
 use std::collections::HashMap;
 
 // Re-export design code calculations
@@ -349,10 +348,10 @@ pub fn solve_sparse_system_json(input_json: &str) -> String {
         let alpha = r_dot_z / p_dot_ap;
         
         // x = x + alpha * p
-        x += alpha * &p;
+        x = &x + alpha * &p;
         
         // r = r - alpha * Ap
-        r -= alpha * &ap;
+        r = &r - alpha * &ap;
         
         if r.norm() / b_norm < tol {
             break; 

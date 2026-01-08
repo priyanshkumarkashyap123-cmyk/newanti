@@ -13,7 +13,8 @@ thiserror = "1.0"
 wasm-bindgen = "0.2"
 console_error_panic_hook = "0.1"
 js-sys = "0.3"
-nalgebra = { version = "0.33", features = ["sparse", "serde-serialize"] }
+nalgebra = { version = "0.33", features = ["serde-serialize"] }
+nalgebra-sparse = { version = "0.10", features = ["serde-serialize"] }
 serde-wasm-bindgen = "0.6"
 # wgpu removed - using Three.js for rendering, stub in renderer.rs
 wasm-bindgen-futures = "0.4"
