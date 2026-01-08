@@ -1,15 +1,63 @@
-//! # BeamLab WASM Solver
+//! # BeamLab WASM Solver - Ultra High Performance Edition
 //!
 //! High-performance WebAssembly linear solver for structural analysis.
-//! Uses nalgebra for sparse matrix operations and LU decomposition.
+//! Optimized for 100,000+ node civil engineering structures.
+//!
+//! ## Features:
+//! - GPU-accelerated sparse matrix operations (WebGPU)
+//! - Algebraic Multigrid (AMG) preconditioner for O(n) complexity
+//! - Domain decomposition for massive problems
+//! - SIMD-optimized vector operations
+//! - Cache-friendly data structures
+//!
+//! ## Performance Targets:
+//! - 100,000 nodes (~600,000 DOF): < 500ms
+//! - 50,000 nodes (~300,000 DOF): < 100ms
+//! - 10,000 nodes (~60,000 DOF): < 10ms
 
 use nalgebra::{DMatrix, DVector};
 use wasm_bindgen::prelude::*;
 use serde::{Deserialize, Serialize};
 
+// Core modules
 pub mod ai_architect;
 pub mod renderer;
 pub mod pinn;
+
+// Ultra-performance modules
+pub mod gpu_solver;
+pub mod simd_ops;
+pub mod webgpu_shaders;
+
+// Re-export main solver components
+pub use gpu_solver::{
+    UltraSolver, 
+    UltraSolverOutput,
+    GpuCsrMatrix,
+    AmgPreconditioner,
+    PcgSolver,
+    DomainDecompositionSolver,
+    SolveResult,
+    MAX_GPU_DOF,
+    solve_ultra_sparse,
+    solve_ultra_coo,
+};
+
+pub use simd_ops::{
+    simd_dot,
+    simd_norm,
+    simd_axpy,
+    blocked_spmv,
+    VectorPool,
+};
+
+pub use webgpu_shaders::{
+    GpuContext,
+    GpuSolverConfig,
+    SPMV_SHADER,
+    DOT_SHADER,
+    AXPY_SHADER,
+};
 
 // ============================================
 // INITIALIZATION
@@ -215,19 +263,41 @@ pub fn solve_sparse_system_json(input_json: &str) -> String {
         }).unwrap_or_default()
     };
 
-    // Size validation - prevent OOM crashes
-    const MAX_DOF: usize = 18000; // ~3000 nodes at 6 DOF/node
-    if input.size > MAX_DOF {
-        return serde_json::to_string(&SolverOutput {
-            displacements: vec![],
-            solve_time_ms: 0.0,
-            success: false,
-            error: Some(format!(
-                "Model too large: {} DOF exceeds limit of {}. Please reduce model size to ~3000 nodes or fewer.",
-                input.size, MAX_DOF
-            )),
-            condition_number: None,
-        }).unwrap_or_default();
+    // Size validation - use ultra solver for large problems
+    const MAX_LEGACY_DOF: usize = 18000; // Legacy solver limit
+    const MAX_DOF: usize = 600000; // ~100,000 nodes at 6 DOF/node
+    
+    // Redirect large problems to ultra-performance solver
+    if input.size > MAX_LEGACY_DOF {
+        if input.size > MAX_DOF {
+            return serde_json::to_string(&SolverOutput {
+                displacements: vec![],
+                solve_time_ms: 0.0,
+                success: false,
+                error: Some(format!(
+                    "Model too large: {} DOF exceeds maximum of {}. Consider cloud computing for larger models.",
+                    input.size, MAX_DOF
+                )),
+                condition_number: None,
+            }).unwrap_or_default();
+        }
+        
+        // Use ultra solver with AMG for large problems
+        let matrix = gpu_solver::GpuCsrMatrix::from_triplets(
+            input.size, input.size,
+            &input.entries.iter().map(|e| e.row).collect::<Vec<_>>(),
+            &input.entries.iter().map(|e| e.col).collect::<Vec<_>>(),
+            &input.entries.iter().map(|e| e.value).collect::<Vec<_>>(),
+        );
+        
+        let solver = gpu_solver::UltraSolver::new();
+        return solver.solve(
+            &matrix.row_ptrs,
+            &matrix.col_indices,
+            &matrix.values,
+            &input.forces,
+            input.size,
+        );
     }
 
     // Convert entries to CSR matrix
@@ -416,13 +486,33 @@ pub fn solve_sparse_system(
         return Err(JsValue::from_str("Input arrays length mismatch"));
     }
 
-    // Size validation - prevent OOM crashes
-    const MAX_DOF: usize = 18000; // ~3000 nodes at 6 DOF/node
-    if size > MAX_DOF {
-        return Err(JsValue::from_str(&format!(
-            "Model too large: {} DOF exceeds limit of {}. Please reduce model size to ~3000 nodes or fewer.",
-            size, MAX_DOF
-        )));
+    // Size validation - use ultra solver for large problems
+    const MAX_LEGACY_DOF: usize = 18000; // Legacy solver limit
+    const MAX_DOF: usize = 600000; // ~100,000 nodes at 6 DOF/node
+    
+    // Redirect large problems to ultra-performance solver
+    if size > MAX_LEGACY_DOF {
+        if size > MAX_DOF {
+            return Err(JsValue::from_str(&format!(
+                "Model too large: {} DOF exceeds maximum of {}. Consider cloud computing for larger models.",
+                size, MAX_DOF
+            )));
+        }
+        
+        // Use ultra solver with AMG for large problems
+        let result_json = gpu_solver::solve_ultra_coo(row_indices, col_indices, values, forces, size);
+        let result: gpu_solver::UltraSolverOutput = serde_json::from_str(&result_json)
+            .map_err(|e| JsValue::from_str(&format!("Parse error: {}", e)))?;
+        
+        if result.success {
+            let arr = js_sys::Float64Array::new_with_length(size as u32);
+            for (i, &val) in result.displacements.iter().enumerate() {
+                arr.set_index(i as u32, val);
+            }
+            return Ok(arr);
+        } else {
+            return Err(JsValue::from_str(&result.error.unwrap_or("Unknown error".to_string())));
+        }
     }
 
     // Convert to CSR directly

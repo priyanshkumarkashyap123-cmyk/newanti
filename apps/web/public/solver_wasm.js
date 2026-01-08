@@ -216,9 +216,21 @@ const AIArchitectFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_aiarchitect_free(ptr >>> 0, 1));
 
+const GpuContextFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_gpucontext_free(ptr >>> 0, 1));
+
+const GpuSolverConfigFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_gpusolverconfig_free(ptr >>> 0, 1));
+
 const RendererFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_renderer_free(ptr >>> 0, 1));
+
+const UltraSolverFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_ultrasolver_free(ptr >>> 0, 1));
 
 export class AIArchitect {
     static __wrap(ptr) {
@@ -264,6 +276,241 @@ export class AIArchitect {
     }
 }
 if (Symbol.dispose) AIArchitect.prototype[Symbol.dispose] = AIArchitect.prototype.free;
+
+/**
+ * GPU computation context
+ */
+export class GpuContext {
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        GpuContextFinalization.unregister(this);
+        return ptr;
+    }
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_gpucontext_free(ptr, 0);
+    }
+    /**
+     * Check if WebGPU is available
+     * Note: Full WebGPU detection requires JavaScript interop
+     * @returns {boolean}
+     */
+    is_available() {
+        const ret = wasm.gpucontext_is_available(this.__wbg_ptr);
+        return ret !== 0;
+    }
+    /**
+     * @returns {string}
+     */
+    get_dot_shader() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.gpucontext_get_dot_shader(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get_axpy_shader() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.gpucontext_get_axpy_shader(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * Get all shader source code
+     * @returns {string}
+     */
+    get_spmv_shader() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.gpucontext_get_spmv_shader(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get_jacobi_shader() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.gpucontext_get_jacobi_shader(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get_cg_update_shader() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.gpucontext_get_cg_update_shader(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * Create new GPU context
+     */
+    constructor() {
+        const ret = wasm.gpucontext_new();
+        this.__wbg_ptr = ret >>> 0;
+        GpuContextFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+}
+if (Symbol.dispose) GpuContext.prototype[Symbol.dispose] = GpuContext.prototype.free;
+
+/**
+ * Configuration for GPU-accelerated solver
+ */
+export class GpuSolverConfig {
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(GpuSolverConfig.prototype);
+        obj.__wbg_ptr = ptr;
+        GpuSolverConfigFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        GpuSolverConfigFinalization.unregister(this);
+        return ptr;
+    }
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_gpusolverconfig_free(ptr, 0);
+    }
+    /**
+     * Create high-accuracy configuration
+     * @returns {GpuSolverConfig}
+     */
+    static high_accuracy() {
+        const ret = wasm.gpusolverconfig_high_accuracy();
+        return GpuSolverConfig.__wrap(ret);
+    }
+    /**
+     * Create default configuration
+     */
+    constructor() {
+        const ret = wasm.gpusolverconfig_new();
+        this.__wbg_ptr = ret >>> 0;
+        GpuSolverConfigFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * Create fast configuration (trades accuracy for speed)
+     * @returns {GpuSolverConfig}
+     */
+    static fast() {
+        const ret = wasm.gpusolverconfig_fast();
+        return GpuSolverConfig.__wrap(ret);
+    }
+    /**
+     * Workgroup size (typically 256)
+     * @returns {number}
+     */
+    get workgroup_size() {
+        const ret = wasm.__wbg_get_gpusolverconfig_workgroup_size(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+     * Workgroup size (typically 256)
+     * @param {number} arg0
+     */
+    set workgroup_size(arg0) {
+        wasm.__wbg_set_gpusolverconfig_workgroup_size(this.__wbg_ptr, arg0);
+    }
+    /**
+     * Maximum iterations
+     * @returns {number}
+     */
+    get max_iterations() {
+        const ret = wasm.__wbg_get_gpusolverconfig_max_iterations(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+     * Maximum iterations
+     * @param {number} arg0
+     */
+    set max_iterations(arg0) {
+        wasm.__wbg_set_gpusolverconfig_max_iterations(this.__wbg_ptr, arg0);
+    }
+    /**
+     * Convergence tolerance
+     * @returns {number}
+     */
+    get tolerance() {
+        const ret = wasm.__wbg_get_gpusolverconfig_tolerance(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Convergence tolerance
+     * @param {number} arg0
+     */
+    set tolerance(arg0) {
+        wasm.__wbg_set_gpusolverconfig_tolerance(this.__wbg_ptr, arg0);
+    }
+    /**
+     * Use single precision (f32) for speed
+     * @returns {boolean}
+     */
+    get use_single_precision() {
+        const ret = wasm.__wbg_get_gpusolverconfig_use_single_precision(this.__wbg_ptr);
+        return ret !== 0;
+    }
+    /**
+     * Use single precision (f32) for speed
+     * @param {boolean} arg0
+     */
+    set use_single_precision(arg0) {
+        wasm.__wbg_set_gpusolverconfig_use_single_precision(this.__wbg_ptr, arg0);
+    }
+    /**
+     * Use async GPU operations
+     * @returns {boolean}
+     */
+    get use_async() {
+        const ret = wasm.__wbg_get_gpusolverconfig_use_async(this.__wbg_ptr);
+        return ret !== 0;
+    }
+    /**
+     * Use async GPU operations
+     * @param {boolean} arg0
+     */
+    set use_async(arg0) {
+        wasm.__wbg_set_gpusolverconfig_use_async(this.__wbg_ptr, arg0);
+    }
+}
+if (Symbol.dispose) GpuSolverConfig.prototype[Symbol.dispose] = GpuSolverConfig.prototype.free;
 
 /**
  * Placeholder renderer - actual rendering done in TypeScript/Three.js
@@ -313,6 +560,71 @@ export class Renderer {
 if (Symbol.dispose) Renderer.prototype[Symbol.dispose] = Renderer.prototype.free;
 
 /**
+ * Ultra-high-performance solver for massive civil engineering structures
+ * Automatically selects the best algorithm based on problem size
+ */
+export class UltraSolver {
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        UltraSolverFinalization.unregister(this);
+        return ptr;
+    }
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_ultrasolver_free(ptr, 0);
+    }
+    /**
+     * Set tolerance
+     * @param {number} tol
+     */
+    set_tolerance(tol) {
+        wasm.ultrasolver_set_tolerance(this.__wbg_ptr, tol);
+    }
+    /**
+     * Create new solver with default settings
+     */
+    constructor() {
+        const ret = wasm.ultrasolver_new();
+        this.__wbg_ptr = ret >>> 0;
+        UltraSolverFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * Solve large sparse system
+     * Input: CSR format arrays
+     * Returns: JSON with displacements and performance info
+     * @param {Uint32Array} row_ptrs
+     * @param {Uint32Array} col_indices
+     * @param {Float64Array} values
+     * @param {Float64Array} forces
+     * @param {number} size
+     * @returns {string}
+     */
+    solve(row_ptrs, col_indices, values, forces, size) {
+        let deferred5_0;
+        let deferred5_1;
+        try {
+            const ptr0 = passArray32ToWasm0(row_ptrs, wasm.__wbindgen_malloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passArray32ToWasm0(col_indices, wasm.__wbindgen_malloc);
+            const len1 = WASM_VECTOR_LEN;
+            const ptr2 = passArrayF64ToWasm0(values, wasm.__wbindgen_malloc);
+            const len2 = WASM_VECTOR_LEN;
+            const ptr3 = passArrayF64ToWasm0(forces, wasm.__wbindgen_malloc);
+            const len3 = WASM_VECTOR_LEN;
+            const ret = wasm.ultrasolver_solve(this.__wbg_ptr, ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3, size);
+            deferred5_0 = ret[0];
+            deferred5_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred5_0, deferred5_1, 1);
+        }
+    }
+}
+if (Symbol.dispose) UltraSolver.prototype[Symbol.dispose] = UltraSolver.prototype.free;
+
+/**
  * Buckling analysis - eigenvalue problem to find critical loads
  * Solves: [K_e - λ*K_g]{φ} = 0
  * @param {any} nodes_json
@@ -324,6 +636,17 @@ if (Symbol.dispose) Renderer.prototype[Symbol.dispose] = Renderer.prototype.free
 export function analyze_buckling(nodes_json, elements_json, point_loads_json, num_modes) {
     const ret = wasm.analyze_buckling(nodes_json, elements_json, point_loads_json, num_modes);
     return ret;
+}
+
+/**
+ * Calculate number of workgroups needed
+ * @param {number} n
+ * @param {number} workgroup_size
+ * @returns {number}
+ */
+export function calculate_workgroups(n, workgroup_size) {
+    const ret = wasm.calculate_workgroups(n, workgroup_size);
+    return ret >>> 0;
 }
 
 /**
@@ -557,6 +880,68 @@ export function solve_system_json(input_json) {
 }
 
 /**
+ * Convert COO format to CSR and solve
+ * More convenient input format from JavaScript
+ * @param {Uint32Array} rows
+ * @param {Uint32Array} cols
+ * @param {Float64Array} values
+ * @param {Float64Array} forces
+ * @param {number} size
+ * @returns {string}
+ */
+export function solve_ultra_coo(rows, cols, values, forces, size) {
+    let deferred5_0;
+    let deferred5_1;
+    try {
+        const ptr0 = passArray32ToWasm0(rows, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passArray32ToWasm0(cols, wasm.__wbindgen_malloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ptr2 = passArrayF64ToWasm0(values, wasm.__wbindgen_malloc);
+        const len2 = WASM_VECTOR_LEN;
+        const ptr3 = passArrayF64ToWasm0(forces, wasm.__wbindgen_malloc);
+        const len3 = WASM_VECTOR_LEN;
+        const ret = wasm.solve_ultra_coo(ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3, size);
+        deferred5_0 = ret[0];
+        deferred5_1 = ret[1];
+        return getStringFromWasm0(ret[0], ret[1]);
+    } finally {
+        wasm.__wbindgen_free(deferred5_0, deferred5_1, 1);
+    }
+}
+
+/**
+ * Solve a massive sparse linear system
+ * Designed for 100,000+ node civil engineering structures
+ * @param {Uint32Array} row_ptrs
+ * @param {Uint32Array} col_indices
+ * @param {Float64Array} values
+ * @param {Float64Array} forces
+ * @param {number} size
+ * @returns {string}
+ */
+export function solve_ultra_sparse(row_ptrs, col_indices, values, forces, size) {
+    let deferred5_0;
+    let deferred5_1;
+    try {
+        const ptr0 = passArray32ToWasm0(row_ptrs, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passArray32ToWasm0(col_indices, wasm.__wbindgen_malloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ptr2 = passArrayF64ToWasm0(values, wasm.__wbindgen_malloc);
+        const len2 = WASM_VECTOR_LEN;
+        const ptr3 = passArrayF64ToWasm0(forces, wasm.__wbindgen_malloc);
+        const len3 = WASM_VECTOR_LEN;
+        const ret = wasm.solve_ultra_sparse(ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3, size);
+        deferred5_0 = ret[0];
+        deferred5_1 = ret[1];
+        return getStringFromWasm0(ret[0], ret[1]);
+    } finally {
+        wasm.__wbindgen_free(deferred5_0, deferred5_1, 1);
+    }
+}
+
+/**
  * Train PINN and return model as JSON (for persistence)
  * @param {string} config_json
  * @returns {string}
@@ -574,6 +959,47 @@ export function train_beam_pinn(config_json) {
     } finally {
         wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
     }
+}
+
+/**
+ * WASM-exported axpy
+ * @param {number} alpha
+ * @param {Float64Array} x
+ * @param {Float64Array} y
+ */
+export function wasm_axpy(alpha, x, y) {
+    const ptr0 = passArrayF64ToWasm0(x, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    var ptr1 = passArrayF64ToWasm0(y, wasm.__wbindgen_malloc);
+    var len1 = WASM_VECTOR_LEN;
+    wasm.wasm_axpy(alpha, ptr0, len0, ptr1, len1, y);
+}
+
+/**
+ * WASM-exported dot product
+ * @param {Float64Array} a
+ * @param {Float64Array} b
+ * @returns {number}
+ */
+export function wasm_dot(a, b) {
+    const ptr0 = passArrayF64ToWasm0(a, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(b, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.wasm_dot(ptr0, len0, ptr1, len1);
+    return ret;
+}
+
+/**
+ * WASM-exported vector norm
+ * @param {Float64Array} a
+ * @returns {number}
+ */
+export function wasm_norm(a) {
+    const ptr0 = passArrayF64ToWasm0(a, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.wasm_norm(ptr0, len0);
+    return ret;
 }
 
 const EXPECTED_RESPONSE_TYPES = new Set(['basic', 'cors', 'default']);
@@ -630,6 +1056,9 @@ function __wbg_get_imports() {
         const v = arg0;
         const ret = typeof(v) === 'boolean' ? v : undefined;
         return isLikeNone(ret) ? 0xFFFFFF : ret ? 1 : 0;
+    };
+    imports.wbg.__wbg___wbindgen_copy_to_typed_array_db832bc4df7216c1 = function(arg0, arg1, arg2) {
+        new Uint8Array(arg2.buffer, arg2.byteOffset, arg2.byteLength).set(getArrayU8FromWasm0(arg0, arg1));
     };
     imports.wbg.__wbg___wbindgen_debug_string_adfb662ae34724b6 = function(arg0, arg1) {
         const ret = debugString(arg1);
