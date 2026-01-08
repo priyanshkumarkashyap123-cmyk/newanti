@@ -308,6 +308,95 @@ pub fn solve_sparse_system_json(input_json: &str) -> String {
     }).unwrap_or_default()
 }
 
+/// Solve a sparse linear system using CG with direct TypedArray input
+/// Avoids OOM issues with large JSON strings
+#[wasm_bindgen]
+pub fn solve_sparse_system(
+    row_indices: &[usize],  // Uint32Array passed as generic array
+    col_indices: &[usize],
+    values: &[f64],
+    forces: &[f64],
+    size: usize
+) -> Result<js_sys::Float64Array, JsValue> {
+    use nalgebra_sparse::{CsrMatrix};
+    use nalgebra::{DVector};
+
+    if row_indices.len() != values.len() || col_indices.len() != values.len() {
+        return Err(JsValue::from_str("Input arrays length mismatch"));
+    }
+
+    // Convert to CSR directly
+    // Note: WASM u32 array passed as &[usize] works because usize=u32 in wasm32
+    
+    // We need to clone the data into Vec for CooMatrix
+    // (copying is unavoidable but much cheaper than JSON parsing)
+    let rows = row_indices.to_vec();
+    let cols = col_indices.to_vec();
+    let vals = values.to_vec();
+    
+    let coo = match nalgebra_sparse::CooMatrix::try_from_triplets(
+        size, size, rows, cols, vals
+    ) {
+        Ok(c) => c,
+        Err(e) => return Err(JsValue::from_str(&format!("Failed to construct COO matrix: {}", e))),
+    };
+
+    let csr = CsrMatrix::from(&coo);
+    let b = DVector::from_column_slice(forces);
+    
+    // CG Solver (Same logic as above, but with result array return)
+    let mut x = DVector::zeros(size);
+    let mut r = &b - &csr * &x;
+    
+    // Jacobi preconditioner
+    let mut inv_diag = DVector::zeros(size);
+    for i in 0..size {
+        let val = csr.get_entry(i, i).map(|e| e.into_value()).unwrap_or(0.0);
+        inv_diag[i] = if val.abs() > 1e-15 { 1.0 / val } else { 1.0 };
+    }
+    
+    let mut z = r.component_mul(&inv_diag);
+    let mut p = z.clone();
+    let mut rz_old = r.dot(&z);
+    
+    let b_norm = b.norm();
+    // Looser tolerance for very large systems to ensure speed
+    let tol = 1e-8 * b_norm.max(1.0); 
+    let max_iter = size * 2;
+    
+    for _ in 0..max_iter {
+        if r.norm() <= tol {
+            break;
+        }
+        
+        let ap = &csr * &p;
+        let p_ap = p.dot(&ap);
+        
+        if p_ap.abs() < 1e-20 {
+            break; // Breakdown or already converged
+        }
+        
+        let alpha = rz_old / p_ap;
+        x += alpha * &p;
+        r -= alpha * &ap;
+        
+        z = r.component_mul(&inv_diag);
+        let rz_new = r.dot(&z);
+        let beta = rz_new / rz_old;
+        p = &z + beta * &p;
+        rz_old = rz_new;
+    }
+    
+    // Return Float64Array directly
+    let result = js_sys::Float64Array::new_with_length(size as u32);
+    // x.data is a slice, we can copy it
+    for (i, &val) in x.iter().enumerate() {
+        result.set_index(i as u32, val);
+    }
+    
+    Ok(result)
+}
+
 /// Solve using Cholesky decomposition (faster for symmetric positive-definite matrices)
 #[wasm_bindgen]
 pub fn solve_system_cholesky(

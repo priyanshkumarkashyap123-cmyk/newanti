@@ -12,6 +12,8 @@
  */
 
 import React, { FC, useState, useMemo, useCallback } from 'react';
+import * as THREE from 'three';
+import { Line, Html } from '@react-three/drei';
 import { DiagramOverlay, DiagramType, DiagramData } from './DiagramOverlay';
 import { useModelStore } from '../../store/model';
 import StressContourRenderer, { MemberStressData, StressType } from './StressContourRenderer';

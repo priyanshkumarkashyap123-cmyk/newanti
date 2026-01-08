@@ -9,6 +9,9 @@ use nalgebra::{DMatrix, DVector};
 use wasm_bindgen::prelude::*;
 use serde_wasm_bindgen;
 use serde::{Deserialize, Serialize};
+use nalgebra::sparse::{CooMatrix, CsrMatrix};
+use nalgebra::{DMatrix, DVector};
+use std::collections::HashMap;
 
 // Re-export design code calculations
 pub use design_codes::{
@@ -225,4 +228,165 @@ pub fn get_solver_info() -> String {
         ]
     }"#.to_string()
 }
+/// Sparse system input
+#[derive(Deserialize)]
+struct SparseSystemInput {
+    entries: Vec<SparseEntry>,
+    forces: Vec<f64>,
+    size: usize,
+}
 
+#[derive(Deserialize)]
+struct SparseEntry {
+    row: usize,
+    col: usize,
+    value: f64,
+}
+
+/// Sparse system output
+#[derive(Serialize)]
+struct SparseSystemOutput {
+    success: bool,
+    displacements: Vec<f64>,
+    error: Option<String>,
+    solve_time_ms: f64,
+}
+
+/// Solve sparse system using Conjugate Gradient
+/// This handles large structures (e.g. 10k+ nodes) without OOM.
+#[wasm_bindgen]
+pub fn solve_sparse_system_json(input_json: &str) -> String {
+    let start = js_sys::Date::now();
+
+    // 1. Parse Input
+    let input: SparseSystemInput = match serde_json::from_str(input_json) {
+        Ok(v) => v,
+        Err(e) => return serde_json::to_string(&SparseSystemOutput {
+            success: false,
+            displacements: vec![],
+            error: Some(format!("JSON Parse Error: {}", e)),
+            solve_time_ms: 0.0,
+        }).unwrap(),
+    };
+
+    let n = input.size;
+    
+    // 2. Build Sparse Matrix (COO -> CSR)
+    // CooMatrix::new(rows, cols)
+    let mut coo = CooMatrix::new(n, n);
+    for entry in input.entries {
+        coo.push(entry.row, entry.col, entry.value);
+    }
+    
+    let csr = CsrMatrix::from(&coo);
+    
+    // 3. Build Force Vector
+    let b = DVector::from_vec(input.forces);
+    
+    // 4. Solve using Conjugate Gradient (PCG) with Jacobi Preconditioner
+    // Initialization
+    let mut x = DVector::from_element(n, 0.0);
+    let mut r = b.clone(); // Residual r = b - Ax (x=0)
+    let mut p = r.clone();
+    
+    // Jacobi Preconditioner: M = diag(A)
+    // We need diagonal elements. CsrMatrix doesn't have easy diag access?
+    // We can iterate.
+    let mut diag = DVector::from_element(n, 1.0);
+    
+    // Extract diagonal (slow-ish but OK once)
+    // In CSR: row offsets and col indices.
+    // row i is in values[row_offsets[i] .. row_offsets[i+1]]
+    // with col indices in col_indices[...]
+    let row_offsets = csr.row_offsets();
+    let col_indices = csr.col_indices();
+    let values = csr.values();
+    
+    for i in 0..n {
+        let start = row_offsets[i];
+        let end = row_offsets[i+1];
+        for idx in start..end {
+            if col_indices[idx] == i {
+                diag[i] = values[idx];
+                break;
+            }
+        }
+    }
+    
+    // z = M^-1 * r
+    let mut z = DVector::zeros(n);
+    for i in 0..n {
+        if diag[i].abs() > 1e-12 {
+            z[i] = r[i] / diag[i];
+        } else {
+            z[i] = r[i];
+        }
+    }
+    
+    let mut p = z.clone();
+    let mut r_dot_z = r.dot(&z);
+    
+    let max_iter = n * 2;
+    let tol = 1e-8;
+    let b_norm = b.norm();
+    
+    let mut recovered = true;
+    let mut iterations = 0;
+    
+    for iter in 0..max_iter {
+        iterations = iter;
+        // Ap = A * p
+        let ap = &csr * &p;
+        
+        // alpha = (r . z) / (p . Ap)
+        let p_dot_ap = p.dot(&ap);
+        
+        if p_dot_ap.abs() < 1e-20 {
+             // breakdown
+             break;
+        }
+        
+        let alpha = r_dot_z / p_dot_ap;
+        
+        // x = x + alpha * p
+        x += alpha * &p;
+        
+        // r = r - alpha * Ap
+        r -= alpha * &ap;
+        
+        if r.norm() / b_norm < tol {
+            break; 
+        }
+        
+        // z_new = M^-1 * r
+        let mut z_new = DVector::zeros(n);
+        for i in 0..n {
+            if diag[i].abs() > 1e-12 {
+                z_new[i] = r[i] / diag[i];
+            } else {
+                z_new[i] = r[i];
+            }
+        }
+        
+        let r_dot_z_new = r.dot(&z_new);
+        let beta = r_dot_z_new / r_dot_z;
+        
+        // p = z_new + beta * p
+        p = z_new + beta * &p;
+        
+        r_dot_z = r_dot_z_new;
+    }
+    
+    let end = js_sys::Date::now();
+    let solve_time = end - start;
+    
+    // Return result
+    let output = SparseSystemOutput {
+        success: true,
+        displacements: x.as_slice().to_vec(),
+        error: None,
+        solve_time_ms: solve_time,
+    };
+    
+    serde_json::to_string(&output).unwrap_or(r#"{"success":false,"error":"Serialization failed"}"#.to_string())
+}

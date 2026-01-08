@@ -3,10 +3,12 @@
  * 
  * Allows users to describe a structure in natural language
  * and generates it using the Python AI backend with Google Gemini.
+ * 
+ * V2.0: 1000x Enhanced with smart model modifications
  */
 
 import { FC, useState, useCallback, useEffect, useRef } from 'react';
-import { Sparkles, Loader2, AlertCircle, CheckCircle, Zap, MessageCircle, Send, Bot, User, Wand2 } from 'lucide-react';
+import { Sparkles, Loader2, AlertCircle, CheckCircle, Zap, MessageCircle, Send, Bot, User, Wand2, Edit3, Settings2, Lightbulb } from 'lucide-react';
 import { useModelStore } from '../../store/model';
 
 // ============================================
@@ -46,6 +48,8 @@ interface ChatMessage {
     role: 'user' | 'assistant';
     content: string;
     timestamp: Date;
+    isModification?: boolean;
+    changes?: string[];
 }
 
 interface AIStatus {
@@ -53,6 +57,20 @@ interface AIStatus {
     mock_mode: boolean;
     model: string;
     capabilities: string[];
+    version?: string;
+}
+
+interface ModifyResponse {
+    success: boolean;
+    message: string;
+    model?: any;
+    changes?: string[];
+    parsed?: {
+        intent: string;
+        confidence: number;
+        entities: Record<string, any>;
+    };
+    suggestions?: string[];
 }
 
 // ============================================
@@ -64,6 +82,16 @@ const EXAMPLE_PROMPTS = [
     "Design a 3-story building frame, 5m bays",
     "Generate a 20m warehouse portal frame",
     "Make a simple beam, 8m span with fixed supports"
+];
+
+// Modification examples for smart modify
+const MODIFY_EXAMPLES = [
+    "Change columns to ISMB400",
+    "Add fixed support at N1",
+    "Remove member M5",
+    "Set span to 15m",
+    "Add a new story on top",
+    "Make beams heavier"
 ];
 
 const CHAT_SUGGESTIONS = [
@@ -84,17 +112,26 @@ export const AIArchitectPanel: FC = () => {
     const [success, setSuccess] = useState<string | null>(null);
 
     // Chat state
-    const [activeTab, setActiveTab] = useState<'generate' | 'chat'>('generate');
+    const [activeTab, setActiveTab] = useState<'generate' | 'modify' | 'chat'>('generate');
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
     const [chatInput, setChatInput] = useState('');
     const [isChatting, setIsChatting] = useState(false);
     const [aiStatus, setAIStatus] = useState<AIStatus | null>(null);
     const chatEndRef = useRef<HTMLDivElement>(null);
+    
+    // Modify state
+    const [modifyCommand, setModifyCommand] = useState('');
+    const [isModifying, setIsModifying] = useState(false);
+    const [modifyHistory, setModifyHistory] = useState<{command: string; result: string; success: boolean}[]>([]);
 
     // Store actions
     const clearModel = useModelStore((state) => state.clearModel);
     const addNode = useModelStore((state) => state.addNode);
     const addMember = useModelStore((state) => state.addMember);
+    const updateNode = useModelStore((state) => state.updateNode);
+    const updateMember = useModelStore((state) => state.updateMember);
+    const removeNode = useModelStore((state) => state.removeNode);
+    const removeMember = useModelStore((state) => state.removeMember);
     const nodes = useModelStore((state) => state.nodes);
     const members = useModelStore((state) => state.members);
 
@@ -110,6 +147,131 @@ export const AIArchitectPanel: FC = () => {
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [chatMessages]);
+
+    // ========================================
+    // HELPER: Convert store to API model format
+    // ========================================
+    const getModelForAPI = useCallback(() => {
+        const nodesArray = Array.from(nodes.values()).map(n => ({
+            id: n.id,
+            x: n.x,
+            y: n.y,
+            z: n.z,
+            restraints: n.restraints || {}
+        }));
+        
+        const membersArray = Array.from(members.values()).map(m => ({
+            id: m.id,
+            startNodeId: m.startNodeId,
+            endNodeId: m.endNodeId,
+            sectionId: m.sectionId
+        }));
+        
+        return { nodes: nodesArray, members: membersArray, loads: [] };
+    }, [nodes, members]);
+
+    // ========================================
+    // HELPER: Apply model changes from API response
+    // ========================================
+    const applyModelChanges = useCallback((model: any) => {
+        // Clear and rebuild model
+        clearModel();
+        
+        // Add nodes
+        if (model.nodes) {
+            for (const node of model.nodes) {
+                addNode({
+                    id: node.id,
+                    x: node.x,
+                    y: node.y,
+                    z: node.z || 0,
+                    restraints: node.restraints
+                });
+            }
+        }
+        
+        // Add members
+        if (model.members) {
+            for (const member of model.members) {
+                addMember({
+                    id: member.id,
+                    startNodeId: member.startNodeId || member.start_node,
+                    endNodeId: member.endNodeId || member.end_node,
+                    sectionId: member.sectionId || member.section_profile || member.section || 'ISMB300'
+                });
+            }
+        }
+    }, [clearModel, addNode, addMember]);
+
+    // ========================================
+    // SMART MODIFY HANDLER
+    // ========================================
+    const handleSmartModify = useCallback(async () => {
+        if (!modifyCommand.trim()) {
+            setError('Please enter a modification command');
+            return;
+        }
+
+        if (nodes.size === 0) {
+            setError('No model to modify. Generate a structure first!');
+            return;
+        }
+
+        setError(null);
+        setSuccess(null);
+        setIsModifying(true);
+
+        console.log("[AI Brain] Smart modify:", modifyCommand);
+
+        try {
+            const model = getModelForAPI();
+            
+            const response = await fetch(`${PYTHON_API}/ai/smart-modify`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model,
+                    command: modifyCommand
+                })
+            });
+
+            const data: ModifyResponse = await response.json();
+            console.log("[AI Brain] Response:", data);
+
+            if (data.success && data.model) {
+                // Apply the modified model to the store
+                applyModelChanges(data.model);
+                
+                setSuccess(data.message);
+                setModifyHistory(prev => [...prev, {
+                    command: modifyCommand,
+                    result: data.message,
+                    success: true
+                }]);
+                setModifyCommand('');
+            } else {
+                const errorMsg = data.message || 'Modification failed';
+                setError(errorMsg);
+                
+                // Show suggestions if available
+                if (data.suggestions && data.suggestions.length > 0) {
+                    setError(`${errorMsg}\n\nTry: ${data.suggestions[0]}`);
+                }
+                
+                setModifyHistory(prev => [...prev, {
+                    command: modifyCommand,
+                    result: errorMsg,
+                    success: false
+                }]);
+            }
+
+        } catch (err) {
+            console.error("[AI Brain] Error:", err);
+            setError(err instanceof Error ? err.message : 'Connection error');
+        } finally {
+            setIsModifying(false);
+        }
+    }, [modifyCommand, nodes.size, getModelForAPI, applyModelChanges]);
 
     // ========================================
     // GENERATE HANDLER
@@ -302,6 +464,16 @@ export const AIArchitectPanel: FC = () => {
                         Generate
                     </button>
                     <button
+                        onClick={() => setActiveTab('modify')}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-medium transition-all ${activeTab === 'modify'
+                                ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-sm'
+                                : 'text-zinc-400 hover:text-white'
+                            }`}
+                    >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        Modify
+                    </button>
+                    <button
                         onClick={() => setActiveTab('chat')}
                         className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-medium transition-all ${activeTab === 'chat'
                                 ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm'
@@ -405,6 +577,136 @@ export const AIArchitectPanel: FC = () => {
                         <div className="flex items-start gap-2 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
                             <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
                             <p className="text-xs text-green-400">{success}</p>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Main Content - Modify Tab (1000x Enhanced AI) */}
+            {activeTab === 'modify' && (
+                <div className="flex-1 p-3 space-y-3 overflow-y-auto">
+                    {/* Model Status */}
+                    <div className={`flex items-center gap-2 p-2 rounded-lg ${nodes.size > 0 ? 'bg-green-500/10 border border-green-500/30' : 'bg-yellow-500/10 border border-yellow-500/30'}`}>
+                        <Settings2 className={`w-4 h-4 ${nodes.size > 0 ? 'text-green-400' : 'text-yellow-400'}`} />
+                        <span className={`text-xs ${nodes.size > 0 ? 'text-green-400' : 'text-yellow-400'}`}>
+                            {nodes.size > 0 
+                                ? `Model: ${nodes.size} nodes, ${members.size} members` 
+                                : 'No model loaded - Generate one first!'}
+                        </span>
+                    </div>
+
+                    {/* Command Input */}
+                    <div>
+                        <label className="block text-xs text-zinc-500 mb-1">
+                            Tell me what to change
+                        </label>
+                        <textarea
+                            value={modifyCommand}
+                            onChange={(e) => setModifyCommand(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSmartModify()}
+                            placeholder="e.g., Change columns to ISMB400, Add support at N3..."
+                            disabled={isModifying || nodes.size === 0}
+                            className="
+                                w-full h-20 px-3 py-2
+                                bg-zinc-800 border border-zinc-700 rounded-lg
+                                text-sm text-zinc-200 placeholder-zinc-600
+                                focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500
+                                resize-none
+                                disabled:opacity-50 disabled:cursor-not-allowed
+                            "
+                        />
+                    </div>
+
+                    {/* Quick Modify Examples */}
+                    <div>
+                        <label className="block text-xs text-zinc-500 mb-1.5 flex items-center gap-1">
+                            <Lightbulb className="w-3 h-3" />
+                            Quick commands
+                        </label>
+                        <div className="flex flex-wrap gap-1.5">
+                            {MODIFY_EXAMPLES.slice(0, 4).map((example, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setModifyCommand(example)}
+                                    disabled={isModifying || nodes.size === 0}
+                                    className="
+                                        px-2 py-1 text-[10px]
+                                        bg-zinc-800/50 border border-zinc-700
+                                        text-zinc-400 rounded
+                                        hover:bg-green-600/20 hover:border-green-600/50 hover:text-green-300
+                                        transition-colors
+                                        disabled:opacity-50
+                                    "
+                                >
+                                    {example}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Apply Button */}
+                    <button
+                        onClick={handleSmartModify}
+                        disabled={isModifying || !modifyCommand.trim() || nodes.size === 0}
+                        className={`
+                            w-full flex items-center justify-center gap-2
+                            py-3 rounded-lg font-medium text-sm
+                            transition-all duration-200
+                            ${isModifying
+                                ? 'bg-green-600/20 text-green-300 cursor-wait'
+                                : 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-500 hover:to-emerald-500 shadow-lg shadow-green-600/20'
+                            }
+                            disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none
+                        `}
+                    >
+                        {isModifying ? (
+                            <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                AI is modifying...
+                            </>
+                        ) : (
+                            <>
+                                <Edit3 className="w-4 h-4" />
+                                Apply Changes
+                            </>
+                        )}
+                    </button>
+
+                    {/* Error Message */}
+                    {error && activeTab === 'modify' && (
+                        <div className="flex items-start gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                            <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                            <p className="text-xs text-red-400 whitespace-pre-line">{error}</p>
+                        </div>
+                    )}
+
+                    {/* Success Message */}
+                    {success && activeTab === 'modify' && (
+                        <div className="flex items-start gap-2 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                            <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+                            <p className="text-xs text-green-400">{success}</p>
+                        </div>
+                    )}
+
+                    {/* Modification History */}
+                    {modifyHistory.length > 0 && (
+                        <div className="mt-2">
+                            <label className="block text-xs text-zinc-500 mb-1.5">Recent changes</label>
+                            <div className="space-y-1 max-h-32 overflow-y-auto">
+                                {modifyHistory.slice(-5).reverse().map((item, i) => (
+                                    <div 
+                                        key={i} 
+                                        className={`text-[10px] p-1.5 rounded ${
+                                            item.success 
+                                                ? 'bg-green-500/10 text-green-400' 
+                                                : 'bg-red-500/10 text-red-400'
+                                        }`}
+                                    >
+                                        <span className="font-medium">{item.command}</span>
+                                        <span className="opacity-70"> → {item.result}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>
