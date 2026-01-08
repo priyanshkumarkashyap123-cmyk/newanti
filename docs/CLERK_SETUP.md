@@ -23,11 +23,11 @@ BeamLab Ultimate uses [Clerk](https://clerk.com) for authentication. You need to
 
 ### Step 1: Create Environment File
 
-Create or update `apps/web/.env.local`:
+Your `apps/web/.env.local` is already configured with the test key:
 
 ```bash
-# Clerk Authentication (Development)
-VITE_CLERK_PUBLISHABLE_KEY=pk_test_YOUR_KEY_HERE
+# Clerk Authentication (Development/Test)
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_Y2FwYWJsZS1vd2wtNjYuY2xlcmsuYWNjb3VudHMuZGV2JA
 
 # API URLs
 VITE_API_URL=http://localhost:3001
@@ -60,20 +60,47 @@ Visit `http://localhost:5173` - you should see the Clerk sign-in widget if not a
 
 ## 🚀 Production Deployment Setup
 
-### Step 1: Add Production Keys to Clerk
+### Step 1: GitHub Repository Secret Already Configured
 
-1. In Clerk Dashboard, go to **API Keys**
-2. Switch to **Production** mode (toggle in top-right)
-3. Copy the **Production Publishable Key** (`pk_live_...`)
+Your production key has been set to use a GitHub secret. The workflow is already updated to use:
 
-### Step 2: Add GitHub Repository Secret
+```yaml
+VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+```
 
-1. Go to your GitHub repository
-2. Navigate to **Settings** → **Secrets and variables** → **Actions**
-3. Click **New repository secret**
-4. Add:
+**You still need to add the secret to GitHub:**
+
+#### Option A: Using GitHub CLI (Recommended)
+
+```bash
+bash CLERK_KEYS_SETUP.sh
+```
+
+This script will interactively add the secret to your repository.
+
+#### Option B: Manual Setup
+
+1. Go to https://github.com/rakshittiwari048-ship-it/newanti/settings/secrets/actions
+2. Click **"New repository secret"**
+3. Add:
    - **Name**: `VITE_CLERK_PUBLISHABLE_KEY`
-   - **Value**: `pk_live_YOUR_PRODUCTION_KEY`
+   - **Value**: `pk_live_Y2xlcmsuYmVhbWxhYnVsdGltYXRlLnRlY2gk`
+4. Click **"Add secret"**
+
+### Step 2: Backend API Configuration
+
+The backend APIs are already configured with production keys:
+
+**Node.js API** (`apps/api/.env`):
+```bash
+CLERK_SECRET_KEY=sk_live_5i0eoYuc4YwBvRCf1MU3PTRs1P2knoQddUWy0QDaOB
+CLERK_PUBLISHABLE_KEY=pk_live_Y2xlcmsuYmVhbWxhYnVsdGltYXRlLnRlY2gk
+```
+
+**Python API** (`apps/backend-python/.env`):
+```bash
+CLERK_SECRET_KEY=sk_live_5i0eoYuc4YwBvRCf1MU3PTRs1P2knoQddUWy0QDaOB
+```
 
 ### Step 3: Configure Allowed Origins for Production
 
@@ -91,9 +118,11 @@ Push to main branch to trigger GitHub Actions deployment:
 
 ```bash
 git add .
-git commit -m "Update Clerk configuration"
+git commit -m "Configure Clerk production keys"
 git push origin main
 ```
+
+The GitHub Actions workflow will automatically use the secret from `${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}`.
 
 ---
 
