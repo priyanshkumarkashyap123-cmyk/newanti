@@ -107,7 +107,7 @@ export interface LoadData {
 }
 
 export interface SolverConfig {
-    analysisType?: 'linear' | 'p-delta' | 'dynamic' | 'dynamic_time_history' | 'topology_optimization';
+    analysisType?: 'linear' | 'p-delta' | 'dynamic' | 'dynamic_time_history' | 'topology_optimization' | 'pinn_beam';
     maxIterations?: number;
     tolerance?: number;
     method?: 'cg' | 'direct' | 'auto';
@@ -926,7 +926,7 @@ function conjugateGradient(
 ): { x: Float64Array; iterations: number; residual: number } {
     const n = K.rows;
     const tolerance = options.tolerance ?? 1e-8;
-    const maxIterations = options.maxIterations ?? n * 2;
+    const maxIterations = Math.min(options.maxIterations ?? n * 2, 5000); // Cap at 5000 to prevent long stalls
 
     // Initial guess
     const x = new Float64Array(n);
@@ -1157,6 +1157,24 @@ async function analyze(model: ModelData): Promise<ResultData> {
 
     const config = model.options || {};
     const analysisType = config.analysisType || 'linear';
+
+    // Model size validation - prevent crashes on large models
+    const totalDOF = model.nodes.length * model.dofPerNode;
+    const MAX_DOF = 18000; // ~3000 nodes at 6 DOF/node
+    const WARN_DOF = 6000; // ~1000 nodes at 6 DOF/node
+
+    if (totalDOF > MAX_DOF) {
+        return {
+            type: 'result',
+            success: false,
+            error: `Model too large: ${model.nodes.length} nodes (${totalDOF} DOF) exceeds limit of ~3000 nodes. Please reduce model size for browser-based analysis, or use the Python backend for larger models.`,
+            stats: { assemblyTimeMs: 0, solveTimeMs: 0, totalTimeMs: 0 }
+        };
+    }
+
+    if (totalDOF > WARN_DOF) {
+        sendProgress('assembling', 0, `Large model detected (${model.nodes.length} nodes). Analysis may take longer...`);
+    }
 
     // Dynamic settings
     const dt = config.timeStep || 0.01;

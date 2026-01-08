@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 
 pub mod ai_architect;
 pub mod renderer;
+pub mod pinn;
 
 // ============================================
 // INITIALIZATION
@@ -214,6 +215,21 @@ pub fn solve_sparse_system_json(input_json: &str) -> String {
         }).unwrap_or_default()
     };
 
+    // Size validation - prevent OOM crashes
+    const MAX_DOF: usize = 18000; // ~3000 nodes at 6 DOF/node
+    if input.size > MAX_DOF {
+        return serde_json::to_string(&SolverOutput {
+            displacements: vec![],
+            solve_time_ms: 0.0,
+            success: false,
+            error: Some(format!(
+                "Model too large: {} DOF exceeds limit of {}. Please reduce model size to ~3000 nodes or fewer.",
+                input.size, MAX_DOF
+            )),
+            condition_number: None,
+        }).unwrap_or_default();
+    }
+
     // Convert entries to CSR matrix
     let mut row_indices = Vec::with_capacity(input.entries.len());
     let mut col_indices = Vec::with_capacity(input.entries.len());
@@ -271,7 +287,7 @@ pub fn solve_sparse_system_json(input_json: &str) -> String {
         
         let b_norm = b.norm();
         let tol = 1e-10 * b_norm.max(1.0);
-        let max_iter = input.size * 2;
+        let max_iter = input.size.min(5000); // Cap at 5000 to prevent long stalls
 
         for _ in 0..max_iter {
             if r.norm() <= tol {
@@ -305,7 +321,7 @@ pub fn solve_sparse_system_json(input_json: &str) -> String {
     if !cg_success && (cg_indefinite || has_zero_diagonal) {
         // Convert sparse to dense and solve with LU
         // Only feasible for moderate-sized matrices (< 2000 DOF)
-        if input.size <= 2000 {
+        if input.size <= 3000 {
             let mut dense = DMatrix::zeros(input.size, input.size);
             for entry in &input.entries {
                 dense[(entry.row, entry.col)] = entry.value;
@@ -400,6 +416,15 @@ pub fn solve_sparse_system(
         return Err(JsValue::from_str("Input arrays length mismatch"));
     }
 
+    // Size validation - prevent OOM crashes
+    const MAX_DOF: usize = 18000; // ~3000 nodes at 6 DOF/node
+    if size > MAX_DOF {
+        return Err(JsValue::from_str(&format!(
+            "Model too large: {} DOF exceeds limit of {}. Please reduce model size to ~3000 nodes or fewer.",
+            size, MAX_DOF
+        )));
+    }
+
     // Convert to CSR directly
     let rows = row_indices.to_vec();
     let cols = col_indices.to_vec();
@@ -443,7 +468,7 @@ pub fn solve_sparse_system(
         
         let b_norm = b.norm();
         let tol = 1e-8 * b_norm.max(1.0); 
-        let max_iter = size * 2;
+        let max_iter = size.min(5000); // Cap at 5000 to prevent long stalls
         
         for _ in 0..max_iter {
             if r.norm() <= tol {
@@ -475,7 +500,7 @@ pub fn solve_sparse_system(
     
     // If CG failed, try LU fallback for smaller systems
     if !cg_success && (cg_indefinite || has_zero_diagonal) {
-        if size <= 2000 {
+        if size <= 3000 {
             // Convert sparse to dense for LU
             let mut dense = DMatrix::zeros(size, size);
             for i in 0..row_indices.len() {
