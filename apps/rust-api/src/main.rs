@@ -18,6 +18,7 @@ use axum::{
     routing::{get, post, delete},
     Router,
 };
+use http;
 use std::sync::Arc;
 use tower_http::{
     compression::CompressionLayer,
@@ -94,6 +95,8 @@ async fn main() -> anyhow::Result<()> {
     });
 
     // Build CORS layer
+    // Note: When allow_credentials(true) is set, we cannot use Any for headers
+    // We must explicitly list allowed headers for CORS security
     let cors = CorsLayer::new()
         .allow_origin([
             "http://localhost:5173".parse().unwrap(),
@@ -102,7 +105,14 @@ async fn main() -> anyhow::Result<()> {
             "https://www.beamlabultimate.tech".parse().unwrap(),
         ])
         .allow_methods(Any)
-        .allow_headers(Any)
+        .allow_headers([
+            http::header::CONTENT_TYPE,
+            http::header::AUTHORIZATION,
+            http::header::ACCEPT,
+            http::header::ORIGIN,
+            http::header::HeaderName::from_static("x-api-key"),
+            http::header::HeaderName::from_static("x-requested-with"),
+        ])
         .allow_credentials(true);
 
     // Build the router
