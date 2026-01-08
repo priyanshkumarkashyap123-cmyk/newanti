@@ -191,7 +191,7 @@ pub fn solve_system_json(input_json: &str) -> String {
     serde_json::to_string(&result).unwrap_or_default()
 }
 
-/// Solve a sparse linear system using CG (Conjugate Gradient)
+/// Solve a sparse linear system using CG (Conjugate Gradient) with LU fallback
 #[wasm_bindgen]
 pub fn solve_sparse_system_json(input_json: &str) -> String {
     use nalgebra_sparse::{CsrMatrix};
@@ -219,14 +219,14 @@ pub fn solve_sparse_system_json(input_json: &str) -> String {
     let mut col_indices = Vec::with_capacity(input.entries.len());
     let mut values = Vec::with_capacity(input.entries.len());
 
-    for entry in input.entries {
+    for entry in &input.entries {
         row_indices.push(entry.row);
         col_indices.push(entry.col);
         values.push(entry.value);
     }
 
     let coo = nalgebra_sparse::CooMatrix::try_from_triplets(
-        input.size, input.size, row_indices, col_indices, values
+        input.size, input.size, row_indices.clone(), col_indices.clone(), values.clone()
     );
 
     let coo = match coo {
@@ -241,57 +241,122 @@ pub fn solve_sparse_system_json(input_json: &str) -> String {
     };
 
     let csr = CsrMatrix::from(&coo);
-    let b = DVector::from_vec(input.forces);
+    let b = DVector::from_vec(input.forces.clone());
     
-    // For now, let's use a simple Jacobi-preconditioned CG solver
-    // Note: nalgebra-sparse doesn't have a built-in CG, so we implement a basic one
+    // Try CG solver first (faster for large symmetric positive-definite matrices)
     let mut x = DVector::zeros(input.size);
     let mut r = &b - &csr * &x;
     
     // Jacobi preconditioner
     let mut inv_diag = DVector::zeros(input.size);
+    let mut has_zero_diagonal = false;
     for i in 0..input.size {
         let val = csr.get_entry(i, i).map(|e| e.into_value()).unwrap_or(0.0);
-        inv_diag[i] = if val.abs() > 1e-15 { 1.0 / val } else { 1.0 };
+        if val.abs() < 1e-15 {
+            has_zero_diagonal = true;
+            inv_diag[i] = 1.0; // Use 1.0 to avoid div by zero
+        } else {
+            inv_diag[i] = 1.0 / val;
+        }
     }
     
-    let mut z = r.component_mul(&inv_diag);
-    let mut p = z.clone();
-    let mut rz_old = r.dot(&z);
+    let mut cg_success = false;
+    let mut cg_indefinite = false;
     
-    let b_norm = b.norm();
-    let tol = 1e-10 * b_norm.max(1.0);
-    let max_iter = input.size * 2;
-    let mut success = false;
-    let mut error = None;
+    // Only try CG if no zero diagonals (indicates possible singular matrix)
+    if !has_zero_diagonal {
+        let mut z = r.component_mul(&inv_diag);
+        let mut p = z.clone();
+        let mut rz_old = r.dot(&z);
+        
+        let b_norm = b.norm();
+        let tol = 1e-10 * b_norm.max(1.0);
+        let max_iter = input.size * 2;
 
-    for _ in 0..max_iter {
-        if r.norm() <= tol {
-            success = true;
-            break;
+        for _ in 0..max_iter {
+            if r.norm() <= tol {
+                cg_success = true;
+                break;
+            }
+            
+            let ap = &csr * &p;
+            let p_ap = p.dot(&ap);
+            
+            if p_ap.abs() < 1e-18 {
+                cg_indefinite = true;
+                break;
+            }
+            
+            let alpha = rz_old / p_ap;
+            x += alpha * &p;
+            r -= alpha * &ap;
+            
+            z = r.component_mul(&inv_diag);
+            let rz_new = r.dot(&z);
+            let beta = rz_new / rz_old;
+            p = &z + beta * &p;
+            rz_old = rz_new;
         }
-        
-        let ap = &csr * &p;
-        let p_ap = p.dot(&ap);
-        
-        if p_ap.abs() < 1e-18 {
-            error = Some("Division by zero in CG solver (matrix might be indefinite)".to_string());
-            break;
-        }
-        
-        let alpha = rz_old / p_ap;
-        x += alpha * &p;
-        r -= alpha * &ap;
-        
-        z = r.component_mul(&inv_diag);
-        let rz_new = r.dot(&z);
-        let beta = rz_new / rz_old;
-        p = &z + beta * &p;
-        rz_old = rz_new;
+    } else {
+        cg_indefinite = true;
     }
-
-    if !success && error.is_none() {
-        error = Some("CG solver failed to converge".to_string());
+    
+    // If CG failed or matrix is indefinite, fallback to LU decomposition
+    if !cg_success && (cg_indefinite || has_zero_diagonal) {
+        // Convert sparse to dense and solve with LU
+        // Only feasible for moderate-sized matrices (< 2000 DOF)
+        if input.size <= 2000 {
+            let mut dense = DMatrix::zeros(input.size, input.size);
+            for entry in &input.entries {
+                dense[(entry.row, entry.col)] = entry.value;
+            }
+            
+            let b_dense = DVector::from_vec(input.forces.clone());
+            
+            match dense.lu().solve(&b_dense) {
+                Some(displacements) => {
+                    let end = web_sys::window()
+                        .and_then(|w| w.performance())
+                        .map(|p| p.now())
+                        .unwrap_or(0.0);
+                    
+                    return serde_json::to_string(&SolverOutput {
+                        displacements: displacements.data.as_vec().clone(),
+                        solve_time_ms: end - start,
+                        success: true,
+                        error: None,
+                        condition_number: None,
+                    }).unwrap_or_default();
+                }
+                None => {
+                    let end = web_sys::window()
+                        .and_then(|w| w.performance())
+                        .map(|p| p.now())
+                        .unwrap_or(0.0);
+                    
+                    return serde_json::to_string(&SolverOutput {
+                        displacements: vec![],
+                        solve_time_ms: end - start,
+                        success: false,
+                        error: Some("Structure is unstable. Please check that:\n1. All nodes have proper supports\n2. The structure is not a mechanism\n3. All members are connected".to_string()),
+                        condition_number: None,
+                    }).unwrap_or_default();
+                }
+            }
+        } else {
+            let end = web_sys::window()
+                .and_then(|w| w.performance())
+                .map(|p| p.now())
+                .unwrap_or(0.0);
+            
+            return serde_json::to_string(&SolverOutput {
+                displacements: vec![],
+                solve_time_ms: end - start,
+                success: false,
+                error: Some("Structure may be unstable (matrix is indefinite). For large systems, ensure proper boundary conditions.".to_string()),
+                condition_number: None,
+            }).unwrap_or_default();
+        }
     }
 
     let end = web_sys::window()
@@ -299,16 +364,26 @@ pub fn solve_sparse_system_json(input_json: &str) -> String {
         .map(|p| p.now())
         .unwrap_or(0.0);
 
-    serde_json::to_string(&SolverOutput {
-        displacements: x.data.as_vec().clone(),
-        solve_time_ms: end - start,
-        success,
-        error,
-        condition_number: None,
-    }).unwrap_or_default()
+    if cg_success {
+        serde_json::to_string(&SolverOutput {
+            displacements: x.data.as_vec().clone(),
+            solve_time_ms: end - start,
+            success: true,
+            error: None,
+            condition_number: None,
+        }).unwrap_or_default()
+    } else {
+        serde_json::to_string(&SolverOutput {
+            displacements: vec![],
+            solve_time_ms: end - start,
+            success: false,
+            error: Some("CG solver failed to converge. Try adding more supports or checking member connectivity.".to_string()),
+            condition_number: None,
+        }).unwrap_or_default()
+    }
 }
 
-/// Solve a sparse linear system using CG with direct TypedArray input
+/// Solve a sparse linear system using CG with direct TypedArray input and LU fallback
 /// Avoids OOM issues with large JSON strings
 #[wasm_bindgen]
 pub fn solve_sparse_system(
@@ -326,16 +401,12 @@ pub fn solve_sparse_system(
     }
 
     // Convert to CSR directly
-    // Note: WASM u32 array passed as &[usize] works because usize=u32 in wasm32
-    
-    // We need to clone the data into Vec for CooMatrix
-    // (copying is unavoidable but much cheaper than JSON parsing)
     let rows = row_indices.to_vec();
     let cols = col_indices.to_vec();
     let vals = values.to_vec();
     
     let coo = match nalgebra_sparse::CooMatrix::try_from_triplets(
-        size, size, rows, cols, vals
+        size, size, rows.clone(), cols.clone(), vals.clone()
     ) {
         Ok(c) => c,
         Err(e) => return Err(JsValue::from_str(&format!("Failed to construct COO matrix: {}", e))),
@@ -344,52 +415,94 @@ pub fn solve_sparse_system(
     let csr = CsrMatrix::from(&coo);
     let b = DVector::from_column_slice(forces);
     
-    // CG Solver (Same logic as above, but with result array return)
+    // CG Solver with LU fallback
     let mut x = DVector::zeros(size);
     let mut r = &b - &csr * &x;
     
-    // Jacobi preconditioner
+    // Jacobi preconditioner - check for zero diagonals
     let mut inv_diag = DVector::zeros(size);
+    let mut has_zero_diagonal = false;
     for i in 0..size {
         let val = csr.get_entry(i, i).map(|e| e.into_value()).unwrap_or(0.0);
-        inv_diag[i] = if val.abs() > 1e-15 { 1.0 / val } else { 1.0 };
+        if val.abs() < 1e-15 {
+            has_zero_diagonal = true;
+            inv_diag[i] = 1.0;
+        } else {
+            inv_diag[i] = 1.0 / val;
+        }
     }
     
-    let mut z = r.component_mul(&inv_diag);
-    let mut p = z.clone();
-    let mut rz_old = r.dot(&z);
+    let mut cg_success = false;
+    let mut cg_indefinite = false;
     
-    let b_norm = b.norm();
-    // Looser tolerance for very large systems to ensure speed
-    let tol = 1e-8 * b_norm.max(1.0); 
-    let max_iter = size * 2;
-    
-    for _ in 0..max_iter {
-        if r.norm() <= tol {
-            break;
+    // Only try CG if no zero diagonals
+    if !has_zero_diagonal {
+        let mut z = r.component_mul(&inv_diag);
+        let mut p = z.clone();
+        let mut rz_old = r.dot(&z);
+        
+        let b_norm = b.norm();
+        let tol = 1e-8 * b_norm.max(1.0); 
+        let max_iter = size * 2;
+        
+        for _ in 0..max_iter {
+            if r.norm() <= tol {
+                cg_success = true;
+                break;
+            }
+            
+            let ap = &csr * &p;
+            let p_ap = p.dot(&ap);
+            
+            if p_ap.abs() < 1e-20 {
+                cg_indefinite = true;
+                break;
+            }
+            
+            let alpha = rz_old / p_ap;
+            x += alpha * &p;
+            r -= alpha * &ap;
+            
+            z = r.component_mul(&inv_diag);
+            let rz_new = r.dot(&z);
+            let beta = rz_new / rz_old;
+            p = &z + beta * &p;
+            rz_old = rz_new;
         }
-        
-        let ap = &csr * &p;
-        let p_ap = p.dot(&ap);
-        
-        if p_ap.abs() < 1e-20 {
-            break; // Breakdown or already converged
-        }
-        
-        let alpha = rz_old / p_ap;
-        x += alpha * &p;
-        r -= alpha * &ap;
-        
-        z = r.component_mul(&inv_diag);
-        let rz_new = r.dot(&z);
-        let beta = rz_new / rz_old;
-        p = &z + beta * &p;
-        rz_old = rz_new;
+    } else {
+        cg_indefinite = true;
     }
     
-    // Return Float64Array directly
+    // If CG failed, try LU fallback for smaller systems
+    if !cg_success && (cg_indefinite || has_zero_diagonal) {
+        if size <= 2000 {
+            // Convert sparse to dense for LU
+            let mut dense = DMatrix::zeros(size, size);
+            for i in 0..row_indices.len() {
+                dense[(row_indices[i], col_indices[i])] = values[i];
+            }
+            
+            let b_dense = DVector::from_column_slice(forces);
+            
+            match dense.lu().solve(&b_dense) {
+                Some(displacements) => {
+                    let result = js_sys::Float64Array::new_with_length(size as u32);
+                    for (i, &val) in displacements.iter().enumerate() {
+                        result.set_index(i as u32, val);
+                    }
+                    return Ok(result);
+                }
+                None => {
+                    return Err(JsValue::from_str("Structure is unstable. Please check that all nodes have proper supports and the structure is not a mechanism."));
+                }
+            }
+        } else {
+            return Err(JsValue::from_str("Structure may be unstable (matrix is indefinite). Ensure proper boundary conditions are applied."));
+        }
+    }
+    
+    // Return CG result
     let result = js_sys::Float64Array::new_with_length(size as u32);
-    // x.data is a slice, we can copy it
     for (i, &val) in x.iter().enumerate() {
         result.set_index(i as u32, val);
     }

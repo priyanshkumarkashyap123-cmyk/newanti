@@ -296,6 +296,7 @@ export const MembersRenderer: FC<MembersRendererProps> = ({
             {/* Render section members as 3D cylinders */}
             {sectionMembers.length > 0 && (
                 <instancedMesh
+                    key={`instanced-mesh-${sectionMembers.length}`}
                     ref={meshRef}
                     args={[undefined, undefined, sectionMembers.length]}
                     onClick={(e) => {

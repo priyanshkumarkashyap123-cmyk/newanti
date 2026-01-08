@@ -228,6 +228,13 @@ function makeMutClosure(arg0, arg1, dtor, f) {
     return real;
 }
 
+function passArray32ToWasm0(arg, malloc) {
+    const ptr = malloc(arg.length * 4, 4) >>> 0;
+    getUint32ArrayMemory0().set(arg, ptr / 4);
+    WASM_VECTOR_LEN = arg.length;
+    return ptr;
+}
+
 function passArrayF64ToWasm0(arg, malloc) {
     const ptr = malloc(arg.length * 8, 8) >>> 0;
     getFloat64ArrayMemory0().set(arg, ptr / 8);
@@ -522,7 +529,33 @@ export function solve_p_delta(nodes_json, elements_json, point_loads_json, membe
 }
 
 /**
- * Solve a sparse linear system using CG (Conjugate Gradient)
+ * Solve a sparse linear system using CG with direct TypedArray input and LU fallback
+ * Avoids OOM issues with large JSON strings
+ * @param {Uint32Array} row_indices
+ * @param {Uint32Array} col_indices
+ * @param {Float64Array} values
+ * @param {Float64Array} forces
+ * @param {number} size
+ * @returns {Float64Array}
+ */
+export function solve_sparse_system(row_indices, col_indices, values, forces, size) {
+    const ptr0 = passArray32ToWasm0(row_indices, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArray32ToWasm0(col_indices, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ptr2 = passArrayF64ToWasm0(values, wasm.__wbindgen_malloc);
+    const len2 = WASM_VECTOR_LEN;
+    const ptr3 = passArrayF64ToWasm0(forces, wasm.__wbindgen_malloc);
+    const len3 = WASM_VECTOR_LEN;
+    const ret = wasm.solve_sparse_system(ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3, size);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+ * Solve a sparse linear system using CG (Conjugate Gradient) with LU fallback
  * @param {string} input_json
  * @returns {string}
  */

@@ -467,7 +467,7 @@ function assembleStiffnessMatrixAndForces(
     // Build nodeIndexMap internally
     const nodeIndexMap = new Map<string, number>();
     nodes.forEach((n, i) => nodeIndexMap.set(n.id, i));
-    
+
     const totalDof = nodes.length * dofPerNode;
 
     const K = new SparseMatrix(totalDof, totalDof);
@@ -1068,8 +1068,93 @@ function updateDensitiesOC(
 
 
 // Analysis Implementation
-function analyze(model: ModelData): ResultData {
+// Helper to wait for WASM initialization
+async function waitForWasm(): Promise<void> {
+    if (wasmReady) return;
+
+    // Check every 100ms
+    return new Promise((resolve, reject) => {
+        const start = performance.now();
+        const checkInterval = setInterval(() => {
+            if (wasmReady) {
+                clearInterval(checkInterval);
+                resolve();
+            } else if (performance.now() - start > 10000) { // 10s timeout
+                clearInterval(checkInterval);
+                reject(new Error("Timeout waiting for WASM solver module."));
+            }
+        }, 100);
+    });
+}
+
+// Analysis Implementation
+// Helper to call WASM sparse solver with TypedArrays (Zero-Copy-ish)
+function solveSystemWasm(entries: any[], F: Float64Array | number[], dof: number): Float64Array {
+    if (!wasmModule || !wasmModule.solve_sparse_system) {
+        // Fallback or error
+        if (wasmModule && wasmModule.solve_sparse_system_json) {
+            // Legacy Path (if WASM not updated yet)
+            console.warn("Using slow JSON solver path");
+            const input = {
+                entries: entries,
+                forces: F instanceof Float64Array ? Array.from(F) : F,
+                size: dof
+            };
+            const res = JSON.parse(wasmModule.solve_sparse_system_json(JSON.stringify(input)));
+            if (!res.success) throw new Error(res.error);
+            return new Float64Array(res.displacements);
+        }
+        throw new Error("WASM solve_sparse_system not available. Please rebuild solver-wasm.");
+    }
+
+    // Convert to TypedArrays for efficient WASM boundary crossing
+    const count = entries.length;
+    const rows = new Uint32Array(count);
+    const cols = new Uint32Array(count);
+    const vals = new Float64Array(count);
+
+    for (let i = 0; i < count; i++) {
+        const e = entries[i];
+        rows[i] = e.row;
+        cols[i] = e.col;
+        vals[i] = e.value;
+    }
+
+    const forces = F instanceof Float64Array ? F : new Float64Array(F);
+
+    // Call WASM directly
+    // This expects: solve_sparse_system(rows: Uint32Array, cols: Uint32Array, vals: Float64Array, forces: Float64Array, size: number)
+    try {
+        const displacements = wasmModule.solve_sparse_system(rows, cols, vals, forces, dof);
+        return displacements;
+    } catch (e) {
+        const errorStr = String(e);
+        // Provide user-friendly error messages
+        if (errorStr.includes('unstable') || errorStr.includes('singular') || errorStr.includes('indefinite')) {
+            throw new Error("Structure is unstable. Please ensure:\n• All nodes have proper supports (at least 3 DOF restrained)\n• The structure is not a mechanism\n• All members are connected to the rest of the structure");
+        } else if (errorStr.includes('boundary conditions')) {
+            throw new Error("Missing boundary conditions. Add fixed or pinned supports to the structure.");
+        } else {
+            throw new Error("Solver Failed: " + errorStr);
+        }
+    }
+}
+
+async function analyze(model: ModelData): Promise<ResultData> {
     const startTime = performance.now();
+
+    // Ensure WASM is ready
+    try {
+        await waitForWasm();
+    } catch (e) {
+        return {
+            type: 'result',
+            success: false,
+            error: "WASM Solver Init Failed: " + (e instanceof Error ? e.message : String(e)),
+            stats: { assemblyTimeMs: 0, solveTimeMs: 0, totalTimeMs: 0 }
+        };
+    }
+
     const config = model.options || {};
     const analysisType = config.analysisType || 'linear';
 
@@ -1167,15 +1252,11 @@ function analyze(model: ModelData): ResultData {
                 // SOLVE
                 // K_hat * u_next = F_eff
                 // Using WASM
+                // Using WASM
                 if (wasmReady && wasmModule) {
-                    const input = { entries: entriesK_hat, forces: Array.from(F_eff), size: dof };
-                    // Optimization: Stringify is slow in loop.
-                    // But for validation (small steps) OK.
-                    const resJson = wasmModule.solve_sparse_system_json(JSON.stringify(input));
-                    const res = JSON.parse(resJson);
-                    if (!res.success) throw new Error(res.error);
+                    const u_next = solveSystemWasm(entriesK_hat, F_eff, dof);
 
-                    const u_next = new Float64Array(res.displacements);
+                    // Update Kinematics
 
                     // Update Kinematics
                     // a_next = a0 * (u_next - u) - a0*dt*v - (1/2beta - 1)*a ???
@@ -1252,12 +1333,8 @@ function analyze(model: ModelData): ResultData {
                 });
 
                 if (wasmReady && wasmModule) {
-                    const input = { entries, forces: Array.from(F), size: dof };
-                    const resJson = wasmModule.solve_sparse_system_json(JSON.stringify(input));
-                    const result = JSON.parse(resJson);
-                    if (!result.success) throw new Error(result.error);
-                    displacements = new Float64Array(result.displacements);
-                    stats.solveTimeMs = (stats.solveTimeMs || 0) + result.solve_time_ms;
+                    displacements = solveSystemWasm(entries, F, dof);
+                    stats.solveTimeMs = (stats.solveTimeMs || 0) + 0; // Time tracking inside helper not returned yet
                 } else { throw new Error("WASM required"); }
 
                 memberForces = computeMemberEndForces(model, displacements, nodeIndexMap);
@@ -1320,9 +1397,7 @@ function analyze(model: ModelData): ResultData {
                 // Solve
                 let u: Float64Array;
                 if (wasmReady && wasmModule) {
-                    const res = JSON.parse(wasmModule.solve_sparse_system_json(JSON.stringify({ entries, forces: Array.from(F), size: dof })));
-                    if (!res.success) throw new Error(res.error);
-                    u = new Float64Array(res.displacements);
+                    u = solveSystemWasm(entries, F, dof);
                 } else throw new Error("WASM required for Optimization");
 
                 finalDisplacements = Float64Array.from(u);
@@ -1498,9 +1573,7 @@ function analyze(model: ModelData): ResultData {
 
             let displacements;
             if (wasmReady && wasmModule) {
-                const input = { entries, forces: Array.from(F), size: dof };
-                const res = JSON.parse(wasmModule.solve_sparse_system_json(JSON.stringify(input)));
-                displacements = new Float64Array(res.displacements);
+                displacements = solveSystemWasm(entries, F, dof);
             } else { throw new Error("WASM not ready"); }
 
             const memberForces = computeMemberEndForces(model, displacements, nodeIndexMap);
@@ -1529,11 +1602,11 @@ function analyze(model: ModelData): ResultData {
 // MESSAGE HANDLER
 // ============================================
 
-self.onmessage = (event: MessageEvent<WorkerRequest>) => {
+self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
     const request = event.data;
 
     if (request.type === 'analyze') {
-        const result = analyze(request.model);
+        const result = await analyze(request.model);
 
         // Use Transferable Objects for zero-copy transfer
         const transferables: Transferable[] = [];
