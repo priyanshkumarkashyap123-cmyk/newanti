@@ -60,7 +60,7 @@ jobs:
           VITE_API_URL: https://beamlab-backend-node.azurewebsites.net
           VITE_PYTHON_API_URL: https://beamlab-backend-python.azurewebsites.net
           VITE_USE_CLERK: "true"
-          VITE_CLERK_PUBLISHABLE_KEY: pk_live_Y2xlcmsuYmVhbWxhYnVsdGltYXRlLnRlY2gk
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
         run: pnpm run build
 
       - name: Deploy to Azure Static Web Apps
