@@ -101,6 +101,7 @@ export const StructuralViewer: FC<StructuralViewerProps> = ({ className = '' }) 
                     preserveDrawingBuffer: true,
                     antialias: true,
                     alpha: false,
+                    powerPreference: 'high-performance',
                 }}
                 style={{
                     width: '100%',

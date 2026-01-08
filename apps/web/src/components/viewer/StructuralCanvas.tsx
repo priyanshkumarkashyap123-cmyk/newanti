@@ -269,7 +269,7 @@ export const StructuralCanvas: FC<StructuralCanvasProps> = ({ children }) => {
     return (
         <Canvas
             shadows
-            gl={{ antialias: true, alpha: false }}
+            gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
             style={{ background: '#0a0a0f' }}
         >
             {/* Camera */}

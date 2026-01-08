@@ -233,7 +233,7 @@ const ViewportContainer: FC<{ className?: string; layout: ViewportLayout; useWeb
                 eventSource={containerRef as MutableRefObject<HTMLElement>}
                 shadows
                 dpr={[1, 2]}
-                gl={{ preserveDrawingBuffer: true, antialias: true, alpha: false }}
+                gl={{ preserveDrawingBuffer: true, antialias: true, alpha: false, powerPreference: 'high-performance' }}
                 camera={{ position: [20, 20, 20], fov: 50 }}
             >
                 {/* Perspective View */}
