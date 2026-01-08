@@ -17,8 +17,8 @@ mod solver;
 use axum::{
     routing::{get, post, delete},
     Router,
+    http,
 };
-use http;
 use std::sync::Arc;
 use tower_http::{
     compression::CompressionLayer,
