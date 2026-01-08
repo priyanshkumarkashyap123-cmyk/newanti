@@ -147,8 +147,7 @@ const UserSchema = new Schema<IUser>({
     timestamps: true
 });
 
-// Indexes for efficient queries
-UserSchema.index({ email: 1 });
+// Indexes for efficient queries (email already indexed via field definition with index: true)
 UserSchema.index({ tier: 1 });
 UserSchema.index({ lastLogin: -1 });
 
@@ -385,14 +384,13 @@ const RefreshTokenSchema = new Schema<IRefreshToken>({
     },
     expiresAt: {
         type: Date,
-        required: true,
-        index: true
+        required: true
     }
 }, {
     timestamps: true
 });
 
-// Auto-delete expired tokens
+// Auto-delete expired tokens (TTL index)
 RefreshTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export const RefreshTokenModel = mongoose.model<IRefreshToken>('RefreshToken', RefreshTokenSchema);
@@ -427,14 +425,13 @@ const VerificationCodeSchema = new Schema<IVerificationCode>({
     },
     expiresAt: {
         type: Date,
-        required: true,
-        index: true
+        required: true
     }
 }, {
     timestamps: true
 });
 
-// Auto-delete expired codes
+// Auto-delete expired codes (TTL index)
 VerificationCodeSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export const VerificationCodeModel = mongoose.model<IVerificationCode>('VerificationCode', VerificationCodeSchema);

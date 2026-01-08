@@ -93,10 +93,11 @@ export interface ProgressCallback {
 // ============================================
 
 const CONFIG = {
-    LOCAL_THRESHOLD: 100000,  // Use local WASM solver for almost all models (was 2000)
-    // Use Rust API for high-performance analysis (only for massive models)
-    RUST_API_URL: import.meta.env.VITE_API_URL || 'https://beamlab-backend-node.azurewebsites.net',
-    // Fallback to Node.js API for auth/payments
+    LOCAL_THRESHOLD: 3000,    // Use local WASM solver for models up to 3000 nodes
+    LARGE_MODEL_THRESHOLD: 5000, // Use Python sparse solver for 5k+ nodes
+    // Python backend for high-performance large model analysis
+    PYTHON_API_URL: import.meta.env.VITE_PYTHON_API_URL || 'https://beamlab-backend-python.azurewebsites.net',
+    // Node.js API for auth/payments
     API_BASE_URL: import.meta.env.VITE_API_URL || 'https://beamlab-backend-node.azurewebsites.net',
     POLL_INTERVAL: 1000,    // Poll interval for async jobs (ms)
     MAX_POLL_TIME: 300000   // Maximum poll time (5 minutes)
@@ -280,7 +281,7 @@ class AnalysisService {
     }
 
     /**
-     * Run analysis on cloud server
+     * Run analysis on cloud server using Python sparse solver
      */
     private async analyzeCloud(
         model: ModelData,
@@ -291,39 +292,77 @@ class AnalysisService {
         const signal = this.abortController.signal;
 
         try {
-            onProgress?.('uploading', 10, 'Uploading to Cloud Engine...');
+            onProgress?.('uploading', 10, 'Uploading to High-Performance Solver...');
 
             const headers: Record<string, string> = { 'Content-Type': 'application/json' };
             if (token) {
                 headers['Authorization'] = `Bearer ${token}`;
             }
 
-            // POST model to Rust API for high-performance analysis
-            const response = await fetch(`${CONFIG.RUST_API_URL}/api/analyze`, {
+            // POST to Python backend large-frame sparse solver
+            const response = await fetch(`${CONFIG.PYTHON_API_URL}/analyze/large-frame`, {
                 method: 'POST',
                 headers,
-                body: JSON.stringify(model),
+                body: JSON.stringify({
+                    nodes: model.nodes.map(n => ({
+                        id: n.id,
+                        x: n.x,
+                        y: n.y,
+                        z: n.z,
+                        support: n.restraints?.fx && n.restraints?.fy && n.restraints?.fz
+                            ? (n.restraints?.mx && n.restraints?.my && n.restraints?.mz ? 'fixed' : 'pinned')
+                            : n.restraints?.fy ? 'roller' : 'none'
+                    })),
+                    members: model.members.map(m => ({
+                        id: m.id,
+                        startNodeId: m.startNodeId,
+                        endNodeId: m.endNodeId,
+                        E: m.E,
+                        A: m.A,
+                        Iy: m.I,
+                        Iz: m.I
+                    })),
+                    node_loads: model.loads.map(l => ({
+                        nodeId: l.nodeId,
+                        fx: l.fx || 0,
+                        fy: l.fy || 0,
+                        fz: l.fz || 0
+                    })),
+                    method: 'auto'
+                }),
                 signal
             });
 
             if (!response.ok) {
                 const error = await response.json();
-                return { success: false, error: error.error || 'Server error' };
+                return { success: false, error: error.detail || error.error || 'Server error' };
             }
 
             const data = await response.json();
 
-            // Check if async job was created
-            if (data.jobId) {
-                onProgress?.('queued', 20, 'Job queued, waiting for results...');
-                return this.pollForResults(data.jobId, onProgress, signal, token);
+            if (!data.success) {
+                return { success: false, error: data.error || 'Analysis failed' };
             }
 
-            // Synchronous result
             onProgress?.('complete', 100, 'Analysis complete!');
+
+            // Convert displacements format
+            const displacements: Record<string, number[]> = {};
+            for (const [nodeId, disp] of Object.entries(data.displacements || {})) {
+                const d = disp as { dx: number; dy: number; dz: number; rx: number; ry: number; rz: number };
+                displacements[nodeId] = [d.dx, d.dy, d.dz, d.rx, d.ry, d.rz];
+            }
+
             return {
-                ...data,
-                stats: { ...data.stats, usedCloud: true }
+                success: true,
+                displacements,
+                stats: {
+                    assemblyTimeMs: 0,
+                    solveTimeMs: data.stats?.solve_time_ms || 0,
+                    totalTimeMs: data.stats?.total_time_ms || 0,
+                    method: data.stats?.method,
+                    usedCloud: true
+                }
             };
 
         } catch (error) {
