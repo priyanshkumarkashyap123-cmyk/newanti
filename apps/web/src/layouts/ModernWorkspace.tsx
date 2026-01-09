@@ -32,10 +32,12 @@ import {
     ChevronRight,
     Grid3X3,
     FileInput,
-    ScanLine
+    ScanLine,
+    MousePointer2
 } from 'lucide-react';
 import { useUIStore, Category } from '../store/uiStore';
-import beamLabLogo from '../assets/beamlab_logo.png';
+// Logo from public folder
+const beamLabLogo = '/branding/logo.png';
 
 // ============================================
 // TYPES
@@ -367,7 +369,7 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
 
             {/* Main Content Area */}
             <div className="flex-1 flex overflow-hidden">
-                <PanelGroup direction="horizontal">
+                <PanelGroup direction="horizontal" className="flex-1">
                     {/* Left Panel - Context Sidebar */}
                     <Panel
                         defaultSize={18}

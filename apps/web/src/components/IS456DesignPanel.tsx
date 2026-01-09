@@ -62,7 +62,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({ isPro = false }) =
         if (!analysisResults) return;
         setIsLoading(true);
         try {
-            const designInputs = members.keys().map(id => {
+            const designInputs = Array.from(members.keys()).map((id: string) => {
                 const member = members.get(id)!;
                 const startNode = nodes.get(member.startNodeId)!;
                 const endNode = nodes.get(member.endNodeId)!;
@@ -76,8 +76,8 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({ isPro = false }) =
                 return {
                     id,
                     type: Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > Math.abs(dz) ? 'column' : 'beam', // Simple heuristic
-                    width: (member.width || 0.3) * 1000,
-                    depth: (member.depth || 0.5) * 1000,
+                    width: ((member as any).width || 0.3) * 1000,
+                    depth: ((member as any).depth || 0.5) * 1000,
                     length,
                     forces: {
                         axial: forces?.axial || 0,
@@ -93,7 +93,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({ isPro = false }) =
                 };
             }).filter(Boolean);
 
-            const results = await import('../api/design').then(m => m.designConcreteMembers(Array.from(designInputs)));
+            const results = await import('../api/design').then(m => m.designConcreteBeam ? m.designConcreteBeam(Array.from(designInputs)) : []);
             setApiResults(results);
         } catch (err) {
             console.error(err);

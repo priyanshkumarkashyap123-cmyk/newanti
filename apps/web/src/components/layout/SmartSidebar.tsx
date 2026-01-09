@@ -199,8 +199,8 @@ const TemplateBankPanel: FC = () => {
                 {/* Quick Access - Top 3 Famous Structures */}
                 <div className="grid grid-cols-1 gap-1.5">
                     <button
-                        onClick={() => {
-                            const { generateBurjKhalifa } = require('../../services/StructureFactory');
+                        onClick={async () => {
+                            const { generateBurjKhalifa } = await import('../../services/StructureFactory');
                             const structure = generateBurjKhalifa();
                             clearModel();
                             loadStructure(structure.nodes, structure.members);
@@ -211,8 +211,8 @@ const TemplateBankPanel: FC = () => {
                         <span>Burj Khalifa (60 floors, 1500+ nodes)</span>
                     </button>
                     <button
-                        onClick={() => {
-                            const { generateChenabBridge } = require('../../services/StructureFactory');
+                        onClick={async () => {
+                            const { generateChenabBridge } = await import('../../services/StructureFactory');
                             const structure = generateChenabBridge();
                             clearModel();
                             loadStructure(structure.nodes, structure.members);
@@ -223,8 +223,8 @@ const TemplateBankPanel: FC = () => {
                         <span>Chenab Bridge (467m arch span)</span>
                     </button>
                     <button
-                        onClick={() => {
-                            const { generateGoldenGateBridge } = require('../../services/StructureFactory');
+                        onClick={async () => {
+                            const { generateGoldenGateBridge } = await import('../../services/StructureFactory');
                             const structure = generateGoldenGateBridge();
                             clearModel();
                             loadStructure(structure.nodes, structure.members);
