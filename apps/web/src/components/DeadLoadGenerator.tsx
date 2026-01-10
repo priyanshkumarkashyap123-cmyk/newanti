@@ -51,14 +51,27 @@ export const DeadLoadGenerator: FC<DeadLoadGeneratorProps> = ({ open, onClose })
     const handleGenerate = () => {
         setIsGenerating(true);
 
+        // Track load applications
+        let loadCounter = 1;
+        let successCount = 0;
+        let skippedCount = 0;
+        let floorLoadCount = 0;
+
         try {
-            let loadCounter = 1;
+            // Validation
+            if (members.size === 0) {
+                throw new Error('No members in the model. Please create members first.');
+            }
 
             if (includeSelfWeight) {
                 // Apply self-weight as uniformly distributed load (UDL) along each member
                 const targetMembers = applyToSelection && selectedIds.size > 0
                     ? Array.from(members.values()).filter(m => selectedIds.has(m.id))
                     : Array.from(members.values());
+
+                if (targetMembers.length === 0) {
+                    throw new Error('No members selected. Please select members or uncheck "Apply to Selection".');
+                }
 
                 targetMembers.forEach(member => {
                     const weightPerMeter = calculateMemberWeightPerMeter(member.id);
@@ -75,6 +88,9 @@ export const DeadLoadGenerator: FC<DeadLoadGeneratorProps> = ({ open, onClose })
                             startPos: 0,
                             endPos: 1,
                         });
+                        successCount++;
+                    } else {
+                        skippedCount++;
                     }
                 });
             }
@@ -115,13 +131,26 @@ export const DeadLoadGenerator: FC<DeadLoadGeneratorProps> = ({ open, onClose })
                         startPos: 0,
                         endPos: 1,
                     });
+                    floorLoadCount++;
                 });
+            }
+
+            // Success notification
+            const totalApplied = successCount + floorLoadCount;
+            if (totalApplied > 0) {
+                console.log(`[Dead Load] Applied ${totalApplied} loads (${successCount} self-weight, ${floorLoadCount} floor)`);
+                if (skippedCount > 0) {
+                    console.warn(`[Dead Load] Skipped ${skippedCount} members without section data`);
+                }
             }
 
             if (!applyToSelection) {
                 clearSelection();
             }
             onClose();
+        } catch (error) {
+            console.error('[Dead Load Generator] Error:', error);
+            alert(error instanceof Error ? error.message : 'Failed to generate dead loads');
         } finally {
             setIsGenerating(false);
         }

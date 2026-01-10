@@ -5,27 +5,25 @@ import { AuthProvider } from './providers/AuthProvider';
 import { SubscriptionProvider } from './hooks/useSubscription';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { safeguards } from './utils/productionSafeguards';
+import { logger } from './utils/logger';
 import './index.css';
 
 // Initialize production safeguards (global error handlers, performance monitoring)
 safeguards.initialize();
 
-// Debug log
-console.log('🚀 main.tsx starting...');
-
 // Lazy load App to catch import errors
 const initializeApp = async () => {
     try {
-        console.log('📦 Importing App...');
+        logger.info('📦 Importing App...');
         const { default: App } = await import('./App');
-        console.log('✅ App imported successfully');
+        logger.info('✅ App imported successfully');
 
         const rootElement = document.getElementById('root');
         if (!rootElement) {
             throw new Error('Root element not found');
         }
 
-        console.log('🎨 Rendering App...');
+        logger.info('🎨 Rendering App...');
         
         // Use unified AuthProvider which handles both Clerk and in-house auth
         // SubscriptionProvider provides subscription/tier context for feature gating
@@ -33,8 +31,8 @@ const initializeApp = async () => {
         createRoot(rootElement).render(
             <StrictMode>
                 <ErrorBoundary onError={(error, errorInfo) => {
-                    console.error('🔴 App Error Caught:', error);
-                    console.error('📍 Component Stack:', errorInfo?.componentStack);
+                    logger.error('🔴 App Error Caught:', error);
+                    logger.error('📍 Component Stack:', errorInfo?.componentStack);
                 }}>
                     <BrowserRouter>
                         <AuthProvider>
@@ -47,9 +45,9 @@ const initializeApp = async () => {
             </StrictMode>
         );
         
-        console.log('✅ App rendered with AuthProvider and SubscriptionProvider');
+        logger.info('✅ App rendered with AuthProvider and SubscriptionProvider');
     } catch (error) {
-        console.error('❌ Failed to initialize app:', error);
+        logger.error('❌ Failed to initialize app:', error);
 
         // Show error in DOM
         const rootElement = document.getElementById('root');

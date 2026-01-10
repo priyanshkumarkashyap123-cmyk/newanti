@@ -10,6 +10,7 @@
 import { FC, useState, useCallback, useEffect, useRef } from 'react';
 import { Sparkles, Loader2, AlertCircle, CheckCircle, Zap, MessageCircle, Send, Bot, User, Wand2, Edit3, Settings2, Lightbulb } from 'lucide-react';
 import { useModelStore } from '../../store/model';
+import { aiLogger } from '../../utils/logger';
 
 // ============================================
 // CONFIGURATION
@@ -221,7 +222,7 @@ export const AIArchitectPanel: FC = () => {
         setSuccess(null);
         setIsModifying(true);
 
-        console.log("[AI Brain] Smart modify:", modifyCommand);
+        aiLogger.debug("Smart modify:", modifyCommand);
 
         try {
             const model = getModelForAPI();
@@ -236,7 +237,7 @@ export const AIArchitectPanel: FC = () => {
             });
 
             const data: ModifyResponse = await response.json();
-            console.log("[AI Brain] Response:", data);
+            aiLogger.debug("Response:", data);
 
             if (data.success && data.model) {
                 // Apply the modified model to the store
