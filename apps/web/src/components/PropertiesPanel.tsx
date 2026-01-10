@@ -127,6 +127,7 @@ export const PropertiesPanel: FC = () => {
     const analysisResults = useModelStore((state) => state.analysisResults);
     const updateNodePosition = useModelStore((state) => state.updateNodePosition);
     const updateMember = useModelStore((state) => state.updateMember);
+    const updateMembers = useModelStore((state) => state.updateMembers);
     const setNodeRestraints = useModelStore((state) => state.setNodeRestraints);
     const addLoad = useModelStore((state) => state.addLoad);
     const removeLoad = useModelStore((state) => state.removeLoad);
@@ -240,31 +241,41 @@ export const PropertiesPanel: FC = () => {
                 const section = STEEL_SECTIONS.find(s => s.id === sectionId);
                 if (section) {
                     const { A, I } = convertSectionToMeters(section);
+                    // Use batch update for performance - single state update for all members
+                    const updates = new Map<string, Partial<typeof selectedMembers[0]>>();
                     selectedMembers.forEach(m => {
-                        updateMember(m.id, { sectionId, A, I });
+                        updates.set(m.id, { sectionId, A, I });
                     });
+                    updateMembers(updates);
                 } else if (sectionId) {
-                    // Fallback: just update ID
+                    const updates = new Map<string, Partial<typeof selectedMembers[0]>>();
                     selectedMembers.forEach(m => {
-                        updateMember(m.id, { sectionId });
+                        updates.set(m.id, { sectionId });
                     });
+                    updateMembers(updates);
                 }
             };
 
             const handleBulkMaterialChange = (materialId: string) => {
                 const material = MATERIAL_OPTIONS.find(m => m.id === materialId);
                 if (material && material.E > 0) {
+                    // Use batch update for performance
+                    const updates = new Map<string, Partial<typeof selectedMembers[0]>>();
                     selectedMembers.forEach(m => {
-                        updateMember(m.id, { E: material.E });
+                        updates.set(m.id, { E: material.E });
                     });
+                    updateMembers(updates);
                 }
             };
 
             const handleBulkReleaseChange = (key: 'startMoment' | 'endMoment', value: boolean) => {
+                // Use batch update for performance
+                const updates = new Map<string, Partial<typeof selectedMembers[0]>>();
                 selectedMembers.forEach(m => {
                     const currentReleases = m.releases ?? { startMoment: false, endMoment: false };
-                    updateMember(m.id, { releases: { ...currentReleases, [key]: value } });
+                    updates.set(m.id, { releases: { ...currentReleases, [key]: value } });
                 });
+                updateMembers(updates);
             };
 
             return (

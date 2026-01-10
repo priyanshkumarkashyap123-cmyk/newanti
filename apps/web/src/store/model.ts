@@ -220,6 +220,8 @@ interface ModelState {
     selectMultiple: (ids: string[]) => void;        // Select multiple elements
     boxSelect: (minX: number, minZ: number, maxX: number, maxZ: number) => void; // Box selection
     selectByCoordinate: (axis: 'x' | 'y' | 'z', min: number, max: number, add?: boolean) => void; // Range selection
+    selectParallel: (axis: 'x' | 'y' | 'z', add?: boolean) => void; // Select members parallel to axis
+    selectByProperty: (property: 'sectionId' | 'E', value: string | number, add?: boolean) => void; // Select by property
 
     // Clipboard Operations (like STAAD)
     clipboard: { nodes: Node[]; members: Member[] } | null;
@@ -569,6 +571,60 @@ export const useModelStore = create<ModelState>()(
                                 if (startVal >= min && startVal <= max && endVal >= min && endVal <= max) {
                                     newSelected.add(id);
                                 }
+                            }
+                        });
+
+                        return { selectedIds: newSelected };
+                    }),
+
+                // Select members parallel to a global axis (X, Y, or Z)
+                selectParallel: (axis, add = false) =>
+                    set((state) => {
+                        const newSelected = add ? new Set(state.selectedIds) : new Set<string>();
+                        const tolerance = 0.1; // 10cm tolerance for "parallel"
+
+                        state.members.forEach((member, id) => {
+                            const start = state.nodes.get(member.startNodeId);
+                            const end = state.nodes.get(member.endNodeId);
+                            if (!start || !end) return;
+
+                            const dx = Math.abs(end.x - start.x);
+                            const dy = Math.abs(end.y - start.y);
+                            const dz = Math.abs(end.z - start.z);
+
+                            let isParallel = false;
+                            switch (axis) {
+                                case 'x':
+                                    // Parallel to X means Y and Z differences are small, X difference is significant
+                                    isParallel = dy <= tolerance && dz <= tolerance && dx > tolerance;
+                                    break;
+                                case 'y':
+                                    // Parallel to Y (vertical members/columns)
+                                    isParallel = dx <= tolerance && dz <= tolerance && dy > tolerance;
+                                    break;
+                                case 'z':
+                                    // Parallel to Z
+                                    isParallel = dx <= tolerance && dy <= tolerance && dz > tolerance;
+                                    break;
+                            }
+
+                            if (isParallel) {
+                                newSelected.add(id);
+                            }
+                        });
+
+                        return { selectedIds: newSelected };
+                    }),
+
+                // Select members by property value (e.g., all members with same section)
+                selectByProperty: (property, value, add = false) =>
+                    set((state) => {
+                        const newSelected = add ? new Set(state.selectedIds) : new Set<string>();
+
+                        state.members.forEach((member, id) => {
+                            const memberValue = member[property as keyof typeof member];
+                            if (memberValue === value) {
+                                newSelected.add(id);
                             }
                         });
 

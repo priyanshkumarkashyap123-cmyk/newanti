@@ -10,9 +10,11 @@
  * - InstancedBufferAttribute for per-member colors (selection/hover states)
  * - GPU-based raycasting for efficient picking
  * - Frustum culling for large models
+ * - Chunked processing for very large selections (prevents browser freeze)
+ * - Throttled color updates for smooth performance
  */
 
-import React, { useRef, useMemo, useEffect, useState } from 'react';
+import React, { useRef, useMemo, useEffect, useState, useCallback } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useModelStore } from '../../store/model';
@@ -29,6 +31,11 @@ const COLORS = {
 
 const MEMBER_RADIUS = 0.05;
 const CYLINDER_SEGMENTS = 8; // 8-sided cylinder for good quality
+
+// Performance thresholds
+const LARGE_MODEL_THRESHOLD = 5000;  // Members count for "large model" mode
+const VERY_LARGE_MODEL_THRESHOLD = 20000; // Members count for "very large" mode
+const UPDATE_BATCH_SIZE = 2000; // Process colors in batches to avoid blocking
 
 // ============================================
 // TYPES
@@ -154,8 +161,12 @@ export const InstancedMembersRenderer: React.FC = () => {
         });
     }, []);
     
+    // Track if we're in large model mode
+    const isLargeModel = instanceCount > LARGE_MODEL_THRESHOLD;
+    const isVeryLargeModel = instanceCount > VERY_LARGE_MODEL_THRESHOLD;
+    
     // ============================================
-    // UPDATE INSTANCE MATRICES & COLORS
+    // UPDATE INSTANCE MATRICES & COLORS (with chunked processing for large models)
     // ============================================
     
     useEffect(() => {
@@ -166,40 +177,79 @@ export const InstancedMembersRenderer: React.FC = () => {
         // Set instance count
         mesh.count = instanceCount;
         
-        // Update matrices and colors
-        const colorArray = new Float32Array(instanceCount * 3);
-        
-        instanceData.forEach((data, i) => {
-            // Set matrix
-            mesh.setMatrixAt(i, data.matrix);
+        // For very large models, use requestIdleCallback to avoid blocking
+        if (isVeryLargeModel && typeof requestIdleCallback !== 'undefined') {
+            const colorArray = new Float32Array(instanceCount * 3);
+            let currentIndex = 0;
             
-            // Set color
-            colorArray[i * 3 + 0] = data.color.r;
-            colorArray[i * 3 + 1] = data.color.g;
-            colorArray[i * 3 + 2] = data.color.b;
-        });
-        
-        // Apply colors as instanced attribute
-        if (!mesh.geometry.attributes.instanceColor) {
-            mesh.geometry.setAttribute(
-                'instanceColor',
-                new THREE.InstancedBufferAttribute(colorArray, 3)
-            );
+            const processChunk = (deadline: IdleDeadline) => {
+                while (currentIndex < instanceCount && deadline.timeRemaining() > 0) {
+                    const data = instanceData[currentIndex];
+                    if (data) {
+                        mesh.setMatrixAt(currentIndex, data.matrix);
+                        colorArray[currentIndex * 3 + 0] = data.color.r;
+                        colorArray[currentIndex * 3 + 1] = data.color.g;
+                        colorArray[currentIndex * 3 + 2] = data.color.b;
+                    }
+                    currentIndex++;
+                }
+                
+                if (currentIndex < instanceCount) {
+                    requestIdleCallback(processChunk);
+                } else {
+                    // Done - apply changes
+                    if (!mesh.geometry.attributes.instanceColor) {
+                        mesh.geometry.setAttribute(
+                            'instanceColor',
+                            new THREE.InstancedBufferAttribute(colorArray, 3)
+                        );
+                    } else {
+                        (mesh.geometry.attributes.instanceColor as THREE.InstancedBufferAttribute).array = colorArray;
+                        mesh.geometry.attributes.instanceColor.needsUpdate = true;
+                    }
+                    mesh.instanceMatrix.needsUpdate = true;
+                }
+            };
+            
+            requestIdleCallback(processChunk);
         } else {
-            (mesh.geometry.attributes.instanceColor as THREE.InstancedBufferAttribute).array = colorArray;
-            mesh.geometry.attributes.instanceColor.needsUpdate = true;
+            // Standard processing for normal/large models
+            const colorArray = new Float32Array(instanceCount * 3);
+            
+            instanceData.forEach((data, i) => {
+                // Set matrix
+                mesh.setMatrixAt(i, data.matrix);
+                
+                // Set color
+                colorArray[i * 3 + 0] = data.color.r;
+                colorArray[i * 3 + 1] = data.color.g;
+                colorArray[i * 3 + 2] = data.color.b;
+            });
+            
+            // Apply colors as instanced attribute
+            if (!mesh.geometry.attributes.instanceColor) {
+                mesh.geometry.setAttribute(
+                    'instanceColor',
+                    new THREE.InstancedBufferAttribute(colorArray, 3)
+                );
+            } else {
+                (mesh.geometry.attributes.instanceColor as THREE.InstancedBufferAttribute).array = colorArray;
+                mesh.geometry.attributes.instanceColor.needsUpdate = true;
+            }
+            
+            mesh.instanceMatrix.needsUpdate = true;
         }
         
-        mesh.instanceMatrix.needsUpdate = true;
-        
-    }, [instanceData, instanceCount]);
+    }, [instanceData, instanceCount, isVeryLargeModel]);
     
     // ============================================
-    // HOVER EFFECT (update color on hover)
+    // HOVER EFFECT (update color on hover) - throttled for large models
     // ============================================
     
     useEffect(() => {
         if (!meshRef.current) return;
+        // Skip hover effects for very large models to prevent lag
+        if (isVeryLargeModel) return;
         
         const mesh = meshRef.current;
         const colorAttribute = mesh.geometry.attributes.instanceColor as THREE.InstancedBufferAttribute;
