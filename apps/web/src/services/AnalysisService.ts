@@ -78,6 +78,7 @@ export interface AnalysisResult {
         totalTimeMs: number;
         method?: string;
         usedCloud?: boolean;
+        fallbackFromLocal?: boolean;  // True if cloud was used after local solver failed
     };
     error?: string;
 }
@@ -135,7 +136,42 @@ class AnalysisService {
 
         // Route based on node count
         if (nodeCount < CONFIG.LOCAL_THRESHOLD) {
-            return this.analyzeLocal(model, onProgress);
+            // Try local solver first
+            const localResult = await this.analyzeLocal(model, onProgress);
+            
+            // If local solver failed with memory/size error, fallback to cloud
+            if (!localResult.success && localResult.error) {
+                const errorLower = localResult.error.toLowerCase();
+                const shouldFallback = 
+                    errorLower.includes('memory') ||
+                    errorLower.includes('too large') ||
+                    errorLower.includes('exceeds') ||
+                    errorLower.includes('error 5') ||
+                    errorLower.includes('crashed') ||
+                    errorLower.includes('oom');
+                
+                if (shouldFallback && token) {
+                    console.warn('[Analysis] Local solver failed, falling back to cloud:', localResult.error);
+                    onProgress?.('uploading', 15, 'Local solver failed. Switching to cloud solver...');
+                    
+                    try {
+                        const cloudResult = await this.analyzeCloud(model, onProgress, token);
+                        if (cloudResult.success && cloudResult.stats) {
+                            cloudResult.stats.fallbackFromLocal = true;
+                        }
+                        return cloudResult;
+                    } catch (cloudError) {
+                        // Both solvers failed - return original local error
+                        console.error('[Analysis] Cloud fallback also failed:', cloudError);
+                        return {
+                            success: false,
+                            error: `Local solver: ${localResult.error}\nCloud solver: ${cloudError instanceof Error ? cloudError.message : String(cloudError)}`
+                        };
+                    }
+                }
+            }
+            
+            return localResult;
         } else {
             return this.analyzeCloud(model, onProgress, token);
         }
@@ -531,7 +567,7 @@ class AnalysisService {
                 headers,
                 body: JSON.stringify({
                     input: model,
-                    max_iterations: settings?.maxIterations || 10,
+                    max_iterations: settings?.iterations || 10,
                     tolerance: settings?.tolerance || 1e-6
                 })
             });

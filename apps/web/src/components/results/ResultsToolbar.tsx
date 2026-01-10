@@ -10,7 +10,7 @@
  * - Full Results Dashboard with enhanced visualizations
  */
 
-import React, { FC, useState, useEffect } from 'react';
+import React, { FC, useState, useEffect, useMemo } from 'react';
 import {
     TrendingDown,
     BarChart2,
@@ -30,11 +30,13 @@ import {
     Download,
     FileText,
     FileSpreadsheet,
-    Loader
+    Loader,
+    Eye
 } from 'lucide-react';
 import { useModelStore, type AnalysisResults } from '../../store/model';
 import { useUIStore } from '../../store/uiStore';
 import { AnalysisResultsDashboard, type AnalysisResultsData } from './AnalysisResultsDashboard';
+import { MemberDetailPanel, type MemberForceData } from './MemberDetailPanel';
 import { CheckpointLegalModal } from '../CheckpointLegalModal';
 import consentService from '../../services/ConsentService';
 
@@ -217,9 +219,54 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
     const [heatmapType, setHeatmapType] = useState<'displacement' | 'stress' | 'utilization'>('displacement');
     const [showDashboard, setShowDashboard] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
+    const [showMemberDetail, setShowMemberDetail] = useState(false);
+    const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
     // Store doesn't have these - we'll use local state
     const [_showReactions, _setShowReactions] = useState(true);
+
+    // Get member IDs for navigation
+    const memberIds = useMemo(() => {
+        if (!analysisResults?.memberForces) return [];
+        return Array.from(analysisResults.memberForces.keys());
+    }, [analysisResults?.memberForces]);
+
+    // Get selected member forces
+    const selectedMemberForces = useMemo((): MemberForceData | null => {
+        if (!selectedMemberId || !analysisResults?.memberForces) return null;
+        const forces = analysisResults.memberForces.get(selectedMemberId);
+        if (!forces) return null;
+        return {
+            axial: forces.axial,
+            shearY: forces.shearY,
+            shearZ: forces.shearZ ?? 0,
+            momentY: forces.momentY ?? 0,
+            momentZ: forces.momentZ,
+            torsion: forces.torsion ?? 0,
+            diagramData: forces.diagramData,
+        };
+    }, [selectedMemberId, analysisResults?.memberForces]);
+
+    // Handle member navigation
+    const handleMemberNavigate = (direction: 'prev' | 'next') => {
+        if (!selectedMemberId || memberIds.length === 0) return;
+        const currentIndex = memberIds.indexOf(selectedMemberId);
+        if (currentIndex === -1) return;
+        
+        const newIndex = direction === 'next' 
+            ? (currentIndex + 1) % memberIds.length
+            : (currentIndex - 1 + memberIds.length) % memberIds.length;
+        setSelectedMemberId(memberIds[newIndex]);
+    };
+
+    // Open member detail panel
+    const handleOpenMemberDetail = (memberId?: string) => {
+        const id = memberId || (memberIds.length > 0 ? memberIds[0] : null);
+        if (id) {
+            setSelectedMemberId(id);
+            setShowMemberDetail(true);
+        }
+    };
 
     // Initialize diagram state on mount - ensure deflection is shown by default
     useEffect(() => {
@@ -848,6 +895,14 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                         Next Steps
                     </h4>
                     <div className="flex flex-col gap-2">
+                        {/* Member Force Diagrams Button */}
+                        <button
+                            onClick={() => handleOpenMemberDetail()}
+                            className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 transition-all shadow-lg text-sm"
+                        >
+                            <Eye className="w-4 h-4" />
+                            <span className="font-medium">Member Force Diagrams</span>
+                        </button>
                         {/* Full Dashboard Button - Premium feature */}
                         <button
                             onClick={() => setShowDashboard(true)}
@@ -910,7 +965,25 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                     }}
                     canClose={true}
                 />
-            )}        </>
+            )}
+
+            {/* Member Detail Panel Modal */}
+            {showMemberDetail && selectedMemberId && selectedMemberForces && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+                    <div className="w-[90vw] h-[85vh] max-w-[900px] bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden">
+                        <MemberDetailPanel
+                            memberId={selectedMemberId}
+                            memberForces={selectedMemberForces}
+                            memberLength={5}
+                            sectionId={members.get(selectedMemberId)?.sectionId || 'ISMB300'}
+                            material="steel"
+                            onClose={() => setShowMemberDetail(false)}
+                            onNavigate={handleMemberNavigate}
+                        />
+                    </div>
+                </div>
+            )}
+        </>
     );
 };
 

@@ -1125,15 +1125,27 @@ function solveSystemWasm(entries: any[], F: Float64Array | number[], dof: number
     // Call WASM directly
     // This expects: solve_sparse_system(rows: Uint32Array, cols: Uint32Array, vals: Float64Array, forces: Float64Array, size: number)
     try {
+        // Check for memory before calling WASM
+        const estimatedBytes = (count * 16) + (dof * 8 * 2); // entries + vectors
+        if (estimatedBytes > 500 * 1024 * 1024) { // 500MB warning
+            console.warn(`[Solver] Large allocation: ${(estimatedBytes / 1024 / 1024).toFixed(0)}MB`);
+        }
+        
         const displacements = wasmModule.solve_sparse_system(rows, cols, vals, forces, dof);
         return displacements;
     } catch (e) {
         const errorStr = String(e);
-        // Provide user-friendly error messages
-        if (errorStr.includes('unstable') || errorStr.includes('singular') || errorStr.includes('indefinite')) {
+        // Provide user-friendly error messages for common failure modes
+        if (errorStr.includes('memory') || errorStr.includes('OOM') || errorStr.includes('alloc') || errorStr.includes('grow')) {
+            throw new Error(`Out of memory: Model with ${dof.toLocaleString()} DOF requires too much memory. Try:\n• Reducing model size\n• Closing other browser tabs\n• Using cloud solver for large models`);
+        } else if (errorStr.includes('unreachable') || errorStr.includes('RuntimeError')) {
+            throw new Error(`Solver crashed (Error 5): Model may be too large or malformed. Try:\n• Checking for disconnected nodes\n• Reducing model complexity\n• Using cloud solver`);
+        } else if (errorStr.includes('unstable') || errorStr.includes('singular') || errorStr.includes('indefinite')) {
             throw new Error("Structure is unstable. Please ensure:\n• All nodes have proper supports (at least 3 DOF restrained)\n• The structure is not a mechanism\n• All members are connected to the rest of the structure");
         } else if (errorStr.includes('boundary conditions')) {
             throw new Error("Missing boundary conditions. Add fixed or pinned supports to the structure.");
+        } else if (errorStr.includes('too large') || errorStr.includes('exceeds')) {
+            throw new Error(`Model exceeds solver limits: ${dof.toLocaleString()} DOF. Use cloud solver for large models.`);
         } else {
             throw new Error("Solver Failed: " + errorStr);
         }
@@ -1158,22 +1170,46 @@ async function analyze(model: ModelData): Promise<ResultData> {
     const config = model.options || {};
     const analysisType = config.analysisType || 'linear';
 
-    // Model size validation - prevent crashes on large models
+    // Model size validation - Use tiered limits based on solver capability
     const totalDOF = model.nodes.length * model.dofPerNode;
-    const MAX_DOF = 18000; // ~3000 nodes at 6 DOF/node
-    const WARN_DOF = 6000; // ~1000 nodes at 6 DOF/node
+    
+    // Tiered DOF limits:
+    // - LEGACY_MAX: Old direct solver limit (kept for compatibility)
+    // - ULTRA_MAX: Ultra solver with AMG preconditioner (handles 100k+ nodes)
+    // - ABSOLUTE_MAX: Hard memory limit to prevent browser crashes
+    const LEGACY_MAX_DOF = 18000;      // ~3000 nodes at 6 DOF/node (direct solver)
+    const ULTRA_MAX_DOF = 600000;      // ~100,000 nodes at 6 DOF/node (ultra solver)
+    const ABSOLUTE_MAX_DOF = 1200000;  // ~200,000 nodes - hard memory limit
+    const WARN_DOF = 30000;            // ~5000 nodes - show progress warning
 
-    if (totalDOF > MAX_DOF) {
+    // Check absolute memory limit
+    if (totalDOF > ABSOLUTE_MAX_DOF) {
         return {
             type: 'result',
             success: false,
-            error: `Model too large: ${model.nodes.length} nodes (${totalDOF} DOF) exceeds limit of ~3000 nodes. Please reduce model size for browser-based analysis, or use the Python backend for larger models.`,
+            error: `Model exceeds browser memory limits: ${model.nodes.length.toLocaleString()} nodes (${totalDOF.toLocaleString()} DOF). Maximum supported: ~200,000 nodes. Please use cloud computing for larger models.`,
             stats: { assemblyTimeMs: 0, solveTimeMs: 0, totalTimeMs: 0 }
         };
     }
 
-    if (totalDOF > WARN_DOF) {
-        sendProgress('assembling', 0, `Large model detected (${model.nodes.length} nodes). Analysis may take longer...`);
+    // Check if ultra solver is needed
+    const useUltraSolver = totalDOF > LEGACY_MAX_DOF;
+    
+    if (useUltraSolver && totalDOF > ULTRA_MAX_DOF) {
+        return {
+            type: 'result',
+            success: false,
+            error: `Model too large for browser: ${model.nodes.length.toLocaleString()} nodes (${totalDOF.toLocaleString()} DOF). Maximum for browser analysis: ~100,000 nodes. Use cloud solver for larger models.`,
+            stats: { assemblyTimeMs: 0, solveTimeMs: 0, totalTimeMs: 0 }
+        };
+    }
+
+    // Memory check - estimate required memory and warn if low
+    const estimatedMemoryMB = Math.ceil((totalDOF * totalDOF * 8) / (1024 * 1024) * 0.01); // Sparse ~1% density
+    if (estimatedMemoryMB > 500) {
+        sendProgress('assembling', 0, `⚠️ Large model: ${model.nodes.length.toLocaleString()} nodes. Estimated memory: ${estimatedMemoryMB}MB. Analysis may take longer...`);
+    } else if (totalDOF > WARN_DOF) {
+        sendProgress('assembling', 0, `Large model detected (${model.nodes.length.toLocaleString()} nodes). ${useUltraSolver ? 'Using Ultra Solver...' : 'Analysis may take longer...'}`);
     }
 
     // Dynamic settings

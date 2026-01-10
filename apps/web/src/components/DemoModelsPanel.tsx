@@ -38,12 +38,11 @@ interface DemoModelsPanelProps {
 export function DemoModelsPanel({ onLoadDemo }: DemoModelsPanelProps) {
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [selectedDemo, setSelectedDemo] = useState<DemoModel | null>(null);
-    const { setNodes, setMembers } = useModelStore();
+    const loadStructure = useModelStore((state) => state.loadStructure);
 
     const handleLoadDemo = (demo: DemoModel) => {
-        // Load structure into model store
-        setNodes(demo.structure.nodes);
-        setMembers(demo.structure.members);
+        // Load structure into model store using the proper store method
+        loadStructure(demo.structure.nodes, demo.structure.members);
 
         // Notify parent component
         onLoadDemo?.(demo);
