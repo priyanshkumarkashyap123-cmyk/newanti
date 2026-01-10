@@ -161,6 +161,14 @@ export interface AnalysisResults {
         displacement?: number;
         von_mises?: number;
     }>;
+    stats?: {
+        solveTimeMs: number;
+        assemblyTimeMs?: number;
+        totalTimeMs?: number;
+        method?: string;
+        usedCloud?: boolean;
+        fallbackFromLocal?: boolean;
+    };
 }
 
 // Modal Analysis Results

@@ -275,10 +275,15 @@ class AnalysisService {
                 }
             };
 
-            this.worker.addEventListener('message', handleMessage);
-            this.worker.addEventListener('error', (error) => {
-                reject(new Error(error.message));
-            });
+            if (this.worker) {
+                this.worker.addEventListener('message', handleMessage);
+                this.worker.addEventListener('error', (error) => {
+                    reject(new Error(error.message));
+                });
+            } else {
+                reject(new Error("Worker initialization failed"));
+                return;
+            }
 
 
             // Convert member loads to nodal loads if present
