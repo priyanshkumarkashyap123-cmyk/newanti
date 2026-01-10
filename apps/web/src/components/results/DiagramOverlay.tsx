@@ -342,22 +342,22 @@ export const DiagramOverlay: FC<DiagramOverlayProps> = ({
     // useThree not needed for current implementation
 
     // Get values based on diagram type
-    const values = useMemo(() => {
+    const values = useMemo((): number[] => {
         switch (type) {
-            case 'BMD': return data.moment_values; // Legacy alias for Major Axis Moment
-            case 'SFD': return data.shear_values;  // Legacy alias for Major Shear
-            case 'deflection': return data.deflection_values || data.deflection_y || [];
+            case 'BMD': return data.moment_values ?? [];
+            case 'SFD': return data.shear_values ?? [];
+            case 'deflection': return data.deflection_values ?? data.deflection_y ?? [];
 
-            case 'ShearY': return data.shear_y || data.shear_values;
-            case 'ShearZ': return data.shear_z || [];
-            case 'MomentY': return data.moment_y || [];
-            case 'MomentZ': return data.moment_z || data.moment_values;
-            case 'DeflectionY': return data.deflection_y || [];
-            case 'DeflectionZ': return data.deflection_z || [];
-            case 'Axial': return data.axial || [];
-            case 'Torsion': return data.torsion || [];
+            case 'ShearY': return data.shear_y ?? data.shear_values ?? [];
+            case 'ShearZ': return data.shear_z ?? [];
+            case 'MomentY': return data.moment_y ?? [];
+            case 'MomentZ': return data.moment_z ?? data.moment_values ?? [];
+            case 'DeflectionY': return data.deflection_y ?? [];
+            case 'DeflectionZ': return data.deflection_z ?? [];
+            case 'Axial': return data.axial ?? [];
+            case 'Torsion': return data.torsion ?? [];
 
-            default: return data.moment_values;
+            default: return data.moment_values ?? [];
         }
     }, [data, type]);
 
@@ -396,9 +396,9 @@ export const DiagramOverlay: FC<DiagramOverlayProps> = ({
         if (type === 'ShearZ' || type === 'MomentY' || type === 'DeflectionZ') plotVector = localZ.clone();
 
         const getPoint = (idx: number) => {
-            if (idx < 0 || idx >= data.x_values.length) return null;
-            const xVal = data.x_values[idx];
-            const val = values[idx];
+            if (idx < 0 || idx >= (data.x_values?.length ?? 0)) return null;
+            const xVal = data.x_values?.[idx] ?? 0;
+            const val = values[idx] ?? 0;
             const pointOnBeam = startPos.clone().add(localX.clone().multiplyScalar(xVal));
             const basePoint = pointOnBeam.clone().add(plotVector.clone().multiplyScalar(offset)); // Using plotVector as offset vector simplified
             return basePoint.add(plotVector.clone().multiplyScalar(val * scale));
@@ -416,6 +416,7 @@ export const DiagramOverlay: FC<DiagramOverlayProps> = ({
 
     // Calculate max height for scanner line
     const maxHeight = useMemo(() => {
+        if (values.length === 0) return 0.5;
         return Math.max(...values.map(Math.abs)) * scale + 0.5;
     }, [values, scale]);
 
@@ -436,14 +437,17 @@ export const DiagramOverlay: FC<DiagramOverlayProps> = ({
         const x = Math.max(0, Math.min(beamLength, projectionLength));
 
         // Find closest data point
-        const closestIndex = data.x_values.reduce((closest, xVal, i) => {
-            const closestVal = data.x_values[closest];
+        const xValues = data.x_values ?? [];
+        if (xValues.length === 0) return;
+        
+        const closestIndex = xValues.reduce((closest, xVal, i) => {
+            const closestVal = xValues[closest];
             if (closestVal === undefined) return i;
             return Math.abs(xVal - x) < Math.abs(closestVal - x) ? i : closest;
         }, 0);
 
         const value = values[closestIndex] ?? 0;
-        const xValue = data.x_values[closestIndex] ?? 0;
+        const xValue = xValues[closestIndex] ?? 0;
 
         // Position for tooltip/scanner
         const scannerPos = startPos.clone().add(beamDirection.clone().multiplyScalar(xValue));

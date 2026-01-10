@@ -76,12 +76,13 @@ export async function initUltraSolver(): Promise<boolean> {
  * Check if WebGPU is available for GPU acceleration
  */
 export async function checkGpuAvailable(): Promise<boolean> {
-  if (!navigator.gpu) {
+  const nav = navigator as Navigator & { gpu?: { requestAdapter: () => Promise<unknown | null> } };
+  if (!nav.gpu) {
     return false;
   }
   
   try {
-    const adapter = await navigator.gpu.requestAdapter();
+    const adapter = await nav.gpu.requestAdapter();
     return adapter !== null;
   } catch {
     return false;

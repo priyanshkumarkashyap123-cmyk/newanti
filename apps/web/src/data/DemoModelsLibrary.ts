@@ -4,9 +4,74 @@
  * Like STAAD.Pro demo models - users can load, analyze, learn
  */
 
-import type { GeneratedStructure } from '../services/StructureFactory';
-import type { Node, Member } from '../store/model';
+import type { GeneratedStructure, Support, Load } from '../services/StructureFactory';
+import type { Node, Member, Restraints } from '../store/model';
 import { STRUCTURAL_SECTIONS } from './StructuralSections';
+
+// Helper to convert support types to restraints
+function getSupportRestraints(support: 'FIXED' | 'PIN' | 'ROLLER' | undefined): Restraints | undefined {
+    switch (support) {
+        case 'FIXED':
+            return { fx: true, fy: true, fz: true, mx: true, my: true, mz: true };
+        case 'PIN':
+            return { fx: true, fy: true, fz: true, mx: false, my: false, mz: false };
+        case 'ROLLER':
+            return { fx: false, fy: true, fz: true, mx: false, my: false, mz: false };
+        default:
+            return undefined;
+    }
+}
+
+// Helper to generate supports from nodes with restraints
+function generateSupports(nodes: Node[]): Support[] {
+    const supports: Support[] = [];
+    nodes.forEach(node => {
+        if (node.restraints) {
+            const type = node.restraints.mx && node.restraints.my && node.restraints.mz ? 'fixed' :
+                        (node.restraints.fx && node.restraints.fy && node.restraints.fz ? 'pinned' : 'roller');
+            supports.push({
+                nodeId: node.id,
+                type,
+                restraints: node.restraints
+            });
+        }
+    });
+    return supports;
+}
+
+// Helper to create complete GeneratedStructure with defaults
+function createStructure(name: string, description: string, nodes: Node[], members: Member[], loads: Load[] = []): GeneratedStructure {
+    // Calculate bounds
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+    let minZ = Infinity, maxZ = -Infinity;
+    
+    nodes.forEach(n => {
+        minX = Math.min(minX, n.x); maxX = Math.max(maxX, n.x);
+        minY = Math.min(minY, n.y); maxY = Math.max(maxY, n.y);
+        minZ = Math.min(minZ, n.z); maxZ = Math.max(maxZ, n.z);
+    });
+    
+    return {
+        name,
+        description,
+        nodes,
+        members,
+        supports: generateSupports(nodes),
+        loads,
+        metadata: {
+            structureType: 'demo',
+            totalNodes: nodes.length,
+            totalMembers: members.length,
+            dimensions: {
+                length: maxX - minX,
+                width: maxZ - minZ,
+                height: maxY - minY
+            },
+            source: 'BeamLab Demo Library'
+        }
+    };
+}
 
 export interface DemoModel {
     id: string;
@@ -52,7 +117,7 @@ function createWarrenTrussDemo(): GeneratedStructure {
             x: i * segmentLength,
             y: height,
             z: 0,
-            support: i === 0 ? 'PIN' : (i === segments ? 'ROLLER' : undefined)
+            restraints: getSupportRestraints(i === 0 ? 'PIN' : (i === segments ? 'ROLLER' : undefined))
         });
     }
 
@@ -178,7 +243,7 @@ function createWarrenTrussDemo(): GeneratedStructure {
         I: 1080e4
     });
 
-    return { nodes, members };
+    return createStructure('Warren Truss', 'Simple Warren truss bridge for learning', nodes, members);
 }
 
 /**
@@ -189,8 +254,8 @@ function createSimpleFrameDemo(): GeneratedStructure {
     const height = 4000; // 4m
 
     const nodes: Node[] = [
-        { id: '1', x: 0, y: 0, z: 0, support: 'FIXED' },
-        { id: '2', x: width, y: 0, z: 0, support: 'FIXED' },
+        { id: '1', x: 0, y: 0, z: 0, restraints: getSupportRestraints('FIXED') },
+        { id: '2', x: width, y: 0, z: 0, restraints: getSupportRestraints('FIXED') },
         { id: '3', x: 0, y: height, z: 0 },
         { id: '4', x: width, y: height, z: 0 }
     ];
@@ -231,7 +296,7 @@ function createSimpleFrameDemo(): GeneratedStructure {
         }
     ];
 
-    return { nodes, members };
+    return createStructure('Simple Frame', 'Simple portal frame for learning', nodes, members);
 }
 
 /**
@@ -240,10 +305,10 @@ function createSimpleFrameDemo(): GeneratedStructure {
 function createBurjKhalifaDemo(): GeneratedStructure {
     const nodes: Node[] = [
         // Foundation level (0m)
-        { id: '1', x: 0, y: 0, z: 0, support: 'FIXED' },
-        { id: '2', x: 60000, y: 0, z: 0, support: 'FIXED' },
-        { id: '3', x: 0, y: 0, z: 60000, support: 'FIXED' },
-        { id: '4', x: 60000, y: 0, z: 60000, support: 'FIXED' },
+        { id: '1', x: 0, y: 0, z: 0, restraints: getSupportRestraints('FIXED') },
+        { id: '2', x: 60000, y: 0, z: 0, restraints: getSupportRestraints('FIXED') },
+        { id: '3', x: 0, y: 0, z: 60000, restraints: getSupportRestraints('FIXED') },
+        { id: '4', x: 60000, y: 0, z: 60000, restraints: getSupportRestraints('FIXED') },
 
         // Level 1 - 100m
         { id: '5', x: 0, y: 100000, z: 0 },
@@ -349,7 +414,7 @@ function createBurjKhalifaDemo(): GeneratedStructure {
         });
     }
 
-    return { nodes, members };
+    return createStructure('Burj Khalifa Simplified', 'Simplified model of Burj Khalifa', nodes, members);
 }
 
 /**
@@ -371,14 +436,14 @@ function createGoldenGateDemo(): GeneratedStructure {
 
     // Tower 1
     nodes.push(
-        { id: String(nodeId++), x: tower1X, y: 0, z: 0, support: 'FIXED' },
+        { id: String(nodeId++), x: tower1X, y: 0, z: 0, restraints: getSupportRestraints('FIXED') },
         { id: String(nodeId++), x: tower1X, y: deckHeight, z: 0 },
         { id: String(nodeId++), x: tower1X, y: towerHeight, z: 0 }
     );
 
     // Tower 2
     nodes.push(
-        { id: String(nodeId++), x: tower2X, y: 0, z: 0, support: 'FIXED' },
+        { id: String(nodeId++), x: tower2X, y: 0, z: 0, restraints: getSupportRestraints('FIXED') },
         { id: String(nodeId++), x: tower2X, y: deckHeight, z: 0 },
         { id: String(nodeId++), x: tower2X, y: towerHeight, z: 0 }
     );
@@ -458,7 +523,7 @@ function createGoldenGateDemo(): GeneratedStructure {
         });
     }
 
-    return { nodes, members };
+    return createStructure('Golden Gate Bridge Section', 'Golden Gate Bridge main span section', nodes, members);
 }
 
 /**

@@ -63,9 +63,9 @@ export function SteelDesignPage() {
 
             for (const member of membersToCheck) {
                 // Get section properties
-                const section = getSectionById(member.sectionId);
+                const section = getSectionById(member.sectionId || 'Default');
                 if (!section) {
-                    console.warn(`Section ${member.sectionId} not found`);
+                    console.warn(`Section ${member.sectionId || 'Default'} not found`);
                     continue;
                 }
 

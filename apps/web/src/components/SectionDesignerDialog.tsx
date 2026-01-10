@@ -280,6 +280,7 @@ export function SectionDesignerDialog({ open, onClose, onSave }: SectionDesigner
 
             return () => clearTimeout(timeoutId);
         }
+        return undefined;
     }, [dimensions, activeTab, shapeType]);
 
     const handleSave = () => {

@@ -3,7 +3,7 @@
  * Uses WASM solver - NO backend calls
  */
 
-import { useModelStore, type Node, type Member, type NodeLoad, type AnalysisResults } from '../store/model';
+import { useModelStore, type Node, type Member, type NodeLoad, type AnalysisResults, type MemberForceData } from '../store/model';
 
 export async function runAnalysis(): Promise<{ success: boolean; message: string }> {
     const state = useModelStore.getState();
@@ -65,17 +65,60 @@ export async function runAnalysis(): Promise<{ success: boolean; message: string
         const result = await analyzeStructure(wasmNodes, wasmElements);
 
         if (result.success) {
-            // Convert results to Maps
+            // Convert results to Maps with proper typing
+            const displacementsMap = new Map<string, { dx: number; dy: number; dz: number; rx: number; ry: number; rz: number }>();
+            Object.entries(result.displacements || {}).forEach(([id, disp]) => {
+                // Handle both array and object formats
+                const d = disp as any;
+                if (Array.isArray(d)) {
+                    displacementsMap.set(id, {
+                        dx: d[0] ?? 0, dy: d[1] ?? 0, dz: d[2] ?? 0,
+                        rx: d[3] ?? 0, ry: d[4] ?? 0, rz: d[5] ?? 0
+                    });
+                } else {
+                    displacementsMap.set(id, {
+                        dx: d.dx ?? 0, dy: d.dy ?? 0, dz: d.dz ?? 0,
+                        rx: d.rx ?? 0, ry: d.ry ?? 0, rz: d.rz ?? 0
+                    });
+                }
+            });
+
+            const reactionsMap = new Map<string, { fx: number; fy: number; fz: number; mx: number; my: number; mz: number }>();
+            Object.entries(result.reactions || {}).forEach(([id, r]) => {
+                const reaction = r as any;
+                if (Array.isArray(reaction)) {
+                    reactionsMap.set(id, {
+                        fx: reaction[0] ?? 0, fy: reaction[1] ?? 0, fz: reaction[2] ?? 0,
+                        mx: reaction[3] ?? 0, my: reaction[4] ?? 0, mz: reaction[5] ?? 0
+                    });
+                } else {
+                    reactionsMap.set(id, {
+                        fx: reaction?.fx ?? 0, fy: reaction?.fy ?? 0, fz: reaction?.fz ?? 0,
+                        mx: reaction?.mx ?? 0, my: reaction?.my ?? 0, mz: reaction?.mz ?? 0
+                    });
+                }
+            });
+
+            const memberForcesMap = new Map<string, MemberForceData>();
+            // Handle both member_forces and memberForces
+            const memberForcesData = result.member_forces || (result as any).memberForces || {};
+            Object.entries(memberForcesData).forEach(([id, f]) => {
+                const forces = f as any;
+                memberForcesMap.set(id, {
+                    axial: forces?.axial ?? 0,
+                    shearY: forces?.shearY ?? 0,
+                    shearZ: forces?.shearZ ?? 0,
+                    momentY: forces?.momentY ?? 0,
+                    momentZ: forces?.momentZ ?? 0,
+                    torsion: forces?.torsion ?? 0,
+                    diagramData: forces?.diagramData
+                });
+            });
+
             const analysisResults: AnalysisResults = {
-                displacements: new Map(
-                    Object.entries(result.displacements).map(([id, disp]) => [id, disp as number[]])
-                ),
-                reactions: new Map(
-                    Object.entries(result.reactions || {}).map(([id, r]) => [id, r as number[]])
-                ),
-                memberForces: new Map(
-                    Object.entries(result.memberForces || {}).map(([id, f]) => [id, f])
-                )
+                displacements: displacementsMap,
+                reactions: reactionsMap,
+                memberForces: memberForcesMap
             };
             state.setAnalysisResults(analysisResults);
             return { success: true, message: 'Analysis completed (WASM solver)' };

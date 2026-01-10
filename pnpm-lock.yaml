@@ -176,9 +176,15 @@ importers:
       '@tanstack/react-virtual':
         specifier: ^3.13.13
         version: 3.13.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@types/uuid':
+        specifier: ^11.0.0
+        version: 11.0.0
       autoprefixer:
         specifier: ^10.4.23
         version: 10.4.23(postcss@8.5.6)
+      axios:
+        specifier: ^1.13.2
+        version: 1.13.2
       backend-rust:
         specifier: workspace:*
         version: link:../backend-rust
@@ -236,6 +242,9 @@ importers:
       three:
         specifier: ^0.170.0
         version: 0.170.0
+      uuid:
+        specifier: ^13.0.0
+        version: 13.0.0
       zod:
         specifier: ^3.23.8
         version: 3.25.76

@@ -22,6 +22,7 @@ export const DeadLoadGenerator: FC<DeadLoadGeneratorProps> = ({ open, onClose })
     const members = useModelStore(state => state.members);
     const selectedIds = useModelStore(state => state.selectedIds);
     const addLoad = useModelStore(state => state.addLoad);
+    const addMemberLoad = useModelStore(state => state.addMemberLoad);
     const clearSelection = useModelStore(state => state.clearSelection);
 
     const [includeSelfWeight, setIncludeSelfWeight] = useState(true);
@@ -29,20 +30,10 @@ export const DeadLoadGenerator: FC<DeadLoadGeneratorProps> = ({ open, onClose })
     const [applyToSelection, setApplyToSelection] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
 
-    // Calculate member self-weight
-    const calculateMemberWeight = (memberId: string): number => {
+    // Calculate member self-weight per unit length (kN/m)
+    const calculateMemberWeightPerMeter = (memberId: string): number => {
         const member = members.get(memberId);
         if (!member) return 0;
-
-        const startNode = nodes.get(member.startNodeId);
-        const endNode = nodes.get(member.endNodeId);
-        if (!startNode || !endNode) return 0;
-
-        // Calculate member length
-        const dx = endNode.x - startNode.x;
-        const dy = endNode.y - startNode.y;
-        const dz = endNode.z - startNode.z;
-        const length = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
         // Get section properties
         const section = STEEL_SECTIONS.find(s => s.id === member.sectionId);
@@ -54,7 +45,7 @@ export const DeadLoadGenerator: FC<DeadLoadGeneratorProps> = ({ open, onClose })
         const massPerMeter = section.A * density * 1000; // kg/m
         const weightPerMeter = massPerMeter * 9.81 / 1000; // kN/m
 
-        return weightPerMeter * length; // Total weight in kN
+        return weightPerMeter;
     };
 
     const handleGenerate = () => {
@@ -62,34 +53,27 @@ export const DeadLoadGenerator: FC<DeadLoadGeneratorProps> = ({ open, onClose })
 
         try {
             let loadCounter = 1;
-            const targetNodes = applyToSelection && selectedIds.size > 0
-                ? Array.from(selectedIds).filter(id => nodes.has(id))
-                : Array.from(nodes.keys());
 
             if (includeSelfWeight) {
-                // Apply self-weight to all nodes based on connected members
-                targetNodes.forEach(nodeId => {
-                    // Find all members connected to this node
-                    const connectedMembers = Array.from(members.values()).filter(
-                        m => m.startNodeId === nodeId || m.endNodeId === nodeId
-                    );
+                // Apply self-weight as uniformly distributed load (UDL) along each member
+                const targetMembers = applyToSelection && selectedIds.size > 0
+                    ? Array.from(members.values()).filter(m => selectedIds.has(m.id))
+                    : Array.from(members.values());
 
-                    if (connectedMembers.length === 0) return;
-
-                    // Calculate total weight from connected members
-                    let totalWeight = 0;
-                    connectedMembers.forEach(member => {
-                        const memberWeight = calculateMemberWeight(member.id);
-                        // Distribute weight 50-50 to start and end nodes
-                        totalWeight += memberWeight / 2;
-                    });
-
-                    // Apply as point load in -Y direction (downward)
-                    if (totalWeight > 0) {
-                        addLoad({
+                targetMembers.forEach(member => {
+                    const weightPerMeter = calculateMemberWeightPerMeter(member.id);
+                    
+                    if (weightPerMeter > 0) {
+                        // Apply as UDL in global_y direction (downward)
+                        addMemberLoad({
                             id: `DL_SW_${loadCounter++}`,
-                            nodeId: nodeId,
-                            fy: -totalWeight, // Negative Y is downward
+                            memberId: member.id,
+                            type: 'UDL',
+                            w1: -weightPerMeter, // Negative for downward
+                            w2: -weightPerMeter, // Same as w1 for uniform distribution
+                            direction: 'global_y',
+                            startPos: 0,
+                            endPos: 1,
                         });
                     }
                 });
@@ -97,7 +81,7 @@ export const DeadLoadGenerator: FC<DeadLoadGeneratorProps> = ({ open, onClose })
 
             // Apply floor load if specified
             if (floorLoad > 0) {
-                // Find horizontal members (beams) and apply floor load
+                // Find horizontal members (beams) and apply floor load as UDL
                 const horizontalMembers = Array.from(members.values()).filter(member => {
                     const startNode = nodes.get(member.startNodeId);
                     const endNode = nodes.get(member.endNodeId);
@@ -112,24 +96,24 @@ export const DeadLoadGenerator: FC<DeadLoadGeneratorProps> = ({ open, onClose })
                     return dy < 0.5 && horizontalLength > 0.5; // Mostly horizontal
                 });
 
-                // For each horizontal member, apply floor load to connected nodes
-                const processedNodes = new Set<string>();
+                // Apply floor load as UDL on each horizontal member
                 horizontalMembers.forEach(member => {
-                    [member.startNodeId, member.endNodeId].forEach(nodeId => {
-                        if (processedNodes.has(nodeId)) return;
-                        if (applyToSelection && !selectedIds.has(nodeId)) return;
+                    if (applyToSelection && !selectedIds.has(member.id)) return;
 
-                        processedNodes.add(nodeId);
+                    // Calculate tributary width (simplified - assumes 1m tributary width)
+                    // In real scenarios, this would be calculated from floor geometry
+                    const tributaryWidth = 1.0; // m
+                    const loadPerMeter = floorLoad * tributaryWidth; // kN/m
 
-                        // Apply floor load (assuming some tributary area)
-                        // This is simplified - in reality would need tributary area calculation
-                        const tributaryLoad = floorLoad; // kN (simplified)
-
-                        addLoad({
-                            id: `DL_FLOOR_${loadCounter++}`,
-                            nodeId: nodeId,
-                            fy: -tributaryLoad,
-                        });
+                    addMemberLoad({
+                        id: `DL_FLOOR_${loadCounter++}`,
+                        memberId: member.id,
+                        type: 'UDL',
+                        w1: -loadPerMeter, // Negative for downward
+                        w2: -loadPerMeter, // Uniform
+                        direction: 'global_y',
+                        startPos: 0,
+                        endPos: 1,
                     });
                 });
             }

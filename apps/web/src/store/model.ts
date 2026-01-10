@@ -93,7 +93,7 @@ export interface Member {
     id: string;
     startNodeId: string;
     endNodeId: string;
-    sectionId: string;
+    sectionId?: string; // Made optional with default 'Default'
 
     // Section geometry for 3D rendering
     sectionType?: SectionType;
@@ -103,10 +103,15 @@ export interface Member {
     E?: number; // Young's Modulus (kN/m²)
     A?: number; // Cross-sectional Area (m²)
     I?: number; // Moment of Inertia (m⁴)
-    // Member releases (hinges)
+    // Member releases (hinges) - full 3D releases for all 6 DOFs at each end
     releases?: {
-        startMoment: boolean; // Release moment at start
-        endMoment: boolean;   // Release moment at end
+        startMoment?: boolean; // Legacy: Release moment at start
+        endMoment?: boolean;   // Legacy: Release moment at end
+        // Full 3D releases
+        fxStart?: boolean; fyStart?: boolean; fzStart?: boolean;
+        mxStart?: boolean; myStart?: boolean; mzStart?: boolean;
+        fxEnd?: boolean; fyEnd?: boolean; fzEnd?: boolean;
+        mxEnd?: boolean; myEnd?: boolean; mzEnd?: boolean;
     };
     // Rigid zone offsets (for beam-column connections)
     startOffset?: { x: number; y: number; z: number };
@@ -143,6 +148,19 @@ export interface AnalysisResults {
     displacements: Map<string, { dx: number; dy: number; dz: number; rx: number; ry: number; rz: number }>;
     reactions: Map<string, { fx: number; fy: number; fz: number; mx: number; my: number; mz: number }>;
     memberForces: Map<string, MemberForceData>;
+    // Plate/shell element results (optional)
+    plateResults?: Record<string, {
+        stress_xx?: number;
+        stress_yy?: number;
+        stress_xy?: number;
+        stress_x?: number;
+        stress_y?: number;
+        moment_xx?: number;
+        moment_yy?: number;
+        moment_xy?: number;
+        displacement?: number;
+        von_mises?: number;
+    }>;
 }
 
 // Modal Analysis Results
@@ -360,6 +378,7 @@ export const useModelStore = create<ModelState>()(
                         // Apply default material properties if not set
                         const memberWithDefaults = {
                             ...member,
+                            sectionId: member.sectionId ?? 'Default',
                             E: member.E ?? 200e6, // Steel: 200 GPa = 200e6 kN/m²
                             A: member.A ?? 0.01,  // 100 cm² = 0.01 m²
                             I: member.I ?? 1e-4   // 10000 cm⁴ = 1e-4 m⁴

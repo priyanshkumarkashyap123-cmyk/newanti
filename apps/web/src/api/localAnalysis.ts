@@ -36,7 +36,30 @@ export async function runLocalAnalysis(): Promise<{ success: boolean; message: s
 
         // 2. Assemble Sparse Matrix (in JS for now, could be moved to WASM later)
         const startTime = performance.now();
-        const { entries, forces, dof, nodeMapping } = SparseMatrixAssembler.assemble(state);
+        
+        // Convert Maps to arrays for the assembler
+        const nodesArray = Array.from(state.nodes.values());
+        const membersArray = Array.from(state.members.values());
+        
+        // Convert node loads to the format expected by assembler
+        // state.loads is an array of NodeLoad
+        const loadsArray = state.loads.map((load: { nodeId: string; fx?: number; fy?: number; fz?: number; mx?: number; my?: number; mz?: number }) => ({
+            nodeId: load.nodeId,
+            fx: load.fx,
+            fy: load.fy,
+            fz: load.fz,
+            mx: load.mx,
+            my: load.my,
+            mz: load.mz
+        }));
+        
+        const assemblerInput = {
+            nodes: nodesArray,
+            members: membersArray,
+            loads: loadsArray
+        };
+        
+        const { entries, forces, dof, nodeMapping } = SparseMatrixAssembler.assemble(assemblerInput);
         const assemblyTime = performance.now() - startTime;
         console.log(`Matrix assembled in ${assemblyTime.toFixed(2)}ms. DOF: ${dof}, Non-zeros: ${entries.length}`);
 

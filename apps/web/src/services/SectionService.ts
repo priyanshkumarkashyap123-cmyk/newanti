@@ -43,42 +43,27 @@ class SectionService {
      * Calculate properties for a custom polygon section
      */
     async calculateCustomSection(request: CustomSectionRequest) {
-        const result = await postJson(`${API_URL}/sections/custom/calculate`, request, {
+        return postJson<{ success: boolean; data: any }>(`${API_URL}/sections/custom/calculate`, request, {
             timeout: 20000 // 20 seconds for complex calculations
         });
-
-        if (!result.success) {
-            throw new Error(result.error || 'Failed to calculate section');
-        }
-        return result.data;
     }
 
     /**
      * Create standard section with properties
      */
     async createStandardSection(request: StandardSectionRequest) {
-        const result = await postJson(`${API_URL}/sections/standard/create`, request, {
+        return postJson<{ success: boolean; data: any }>(`${API_URL}/sections/standard/create`, request, {
             timeout: 15000
         });
-
-        if (!result.success) {
-            throw new Error(result.error || 'Failed to create section');
-        }
-        return result.data;
     }
 
     /**
      * Get section recommendations based on load
      */
     async getRecommendedSections(request: SectionRecommendationRequest) {
-        const result = await postJson(`${API_URL}/sections/recommend`, request, {
+        return postJson<{ success: boolean; data: any }>(`${API_URL}/sections/recommend`, request, {
             timeout: 15000
         });
-
-        if (!result.success) {
-            throw new Error(result.error || 'Failed to get recommendations');
-        }
-        return result.data;
     }
 
     /**

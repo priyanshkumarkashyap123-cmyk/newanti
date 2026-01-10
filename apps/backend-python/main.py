@@ -368,6 +368,7 @@ class MemberDistLoadInput(BaseModel):
     w2: Optional[float] = None  # End value for trapezoidal (defaults to w1)
     x1: Optional[float] = 0  # Start position (0-1 fraction)
     x2: Optional[float] = 1  # End position (0-1 fraction)
+    isRatio: Optional[bool] = True  # True if x1/x2 are ratios (0-1), False if absolute positions
     case: str = "D"  # Load case
 
 class FrameAnalysisRequest(BaseModel):
@@ -449,8 +450,8 @@ async def analyze_3d_frame(request: FrameAnalysisRequest):
                     "direction": l.direction or "Fy",
                     "w1": l.w1,
                     "w2": l.w2 if l.w2 is not None else l.w1,
-                    "startPos": l.startPos or 0,
-                    "endPos": l.endPos or 1,
+                    "startPos": l.x1 or 0,
+                    "endPos": l.x2 or 1,
                     "isRatio": l.isRatio if l.isRatio is not None else True
                 }
                 for l in (request.distributed_loads or [])
@@ -521,11 +522,32 @@ async def analyze_large_frame(request: LargeFrameAnalysisRequest):
     start_time = time.perf_counter()
     
     try:
-        from analysis.sparse_solver import analyze_large_frame as solve_large
+        # Validate request first
+        n_nodes = len(request.nodes) if request.nodes else 0
+        n_members = len(request.members) if request.members else 0
+        n_loads = len(request.node_loads) if request.node_loads else 0
         
-        n_nodes = len(request.nodes)
-        n_members = len(request.members)
+        print(f"[SPARSE] Received request: {n_nodes} nodes, {n_members} members, {n_loads} loads")
+        
+        # Validate model has required data
+        if n_nodes == 0:
+            raise HTTPException(status_code=400, detail="No nodes provided in request")
+        if n_members == 0:
+            raise HTTPException(status_code=400, detail="No members provided in request")
+        
+        # Limit model size for Azure free tier (prevent timeout/memory issues)
+        MAX_NODES = 100000
+        if n_nodes > MAX_NODES:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Model too large: {n_nodes} nodes exceeds limit of {MAX_NODES}"
+            )
+        
         n_dof = n_nodes * 6
+        print(f"[SPARSE] Total DOF: {n_dof}")
+        
+        # Import solver after validation passes
+        from analysis.sparse_solver import analyze_large_frame as solve_large
         
         print(f"[SPARSE] Large model analysis: {n_nodes} nodes ({n_dof} DOF), {n_members} members")
         
@@ -592,21 +614,23 @@ async def analyze_large_frame(request: LargeFrameAnalysisRequest):
             print(f"[SPARSE] Analysis failed: {result.get('error')}")
             raise HTTPException(status_code=400, detail=result.get('error', 'Sparse solver failed'))
         
-        print(f"[SPARSE] Analysis complete in {result['solve_time_ms']:.1f}ms (total: {total_time:.1f}ms)")
-        print(f"[SPARSE] Method: {result.get('method')}, Iterations: {result.get('iterations', 'N/A')}")
+        print(f"[SPARSE] Analysis complete in {result.get('solve_time_ms', 0):.1f}ms (total: {total_time:.1f}ms)")
+        print(f"[SPARSE] Method: {result.get('method')}, Max disp: {result.get('max_displacement_mm', 0):.3f}mm")
         
+        # Return results - already sanitized by solve_large
         return {
             "success": True,
             "displacements": result['displacements'],
             "stats": {
-                "solve_time_ms": result['solve_time_ms'],
+                "solve_time_ms": result.get('solve_time_ms', 0),
                 "total_time_ms": total_time,
                 "method": result.get('method'),
                 "iterations": result.get('iterations', 0),
                 "residual_norm": result.get('residual_norm', 0),
                 "n_nodes": n_nodes,
                 "n_members": n_members,
-                "n_dof": n_dof
+                "n_dof": n_dof,
+                "max_displacement_mm": result.get('max_displacement_mm', 0)
             }
         }
         
@@ -2202,6 +2226,55 @@ async def modify_model(request: ModelModifyRequest):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
+
+class SmartModifyRequest(BaseModel):
+    """Smart modify request - accepts model as nested object"""
+    model: Dict[str, Any]
+    command: str
+
+
+@app.post("/ai/smart-modify", tags=["AI Assistant"])
+async def smart_modify_model(request: SmartModifyRequest):
+    """
+    Smart modify - enhanced AI model modification with Gemini.
+    
+    This endpoint accepts the model as a nested object and command.
+    Uses Gemini AI for intelligent command interpretation.
+    
+    Examples:
+    - "Change all columns to ISMB500"
+    - "Add pinned support at node N1"
+    - "Remove member M5"
+    - "Make the structure 20m span"
+    - "Add a new story on top"
+    """
+    try:
+        from ai_assistant import AIModelAssistant
+        
+        model_data = request.model
+        command = request.command
+        
+        print(f"[SMART MODIFY] Command: {command}")
+        print(f"[SMART MODIFY] Model has {len(model_data.get('nodes', []))} nodes, {len(model_data.get('members', []))} members")
+        
+        # Use Gemini for intelligent command parsing if available
+        use_gemini = bool(GEMINI_API_KEY and not USE_MOCK_AI)
+        
+        assistant = AIModelAssistant(use_gemini=use_gemini, gemini_key=GEMINI_API_KEY if use_gemini else None)
+        result = assistant.smart_modify(model_data, command)
+        
+        print(f"[SMART MODIFY] Result: {result.get('message', 'Unknown')}")
+        return result
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {
+            "success": False,
+            "message": f"Error: {str(e)}",
+            "suggestions": ["Try a simpler command", "Check if nodes/members exist"]
+        }
 
 
 # ============================================

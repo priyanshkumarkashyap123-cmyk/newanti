@@ -72,20 +72,22 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({ isPro = false }) =
                 const length = Math.sqrt(dx * dx + dy * dy + dz * dz) * 1000; // mm
 
                 const forces = analysisResults.memberForces.get(id);
+                const width = (member.dimensions?.rectWidth ?? 0.3) * 1000;
+                const depth = (member.dimensions?.rectHeight ?? 0.5) * 1000;
 
                 return {
                     id,
                     type: Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > Math.abs(dz) ? 'column' : 'beam', // Simple heuristic
-                    width: ((member as any).width || 0.3) * 1000,
-                    depth: ((member as any).depth || 0.5) * 1000,
+                    width,
+                    depth,
                     length,
                     forces: {
-                        axial: forces?.axial || 0,
-                        shearY: forces?.shearY || 0,
-                        shearZ: forces?.shearZ || 0,
-                        torsion: forces?.torsion || 0,
-                        momentY: forces?.momentY || 0,
-                        momentZ: forces?.momentZ || 0
+                        axial: forces?.axial ?? 0,
+                        shearY: forces?.shearY ?? 0,
+                        shearZ: forces?.shearZ ?? 0,
+                        torsion: forces?.torsion ?? 0,
+                        momentY: forces?.momentY ?? 0,
+                        momentZ: forces?.momentZ ?? 0
                     },
                     fck: concreteGrade.fck,
                     fy: rebarGrade.fy,
@@ -93,7 +95,36 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({ isPro = false }) =
                 };
             }).filter(Boolean);
 
-            const results = await import('../api/design').then(m => m.designConcreteBeam ? m.designConcreteBeam(Array.from(designInputs)) : []);
+            // Design each member individually
+            const designModule = await import('../api/design');
+            const results: any[] = [];
+            
+            for (const input of designInputs) {
+                try {
+                    if (designModule.designConcreteBeam) {
+                        const result = await designModule.designConcreteBeam({
+                            section: {
+                                width: input.width,
+                                depth: input.depth,
+                                effectiveDepth: input.depth - input.cover - 10, // Approx effective depth
+                                cover: input.cover
+                            },
+                            forces: {
+                                Mu: Math.abs(input.forces.momentY),
+                                Vu: Math.abs(input.forces.shearY)
+                            },
+                            material: {
+                                fck: input.fck,
+                                fy: input.fy
+                            }
+                        });
+                        results.push({ id: input.id, ...result });
+                    }
+                } catch (e) {
+                    console.warn(`Failed to design member ${input.id}:`, e);
+                }
+            }
+            
             setApiResults(results);
         } catch (err) {
             console.error(err);

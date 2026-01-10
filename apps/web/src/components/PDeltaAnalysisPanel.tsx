@@ -162,7 +162,7 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
     const handleRunAnalysis = async () => {
         const nodesArray = Array.from(nodes.values());
         const membersArray = Array.from(members.values()).map((m, idx) => {
-            const section = getSectionById(m.sectionId) || STEEL_SECTIONS[0];
+            const section = getSectionById(m.sectionId || 'Default') || STEEL_SECTIONS[0];
             return {
                 id: `member-${idx}`,
                 startNodeId: m.startNodeId,

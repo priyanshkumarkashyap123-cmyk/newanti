@@ -450,6 +450,7 @@ export const useUIStore = create<UIState>()(
                 dataPanelOpen: true,
                 modals: {
                     structureWizard: false,
+                    structureGallery: false,
                     geometryTools: false,
                     interoperability: false,
                     foundationDesign: false,
@@ -460,7 +461,7 @@ export const useUIStore = create<UIState>()(
                     windLoadDialog: false,
                     seismicLoadDialog: false,
                     movingLoadDialog: false,
-                    boundaryDialog: false,
+                    boundaryConditionsDialog: false,
                     asce7SeismicDialog: false,
                     asce7WindDialog: false,
                     loadCombinationsDialog: false,
@@ -472,6 +473,8 @@ export const useUIStore = create<UIState>()(
                     pDeltaAnalysis: false,
                     modalAnalysis: false,
                     bucklingAnalysis: false,
+                    selectionToolbar: false,
+                    deadLoadGenerator: false,
                 }
             }),
             // Grid Settings

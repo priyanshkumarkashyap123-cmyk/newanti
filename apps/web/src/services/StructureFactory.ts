@@ -23,8 +23,8 @@
 import type { Node, Member } from '../store/model';
 import { STRUCTURAL_SECTIONS, getSection } from '../data/StructuralSections';
 
-// Local types for structure generation
-interface Support {
+// Exported types for structure generation
+export interface Support {
     nodeId: string;
     type: 'fixed' | 'pinned' | 'roller';
     restraints: {
@@ -37,7 +37,7 @@ interface Support {
     };
 }
 
-interface Load {
+export interface Load {
     id: string;
     nodeId: string;
     type?: string;  // 'nodal' or other load types

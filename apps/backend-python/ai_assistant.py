@@ -727,8 +727,9 @@ class ModelModifier:
 class AIModelAssistant:
     """Main AI assistant for model troubleshooting and modification"""
     
-    def __init__(self, api_key: Optional[str] = None):
-        self.api_key = api_key
+    def __init__(self, api_key: Optional[str] = None, use_gemini: bool = False, gemini_key: Optional[str] = None):
+        self.api_key = api_key or gemini_key
+        self.use_gemini = use_gemini and bool(self.api_key)
     
     def diagnose(self, model_data: Dict[str, Any]) -> Dict[str, Any]:
         """Diagnose model issues"""
@@ -782,3 +783,190 @@ class AIModelAssistant:
             'changes': result.changes,
             'model': model_data  # Model is modified in-place
         }
+    
+    def smart_modify(self, model_data: Dict[str, Any], command: str) -> Dict[str, Any]:
+        """
+        Smart modify - uses Gemini AI for intelligent command parsing if available.
+        Falls back to rule-based modification otherwise.
+        """
+        print(f"[SMART MODIFY] Processing: '{command}'")
+        print(f"[SMART MODIFY] Use Gemini: {self.use_gemini}")
+        
+        # Try Gemini-powered modification first
+        if self.use_gemini:
+            try:
+                result = self._gemini_modify(model_data, command)
+                if result.get('success'):
+                    return result
+                print("[SMART MODIFY] Gemini failed, falling back to rule-based")
+            except Exception as e:
+                print(f"[SMART MODIFY] Gemini error: {e}, falling back to rule-based")
+        
+        # Fall back to rule-based modification
+        result = ModelModifier.parse_and_modify(model_data, command)
+        
+        return {
+            'success': result.success,
+            'action': result.action,
+            'message': result.message,
+            'changes': result.changes,
+            'model': model_data,
+            'suggestions': self._get_suggestions(command) if not result.success else []
+        }
+    
+    def _gemini_modify(self, model_data: Dict[str, Any], command: str) -> Dict[str, Any]:
+        """Use Gemini to intelligently parse and execute modification commands"""
+        try:
+            import google.generativeai as genai
+            
+            genai.configure(api_key=self.api_key)
+            model = genai.GenerativeModel('gemini-pro')
+            
+            # Build prompt for Gemini
+            nodes_summary = json.dumps(model_data.get('nodes', [])[:10], indent=2)
+            members_summary = json.dumps(model_data.get('members', [])[:10], indent=2)
+            
+            prompt = f"""You are a structural engineering AI assistant. Parse the following command and return a JSON response.
+
+CURRENT MODEL (first 10 elements):
+Nodes: {nodes_summary}
+Members: {members_summary}
+Total: {len(model_data.get('nodes', []))} nodes, {len(model_data.get('members', []))} members
+
+USER COMMAND: "{command}"
+
+Analyze the command and return ONLY valid JSON in this format:
+{{
+  "action": "one of: change_section, add_support, remove_member, add_member, scale, add_load, other",
+  "targets": ["list", "of", "element", "ids", "affected"],
+  "parameters": {{
+    "section": "ISMB300",  // for change_section
+    "support_type": "FIXED",  // for add_support
+    "scale_factor": 1.5,  // for scale
+    "new_span": 15.0,  // for scaling
+    "load_value": -10.0  // for add_load
+  }},
+  "confidence": 0.95,
+  "explanation": "Brief explanation of what will be done"
+}}
+
+Only respond with valid JSON, no markdown or explanation outside the JSON."""
+            
+            response = model.generate_content(prompt)
+            raw_text = response.text.strip()
+            
+            # Clean JSON response
+            if raw_text.startswith('```'):
+                raw_text = re.sub(r'^```\w*\n?', '', raw_text)
+                raw_text = re.sub(r'\n?```$', '', raw_text)
+            
+            parsed = json.loads(raw_text)
+            
+            # Execute the parsed action
+            action = parsed.get('action', 'other')
+            targets = parsed.get('targets', [])
+            params = parsed.get('parameters', {})
+            explanation = parsed.get('explanation', '')
+            
+            changes = []
+            success = False
+            message = explanation
+            
+            if action == 'change_section':
+                section = params.get('section', 'ISMB300')
+                # Update all matching members
+                for member in model_data.get('members', []):
+                    if not targets or member.get('id') in targets or 'all' in [t.lower() for t in targets]:
+                        old_section = member.get('section_profile', member.get('sectionId', 'unknown'))
+                        member['section_profile'] = section
+                        member['sectionId'] = section
+                        changes.append(f"Changed {member['id']} from {old_section} to {section}")
+                success = len(changes) > 0
+                message = f"Changed {len(changes)} members to {section}"
+                
+            elif action == 'add_support':
+                support_type = params.get('support_type', 'FIXED')
+                for node in model_data.get('nodes', []):
+                    if node.get('id') in targets:
+                        node['support'] = support_type
+                        changes.append(f"Added {support_type} support at {node['id']}")
+                success = len(changes) > 0
+                message = f"Added {len(changes)} supports"
+                
+            elif action == 'remove_member':
+                members_to_remove = [m for m in model_data.get('members', []) if m.get('id') in targets]
+                for m in members_to_remove:
+                    model_data['members'].remove(m)
+                    changes.append(f"Removed member {m['id']}")
+                success = len(changes) > 0
+                message = f"Removed {len(changes)} members"
+                
+            elif action == 'scale':
+                scale = params.get('scale_factor', 1.0)
+                new_span = params.get('new_span')
+                
+                if new_span:
+                    # Calculate current span and compute scale factor
+                    nodes = model_data.get('nodes', [])
+                    if nodes:
+                        xs = [n.get('x', 0) for n in nodes]
+                        current_span = max(xs) - min(xs) if xs else 1
+                        if current_span > 0:
+                            scale = new_span / current_span
+                
+                for node in model_data.get('nodes', []):
+                    node['x'] = node.get('x', 0) * scale
+                    node['y'] = node.get('y', 0) * scale
+                    node['z'] = node.get('z', 0) * scale
+                    changes.append(f"Scaled node {node['id']}")
+                    
+                success = len(changes) > 0
+                message = f"Scaled model by factor {scale:.2f}"
+            
+            else:
+                # Unknown action - try rule-based fallback
+                return {'success': False, 'message': f"Unknown action: {action}"}
+            
+            return {
+                'success': success,
+                'action': action,
+                'message': message,
+                'changes': changes,
+                'model': model_data,
+                'parsed': parsed
+            }
+            
+        except Exception as e:
+            print(f"[GEMINI MODIFY] Error: {e}")
+            return {'success': False, 'message': str(e)}
+    
+    def _get_suggestions(self, command: str) -> List[str]:
+        """Generate helpful suggestions based on the command"""
+        suggestions = []
+        
+        cmd_lower = command.lower()
+        
+        if 'section' in cmd_lower or 'column' in cmd_lower or 'beam' in cmd_lower:
+            suggestions.append("Try: 'Change columns to ISMB400'")
+            suggestions.append("Try: 'Change all members to ISMB350'")
+        
+        if 'support' in cmd_lower or 'fix' in cmd_lower:
+            suggestions.append("Try: 'Add fixed support at N1'")
+            suggestions.append("Try: 'Make N1 and N2 pinned'")
+        
+        if 'remove' in cmd_lower or 'delete' in cmd_lower:
+            suggestions.append("Try: 'Remove member M5'")
+        
+        if 'span' in cmd_lower or 'length' in cmd_lower or 'scale' in cmd_lower:
+            suggestions.append("Try: 'Set span to 15m'")
+            suggestions.append("Try: 'Scale model by 1.5'")
+        
+        if not suggestions:
+            suggestions = [
+                "Try: 'Change columns to ISMB500'",
+                "Try: 'Add support at N1'",
+                "Try: 'Remove member M3'"
+            ]
+        
+        return suggestions[:3]
+

@@ -72,21 +72,25 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
 
         const forcePoints: ForcePoint[] = dd.x_values.map((x, i) => ({
             x,
-            Mz: dd.moment_y?.[i] || 0,
-            Fy: dd.shear_y?.[i] || 0,
-            My: dd.moment_z?.[i] || 0,
-            Fz: dd.shear_z?.[i] || 0,
-            Fx: dd.axial?.[i] || 0,
-            Tx: dd.torsion?.[i] || 0,
+            Mz: dd.moment_y?.[i] ?? 0,
+            Fy: dd.shear_y?.[i] ?? 0,
+            My: dd.moment_z?.[i] ?? 0,
+            Fz: dd.shear_z?.[i] ?? 0,
+            Fx: dd.axial?.[i] ?? 0,
+            Tx: dd.torsion?.[i] ?? 0,
         }));
 
-        const shearValues = forcePoints.map(p => Math.max(Math.abs(p.Fy), Math.abs(p.Fz)));
-        const momentValues = forcePoints.map(p => Math.max(Math.abs(p.Mz), Math.abs(p.My)));
-        const axialValues = forcePoints.map(p => p.Fx);
+        const shearValues = forcePoints.map(p => Math.max(Math.abs(p.Fy), Math.abs(p.Fz ?? 0)));
+        const momentValues = forcePoints.map(p => Math.max(Math.abs(p.Mz), Math.abs(p.My ?? 0)));
+        const axialValues = forcePoints.map(p => p.Fx ?? 0);
+
+        const length = dd.x_values[dd.x_values.length - 1] ?? memberLength ?? 1;
 
         return {
             memberId,
-            length: dd.x_values[dd.x_values.length - 1] || memberLength,
+            length,
+            startNode: { x: 0, y: 0, z: 0 },
+            endNode: { x: length, y: 0, z: 0 },
             forcePoints,
             maxValues: {
                 shear: Math.max(...shearValues, 0.01),
@@ -136,15 +140,15 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
     }, [memberForces, memberId, memberLength, material, designCode]);
 
     // Diagram config
-    const getConfig = (type: 'SFD' | 'BMD' | 'AFD' | 'ALL'): DiagramConfig => ({
+    const getConfig = (type: 'SFD' | 'BMD' | 'AFD' | 'ALL'): Partial<DiagramConfig> => ({
         showShear: type === 'SFD' || type === 'ALL',
         showMoment: type === 'BMD' || type === 'ALL',
         showAxial: type === 'AFD' || type === 'ALL',
         showTorsion: false,
         showGrid: true,
-        showLabels: true,
+        showValues: true,
         colorScheme: 'engineering',
-        scale: 'auto',
+        scale: 1,
     });
 
     // Status colors

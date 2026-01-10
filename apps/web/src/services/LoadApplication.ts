@@ -4,7 +4,7 @@
  * Converts realistic load definitions to node/member loads
  */
 
-import type { Node, Load, MemberLoad } from '../store/model';
+import type { Node, NodeLoad, MemberLoad } from '../store/model';
 import { getRealisticLoads, type LoadDefinition } from './RealisticLoads';
 
 /**
@@ -15,14 +15,14 @@ export function applyRealisticLoadsToStructure(
     structureId: string,
     nodes: Node[],
     useFactoredLoads: boolean = false
-): { nodeLoads: Load[]; memberLoads: MemberLoad[] } {
+): { nodeLoads: NodeLoad[]; memberLoads: MemberLoad[] } {
     const loadDef = getRealisticLoads(structureId);
     if (!loadDef) {
         console.warn(`No realistic loads defined for structure: ${structureId}`);
         return { nodeLoads: [], memberLoads: [] };
     }
 
-    const nodeLoads: Load[] = [];
+    const nodeLoads: NodeLoad[] = [];
     const memberLoads: MemberLoad[] = [];
 
     // Calculate total gravity load (dead + live)

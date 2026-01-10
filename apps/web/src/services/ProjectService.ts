@@ -31,11 +31,7 @@ export const ProjectService = {
             timeout: 10000
         });
 
-        if (!result.success) {
-            throw new Error(result.error || 'Failed to fetch projects');
-        }
-
-        return result.data?.projects || [];
+        return result.projects || [];
     },
 
     /**
@@ -49,11 +45,7 @@ export const ProjectService = {
             timeout: 10000
         });
 
-        if (!result.success) {
-            throw new Error(result.error || 'Failed to fetch project');
-        }
-
-        return result.data!.project;
+        return result.project;
     },
 
     /**

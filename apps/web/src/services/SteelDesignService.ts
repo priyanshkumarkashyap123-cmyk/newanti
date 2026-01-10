@@ -544,10 +544,10 @@ export async function designSteelMembers(members: SteelDesignResults[], code: 'A
                 effective_length_factor_z: 1.0,
                 section: {
                     area: m.section.A,
-                    Ixx: m.section.Ixx,
-                    Iyy: m.section.Iyy,
+                    Ixx: m.section.Ix,
+                    Iyy: m.section.Iy,
                     J: m.section.J || 0,
-                    Zz: m.section.Zx, // Mapping Sx to Zz (Elastic)
+                    Zz: m.section.Sx, // Mapping Sx to Zz (Elastic)
                     Zy: m.section.Sy,
                     Zpz: m.section.Zx, // Mapping Zx to Zpz (Plastic - assumption for API mapping)
                     Zpy: m.section.Zy,

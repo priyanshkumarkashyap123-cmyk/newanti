@@ -6,11 +6,12 @@ import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Activity, Play, Pause, Waves, Calculator } from 'lucide-react';
-import { useStructuralStore } from '../store/model';
+import { useModelStore } from '../store/model';
 import { ClientDesignService } from '../services/ClientDesignService';
 
 export function DynamicsPanel() {
-    const { nodes, elements } = useStructuralStore();
+    const nodes = useModelStore(state => state.nodes);
+    const members = useModelStore(state => state.members);
 
     // Modal Analysis State
     const [numModes, setNumModes] = useState(3);
@@ -30,10 +31,10 @@ export function DynamicsPanel() {
     const handleRunAnalysis = async () => {
         setLoading(true);
         try {
-            const nodeArray = Object.values(nodes);
-            const elementArray = Object.values(elements);
+            const nodeArray = Array.from(nodes.values());
+            const memberArray = Array.from(members.values());
 
-            const res = await ClientDesignService.runModalAnalysis(nodeArray, elementArray, numModes);
+            const res = await ClientDesignService.runModalAnalysis(nodeArray, memberArray, numModes);
 
             if (res && res.success) {
                 setResults(res);

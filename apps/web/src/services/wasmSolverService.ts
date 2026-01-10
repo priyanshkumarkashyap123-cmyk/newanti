@@ -9,6 +9,7 @@
 
 import init, {
     solve_structure_wasm,
+    solve_3d_frame,
     solve_p_delta,
     analyze_buckling,
     get_solver_info
@@ -169,8 +170,8 @@ export async function analyzeStructure(
 
         const startTime = performance.now();
 
-        // Call Rust WASM function
-        const result = solve_structure_wasm(
+        // Call Rust WASM function - use solve_3d_frame for full 3D analysis with loads
+        const result = solve_3d_frame(
             nodes,
             elements,
             pointLoads,

@@ -114,7 +114,7 @@ export const MembersRenderer: FC<MembersRendererProps> = ({
             if (!startNode || !endNode) continue;
 
             // Get section dimensions from lookup
-            const sectionData = getSectionDataForRendering(member.sectionId);
+            const sectionData = getSectionDataForRendering(member.sectionId || 'Default');
 
             // Create node data for StructuralMember
             const startNodeData: NodeData = {

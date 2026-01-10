@@ -90,7 +90,7 @@ export class ClientDesignService {
 
     static async runResponseSpectrum(
         modalResults: any,
-        params: { zone: number, importance: number, reduction: number, soil: number }
+        params: { zone: number, importance: number, reduction: number, soil: number, scaleX?: number, scaleZ?: number }
     ): Promise<any | null> {
         if (!this.wasm) await this.init();
         if (!this.wasm) return null;

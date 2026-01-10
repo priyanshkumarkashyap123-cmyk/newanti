@@ -144,8 +144,8 @@ export const InteroperabilityDialog: FC<InteroperabilityDialogProps> = ({ isOpen
                     const endNode = nodes.get(member.endNodeId);
                     if (startNode && endNode) {
                         const section: PhysicalMemberSection = {
-                            id: member.sectionId,
-                            name: member.sectionId,
+                            id: member.sectionId || 'Default',
+                            name: member.sectionId || 'Default',
                             width: 0.2,
                             height: 0.3,
                             area: member.A || 0.01,

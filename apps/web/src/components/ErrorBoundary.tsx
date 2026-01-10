@@ -35,7 +35,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
         return { hasError: true, error };
     }
 
-    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
         this.setState({
             error,
             errorInfo,
@@ -100,7 +100,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
         URL.revokeObjectURL(url);
     };
 
-    render(): ReactElement {
+    override render(): React.ReactNode {
         if (this.state.hasError) {
             if (this.props.fallback) {
                 return this.props.fallback as ReactElement;

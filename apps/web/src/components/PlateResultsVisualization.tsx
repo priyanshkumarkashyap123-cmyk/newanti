@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useStructuralStore } from '../store/model';
+import { useModelStore } from '../store/model';
 import * as THREE from 'three';
 
 interface PlateResultsVisualizationProps {
@@ -14,16 +14,16 @@ interface PlateResultsVisualizationProps {
  * Can be used inside the main Three.js Canvas.
  */
 export function PlateResultsVisualization({ resultType = 'von_mises', scale = 1.0 }: PlateResultsVisualizationProps) {
-    const { elements, analysisResults } = useStructuralStore();
+    const members = useModelStore(state => state.members);
+    const analysisResults = useModelStore(state => state.analysisResults);
 
     // Filter for plate/shell elements (property type check or explicit flag)
     // Assuming elements with 4 node IDs are plates for now
-    const plates = useMemo(() =>
-        Object.values(elements).filter(el =>
-            el.nodeIds && el.nodeIds.length === 4
-        ),
-        [elements]
-    );
+    const plates = useMemo(() => {
+        // For now, return empty array as plates aren't stored in the standard store
+        // TODO: Add plates to store if needed
+        return [] as Array<{ id: string; nodeIds: string[] }>;
+    }, [members]);
 
     // Color scale helper (Blue -> Red)
     const getColor = (value: number, min: number, max: number) => {

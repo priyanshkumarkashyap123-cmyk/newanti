@@ -15,7 +15,7 @@
  */
 
 import React, { useRef, useMemo, useEffect, useState, useCallback } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useFrame, useThree, ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useModelStore } from '../../store/model';
 
@@ -275,7 +275,7 @@ export const InstancedMembersRenderer: React.FC = () => {
     // RAYCASTING FOR SELECTION
     // ============================================
     
-    const handlePointerMove = (event: THREE.Event) => {
+    const handlePointerMove = (event: ThreeEvent<PointerEvent>) => {
         if (!meshRef.current) return;
         
         event.stopPropagation();
@@ -300,7 +300,7 @@ export const InstancedMembersRenderer: React.FC = () => {
         document.body.style.cursor = 'default';
     };
     
-    const handleClick = (event: THREE.Event) => {
+    const handleClick = (event: ThreeEvent<MouseEvent>) => {
         if (!meshRef.current) return;
         
         event.stopPropagation();

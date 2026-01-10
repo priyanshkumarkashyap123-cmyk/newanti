@@ -42,7 +42,7 @@ export function WorkerValidation() {
 
             if (res.success) {
                 addLog('✅ Analysis Success!');
-                addLog(`Method: ${res.stats.method}`);
+                addLog(`Method: ${(res.stats as any)?.method || 'Direct Stiffness'}`);
                 addLog(`Time: ${res.stats.totalTimeMs.toFixed(0)}ms`);
 
                 // 4. Verify Results

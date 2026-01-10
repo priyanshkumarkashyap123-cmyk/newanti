@@ -51,13 +51,14 @@ export class AIArchitect {
             const height = intent.height || 5;
             const bays = intent.bays || Math.ceil(span / 5); // Default 5m panels
 
-            // Call Warren Bridge Generator
-            // Note: generateWarrenBridge might need adaptation if it expects specific args
-            // Assuming it accepts (span, height, bays).
-            // We need to check `generateWarrenBridge` signature.
-            // For now, assume it returns a ModelData-like object.
-
-            return generateWarrenBridge(span, height, bays, 5); // width=5 default
+            // Call Warren Bridge Generator and extend with required properties
+            const bridgeData = generateWarrenBridge(span, height, bays, 5); // width=5 default
+            return {
+                ...bridgeData,
+                materials: [],
+                sections: [],
+                dofPerNode: 3
+            };
         }
 
         if (intent.type === 'tower') {

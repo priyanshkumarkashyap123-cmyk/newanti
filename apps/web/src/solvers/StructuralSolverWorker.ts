@@ -24,7 +24,7 @@
  * └─────────────────┴──────────┴──────────────────┴────────────────┘
  */
 
-import { matmul, solve, transpose, zeros } from 'mathjs';
+import { multiply, lusolve, transpose, zeros } from 'mathjs';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -224,7 +224,7 @@ function computeFrame2DStiffness(E: number, A: number, I: number, L: number, x1:
   ];
   
   // K_global = T^T × K_local × T
-  const K_global = matmul(matmul(transpose(T), K_local), T);
+  const K_global = multiply(multiply(transpose(T), K_local), T);
   
   return K_global as number[][];
 }
@@ -321,7 +321,7 @@ function computeFrame3DStiffness(E: number, A: number, Iy: number, Iz: number, J
   }
   
   // K_global = T^T × K_local × T
-  const K_global = matmul(matmul(transpose(T), K_local), T);
+  const K_global = multiply(multiply(transpose(T), K_local), T);
   
   return K_global as number[][];
 }
@@ -355,7 +355,7 @@ function computeTruss2DStiffness(E: number, A: number, L: number, x1: number, y1
   ];
   
   // K_global = T^T × K_local × T
-  const K_global = matmul(matmul(transpose(T), K_local), T);
+  const K_global = multiply(multiply(transpose(T), K_local), T);
   
   return K_global as number[][];
 }
@@ -408,7 +408,7 @@ function computeTruss3DStiffness(E: number, A: number, L: number, x1: number, y1
   ];
   
   // K_global = T^T × K_local × T
-  const K_global = matmul(matmul(transpose(T), K_local), T);
+  const K_global = multiply(multiply(transpose(T), K_local), T);
   
   return K_global as number[][];
 }
@@ -559,7 +559,7 @@ export async function solveStructure(input: StructuralAnalysisInput): Promise<An
     F_reduced[i][0] = F_global[free_dof[i]][0];
   }
   
-  const u_reduced = solve(K_reduced, F_reduced) as number[][];
+  const u_reduced = lusolve(K_reduced, F_reduced) as number[][];
   
   // Expand solution to full system
   const u_global = zeros(total_dof, 1) as number[][];
@@ -609,7 +609,7 @@ export async function solveStructure(input: StructuralAnalysisInput): Promise<An
   
   // Compute reactions
   const reactions = new Map<number, number[]>();
-  const R_global = matmul(K_global, u_global);
+  const R_global = multiply(K_global, u_global);
   
   for (const node of input.nodes) {
     const dof_offset = node.id * dof_per_node;

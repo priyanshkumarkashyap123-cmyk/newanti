@@ -190,11 +190,11 @@ export const ReportsPage = () => {
                                         {Array.from(analysisResults.memberForces.entries()).slice(0, 15).map(([id, forces]) => (
                                             <tr key={id} className="hover:bg-slate-50/50">
                                                 <td className="px-4 py-2 font-medium text-slate-900">{id}</td>
-                                                <td className="px-4 py-2 text-slate-600 text-right font-mono">{(forces[0] || 0).toFixed(2)}</td>
-                                                <td className="px-4 py-2 text-slate-600 text-right font-mono">{(forces[1] || 0).toFixed(2)}</td>
-                                                <td className="px-4 py-2 text-slate-600 text-right font-mono">{(forces[2] || 0).toFixed(2)}</td>
-                                                <td className="px-4 py-2 text-slate-600 text-right font-mono">{(forces[5] || 0).toFixed(2)}</td>
-                                                <td className="px-4 py-2 text-slate-600 text-right font-mono">{(forces[4] || 0).toFixed(2)}</td>
+                                                <td className="px-4 py-2 text-slate-600 text-right font-mono">{(forces.axial || 0).toFixed(2)}</td>
+                                                <td className="px-4 py-2 text-slate-600 text-right font-mono">{(forces.shearY || 0).toFixed(2)}</td>
+                                                <td className="px-4 py-2 text-slate-600 text-right font-mono">{(forces.shearZ || 0).toFixed(2)}</td>
+                                                <td className="px-4 py-2 text-slate-600 text-right font-mono">{(forces.momentZ || 0).toFixed(2)}</td>
+                                                <td className="px-4 py-2 text-slate-600 text-right font-mono">{(forces.momentY || 0).toFixed(2)}</td>
                                             </tr>
                                         ))}
                                         {analysisResults.memberForces.size > 15 && (

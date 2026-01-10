@@ -77,7 +77,8 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isOpen, onClos
             }
 
             // Convert nodes to 3D format for future WASM integration
-            const nodes3D = nodes.map(n => ({
+            const nodesArray = Array.from(nodes.values());
+            const nodes3D = nodesArray.map((n: { id: string; x: number; y: number; z: number; position?: { x: number; y: number; z: number }; restraints?: { fx?: boolean; fy?: boolean; fz?: boolean; mx?: boolean; my?: boolean; mz?: boolean } }) => ({
                 id: n.id,
                 x: n.position?.x || n.x || 0,
                 y: n.position?.y || n.y || 0,
@@ -195,7 +196,7 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isOpen, onClos
                     </button>
 
                     <div className="ml-auto text-xs text-slate-500">
-                        {nodes.length} nodes, {members.length} members
+                        {nodes.size} nodes, {members.size} members
                     </div>
                 </div>
 

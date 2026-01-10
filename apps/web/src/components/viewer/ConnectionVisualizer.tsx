@@ -12,10 +12,10 @@ import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
-import type { Connection, ConnectionType } from '../data/ConnectionTypes';
-import { getConnectionVisualProperties } from '../data/ConnectionTypes';
-import { useModelStore } from '../store/model';
-import { useUIStore } from '../store/uiStore';
+import type { Connection, ConnectionType } from '../../data/ConnectionTypes';
+import { getConnectionVisualProperties } from '../../data/ConnectionTypes';
+import { useModelStore } from '../../store/model';
+import { useUIStore } from '../../store/uiStore';
 
 // ============================================
 // CONNECTION BALL COMPONENT

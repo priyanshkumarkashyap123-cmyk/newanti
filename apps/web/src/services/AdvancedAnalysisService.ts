@@ -102,35 +102,20 @@ export class AdvancedAnalysisService {
   }
 
   async modalAnalysis(req: ModalAnalysisRequest): Promise<ModalAnalysisResponse> {
-    const result = await postJson<ModalAnalysisResponse>(`${this.baseUrl}/modal`, req, {
+    return postJson<ModalAnalysisResponse>(`${this.baseUrl}/modal`, req, {
       timeout: 30000 // 30 seconds for modal analysis
     });
-
-    if (!result.success) {
-      throw new Error(`Modal analysis failed: ${result.error || 'Unknown error'}`);
-    }
-    return result.data!;
   }
 
   async timeHistoryAnalysis(req: TimeHistoryRequest): Promise<TimeHistoryResponse> {
-    const result = await postJson<TimeHistoryResponse>(`${this.baseUrl}/time-history`, req, {
+    return postJson<TimeHistoryResponse>(`${this.baseUrl}/time-history`, req, {
       timeout: 60000 // 60 seconds for time-history
     });
-
-    if (!result.success) {
-      throw new Error(`Time-history analysis failed: ${result.error || 'Unknown error'}`);
-    }
-    return result.data!;
   }
 
   async seismicAnalysis(req: SeismicAnalysisRequest): Promise<SeismicAnalysisResponse> {
-    const result = await postJson<SeismicAnalysisResponse>(`${this.baseUrl}/seismic`, req, {
+    return postJson<SeismicAnalysisResponse>(`${this.baseUrl}/seismic`, req, {
       timeout: 30000 // 30 seconds for seismic
     });
-
-    if (!result.success) {
-      throw new Error(`Seismic analysis failed: ${result.error || 'Unknown error'}`);
-    }
-    return result.data!;
   }
 }
