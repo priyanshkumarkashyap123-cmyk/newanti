@@ -18,7 +18,10 @@ import {
     ChevronRight,
     Loader2,
     TrendingUp,
-    FileText
+    FileText,
+    Cloud,
+    BookOpen,
+    Layout
 } from 'lucide-react';
 import { useAuth } from '../providers/AuthProvider';
 
@@ -300,15 +303,15 @@ export const UserDashboard: FC = () => {
                     </h3>
                     <div className="grid grid-cols-2 gap-4">
                         {[
-                            { icon: '♾️', label: 'Unlimited Analyses' },
-                            { icon: '☁️', label: 'Cloud Project Save' },
-                            { icon: '📄', label: 'Clean PDF Reports' },
-                            { icon: '📐', label: 'IS 456 Design Codes' },
-                            { icon: '📦', label: '30+ Templates' },
-                            { icon: '⚡', label: 'Priority Solver' }
+                            { icon: <BarChart3 className="w-4 h-4 text-blue-400" />, label: 'Unlimited Analyses' },
+                            { icon: <Cloud className="w-4 h-4 text-purple-400" />, label: 'Cloud Project Save' },
+                            { icon: <FileText className="w-4 h-4 text-green-400" />, label: 'Clean PDF Reports' },
+                            { icon: <BookOpen className="w-4 h-4 text-yellow-400" />, label: 'IS 456 Design Codes' },
+                            { icon: <Layout className="w-4 h-4 text-pink-400" />, label: '30+ Templates' },
+                            { icon: <Zap className="w-4 h-4 text-orange-400" />, label: 'Priority Solver' }
                         ].map((feature, i) => (
                             <div key={i} className="flex items-center gap-2 text-sm">
-                                <span>{feature.icon}</span>
+                                {feature.icon}
                                 <span className="text-zinc-400">{feature.label}</span>
                             </div>
                         ))}

@@ -119,7 +119,7 @@ export interface SolverConfig {
 /** Output: Progress events */
 export interface ProgressEvent {
     type: 'progress';
-    stage: 'assembling' | 'applying_bc' | 'solving' | 'extracting';
+    stage: 'assembling' | 'applying_bc' | 'solving' | 'extracting' | 'uploading';
     percent: number;
     message: string;
 }
@@ -147,9 +147,11 @@ export interface ResultData {
 
 /** Request message from main thread */
 interface WorkerRequest {
-    type: 'analyze';
+    type: 'analyze' | 'analyze_cloud';
     requestId: string;
     model: ModelData;
+    url?: string; // For cloud analysis
+    token?: string; // For cloud analysis auth
 }
 
 // ============================================
@@ -1130,7 +1132,7 @@ function solveSystemWasm(entries: any[], F: Float64Array | number[], dof: number
         if (estimatedBytes > 500 * 1024 * 1024) { // 500MB warning
             console.warn(`[Solver] Large allocation: ${(estimatedBytes / 1024 / 1024).toFixed(0)}MB`);
         }
-        
+
         const displacements = wasmModule.solve_sparse_system(rows, cols, vals, forces, dof);
         return displacements;
     } catch (e) {
@@ -1172,7 +1174,7 @@ async function analyze(model: ModelData): Promise<ResultData> {
 
     // Model size validation - Use tiered limits based on solver capability
     const totalDOF = model.nodes.length * model.dofPerNode;
-    
+
     // Tiered DOF limits:
     // - LEGACY_MAX: Old direct solver limit (kept for compatibility)
     // - ULTRA_MAX: Ultra solver with AMG preconditioner (handles 100k+ nodes)
@@ -1194,7 +1196,7 @@ async function analyze(model: ModelData): Promise<ResultData> {
 
     // Check if ultra solver is needed
     const useUltraSolver = totalDOF > LEGACY_MAX_DOF;
-    
+
     if (useUltraSolver && totalDOF > ULTRA_MAX_DOF) {
         return {
             type: 'result',
@@ -1659,7 +1661,88 @@ async function analyze(model: ModelData): Promise<ResultData> {
 self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
     const request = event.data;
 
-    if (request.type === 'analyze') {
+    if (request.type === 'analyze_cloud') {
+        // --- CLOUD ANALYSIS (Offload main thread) ---
+        try {
+            sendProgress('uploading', 0, 'Preparing data for cloud solver...');
+
+            const { model, url, token } = request;
+
+            // Serialize in worker to avoid main thread blocking
+            const body = JSON.stringify({
+                nodes: model.nodes.map(n => ({
+                    id: n.id,
+                    x: n.x,
+                    y: n.y,
+                    z: n.z,
+                    // Map restraints to backend format
+                    support: n.restraints?.fx && n.restraints?.fy && n.restraints?.fz
+                        ? (n.restraints?.mx && n.restraints?.my && n.restraints?.mz ? 'fixed' : 'pinned')
+                        : n.restraints?.fy ? 'roller' : 'none'
+                })),
+                members: model.members.map(m => ({
+                    id: m.id,
+                    startNodeId: m.startNodeId,
+                    endNodeId: m.endNodeId,
+                    E: m.E,
+                    A: m.A,
+                    Iy: m.I,
+                    Iz: m.I,
+                    J: m.I * 0.1, // Approximate J if not provided
+                    G: m.E / (2 * (1 + 0.3)) // Poisson 0.3
+                })),
+                node_loads: model.loads.map(l => ({
+                    nodeId: l.nodeId,
+                    fx: l.fx || 0,
+                    fy: l.fy || 0,
+                    fz: l.fz || 0,
+                    mx: l.mx || 0,
+                    my: l.my || 0,
+                    mz: l.mz || 0
+                })),
+                method: 'auto'
+            });
+
+            sendProgress('uploading', 20, 'Sending to High-Performance Solver...');
+
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            const response = await fetch(`${url}/analyze/large-frame`, {
+                method: 'POST',
+                headers,
+                body
+            });
+
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`Cloud solver error (${response.status}): ${errText}`);
+            }
+
+            const result = await response.json();
+
+            if (!result.success) {
+                throw new Error(result.error || 'Unknown solver error');
+            }
+
+            self.postMessage({
+                type: 'result',
+                requestId: request.requestId,
+                success: true,
+                data: result, // Pass raw backend result
+                stats: result.stats
+            });
+
+        } catch (error) {
+            self.postMessage({
+                type: 'result',
+                requestId: request.requestId,
+                success: false,
+                error: error instanceof Error ? error.message : String(error)
+            });
+        }
+
+    } else if (request.type === 'analyze') {
         const result = await analyze(request.model);
 
         // Use Transferable Objects for zero-copy transfer

@@ -18,3 +18,20 @@ export {
 } from './StructuralMesh';
 export { StructuralCanvas } from './StructuralCanvas';
 export { WgpuCanvas } from './WgpuCanvas';
+
+// Ultra-light renderers for massive models (50,000+ members)
+export { UltraLightMembersRenderer } from './UltraLightMembersRenderer';
+export { UltraLightNodesRenderer } from './UltraLightNodesRenderer';
+
+// Standard instanced renderers
+export { InstancedMembersRenderer } from './InstancedMembersRenderer';
+export { InstancedNodesRenderer } from './InstancedNodesRenderer';
+
+// Safe wrapper with error boundary and memory monitoring
+export { 
+    SafeCanvasWrapper, 
+    CanvasErrorBoundary, 
+    PerformanceWarning,
+    useMemoryMonitor,
+    useModelSizeCheck 
+} from './SafeCanvasWrapper';

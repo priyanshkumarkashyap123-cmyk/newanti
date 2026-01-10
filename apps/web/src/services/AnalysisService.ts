@@ -138,22 +138,22 @@ class AnalysisService {
         if (nodeCount < CONFIG.LOCAL_THRESHOLD) {
             // Try local solver first
             const localResult = await this.analyzeLocal(model, onProgress);
-            
+
             // If local solver failed with memory/size error, fallback to cloud
             if (!localResult.success && localResult.error) {
                 const errorLower = localResult.error.toLowerCase();
-                const shouldFallback = 
+                const shouldFallback =
                     errorLower.includes('memory') ||
                     errorLower.includes('too large') ||
                     errorLower.includes('exceeds') ||
                     errorLower.includes('error 5') ||
                     errorLower.includes('crashed') ||
                     errorLower.includes('oom');
-                
+
                 if (shouldFallback && token) {
                     console.warn('[Analysis] Local solver failed, falling back to cloud:', localResult.error);
                     onProgress?.('uploading', 15, 'Local solver failed. Switching to cloud solver...');
-                    
+
                     try {
                         const cloudResult = await this.analyzeCloud(model, onProgress, token);
                         if (cloudResult.success && cloudResult.stats) {
@@ -170,10 +170,27 @@ class AnalysisService {
                     }
                 }
             }
-            
+
             return localResult;
         } else {
             return this.analyzeCloud(model, onProgress, token);
+        }
+    }
+
+    /**
+     * Initialize the Web Worker if not already active
+     */
+    private initializeWorker(): void {
+        if (!this.worker) {
+            this.worker = new Worker(
+                new URL('../workers/StructuralSolverWorker.ts', import.meta.url),
+                { type: 'module' }
+            );
+
+            // Handle worker errors
+            this.worker.onerror = (error) => {
+                console.error('[AnalysisService] Worker Error:', error);
+            };
         }
     }
 
@@ -188,12 +205,7 @@ class AnalysisService {
 
         return new Promise((resolve, reject) => {
             // Create worker if not exists
-            if (!this.worker) {
-                this.worker = new Worker(
-                    new URL('../workers/StructuralSolverWorker.ts', import.meta.url),
-                    { type: 'module' }
-                );
-            }
+            this.initializeWorker();
 
             const handleMessage = (event: MessageEvent) => {
                 const data = event.data;
@@ -319,97 +331,90 @@ class AnalysisService {
     /**
      * Run analysis on cloud server using Python sparse solver
      */
+    /**
+     * Run analysis on cloud server using Python sparse solver via Worker
+     * Offloads JSON serialization and network request to worker thread
+     */
     private async analyzeCloud(
         model: ModelData,
         onProgress?: ProgressCallback,
         token?: string | null
     ): Promise<AnalysisResult> {
-        this.abortController = new AbortController();
-        const signal = this.abortController.signal;
-
-        try {
-            onProgress?.('uploading', 10, 'Uploading to High-Performance Solver...');
-
-            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
+        return new Promise((resolve) => {
+            if (!this.worker) {
+                this.initializeWorker();
             }
 
-            // POST to Python backend large-frame sparse solver
-            const response = await fetch(`${CONFIG.PYTHON_API_URL}/analyze/large-frame`, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({
-                    nodes: model.nodes.map(n => ({
-                        id: n.id,
-                        x: n.x,
-                        y: n.y,
-                        z: n.z,
-                        support: n.restraints?.fx && n.restraints?.fy && n.restraints?.fz
-                            ? (n.restraints?.mx && n.restraints?.my && n.restraints?.mz ? 'fixed' : 'pinned')
-                            : n.restraints?.fy ? 'roller' : 'none'
-                    })),
-                    members: model.members.map(m => ({
-                        id: m.id,
-                        startNodeId: m.startNodeId,
-                        endNodeId: m.endNodeId,
-                        E: m.E,
-                        A: m.A,
-                        Iy: m.I,
-                        Iz: m.I
-                    })),
-                    node_loads: model.loads.map(l => ({
-                        nodeId: l.nodeId,
-                        fx: l.fx || 0,
-                        fy: l.fy || 0,
-                        fz: l.fz || 0
-                    })),
-                    method: 'auto'
-                }),
-                signal
-            });
+            const requestId = `cloud-${Date.now()}`;
 
-            if (!response.ok) {
-                const error = await response.json();
-                return { success: false, error: error.detail || error.error || 'Server error' };
-            }
-
-            const data = await response.json();
-
-            if (!data.success) {
-                return { success: false, error: data.error || 'Analysis failed' };
-            }
-
-            onProgress?.('complete', 100, 'Analysis complete!');
-
-            // Convert displacements format
-            const displacements: Record<string, number[]> = {};
-            for (const [nodeId, disp] of Object.entries(data.displacements || {})) {
-                const d = disp as { dx: number; dy: number; dz: number; rx: number; ry: number; rz: number };
-                displacements[nodeId] = [d.dx, d.dy, d.dz, d.rx, d.ry, d.rz];
-            }
-
-            return {
-                success: true,
-                displacements,
-                stats: {
-                    assemblyTimeMs: 0,
-                    solveTimeMs: data.stats?.solve_time_ms || 0,
-                    totalTimeMs: data.stats?.total_time_ms || 0,
-                    method: data.stats?.method,
-                    usedCloud: true
+            // Progress listener
+            const progressHandler = (e: MessageEvent) => {
+                const { type, stage, percent, message } = e.data;
+                if (type === 'progress') {
+                    onProgress?.(stage, percent, message);
                 }
             };
 
-        } catch (error) {
-            if (error instanceof Error && error.name === 'AbortError') {
-                return { success: false, error: 'Analysis cancelled' };
-            }
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : 'Network error'
+            // Result handler
+            const resultHandler = (e: MessageEvent) => {
+                const response = e.data;
+
+                // Filter for this specific request
+                if (response.requestId !== requestId) return;
+
+                if (response.type === 'result') {
+                    // Cleanup
+                    this.worker!.removeEventListener('message', progressHandler);
+                    this.worker!.removeEventListener('message', resultHandler);
+
+                    if (!response.success) {
+                        resolve({ success: false, error: response.error || 'Worker cloud analysis failed' });
+                        return;
+                    }
+
+                    const data = response.data;
+
+                    onProgress?.('complete', 100, 'Analysis complete!');
+
+                    // Convert displacements format
+                    const displacements: Record<string, number[]> = {};
+                    for (const [nodeId, disp] of Object.entries(data.displacements || {})) {
+                        const d = disp as { dx: number; dy: number; dz: number; rx: number; ry: number; rz: number };
+                        displacements[nodeId] = [d.dx, d.dy, d.dz, d.rx, d.ry, d.rz];
+                    }
+
+                    resolve({
+                        success: true,
+                        displacements,
+                        stats: {
+                            assemblyTimeMs: 0,
+                            solveTimeMs: data.stats?.solve_time_ms || 0,
+                            totalTimeMs: data.stats?.total_time_ms || 0,
+                            method: data.stats?.method,
+                            usedCloud: true
+                        }
+                    });
+                }
             };
-        }
+
+            this.worker!.addEventListener('message', progressHandler);
+            this.worker!.addEventListener('message', resultHandler);
+
+            // Send to worker
+            this.worker!.postMessage({
+                type: 'analyze_cloud',
+                requestId,
+                model: {
+                    nodes: model.nodes,
+                    members: model.members,
+                    loads: model.loads,
+                    dofPerNode: model.dofPerNode ?? 6, // Cloud assumes 6DOF
+                    settings: model.settings
+                },
+                url: CONFIG.PYTHON_API_URL,
+                token
+            });
+        });
     }
 
     /**

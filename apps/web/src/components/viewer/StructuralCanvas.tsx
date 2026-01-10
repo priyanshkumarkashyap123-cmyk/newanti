@@ -8,7 +8,7 @@
  * - Pre-highlighting on hover (cyan) and selection (blue)
  */
 
-import { FC, useRef, useState, useMemo, useCallback } from 'react';
+import { FC, useRef, useState, useMemo, useCallback, Suspense } from 'react';
 import { Canvas, useFrame, useThree, ThreeEvent } from '@react-three/fiber';
 import {
     OrbitControls,
@@ -24,6 +24,14 @@ import * as THREE from 'three';
 import { useModelStore } from '../../store/model';
 import { InstancedMembersRenderer } from './InstancedMembersRenderer';
 import { InstancedNodesRenderer } from './InstancedNodesRenderer';
+import { UltraLightMembersRenderer } from './UltraLightMembersRenderer';
+import { UltraLightNodesRenderer } from './UltraLightNodesRenderer';
+
+// ============================================
+// PERFORMANCE THRESHOLDS
+// ============================================
+
+const ULTRA_LIGHT_THRESHOLD = 10000; // Switch to ultra-light mode above this
 
 // ============================================
 // TYPES
@@ -199,13 +207,35 @@ const NodeMesh: FC<NodeMeshProps> = ({
 // ============================================
 
 const StructureRenderer: FC = () => {
+    const members = useModelStore((state) => state.members);
+    const nodes = useModelStore((state) => state.nodes);
+    
+    const memberCount = members.size;
+    const nodeCount = nodes.size;
+    const totalElements = memberCount + nodeCount;
+    
+    // Use ultra-light renderers for large models
+    const useUltraLight = totalElements > ULTRA_LIGHT_THRESHOLD;
+    
+    if (useUltraLight) {
+        console.log(`[StructuralCanvas] Using UltraLight mode for ${memberCount} members, ${nodeCount} nodes`);
+    }
+    
     return (
         <group>
             {/* GPU-accelerated instanced rendering for members */}
-            <InstancedMembersRenderer />
+            {useUltraLight ? (
+                <UltraLightMembersRenderer />
+            ) : (
+                <InstancedMembersRenderer />
+            )}
 
             {/* GPU-accelerated instanced rendering for nodes */}
-            <InstancedNodesRenderer />
+            {useUltraLight ? (
+                <UltraLightNodesRenderer />
+            ) : (
+                <InstancedNodesRenderer />
+            )}
         </group>
     );
 };
@@ -266,11 +296,30 @@ const AxisLabels: FC = () => {
 // ============================================
 
 export const StructuralCanvas: FC<StructuralCanvasProps> = ({ children }) => {
+    const members = useModelStore((state) => state.members);
+    const nodes = useModelStore((state) => state.nodes);
+    
+    const totalElements = members.size + nodes.size;
+    const isLargeModel = totalElements > ULTRA_LIGHT_THRESHOLD;
+    
+    // Adaptive settings based on model size
+    const glSettings = useMemo(() => ({
+        antialias: !isLargeModel, // Disable AA for large models
+        alpha: false,
+        powerPreference: 'high-performance' as const,
+        failIfMajorPerformanceCaveat: false,
+        preserveDrawingBuffer: false,
+        stencil: false, // Disable stencil for performance
+        depth: true,
+    }), [isLargeModel]);
+    
     return (
         <Canvas
-            shadows
-            gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
+            shadows={!isLargeModel} // Disable shadows for large models
+            gl={glSettings}
             style={{ background: '#0a0a0f' }}
+            frameloop={isLargeModel ? 'demand' : 'always'} // On-demand rendering for large models
+            performance={{ min: 0.5 }} // Allow frame rate drop to 30fps
         >
             {/* Camera */}
             <PerspectiveCamera
@@ -278,23 +327,31 @@ export const StructuralCanvas: FC<StructuralCanvasProps> = ({ children }) => {
                 position={[15, 12, 15]}
                 fov={45}
                 near={0.1}
-                far={1000}
+                far={isLargeModel ? 2000 : 1000}
             />
 
-            {/* Lighting */}
-            <ambientLight intensity={0.4} />
-            <directionalLight
-                position={[10, 20, 10]}
-                intensity={0.8}
-                castShadow
-                shadow-mapSize={[2048, 2048]}
-                shadow-camera-far={50}
-                shadow-camera-left={-20}
-                shadow-camera-right={20}
-                shadow-camera-top={20}
-                shadow-camera-bottom={-20}
-            />
-            <pointLight position={[-10, 10, -10]} intensity={0.3} />
+            {/* Lighting - simplified for large models */}
+            <ambientLight intensity={isLargeModel ? 0.6 : 0.4} />
+            {!isLargeModel && (
+                <directionalLight
+                    position={[10, 20, 10]}
+                    intensity={0.8}
+                    castShadow
+                    shadow-mapSize={[2048, 2048]}
+                    shadow-camera-far={50}
+                    shadow-camera-left={-20}
+                    shadow-camera-right={20}
+                    shadow-camera-top={20}
+                    shadow-camera-bottom={-20}
+                />
+            )}
+            {isLargeModel && (
+                <directionalLight
+                    position={[10, 20, 10]}
+                    intensity={0.6}
+                />
+            )}
+            <pointLight position={[-10, 10, -10]} intensity={isLargeModel ? 0.2 : 0.3} />
 
             {/* Orbit Controls */}
             <OrbitControls
@@ -309,15 +366,17 @@ export const StructuralCanvas: FC<StructuralCanvasProps> = ({ children }) => {
             {/* Infinite Grid */}
             <InfiniteGrid />
 
-            {/* Contact Shadows for depth perception */}
-            <ContactShadows
-                position={[0, -0.01, 0]}
-                opacity={0.4}
-                scale={50}
-                blur={2}
-                far={10}
-                color={COLORS.shadow}
-            />
+            {/* Contact Shadows for depth perception - disabled for large models */}
+            {!isLargeModel && (
+                <ContactShadows
+                    position={[0, -0.01, 0]}
+                    opacity={0.4}
+                    scale={50}
+                    blur={2}
+                    far={10}
+                    color={COLORS.shadow}
+                />
+            )}
 
             {/* Axis Helper */}
             <AxisLabels />

@@ -21,7 +21,8 @@ import {
     Package,
     Table,
     ClipboardCheck,
-    Share2
+    Share2,
+    Printer
 } from 'lucide-react';
 import {
     ExportService,
@@ -49,7 +50,7 @@ type ExportOption = {
     label: string;
     description: string;
     icon: React.ReactNode;
-    format: 'csv' | 'json' | 'staad' | 'excel';
+    format: 'csv' | 'json' | 'staad' | 'excel' | 'pdf';
     dataType?: 'nodes' | 'members' | 'reactions' | 'design' | 'all';
 };
 
@@ -64,7 +65,15 @@ const EXPORT_OPTIONS: ExportOption[] = [
         description: 'All results in one spreadsheet',
         icon: <Package size={16} />,
         format: 'csv',
+        format: 'csv',
         dataType: 'all'
+    },
+    {
+        id: 'pdf-report',
+        label: 'Clean PDF Report',
+        description: 'Professional report for printing',
+        icon: <Printer size={16} />,
+        format: 'pdf'
     },
     {
         id: 'csv-nodes',
@@ -142,9 +151,16 @@ export const ExportToolbar: FC<ExportToolbarProps> = ({
                     blob = service.exportToExcel(option.dataType as any);
                     extension = 'csv';
                     break;
+                case 'pdf':
+                    // Trigger print dialog for now (Clean PDF is handled by print stylesheet)
+                    window.print();
+                    onExportComplete?.('pdf');
+                    setExporting(null);
+                    setIsOpen(false);
+                    return; // Exit early as no blob is downloaded
                 case 'csv':
                 default:
-                    blob = service.exportToCSV(option.dataType as any || 'all');
+                    blob = service.exportToCSV((option.dataType as any) || 'all');
                     extension = 'csv';
                     break;
             }
@@ -206,9 +222,9 @@ export const ExportToolbar: FC<ExportToolbarProps> = ({
                     {isOpen && (
                         <>
                             {/* Backdrop */}
-                            <div 
-                                className="fixed inset-0 z-40" 
-                                onClick={() => setIsOpen(false)} 
+                            <div
+                                className="fixed inset-0 z-40"
+                                onClick={() => setIsOpen(false)}
                             />
 
                             {/* Dropdown */}

@@ -205,296 +205,113 @@ export const ResultsTable: FC = () => {
 
     if (!analysisResults) {
         return (
-            <div style={containerStyle}>
-                <div style={emptyStyle}>
-                    Run analysis to see results
-                </div>
+            <div className="absolute top-16 right-4 w-80 p-6 bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl shadow-2xl flex items-center justify-center text-slate-500 z-50">
+                Run analysis to see results
             </div>
         );
     }
 
+    // Helper to render active table
+    const renderTable = (table: any) => (
+        <table className="w-full text-left border-collapse text-xs">
+            <thead>
+                {table.getHeaderGroups().map((headerGroup: any) => (
+                    <tr key={headerGroup.id}>
+                        {headerGroup.headers.map((header: any) => (
+                            <th
+                                key={header.id}
+                                onClick={header.column.getToggleSortingHandler()}
+                                className="sticky top-0 z-10 bg-slate-900 p-3 font-semibold text-slate-300 border-b border-slate-700 cursor-pointer hover:text-white transition-colors"
+                            >
+                                <div className="flex items-center gap-1">
+                                    {flexRender(header.column.columnDef.header, header.getContext())}
+                                    {{
+                                        asc: ' ▲',
+                                        desc: ' ▼',
+                                    }[header.column.getIsSorted() as string] ?? ''}
+                                </div>
+                            </th>
+                        ))}
+                    </tr>
+                ))}
+            </thead>
+            <tbody>
+                {table.getRowModel().rows.map((row: any) => (
+                    <tr
+                        key={row.id}
+                        onClick={() => handleRowClick(row.original.nodeId || row.original.memberId)}
+                        className="hover:bg-blue-600/10 cursor-pointer transition-colors border-b border-slate-800/50"
+                    >
+                        {row.getVisibleCells().map((cell: any) => (
+                            <td key={cell.id} className="p-2.5 font-mono text-slate-200">
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </td>
+                        ))}
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    );
+
     return (
-        <div style={containerStyle}>
+        <div className="absolute top-16 right-4 w-[500px] max-h-[calc(100vh-160px)] bg-slate-900 border border-slate-800 rounded-xl shadow-2xl flex flex-col z-40 overflow-hidden ring-1 ring-white/10">
             {/* Header */}
-            <div style={headerStyle}>
-                <h3 style={{ margin: 0, color: '#f1f5f9' }}>📊 Analysis Results</h3>
-                <button onClick={handleExport} style={exportBtnStyle}>
-                    📥 Export CSV
+            <div className="flex justify-between items-center px-4 py-3 bg-slate-950 border-b border-slate-800">
+                <h3 className="flex items-center gap-2 font-bold text-slate-100 text-sm">
+                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                    Analysis Results
+                </h3>
+                <button
+                    onClick={handleExport}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-medium transition-all shadow-lg shadow-blue-500/20"
+                >
+                    Export CSV
                 </button>
             </div>
 
             {/* Tabs */}
-            <div style={tabsStyle}>
-                <button
-                    onClick={() => setActiveTab('displacements')}
-                    style={activeTab === 'displacements' ? activeTabStyle : tabStyle}
-                >
-                    Node Displacements
-                </button>
-                <button
-                    onClick={() => setActiveTab('reactions')}
-                    style={activeTab === 'reactions' ? activeTabStyle : tabStyle}
-                >
-                    Reactions
-                </button>
-                <button
-                    onClick={() => setActiveTab('forces')}
-                    style={activeTab === 'forces' ? activeTabStyle : tabStyle}
-                >
-                    Beam Forces
-                </button>
+            <div className="flex border-b border-slate-800 bg-slate-900">
+                {[
+                    { id: 'displacements', label: 'Displacements' },
+                    { id: 'reactions', label: 'Reactions' },
+                    { id: 'forces', label: 'Forces' }
+                ].map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id as TabType)}
+                        className={`
+                            flex-1 py-2.5 text-xs font-medium transition-all border-b-2
+                            ${activeTab === tab.id
+                                ? 'border-blue-500 text-blue-400 bg-blue-500/5'
+                                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                            }
+                        `}
+                    >
+                        {tab.label}
+                    </button>
+                ))}
             </div>
 
-            {/* Table */}
-            <div style={tableContainerStyle}>
-                {activeTab === 'displacements' && (
-                    <table style={tableStyle}>
-                        <thead>
-                            {displacementTable.getHeaderGroups().map(headerGroup => (
-                                <tr key={headerGroup.id}>
-                                    {headerGroup.headers.map(header => (
-                                        <th
-                                            key={header.id}
-                                            onClick={header.column.getToggleSortingHandler()}
-                                            style={{
-                                                ...thStyle,
-                                                cursor: header.column.getCanSort() ? 'pointer' : 'default'
-                                            }}
-                                        >
-                                            {flexRender(header.column.columnDef.header, header.getContext())}
-                                            {{
-                                                asc: ' 🔼',
-                                                desc: ' 🔽',
-                                            }[header.column.getIsSorted() as string] ?? ''}
-                                        </th>
-                                    ))}
-                                </tr>
-                            ))}
-                        </thead>
-                        <tbody>
-                            {displacementTable.getRowModel().rows.map(row => (
-                                <tr
-                                    key={row.id}
-                                    onClick={() => handleRowClick(row.original.nodeId)}
-                                    style={rowStyle}
-                                >
-                                    {row.getVisibleCells().map(cell => (
-                                        <td key={cell.id} style={tdStyle}>
-                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
-
-                {activeTab === 'reactions' && (
-                    <table style={tableStyle}>
-                        <thead>
-                            {reactionTable.getHeaderGroups().map(headerGroup => (
-                                <tr key={headerGroup.id}>
-                                    {headerGroup.headers.map(header => (
-                                        <th
-                                            key={header.id}
-                                            onClick={header.column.getToggleSortingHandler()}
-                                            style={{
-                                                ...thStyle,
-                                                cursor: header.column.getCanSort() ? 'pointer' : 'default'
-                                            }}
-                                        >
-                                            {flexRender(header.column.columnDef.header, header.getContext())}
-                                            {{
-                                                asc: ' 🔼',
-                                                desc: ' 🔽',
-                                            }[header.column.getIsSorted() as string] ?? ''}
-                                        </th>
-                                    ))}
-                                </tr>
-                            ))}
-                        </thead>
-                        <tbody>
-                            {reactionTable.getRowModel().rows.map(row => (
-                                <tr
-                                    key={row.id}
-                                    onClick={() => handleRowClick(row.original.nodeId)}
-                                    style={rowStyle}
-                                >
-                                    {row.getVisibleCells().map(cell => (
-                                        <td key={cell.id} style={tdStyle}>
-                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
-
-                {activeTab === 'forces' && (
-                    <table style={tableStyle}>
-                        <thead>
-                            {forceTable.getHeaderGroups().map(headerGroup => (
-                                <tr key={headerGroup.id}>
-                                    {headerGroup.headers.map(header => (
-                                        <th
-                                            key={header.id}
-                                            onClick={header.column.getToggleSortingHandler()}
-                                            style={{
-                                                ...thStyle,
-                                                cursor: header.column.getCanSort() ? 'pointer' : 'default'
-                                            }}
-                                        >
-                                            {flexRender(header.column.columnDef.header, header.getContext())}
-                                            {{
-                                                asc: ' 🔼',
-                                                desc: ' 🔽',
-                                            }[header.column.getIsSorted() as string] ?? ''}
-                                        </th>
-                                    ))}
-                                </tr>
-                            ))}
-                        </thead>
-                        <tbody>
-                            {forceTable.getRowModel().rows.map(row => (
-                                <tr
-                                    key={row.id}
-                                    onClick={() => handleRowClick(row.original.memberId)}
-                                    style={rowStyle}
-                                >
-                                    {row.getVisibleCells().map(cell => (
-                                        <td key={cell.id} style={tdStyle}>
-                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
+            {/* Table Area */}
+            <div className="flex-1 overflow-auto custom-scrollbar bg-slate-900">
+                {activeTab === 'displacements' && renderTable(displacementTable)}
+                {activeTab === 'reactions' && renderTable(reactionTable)}
+                {activeTab === 'forces' && renderTable(forceTable)}
             </div>
 
-            {/* Summary */}
-            <div style={summaryStyle}>
-                {activeTab === 'displacements' && (
-                    <span>📍 {displacementData.length} nodes</span>
-                )}
-                {activeTab === 'reactions' && (
-                    <span>🔒 {reactionData.length} supports</span>
-                )}
-                {activeTab === 'forces' && (
-                    <span>📐 {forceData.length} members</span>
-                )}
+            {/* Footer Summary */}
+            <div className="px-4 py-2 bg-slate-950 border-t border-slate-800 text-xs text-slate-500 flex justify-between items-center">
+                <span>
+                    {activeTab === 'displacements' && `Showing ${displacementData.length} Nodes`}
+                    {activeTab === 'reactions' && `Showing ${reactionData.length} Supports`}
+                    {activeTab === 'forces' && `Showing ${forceData.length} Members`}
+                </span>
+                <span className="text-slate-600 font-mono">
+                    {analysisResults.stats?.solveTimeMs ? `Solved in ${analysisResults.stats.solveTimeMs.toFixed(1)}ms` : ''}
+                </span>
             </div>
         </div>
     );
-};
-
-// Styles
-const containerStyle: React.CSSProperties = {
-    position: 'absolute',
-    top: 60,
-    right: 10,
-    width: 450,
-    maxHeight: 'calc(100vh - 150px)',
-    background: '#1e293b', // Slate-800
-    borderRadius: '8px',
-    border: '1px solid #475569', // Slate-600
-    display: 'flex',
-    flexDirection: 'column',
-    zIndex: 150,
-    overflow: 'hidden'
-};
-
-const headerStyle: React.CSSProperties = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '12px 16px',
-    borderBottom: '1px solid #334155',
-    background: '#0f172a' // Slate-900
-};
-
-const exportBtnStyle: React.CSSProperties = {
-    background: '#3b82f6', // Primary Blue
-    color: 'white',
-    border: 'none',
-    padding: '6px 12px',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '12px'
-};
-
-const tabsStyle: React.CSSProperties = {
-    display: 'flex',
-    borderBottom: '1px solid #334155'
-};
-
-const tabStyle: React.CSSProperties = {
-    flex: 1,
-    padding: '10px',
-    background: 'transparent',
-    border: 'none',
-    color: '#94a3b8', // Slate-400
-    cursor: 'pointer',
-    fontSize: '12px',
-    transition: 'all 0.2s',
-    borderBottom: '2px solid transparent'
-};
-
-const activeTabStyle: React.CSSProperties = {
-    ...tabStyle,
-    color: '#f8fafc', // Slate-50
-    background: 'rgba(59, 130, 246, 0.1)',
-    borderBottom: '2px solid #3b82f6'
-};
-
-const tableContainerStyle: React.CSSProperties = {
-    flex: 1,
-    overflow: 'auto',
-    maxHeight: '400px'
-};
-
-const tableStyle: React.CSSProperties = {
-    width: '100%',
-    borderCollapse: 'collapse',
-    fontSize: '11px'
-};
-
-const thStyle: React.CSSProperties = {
-    padding: '8px 6px',
-    textAlign: 'left',
-    background: '#1e293b', // Slate-800
-    color: '#cbd5e1', // Slate-300
-    fontWeight: 600,
-    position: 'sticky',
-    top: 0,
-    borderBottom: '1px solid #334155'
-};
-
-const tdStyle: React.CSSProperties = {
-    padding: '6px',
-    color: '#f1f5f9', // Slate-100
-    borderBottom: '1px solid #334155',
-    fontFamily: 'monospace'
-};
-
-const rowStyle: React.CSSProperties = {
-    cursor: 'pointer',
-    transition: 'background 0.15s'
-};
-
-const summaryStyle: React.CSSProperties = {
-    padding: '8px 16px',
-    borderTop: '1px solid rgba(255,255,255,0.1)',
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: '11px'
-};
-
-const emptyStyle: React.CSSProperties = {
-    padding: '40px',
-    textAlign: 'center',
-    color: 'rgba(255,255,255,0.5)'
 };
 
 export default ResultsTable;
