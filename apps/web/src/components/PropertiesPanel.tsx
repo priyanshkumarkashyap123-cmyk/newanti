@@ -646,11 +646,23 @@ export const PropertiesPanel: FC = () => {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                     <label style={{ fontSize: 11, width: 80 }}>Width (m)</label>
-                                    <NumberInput value={member.width ?? 0.3} onChange={(v) => updateMember(id, { width: v })} style={{ flex: 1 }} />
+                                    <NumberInput 
+                                        value={member.dimensions?.rectWidth ?? member.dimensions?.width ?? 0.3} 
+                                        onChange={(v) => updateMember(id, { 
+                                            dimensions: { ...member.dimensions, rectWidth: v, width: v } 
+                                        })} 
+                                        style={{ flex: 1 }} 
+                                    />
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                     <label style={{ fontSize: 11, width: 80 }}>Depth (m)</label>
-                                    <NumberInput value={member.depth ?? 0.5} onChange={(v) => updateMember(id, { depth: v })} style={{ flex: 1 }} />
+                                    <NumberInput 
+                                        value={member.dimensions?.rectHeight ?? member.dimensions?.height ?? 0.5} 
+                                        onChange={(v) => updateMember(id, { 
+                                            dimensions: { ...member.dimensions, rectHeight: v, height: v } 
+                                        })} 
+                                        style={{ flex: 1 }} 
+                                    />
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                     <label style={{ fontSize: 11, width: 80 }}>Area (cm²)</label>
