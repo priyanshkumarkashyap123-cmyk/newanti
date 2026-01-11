@@ -26,6 +26,7 @@ import { InstancedMembersRenderer } from './InstancedMembersRenderer';
 import { InstancedNodesRenderer } from './InstancedNodesRenderer';
 import { UltraLightMembersRenderer } from './UltraLightMembersRenderer';
 import { UltraLightNodesRenderer } from './UltraLightNodesRenderer';
+import { PlateRenderer } from './PlateRenderer';
 import { announce, prefersReducedMotion } from '../../utils/accessibility';
 
 // ============================================
@@ -210,18 +211,18 @@ const NodeMesh: FC<NodeMeshProps> = ({
 const StructureRenderer: FC = () => {
     const members = useModelStore((state) => state.members);
     const nodes = useModelStore((state) => state.nodes);
-    
+
     const memberCount = members.size;
     const nodeCount = nodes.size;
     const totalElements = memberCount + nodeCount;
-    
+
     // Use ultra-light renderers for large models
     const useUltraLight = totalElements > ULTRA_LIGHT_THRESHOLD;
-    
+
     if (useUltraLight) {
         console.log(`[StructuralCanvas] Using UltraLight mode for ${memberCount} members, ${nodeCount} nodes`);
     }
-    
+
     return (
         <group>
             {/* GPU-accelerated instanced rendering for members */}
@@ -237,6 +238,9 @@ const StructureRenderer: FC = () => {
             ) : (
                 <InstancedNodesRenderer />
             )}
+
+            {/* Plate/Shell elements */}
+            <PlateRenderer />
         </group>
     );
 };
@@ -299,20 +303,20 @@ const AxisLabels: FC = () => {
 export const StructuralCanvas: FC<StructuralCanvasProps> = ({ children }) => {
     const members = useModelStore((state) => state.members);
     const nodes = useModelStore((state) => state.nodes);
-    
+
     const memberCount = members.size;
     const nodeCount = nodes.size;
     const totalElements = memberCount + nodeCount;
     const isLargeModel = totalElements > ULTRA_LIGHT_THRESHOLD;
     const reducedMotion = prefersReducedMotion();
-    
+
     // Announce model size changes for screen readers
     useEffect(() => {
         if (totalElements > 0) {
             announce(`Model loaded: ${nodeCount} nodes, ${memberCount} members`);
         }
     }, [totalElements, nodeCount, memberCount]);
-    
+
     // Adaptive settings based on model size
     const glSettings = useMemo(() => ({
         antialias: !isLargeModel, // Disable AA for large models
@@ -323,7 +327,7 @@ export const StructuralCanvas: FC<StructuralCanvasProps> = ({ children }) => {
         stencil: false, // Disable stencil for performance
         depth: true,
     }), [isLargeModel]);
-    
+
     // Keyboard shortcuts for 3D navigation
     const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
         switch (e.key) {
@@ -340,9 +344,9 @@ export const StructuralCanvas: FC<StructuralCanvasProps> = ({ children }) => {
                 break;
         }
     }, []);
-    
+
     return (
-        <div 
+        <div
             className="relative w-full h-full"
             role="application"
             aria-label={`3D structural model viewer. ${nodeCount} nodes, ${memberCount} members. Use mouse to orbit, scroll to zoom.`}
@@ -358,88 +362,88 @@ export const StructuralCanvas: FC<StructuralCanvasProps> = ({ children }) => {
                 frameloop={isLargeModel ? 'demand' : 'always'}
                 performance={{ min: 0.5 }}
             >
-            {/* Camera */}
-            <PerspectiveCamera
-                makeDefault
-                position={[15, 12, 15]}
-                fov={45}
-                near={0.1}
-                far={isLargeModel ? 2000 : 1000}
-            />
-
-            {/* Lighting - simplified for large models */}
-            <ambientLight intensity={isLargeModel ? 0.6 : 0.4} />
-            {!isLargeModel && (
-                <directionalLight
-                    position={[10, 20, 10]}
-                    intensity={0.8}
-                    castShadow
-                    shadow-mapSize={[2048, 2048]}
-                    shadow-camera-far={50}
-                    shadow-camera-left={-20}
-                    shadow-camera-right={20}
-                    shadow-camera-top={20}
-                    shadow-camera-bottom={-20}
+                {/* Camera */}
+                <PerspectiveCamera
+                    makeDefault
+                    position={[15, 12, 15]}
+                    fov={45}
+                    near={0.1}
+                    far={isLargeModel ? 2000 : 1000}
                 />
-            )}
-            {isLargeModel && (
-                <directionalLight
-                    position={[10, 20, 10]}
-                    intensity={0.6}
+
+                {/* Lighting - simplified for large models */}
+                <ambientLight intensity={isLargeModel ? 0.6 : 0.4} />
+                {!isLargeModel && (
+                    <directionalLight
+                        position={[10, 20, 10]}
+                        intensity={0.8}
+                        castShadow
+                        shadow-mapSize={[2048, 2048]}
+                        shadow-camera-far={50}
+                        shadow-camera-left={-20}
+                        shadow-camera-right={20}
+                        shadow-camera-top={20}
+                        shadow-camera-bottom={-20}
+                    />
+                )}
+                {isLargeModel && (
+                    <directionalLight
+                        position={[10, 20, 10]}
+                        intensity={0.6}
+                    />
+                )}
+                <pointLight position={[-10, 10, -10]} intensity={isLargeModel ? 0.2 : 0.3} />
+
+                {/* Orbit Controls */}
+                <OrbitControls
+                    makeDefault
+                    enableDamping
+                    dampingFactor={0.05}
+                    minDistance={2}
+                    maxDistance={100}
+                    maxPolarAngle={Math.PI / 2 + 0.3}
                 />
-            )}
-            <pointLight position={[-10, 10, -10]} intensity={isLargeModel ? 0.2 : 0.3} />
 
-            {/* Orbit Controls */}
-            <OrbitControls
-                makeDefault
-                enableDamping
-                dampingFactor={0.05}
-                minDistance={2}
-                maxDistance={100}
-                maxPolarAngle={Math.PI / 2 + 0.3}
-            />
+                {/* Infinite Grid */}
+                <InfiniteGrid />
 
-            {/* Infinite Grid */}
-            <InfiniteGrid />
+                {/* Contact Shadows for depth perception - disabled for large models */}
+                {!isLargeModel && (
+                    <ContactShadows
+                        position={[0, -0.01, 0]}
+                        opacity={0.4}
+                        scale={50}
+                        blur={2}
+                        far={10}
+                        color={COLORS.shadow}
+                    />
+                )}
 
-            {/* Contact Shadows for depth perception - disabled for large models */}
-            {!isLargeModel && (
-                <ContactShadows
-                    position={[0, -0.01, 0]}
-                    opacity={0.4}
-                    scale={50}
-                    blur={2}
-                    far={10}
-                    color={COLORS.shadow}
-                />
-            )}
+                {/* Axis Helper */}
+                <AxisLabels />
 
-            {/* Axis Helper */}
-            <AxisLabels />
+                {/* Structural Elements */}
+                <StructureRenderer />
 
-            {/* Structural Elements */}
-            <StructureRenderer />
+                {/* GizmoHelper for orientation */}
+                <GizmoHelper
+                    alignment="bottom-right"
+                    margin={[80, 80]}
+                >
+                    <GizmoViewport
+                        axisColors={['#ef4444', '#22c55e', '#3b82f6']}
+                        labelColor="white"
+                    />
+                </GizmoHelper>
 
-            {/* GizmoHelper for orientation */}
-            <GizmoHelper
-                alignment="bottom-right"
-                margin={[80, 80]}
-            >
-                <GizmoViewport
-                    axisColors={['#ef4444', '#22c55e', '#3b82f6']}
-                    labelColor="white"
-                />
-            </GizmoHelper>
+                {/* Additional children (InteractionManager, etc.) */}
+                {children}
+            </Canvas>
 
-            {/* Additional children (InteractionManager, etc.) */}
-            {children}
-        </Canvas>
-        
-        {/* Keyboard shortcuts help (screen reader only) */}
-        <div className="sr-only" aria-live="polite">
-            Keyboard shortcuts: R to reset view, Escape to deselect, Delete to remove selected
-        </div>
+            {/* Keyboard shortcuts help (screen reader only) */}
+            <div className="sr-only" aria-live="polite">
+                Keyboard shortcuts: R to reset view, Escape to deselect, Delete to remove selected
+            </div>
         </div>
     );
 };

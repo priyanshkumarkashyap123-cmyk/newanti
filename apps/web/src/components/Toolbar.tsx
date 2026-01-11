@@ -5,6 +5,7 @@ import useStructuralSolver from '../hooks/useStructuralSolver';
 import { ReportGenerator } from '../utils/ReportGenerator';
 import { useIsSignedIn } from '../providers/AuthProvider';
 import { useSubscription } from '../hooks/useSubscription';
+import { PlateCreationDialog } from './dialogs/PlateCreationDialog';
 
 export const Toolbar: FC = () => {
     const isSignedIn = useIsSignedIn();
@@ -23,6 +24,7 @@ export const Toolbar: FC = () => {
     const { undo, redo, pastStates, futureStates } = useModelStore.temporal.getState();
     const [message, setMessage] = useState<string | null>(null);
     const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
+    const [showPlateDialog, setShowPlateDialog] = useState(false);
 
     // Subscription for feature gating
     const { subscription, canAccess } = useSubscription();
@@ -256,6 +258,7 @@ export const Toolbar: FC = () => {
                 <button onClick={() => setTool('select')} style={getBtnStyle(activeTool === 'select')}>👆 Select</button>
                 <button onClick={() => setTool('node')} style={getBtnStyle(activeTool === 'node')}>● Node</button>
                 <button onClick={() => setTool('member')} style={getBtnStyle(activeTool === 'member')}>╱ Member</button>
+                <button onClick={() => setShowPlateDialog(true)} style={{ ...btnStyle, background: '#7c3aed', borderColor: '#6d28d9' }}>▢ Plate</button>
 
                 <div style={{ width: '1px', background: 'rgba(255,255,255,0.2)' }} />
 
@@ -300,6 +303,12 @@ export const Toolbar: FC = () => {
                     </>
                 )}
             </div>
+
+            {/* Plate Creation Dialog */}
+            <PlateCreationDialog
+                isOpen={showPlateDialog}
+                onClose={() => setShowPlateDialog(false)}
+            />
         </>
     );
 };
