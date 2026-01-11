@@ -65,7 +65,6 @@ const EXPORT_OPTIONS: ExportOption[] = [
         description: 'All results in one spreadsheet',
         icon: <Package size={16} />,
         format: 'csv',
-        format: 'csv',
         dataType: 'all'
     },
     {

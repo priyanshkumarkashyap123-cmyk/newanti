@@ -120,6 +120,17 @@ export interface Member {
     betaAngle?: number; // Rotation angle in degrees
 }
 
+// Plate/Shell element (quadrilateral)
+export interface Plate {
+    id: string;
+    nodeIds: [string, string, string, string]; // 4 corner nodes (CCW order)
+    thickness: number;   // Plate thickness (m)
+    E?: number;          // Young's Modulus (kN/m²), default 200e6 for steel
+    nu?: number;         // Poisson's ratio, default 0.3
+    pressure?: number;   // Applied pressure (kN/m²), positive = downward
+    materialType?: 'steel' | 'concrete' | 'custom';
+}
+
 // Member Force Results with diagram data
 export interface MemberForceData {
     // Max values for quick access
@@ -190,6 +201,7 @@ interface ModelState {
     projectInfo: ProjectInfo; // NEW
     nodes: Map<string, Node>;
     members: Map<string, Member>;
+    plates: Map<string, Plate>;  // NEW: Shell/slab elements
     loads: NodeLoad[];
     memberLoads: MemberLoad[];  // NEW: Member loads (UDL, UVL, point)
     selectedIds: Set<string>;
@@ -289,6 +301,13 @@ interface ModelState {
     mergeNodes: (nodeId1: string, nodeId2: string) => void; // Merge two nodes
     renumberNodes: () => void; // Renumber all nodes from N1
     renumberMembers: () => void; // Renumber all members from M1
+
+    // Plate/Shell Operations
+    nextPlateNumber: number;
+    getNextPlateId: () => string;
+    addPlate: (plate: Plate) => void;
+    removePlate: (id: string) => void;
+    updatePlate: (id: string, updates: Partial<Plate>) => void;
 }
 
 // Helper to convert Map to Record for DevTools display
@@ -311,6 +330,7 @@ export const useModelStore = create<ModelState>()(
                 },
                 nodes: new Map(),
                 members: new Map(),
+                plates: new Map(),  // NEW: Plate/shell elements
                 loads: [],
                 memberLoads: [],  // NEW: Member distributed/point loads
                 selectedIds: new Set(),
@@ -336,6 +356,13 @@ export const useModelStore = create<ModelState>()(
                     const state = get();
                     const id = `M${state.nextMemberNumber}`;
                     set({ nextMemberNumber: state.nextMemberNumber + 1 });
+                    return id;
+                },
+                nextPlateNumber: 1,
+                getNextPlateId: () => {
+                    const state = get();
+                    const id = `P${state.nextPlateNumber}`;
+                    set({ nextPlateNumber: state.nextPlateNumber + 1 });
                     return id;
                 },
 
@@ -440,6 +467,31 @@ export const useModelStore = create<ModelState>()(
 
                 removeMemberLoad: (id) =>
                     set((state) => ({ memberLoads: state.memberLoads.filter(l => l.id !== id) })),
+
+                // Plate/Shell actions
+                addPlate: (plate) =>
+                    set((state) => {
+                        const newPlates = new Map(state.plates);
+                        newPlates.set(plate.id, plate);
+                        return { plates: newPlates };
+                    }),
+
+                removePlate: (id) =>
+                    set((state) => {
+                        const newPlates = new Map(state.plates);
+                        newPlates.delete(id);
+                        return { plates: newPlates, selectedIds: new Set([...state.selectedIds].filter(i => i !== id)) };
+                    }),
+
+                updatePlate: (id, updates) =>
+                    set((state) => {
+                        const newPlates = new Map(state.plates);
+                        const existing = newPlates.get(id);
+                        if (existing) {
+                            newPlates.set(id, { ...existing, ...updates });
+                        }
+                        return { plates: newPlates };
+                    }),
 
                 setAnalysisResults: (results) =>
                     set({ analysisResults: results }),

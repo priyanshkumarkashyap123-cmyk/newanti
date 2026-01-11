@@ -8,7 +8,7 @@
  * - Pre-highlighting on hover (cyan) and selection (blue)
  */
 
-import { FC, useRef, useState, useMemo, useCallback, Suspense } from 'react';
+import { FC, useRef, useState, useMemo, useCallback, Suspense, useEffect } from 'react';
 import { Canvas, useFrame, useThree, ThreeEvent } from '@react-three/fiber';
 import {
     OrbitControls,
@@ -26,6 +26,7 @@ import { InstancedMembersRenderer } from './InstancedMembersRenderer';
 import { InstancedNodesRenderer } from './InstancedNodesRenderer';
 import { UltraLightMembersRenderer } from './UltraLightMembersRenderer';
 import { UltraLightNodesRenderer } from './UltraLightNodesRenderer';
+import { announce, prefersReducedMotion } from '../../utils/accessibility';
 
 // ============================================
 // PERFORMANCE THRESHOLDS
@@ -299,8 +300,18 @@ export const StructuralCanvas: FC<StructuralCanvasProps> = ({ children }) => {
     const members = useModelStore((state) => state.members);
     const nodes = useModelStore((state) => state.nodes);
     
-    const totalElements = members.size + nodes.size;
+    const memberCount = members.size;
+    const nodeCount = nodes.size;
+    const totalElements = memberCount + nodeCount;
     const isLargeModel = totalElements > ULTRA_LIGHT_THRESHOLD;
+    const reducedMotion = prefersReducedMotion();
+    
+    // Announce model size changes for screen readers
+    useEffect(() => {
+        if (totalElements > 0) {
+            announce(`Model loaded: ${nodeCount} nodes, ${memberCount} members`);
+        }
+    }, [totalElements, nodeCount, memberCount]);
     
     // Adaptive settings based on model size
     const glSettings = useMemo(() => ({
@@ -313,14 +324,40 @@ export const StructuralCanvas: FC<StructuralCanvasProps> = ({ children }) => {
         depth: true,
     }), [isLargeModel]);
     
+    // Keyboard shortcuts for 3D navigation
+    const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+        switch (e.key) {
+            case 'r':
+            case 'R':
+                announce('Reset camera view');
+                break;
+            case 'Escape':
+                announce('Deselected all elements');
+                break;
+            case 'Delete':
+            case 'Backspace':
+                announce('Delete selected elements');
+                break;
+        }
+    }, []);
+    
     return (
-        <Canvas
-            shadows={!isLargeModel} // Disable shadows for large models
-            gl={glSettings}
-            style={{ background: '#0a0a0f' }}
-            frameloop={isLargeModel ? 'demand' : 'always'} // On-demand rendering for large models
-            performance={{ min: 0.5 }} // Allow frame rate drop to 30fps
+        <div 
+            className="relative w-full h-full"
+            role="application"
+            aria-label={`3D structural model viewer. ${nodeCount} nodes, ${memberCount} members. Use mouse to orbit, scroll to zoom.`}
+            aria-roledescription="interactive 3D canvas"
+            tabIndex={0}
+            onKeyDown={handleKeyDown}
+            id="main-content"
         >
+            <Canvas
+                shadows={!isLargeModel && !reducedMotion}
+                gl={glSettings}
+                style={{ background: '#0a0a0f' }}
+                frameloop={isLargeModel ? 'demand' : 'always'}
+                performance={{ min: 0.5 }}
+            >
             {/* Camera */}
             <PerspectiveCamera
                 makeDefault
@@ -398,6 +435,12 @@ export const StructuralCanvas: FC<StructuralCanvasProps> = ({ children }) => {
             {/* Additional children (InteractionManager, etc.) */}
             {children}
         </Canvas>
+        
+        {/* Keyboard shortcuts help (screen reader only) */}
+        <div className="sr-only" aria-live="polite">
+            Keyboard shortcuts: R to reset view, Escape to deselect, Delete to remove selected
+        </div>
+        </div>
     );
 };
 

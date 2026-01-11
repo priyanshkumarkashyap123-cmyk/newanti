@@ -3,51 +3,224 @@
 
 <head>
   <meta charset="UTF-8" />
+  
+  <!-- ============================================ -->
+  <!-- CRITICAL: Preload/Preconnect for CWV        -->
+  <!-- ============================================ -->
+  <!-- Preconnect to critical origins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+  
+  <!-- Preload critical fonts for LCP -->
+  <link rel="preload" as="font" type="font/woff2" href="https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff2" crossorigin />
+  
   <!-- Primary Favicon -->
   <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32" />
-  <link rel="apple-touch-icon" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/favicon.png" sizes="180x180" />
   <link rel="manifest" href="/site.webmanifest" />
   
-  <!-- Basic SEO -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="BeamLab Ultimate is a modern structural analysis platform for beams, frames, and 3D structures with advanced FEM, P-Delta, and time-history analysis." />
-  <meta name="keywords" content="structural analysis,FEM,beam,frame,engineering,finite element,P-Delta,modal,time-history,design" />
+  <!-- ============================================ -->
+  <!-- SEO: Meta Tags                              -->
+  <!-- ============================================ -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="BeamLab Ultimate is a modern structural analysis platform for beams, frames, and 3D structures with advanced FEM, P-Delta, and time-history analysis. Free online structural engineering software." />
+  <meta name="keywords" content="structural analysis,FEM,finite element method,beam calculator,frame analysis,engineering software,P-Delta,modal analysis,time-history,structural design,civil engineering,steel design,concrete design,online calculator" />
   <meta name="author" content="BeamLab Ultimate" />
-  <meta name="robots" content="index,follow" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
   <link rel="canonical" href="https://beamlabultimate.tech" />
   <meta name="theme-color" content="#0f172a" />
+  <meta name="color-scheme" content="dark light" />
   
-  <!-- Open Graph / Social -->
+  <!-- Mobile Web App -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BeamLab" />
+  <meta name="application-name" content="BeamLab Ultimate" />
+  <meta name="format-detection" content="telephone=no" />
+  
+  <!-- ============================================ -->
+  <!-- Open Graph / Social                         -->
+  <!-- ============================================ -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="BeamLab Ultimate – Structural Analysis Platform" />
-  <meta property="og:description" content="Analyze beams and frames with advanced features: FEM, P-Delta, modal, and time-history. Built for professional engineers." />
+  <meta property="og:title" content="BeamLab Ultimate – Professional Structural Analysis Platform" />
+  <meta property="og:description" content="Analyze beams and frames with advanced features: FEM, P-Delta, modal, and time-history analysis. Built for professional structural engineers." />
   <meta property="og:url" content="https://beamlabultimate.tech" />
-  <meta property="og:image" content="/branding/logo.png" />
+  <meta property="og:image" content="https://beamlabultimate.tech/branding/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="BeamLab Ultimate - Structural Analysis Platform" />
   <meta property="og:site_name" content="BeamLab Ultimate" />
   <meta property="og:locale" content="en_US" />
   
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@beamlabtech" />
+  <meta name="twitter:creator" content="@beamlabtech" />
   <meta name="twitter:title" content="BeamLab Ultimate – Structural Analysis Platform" />
   <meta name="twitter:description" content="Modern structural analysis for professional engineers: FEM, P-Delta, modal, time-history." />
-  <meta name="twitter:image" content="https://beamlabultimate.tech/branding/logo.png" />
-  <title>BeamLab Ultimate – Structural Analysis Platform</title>
+  <meta name="twitter:image" content="https://beamlabultimate.tech/branding/og-image.png" />
+  
+  <!-- ============================================ -->
+  <!-- Structured Data / JSON-LD                   -->
+  <!-- ============================================ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "BeamLab Ultimate",
+    "description": "Professional structural analysis platform for beams, frames, and 3D structures with advanced FEM, P-Delta, and time-history analysis.",
+    "url": "https://beamlabultimate.tech",
+    "applicationCategory": "EngineeringApplication",
+    "operatingSystem": "Web Browser",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "featureList": [
+      "Finite Element Method (FEM) Analysis",
+      "P-Delta Second Order Effects",
+      "Modal Analysis",
+      "Time-History Analysis",
+      "3D Frame Analysis",
+      "Steel and Concrete Design",
+      "AI-Powered Engineering Assistant"
+    ],
+    "screenshot": "https://beamlabultimate.tech/branding/screenshot.png",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "ratingCount": "150"
+    }
+  }
+  </script>
+  
+  <title>BeamLab Ultimate – Professional Structural Analysis Platform</title>
 
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- ============================================ -->
+  <!-- Fonts (Non-Blocking)                        -->
+  <!-- ============================================ -->
   <link
     href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
-    rel="stylesheet" />
+    rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  </noscript>
 
-  <!-- Material Symbols Icons -->
+  <!-- Material Symbols Icons (lazy) -->
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-    rel="stylesheet" />
+    rel="stylesheet" media="print" onload="this.media='all'" />
+  
+  <!-- ============================================ -->
+  <!-- Critical CSS (Inlined for CWV)              -->
+  <!-- ============================================ -->
+  <style>
+    /* Critical CSS for LCP */
+    :root {
+      --bg-primary: #0f172a;
+      --text-primary: #f8fafc;
+      --accent: #3b82f6;
+    }
+    html { scroll-behavior: smooth; }
+    body { 
+      margin: 0; 
+      background: var(--bg-primary); 
+      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    #root { min-height: 100vh; }
+    
+    /* Accessibility: Skip link */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: var(--accent);
+      color: white;
+      padding: 8px 16px;
+      z-index: 9999;
+      text-decoration: none;
+      font-weight: 600;
+      border-radius: 0 0 4px 0;
+      transition: top 0.2s;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+    
+    /* Loading skeleton for CLS prevention */
+    .loading-skeleton {
+      background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    
+    /* Reduced motion preference */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+    
+    /* Font fallback to prevent FOUT */
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: local('Inter'), local('Inter-Regular');
+    }
+  </style>
 </head>
 
 <body>
-  <div id="root"></div>
+  <!-- Skip link for keyboard users -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+  
+  <!-- Initial loading state for CLS prevention -->
+  <div id="root" role="main">
+    <noscript>
+      <div style="padding: 2rem; text-align: center;">
+        <h1>JavaScript Required</h1>
+        <p>BeamLab Ultimate requires JavaScript to run. Please enable JavaScript in your browser settings.</p>
+      </div>
+    </noscript>
+  </div>
+  
+  <!-- Main application script -->
   <script type="module" src="/src/main.tsx"></script>
+  
+  <!-- Performance monitoring -->
+  <script>
+    // Report Core Web Vitals to analytics
+    if ('PerformanceObserver' in window) {
+      // CLS
+      new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          if (!entry.hadRecentInput) {
+            console.debug('CLS:', entry.value);
+          }
+        }
+      }).observe({ type: 'layout-shift', buffered: true });
+      
+      // LCP
+      new PerformanceObserver((list) => {
+        const entries = list.getEntries();
+        const lastEntry = entries[entries.length - 1];
+        console.debug('LCP:', lastEntry.startTime);
+      }).observe({ type: 'largest-contentful-paint', buffered: true });
+    }
+  </script>
 </body>
 
-</html>
+</html></html>

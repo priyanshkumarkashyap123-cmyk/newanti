@@ -105,6 +105,46 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
         };
     }, [memberForces, memberId, memberLength]);
 
+    // Section Cut Query - state and interpolation
+    const [sectionCutPosition, setSectionCutPosition] = useState(0.5); // 0 to 1 ratio
+    const [showSectionCut, setShowSectionCut] = useState(true);
+
+    const sectionCutForces = useMemo(() => {
+        const dd = memberForces.diagramData;
+        if (!dd?.x_values || dd.x_values.length < 2) return null;
+
+        const length = dd.x_values[dd.x_values.length - 1] || memberLength;
+        const x = sectionCutPosition * length;
+
+        // Find bounding indices for interpolation
+        let i = 0;
+        while (i < dd.x_values.length - 1 && dd.x_values[i + 1] < x) i++;
+
+        const x1 = dd.x_values[i] || 0;
+        const x2 = dd.x_values[i + 1] || x1;
+        const t = x2 !== x1 ? (x - x1) / (x2 - x1) : 0;
+
+        // Linear interpolation helper
+        const lerp = (arr: number[] | undefined, idx: number): number => {
+            if (!arr || arr.length === 0) return 0;
+            const v1 = arr[idx] ?? 0;
+            const v2 = arr[idx + 1] ?? v1;
+            return v1 + t * (v2 - v1);
+        };
+
+        return {
+            x: x,
+            shearY: lerp(dd.shear_y, i),
+            shearZ: lerp(dd.shear_z, i),
+            momentY: lerp(dd.moment_y, i),
+            momentZ: lerp(dd.moment_z, i),
+            axial: lerp(dd.axial, i),
+            torsion: lerp(dd.torsion, i),
+            deflectionY: lerp(dd.deflection_y, i),
+            deflectionZ: lerp(dd.deflection_z, i),
+        };
+    }, [memberForces.diagramData, sectionCutPosition, memberLength]);
+
     // Design results
     const designResult = useMemo((): DesignResult => {
         const input: DesignInput = {
@@ -211,8 +251,8 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                         <AlertTriangle className="w-5 h-5 text-yellow-400" />
                     )}
                     <span className={`font-medium ${getStatusColor(designResult.overallStatus).text}`}>
-                        {designResult.overallStatus === 'PASS' ? 'Design OK' : 
-                         designResult.overallStatus === 'WARNING' ? 'Check Required' : 'Design Failed'}
+                        {designResult.overallStatus === 'PASS' ? 'Design OK' :
+                            designResult.overallStatus === 'WARNING' ? 'Check Required' : 'Design Failed'}
                     </span>
                 </div>
                 <span className="text-sm text-zinc-300">
@@ -230,11 +270,10 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                         <button
                             key={type}
                             onClick={() => setActiveDiagram(type)}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                activeDiagram === type
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
-                            }`}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeDiagram === type
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                                }`}
                         >
                             {type === 'ALL' ? 'All Diagrams' : type}
                         </button>
@@ -266,9 +305,9 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                     <div className="bg-zinc-800 rounded-lg p-4">
                         <h3 className="text-sm font-medium text-zinc-400 mb-3">
                             {activeDiagram === 'ALL' ? 'Combined Force Diagrams' :
-                             activeDiagram === 'SFD' ? 'Shear Force Diagram' :
-                             activeDiagram === 'BMD' ? 'Bending Moment Diagram' :
-                             'Axial Force Diagram'}
+                                activeDiagram === 'SFD' ? 'Shear Force Diagram' :
+                                    activeDiagram === 'BMD' ? 'Bending Moment Diagram' :
+                                        'Axial Force Diagram'}
                         </h3>
                         <ForceDiagramRenderer
                             memberData={diagramData}
@@ -276,6 +315,69 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                             width={700}
                             height={activeDiagram === 'ALL' ? 350 : 250}
                         />
+                    </div>
+                )}
+
+                {/* Section Cut Query */}
+                {showSectionCut && sectionCutForces && (
+                    <div className="bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-lg p-4 border border-blue-500/30">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-sm font-medium text-blue-400 flex items-center gap-2">
+                                ✂️ Section Cut Query
+                            </h3>
+                            <button
+                                onClick={() => setShowSectionCut(false)}
+                                className="text-xs text-zinc-500 hover:text-zinc-300"
+                            >
+                                Hide
+                            </button>
+                        </div>
+
+                        {/* Position Slider */}
+                        <div className="mb-4">
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="text-xs text-zinc-400">Position along member</label>
+                                <span className="text-sm font-mono text-blue-400">
+                                    x = {sectionCutForces.x.toFixed(3)} m ({(sectionCutPosition * 100).toFixed(1)}%)
+                                </span>
+                            </div>
+                            <input
+                                type="range"
+                                min="0"
+                                max="1"
+                                step="0.01"
+                                value={sectionCutPosition}
+                                onChange={(e) => setSectionCutPosition(parseFloat(e.target.value))}
+                                className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                            />
+                            <div className="flex justify-between text-xs text-zinc-600 mt-1">
+                                <span>Start (0)</span>
+                                <span>Mid (L/2)</span>
+                                <span>End (L)</span>
+                            </div>
+                        </div>
+
+                        {/* Forces at Section */}
+                        <div className="grid grid-cols-4 gap-3">
+                            {[
+                                { label: 'Shear Y', value: sectionCutForces.shearY, unit: 'kN', color: 'text-blue-400' },
+                                { label: 'Shear Z', value: sectionCutForces.shearZ, unit: 'kN', color: 'text-blue-400' },
+                                { label: 'Moment Y', value: sectionCutForces.momentY, unit: 'kN·m', color: 'text-purple-400' },
+                                { label: 'Moment Z', value: sectionCutForces.momentZ, unit: 'kN·m', color: 'text-purple-400' },
+                                { label: 'Axial', value: sectionCutForces.axial, unit: 'kN', color: sectionCutForces.axial > 0 ? 'text-green-400' : 'text-red-400' },
+                                { label: 'Torsion', value: sectionCutForces.torsion, unit: 'kN·m', color: 'text-orange-400' },
+                                { label: 'Deflection Y', value: sectionCutForces.deflectionY, unit: 'mm', color: 'text-cyan-400' },
+                                { label: 'Deflection Z', value: sectionCutForces.deflectionZ, unit: 'mm', color: 'text-cyan-400' },
+                            ].map(item => (
+                                <div key={item.label} className="bg-zinc-900/50 rounded-lg p-3 text-center">
+                                    <div className="text-xs text-zinc-500 mb-1">{item.label}</div>
+                                    <div className={`text-base font-bold font-mono ${item.color}`}>
+                                        {item.value.toFixed(3)}
+                                    </div>
+                                    <div className="text-xs text-zinc-600">{item.unit}</div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
 
@@ -291,14 +393,13 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                                 Hide
                             </button>
                         </div>
-                        
+
                         <div className="space-y-2">
                             {designResult.checks.map((check) => (
                                 <div
                                     key={check.name}
-                                    className={`flex items-center justify-between p-3 rounded-lg bg-zinc-900 border-l-3 ${
-                                        getStatusColor(check.status).border
-                                    }`}
+                                    className={`flex items-center justify-between p-3 rounded-lg bg-zinc-900 border-l-3 ${getStatusColor(check.status).border
+                                        }`}
                                     style={{ borderLeftWidth: '3px' }}
                                 >
                                     <div className="flex-1">
@@ -316,21 +417,19 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                                     <div className="flex items-center gap-3 ml-4">
                                         <div className="w-24 h-2 bg-zinc-700 rounded-full overflow-hidden">
                                             <div
-                                                className={`h-full rounded-full transition-all ${
-                                                    check.utilization <= 0.7 ? 'bg-green-500' :
+                                                className={`h-full rounded-full transition-all ${check.utilization <= 0.7 ? 'bg-green-500' :
                                                     check.utilization <= 0.9 ? 'bg-yellow-500' :
-                                                    check.utilization <= 1.0 ? 'bg-orange-500' :
-                                                    'bg-red-500'
-                                                }`}
+                                                        check.utilization <= 1.0 ? 'bg-orange-500' :
+                                                            'bg-red-500'
+                                                    }`}
                                                 style={{ width: `${Math.min(check.utilization * 100, 100)}%` }}
                                             />
                                         </div>
-                                        <span className={`text-sm font-bold font-mono w-14 text-right ${
-                                            check.utilization <= 0.7 ? 'text-green-400' :
+                                        <span className={`text-sm font-bold font-mono w-14 text-right ${check.utilization <= 0.7 ? 'text-green-400' :
                                             check.utilization <= 0.9 ? 'text-yellow-400' :
-                                            check.utilization <= 1.0 ? 'text-orange-400' :
-                                            'text-red-400'
-                                        }`}>
+                                                check.utilization <= 1.0 ? 'text-orange-400' :
+                                                    'text-red-400'
+                                            }`}>
                                             {(check.utilization * 100).toFixed(1)}%
                                         </span>
                                     </div>

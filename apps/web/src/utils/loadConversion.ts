@@ -143,6 +143,116 @@ function getMemberDirection(startNode: Node, endNode: Node): { lx: number; ly: n
 }
 
 /**
+ * Build full 3x3 rotation matrix for member local-to-global transformation
+ * 
+ * Local coordinate system:
+ * - x-axis: along member from start to end
+ * - y-axis: perpendicular to member in vertical plane (principal bending axis)
+ * - z-axis: perpendicular to both (minor bending axis)
+ * 
+ * Returns transformation matrix T where:
+ * {F_global} = [T] * {F_local}
+ */
+function getMemberRotationMatrix(startNode: Node, endNode: Node): number[][] {
+    const L = calculateMemberLength(startNode, endNode);
+    if (L < LENGTH_TOL) {
+        // Identity matrix for zero-length members
+        return [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+    }
+    
+    // Local x-axis (along member)
+    const lx = (endNode.x - startNode.x) / L;
+    const ly = (endNode.y - startNode.y) / L;
+    const lz = (endNode.z - startNode.z) / L;
+    
+    // Determine local y-axis (perpendicular in vertical plane)
+    let mx: number, my: number, mz: number;
+    
+    if (Math.abs(lx) < 0.001 && Math.abs(lz) < 0.001) {
+        // Member is vertical (along global Y)
+        // Use global Z as reference
+        mx = -ly; // Cross product of (0,ly,0) with (0,0,1)
+        my = 0;
+        mz = 0;
+        const mag = Math.abs(mx);
+        if (mag > EPSILON) {
+            mx /= mag;
+        } else {
+            mx = 1;
+        }
+    } else {
+        // Member is not vertical
+        // Cross product of member direction with global Y (0,1,0)
+        // to get local z-axis, then cross again to get local y
+        const zx = ly * 0 - lz * 1; // = -lz
+        const zy = lz * 0 - lx * 0; // = 0
+        const zz = lx * 1 - ly * 0; // = lx
+        const zMag = Math.sqrt(zx * zx + zy * zy + zz * zz);
+        
+        if (zMag < EPSILON) {
+            mx = 0; my = 1; mz = 0;
+        } else {
+            const nzx = zx / zMag;
+            const nzy = zy / zMag;
+            const nzz = zz / zMag;
+            
+            // Local y = local z × local x
+            mx = nzy * lz - nzz * ly;
+            my = nzz * lx - nzx * lz;
+            mz = nzx * ly - nzy * lx;
+        }
+    }
+    
+    // Normalize local y-axis
+    const mMag = Math.sqrt(mx * mx + my * my + mz * mz);
+    if (mMag > EPSILON) {
+        mx /= mMag;
+        my /= mMag;
+        mz /= mMag;
+    } else {
+        mx = 0; my = 1; mz = 0;
+    }
+    
+    // Local z-axis = local x × local y
+    const nx = ly * mz - lz * my;
+    const ny = lz * mx - lx * mz;
+    const nz = lx * my - ly * mx;
+    
+    // Rotation matrix [T]: each row is a local axis in global coordinates
+    // Row 0: local x in global
+    // Row 1: local y in global
+    // Row 2: local z in global
+    return [
+        [lx, ly, lz],   // local x
+        [mx, my, mz],   // local y
+        [nx, ny, nz]    // local z
+    ];
+}
+
+/**
+ * Transform local load to global coordinates
+ */
+function transformLocalToGlobal(
+    fx: number, fy: number, fz: number,
+    mx: number, my: number, mz: number,
+    T: number[][]
+): { gfx: number; gfy: number; gfz: number; gmx: number; gmy: number; gmz: number } {
+    // Forces: F_global = T^T * F_local (transpose because T is local-to-global)
+    // Since each row of T is local axis in global coords:
+    // gfx = T[0][0]*fx + T[1][0]*fy + T[2][0]*fz
+    const gfx = T[0][0] * fx + T[1][0] * fy + T[2][0] * fz;
+    const gfy = T[0][1] * fx + T[1][1] * fy + T[2][1] * fz;
+    const gfz = T[0][2] * fx + T[1][2] * fy + T[2][2] * fz;
+    
+    // Moments transform the same way
+    const gmx = T[0][0] * mx + T[1][0] * my + T[2][0] * mz;
+    const gmy = T[0][1] * mx + T[1][1] * my + T[2][1] * mz;
+    const gmz = T[0][2] * mx + T[1][2] * my + T[2][2] * mz;
+    
+    return { gfx, gfy, gfz, gmx, gmy, gmz };
+}
+
+/**
  * Get perpendicular direction for local coordinate transformation
  * Uses the global Y-up convention with Z as secondary
  */
@@ -176,35 +286,93 @@ function getPerpendicularDirection(
 
 /**
  * Apply nodal loads based on direction with proper 3D transformation
+ * Supports both global and local coordinate systems
  */
 function applyDirectionalLoads(
     nodeId: string,
     reaction: number,
     moment: number,
     direction: string,
-    momentAxis: 'x' | 'y' | 'z' = 'z'
+    startNode?: Node,
+    endNode?: Node
 ): NodalLoad {
     const dir = direction.toLowerCase();
+    const isLocal = dir.includes('local');
     const isY = dir.includes('y');
     const isX = dir.includes('x');
     const isZ = dir.includes('z');
     
     const load: NodalLoad = { nodeId };
     
-    // Apply force in the correct direction
-    if (isX) {
-        load.fx = validateLoad(reaction, 'fx');
-        // Moment about Z for X-direction loads (in XY plane)
-        load.mz = validateLoad(moment, 'mz');
-    } else if (isZ) {
-        load.fz = validateLoad(reaction, 'fz');
-        // Moment about X for Z-direction loads (in YZ plane) - note sign change
-        load.mx = validateLoad(-moment, 'mx');
+    if (isLocal && startNode && endNode) {
+        // ========================================
+        // LOCAL COORDINATE SYSTEM
+        // ========================================
+        // Get rotation matrix for this member
+        const T = getMemberRotationMatrix(startNode, endNode);
+        
+        // In local coordinates:
+        // - Local Y is the loading direction (perpendicular to member)
+        // - Moment is about local Z axis
+        let localFx = 0, localFy = 0, localFz = 0;
+        let localMx = 0, localMy = 0, localMz = 0;
+        
+        if (isY) {
+            localFy = reaction;
+            localMz = moment;
+        } else if (isX) {
+            localFx = reaction;
+            localMy = moment;
+        } else if (isZ) {
+            localFz = reaction;
+            localMx = moment;
+        } else {
+            // Default to local Y
+            localFy = reaction;
+            localMz = moment;
+        }
+        
+        // Transform to global coordinates
+        const global = transformLocalToGlobal(
+            localFx, localFy, localFz,
+            localMx, localMy, localMz,
+            T
+        );
+        
+        load.fx = validateLoad(global.gfx, 'fx');
+        load.fy = validateLoad(global.gfy, 'fy');
+        load.fz = validateLoad(global.gfz, 'fz');
+        load.mx = validateLoad(global.gmx, 'mx');
+        load.my = validateLoad(global.gmy, 'my');
+        load.mz = validateLoad(global.gmz, 'mz');
+        
+        // Clean up near-zero values
+        if (Math.abs(load.fx || 0) < LOAD_TOL) delete load.fx;
+        if (Math.abs(load.fy || 0) < LOAD_TOL) delete load.fy;
+        if (Math.abs(load.fz || 0) < LOAD_TOL) delete load.fz;
+        if (Math.abs(load.mx || 0) < LOAD_TOL) delete load.mx;
+        if (Math.abs(load.my || 0) < LOAD_TOL) delete load.my;
+        if (Math.abs(load.mz || 0) < LOAD_TOL) delete load.mz;
+        
     } else {
-        // Default: Y direction (gravity)
-        load.fy = validateLoad(reaction, 'fy');
-        // Moment about Z for Y-direction loads (in XY plane)
-        load.mz = validateLoad(moment, 'mz');
+        // ========================================
+        // GLOBAL COORDINATE SYSTEM
+        // ========================================
+        // Apply force in the correct direction
+        if (isX) {
+            load.fx = validateLoad(reaction, 'fx');
+            // Moment about Z for X-direction loads (in XY plane)
+            load.mz = validateLoad(moment, 'mz');
+        } else if (isZ) {
+            load.fz = validateLoad(reaction, 'fz');
+            // Moment about X for Z-direction loads (in YZ plane)
+            load.mx = validateLoad(-moment, 'mx');
+        } else {
+            // Default: Y direction (gravity)
+            load.fy = validateLoad(reaction, 'fy');
+            // Moment about Z for Y-direction loads (in XY plane)
+            load.mz = validateLoad(moment, 'mz');
+        }
     }
     
     return load;
@@ -322,10 +490,10 @@ function convertUDL(
     M1 = validateLoad(M1, 'M1');
     M2 = validateLoad(M2, 'M2');
 
-    // Apply loads in the correct direction
+    // Apply loads in the correct direction (pass nodes for local transformation)
     return [
-        applyDirectionalLoads(member.startNodeId, R1, M1, memberLoad.direction),
-        applyDirectionalLoads(member.endNodeId, R2, M2, memberLoad.direction)
+        applyDirectionalLoads(member.startNodeId, R1, M1, memberLoad.direction, startNode, endNode),
+        applyDirectionalLoads(member.endNodeId, R2, M2, memberLoad.direction, startNode, endNode)
     ];
 }
 
@@ -457,10 +625,10 @@ function convertTriangular(
     M1 = validateLoad(M1, 'M1');
     M2 = validateLoad(M2, 'M2');
 
-    // Apply loads in the correct direction
+    // Apply loads in the correct direction (pass nodes for local transformation)
     return [
-        applyDirectionalLoads(member.startNodeId, R1, M1, memberLoad.direction),
-        applyDirectionalLoads(member.endNodeId, R2, M2, memberLoad.direction)
+        applyDirectionalLoads(member.startNodeId, R1, M1, memberLoad.direction, startNode, endNode),
+        applyDirectionalLoads(member.endNodeId, R2, M2, memberLoad.direction, startNode, endNode)
     ];
 }
 
@@ -524,10 +692,10 @@ function convertPointLoad(
         console.log(`[Point Load] P=${P}, a=${a}, b=${b}, R1=${R1}, R2=${R2}, M1=${M1}, M2=${M2}`);
     }
 
-    // Apply loads in the correct direction
+    // Apply loads in the correct direction (pass nodes for local transformation)
     return [
-        applyDirectionalLoads(member.startNodeId, R1, M1, memberLoad.direction),
-        applyDirectionalLoads(member.endNodeId, R2, M2, memberLoad.direction)
+        applyDirectionalLoads(member.startNodeId, R1, M1, memberLoad.direction, startNode, endNode),
+        applyDirectionalLoads(member.endNodeId, R2, M2, memberLoad.direction, startNode, endNode)
     ];
 }
 
@@ -583,9 +751,10 @@ function convertMomentLoad(
         console.log(`[Moment Load] M0=${M0}, a=${a}, R1=${R1}, R2=${R2}, M1=${M1}, M2=${M2}`);
     }
     
+    // Apply loads in the correct direction (pass nodes for local transformation)
     return [
-        applyDirectionalLoads(member.startNodeId, R1, M1, memberLoad.direction),
-        applyDirectionalLoads(member.endNodeId, R2, M2, memberLoad.direction)
+        applyDirectionalLoads(member.startNodeId, R1, M1, memberLoad.direction, startNode, endNode),
+        applyDirectionalLoads(member.endNodeId, R2, M2, memberLoad.direction, startNode, endNode)
     ];
 }
 

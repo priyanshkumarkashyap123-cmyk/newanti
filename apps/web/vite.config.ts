@@ -4,6 +4,53 @@ import wasm from 'vite-plugin-wasm';
 import topLevelAwait from 'vite-plugin-top-level-await';
 import path from 'path';
 
+// ============================================
+// SECURITY HEADERS CONFIGURATION
+// ============================================
+const securityHeaders = {
+  // Content Security Policy - Restrict resource loading
+  'Content-Security-Policy': [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://*.clerk.accounts.dev",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com",
+    "img-src 'self' data: blob: https:",
+    "connect-src 'self' https://*.clerk.accounts.dev wss://*.clerk.accounts.dev https://api.anthropic.com https://generativelanguage.googleapis.com",
+    "frame-src 'self' https://challenges.cloudflare.com https://*.clerk.accounts.dev",
+    "worker-src 'self' blob:",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join('; '),
+  
+  // Prevent clickjacking
+  'X-Frame-Options': 'SAMEORIGIN',
+  
+  // Prevent MIME type sniffing
+  'X-Content-Type-Options': 'nosniff',
+  
+  // Enable XSS filter
+  'X-XSS-Protection': '1; mode=block',
+  
+  // Control referrer information
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  
+  // Permissions Policy - Restrict browser features
+  'Permissions-Policy': [
+    'accelerometer=()',
+    'camera=()',
+    'geolocation=()',
+    'gyroscope=()',
+    'magnetometer=()',
+    'microphone=()',
+    'payment=()',
+    'usb=()',
+  ].join(', '),
+  
+  // Strict Transport Security (for production)
+  // 'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
+};
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
@@ -27,6 +74,8 @@ export default defineConfig({
     strictPort: false,
     host: 'localhost',
     cors: true,
+    // Apply security headers in development
+    headers: securityHeaders,
     hmr: {
       host: 'localhost',
       port: 5173,
