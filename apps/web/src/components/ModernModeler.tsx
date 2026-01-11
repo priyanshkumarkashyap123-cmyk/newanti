@@ -79,6 +79,7 @@ import { useAuth } from '../providers/AuthProvider';
 import { useSubscription } from '../hooks/useSubscription';
 import { StructureGallery } from './gallery/StructureGallery';
 import { BoundaryConditionsDialog } from './BoundaryConditionsDialog';
+import { PlateCreationDialog } from './dialogs/PlateCreationDialog';
 import { SelectionToolbar } from './SelectionToolbar';
 import { DeadLoadGenerator } from './DeadLoadGenerator';
 
@@ -1487,6 +1488,12 @@ export const ModernModeler: FC = () => {
             <BoundaryConditionsDialog
                 open={modals.boundaryConditionsDialog}
                 onClose={() => closeModal('boundaryConditionsDialog')}
+            />
+
+            {/* Plate Creation Dialog - NEW */}
+            <PlateCreationDialog
+                isOpen={modals.plateDialog}
+                onClose={() => closeModal('plateDialog')}
             />
 
             {/* Advanced Selection Toolbar - NEW */}

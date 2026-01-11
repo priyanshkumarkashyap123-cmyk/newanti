@@ -113,14 +113,14 @@ export const EngineeringRibbon: FC<RibbonProps> = ({ activeCategory }) => {
             </ToolGroup>
 
             <ToolGroup label="Structure">
-                <ToolButton icon={Grid} label="Wizard" onClick={() => openModal('structureWizard')} vertical />
-                <ToolButton icon={Table2} label="Tables" onClick={() => { }} vertical />
+                <ToolButton icon={Grid} label="Wizard" onClick={() => openModal('structureWizard')} tooltip="Structure Wizard" shortcut="Cmd+Shift+W" />
+                <ToolButton icon={Database} label="Gallery" onClick={() => openModal('structureGallery')} tooltip="Load Famous Structures" />
             </ToolGroup>
 
             <ToolGroup label="Create">
-                <ToolButton icon={Box} label="Node" onClick={() => setTool('node')} isActive={activeTool === 'node'} />
-                <ToolButton icon={Spline} label="Beam" onClick={() => setTool('member')} isActive={activeTool === 'member'} />
-                <ToolButton icon={Grid} label="Plate" onClick={() => { }} disabled />
+                <ToolButton icon={Box} label="Node" onClick={() => setTool('node')} isActive={activeTool === 'node'} tooltip="Create Node" shortcut="N" />
+                <ToolButton icon={Spline} label="Beam" onClick={() => setTool('member')} isActive={activeTool === 'member'} tooltip="Create Member" shortcut="M" />
+                <ToolButton icon={Grid} label="Plate" onClick={() => openModal('plateDialog')} tooltip="Create Plate/Shell Element" shortcut="P" />
             </ToolGroup>
 
             <ToolGroup label="Selection">
