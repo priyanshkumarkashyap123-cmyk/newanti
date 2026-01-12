@@ -1,5 +1,5 @@
 import { FC, useState, useEffect, useCallback, useRef } from 'react';
-import { useModelStore, type Restraints } from '../store/model';
+import { useModelStore, type Restraints, type MemberLoad as StoreMemberLoad } from '../store/model';
 import { STEEL_SECTIONS, MATERIALS_DATABASE, type SectionProperties, type Material } from '../data/SectionDatabase';
 
 // ============================================
@@ -116,6 +116,19 @@ const NumberInput: FC<NumberInputProps> = ({ value, onChange, step = 0.1, disabl
 };
 
 // ============================================
+// LOAD DIRECTION OPTIONS
+// ============================================
+const LOAD_DIRECTIONS = [
+    { value: 'global_y', label: 'Global Y (Vertical)' },
+    { value: 'global_x', label: 'Global X (Horizontal)' },
+    { value: 'global_z', label: 'Global Z (Out-of-plane)' },
+    { value: 'local_y', label: 'Local Y (Perpendicular)' },
+    { value: 'axial', label: 'Local X (Axial)' },
+] as const;
+
+type LoadDirection = typeof LOAD_DIRECTIONS[number]['value'];
+
+// ============================================
 // PROPERTIES PANEL COMPONENT
 // ============================================
 export const PropertiesPanel: FC = () => {
@@ -124,6 +137,7 @@ export const PropertiesPanel: FC = () => {
     const nodes = useModelStore((state) => state.nodes);
     const members = useModelStore((state) => state.members);
     const loads = useModelStore((state) => state.loads);
+    const memberLoads = useModelStore((state) => state.memberLoads);
     const analysisResults = useModelStore((state) => state.analysisResults);
     const updateNodePosition = useModelStore((state) => state.updateNodePosition);
     const updateMember = useModelStore((state) => state.updateMember);
@@ -131,9 +145,22 @@ export const PropertiesPanel: FC = () => {
     const setNodeRestraints = useModelStore((state) => state.setNodeRestraints);
     const addLoad = useModelStore((state) => state.addLoad);
     const removeLoad = useModelStore((state) => state.removeLoad);
+    const addMemberLoad = useModelStore((state) => state.addMemberLoad);
+    const removeMemberLoad = useModelStore((state) => state.removeMemberLoad);
 
-    // Local state for new load input
+    // Local state for new nodal load input (enhanced)
+    const [newLoadFx, setNewLoadFx] = useState(0);
     const [newLoadFy, setNewLoadFy] = useState(-10);
+    const [newLoadFz, setNewLoadFz] = useState(0);
+    const [newLoadMz, setNewLoadMz] = useState(0);
+    const [showFullLoadInput, setShowFullLoadInput] = useState(false);
+
+    // Local state for new member load input (UDL)
+    const [newUdlW, setNewUdlW] = useState(-10);
+    const [newUdlDirection, setNewUdlDirection] = useState<LoadDirection>('global_y');
+    const [newUdlStartPos, setNewUdlStartPos] = useState(0);
+    const [newUdlEndPos, setNewUdlEndPos] = useState(1);
+    const [showUdlOptions, setShowUdlOptions] = useState(false);
 
     // Minimize state for the panel
     const [isMinimized, setIsMinimized] = useState(false);
@@ -397,11 +424,28 @@ export const PropertiesPanel: FC = () => {
         };
 
         const handleAddLoad = () => {
-            addLoad({
+            // Use full load vector if in full mode, otherwise just Fy
+            const loadData = showFullLoadInput ? {
                 id: crypto.randomUUID(),
                 nodeId: id,
-                fy: newLoadFy
-            });
+                fx: newLoadFx,
+                fy: newLoadFy,
+                fz: newLoadFz,
+                mz: newLoadMz
+            } : {
+                id: crypto.randomUUID(),
+                nodeId: id,
+                fx: 0,
+                fy: newLoadFy,
+                fz: 0,
+                mz: 0
+            };
+            addLoad(loadData);
+            // Reset inputs
+            setNewLoadFx(0);
+            setNewLoadFy(-10);
+            setNewLoadFz(0);
+            setNewLoadMz(0);
         };
 
         return (
@@ -474,19 +518,88 @@ export const PropertiesPanel: FC = () => {
 
                 <hr style={dividerStyle} />
 
-                {/* Loads */}
+                {/* Enhanced Loads Section */}
                 <div style={sectionStyle}>
-                    <label style={labelStyle}>⬇️ Loads</label>
-                    {nodeLoads.length === 0 && <p style={{ fontSize: 11, color: '#666' }}>No loads</p>}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <label style={labelStyle}>⬇️ Nodal Loads</label>
+                        <button 
+                            onClick={() => setShowFullLoadInput(!showFullLoadInput)} 
+                            style={{ ...minimizeButtonStyle, fontSize: 10 }}
+                            title="Toggle detailed input"
+                        >
+                            {showFullLoadInput ? '▼ Simple' : '▶ Full'}
+                        </button>
+                    </div>
+                    
+                    {/* Existing loads display with full info */}
+                    {nodeLoads.length === 0 && <p style={{ fontSize: 11, color: '#666', marginTop: 4 }}>No loads applied</p>}
                     {nodeLoads.map(load => (
-                        <div key={load.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginTop: 4, alignItems: 'center' }}>
-                            <span>Fy: {load.fy ?? 0} kN</span>
+                        <div key={load.id} style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            fontSize: 11, 
+                            marginTop: 6, 
+                            alignItems: 'center',
+                            background: 'rgba(59, 130, 246, 0.1)',
+                            padding: '6px 8px',
+                            borderRadius: 4,
+                            border: '1px solid rgba(59, 130, 246, 0.3)'
+                        }}>
+                            <div style={{ fontFamily: 'monospace' }}>
+                                {load.fx ? `Fx: ${load.fx} ` : ''}
+                                {load.fy ? `Fy: ${load.fy} ` : ''}
+                                {load.fz ? `Fz: ${load.fz} ` : ''}
+                                {load.mz ? `Mz: ${load.mz}` : ''}
+                                {!load.fx && !load.fy && !load.fz && !load.mz && 'Zero load'}
+                                <span style={{ color: '#888' }}> kN</span>
+                            </div>
                             <button onClick={() => removeLoad(load.id)} style={deleteButtonStyle}>✕</button>
                         </div>
                     ))}
-                    <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-                        <NumberInput value={newLoadFy} onChange={setNewLoadFy} style={{ width: 60 }} />
-                        <button onClick={handleAddLoad} style={addButtonStyle}>+ Add</button>
+                    
+                    {/* Add Load Form */}
+                    <div style={{ marginTop: 10, padding: 8, background: 'rgba(0,0,0,0.2)', borderRadius: 6 }}>
+                        {showFullLoadInput ? (
+                            // Full load input with all components
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                    <span style={{ fontSize: 10, width: 24, color: '#888' }}>Fx</span>
+                                    <NumberInput value={newLoadFx} onChange={setNewLoadFx} style={{ flex: 1 }} />
+                                    <span style={{ fontSize: 10, color: '#666' }}>kN</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                    <span style={{ fontSize: 10, width: 24, color: '#888' }}>Fy</span>
+                                    <NumberInput value={newLoadFy} onChange={setNewLoadFy} style={{ flex: 1 }} />
+                                    <span style={{ fontSize: 10, color: '#666' }}>kN</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                    <span style={{ fontSize: 10, width: 24, color: '#888' }}>Fz</span>
+                                    <NumberInput value={newLoadFz} onChange={setNewLoadFz} style={{ flex: 1 }} />
+                                    <span style={{ fontSize: 10, color: '#666' }}>kN</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                    <span style={{ fontSize: 10, width: 24, color: '#888' }}>Mz</span>
+                                    <NumberInput value={newLoadMz} onChange={setNewLoadMz} style={{ flex: 1 }} />
+                                    <span style={{ fontSize: 10, color: '#666' }}>kN·m</span>
+                                </div>
+                            </div>
+                        ) : (
+                            // Simple vertical load input
+                            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                <span style={{ fontSize: 11, color: '#888' }}>Fy:</span>
+                                <NumberInput value={newLoadFy} onChange={setNewLoadFy} style={{ width: 70 }} />
+                                <span style={{ fontSize: 10, color: '#666' }}>kN</span>
+                            </div>
+                        )}
+                        <button 
+                            onClick={handleAddLoad} 
+                            style={{ ...addButtonStyle, width: '100%', marginTop: 8, background: '#3b82f6' }}
+                        >
+                            + Add Load
+                        </button>
+                        <p style={{ fontSize: 9, color: '#666', marginTop: 4, textAlign: 'center' }}>
+                            Negative = downward/leftward
+                        </p>
                     </div>
                 </div>
 
@@ -765,6 +878,156 @@ export const PropertiesPanel: FC = () => {
                         </div>
                     </>
                 )}
+
+                <hr style={dividerStyle} />
+
+                {/* Member Loads (UDL) */}
+                <div style={sectionStyle}>
+                    <label style={labelStyle}>⬇️ Member Loads (UDL)</label>
+                    
+                    {/* Existing member loads */}
+                    {memberLoads.filter(ml => ml.memberId === id).length > 0 ? (
+                        <div style={{ marginTop: 8 }}>
+                            {memberLoads.filter(ml => ml.memberId === id).map((ml, idx) => (
+                                <div key={ml.id} style={{ 
+                                    background: 'rgba(156, 39, 176, 0.15)', 
+                                    padding: 8, 
+                                    borderRadius: 6, 
+                                    marginBottom: 6,
+                                    border: '1px solid rgba(156, 39, 176, 0.3)'
+                                }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: 11, fontWeight: 600, color: '#ce93d8' }}>
+                                            {ml.type || 'UDL'} #{idx + 1}
+                                        </span>
+                                        <button
+                                            onClick={() => removeMemberLoad(ml.id)}
+                                            style={{ 
+                                                background: 'rgba(255,68,68,0.3)', 
+                                                border: 'none', 
+                                                color: '#f88', 
+                                                cursor: 'pointer',
+                                                borderRadius: 4,
+                                                padding: '2px 6px',
+                                                fontSize: 10
+                                            }}
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                    <div style={{ fontSize: 11, marginTop: 4, fontFamily: 'monospace' }}>
+                                        w = {ml.w1?.toFixed(2) ?? '0.00'} kN/m ({ml.direction || 'global_y'})<br/>
+                                        Range: {((ml.startPos ?? 0) * 100).toFixed(0)}% - {((ml.endPos ?? 1) * 100).toFixed(0)}%
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div style={{ fontSize: 11, color: '#666', marginTop: 4 }}>No member loads</div>
+                    )}
+
+                    {/* Add new UDL */}
+                    <div style={{ marginTop: 10 }}>
+                        <button 
+                            onClick={() => setShowUdlOptions(!showUdlOptions)}
+                            style={{ 
+                                ...addButtonStyle, 
+                                width: '100%',
+                                background: showUdlOptions ? '#7b1fa2' : '#9c27b0'
+                            }}
+                        >
+                            {showUdlOptions ? '− Hide UDL Form' : '+ Add UDL'}
+                        </button>
+                        
+                        {showUdlOptions && (
+                            <div style={{ 
+                                background: 'rgba(156, 39, 176, 0.1)', 
+                                padding: 10, 
+                                borderRadius: 8, 
+                                marginTop: 8,
+                                border: '1px solid rgba(156, 39, 176, 0.3)'
+                            }}>
+                                {/* Load magnitude */}
+                                <div style={{ marginBottom: 8 }}>
+                                    <label style={{ fontSize: 11, color: '#ce93d8' }}>Load (w) in kN/m</label>
+                                    <NumberInput 
+                                        value={newUdlW} 
+                                        onChange={setNewUdlW} 
+                                        style={{ width: '100%', marginTop: 4 }}
+                                    />
+                                    <span style={{ fontSize: 9, color: '#888' }}>Negative = downward</span>
+                                </div>
+
+                                {/* Direction dropdown */}
+                                <div style={{ marginBottom: 8 }}>
+                                    <label style={{ fontSize: 11, color: '#ce93d8' }}>Direction</label>
+                                    <select
+                                        value={newUdlDirection}
+                                        onChange={(e) => setNewUdlDirection(e.target.value as typeof newUdlDirection)}
+                                        style={{ ...selectStyle, marginTop: 4 }}
+                                    >
+                                        {LOAD_DIRECTIONS.map(dir => (
+                                            <option key={dir.value} value={dir.value}>{dir.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Position range */}
+                                <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                                    <div style={{ flex: 1 }}>
+                                        <label style={{ fontSize: 11, color: '#ce93d8' }}>Start %</label>
+                                        <NumberInput 
+                                            value={newUdlStartPos * 100} 
+                                            onChange={(v) => setNewUdlStartPos(Math.min(Math.max(v / 100, 0), 1))} 
+                                            style={{ width: '100%', marginTop: 4 }}
+                                        />
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <label style={{ fontSize: 11, color: '#ce93d8' }}>End %</label>
+                                        <NumberInput 
+                                            value={newUdlEndPos * 100} 
+                                            onChange={(v) => setNewUdlEndPos(Math.min(Math.max(v / 100, 0), 1))} 
+                                            style={{ width: '100%', marginTop: 4 }}
+                                        />
+                                    </div>
+                                </div>
+                                <div style={{ fontSize: 9, color: '#888', marginBottom: 8 }}>
+                                    0% = start of member, 100% = end of member
+                                </div>
+
+                                {/* Apply button */}
+                                <button
+                                    onClick={() => {
+                                        addMemberLoad({
+                                            id: crypto.randomUUID(),
+                                            memberId: id,
+                                            type: 'UDL',
+                                            w1: newUdlW,
+                                            w2: newUdlW, // For UDL, w1 = w2
+                                            direction: newUdlDirection,
+                                            startPos: newUdlStartPos,
+                                            endPos: newUdlEndPos
+                                        });
+                                        // Reset
+                                        setNewUdlW(-10);
+                                        setNewUdlDirection('global_y');
+                                        setNewUdlStartPos(0);
+                                        setNewUdlEndPos(1);
+                                        setShowUdlOptions(false);
+                                    }}
+                                    style={{ 
+                                        ...addButtonStyle, 
+                                        width: '100%', 
+                                        background: '#4caf50',
+                                        marginTop: 4
+                                    }}
+                                >
+                                    ✓ Apply UDL
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
         );
     }
