@@ -665,42 +665,51 @@ export const ModernModeler: FC = () => {
                 setAnalysisStage('assembling');
                 setAnalysisProgress(30);
 
-                // Convert direction format: local_y -> Fy, global_y -> FY
+                // Direction format - Rust WASM expects strings like "local_y", "global_y"
+                // The Rust code checks for "local" AND "y" in the string
                 const convertDirection = (dir: string): string => {
+                    // Already in correct format
+                    if (dir.includes('_')) return dir;
+                    
+                    // Convert from older formats
                     switch (dir) {
-                        case 'local_y': return 'Fy';
-                        case 'local_z': return 'Fz';
-                        case 'global_x': return 'FX';
-                        case 'global_y': return 'FY';
-                        case 'global_z': return 'FZ';
-                        case 'axial': return 'Fx';
-                        default: return 'Fy';
+                        case 'Fy': return 'local_y';
+                        case 'Fz': return 'local_z';
+                        case 'Fx': return 'local_x';
+                        case 'FX': return 'global_x';
+                        case 'FY': return 'global_y';
+                        case 'FZ': return 'global_z';
+                        case 'axial': return 'local_x';
+                        case 'projected': return 'global_y';
+                        default: return dir || 'global_y';
                     }
                 };
 
-                // Build distributed_loads from memberLoads
-                const distributed_loads = memberLoads
+                // Build distributed_loads from memberLoads in WASM format
+                // WASM MemberLoad struct: { element_id, w1, w2, direction, start_pos, end_pos, is_projected }
+                const wasmMemberLoads = memberLoads
                     .filter(ml => ml.type === 'UDL' || ml.type === 'UVL')
                     .map(ml => ({
-                        memberId: ml.memberId,
+                        element_id: parseInt(ml.memberId),
+                        w1: (ml.w1 ?? 0) * 1000, // Convert kN/m to N/m for WASM
+                        w2: ml.type === 'UDL' ? ((ml.w1 ?? 0) * 1000) : ((ml.w2 ?? ml.w1 ?? 0) * 1000),
                         direction: convertDirection(ml.direction),
-                        w1: ml.w1 ?? 0,
-                        w2: ml.type === 'UDL' ? (ml.w1 ?? 0) : (ml.w2 ?? ml.w1 ?? 0),
-                        startPos: ml.startPos ?? 0,
-                        endPos: ml.endPos ?? 1,
-                        isRatio: true
+                        start_pos: ml.startPos ?? 0,
+                        end_pos: ml.endPos ?? 1,
+                        is_projected: false // Default to false, could be extended later
                     }));
 
-                // Build node_loads from nodal loads
-                const node_loads = loads.map(l => ({
-                    nodeId: l.nodeId,
-                    fx: l.fx ?? 0,
-                    fy: l.fy ?? 0,
-                    fz: l.fz ?? 0,
-                    mx: l.mx ?? 0,
-                    my: l.my ?? 0,
-                    mz: l.mz ?? 0
+                // Build point loads from nodal loads in WASM format
+                // WASM expects: { node, fx, fy, mz }
+                const wasmPointLoads = loads.map(l => ({
+                    node: parseInt(l.nodeId),
+                    fx: (l.fx ?? 0) * 1000, // Convert kN to N for WASM
+                    fy: (l.fy ?? 0) * 1000,
+                    mz: (l.mz ?? 0) * 1000  // Convert kN·m to N·m
                 }));
+
+                console.log('[Analysis] Member loads:', wasmMemberLoads.length, wasmMemberLoads);
+                console.log('[Analysis] Point loads:', wasmPointLoads.length, wasmPointLoads);
 
                 // Use Rust WASM solver (client-side) for frame analysis
                 try {
@@ -735,45 +744,71 @@ export const ModernModeler: FC = () => {
                         a: m.A || 0.01
                     }));
 
-                    // Run WASM analysis
-                    const wasmResult = await analyzeStructure(wasmNodes, wasmElements);
+                    // Run WASM analysis WITH LOADS
+                    console.log('[Analysis] Calling WASM solver with', wasmNodes.length, 'nodes,', wasmElements.length, 'members,', wasmPointLoads.length, 'point loads,', wasmMemberLoads.length, 'member loads');
+                    const wasmResult = await analyzeStructure(wasmNodes, wasmElements, wasmPointLoads, wasmMemberLoads);
 
                     if (!wasmResult.success) {
                         throw new Error(wasmResult.error || 'WASM analysis failed');
                     }
 
+                    console.log('[Analysis] WASM Result:', {
+                        displacements: wasmResult.displacements?.length,
+                        reactions: wasmResult.reactions?.length,
+                        member_forces: wasmResult.member_forces?.length
+                    });
+
                     // Convert WASM result to expected format
+                    // WASM returns arrays: displacements[], reactions[], member_forces[]
                     const pythonResult = {
                         success: true,
-                        nodes: Object.entries(wasmResult.displacements).map(([nodeId, disp]) => ({
-                            nodeId,
-                            DX: disp.dx || 0,
-                            DY: disp.dy || 0,
+                        nodes: (wasmResult.displacements || []).map((disp: any) => ({
+                            nodeId: String(disp.node),
+                            DX: (disp.dx || 0) / 1000, // Convert mm to m
+                            DY: (disp.dy || 0) / 1000,
                             DZ: 0, // 2D Frame
+                            RZ: (disp.rz || 0), // Rotation in radians
                             RxnFX: 0,
                             RxnFY: 0,
                             RxnFZ: 0
                         })),
-                        members: membersArray.map(m => ({
-                            memberId: m.id,
-                            axial: 0,
-                            shear: 0,
-                            moment: 0
+                        // Add reactions from WASM result
+                        reactions: (wasmResult.reactions || []).map((rxn: any) => ({
+                            nodeId: String(rxn.node),
+                            RxnFX: (rxn.fx || 0) / 1000, // Convert N to kN
+                            RxnFY: (rxn.fy || 0) / 1000,
+                            RxnMZ: (rxn.mz || 0) / 1000  // Convert N·m to kN·m
                         })),
-                        metadata: { solver: 'Rust WASM', computation_time: '< 1ms' },
-                        error: undefined // Fix missing property
+                        members: (wasmResult.member_forces || []).reduce((acc: Record<string, any>, mf: any) => {
+                            const memberId = String(mf.element);
+                            if (!acc[memberId]) {
+                                acc[memberId] = {
+                                    memberId,
+                                    axial: 0,
+                                    shearStart: 0,
+                                    shearEnd: 0,
+                                    momentStart: 0,
+                                    momentEnd: 0
+                                };
+                            }
+                            const forces = acc[memberId];
+                            if (mf.end === 'start') {
+                                forces.axial = (mf.axial || 0) / 1000; // Convert N to kN
+                                forces.shearStart = (mf.shear || 0) / 1000;
+                                forces.momentStart = (mf.moment || 0) / 1000; // Convert N·m to kN·m
+                            } else {
+                                forces.shearEnd = (mf.shear || 0) / 1000;
+                                forces.momentEnd = (mf.moment || 0) / 1000;
+                            }
+                            return acc;
+                        }, {} as Record<string, any>),
+                        metadata: { solver: 'Rust WASM', computation_time: wasmResult.stats?.solveTimeMs ? `${wasmResult.stats.solveTimeMs.toFixed(2)}ms` : '< 1ms' },
+                        error: undefined
                     };
 
                     if (pythonResult.success) {
-                        // Convert members array to dictionary keyed by memberId
-                        const membersDict: Record<string, any> = {};
-                        if (Array.isArray(pythonResult.members)) {
-                            for (const member of pythonResult.members) {
-                                if (member.memberId) {
-                                    membersDict[member.memberId] = member;
-                                }
-                            }
-                        }
+                        // Members is already a dict from reduce above
+                        const membersDict: Record<string, any> = pythonResult.members;
 
                         // Convert nodes array to dictionary keyed by nodeId
                         const nodesDict: Record<string, any> = {};
@@ -785,36 +820,36 @@ export const ModernModeler: FC = () => {
                             }
                         }
 
+                        // Build reactions dict from reactions array
+                        const reactionsDict: Record<string, number[]> = {};
+                        if (Array.isArray(pythonResult.reactions)) {
+                            for (const rxn of pythonResult.reactions) {
+                                if (rxn.nodeId) {
+                                    reactionsDict[rxn.nodeId] = [
+                                        rxn.RxnFX || 0,
+                                        rxn.RxnFY || 0,
+                                        0, // RxnFZ (2D)
+                                        0, // RxnMX (2D)
+                                        0, // RxnMY (2D)
+                                        rxn.RxnMZ || 0
+                                    ];
+                                }
+                            }
+                        }
+
                         result = {
                             success: true,
                             displacements: nodesDict,
-                            reactions: {},
+                            reactions: reactionsDict,
                             memberForces: membersDict,
-                            stats: { ...pythonResult.metadata, usedPythonApi: true }
+                            stats: { ...pythonResult.metadata, usedPythonApi: false, solver: 'Rust WASM' }
                         };
 
-                        // Extract reactions from nodes with restraints
-                        if (pythonResult.nodes) {
-                            const nodesList = Array.isArray(pythonResult.nodes) ? pythonResult.nodes : Object.values(pythonResult.nodes);
-                            nodesList.forEach((data: any) => {
-                                const nodeId = data.nodeId || data.node_id;
-                                const node = nodes.get(nodeId);
-                                if (node?.restraints && (node.restraints.fx || node.restraints.fy || node.restraints.fz)) {
-                                    // Check if there's reaction data
-                                    const hasReaction = data.reaction || data.RxnFX !== undefined;
-                                    if (hasReaction) {
-                                        result.reactions![nodeId] = [
-                                            data.reaction?.fx ?? data.RxnFX ?? 0,
-                                            data.reaction?.fy ?? data.RxnFY ?? 0,
-                                            data.reaction?.fz ?? data.RxnFZ ?? 0,
-                                            data.reaction?.mx ?? data.RxnMX ?? 0,
-                                            data.reaction?.my ?? data.RxnMY ?? 0,
-                                            data.reaction?.mz ?? data.RxnMZ ?? 0
-                                        ];
-                                    }
-                                }
-                            });
-                        }
+                        console.log('[Analysis] Parsed results:', {
+                            displacements: Object.keys(nodesDict).length,
+                            reactions: Object.keys(reactionsDict).length,
+                            memberForces: Object.keys(membersDict).length
+                        });
                     } else {
                         result = { success: false, error: pythonResult.error || 'Python analysis failed' };
                     }

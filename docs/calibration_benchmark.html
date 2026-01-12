@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>BeamLab Solver Calibration Benchmark</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --text: #e2e8f0;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: var(--bg-dark);
+            color: var(--text);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 40px;
+        }
+
+        .test-case {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+            border: 1px solid #334155;
+        }
+
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .test-number {
+            background: var(--accent);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        h2 {
+            color: var(--text);
+            margin: 0;
+            font-size: 1.4rem;
+        }
+
+        .diagram {
+            background: #0f172a;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            white-space: pre;
+            margin: 16px 0;
+            border: 1px solid #334155;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .params {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 16px 0;
+        }
+
+        .param {
+            background: #0f172a;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+
+        .param-label {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .param-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #60a5fa;
+        }
+
+        .expected {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+
+        .expected h4 {
+            color: var(--success);
+            margin: 0 0 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .expected-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .expected-table th,
+        .expected-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #334155;
+        }
+
+        .expected-table th {
+            color: #94a3b8;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .expected-table td:last-child {
+            font-family: 'Courier New', monospace;
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        button {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 8px 4px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        button:disabled {
+            background: #475569;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .results {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            display: none;
+            border: 1px solid #334155;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .results.success {
+            border-color: var(--success);
+        }
+
+        .results.error {
+            border-color: var(--error);
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .result-header.pass {
+            color: var(--success);
+        }
+
+        .result-header.fail {
+            color: var(--error);
+        }
+
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+
+        .result-table th {
+            background: #1e293b;
+            padding: 10px;
+            text-align: left;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .result-table td {
+            padding: 10px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .status-pass {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .status-fail {
+            color: var(--error);
+            font-weight: 600;
+        }
+
+        .formula {
+            background: rgba(59, 130, 246, 0.1);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #60a5fa;
+            display: inline-block;
+            margin: 4px 0;
+        }
+
+        .summary {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 32px;
+            text-align: center;
+            border: 1px solid #334155;
+        }
+
+        .summary h3 {
+            margin: 0 0 16px 0;
+            font-size: 1.5rem;
+        }
+
+        .summary-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 20px 0;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .stat-value.pass {
+            color: var(--success);
+        }
+
+        .stat-value.fail {
+            color: var(--error);
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .debug-section {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 32px;
+        }
+
+        .debug-section h4 {
+            color: var(--warning);
+            margin: 0 0 12px 0;
+        }
+
+        .debug-section ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .debug-section li {
+            margin: 8px 0;
+            color: #cbd5e1;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #334155;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .init-status {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .init-status.loading-status {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .init-status.ready-status {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--success);
+        }
+
+        .init-status.error-status {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--error);
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔬 Structural Solver Calibration Benchmark</h1>
+    <p class="subtitle">Testing against theoretical solutions with known exact values</p>
+
+    <div id="initStatus" class="init-status loading-status">
+        <span class="loading"></span> Initializing WASM Solver...
+    </div>
+
+    <!-- TEST CASE 1 -->
+    <div class="test-case">
+        <div class="test-header">
+            <span class="test-number">Test 1</span>
+            <h2>Simply Supported Beam with UDL</h2>
+        </div>
+
+        <div class="diagram">
+            ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ w = 10 kN/m
+            ════════════════════════
+            △ ○
+            Node 1 Node 2
+            (0,0) (10,0)
+            PINNED ROLLER
+        </div>
+
+        <div class="params">
+            <div class="param">
+                <div class="param-label">Span Length (L)</div>
+                <div class="param-value">10 m</div>
+            </div>
+            <div class="param">
+                <div class="param-label">UDL Intensity (w)</div>
+                <div class="param-value">10 kN/m</div>
+            </div>
+            <div class="param">
+                <div class="param-label">Young's Modulus (E)</div>
+                <div class="param-value">200 GPa</div>
+            </div>
+            <div class="param">
+                <div class="param-label">Moment of Inertia (I)</div>
+                <div class="param-value">4×10⁻⁵ m⁴</div>
+            </div>
+        </div>
+
+        <div class="expected">
+            <h4>📐 Expected Results (Theoretical)</h4>
+            <table class="expected-table">
+                <tr>
+                    <th>Parameter</th>
+                    <th>Formula</th>
+                    <th>Expected Value</th>
+                </tr>
+                <tr>
+                    <td>Reaction R_A</td>
+                    <td><span class="formula">R = wL/2</span></td>
+                    <td>50 kN</td>
+                </tr>
+                <tr>
+                    <td>Reaction R_B</td>
+                    <td><span class="formula">R = wL/2</span></td>
+                    <td>50 kN</td>
+                </tr>
+                <tr>
+                    <td>Max Moment (at center)</td>
+                    <td><span class="formula">M = wL²/8</span></td>
+                    <td>125 kNm</td>
+                </tr>
+                <tr>
+                    <td>Max Deflection</td>
+                    <td><span class="formula">δ = 5wL⁴/(384EI)</span></td>
+                    <td>65.1 mm</td>
+                </tr>
+            </table>
+        </div>
+
+        <button onclick="runTest1()">▶ Run Test 1</button>
+        <div id="result1" class="results"></div>
+    </div>
+
+    <!-- TEST CASE 2 -->
+    <div class="test-case">
+        <div class="test-header">
+            <span class="test-number">Test 2</span>
+            <h2>Asymmetric Point Load (Shear Check)</h2>
+        </div>
+
+        <div class="diagram">
+            100 kN
+            ↓
+            ════════●════════════════
+            △ ↑ ○
+            Node 1 Node 2 Node 3
+            (0,0) (2.5,0) (10,0)
+            PINNED a=2.5m b=7.5m ROLLER
+        </div>
+
+        <div class="params">
+            <div class="param">
+                <div class="param-label">Span Length (L)</div>
+                <div class="param-value">10 m</div>
+            </div>
+            <div class="param">
+                <div class="param-label">Point Load (P)</div>
+                <div class="param-value">100 kN at 2.5m</div>
+            </div>
+            <div class="param">
+                <div class="param-label">Distance a</div>
+                <div class="param-value">2.5 m</div>
+            </div>
+            <div class="param">
+                <div class="param-label">Distance b</div>
+                <div class="param-value">7.5 m</div>
+            </div>
+        </div>
+
+        <div class="expected">
+            <h4>📐 Expected Results (Theoretical)</h4>
+            <table class="expected-table">
+                <tr>
+                    <th>Parameter</th>
+                    <th>Formula</th>
+                    <th>Expected Value</th>
+                </tr>
+                <tr>
+                    <td>Reaction R_A (Left)</td>
+                    <td><span class="formula">R_A = P×b/L</span></td>
+                    <td>75 kN</td>
+                </tr>
+                <tr>
+                    <td>Reaction R_B (Right)</td>
+                    <td><span class="formula">R_B = P×a/L</span></td>
+                    <td>25 kN</td>
+                </tr>
+                <tr>
+                    <td>Max Moment (at load)</td>
+                    <td><span class="formula">M = P×a×b/L</span></td>
+                    <td>187.5 kNm</td>
+                </tr>
+            </table>
+        </div>
+
+        <button onclick="runTest2()">▶ Run Test 2</button>
+        <div id="result2" class="results"></div>
+    </div>
+
+    <!-- TEST CASE 3 -->
+    <div class="test-case">
+        <div class="test-header">
+            <span class="test-number">Test 3</span>
+            <h2>Fixed-Fixed Beam with UDL (Indeterminate)</h2>
+        </div>
+
+        <div class="diagram">
+            ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ w = 10 kN/m
+            ════════════════════════
+            ▓ ▓
+            Node 1 Node 2
+            (0,0) (10,0)
+            FIXED FIXED
+        </div>
+
+        <div class="params">
+            <div class="param">
+                <div class="param-label">Span Length (L)</div>
+                <div class="param-value">10 m</div>
+            </div>
+            <div class="param">
+                <div class="param-label">UDL Intensity (w)</div>
+                <div class="param-value">10 kN/m</div>
+            </div>
+            <div class="param">
+                <div class="param-label">Support Type</div>
+                <div class="param-value">Both Ends Fixed</div>
+            </div>
+        </div>
+
+        <div class="expected">
+            <h4>📐 Expected Results (Theoretical)</h4>
+            <table class="expected-table">
+                <tr>
+                    <th>Parameter</th>
+                    <th>Formula</th>
+                    <th>Expected Value</th>
+                </tr>
+                <tr>
+                    <td>Support Moments (hogging)</td>
+                    <td><span class="formula">M = wL²/12</span></td>
+                    <td>83.33 kNm</td>
+                </tr>
+                <tr>
+                    <td>Center Moment (sagging)</td>
+                    <td><span class="formula">M = wL²/24</span></td>
+                    <td>41.67 kNm</td>
+                </tr>
+                <tr>
+                    <td>Reactions</td>
+                    <td><span class="formula">R = wL/2</span></td>
+                    <td>50 kN each</td>
+                </tr>
+            </table>
+        </div>
+
+        <button onclick="runTest3()">▶ Run Test 3</button>
+        <div id="result3" class="results"></div>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary" id="summary" style="display: none;">
+        <h3>📊 Benchmark Summary</h3>
+        <div class="summary-stats">
+            <div class="stat">
+                <div class="stat-value pass" id="passCount">0</div>
+                <div class="stat-label">Tests Passed</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value fail" id="failCount">0</div>
+                <div class="stat-label">Tests Failed</div>
+            </div>
+        </div>
+        <button onclick="runAllTests()">🔄 Run All Tests</button>
+    </div>
+
+    <!-- Debug Tips -->
+    <div class="debug-section">
+        <h4>🔧 Debugging Tips (If Results Don't Match)</h4>
+        <ul>
+            <li><strong>Unit Consistency:</strong> Are you mixing mm and meters? (e.g., Span in meters but I in mm⁴?)
+            </li>
+            <li><strong>Sign Convention:</strong> Is downward load positive or negative in your array?</li>
+            <li><strong>UDL Conversion:</strong> For 2-node beams, UDL must be converted to equivalent nodal loads (wL/2
+                at each end)</li>
+            <li><strong>Boundary Conditions:</strong> Pinned = [true, true, false], Roller = [false, true, false], Fixed
+                = [true, true, true]</li>
+            <li><strong>Global vs Local:</strong> Ensure transformation matrix T is correctly applied for angled
+                elements</li>
+        </ul>
+    </div>
+
+    <script type="module">
+        import init, { solve_structure_wasm } from '../packages/solver-wasm/pkg/solver_wasm.js';
+
+        let wasmReady = false;
+        let testResults = { pass: 0, fail: 0 };
+
+        // Initialize WASM
+        init().then(() => {
+            wasmReady = true;
+            document.getElementById('initStatus').className = 'init-status ready-status';
+            document.getElementById('initStatus').innerHTML = '✅ WASM Solver Ready';
+            console.log('✅ WASM Solver initialized');
+        }).catch(err => {
+            document.getElementById('initStatus').className = 'init-status error-status';
+            document.getElementById('initStatus').innerHTML = '❌ WASM initialization failed: ' + err.message;
+            console.error('❌ WASM initialization failed:', err);
+        });
+
+        // Helper: Check tolerance
+        function checkTolerance(actual, expected, tolerancePercent = 5) {
+            if (expected === 0) return Math.abs(actual) < 0.001;
+            const error = Math.abs((actual - expected) / expected) * 100;
+            return { pass: error <= tolerancePercent, error: error };
+        }
+
+        // Display result
+        function showResult(elementId, passed, rows, notes = []) {
+            const div = document.getElementById(elementId);
+            div.className = 'results show ' + (passed ? 'success' : 'error');
+
+            let html = `<div class="result-header ${passed ? 'pass' : 'fail'}">
+                ${passed ? '✅' : '❌'} ${passed ? 'All checks passed!' : 'Some checks failed'}
+            </div>`;
+
+            html += '<table class="result-table">';
+            html += '<tr><th>Metric</th><th>Expected</th><th>Actual</th><th>Error</th><th>Status</th></tr>';
+
+            for (const row of rows) {
+                const statusClass = row.pass ? 'status-pass' : 'status-fail';
+                const statusText = row.pass ? '✓ PASS' : '✗ FAIL';
+                html += `<tr>
+                    <td>${row.metric}</td>
+                    <td>${row.expected}</td>
+                    <td>${row.actual}</td>
+                    <td>${row.error}%</td>
+                    <td class="${statusClass}">${statusText}</td>
+                </tr>`;
+            }
+            html += '</table>';
+
+            if (notes.length > 0) {
+                html += '<div style="margin-top: 12px; color: #94a3b8; font-size: 0.9rem;">';
+                for (const note of notes) {
+                    html += `<div>💡 ${note}</div>`;
+                }
+                html += '</div>';
+            }
+
+            div.innerHTML = html;
+
+            if (passed) testResults.pass++;
+            else testResults.fail++;
+            updateSummary();
+        }
+
+        function updateSummary() {
+            document.getElementById('summary').style.display = 'block';
+            document.getElementById('passCount').textContent = testResults.pass;
+            document.getElementById('failCount').textContent = testResults.fail;
+        }
+
+        // ====================
+        // TEST 1: Simply Supported Beam with UDL
+        // ====================
+        window.runTest1 = async function () {
+            if (!wasmReady) {
+                alert('WASM not ready yet, please wait...');
+                return;
+            }
+
+            // 10m span, 2 nodes + 1 intermediate for UDL distribution
+            const nodes = [
+                { id: 1, x: 0, y: 0, fixed: [true, true, false] },   // Pinned
+                { id: 2, x: 5, y: 0, fixed: [false, false, false] }, // Middle (free)
+                { id: 3, x: 10, y: 0, fixed: [false, true, false] }  // Roller
+            ];
+
+            const elements = [
+                { id: 1, node_start: 1, node_end: 2, e: 200e9, i: 4e-5, a: 0.01 },
+                { id: 2, node_start: 2, node_end: 3, e: 200e9, i: 4e-5, a: 0.01 }
+            ];
+
+            // UDL = 10 kN/m = 10000 N/m
+            // Equivalent nodal loads for UDL over full span
+            const memberLoads = [
+                { element_id: 1, w1: -10000, w2: -10000, direction: "global_y", start_pos: 0, end_pos: 1, is_projected: false },
+                { element_id: 2, w1: -10000, w2: -10000, direction: "global_y", start_pos: 0, end_pos: 1, is_projected: false }
+            ];
+
+            try {
+                const result = solve_structure_wasm(nodes, elements, [], memberLoads);
+                console.log('Test 1 Result:', result);
+
+                if (!result.success) {
+                    showResult('result1', false, [], [result.error || 'Unknown error']);
+                    return;
+                }
+
+                const rows = [];
+
+                // Check Reaction at node 1 (left support)
+                const r1 = result.reactions[1]?.[1] || 0;
+                const check1 = checkTolerance(Math.abs(r1), 50000);
+                rows.push({
+                    metric: 'Reaction R_A (kN)',
+                    expected: '50',
+                    actual: (Math.abs(r1) / 1000).toFixed(2),
+                    error: check1.error.toFixed(2),
+                    pass: check1.pass
+                });
+
+                // Check Reaction at node 3 (right support)
+                const r3 = result.reactions[3]?.[1] || 0;
+                const check3 = checkTolerance(Math.abs(r3), 50000);
+                rows.push({
+                    metric: 'Reaction R_B (kN)',
+                    expected: '50',
+                    actual: (Math.abs(r3) / 1000).toFixed(2),
+                    error: check3.error.toFixed(2),
+                    pass: check3.pass
+                });
+
+                // Check max deflection at center (node 2)
+                const deflection = result.displacements[2]?.[1] || 0;
+                const expectedDeflection = -0.0651; // 65.1 mm downward
+                const checkDefl = checkTolerance(deflection, expectedDeflection);
+                rows.push({
+                    metric: 'Max Deflection (mm)',
+                    expected: '65.1',
+                    actual: Math.abs(deflection * 1000).toFixed(2),
+                    error: checkDefl.error.toFixed(2),
+                    pass: checkDefl.pass
+                });
+
+                const allPassed = rows.every(r => r.pass);
+                showResult('result1', allPassed, rows);
+            } catch (error) {
+                console.error('Test 1 Error:', error);
+                showResult('result1', false, [], ['Error: ' + error.message]);
+            }
+        };
+
+        // ====================
+        // TEST 2: Asymmetric Point Load
+        // ====================
+        window.runTest2 = async function () {
+            if (!wasmReady) {
+                alert('WASM not ready yet, please wait...');
+                return;
+            }
+
+            // 10m span, point load at 2.5m
+            const nodes = [
+                { id: 1, x: 0, y: 0, fixed: [true, true, false] },   // Pinned
+                { id: 2, x: 2.5, y: 0, fixed: [false, false, false] }, // Load point
+                { id: 3, x: 10, y: 0, fixed: [false, true, false] }  // Roller
+            ];
+
+            const elements = [
+                { id: 1, node_start: 1, node_end: 2, e: 200e9, i: 4e-5, a: 0.01 },
+                { id: 2, node_start: 2, node_end: 3, e: 200e9, i: 4e-5, a: 0.01 }
+            ];
+
+            // Point load: 100 kN at node 2
+            const pointLoads = [
+                { node_id: 2, fx: 0, fy: -100000, mz: 0 }
+            ];
+
+            try {
+                const result = solve_structure_wasm(nodes, elements, pointLoads, []);
+                console.log('Test 2 Result:', result);
+
+                if (!result.success) {
+                    showResult('result2', false, [], [result.error || 'Unknown error']);
+                    return;
+                }
+
+                const rows = [];
+
+                // Check Reaction at node 1 (left support) - Expected 75 kN
+                const r1 = result.reactions[1]?.[1] || 0;
+                const check1 = checkTolerance(Math.abs(r1), 75000);
+                rows.push({
+                    metric: 'Reaction R_A (kN)',
+                    expected: '75',
+                    actual: (Math.abs(r1) / 1000).toFixed(2),
+                    error: check1.error.toFixed(2),
+                    pass: check1.pass
+                });
+
+                // Check Reaction at node 3 (right support) - Expected 25 kN
+                const r3 = result.reactions[3]?.[1] || 0;
+                const check3 = checkTolerance(Math.abs(r3), 25000);
+                rows.push({
+                    metric: 'Reaction R_B (kN)',
+                    expected: '25',
+                    actual: (Math.abs(r3) / 1000).toFixed(2),
+                    error: check3.error.toFixed(2),
+                    pass: check3.pass
+                });
+
+                // Sum of reactions should equal applied load
+                const totalReaction = Math.abs(r1) + Math.abs(r3);
+                const checkTotal = checkTolerance(totalReaction, 100000);
+                rows.push({
+                    metric: 'Total Reactions (kN)',
+                    expected: '100',
+                    actual: (totalReaction / 1000).toFixed(2),
+                    error: checkTotal.error.toFixed(2),
+                    pass: checkTotal.pass
+                });
+
+                const allPassed = rows.every(r => r.pass);
+                showResult('result2', allPassed, rows);
+            } catch (error) {
+                console.error('Test 2 Error:', error);
+                showResult('result2', false, [], ['Error: ' + error.message]);
+            }
+        };
+
+        // ====================
+        // TEST 3: Fixed-Fixed Beam with UDL
+        // ====================
+        window.runTest3 = async function () {
+            if (!wasmReady) {
+                alert('WASM not ready yet, please wait...');
+                return;
+            }
+
+            // 10m span, both ends fixed
+            const nodes = [
+                { id: 1, x: 0, y: 0, fixed: [true, true, true] },    // Fixed
+                { id: 2, x: 5, y: 0, fixed: [false, false, false] }, // Middle
+                { id: 3, x: 10, y: 0, fixed: [true, true, true] }    // Fixed
+            ];
+
+            const elements = [
+                { id: 1, node_start: 1, node_end: 2, e: 200e9, i: 4e-5, a: 0.01 },
+                { id: 2, node_start: 2, node_end: 3, e: 200e9, i: 4e-5, a: 0.01 }
+            ];
+
+            // UDL = 10 kN/m = 10000 N/m
+            const memberLoads = [
+                { element_id: 1, w1: -10000, w2: -10000, direction: "global_y", start_pos: 0, end_pos: 1, is_projected: false },
+                { element_id: 2, w1: -10000, w2: -10000, direction: "global_y", start_pos: 0, end_pos: 1, is_projected: false }
+            ];
+
+            try {
+                const result = solve_structure_wasm(nodes, elements, [], memberLoads);
+                console.log('Test 3 Result:', result);
+
+                if (!result.success) {
+                    showResult('result3', false, [], [result.error || 'Unknown error']);
+                    return;
+                }
+
+                const rows = [];
+
+                // Check Reaction at node 1 (left support) - Expected 50 kN
+                const r1 = result.reactions[1]?.[1] || 0;
+                const check1 = checkTolerance(Math.abs(r1), 50000);
+                rows.push({
+                    metric: 'Reaction R_A (kN)',
+                    expected: '50',
+                    actual: (Math.abs(r1) / 1000).toFixed(2),
+                    error: check1.error.toFixed(2),
+                    pass: check1.pass
+                });
+
+                // Check Support Moment at node 1 - Expected 83.33 kNm
+                const m1 = result.reactions[1]?.[2] || 0;
+                const checkM1 = checkTolerance(Math.abs(m1), 83333);
+                rows.push({
+                    metric: 'Support Moment M_A (kNm)',
+                    expected: '83.33',
+                    actual: (Math.abs(m1) / 1000).toFixed(2),
+                    error: checkM1.error.toFixed(2),
+                    pass: checkM1.pass
+                });
+
+                // Check Support Moment at node 3 - Expected 83.33 kNm
+                const m3 = result.reactions[3]?.[2] || 0;
+                const checkM3 = checkTolerance(Math.abs(m3), 83333);
+                rows.push({
+                    metric: 'Support Moment M_B (kNm)',
+                    expected: '83.33',
+                    actual: (Math.abs(m3) / 1000).toFixed(2),
+                    error: checkM3.error.toFixed(2),
+                    pass: checkM3.pass
+                });
+
+                // Note about center moment
+                const notes = [
+                    'Center moment (41.67 kNm) can be verified from member forces at node 2'
+                ];
+
+                const allPassed = rows.every(r => r.pass);
+                showResult('result3', allPassed, rows, notes);
+            } catch (error) {
+                console.error('Test 3 Error:', error);
+                showResult('result3', false, [], ['Error: ' + error.message]);
+            }
+        };
+
+        // Run all tests
+        window.runAllTests = async function () {
+            testResults = { pass: 0, fail: 0 };
+            await runTest1();
+            await runTest2();
+            await runTest3();
+        };
+    </script>
+</body>
+
+</html>

@@ -46,10 +46,10 @@ export type LoadDistribution = 'Uniform' | 'Triangular' | 'Trapezoidal';
 
 export interface MemberLoad {
     element_id: number;
-    distribution: LoadDistribution;
+    distribution?: LoadDistribution; // Optional - Rust infers from w1/w2
     w1: number;  // Load intensity at start (N/m)
     w2: number;  // Load intensity at end (N/m)
-    direction: string; // "LocalY", "GlobalY", etc.
+    direction: string; // "local_y", "global_y", etc. - Rust checks for "local" + "y"
     start_pos?: number; // 0-1 ratio (default 0)
     end_pos?: number;   // 0-1 ratio (default 1)
     is_projected?: boolean; // For wind/snow loads
