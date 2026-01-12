@@ -36,7 +36,7 @@ export interface Element {
 }
 
 export interface PointLoad {
-    node: number;
+    node_id: number;  // MUST match Rust struct field name
     fx: number; // Force X (N)
     fy: number; // Force Y (N)
     mz: number; // Moment Z (N·m)
@@ -55,32 +55,33 @@ export interface MemberLoad {
     is_projected?: boolean; // For wind/snow loads
 }
 
-export interface Displacement {
-    node: number;
-    dx: number;
-    dy: number;
-    rz: number;
+// Rust returns HashMap<i32, [f64; 3]> for displacements and reactions
+// This gets serialized as { "1": [dx, dy, rz], "2": [...] } etc.
+export interface DisplacementMap {
+    [nodeId: string]: [number, number, number]; // [dx, dy, rz]
 }
 
-export interface Reaction {
-    node: number;
-    fx: number;
-    fy: number;
-    mz: number;
+export interface ReactionMap {
+    [nodeId: string]: [number, number, number]; // [fx, fy, mz]
 }
 
-export interface MemberForce {
-    element: number;
-    end: 'start' | 'end';
+// Rust MemberForces struct
+export interface MemberForces {
     axial: number;
-    shear: number;
-    moment: number;
+    shear_start: number;
+    moment_start: number;
+    shear_end: number;
+    moment_end: number;
+}
+
+export interface MemberForcesMap {
+    [elementId: string]: MemberForces;
 }
 
 export interface AnalysisResult {
-    displacements: Displacement[];
-    reactions: Reaction[];
-    member_forces: MemberForce[];
+    displacements: DisplacementMap;  // HashMap from Rust
+    reactions: ReactionMap;          // HashMap from Rust
+    member_forces: MemberForcesMap;  // HashMap from Rust
     success: boolean;
     error?: string;
     stats?: {
@@ -182,21 +183,22 @@ export async function analyzeStructure(
         const solveTime = endTime - startTime;
 
         console.log('[WASM] Analysis completed in', solveTime.toFixed(2), 'ms');
+        console.log('[WASM] Raw result:', result);
 
         if (result.error) {
             return {
-                displacements: [],
-                reactions: [],
-                member_forces: [],
+                displacements: {},
+                reactions: {},
+                member_forces: {},
                 success: false,
                 error: result.error
             };
         }
 
         return {
-            displacements: result.displacements || [],
-            reactions: result.reactions || [],
-            member_forces: result.member_forces || [],
+            displacements: result.displacements || {},
+            reactions: result.reactions || {},
+            member_forces: result.member_forces || {},
             success: true,
             stats: {
                 solveTimeMs: solveTime,
@@ -206,9 +208,9 @@ export async function analyzeStructure(
     } catch (error) {
         console.error('[WASM] Analysis failed:', error);
         return {
-            displacements: [],
-            reactions: [],
-            member_forces: [],
+            displacements: {},
+            reactions: {},
+            member_forces: {},
             success: false,
             error: String(error)
         };
@@ -264,9 +266,9 @@ export async function analyzePDelta(
 
         if (result.error) {
             return {
-                displacements: [],
-                reactions: [],
-                member_forces: [],
+                displacements: {},
+                reactions: {},
+                member_forces: {},
                 success: false,
                 converged: false,
                 error: result.error
@@ -274,9 +276,9 @@ export async function analyzePDelta(
         }
 
         return {
-            displacements: result.displacements || [],
-            reactions: result.reactions || [],
-            member_forces: result.member_forces || [],
+            displacements: result.displacements || {},
+            reactions: result.reactions || {},
+            member_forces: result.member_forces || {},
             success: true,
             converged: result.converged || false,
             iterations: result.iterations,
@@ -288,9 +290,9 @@ export async function analyzePDelta(
     } catch (error) {
         console.error('[WASM] P-Delta analysis failed:', error);
         return {
-            displacements: [],
-            reactions: [],
-            member_forces: [],
+            displacements: {},
+            reactions: {},
+            member_forces: {},
             success: false,
             converged: false,
             error: String(error)

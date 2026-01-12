@@ -1159,28 +1159,36 @@ pub fn solve_structure_wasm(
 
     // Reduce stiffness matrix to free DOFs only
     let n_free = free_dofs.len();
-    let mut k_reduced = DMatrix::zeros(n_free, n_free);
-    let mut f_reduced = DVector::zeros(n_free);
+    
+    // Edge case: if all DOFs are fixed, we can't solve (no unknowns)
+    // But we can still calculate reactions from the applied loads
+    let u_reduced = if n_free == 0 {
+        // No free DOFs - all displacements are zero
+        DVector::zeros(0)
+    } else {
+        let mut k_reduced = DMatrix::zeros(n_free, n_free);
+        let mut f_reduced = DVector::zeros(n_free);
 
-    for (i, &dof_i) in free_dofs.iter().enumerate() {
-        for (j, &dof_j) in free_dofs.iter().enumerate() {
-            k_reduced[(i, j)] = k_global[(dof_i, dof_j)];
+        for (i, &dof_i) in free_dofs.iter().enumerate() {
+            for (j, &dof_j) in free_dofs.iter().enumerate() {
+                k_reduced[(i, j)] = k_global[(dof_i, dof_j)];
+            }
+            f_reduced[i] = f_global[dof_i];
         }
-        f_reduced[i] = f_global[dof_i];
-    }
 
-    // Solve for displacements
-    let u_reduced = match k_reduced.lu().solve(&f_reduced) {
-        Some(u) => u,
-        None => {
-            let result = AnalysisResult {
-                displacements: std::collections::HashMap::new(),
-                reactions: std::collections::HashMap::new(),
-                member_forces: std::collections::HashMap::new(),
-                success: false,
-                error: Some("Singular stiffness matrix - structure is unstable".to_string()),
-            };
-            return serde_wasm_bindgen::to_value(&result).unwrap();
+        // Solve for displacements
+        match k_reduced.lu().solve(&f_reduced) {
+            Some(u) => u,
+            None => {
+                let result = AnalysisResult {
+                    displacements: std::collections::HashMap::new(),
+                    reactions: std::collections::HashMap::new(),
+                    member_forces: std::collections::HashMap::new(),
+                    success: false,
+                    error: Some("Singular stiffness matrix - structure is unstable".to_string()),
+                };
+                return serde_wasm_bindgen::to_value(&result).unwrap();
+            }
         }
     };
 
