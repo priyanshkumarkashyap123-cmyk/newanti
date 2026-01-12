@@ -78,8 +78,8 @@ import consentService from '../services/ConsentService';
 import { useAuth } from '../providers/AuthProvider';
 import { useSubscription } from '../hooks/useSubscription';
 import { StructureGallery } from './gallery/StructureGallery';
-import { BoundaryConditionsDialog } from './BoundaryConditionsDialog';
 import { PlateCreationDialog } from './dialogs/PlateCreationDialog';
+import { BoundaryConditionsDialog } from './BoundaryConditionsDialog';
 import { SelectionToolbar } from './SelectionToolbar';
 import { DeadLoadGenerator } from './DeadLoadGenerator';
 
@@ -670,7 +670,7 @@ export const ModernModeler: FC = () => {
                 const convertDirection = (dir: string): string => {
                     // Already in correct format
                     if (dir.includes('_')) return dir;
-                    
+
                     // Convert from older formats
                     switch (dir) {
                         case 'Fy': return 'local_y';
@@ -1502,6 +1502,12 @@ export const ModernModeler: FC = () => {
             <MeshingPanel
                 isOpen={modals.meshing}
                 onClose={() => closeModal('meshing')}
+            />
+
+            {/* Plate Creation Dialog */}
+            <PlateCreationDialog
+                isOpen={modals.plateDialog}
+                onClose={() => closeModal('plateDialog')}
             />
 
             {/* Comprehensive Loading Manager */}
