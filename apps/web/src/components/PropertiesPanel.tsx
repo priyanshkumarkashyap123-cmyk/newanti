@@ -455,38 +455,65 @@ export const PropertiesPanel: FC = () => {
                     <button onClick={() => setIsMinimized(true)} style={minimizeButtonStyle} title="Minimize">−</button>
                 </div>
 
-                {/* ID */}
-                <div style={rowStyle}>
-                    <label style={labelStyle}>ID</label>
-                    <span style={{ fontSize: 10, color: '#666', fontFamily: 'monospace' }}>{id.slice(0, 8)}...</span>
+                {/* Node Label & ID - STAAD Pro Style */}
+                <div style={{ 
+                    background: 'linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%)',
+                    padding: '10px 12px',
+                    borderRadius: 6,
+                    marginBottom: 12,
+                    border: '1px solid #334155'
+                }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: '#60a5fa' }}>
+                            🔵 NODE
+                        </span>
+                        <span style={{ 
+                            fontSize: 12, 
+                            color: '#94a3b8', 
+                            fontFamily: 'monospace',
+                            background: 'rgba(0,0,0,0.3)',
+                            padding: '2px 6px',
+                            borderRadius: 3
+                        }}>
+                            #{id.slice(0, 8)}
+                        </span>
+                    </div>
                 </div>
 
-                {/* 3. NumberInput for X, Y, Z with debounce */}
+                {/* Coordinates - Industry Style Grid */}
                 <div style={sectionStyle}>
-                    <label style={labelStyle}>Position</label>
-                    <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
-                        <div style={inputGroupStyle}>
-                            <span style={axisLabelStyle}>X</span>
+                    <label style={labelStyle}>📍 Coordinates (m)</label>
+                    <div style={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: 'repeat(3, 1fr)', 
+                        gap: 6, 
+                        marginTop: 6,
+                        background: 'rgba(0,0,0,0.2)',
+                        padding: 8,
+                        borderRadius: 6
+                    }}>
+                        <div style={{ textAlign: 'center' }}>
+                            <span style={{ fontSize: 10, color: '#ef4444', display: 'block', marginBottom: 2 }}>X</span>
                             <NumberInput
                                 value={node.x}
                                 onChange={(val) => updateNodePosition(id, { x: val })}
-                                style={{ width: 60 }}
+                                style={{ width: '100%', textAlign: 'center' }}
                             />
                         </div>
-                        <div style={inputGroupStyle}>
-                            <span style={axisLabelStyle}>Y</span>
+                        <div style={{ textAlign: 'center' }}>
+                            <span style={{ fontSize: 10, color: '#22c55e', display: 'block', marginBottom: 2 }}>Y</span>
                             <NumberInput
                                 value={node.y}
                                 onChange={(val) => updateNodePosition(id, { y: val })}
-                                style={{ width: 60 }}
+                                style={{ width: '100%', textAlign: 'center' }}
                             />
                         </div>
-                        <div style={inputGroupStyle}>
-                            <span style={axisLabelStyle}>Z</span>
+                        <div style={{ textAlign: 'center' }}>
+                            <span style={{ fontSize: 10, color: '#3b82f6', display: 'block', marginBottom: 2 }}>Z</span>
                             <NumberInput
                                 value={node.z}
                                 onChange={(val) => updateNodePosition(id, { z: val })}
-                                style={{ width: 60 }}
+                                style={{ width: '100%', textAlign: 'center' }}
                             />
                         </div>
                     </div>
@@ -494,26 +521,119 @@ export const PropertiesPanel: FC = () => {
 
                 <hr style={dividerStyle} />
 
-                {/* Supports */}
+                {/* Supports - STAAD Pro Style with DOF indicators */}
                 <div style={sectionStyle}>
-                    <label style={labelStyle}>📌 Supports</label>
-                    <div style={{ display: 'flex', gap: 12, marginTop: 6 }}>
-                        <label style={checkboxLabelStyle}>
-                            <input type="checkbox" checked={restraints.fx} onChange={(e) => handleRestraintChange('fx', e.target.checked)} /> X
+                    <label style={labelStyle}>📌 Boundary Conditions</label>
+                    
+                    {/* Quick presets */}
+                    <div style={{ display: 'flex', gap: 4, marginTop: 6, marginBottom: 8 }}>
+                        <button 
+                            onClick={() => {
+                                handleRestraintChange('fx', true);
+                                handleRestraintChange('fy', true);
+                                handleRestraintChange('fz', true);
+                                handleRestraintChange('mz', true);
+                            }}
+                            style={{ ...presetButtonStyle, background: restraints.fx && restraints.fy && restraints.mz ? '#4caf50' : '#334155' }}
+                            title="Fixed Support"
+                        >
+                            Fixed
+                        </button>
+                        <button 
+                            onClick={() => {
+                                handleRestraintChange('fx', true);
+                                handleRestraintChange('fy', true);
+                                handleRestraintChange('fz', true);
+                                handleRestraintChange('mz', false);
+                            }}
+                            style={{ ...presetButtonStyle, background: restraints.fx && restraints.fy && !restraints.mz ? '#ff9800' : '#334155' }}
+                            title="Pinned Support"
+                        >
+                            Pinned
+                        </button>
+                        <button 
+                            onClick={() => {
+                                handleRestraintChange('fx', false);
+                                handleRestraintChange('fy', true);
+                                handleRestraintChange('fz', false);
+                                handleRestraintChange('mz', false);
+                            }}
+                            style={{ ...presetButtonStyle, background: !restraints.fx && restraints.fy && !restraints.mz ? '#2196f3' : '#334155' }}
+                            title="Roller Support"
+                        >
+                            Roller
+                        </button>
+                        <button 
+                            onClick={() => {
+                                handleRestraintChange('fx', false);
+                                handleRestraintChange('fy', false);
+                                handleRestraintChange('fz', false);
+                                handleRestraintChange('mz', false);
+                            }}
+                            style={{ ...presetButtonStyle, background: !restraints.fx && !restraints.fy && !restraints.mz ? '#666' : '#334155' }}
+                            title="Free (No support)"
+                        >
+                            Free
+                        </button>
+                    </div>
+
+                    {/* DOF Grid - Industry Standard */}
+                    <div style={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: 'repeat(3, 1fr)',
+                        gap: 4,
+                        background: 'rgba(0,0,0,0.2)',
+                        padding: 8,
+                        borderRadius: 6
+                    }}>
+                        <label style={{ ...dofLabelStyle, borderColor: restraints.fx ? '#4caf50' : '#555' }}>
+                            <input type="checkbox" checked={restraints.fx} onChange={(e) => handleRestraintChange('fx', e.target.checked)} style={{ display: 'none' }} />
+                            <span style={{ fontSize: 10, color: restraints.fx ? '#4caf50' : '#888' }}>Tx</span>
+                            <span style={{ fontSize: 8, color: '#666' }}>X-trans</span>
                         </label>
-                        <label style={checkboxLabelStyle}>
-                            <input type="checkbox" checked={restraints.fy} onChange={(e) => handleRestraintChange('fy', e.target.checked)} /> Y
+                        <label style={{ ...dofLabelStyle, borderColor: restraints.fy ? '#4caf50' : '#555' }}>
+                            <input type="checkbox" checked={restraints.fy} onChange={(e) => handleRestraintChange('fy', e.target.checked)} style={{ display: 'none' }} />
+                            <span style={{ fontSize: 10, color: restraints.fy ? '#4caf50' : '#888' }}>Ty</span>
+                            <span style={{ fontSize: 8, color: '#666' }}>Y-trans</span>
                         </label>
-                        <label style={checkboxLabelStyle}>
-                            <input type="checkbox" checked={restraints.mz} onChange={(e) => handleRestraintChange('mz', e.target.checked)} /> Rz
+                        <label style={{ ...dofLabelStyle, borderColor: restraints.fz ? '#4caf50' : '#555' }}>
+                            <input type="checkbox" checked={restraints.fz} onChange={(e) => handleRestraintChange('fz', e.target.checked)} style={{ display: 'none' }} />
+                            <span style={{ fontSize: 10, color: restraints.fz ? '#4caf50' : '#888' }}>Tz</span>
+                            <span style={{ fontSize: 8, color: '#666' }}>Z-trans</span>
+                        </label>
+                        <label style={{ ...dofLabelStyle, borderColor: restraints.mx ? '#4caf50' : '#555' }}>
+                            <input type="checkbox" checked={restraints.mx ?? false} onChange={(e) => handleRestraintChange('mx', e.target.checked)} style={{ display: 'none' }} />
+                            <span style={{ fontSize: 10, color: restraints.mx ? '#4caf50' : '#888' }}>Rx</span>
+                            <span style={{ fontSize: 8, color: '#666' }}>X-rot</span>
+                        </label>
+                        <label style={{ ...dofLabelStyle, borderColor: restraints.my ? '#4caf50' : '#555' }}>
+                            <input type="checkbox" checked={restraints.my ?? false} onChange={(e) => handleRestraintChange('my', e.target.checked)} style={{ display: 'none' }} />
+                            <span style={{ fontSize: 10, color: restraints.my ? '#4caf50' : '#888' }}>Ry</span>
+                            <span style={{ fontSize: 8, color: '#666' }}>Y-rot</span>
+                        </label>
+                        <label style={{ ...dofLabelStyle, borderColor: restraints.mz ? '#4caf50' : '#555' }}>
+                            <input type="checkbox" checked={restraints.mz} onChange={(e) => handleRestraintChange('mz', e.target.checked)} style={{ display: 'none' }} />
+                            <span style={{ fontSize: 10, color: restraints.mz ? '#4caf50' : '#888' }}>Rz</span>
+                            <span style={{ fontSize: 8, color: '#666' }}>Z-rot</span>
                         </label>
                     </div>
-                    {(restraints.fx || restraints.fy || restraints.mz) && (
-                        <span style={{ fontSize: 10, color: '#4caf50', marginTop: 4 }}>
-                            {restraints.fx && restraints.fy && restraints.mz ? '(Fixed)' :
-                                restraints.fx && restraints.fy ? '(Pinned)' : '(Partial)'}
+                    
+                    {/* Support Type Indicator */}
+                    <div style={{ 
+                        marginTop: 6, 
+                        padding: '4px 8px', 
+                        background: 'rgba(76, 175, 80, 0.1)', 
+                        borderRadius: 4,
+                        textAlign: 'center'
+                    }}>
+                        <span style={{ fontSize: 11, color: '#4caf50', fontWeight: 500 }}>
+                            {Object.values(restraints).every(v => v) ? '🔒 Fixed Support' :
+                             restraints.fx && restraints.fy && restraints.fz && !restraints.mz ? '📍 Pinned Support' :
+                             restraints.fy && !restraints.fx && !restraints.mz ? '🔄 Roller Support' :
+                             Object.values(restraints).some(v => v) ? '⚡ Partial Restraint' :
+                             '⭕ Free Node'}
                         </span>
-                    )}
+                    </div>
                 </div>
 
                 <hr style={dividerStyle} />
@@ -603,26 +723,75 @@ export const PropertiesPanel: FC = () => {
                     </div>
                 </div>
 
-                {/* Analysis Results */}
-                {disp && (
+                {/* Analysis Results - Enhanced Industry Style */}
+                {(disp || reaction) && (
                     <>
                         <hr style={dividerStyle} />
-                        <div style={sectionStyle}>
-                            <label style={{ ...labelStyle, color: '#4caf50' }}>📊 Displacements</label>
-                            <div style={{ fontSize: 11, marginTop: 4, fontFamily: 'monospace' }}>
-                                dx: {(disp.dx * 1000).toFixed(3)} mm<br />
-                                dy: {(disp.dy * 1000).toFixed(3)} mm
-                            </div>
+                        <div style={{ 
+                            background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(0,0,0,0.2) 100%)',
+                            padding: 10,
+                            borderRadius: 6,
+                            border: '1px solid rgba(76, 175, 80, 0.3)'
+                        }}>
+                            <label style={{ ...labelStyle, color: '#4caf50', marginBottom: 8, display: 'block' }}>
+                                📊 Analysis Results
+                            </label>
+                            
+                            {/* Displacements */}
+                            {disp && (
+                                <div style={{ marginBottom: 8 }}>
+                                    <span style={{ fontSize: 10, color: '#888', display: 'block', marginBottom: 4 }}>
+                                        DISPLACEMENTS
+                                    </span>
+                                    <div style={infoGridStyle}>
+                                        <div style={infoItemStyle}>
+                                            <span style={{ color: '#ef4444' }}>δx</span>
+                                            <span>{(disp.dx * 1000).toFixed(3)} mm</span>
+                                        </div>
+                                        <div style={infoItemStyle}>
+                                            <span style={{ color: '#22c55e' }}>δy</span>
+                                            <span>{(disp.dy * 1000).toFixed(3)} mm</span>
+                                        </div>
+                                        <div style={infoItemStyle}>
+                                            <span style={{ color: '#3b82f6' }}>δz</span>
+                                            <span>{(disp.dz * 1000).toFixed(3)} mm</span>
+                                        </div>
+                                        <div style={infoItemStyle}>
+                                            <span style={{ color: '#a855f7' }}>θz</span>
+                                            <span>{(disp.rz * 1000).toFixed(4)} rad</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            
+                            {/* Reactions */}
+                            {reaction && (reaction.fx !== 0 || reaction.fy !== 0 || reaction.fz !== 0 || reaction.mz !== 0) && (
+                                <div>
+                                    <span style={{ fontSize: 10, color: '#888', display: 'block', marginBottom: 4 }}>
+                                        SUPPORT REACTIONS
+                                    </span>
+                                    <div style={infoGridStyle}>
+                                        <div style={{ ...infoItemStyle, borderLeft: '2px solid #ef4444' }}>
+                                            <span style={{ color: '#ef4444' }}>Rx</span>
+                                            <span style={{ fontWeight: 600 }}>{reaction.fx.toFixed(2)} kN</span>
+                                        </div>
+                                        <div style={{ ...infoItemStyle, borderLeft: '2px solid #22c55e' }}>
+                                            <span style={{ color: '#22c55e' }}>Ry</span>
+                                            <span style={{ fontWeight: 600 }}>{reaction.fy.toFixed(2)} kN</span>
+                                        </div>
+                                        <div style={{ ...infoItemStyle, borderLeft: '2px solid #3b82f6' }}>
+                                            <span style={{ color: '#3b82f6' }}>Rz</span>
+                                            <span style={{ fontWeight: 600 }}>{reaction.fz.toFixed(2)} kN</span>
+                                        </div>
+                                        <div style={{ ...infoItemStyle, borderLeft: '2px solid #a855f7' }}>
+                                            <span style={{ color: '#a855f7' }}>Mz</span>
+                                            <span style={{ fontWeight: 600 }}>{reaction.mz.toFixed(2)} kN·m</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </>
-                )}
-                {reaction && (
-                    <div style={{ ...sectionStyle, marginTop: 8 }}>
-                        <label style={{ ...labelStyle, color: '#ff9800' }}>⚡ Reactions</label>
-                        <div style={{ fontSize: 11, marginTop: 4, fontFamily: 'monospace' }}>
-                            Fx: {reaction.fx.toFixed(2)} kN | Fy: {reaction.fy.toFixed(2)} kN
-                        </div>
-                    </div>
                 )}
             </div>
         );
@@ -693,6 +862,13 @@ export const PropertiesPanel: FC = () => {
             updateMember(id, { releases: { ...releases, [key]: value } });
         };
 
+        // Calculate member angle/orientation
+        const memberAngle = startNode && endNode ? 
+            Math.atan2(endNode.y - startNode.y, endNode.x - startNode.x) * 180 / Math.PI : 0;
+        const isHorizontal = Math.abs(memberAngle) < 15 || Math.abs(memberAngle) > 165;
+        const isVertical = Math.abs(memberAngle - 90) < 15 || Math.abs(memberAngle + 90) < 15;
+        const memberType = isVertical ? 'Column' : isHorizontal ? 'Beam' : 'Inclined';
+
         return (
             <div style={panelStyle}>
                 <div style={headerWithButtonStyle}>
@@ -700,16 +876,89 @@ export const PropertiesPanel: FC = () => {
                     <button onClick={() => setIsMinimized(true)} style={minimizeButtonStyle} title="Minimize">−</button>
                 </div>
 
-                {/* ID */}
-                <div style={rowStyle}>
-                    <label style={labelStyle}>ID</label>
-                    <span style={{ fontSize: 10, color: '#666', fontFamily: 'monospace' }}>{id.slice(0, 8)}...</span>
+                {/* Member Header - STAAD Pro Style */}
+                <div style={{ 
+                    background: 'linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%)',
+                    padding: '10px 12px',
+                    borderRadius: 6,
+                    marginBottom: 12,
+                    border: '1px solid #334155'
+                }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: '#f97316' }}>
+                            🔶 MEMBER
+                        </span>
+                        <span style={{ 
+                            ...memberTypeBadgeStyle,
+                            background: isVertical ? 'rgba(139, 92, 246, 0.3)' : 
+                                       isHorizontal ? 'rgba(34, 197, 94, 0.3)' : 
+                                       'rgba(251, 191, 36, 0.3)',
+                            color: isVertical ? '#a78bfa' : 
+                                  isHorizontal ? '#4ade80' : 
+                                  '#fcd34d'
+                        }}>
+                            {memberType}
+                        </span>
+                    </div>
+                    <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4, fontFamily: 'monospace' }}>
+                        #{id.slice(0, 8)}
+                    </div>
                 </div>
 
-                {/* Length (Read-only) */}
-                <div style={rowStyle}>
-                    <label style={labelStyle}>Length</label>
-                    <span style={{ fontSize: 13, fontFamily: 'monospace' }}>{length.toFixed(3)} m</span>
+                {/* Connectivity Info - Industry Standard */}
+                <div style={sectionStyle}>
+                    <label style={labelStyle}>🔗 Connectivity</label>
+                    <div style={{ 
+                        display: 'grid',
+                        gridTemplateColumns: '1fr auto 1fr',
+                        alignItems: 'center',
+                        gap: 8,
+                        marginTop: 6,
+                        background: 'rgba(0,0,0,0.2)',
+                        padding: 8,
+                        borderRadius: 6
+                    }}>
+                        <div style={{ textAlign: 'center' }}>
+                            <span style={{ fontSize: 9, color: '#888', display: 'block' }}>START (I)</span>
+                            <span style={{ fontSize: 11, color: '#60a5fa', fontFamily: 'monospace' }}>
+                                {member.startNodeId.slice(0, 6)}
+                            </span>
+                            {startNode && (
+                                <span style={{ fontSize: 9, color: '#666', display: 'block' }}>
+                                    ({startNode.x.toFixed(1)}, {startNode.y.toFixed(1)})
+                                </span>
+                            )}
+                        </div>
+                        <span style={{ fontSize: 16, color: '#f97316' }}>→</span>
+                        <div style={{ textAlign: 'center' }}>
+                            <span style={{ fontSize: 9, color: '#888', display: 'block' }}>END (J)</span>
+                            <span style={{ fontSize: 11, color: '#60a5fa', fontFamily: 'monospace' }}>
+                                {member.endNodeId.slice(0, 6)}
+                            </span>
+                            {endNode && (
+                                <span style={{ fontSize: 9, color: '#666', display: 'block' }}>
+                                    ({endNode.x.toFixed(1)}, {endNode.y.toFixed(1)})
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                <hr style={dividerStyle} />
+
+                {/* Geometry Info - Enhanced */}
+                <div style={sectionStyle}>
+                    <label style={labelStyle}>📐 Geometry</label>
+                    <div style={infoGridStyle}>
+                        <div style={infoItemStyle}>
+                            <span style={{ color: '#888' }}>Length</span>
+                            <span style={{ color: '#4ade80' }}>{length.toFixed(3)} m</span>
+                        </div>
+                        <div style={infoItemStyle}>
+                            <span style={{ color: '#888' }}>Angle</span>
+                            <span style={{ color: '#60a5fa' }}>{memberAngle.toFixed(1)}°</span>
+                        </div>
+                    </div>
                 </div>
 
                 <hr style={dividerStyle} />
@@ -843,37 +1092,150 @@ export const PropertiesPanel: FC = () => {
 
                 <hr style={dividerStyle} />
 
-                {/* Releases (Checkboxes) */}
+                {/* Member End Releases - Enhanced Industry Style */}
                 <div style={sectionStyle}>
-                    <label style={labelStyle}>🔓 Releases</label>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
-                        <label style={checkboxLabelStyle}>
-                            <input
-                                type="checkbox"
-                                checked={releases.startMoment}
-                                onChange={(e) => handleReleaseChange('startMoment', e.target.checked)}
-                            /> Start Moment (Hinge)
-                        </label>
-                        <label style={checkboxLabelStyle}>
-                            <input
-                                type="checkbox"
-                                checked={releases.endMoment}
-                                onChange={(e) => handleReleaseChange('endMoment', e.target.checked)}
-                            /> End Moment (Hinge)
-                        </label>
+                    <label style={labelStyle}>🔓 Member End Releases</label>
+                    <div style={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: 8,
+                        marginTop: 8,
+                        background: 'rgba(0,0,0,0.2)',
+                        padding: 10,
+                        borderRadius: 6
+                    }}>
+                        {/* Start End (I-end) */}
+                        <div style={{ textAlign: 'center' }}>
+                            <span style={{ fontSize: 10, color: '#60a5fa', fontWeight: 600, display: 'block', marginBottom: 6 }}>
+                                START (I)
+                            </span>
+                            <label style={{ 
+                                ...dofLabelStyle, 
+                                marginBottom: 4,
+                                borderColor: releases.startMoment ? '#f97316' : '#555'
+                            }}>
+                                <input
+                                    type="checkbox"
+                                    checked={releases.startMoment}
+                                    onChange={(e) => handleReleaseChange('startMoment', e.target.checked)}
+                                    style={{ display: 'none' }}
+                                />
+                                <span style={{ fontSize: 11, color: releases.startMoment ? '#f97316' : '#888' }}>
+                                    {releases.startMoment ? '🔓 Hinged' : '🔒 Fixed'}
+                                </span>
+                                <span style={{ fontSize: 8, color: '#666' }}>Moment Release</span>
+                            </label>
+                        </div>
+                        
+                        {/* End End (J-end) */}
+                        <div style={{ textAlign: 'center' }}>
+                            <span style={{ fontSize: 10, color: '#60a5fa', fontWeight: 600, display: 'block', marginBottom: 6 }}>
+                                END (J)
+                            </span>
+                            <label style={{ 
+                                ...dofLabelStyle, 
+                                marginBottom: 4,
+                                borderColor: releases.endMoment ? '#f97316' : '#555'
+                            }}>
+                                <input
+                                    type="checkbox"
+                                    checked={releases.endMoment}
+                                    onChange={(e) => handleReleaseChange('endMoment', e.target.checked)}
+                                    style={{ display: 'none' }}
+                                />
+                                <span style={{ fontSize: 11, color: releases.endMoment ? '#f97316' : '#888' }}>
+                                    {releases.endMoment ? '🔓 Hinged' : '🔒 Fixed'}
+                                </span>
+                                <span style={{ fontSize: 8, color: '#666' }}>Moment Release</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    {/* Release Configuration Indicator */}
+                    <div style={{ 
+                        marginTop: 6, 
+                        padding: '4px 8px', 
+                        background: 'rgba(249, 115, 22, 0.1)', 
+                        borderRadius: 4,
+                        textAlign: 'center'
+                    }}>
+                        <span style={{ fontSize: 10, color: '#f97316' }}>
+                            {releases.startMoment && releases.endMoment ? '⚡ Truss Member (Both ends released)' :
+                             releases.startMoment ? '↱ Start Pinned Connection' :
+                             releases.endMoment ? '↳ End Pinned Connection' :
+                             '🔗 Rigid Frame Member'}
+                        </span>
                     </div>
                 </div>
 
-                {/* Member Forces */}
+                {/* Member Forces - Enhanced Industry Style */}
                 {forces && (
                     <>
                         <hr style={dividerStyle} />
-                        <div style={sectionStyle}>
-                            <label style={{ ...labelStyle, color: '#4caf50' }}>📊 Member Forces</label>
-                            <div style={{ fontSize: 11, marginTop: 4, fontFamily: 'monospace' }}>
-                                Axial: {forces.axial.toFixed(2)} kN<br />
-                                Shear: {forces.shearY.toFixed(2)} kN<br />
-                                Moment: {forces.momentZ.toFixed(2)} kN-m
+                        <div style={{ 
+                            background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(0,0,0,0.2) 100%)',
+                            padding: 10,
+                            borderRadius: 6,
+                            border: '1px solid rgba(76, 175, 80, 0.3)'
+                        }}>
+                            <label style={{ ...labelStyle, color: '#4caf50', marginBottom: 8, display: 'block' }}>
+                                📊 Member End Forces
+                            </label>
+                            
+                            {/* Force Grid - STAAD Pro Style */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                                {/* Axial Force */}
+                                <div style={{ 
+                                    ...infoItemStyle, 
+                                    borderLeft: forces.axial > 0 ? '3px solid #ef4444' : forces.axial < 0 ? '3px solid #3b82f6' : '3px solid #666'
+                                }}>
+                                    <span style={{ color: '#888' }}>Axial</span>
+                                    <span style={{ 
+                                        fontWeight: 600,
+                                        color: forces.axial > 0 ? '#ef4444' : forces.axial < 0 ? '#3b82f6' : '#888'
+                                    }}>
+                                        {forces.axial.toFixed(2)} kN
+                                        <span style={{ fontSize: 8, marginLeft: 2 }}>
+                                            {forces.axial > 0 ? '(T)' : forces.axial < 0 ? '(C)' : ''}
+                                        </span>
+                                    </span>
+                                </div>
+                                
+                                {/* Shear Y */}
+                                <div style={{ ...infoItemStyle, borderLeft: '3px solid #22c55e' }}>
+                                    <span style={{ color: '#888' }}>Shear Y</span>
+                                    <span style={{ fontWeight: 600 }}>{forces.shearY.toFixed(2)} kN</span>
+                                </div>
+                                
+                                {/* Shear Z */}
+                                <div style={{ ...infoItemStyle, borderLeft: '3px solid #06b6d4' }}>
+                                    <span style={{ color: '#888' }}>Shear Z</span>
+                                    <span style={{ fontWeight: 600 }}>{(forces.shearZ ?? 0).toFixed(2)} kN</span>
+                                </div>
+                                
+                                {/* Moment Z */}
+                                <div style={{ ...infoItemStyle, borderLeft: '3px solid #a855f7' }}>
+                                    <span style={{ color: '#888' }}>Moment</span>
+                                    <span style={{ fontWeight: 600, color: '#a855f7' }}>{forces.momentZ.toFixed(2)} kN·m</span>
+                                </div>
+                            </div>
+                            
+                            {/* Force Summary */}
+                            <div style={{ 
+                                marginTop: 8, 
+                                padding: '4px 8px', 
+                                background: 'rgba(0,0,0,0.2)', 
+                                borderRadius: 4,
+                                textAlign: 'center',
+                                fontSize: 9,
+                                color: '#888'
+                            }}>
+                                {Math.abs(forces.axial) > Math.abs(forces.shearY) && Math.abs(forces.axial) > Math.abs(forces.momentZ) ?
+                                    '⚡ Axial-dominant member' :
+                                    Math.abs(forces.momentZ) > Math.abs(forces.shearY) ?
+                                    '↩️ Bending-dominant member' :
+                                    '↕️ Shear-dominant member'
+                                }
                             </div>
                         </div>
                     </>
@@ -1158,4 +1520,58 @@ const deleteButtonStyle: React.CSSProperties = {
     cursor: 'pointer',
     fontSize: 14,
     padding: '2px 6px'
+};
+
+// Industry-level preset button style
+const presetButtonStyle: React.CSSProperties = {
+    background: '#334155',
+    color: '#f1f5f9',
+    border: 'none',
+    borderRadius: 4,
+    padding: '4px 8px',
+    cursor: 'pointer',
+    fontSize: 10,
+    flex: 1,
+    transition: 'all 0.15s ease'
+};
+
+// DOF checkbox label style (industry grid style)
+const dofLabelStyle: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: '6px 4px',
+    background: 'rgba(0,0,0,0.3)',
+    borderRadius: 4,
+    cursor: 'pointer',
+    border: '2px solid #555',
+    transition: 'all 0.15s ease'
+};
+
+// Member type badge style
+const memberTypeBadgeStyle: React.CSSProperties = {
+    display: 'inline-block',
+    padding: '2px 8px',
+    borderRadius: 4,
+    fontSize: 10,
+    fontWeight: 600,
+    textTransform: 'uppercase'
+};
+
+// Info grid style for displaying values
+const infoGridStyle: React.CSSProperties = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    gap: 4,
+    marginTop: 6,
+    fontSize: 11,
+    fontFamily: 'monospace'
+};
+
+const infoItemStyle: React.CSSProperties = {
+    background: 'rgba(0,0,0,0.2)',
+    padding: '4px 6px',
+    borderRadius: 4,
+    display: 'flex',
+    justifyContent: 'space-between'
 };
