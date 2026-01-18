@@ -22,15 +22,35 @@ pub struct Element {
     pub a: f64, // Area
 }
 
+/// 2D Nodal Load structure
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct NodalLoad2D {
+    pub node_id: String,
+    #[serde(default)]
+    pub fx: f64,    // Force in X direction [N]
+    #[serde(default)]
+    pub fy: f64,    // Force in Y direction [N]
+    #[serde(default)]
+    pub mz: f64,    // Moment about Z axis [N·m]
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AnalysisResult {
     // Map of Node ID to displacements [u, v, theta]
-    pub displacements: HashMap<String, Vec<f64>>,  // Changed key from us ize to String
+    pub displacements: HashMap<String, Vec<f64>>,
+    /// Support reactions: node_id -> [Rx, Ry, Mz]
+    #[serde(default)]
+    pub reactions: HashMap<String, Vec<f64>>,
     pub success: bool,
     pub error: Option<String>,
 }
 
-pub fn analyze(nodes: Vec<Node>, elements: Vec<Element>) -> Result<AnalysisResult, String> {
+/// Perform 2D frame analysis with nodal loads
+pub fn analyze_with_loads(
+    nodes: Vec<Node>, 
+    elements: Vec<Element>,
+    loads: Vec<NodalLoad2D>
+) -> Result<AnalysisResult, String> {
     let num_nodes = nodes.len();
     let num_dof = num_nodes * 3;
 
@@ -41,7 +61,17 @@ pub fn analyze(nodes: Vec<Node>, elements: Vec<Element>) -> Result<AnalysisResul
     }
 
     let mut k_global = DMatrix::zeros(num_dof, num_dof);
-    let f_global = DVector::zeros(num_dof); // Currently zero loads
+    let mut f_global: DVector<f64> = DVector::zeros(num_dof);
+
+    // Apply nodal loads to force vector
+    for load in &loads {
+        if let Some(&idx) = node_map.get(&load.node_id) {
+            let dof_base = idx * 3;
+            f_global[dof_base + 0] += load.fx;
+            f_global[dof_base + 1] += load.fy;
+            f_global[dof_base + 2] += load.mz;
+        }
+    }
 
     for element in &elements {
         let start_idx = *node_map.get(&element.node_start).ok_or("Node not found")?;
@@ -117,32 +147,51 @@ pub fn analyze(nodes: Vec<Node>, elements: Vec<Element>) -> Result<AnalysisResul
         }
     }
 
-    // Apply boundary conditions (Penalty method or reduction)
-    // Using reduction (solving for free DOFs)
-    
+    // Apply boundary conditions using reduction method
     let mut free_dofs = Vec::new();
+    let mut fixed_dofs = Vec::new();
+    
     for (i, node) in nodes.iter().enumerate() {
-        if !node.fixed[0] { free_dofs.push(i * 3); }
-        if !node.fixed[1] { free_dofs.push(i * 3 + 1); }
-        if !node.fixed[2] { free_dofs.push(i * 3 + 2); }
+        for dof in 0..3 {
+            let global_dof = i * 3 + dof;
+            if node.fixed[dof] {
+                fixed_dofs.push(global_dof);
+            } else {
+                free_dofs.push(global_dof);
+            }
+        }
     }
 
     let n_free = free_dofs.len();
     if n_free == 0 {
-        // All fixed
+        // All fixed - return zero displacements
         let mut disp_map = HashMap::new();
-        for node in nodes {
-             disp_map.insert(node.id, vec![0.0, 0.0, 0.0]);
+        let mut react_map = HashMap::new();
+        
+        for node in &nodes {
+            disp_map.insert(node.id.clone(), vec![0.0, 0.0, 0.0]);
+            if node.fixed.iter().any(|&f| f) {
+                // Reactions = applied loads (negative)
+                let idx = node_map.get(&node.id).unwrap();
+                let dof_base = idx * 3;
+                react_map.insert(node.id.clone(), vec![
+                    -f_global[dof_base],
+                    -f_global[dof_base + 1],
+                    -f_global[dof_base + 2],
+                ]);
+            }
         }
+        
         return Ok(AnalysisResult {
             displacements: disp_map,
+            reactions: react_map,
             success: true,
             error: None,
         });
     }
 
     let mut k_reduced = DMatrix::zeros(n_free, n_free);
-    let mut f_reduced = DVector::zeros(n_free); // Will need real loads later
+    let mut f_reduced: DVector<f64> = DVector::zeros(n_free);
 
     for (i, &r_idx) in free_dofs.iter().enumerate() {
         f_reduced[i] = f_global[r_idx];
@@ -152,7 +201,6 @@ pub fn analyze(nodes: Vec<Node>, elements: Vec<Element>) -> Result<AnalysisResul
     }
 
     // Solve K_reduced * u_reduced = F_reduced
-    // Use LU decomposition
     let u_reduced = k_reduced.lu().solve(&f_reduced);
 
     let u_reduced = match u_reduced {
@@ -166,17 +214,41 @@ pub fn analyze(nodes: Vec<Node>, elements: Vec<Element>) -> Result<AnalysisResul
         u_global[dof_idx] = u_reduced[i];
     }
 
+    // Calculate reactions: R = K * u - F
+    let r_global = &k_global * &u_global - &f_global;
+
+    // Build result maps
     let mut disp_map = HashMap::new();
+    let mut react_map = HashMap::new();
+    
     for (idx, node) in nodes.iter().enumerate() {
-        let u = u_global[idx * 3];
-        let v = u_global[idx * 3 + 1];
-        let theta = u_global[idx * 3 + 2];
-        disp_map.insert(node.id.clone(), vec![u, v, theta]);
+        let dof_base = idx * 3;
+        
+        disp_map.insert(node.id.clone(), vec![
+            u_global[dof_base],
+            u_global[dof_base + 1],
+            u_global[dof_base + 2],
+        ]);
+        
+        // Include reactions for nodes with any restraint
+        if node.fixed.iter().any(|&f| f) {
+            react_map.insert(node.id.clone(), vec![
+                r_global[dof_base],
+                r_global[dof_base + 1],
+                r_global[dof_base + 2],
+            ]);
+        }
     }
 
     Ok(AnalysisResult {
         displacements: disp_map,
+        reactions: react_map,
         success: true,
         error: None,
     })
+}
+
+/// Legacy analyze function (backward compatible, zero loads)
+pub fn analyze(nodes: Vec<Node>, elements: Vec<Element>) -> Result<AnalysisResult, String> {
+    analyze_with_loads(nodes, elements, vec![])
 }

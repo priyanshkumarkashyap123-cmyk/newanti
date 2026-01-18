@@ -7,6 +7,7 @@
  * NO backend calls - everything runs in the browser!
  */
 
+import { wasmLogger } from '../utils/logger';
 import init, {
     solve_structure_wasm,
     solve_3d_frame,
@@ -126,18 +127,18 @@ export async function initSolver(): Promise<void> {
     try {
         await init();
         wasmInitialized = true;
-        console.log('[BeamLab] WASM Solver initialized successfully ✅');
+        wasmLogger.success('WASM Solver initialized successfully');
 
         // Log solver capabilities
         try {
             const info = JSON.parse(get_solver_info());
-            console.log('[BeamLab] Solver version:', info.version);
-            console.log('[BeamLab] Capabilities:', info.capabilities);
+            wasmLogger.info('Solver version:', info.version);
+            wasmLogger.debug('Capabilities:', info.capabilities);
         } catch (e) {
-            console.log('[BeamLab] Solver info not available');
+            wasmLogger.debug('Solver info not available');
         }
     } catch (error) {
-        console.error('[BeamLab] Failed to initialize WASM Solver:', error);
+        wasmLogger.error('Failed to initialize WASM Solver:', error);
         throw error;
     }
 }
@@ -166,8 +167,8 @@ export async function analyzeStructure(
     }
 
     try {
-        console.log('[WASM] Analyzing structure:', nodes.length, 'nodes,', elements.length, 'elements');
-        console.log('[WASM] Loads:', pointLoads.length, 'point loads,', memberLoads.length, 'member loads');
+        wasmLogger.info('Analyzing structure:', nodes.length, 'nodes,', elements.length, 'elements');
+        wasmLogger.debug('Loads:', pointLoads.length, 'point loads,', memberLoads.length, 'member loads');
 
         const startTime = performance.now();
 
@@ -182,8 +183,8 @@ export async function analyzeStructure(
         const endTime = performance.now();
         const solveTime = endTime - startTime;
 
-        console.log('[WASM] Analysis completed in', solveTime.toFixed(2), 'ms');
-        console.log('[WASM] Raw result:', result);
+        wasmLogger.success('Analysis completed in', solveTime.toFixed(2), 'ms');
+        wasmLogger.debug('Raw result:', result);
 
         if (result.error) {
             return {
@@ -206,7 +207,7 @@ export async function analyzeStructure(
             }
         };
     } catch (error) {
-        console.error('[WASM] Analysis failed:', error);
+        wasmLogger.error('Analysis failed:', error);
         return {
             displacements: {},
             reactions: {},
@@ -241,8 +242,8 @@ export async function analyzePDelta(
     }
 
     try {
-        console.log('[WASM] Running P-Delta analysis...');
-        console.log('[WASM] Max iterations:', maxIterations, 'Tolerance:', tolerance);
+        wasmLogger.info('Running P-Delta analysis...');
+        wasmLogger.debug('Max iterations:', maxIterations, 'Tolerance:', tolerance);
 
         const startTime = performance.now();
 
@@ -258,10 +259,10 @@ export async function analyzePDelta(
         const endTime = performance.now();
         const solveTime = endTime - startTime;
 
-        console.log('[WASM] P-Delta completed in', solveTime.toFixed(2), 'ms');
+        wasmLogger.success('P-Delta completed in', solveTime.toFixed(2), 'ms');
 
         if (result.converged !== undefined) {
-            console.log('[WASM] Converged:', result.converged, 'Iterations:', result.iterations);
+            wasmLogger.info('Converged:', result.converged, 'Iterations:', result.iterations);
         }
 
         if (result.error) {
@@ -288,7 +289,7 @@ export async function analyzePDelta(
             }
         };
     } catch (error) {
-        console.error('[WASM] P-Delta analysis failed:', error);
+        wasmLogger.error('P-Delta analysis failed:', error);
         return {
             displacements: {},
             reactions: {},
@@ -321,7 +322,7 @@ export async function analyzeBuckling(
     }
 
     try {
-        console.log('[WASM] Running buckling analysis for', numModes, 'modes...');
+        wasmLogger.info('Running buckling analysis for', numModes, 'modes...');
 
         const startTime = performance.now();
 
@@ -337,7 +338,7 @@ export async function analyzeBuckling(
             try {
                 result = JSON.parse(result);
             } catch (e) {
-                console.error('[WASM] Failed to parse buckling result:', e);
+                wasmLogger.error('Failed to parse buckling result:', e);
                 return {
                     success: false,
                     buckling_loads: [],
@@ -349,7 +350,7 @@ export async function analyzeBuckling(
         const endTime = performance.now();
         const solveTime = endTime - startTime;
 
-        console.log('[WASM] Buckling analysis completed in', solveTime.toFixed(2), 'ms');
+        wasmLogger.success('Buckling analysis completed in', solveTime.toFixed(2), 'ms');
 
         if (result.error) {
             return {
@@ -359,7 +360,7 @@ export async function analyzeBuckling(
             };
         }
 
-        console.log('[WASM] Critical loads:', result.buckling_loads);
+        wasmLogger.debug('Critical loads:', result.buckling_loads);
 
         return {
             success: true,
@@ -367,7 +368,7 @@ export async function analyzeBuckling(
             modes: numModes
         };
     } catch (error) {
-        console.error('[WASM] Buckling analysis failed:', error);
+        wasmLogger.error('Buckling analysis failed:', error);
         return {
             success: false,
             buckling_loads: [],
@@ -400,7 +401,7 @@ export function getSolverInfo(): SolverInfo {
             };
         }
     } catch (e) {
-        console.warn('Failed to get solver info:', e);
+        wasmLogger.warn('Failed to get solver info:', e);
     }
 
     return {

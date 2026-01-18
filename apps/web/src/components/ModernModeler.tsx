@@ -83,6 +83,9 @@ import { BoundaryConditionsDialog } from './BoundaryConditionsDialog';
 import { SelectionToolbar } from './SelectionToolbar';
 import { DeadLoadGenerator } from './DeadLoadGenerator';
 
+// Production-safe logging
+import { modelerLogger, stressLogger, uiLogger } from '../utils/logger';
+
 // Command Palette for quick feature access (Cmd+K)
 import { CommandPalette, useCommandPalette } from './CommandPalette';
 
@@ -400,7 +403,7 @@ export const ModernModeler: FC = () => {
                 showNotification('success', 'Project saved to cloud');
             }
         } catch (error) {
-            console.error(error);
+            modelerLogger.error('Failed to save project:', error);
             showNotification('error', 'Failed to save project. Ensure you are logged in.');
         }
     }, [getToken, showNotification]);
@@ -429,7 +432,7 @@ export const ModernModeler: FC = () => {
 
             showNotification('success', `Loaded project: ${project.name}`);
         } catch (error) {
-            console.error(error);
+            modelerLogger.error('Failed to parse project data:', error);
             showNotification('error', 'Failed to parse project data');
         }
     }, [showNotification]);
@@ -518,7 +521,7 @@ export const ModernModeler: FC = () => {
         members: Map<string, Member>
     ) => {
         try {
-            console.log('[STRESS] Calculating stresses for members...');
+            stressLogger.log('Calculating stresses for members...');
 
             // Prepare stress calculation request
             const membersData = Array.from(members.values()).map(member => {
@@ -576,7 +579,7 @@ export const ModernModeler: FC = () => {
             }).filter(m => m !== null);
 
             if (membersData.length === 0) {
-                console.log('[STRESS] No member force data available');
+                stressLogger.log('No member force data available');
                 return;
             }
 
@@ -602,10 +605,10 @@ export const ModernModeler: FC = () => {
             if (data.success && data.results) {
                 setStressResults(data.results);
                 setShowStressVisualization(true);
-                console.log('[STRESS] Stress calculation completed:', data.results.length, 'members');
+                stressLogger.log(`Stress calculation completed: ${data.results.length} members`);
             }
         } catch (error) {
-            console.error('[STRESS] Error calculating stresses:', error);
+            stressLogger.error('Error calculating stresses:', error);
             // Don't show error to user - stress visualization is optional enhancement
         }
     }, [currentStressType, nodes]);
@@ -708,15 +711,14 @@ export const ModernModeler: FC = () => {
                     mz: (l.mz ?? 0) * 1000  // Convert kN·m to N·m
                 }));
 
-                console.log('[Analysis] Member loads:', wasmMemberLoads.length, wasmMemberLoads);
-                console.log('[Analysis] Point loads:', wasmPointLoads.length, wasmPointLoads);
+                modelerLogger.log(`[Analysis] Member loads: ${wasmMemberLoads.length}, Point loads: ${wasmPointLoads.length}`);
 
                 // Use Rust WASM solver (client-side) for frame analysis
                 try {
                     setAnalysisStage('solving');
                     setAnalysisProgress(50);
 
-                    console.log('[Analysis] Using Rust WASM solver - client-side computation');
+                    modelerLogger.log('[Analysis] Using Rust WASM solver - client-side computation');
                     const { analyzeStructure, initSolver } = await import('../services/wasmSolverService');
 
                     // Initialize WASM module
@@ -745,18 +747,14 @@ export const ModernModeler: FC = () => {
                     }));
 
                     // Run WASM analysis WITH LOADS
-                    console.log('[Analysis] Calling WASM solver with', wasmNodes.length, 'nodes,', wasmElements.length, 'members,', wasmPointLoads.length, 'point loads,', wasmMemberLoads.length, 'member loads');
+                    modelerLogger.log(`[Analysis] Calling WASM solver with ${wasmNodes.length} nodes, ${wasmElements.length} members`);
                     const wasmResult = await analyzeStructure(wasmNodes, wasmElements, wasmPointLoads, wasmMemberLoads);
 
                     if (!wasmResult.success) {
                         throw new Error(wasmResult.error || 'WASM analysis failed');
                     }
 
-                    console.log('[Analysis] WASM Result:', {
-                        displacements: wasmResult.displacements,
-                        reactions: wasmResult.reactions,
-                        member_forces: wasmResult.member_forces
-                    });
+                    modelerLogger.log('[Analysis] WASM Result received');
 
                     // Convert WASM result to expected format
                     // WASM returns HashMaps: { "nodeId": [dx, dy, rz], ... }
@@ -776,7 +774,7 @@ export const ModernModeler: FC = () => {
                             RY: 0
                         };
                     }
-                    console.log('[Analysis] Parsed displacements:', nodesDict);
+                    modelerLogger.log(`[Analysis] Parsed ${Object.keys(nodesDict).length} displacements`);
 
                     // Parse reactions - HashMap<i32, [f64; 3]> → { "1": [fx, fy, mz] }
                     const reactionsDict: Record<string, number[]> = {};
@@ -792,7 +790,7 @@ export const ModernModeler: FC = () => {
                             rxnArray[2] / 1000   // Mz: Convert N·m to kN·m
                         ];
                     }
-                    console.log('[Analysis] Parsed reactions:', reactionsDict);
+                    modelerLogger.log(`[Analysis] Parsed ${Object.keys(reactionsDict).length} reactions`);
 
                     // Parse member forces - HashMap<i32, MemberForces>
                     const membersDict: Record<string, any> = {};
@@ -808,7 +806,7 @@ export const ModernModeler: FC = () => {
                             momentEnd: mf.moment_end / 1000
                         };
                     }
-                    console.log('[Analysis] Parsed member forces:', membersDict);
+                    modelerLogger.log(`[Analysis] Parsed ${Object.keys(membersDict).length} member forces`);
 
                     const pythonResult = {
                         success: true,
@@ -824,7 +822,7 @@ export const ModernModeler: FC = () => {
                             stats: { ...pythonResult.metadata, usedPythonApi: false, solver: 'Rust WASM' }
                         };
 
-                        console.log('[Analysis] Final results:', {
+                        modelerLogger.log('[Analysis] Complete:', {
                             displacements: Object.keys(nodesDict).length,
                             reactions: Object.keys(reactionsDict).length,
                             memberForces: Object.keys(membersDict).length
@@ -1594,7 +1592,7 @@ export const ModernModeler: FC = () => {
                     }}
                     onAutoFix={(issue) => {
                         // TODO: Implement auto-fix functionality
-                        console.log('Auto-fix for issue:', issue);
+                        uiLogger.log('Auto-fix requested for issue:', issue);
                     }}
                 />
             )}

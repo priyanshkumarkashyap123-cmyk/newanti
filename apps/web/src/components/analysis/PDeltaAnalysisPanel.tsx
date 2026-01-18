@@ -6,11 +6,12 @@
 import { useState } from 'react';
 import { useModelStore } from '../../store/model';
 import { analysisService } from '../../services/AnalysisService';
+import type { PDeltaAnalysisResult, Displacement } from '../../types/analysis';
 
 export function PDeltaAnalysisPanel() {
     const store = useModelStore();
     const [analyzing, setAnalyzing] = useState(false);
-    const [results, setResults] = useState<any>(null);
+    const [results, setResults] = useState<PDeltaAnalysisResult | null>(null);
     const [error, setError] = useState<string>('');
     const [params, setParams] = useState({
         maxIterations: 10,
@@ -126,12 +127,14 @@ export function PDeltaAnalysisPanel() {
                     style={{
                         marginTop: '20px',
                         padding: '12px 24px',
-                        background: analyzing ? '#555' : '#FF5722',
-                        color: '#fff',
+                        background: analyzing ? '#555' : store.nodes.size === 0 ? '#333' : '#FF5722',
+                        color: analyzing || store.nodes.size === 0 ? '#888' : '#fff',
                         border: 'none',
                         borderRadius: '4px',
-                        cursor: analyzing ? 'wait' : 'pointer',
-                        fontSize: '16px'
+                        cursor: analyzing || store.nodes.size === 0 ? 'not-allowed' : 'pointer',
+                        fontSize: '16px',
+                        opacity: store.nodes.size === 0 ? 0.5 : 1,
+                        transition: 'all 0.2s ease'
                     }}
                 >
                     {analyzing ? '🔄 Analyzing (Rust)...' : '▶️ Run P-Delta Analysis'}
@@ -182,8 +185,8 @@ export function PDeltaAnalysisPanel() {
                             <h4>Maximum Displacements</h4>
                             <div style={{ marginTop: '10px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
                                 {['dx', 'dy', 'dz'].map((dir) => {
-                                    const maxDisp = results.displacements.reduce((max: number, d: any) => 
-                                        Math.max(max, Math.abs(d[dir] || 0)), 0
+                                    const maxDisp = results.displacements.reduce((max: number, d: Displacement) => 
+                                        Math.max(max, Math.abs(d[dir as keyof Displacement] as number || 0)), 0
                                     );
                                     return (
                                         <div key={dir} style={{ padding: '15px', background: '#1e1e1e', borderRadius: '4px' }}>

@@ -406,7 +406,10 @@ function convertUDL(
     
     const w = memberLoad.w1; // Load intensity (kN/m) - typically negative for gravity
     
+    console.log(`[UDL Convert] Member ${member.id}: w=${w}, L=${L}, direction=${memberLoad.direction}`);
+    
     if (Math.abs(w) < LOAD_TOL) {
+        console.warn(`[UDL Convert] Load too small, skipping: ${w}`);
         return []; // No significant load
     }
 
@@ -490,11 +493,17 @@ function convertUDL(
     M1 = validateLoad(M1, 'M1');
     M2 = validateLoad(M2, 'M2');
 
+    console.log(`[UDL Convert] Calculated forces - R1=${R1}, R2=${R2}, M1=${M1}, M2=${M2}`);
+
     // Apply loads in the correct direction (pass nodes for local transformation)
-    return [
+    const loads = [
         applyDirectionalLoads(member.startNodeId, R1, M1, memberLoad.direction, startNode, endNode),
         applyDirectionalLoads(member.endNodeId, R2, M2, memberLoad.direction, startNode, endNode)
     ];
+    
+    console.log(`[UDL Convert] Final nodal loads:`, loads);
+    
+    return loads;
 }
 
 /**
@@ -563,11 +572,13 @@ function convertTriangular(
         // ----------------------------------------
         // Case 1: Ascending triangle (0 to w2)
         // ----------------------------------------
-        // FEM formulas from Hibbeler Table 12-1:
-        // M1 = -w2 * L² / 20  (at fixed start)
-        // M2 = +w2 * L² / 30  (at fixed end)
-        M1 = -w2 * L * L / 20;
-        M2 = w2 * L * L / 30;
+        // FEM formulas from Roark's Table 8.1 (linearly increasing):
+        // For load increasing from 0 at i to w at j on fixed-fixed beam:
+        // M_i = -wL²/30 (fixed-end moment at start)
+        // M_j = +wL²/20 (fixed-end moment at end)
+        // Reactions: R1 = 3wL/20, R2 = 7wL/20
+        M1 = -w2 * L * L / 30;
+        M2 = w2 * L * L / 20;
         
         if (DEBUG.logMoments) {
             console.log(`[Triangle Ascending] w2=${w2}, L=${L}, M1=${M1}, M2=${M2}`);
@@ -576,11 +587,13 @@ function convertTriangular(
         // ----------------------------------------
         // Case 2: Descending triangle (w1 to 0)
         // ----------------------------------------
-        // FEM formulas (mirror of ascending):
-        // M1 = -w1 * L² / 30  (at fixed start)
-        // M2 = +w1 * L² / 20  (at fixed end)
-        M1 = -w1 * L * L / 30;
-        M2 = w1 * L * L / 20;
+        // FEM formulas (mirror of ascending - load decreasing from w at i to 0 at j):
+        // For load decreasing from w at i to 0 at j on fixed-fixed beam:
+        // M_i = -wL²/20 (fixed-end moment at start)
+        // M_j = +wL²/30 (fixed-end moment at end)
+        // Reactions: R1 = 7wL/20, R2 = 3wL/20
+        M1 = -w1 * L * L / 20;
+        M2 = w1 * L * L / 30;
         
         if (DEBUG.logMoments) {
             console.log(`[Triangle Descending] w1=${w1}, L=${L}, M1=${M1}, M2=${M2}`);
@@ -599,16 +612,17 @@ function convertTriangular(
         const M2_uniform = wMin * L * L / 12;
         
         // Triangular part contribution
+        // Using corrected Roark's formulas for linearly varying loads
         let M1_tri: number, M2_tri: number;
         
         if (wDelta > 0) {
-            // Ascending triangle (0 to wDelta)
-            M1_tri = -wDelta * L * L / 20;
-            M2_tri = wDelta * L * L / 30;
+            // Ascending triangle (0 to wDelta): M1 = -wL²/30, M2 = +wL²/20
+            M1_tri = -wDelta * L * L / 30;
+            M2_tri = wDelta * L * L / 20;
         } else {
-            // Descending triangle (|wDelta| to 0)
-            M1_tri = wDelta * L * L / 30; // wDelta is negative, so this is positive
-            M2_tri = -wDelta * L * L / 20; // This is negative
+            // Descending triangle (|wDelta| to 0): M1 = -wL²/20, M2 = +wL²/30
+            M1_tri = -Math.abs(wDelta) * L * L / 20;
+            M2_tri = Math.abs(wDelta) * L * L / 30;
         }
         
         M1 = M1_uniform + M1_tri;
@@ -926,17 +940,30 @@ export function mergeNodalLoads(loads: NodalLoad[]): NodalLoad[] {
 }
 
 /**
- * Verify equilibrium of converted loads (for debugging)
- * Sum of all forces should equal the applied load
+ * Verify equilibrium of load conversion
+ * 
+ * For Fixed-End Reactions, the sum of reactions must equal the applied load:
+ * - ΣFy = Total Applied Load (for vertical loads)
+ * - ΣMz at any point should satisfy moment equilibrium
+ * 
+ * This verifies that the FEM formulas are correctly implemented.
  */
-export function verifyEquilibrium(loads: NodalLoad[]): {
+export function verifyEquilibrium(
+    loads: NodalLoad[],
+    originalMemberLoads?: MemberLoad[],
+    members?: Member[],
+    nodes?: Node[]
+): {
     sumFx: number;
     sumFy: number;
     sumFz: number;
     sumMx: number;
     sumMy: number;
     sumMz: number;
+    expectedFy: number;
+    forceError: number;
     isBalanced: boolean;
+    message: string;
 } {
     let sumFx = 0, sumFy = 0, sumFz = 0;
     let sumMx = 0, sumMy = 0, sumMz = 0;
@@ -950,11 +977,60 @@ export function verifyEquilibrium(loads: NodalLoad[]): {
         sumMz += load.mz || 0;
     }
     
-    // Forces should sum to zero for internal equilibrium
-    // (Actually they should sum to the applied load, but for FEM reactions, 
-    // the reactions at ends cancel each other for moment equilibrium)
-    const forceTol = 1e-6;
-    const isBalanced = true; // Forces won't sum to zero; they transfer load to supports
+    // Calculate expected total load from original member loads
+    let expectedFy = 0;
+    
+    if (originalMemberLoads && members && nodes) {
+        const memberMap = new Map(members.map(m => [m.id, m]));
+        const nodeMap = new Map(nodes.map(n => [n.id, n]));
+        
+        for (const ml of originalMemberLoads) {
+            const member = memberMap.get(ml.memberId);
+            if (!member) continue;
+            
+            const startNode = nodeMap.get(member.startNodeId);
+            const endNode = nodeMap.get(member.endNodeId);
+            if (!startNode || !endNode) continue;
+            
+            const L = calculateMemberLength(startNode, endNode);
+            if (L < LENGTH_TOL) continue;
+            
+            const w1 = ml.w1;
+            const w2 = ml.w2 ?? w1;
+            
+            // Calculate total load based on type
+            switch (ml.type.toUpperCase()) {
+                case 'UDL':
+                    // Total load = w × L
+                    expectedFy += w1 * L;
+                    break;
+                case 'TRIANGULAR':
+                case 'UVL':
+                    // Total load = (w1 + w2) × L / 2
+                    expectedFy += (w1 + w2) * L / 2;
+                    break;
+                case 'TRAPEZOIDAL':
+                    expectedFy += (w1 + w2) * L / 2;
+                    break;
+                case 'POINT':
+                    expectedFy += w1;
+                    break;
+            }
+        }
+    }
+    
+    // The sum of reactions should equal the negative of the applied load
+    // (reactions oppose the applied load)
+    const forceError = Math.abs(sumFy + expectedFy);
+    const forceTol = Math.abs(expectedFy) * 0.001 + 1e-6; // 0.1% tolerance
+    const isBalanced = forceError < forceTol;
+    
+    let message: string;
+    if (isBalanced) {
+        message = `✓ Equilibrium verified: ΣFy = ${sumFy.toFixed(4)} kN (expected ${(-expectedFy).toFixed(4)} kN)`;
+    } else {
+        message = `⚠ Equilibrium error: ΣFy = ${sumFy.toFixed(4)} kN but expected ${(-expectedFy).toFixed(4)} kN (error: ${forceError.toFixed(6)} kN)`;
+    }
     
     return {
         sumFx: Math.round(sumFx * 1e6) / 1e6,
@@ -963,7 +1039,10 @@ export function verifyEquilibrium(loads: NodalLoad[]): {
         sumMx: Math.round(sumMx * 1e6) / 1e6,
         sumMy: Math.round(sumMy * 1e6) / 1e6,
         sumMz: Math.round(sumMz * 1e6) / 1e6,
-        isBalanced
+        expectedFy: Math.round(expectedFy * 1e6) / 1e6,
+        forceError: Math.round(forceError * 1e6) / 1e6,
+        isBalanced,
+        message
     };
 }
 

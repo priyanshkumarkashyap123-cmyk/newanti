@@ -71,7 +71,7 @@ pub fn solve_system(
     }
 }
 
-/// 2D Frame analysis (backward compatible)
+/// 2D Frame analysis (backward compatible - no loads)
 #[wasm_bindgen]
 pub fn solve_structure_wasm(nodes_val: JsValue, elements_val: JsValue) -> JsValue {
     // Deserialize inputs
@@ -97,6 +97,45 @@ pub fn solve_structure_wasm(nodes_val: JsValue, elements_val: JsValue) -> JsValu
             // Return error object
             let err_res = solver::AnalysisResult {
                 displacements: std::collections::HashMap::new(),
+                reactions: std::collections::HashMap::new(),
+                success: false,
+                error: Some(e),
+            };
+            serde_wasm_bindgen::to_value(&err_res).unwrap_or(JsValue::from_str("Error"))
+        }
+    }
+}
+
+/// 2D Frame analysis WITH nodal loads
+/// This is the recommended function for 2D analysis with applied loads
+#[wasm_bindgen]
+pub fn solve_2d_frame_with_loads(
+    nodes_val: JsValue, 
+    elements_val: JsValue,
+    loads_val: JsValue
+) -> JsValue {
+    let nodes: Vec<solver::Node> = match serde_wasm_bindgen::from_value(nodes_val) {
+        Ok(v) => v,
+        Err(e) => return JsValue::from_str(&format!("Error parsing nodes: {}", e)),
+    };
+    
+    let elements: Vec<solver::Element> = match serde_wasm_bindgen::from_value(elements_val) {
+        Ok(v) => v,
+        Err(e) => return JsValue::from_str(&format!("Error parsing elements: {}", e)),
+    };
+    
+    let loads: Vec<solver::NodalLoad2D> = serde_wasm_bindgen::from_value(loads_val)
+        .unwrap_or_default();
+
+    match solver::analyze_with_loads(nodes, elements, loads) {
+        Ok(result) => {
+            serde_wasm_bindgen::to_value(&result)
+                .unwrap_or_else(|e| JsValue::from_str(&format!("Serialization error: {}", e)))
+        },
+        Err(e) => {
+            let err_res = solver::AnalysisResult {
+                displacements: std::collections::HashMap::new(),
+                reactions: std::collections::HashMap::new(),
                 success: false,
                 error: Some(e),
             };
@@ -130,8 +169,40 @@ pub fn solve_3d_frame(
         .unwrap_or_default();
     
     match solver_3d::analyze_3d_frame(nodes, elements, nodal_loads, distributed_loads, vec![]) {
-        Ok(result) => serde_wasm_bindgen::to_value(&result)
-            .unwrap_or_else(|e| JsValue::from_str(&format!("Serialization error: {}", e))),
+        Ok(mut result) => {
+            // Sanitize NaN values to prevent serialization errors
+            for (_, disp) in result.displacements.iter_mut() {
+                for val in disp.iter_mut() {
+                    if val.is_nan() || val.is_infinite() {
+                        *val = 0.0;
+                    }
+                }
+            }
+            for (_, react) in result.reactions.iter_mut() {
+                for val in react.iter_mut() {
+                    if val.is_nan() || val.is_infinite() {
+                        *val = 0.0;
+                    }
+                }
+            }
+            for (_, forces) in result.member_forces.iter_mut() {
+                for val in forces.forces_i.iter_mut() {
+                    if val.is_nan() || val.is_infinite() { *val = 0.0; }
+                }
+                for val in forces.forces_j.iter_mut() {
+                    if val.is_nan() || val.is_infinite() { *val = 0.0; }
+                }
+                if forces.max_shear_y.is_nan() { forces.max_shear_y = 0.0; }
+                if forces.max_shear_z.is_nan() { forces.max_shear_z = 0.0; }
+                if forces.max_moment_y.is_nan() { forces.max_moment_y = 0.0; }
+                if forces.max_moment_z.is_nan() { forces.max_moment_z = 0.0; }
+                if forces.max_axial.is_nan() { forces.max_axial = 0.0; }
+                if forces.max_torsion.is_nan() { forces.max_torsion = 0.0; }
+            }
+            
+            serde_wasm_bindgen::to_value(&result)
+                .unwrap_or_else(|e| JsValue::from_str(&format!("Serialization error: {}", e)))
+        },
         Err(e) => JsValue::from_str(&format!("Analysis error: {}", e)),
     }
 }
@@ -187,17 +258,49 @@ pub fn solve_response_spectrum(
         .unwrap_or_else(|e| JsValue::from_str(&format!("Error serializing seismic result: {}", e)))
 }
 
-/// P-Delta analysis (stub for backward compatibility)
+/// P-Delta analysis - iterative geometric nonlinear analysis
+/// Accounts for secondary moments from axial loads (P) acting on lateral displacements (Δ)
 #[wasm_bindgen]
 pub fn solve_p_delta(
-    _nodes_val: JsValue,
-    _elements_val: JsValue,
-    _point_loads_val: JsValue,
-    _member_loads_val: JsValue,
-    _max_iterations: usize,
-    _tolerance: f64
+    nodes_val: JsValue,
+    elements_val: JsValue,
+    point_loads_val: JsValue,
+    member_loads_val: JsValue,
+    max_iterations: usize,
+    tolerance: f64
 ) -> JsValue {
-    JsValue::from_str(r#"{"success": false, "error": "P-Delta analysis not yet implemented in backend-rust"}"#)
+    // Parse inputs
+    let nodes: Vec<solver_3d::Node3D> = match serde_wasm_bindgen::from_value(nodes_val) {
+        Ok(v) => v,
+        Err(e) => return JsValue::from_str(&format!("Error parsing nodes: {}", e)),
+    };
+    
+    let elements: Vec<solver_3d::Element3D> = match serde_wasm_bindgen::from_value(elements_val) {
+        Ok(v) => v,
+        Err(e) => return JsValue::from_str(&format!("Error parsing elements: {}", e)),
+    };
+    
+    let nodal_loads: Vec<solver_3d::NodalLoad> = serde_wasm_bindgen::from_value(point_loads_val)
+        .unwrap_or_default();
+        
+    let distributed_loads: Vec<solver_3d::DistributedLoad> = serde_wasm_bindgen::from_value(member_loads_val)
+        .unwrap_or_default();
+    
+    // Perform P-Delta analysis
+    match solver_3d::p_delta_analysis(
+        nodes, 
+        elements, 
+        nodal_loads, 
+        distributed_loads,
+        if max_iterations == 0 { 10 } else { max_iterations },
+        if tolerance == 0.0 { 1e-4 } else { tolerance }
+    ) {
+        Ok(result) => {
+            serde_wasm_bindgen::to_value(&result)
+                .unwrap_or_else(|e| JsValue::from_str(&format!("Serialization error: {}", e)))
+        },
+        Err(e) => JsValue::from_str(&format!(r#"{{"success": false, "error": "{}"}}"#, e)),
+    }
 }
 
 /// Buckling analysis (stub for backward compatibility)

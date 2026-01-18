@@ -26,7 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Switch } from './ui/switch';
 import { Badge } from './ui/badge';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
-import { Activity, MapPin, Building2, Calculator, Info, AlertTriangle, Layers } from 'lucide-react';
+import { Activity, MapPin, Building2, Calculator, Info, AlertTriangle, Layers, Loader2 } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
 
 // ===== CONSTANTS FROM IS 1893 =====
@@ -108,6 +108,7 @@ const SeismicLoadDialog: React.FC = () => {
     const isOpen = modals.seismicLoadDialog || false;
     
     const [activeTab, setActiveTab] = useState('zone');
+    const [isApplying, setIsApplying] = useState(false);
     const [params, setParams] = useState<SeismicParams>({
         zone: 'III',
         Z: 0.16,
@@ -253,13 +254,21 @@ const SeismicLoadDialog: React.FC = () => {
         setParams(prev => ({ ...prev, floors: newFloors }));
     };
     
-    const handleApplyLoads = () => {
+    const handleApplyLoads = async () => {
         if (!results) return;
         
-        // TODO: Apply to model as nodal loads at floor levels
-        console.log('Applying seismic loads:', results);
-        
-        setModal('seismicLoadDialog', false);
+        setIsApplying(true);
+        try {
+            // TODO: Apply to model as nodal loads at floor levels
+            console.log('Applying seismic loads:', results);
+            
+            // Simulate async operation (e.g., applying to model store)
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            setModal('seismicLoadDialog', false);
+        } finally {
+            setIsApplying(false);
+        }
     };
     
     const zoneColor = SEISMIC_ZONES.find(z => z.value === params.zone)?.color || 'gray';
@@ -707,16 +716,25 @@ const SeismicLoadDialog: React.FC = () => {
                 </Tabs>
                 
                 <DialogFooter className="gap-2">
-                    <Button variant="outline" onClick={() => setModal('seismicLoadDialog', false)}>
+                    <Button variant="outline" onClick={() => setModal('seismicLoadDialog', false)} disabled={isApplying}>
                         Cancel
                     </Button>
                     <Button 
                         onClick={handleApplyLoads} 
-                        disabled={!results}
+                        disabled={!results || isApplying}
                         className="bg-red-600 hover:bg-red-700"
                     >
-                        <Activity className="h-4 w-4 mr-2" />
-                        Apply Seismic Loads
+                        {isApplying ? (
+                            <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Applying...
+                            </>
+                        ) : (
+                            <>
+                                <Activity className="h-4 w-4 mr-2" />
+                                Apply Seismic Loads
+                            </>
+                        )}
                     </Button>
                 </DialogFooter>
             </DialogContent>

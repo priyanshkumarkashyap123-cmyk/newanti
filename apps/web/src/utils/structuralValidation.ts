@@ -3,6 +3,14 @@
  * Validates structures BEFORE analysis to prevent errors
  */
 
+import { 
+    analyzeDeterminacy, 
+    type Node as DeterminacyNode, 
+    type Member as DeterminacyMember,
+    type DeterminacyResult,
+    getDeterminacyDescription 
+} from './determinacyAnalysis';
+
 export interface ValidationError {
     type: 'error' | 'warning' | 'critical';
     message: string;
@@ -14,6 +22,7 @@ export interface ValidationResult {
     valid: boolean;
     errors: ValidationError[];
     warnings: ValidationError[];
+    determinacy?: DeterminacyResult;  // Added comprehensive determinacy analysis
 }
 
 interface Node {
@@ -204,10 +213,43 @@ export function validateStructure(
     // 7. Check for loads
     // This is handled separately, but we can warn if no loads exist
 
+    // ========================================================================
+    // 8. COMPREHENSIVE DETERMINACY ANALYSIS
+    // ========================================================================
+    
+    // Convert to array format for determinacy analysis
+    const nodesArray: DeterminacyNode[] = Array.from(nodes.values());
+    const membersArray: DeterminacyMember[] = Array.from(members.values());
+    
+    // Run comprehensive determinacy analysis
+    const determinacy = analyzeDeterminacy(nodesArray, membersArray, '2D');
+    
+    // Add determinacy-specific errors and warnings
+    determinacy.errors.forEach(err => {
+        errors.push({
+            type: 'critical',
+            message: err,
+            details: 'From determinacy analysis'
+        });
+    });
+    
+    determinacy.warnings.forEach(warn => {
+        warnings.push({
+            type: 'warning',
+            message: warn,
+            details: 'From determinacy analysis'
+        });
+    });
+    
+    // Log determinacy analysis for debugging
+    console.log('[Structural Validation] Determinacy Analysis:');
+    console.log(getDeterminacyDescription(determinacy));
+
     return {
         valid: errors.filter(e => e.type === 'error' || e.type === 'critical').length === 0,
         errors,
-        warnings
+        warnings,
+        determinacy  // Include full determinacy analysis
     };
 }
 

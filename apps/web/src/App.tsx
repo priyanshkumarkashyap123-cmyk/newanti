@@ -12,6 +12,7 @@ import { LandingPage } from './pages/LandingPage';
 import { Dashboard } from './pages/Dashboard';
 import DashboardEnhanced from './pages/DashboardEnhanced';
 import { StreamDashboard } from './pages/StreamDashboard';
+import { UnifiedDashboard } from './pages/UnifiedDashboard';
 import { Capabilities } from './pages/Capabilities';
 import { SignInPage } from './pages/SignInPage';
 import { SignUpPage } from './pages/SignUpPage';
@@ -289,7 +290,6 @@ function Modeler() {
 
 function WorkspacePage({ moduleType }: { moduleType: string }) {
     // Users start with an empty model - they can create their own or load a sample
-    console.log('WorkspacePage moduleType:', moduleType);
     return (
         <WorkspaceLayout>
             {/* The 3D canvas content */}
@@ -362,29 +362,18 @@ function App() {
                 {/* Enhanced Landing Page - NEW Advanced Template */}
 
 
-                {/* Stream Dashboard - Main Entry Point */}
-                {/* Stream Dashboard - Main Entry Point */}
+                {/* Stream Dashboard - Main Entry Point (Now uses UnifiedDashboard) */}
                 <Route path="/stream" element={
                     <RequireAuth>
-                        <StreamDashboard />
+                        <UnifiedDashboard />
                     </RequireAuth>
                 } />
 
-                {/* Legacy Dashboard */}
-                {/* Legacy Dashboard */}
-                <Route path="/dashboard" element={
-                    <RequireAuth>
-                        <Dashboard />
-                    </RequireAuth>
-                } />
+                {/* Legacy Dashboard - redirects to unified */}
+                <Route path="/dashboard" element={<Navigate to="/stream" replace />} />
 
-                {/* Enhanced Dashboard - NEW Advanced Template */}
-                {/* Enhanced Dashboard - NEW Advanced Template */}
-                <Route path="/dashboard-enhanced" element={
-                    <RequireAuth>
-                        <DashboardEnhanced />
-                    </RequireAuth>
-                } />
+                {/* Enhanced Dashboard - redirects to unified */}
+                <Route path="/dashboard-enhanced" element={<Navigate to="/stream" replace />} />
 
                 {/* Capabilities Page */}
                 <Route path="/capabilities" element={<Capabilities />} />
@@ -512,8 +501,6 @@ function App() {
 
 // Helper to extract moduleType param - Now uses ModernModeler
 function WorkspacePageWrapper() {
-    const moduleType = window.location.pathname.split('/').pop() || 'structural-3d';
-    console.log('WorkspacePageWrapper loading ModernModeler for:', moduleType);
     // All workspace routes now use ModernModeler with all new UI improvements
     return <ModernModeler />;
 }

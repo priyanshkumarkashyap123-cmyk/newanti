@@ -97,6 +97,16 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
+  readonly get_solver_info: () => [number, number];
+  readonly modal_analysis: (a: any, b: any, c: number) => any;
+  readonly solve_3d_frame: (a: any, b: any, c: any, d: any) => any;
+  readonly solve_response_spectrum: (a: any, b: number, c: number, d: number, e: number) => any;
+  readonly solve_sparse_system_json: (a: number, b: number) => [number, number];
+  readonly solve_structure_wasm: (a: any, b: any) => any;
+  readonly solve_system: (a: number, b: number, c: number, d: number, e: number) => [number, number, number];
+  readonly analyze_buckling: (a: any, b: any, c: any, d: number) => any;
+  readonly set_panic_hook: () => void;
+  readonly solve_p_delta: (a: any, b: any, c: any, d: any, e: number, f: number) => any;
   readonly __wbg_aiarchitect_free: (a: number, b: number) => void;
   readonly __wbg_renderer_free: (a: number, b: number) => void;
   readonly aiarchitect_suggest_beam_size: (a: number, b: number) => [number, number];
@@ -110,16 +120,6 @@ export interface InitOutput {
   readonly calculate_aisc_capacity: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number, r: number, s: number) => any;
   readonly calculate_beam_capacity: (a: number, b: number, c: number, d: number, e: number) => number;
   readonly calculate_seismic_base_shear: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
-  readonly get_solver_info: () => [number, number];
-  readonly modal_analysis: (a: any, b: any, c: number) => any;
-  readonly solve_3d_frame: (a: any, b: any, c: any, d: any) => any;
-  readonly solve_response_spectrum: (a: any, b: number, c: number, d: number, e: number) => any;
-  readonly solve_sparse_system_json: (a: number, b: number) => [number, number];
-  readonly solve_structure_wasm: (a: any, b: any) => any;
-  readonly solve_system: (a: number, b: number, c: number, d: number, e: number) => [number, number, number];
-  readonly analyze_buckling: (a: any, b: any, c: any, d: number) => any;
-  readonly set_panic_hook: () => void;
-  readonly solve_p_delta: (a: any, b: any, c: any, d: any, e: number, f: number) => any;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_exn_store: (a: number) => void;

@@ -6,12 +6,13 @@
 import { useState } from 'react';
 import { useModelStore } from '../../store/model';
 import { AdvancedAnalysisService } from '../../services/AdvancedAnalysisService';
+import type { BucklingAnalysisResult, BucklingMode } from '../../types/analysis';
 
 export function BucklingAnalysisPanel() {
     const store = useModelStore();
     const [modes, setModes] = useState<number>(5);
     const [analyzing, setAnalyzing] = useState(false);
-    const [results, setResults] = useState<any>(null);
+    const [results, setResults] = useState<BucklingAnalysisResult | null>(null);
     const [error, setError] = useState<string>('');
 
     const handleRunAnalysis = async () => {
@@ -32,7 +33,7 @@ export function BucklingAnalysisPanel() {
         try {
             const model = { nodes, members, supports, loads };
             // Note: Using mock buckling - real implementation would call Rust API
-            const analysisResults = { 
+            const analysisResults: BucklingAnalysisResult = { 
                 modes: Array.from({ length: modes }, (_, i) => ({
                     mode: i + 1,
                     load_factor: 1.5 + i * 0.3,
@@ -83,12 +84,14 @@ export function BucklingAnalysisPanel() {
                     style={{
                         marginTop: '20px',
                         padding: '12px 24px',
-                        background: analyzing ? '#555' : '#4CAF50',
-                        color: '#fff',
+                        background: analyzing ? '#555' : store.nodes.size === 0 ? '#333' : '#4CAF50',
+                        color: analyzing || store.nodes.size === 0 ? '#888' : '#fff',
                         border: 'none',
                         borderRadius: '4px',
-                        cursor: analyzing ? 'wait' : 'pointer',
-                        fontSize: '16px'
+                        cursor: analyzing || store.nodes.size === 0 ? 'not-allowed' : 'pointer',
+                        fontSize: '16px',
+                        opacity: store.nodes.size === 0 ? 0.5 : 1,
+                        transition: 'all 0.2s ease'
                     }}
                 >
                     {analyzing ? '🔄 Analyzing...' : '▶️ Run Buckling Analysis'}
@@ -116,7 +119,7 @@ export function BucklingAnalysisPanel() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {results.modes.map((mode: any, idx: number) => (
+                                    {results.modes.map((mode: BucklingMode, idx: number) => (
                                         <tr key={idx} style={{ borderBottom: '1px solid #333' }}>
                                             <td style={{ padding: '10px' }}>Mode {mode.mode || idx + 1}</td>
                                             <td style={{ padding: '10px', textAlign: 'right', color: '#4fc3f7' }}>
