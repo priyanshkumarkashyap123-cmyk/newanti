@@ -247,6 +247,7 @@ interface ModelState {
     removeLoad: (id: string) => void;
     addMemberLoad: (load: MemberLoad) => void;  // NEW
     removeMemberLoad: (id: string) => void;     // NEW
+    updateMemberLoadById: (id: string, updates: Partial<MemberLoad>) => void; // Performance optimization
     setAnalysisResults: (results: AnalysisResults | null) => void;
     setIsAnalyzing: (analyzing: boolean) => void;
     select: (id: string, multi: boolean) => void;
@@ -463,10 +464,25 @@ export const useModelStore = create<ModelState>()(
 
                 // NEW: Member load actions
                 addMemberLoad: (load) =>
-                    set((state) => ({ memberLoads: [...state.memberLoads, load] })),
+                    set((state) => {
+                        // Only create new array if load doesn't already exist
+                        const exists = state.memberLoads.some(l => l.id === load.id);
+                        if (exists) return state;
+                        return { memberLoads: [...state.memberLoads, load] };
+                    }),
 
                 removeMemberLoad: (id) =>
                     set((state) => ({ memberLoads: state.memberLoads.filter(l => l.id !== id) })),
+
+                // Targeted update for single member load - prevents full re-render cascade
+                updateMemberLoadById: (id, updates) =>
+                    set((state) => {
+                        const idx = state.memberLoads.findIndex(l => l.id === id);
+                        if (idx === -1) return state;
+                        const updated = [...state.memberLoads];
+                        updated[idx] = { ...updated[idx], ...updates };
+                        return { memberLoads: updated };
+                    }),
 
                 // Plate/Shell actions
                 addPlate: (plate) =>

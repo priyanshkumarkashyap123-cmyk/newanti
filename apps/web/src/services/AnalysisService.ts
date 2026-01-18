@@ -8,6 +8,8 @@
  * - nodeCount >= 2000: Cloud API
  */
 
+import { analysisLogger } from '../utils/logger';
+
 // ============================================
 // TYPES
 // ============================================
@@ -112,6 +114,62 @@ class AnalysisService {
     private worker: Worker | null = null;
     private abortController: AbortController | null = null;
 
+    // Debounce state for rapid updates (e.g., slider manipulation)
+    private pendingAnalysis: {
+        model: ModelData;
+        resolve: (result: AnalysisResult) => void;
+        reject: (error: Error) => void;
+        onProgress?: ProgressCallback;
+        token?: string | null;
+    } | null = null;
+    private debounceTimeoutId: ReturnType<typeof setTimeout> | null = null;
+    private readonly DEBOUNCE_MS = 300; // Coalesce requests within 300ms
+
+    /**
+     * Debounced analysis - coalesces rapid requests
+     * Only the LAST request within DEBOUNCE_MS will be executed
+     * Use this for live-updating UI like sliders
+     * @see bottleneck_report.md - Missing Solver Debounce fix
+     */
+    async analyzeDebounced(
+        model: ModelData,
+        onProgress?: ProgressCallback,
+        token?: string | null
+    ): Promise<AnalysisResult> {
+        return new Promise((resolve, reject) => {
+            // Cancel any pending analysis
+            if (this.debounceTimeoutId) {
+                clearTimeout(this.debounceTimeoutId);
+                // Resolve pending with "superseded" result (not an error)
+                if (this.pendingAnalysis) {
+                    this.pendingAnalysis.resolve({
+                        success: false,
+                        error: 'Request superseded by newer analysis'
+                    } as AnalysisResult);
+                }
+            }
+
+            // Queue this request
+            this.pendingAnalysis = { model, resolve, reject, onProgress, token };
+
+            // Start debounce timer
+            this.debounceTimeoutId = setTimeout(async () => {
+                const pending = this.pendingAnalysis;
+                this.pendingAnalysis = null;
+                this.debounceTimeoutId = null;
+
+                if (!pending) return;
+
+                try {
+                    const result = await this.analyze(pending.model, pending.onProgress, pending.token);
+                    pending.resolve(result);
+                } catch (error) {
+                    pending.reject(error instanceof Error ? error : new Error(String(error)));
+                }
+            }, this.DEBOUNCE_MS);
+        });
+    }
+
     /**
      * Run structural analysis
      * Automatically selects local or cloud solver based on model size
@@ -151,7 +209,7 @@ class AnalysisService {
                     errorLower.includes('oom');
 
                 if (shouldFallback && token) {
-                    console.warn('[Analysis] Local solver failed, falling back to cloud:', localResult.error);
+                    analysisLogger.warn('Local solver failed, falling back to cloud:', localResult.error);
                     onProgress?.('uploading', 15, 'Local solver failed. Switching to cloud solver...');
 
                     try {
@@ -162,7 +220,7 @@ class AnalysisService {
                         return cloudResult;
                     } catch (cloudError) {
                         // Both solvers failed - return original local error
-                        console.error('[Analysis] Cloud fallback also failed:', cloudError);
+                        analysisLogger.error('Cloud fallback also failed:', cloudError);
                         return {
                             success: false,
                             error: `Local solver: ${localResult.error}\nCloud solver: ${cloudError instanceof Error ? cloudError.message : String(cloudError)}`
@@ -189,7 +247,7 @@ class AnalysisService {
 
             // Handle worker errors
             this.worker.onerror = (error) => {
-                console.error('[AnalysisService] Worker Error:', error);
+                analysisLogger.error('Worker Error:', error);
             };
         }
     }
@@ -293,26 +351,45 @@ class AnalysisService {
                 // Check if model has memberLoads property
                 const modelWithMemberLoads = model as any;
                 if (modelWithMemberLoads.memberLoads && modelWithMemberLoads.memberLoads.length > 0) {
-                    console.log(`[Analysis] Converting ${modelWithMemberLoads.memberLoads.length} member loads to nodal loads...`);
+                    analysisLogger.info(`Converting ${modelWithMemberLoads.memberLoads.length} member loads to nodal loads...`);
+                    analysisLogger.debug('Member loads:', modelWithMemberLoads.memberLoads);
 
                     try {
                         // Import conversion utility
                         const { convertMemberLoadsToNodal, mergeNodalLoads } = await import('../utils/loadConversion');
 
-                        const equivalentLoads = convertMemberLoadsToNodal(
+                        const conversionResult = convertMemberLoadsToNodal(
                             modelWithMemberLoads.memberLoads,
                             model.members,
                             model.nodes
                         );
 
-                        // Merge with existing nodal loads
-                        allLoads = mergeNodalLoads([...allLoads, ...equivalentLoads]);
+                        analysisLogger.debug('Conversion result:', {
+                            summary: conversionResult.summary,
+                            errors: conversionResult.errors,
+                            warnings: conversionResult.warnings,
+                            nodalLoadsCount: conversionResult.nodalLoads.length
+                        });
 
-                        console.log(`[Analysis] Total nodal loads after conversion: ${allLoads.length}`);
+                        if (conversionResult.errors.length > 0) {
+                            analysisLogger.error('Conversion errors:', conversionResult.errors);
+                        }
+
+                        if (conversionResult.warnings.length > 0) {
+                            analysisLogger.warn('Conversion warnings:', conversionResult.warnings);
+                        }
+
+                        // Merge with existing nodal loads
+                        allLoads = mergeNodalLoads([...allLoads, ...conversionResult.nodalLoads]);
+
+                        analysisLogger.info(`Total nodal loads after conversion: ${allLoads.length}`);
+                        analysisLogger.debug('Final loads being sent to worker:', allLoads);
                     } catch (err) {
-                        console.error('[Analysis] Load conversion failed:', err);
+                        analysisLogger.error('Load conversion failed:', err);
                         // Continue with original loads
                     }
+                } else {
+                    analysisLogger.debug('No member loads to convert, using direct nodal loads:', allLoads.length);
                 }
 
                 // Send to worker
@@ -466,7 +543,7 @@ class AnalysisService {
                     if (!response.ok) {
                         // Log but don't crash on temporary errors
                         if (response.status >= 500) {
-                            console.warn(`Server error fetching job status: ${response.status}`);
+                            analysisLogger.warn(`Server error fetching job status: ${response.status}`);
                         } else if (response.status === 404) {
                             return { success: false, error: 'Job not found' };
                         }
@@ -503,16 +580,16 @@ class AnalysisService {
                     clearTimeout(timeoutId);
 
                     if (fetchError instanceof TypeError && fetchError.message.includes('Failed to fetch')) {
-                        console.warn('Network error, will retry...');
+                        analysisLogger.warn('Network error, will retry...');
                     } else if (fetchError instanceof DOMException && fetchError.name === 'AbortError') {
-                        console.warn('Fetch timeout, retrying...');
+                        analysisLogger.warn('Fetch timeout, retrying...');
                     } else {
-                        console.error('Poll fetch error:', fetchError);
+                        analysisLogger.error('Poll fetch error:', fetchError);
                     }
                     // Continue polling on network errors
                 }
             } catch (error) {
-                console.error('Poll error:', error);
+                analysisLogger.error('Poll error:', error);
                 // Don't throw - continue polling
             }
 
@@ -589,7 +666,7 @@ class AnalysisService {
 
             return await response.json();
         } catch (error) {
-            console.error('Non-linear analysis error:', error);
+            analysisLogger.error('Non-linear analysis error:', error);
             return { success: false, error: error instanceof Error ? error.message : 'Network error' };
         }
     }

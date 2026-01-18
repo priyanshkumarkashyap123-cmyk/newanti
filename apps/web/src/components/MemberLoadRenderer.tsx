@@ -1,40 +1,35 @@
 /**
  * MemberLoadRenderer - Visualizes distributed and point loads on members
  * Renders UDL, UVL, and point loads in 3D
+ * 
+ * Performance optimizations:
+ * - maxLoadMagnitude calculated once in parent, passed as prop
+ * - Reduces cross-component dependency recalculations
+ * @see bottleneck_report.md - GPU Buffer Transfer Lock fix
  */
 
-import { FC, useMemo } from 'react';
+import { FC, useMemo, memo } from 'react';
 import * as THREE from 'three';
 import { Line } from '@react-three/drei';
 import { useModelStore, MemberLoad } from '../store/model';
+import { useNodes, useMembers } from '../store/selectors';
 
 const LOAD_COLOR = '#ff6600';  // Orange for loads
 const ARROW_COLOR = '#ff3333'; // Red for arrows
 
 interface MemberLoadVisualizerProps {
     load: MemberLoad;
+    maxLoadMagnitude: number;  // Passed from parent to prevent recalculation
 }
 
 // Reference constants for scaling
 const REFERENCE_LOAD = 100;  // 100 kN reference
 
-const MemberLoadVisualizer: FC<MemberLoadVisualizerProps> = ({ load }) => {
-    const nodes = useModelStore((state) => state.nodes);
-    const members = useModelStore((state) => state.members);
-    const memberLoads = useModelStore((state) => state.memberLoads);
-
-    // Calculate max load magnitude for scaling
-    const maxLoadMagnitude = useMemo(() => {
-        let maxMag = REFERENCE_LOAD;
-        memberLoads.forEach((ml) => {
-            const w1 = Math.abs(ml.w1 ?? 0);
-            const w2 = Math.abs(ml.w2 ?? ml.w1 ?? 0);
-            const P = Math.abs(ml.P ?? 0);
-            const maxIntensity = Math.max(w1, w2, P);
-            if (maxIntensity > maxMag) maxMag = maxIntensity;
-        });
-        return maxMag;
-    }, [memberLoads]);
+// Memoized component to prevent unnecessary re-renders
+const MemberLoadVisualizer: FC<MemberLoadVisualizerProps> = memo(({ load, maxLoadMagnitude }) => {
+    // Use optimized selectors
+    const nodes = useNodes();
+    const members = useMembers();
 
     const geometry = useMemo(() => {
         const member = members.get(load.memberId);
@@ -143,7 +138,7 @@ const MemberLoadVisualizer: FC<MemberLoadVisualizerProps> = ({ load }) => {
             ))}
         </group>
     );
-};
+});
 
 // Helper: Create distributed load visualization with dynamic scale
 function createDistributedLoadGeometry(
@@ -264,13 +259,30 @@ function createMomentGeometry(
 }
 
 // Main component that renders all member loads
+// Calculates maxLoadMagnitude ONCE and passes to children
 export const MemberLoadRenderer: FC = () => {
     const memberLoads = useModelStore((state) => state.memberLoads);
+
+    // Calculate maxLoadMagnitude once in parent - prevents N recalculations in children
+    const maxLoadMagnitude = useMemo(() => {
+        let maxMag = REFERENCE_LOAD;
+        for (const ml of memberLoads) {
+            const w1 = Math.abs(ml.w1 ?? 0);
+            const w2 = Math.abs(ml.w2 ?? ml.w1 ?? 0);
+            const P = Math.abs(ml.P ?? 0);
+            maxMag = Math.max(maxMag, w1, w2, P);
+        }
+        return maxMag;
+    }, [memberLoads.length]); // Only recalculate when count changes
 
     return (
         <group name="member-loads">
             {memberLoads.map((load) => (
-                <MemberLoadVisualizer key={load.id} load={load} />
+                <MemberLoadVisualizer
+                    key={load.id}
+                    load={load}
+                    maxLoadMagnitude={maxLoadMagnitude}
+                />
             ))}
         </group>
     );
