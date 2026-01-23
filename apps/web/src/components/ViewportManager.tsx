@@ -4,11 +4,127 @@ import { View, OrbitControls, OrthographicCamera, PerspectiveCamera } from '@rea
 import { SharedScene } from './SharedScene';
 import { BoxSelector } from './BoxSelector';
 import { WgpuCanvas } from './viewer/WgpuCanvas';
+import { SafeCanvasWrapper } from './viewer/SafeCanvasWrapper';
 import { useUIStore } from '../store/uiStore';
 import { Cpu, Zap, Box, GitBranch } from 'lucide-react';
 
 type ViewportLayout = 'SINGLE' | 'QUAD';
 type WorkingPlane = 'XZ' | 'XY' | 'YZ';
+
+// ============================================
+// WEBGL SUPPORT CHECK
+// ============================================
+
+const checkWebglSupport = (): { supported: boolean; reason?: string } => {
+    if (typeof document === 'undefined') {
+        return { supported: true };
+    }
+
+    try {
+        const testCanvas = document.createElement('canvas');
+        const gl = testCanvas.getContext('webgl2') || testCanvas.getContext('webgl');
+
+        if (!gl) {
+            throw new Error('WebGL is not available (blocked or disabled in this browser).');
+        }
+
+        // Immediately release the context to avoid leaks
+        const loseContext = (gl as any).getExtension?.('WEBGL_lose_context');
+        loseContext?.loseContext?.();
+
+        return { supported: true };
+    } catch (error) {
+        return {
+            supported: false,
+            reason: error instanceof Error ? error.message : String(error)
+        };
+    }
+};
+
+const WebglFallback: FC<{ error?: string }> = ({ error }) => (
+    <div style={{
+        width: '100%',
+        height: '100%',
+        background: 'radial-gradient(circle at 20% 20%, rgba(34,197,94,0.08), rgba(10,10,10,0.95))',
+        color: '#e5e7eb',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '32px'
+    }}>
+        <div style={{ maxWidth: 640, width: '100%', background: '#0b1120', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 24, boxShadow: '0 10px 50px rgba(0,0,0,0.35)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f87171' }}>⚠️</div>
+                <div>
+                    <div style={{ fontSize: 18, fontWeight: 700 }}>3D Viewer needs WebGL</div>
+                    <div style={{ fontSize: 13, color: '#94a3b8' }}>Your browser/device couldn’t create a WebGL context. The workspace is disabled to avoid crashes.</div>
+                </div>
+            </div>
+            <div style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 12 }}>
+                Try these quick fixes, then refresh:
+            </div>
+            <ul style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.6, paddingLeft: 18, marginBottom: 14 }}>
+                <li>Enable hardware acceleration in your browser settings</li>
+                <li>Close GPU-intensive tabs/apps and reload</li>
+                <li>Update your browser or switch to Chrome/Edge latest</li>
+                <li>Ensure WebGL is not blocked by extensions or corporate policy</li>
+            </ul>
+            {error && (
+                <div style={{ fontSize: 12, color: '#94a3b8', background: 'rgba(255,255,255,0.04)', padding: 12, borderRadius: 10, border: '1px solid rgba(255,255,255,0.05)', marginBottom: 14 }}>
+                    <div style={{ fontWeight: 600, marginBottom: 4 }}>Technical details</div>
+                    <div style={{ whiteSpace: 'pre-wrap' }}>{error}</div>
+                </div>
+            )}
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                <button
+                    onClick={() => window.location.reload()}
+                    style={{
+                        padding: '10px 14px',
+                        background: '#22c55e',
+                        color: '#0b1120',
+                        border: 'none',
+                        borderRadius: 10,
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                    }}
+                >
+                    Reload after enabling WebGL
+                </button>
+                <a
+                    href="https://get.webgl.org/"
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                        padding: '10px 12px',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        borderRadius: 10,
+                        color: '#e5e7eb',
+                        textDecoration: 'none'
+                    }}
+                >
+                    Check WebGL support →
+                </a>
+            </div>
+        </div>
+    </div>
+);
+
+const WebglChecking: FC = () => (
+    <div style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#0b1120',
+        color: '#cbd5e1'
+    }}>
+        <div style={{ textAlign: 'center' }}>
+            <div style={{ marginBottom: 12, fontWeight: 700, fontSize: 16 }}>Checking graphics compatibility…</div>
+            <div style={{ fontSize: 13, color: '#94a3b8' }}>Preparing the 3D workspace</div>
+        </div>
+    </div>
+);
 
 // ============================================
 // WORKING PLANE CONTROLS
@@ -291,10 +407,31 @@ export const ViewportManager: FC = () => {
     const [layout, setLayout] = useState<ViewportLayout>('QUAD');
     const [workingPlane, setWorkingPlane] = useState<WorkingPlane>('XZ');
     const [workingElevation, setWorkingElevation] = useState(0);
+    const [webglStatus, setWebglStatus] = useState<'pending' | 'ok' | 'unsupported'>('pending');
+    const [webglError, setWebglError] = useState<string | null>(null);
     const useWebGpu = useUIStore(state => state.useWebGpu);
     const setUseWebGpu = useUIStore(state => state.setUseWebGpu);
     const renderMode3D = useUIStore(state => state.renderMode3D);
     const setRenderMode3D = useUIStore(state => state.setRenderMode3D);
+
+    useEffect(() => {
+        const result = checkWebglSupport();
+        if (result.supported) {
+            setWebglStatus('ok');
+        } else {
+            setWebglStatus('unsupported');
+            setWebglError(result.reason || 'WebGL is unavailable on this device.');
+            setUseWebGpu(false);
+        }
+    }, [setUseWebGpu]);
+
+    if (webglStatus === 'pending') {
+        return <WebglChecking />;
+    }
+
+    if (webglStatus === 'unsupported') {
+        return <WebglFallback error={webglError ?? undefined} />;
+    }
 
     return (
         <div style={{ width: '100%', height: '100%', position: 'relative' }}>
@@ -452,7 +589,9 @@ export const ViewportManager: FC = () => {
                 onElevationChange={setWorkingElevation}
             />
 
-            <ViewportContainer layout={layout} useWebGpu={useWebGpu} />
+            <SafeCanvasWrapper fallback={<WebglFallback error={webglError ?? undefined} />}>
+                <ViewportContainer layout={layout} useWebGpu={useWebGpu} />
+            </SafeCanvasWrapper>
         </div>
     );
 };
