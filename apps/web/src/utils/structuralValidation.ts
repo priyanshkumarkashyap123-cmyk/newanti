@@ -221,8 +221,16 @@ export function validateStructure(
     const nodesArray: DeterminacyNode[] = Array.from(nodes.values());
     const membersArray: DeterminacyMember[] = Array.from(members.values());
     
+    // Auto-detect if structure is 3D based on Z-coordinate variation
+    const zCoords = nodesArray.map(n => n.z || 0);
+    const uniqueZ = [...new Set(zCoords.map(z => Math.round(z * 1000)))]; // Round to mm precision
+    const is3D = uniqueZ.length > 1; // More than one distinct Z coordinate = 3D structure
+    const structureType = is3D ? '3D' : '2D';
+    
+    console.log(`[Structural Validation] Auto-detected structure type: ${structureType} (${uniqueZ.length} Z-planes)`);
+    
     // Run comprehensive determinacy analysis
-    const determinacy = analyzeDeterminacy(nodesArray, membersArray, '2D');
+    const determinacy = analyzeDeterminacy(nodesArray, membersArray, structureType);
     
     // Add determinacy-specific errors and warnings
     determinacy.errors.forEach(err => {

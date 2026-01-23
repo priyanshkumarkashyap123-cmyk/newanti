@@ -25,6 +25,15 @@ import {
 } from 'lucide-react';
 import beamLabLogo from '../assets/beamlab_logo.png';
 
+// Marketing Components
+import {
+    CompetitiveAdvantage,
+    PerformanceMetrics,
+    Testimonials,
+    SecurityCompliance,
+    CTABanner
+} from '../components/marketing/FeatureShowcase';
+
 // Animation variants
 const fadeInUp: Variants = {
     hidden: { opacity: 0, y: 30 },
@@ -308,6 +317,16 @@ export const LandingPage: FC = () => {
                 </div>
             </section>
 
+            {/* Competitive Advantage Section */}
+            <section className="py-20 bg-slate-900/30">
+                <CompetitiveAdvantage />
+            </section>
+
+            {/* Performance Metrics Section */}
+            <section className="py-20 bg-slate-950">
+                <PerformanceMetrics />
+            </section>
+
             {/* Pricing Section */}
             <section id="pricing" className="py-20 sm:py-24 bg-slate-900/50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -381,25 +400,19 @@ export const LandingPage: FC = () => {
                 </div>
             </section>
 
+            {/* Testimonials Section */}
+            <section className="py-20 bg-slate-900/30">
+                <Testimonials />
+            </section>
+
+            {/* Security Compliance Section */}
+            <section className="py-16 bg-slate-950">
+                <SecurityCompliance />
+            </section>
+
             {/* CTA Section */}
             <section className="py-24 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-900/20 to-purple-900/20" />
-                <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
-                    <h2 className="text-4xl font-bold text-white mb-6">
-                        Ready to Transform Your Workflow?
-                    </h2>
-                    <p className="text-xl text-slate-300 mb-10">
-                        Join thousands of engineers using BeamLab Ultimate for their structural analysis needs.
-                    </p>
-                    <button
-                        onClick={handleGetStarted}
-                        className="inline-flex items-center gap-3 h-14 px-10 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-full text-lg font-bold transition-all hover:scale-105 shadow-2xl shadow-blue-500/20"
-                    >
-                        Get Started Free
-                        <ArrowRight className="w-5 h-5" />
-                    </button>
-                    <p className="text-slate-500 text-sm mt-6">No credit card required • Free forever plan available</p>
-                </div>
+                <CTABanner onGetStarted={handleGetStarted} />
             </section>
 
             {/* Footer */}

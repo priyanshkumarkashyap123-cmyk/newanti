@@ -337,6 +337,19 @@ export function analyze_buckling(_nodes_val, _elements_val, _point_loads_val, _n
 }
 
 /**
+ * Benchmark the ultra-fast solver
+ * Returns timing statistics for different problem sizes
+ * @param {number} num_nodes
+ * @param {number} num_elements
+ * @param {number} iterations
+ * @returns {any}
+ */
+export function benchmark_ultra_fast(num_nodes, num_elements, iterations) {
+    const ret = wasm.benchmark_ultra_fast(num_nodes, num_elements, iterations);
+    return ret;
+}
+
+/**
  * @param {number} d
  * @param {number} bf
  * @param {number} tw
@@ -424,6 +437,19 @@ export function set_panic_hook() {
 }
 
 /**
+ * 2D Frame analysis WITH nodal loads
+ * This is the recommended function for 2D analysis with applied loads
+ * @param {any} nodes_val
+ * @param {any} elements_val
+ * @param {any} loads_val
+ * @returns {any}
+ */
+export function solve_2d_frame_with_loads(nodes_val, elements_val, loads_val) {
+    const ret = wasm.solve_2d_frame_with_loads(nodes_val, elements_val, loads_val);
+    return ret;
+}
+
+/**
  * 3D Frame analysis (new advanced solver)
  * @param {any} nodes_val
  * @param {any} elements_val
@@ -437,17 +463,18 @@ export function solve_3d_frame(nodes_val, elements_val, nodal_loads_val, distrib
 }
 
 /**
- * P-Delta analysis (stub for backward compatibility)
- * @param {any} _nodes_val
- * @param {any} _elements_val
- * @param {any} _point_loads_val
- * @param {any} _member_loads_val
- * @param {number} _max_iterations
- * @param {number} _tolerance
+ * P-Delta analysis - iterative geometric nonlinear analysis
+ * Accounts for secondary moments from axial loads (P) acting on lateral displacements (Δ)
+ * @param {any} nodes_val
+ * @param {any} elements_val
+ * @param {any} point_loads_val
+ * @param {any} member_loads_val
+ * @param {number} max_iterations
+ * @param {number} tolerance
  * @returns {any}
  */
-export function solve_p_delta(_nodes_val, _elements_val, _point_loads_val, _member_loads_val, _max_iterations, _tolerance) {
-    const ret = wasm.solve_p_delta(_nodes_val, _elements_val, _point_loads_val, _member_loads_val, _max_iterations, _tolerance);
+export function solve_p_delta(nodes_val, elements_val, point_loads_val, member_loads_val, max_iterations, tolerance) {
+    const ret = wasm.solve_p_delta(nodes_val, elements_val, point_loads_val, member_loads_val, max_iterations, tolerance);
     return ret;
 }
 
@@ -487,7 +514,7 @@ export function solve_sparse_system_json(input_json) {
 }
 
 /**
- * 2D Frame analysis (backward compatible)
+ * 2D Frame analysis (backward compatible - no loads)
  * @param {any} nodes_val
  * @param {any} elements_val
  * @returns {any}
@@ -515,6 +542,19 @@ export function solve_system(stiffness_array, force_array, dof) {
         throw takeFromExternrefTable0(ret[1]);
     }
     return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+ * Ultra-fast 3D frame analysis with performance metrics
+ * Returns microsecond-level analysis times for small-medium structures
+ * @param {any} nodes_val
+ * @param {any} elements_val
+ * @param {any} loads_val
+ * @returns {any}
+ */
+export function solve_ultra_fast(nodes_val, elements_val, loads_val) {
+    const ret = wasm.solve_ultra_fast(nodes_val, elements_val, loads_val);
+    return ret;
 }
 
 const EXPECTED_RESPONSE_TYPES = new Set(['basic', 'cors', 'default']);
@@ -554,6 +594,10 @@ function __wbg_get_imports() {
     imports.wbg = {};
     imports.wbg.__wbg_Error_52673b7de5a0ca89 = function(arg0, arg1) {
         const ret = Error(getStringFromWasm0(arg0, arg1));
+        return ret;
+    };
+    imports.wbg.__wbg_Number_2d1dcfcf4ec51736 = function(arg0) {
+        const ret = Number(arg0);
         return ret;
     };
     imports.wbg.__wbg_String_8f0eb39a4a4c2f66 = function(arg0, arg1) {

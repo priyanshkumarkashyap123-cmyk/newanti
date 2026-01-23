@@ -1,16 +1,22 @@
 /* tslint:disable */
 /* eslint-disable */
 export const memory: WebAssembly.Memory;
+export const benchmark_ultra_fast: (a: number, b: number, c: number) => any;
 export const get_solver_info: () => [number, number];
 export const modal_analysis: (a: any, b: any, c: number) => any;
+export const solve_2d_frame_with_loads: (a: any, b: any, c: any) => any;
 export const solve_3d_frame: (a: any, b: any, c: any, d: any) => any;
+export const solve_p_delta: (a: any, b: any, c: any, d: any, e: number, f: number) => any;
 export const solve_response_spectrum: (a: any, b: number, c: number, d: number, e: number) => any;
 export const solve_sparse_system_json: (a: number, b: number) => [number, number];
 export const solve_structure_wasm: (a: any, b: any) => any;
 export const solve_system: (a: number, b: number, c: number, d: number, e: number) => [number, number, number];
+export const solve_ultra_fast: (a: any, b: any, c: any) => any;
 export const analyze_buckling: (a: any, b: any, c: any, d: number) => any;
 export const set_panic_hook: () => void;
-export const solve_p_delta: (a: any, b: any, c: any, d: any, e: number, f: number) => any;
+export const calculate_aisc_capacity: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number, r: number, s: number) => any;
+export const calculate_beam_capacity: (a: number, b: number, c: number, d: number, e: number) => number;
+export const calculate_seismic_base_shear: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
 export const __wbg_aiarchitect_free: (a: number, b: number) => void;
 export const __wbg_renderer_free: (a: number, b: number) => void;
 export const aiarchitect_suggest_beam_size: (a: number, b: number) => [number, number];
@@ -21,9 +27,6 @@ export const renderer_resize: (a: number, b: number, c: number) => void;
 export const renderer_width: (a: number) => number;
 export const renderer_render: (a: number) => [number, number];
 export const aiarchitect_new: () => number;
-export const calculate_aisc_capacity: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number, r: number, s: number) => any;
-export const calculate_beam_capacity: (a: number, b: number, c: number, d: number, e: number) => number;
-export const calculate_seismic_base_shear: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
 export const __wbindgen_malloc: (a: number, b: number) => number;
 export const __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
 export const __wbindgen_exn_store: (a: number) => void;

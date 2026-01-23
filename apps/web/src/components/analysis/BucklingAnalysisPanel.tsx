@@ -33,12 +33,17 @@ export function BucklingAnalysisPanel() {
         try {
             const model = { nodes, members, supports, loads };
             // Note: Using mock buckling - real implementation would call Rust API
+            const mockModeShapes: BucklingMode[] = Array.from({ length: modes }, (_, i) => ({
+                modeNumber: i + 1,
+                eigenvalue: 1.5 + i * 0.3,
+                criticalLoad: (1.5 + i * 0.3) * 100,
+                shape: {}
+            }));
             const analysisResults: BucklingAnalysisResult = { 
-                modes: Array.from({ length: modes }, (_, i) => ({
-                    mode: i + 1,
-                    load_factor: 1.5 + i * 0.3,
-                    critical_load: (1.5 + i * 0.3) * 100
-                }))
+                modes: modes,
+                buckling_loads: mockModeShapes.map(m => m.eigenvalue),
+                modeShapes: mockModeShapes,
+                success: true
             };
             
             setResults(analysisResults);
@@ -108,7 +113,7 @@ export function BucklingAnalysisPanel() {
                 <div style={{ background: '#2d2d2d', padding: '20px', borderRadius: '8px' }}>
                     <h3>Buckling Modes</h3>
                     
-                    {results.modes && results.modes.length > 0 ? (
+                    {results.modeShapes && results.modeShapes.length > 0 ? (
                         <div style={{ marginTop: '20px' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                 <thead>
@@ -119,14 +124,14 @@ export function BucklingAnalysisPanel() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {results.modes.map((mode: BucklingMode, idx: number) => (
+                                    {results.modeShapes.map((mode: BucklingMode, idx: number) => (
                                         <tr key={idx} style={{ borderBottom: '1px solid #333' }}>
-                                            <td style={{ padding: '10px' }}>Mode {mode.mode || idx + 1}</td>
+                                            <td style={{ padding: '10px' }}>Mode {mode.modeNumber || idx + 1}</td>
                                             <td style={{ padding: '10px', textAlign: 'right', color: '#4fc3f7' }}>
-                                                {mode.load_factor?.toFixed(3) || 'N/A'}
+                                                {mode.eigenvalue?.toFixed(3) || 'N/A'}
                                             </td>
                                             <td style={{ padding: '10px', textAlign: 'right' }}>
-                                                {mode.critical_load ? `${mode.critical_load.toFixed(2)} kN` : 'N/A'}
+                                                {mode.criticalLoad ? `${mode.criticalLoad.toFixed(2)} kN` : 'N/A'}
                                             </td>
                                         </tr>
                                     ))}

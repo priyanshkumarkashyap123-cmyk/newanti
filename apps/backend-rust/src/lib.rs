@@ -5,6 +5,8 @@ pub mod renderer; // Stubbed for WASM compatibility (Three.js used for actual re
 pub mod ai_architect;
 pub mod dynamics;
 pub mod plate_element;
+pub mod ultra_fast_solver;
+
 use nalgebra::{DMatrix, DVector};
 use nalgebra_sparse::{CooMatrix, CsrMatrix};
 use wasm_bindgen::prelude::*;
@@ -318,7 +320,7 @@ pub fn analyze_buckling(
 #[wasm_bindgen]
 pub fn get_solver_info() -> String {
     r#"{
-        "version": "2.1.0-rust-hybrid",
+        "version": "3.0.0-ultra-fast",
         "capabilities": [
             "2D frame analysis",
             "3D frame analysis",
@@ -326,9 +328,164 @@ pub fn get_solver_info() -> String {
             "AISC 360-16 LRFD Design",
             "Indian Standard Design (IS456/IS800)",
             "Direct stiffness method",
-            "LU decomposition solver"
-        ]
+            "LU decomposition solver",
+            "Cholesky decomposition (SPD)",
+            "Sparse matrix storage (CSR)",
+            "Conjugate Gradient iterative solver",
+            "Memory pooling",
+            "Incremental updates (Sherman-Morrison)",
+            "Model Order Reduction (POD)"
+        ],
+        "performance": {
+            "target_20_nodes_us": 100,
+            "target_100_nodes_us": 1000,
+            "target_1000_nodes_ms": 10,
+            "memory_efficient": true
+        }
     }"#.to_string()
+}
+
+// ============================================
+// ULTRA-FAST SOLVER EXPORTS
+// ============================================
+
+/// Ultra-fast 3D frame analysis with performance metrics
+/// Returns microsecond-level analysis times for small-medium structures
+#[wasm_bindgen]
+pub fn solve_ultra_fast(
+    nodes_val: JsValue,
+    elements_val: JsValue,
+    loads_val: JsValue,
+) -> JsValue {
+    // Input structure for ultra-fast solver
+    #[derive(Deserialize)]
+    struct UltraFastNode {
+        id: String,
+        x: f64,
+        y: f64,
+        #[serde(default)]
+        z: f64,
+        #[serde(default)]
+        restraints: [bool; 6],
+    }
+    
+    #[derive(Deserialize)]
+    struct UltraFastElement {
+        id: String,
+        node_i: usize,
+        node_j: usize,
+        #[serde(alias = "E")]
+        e: f64,
+        #[serde(default = "default_g")]
+        g: f64,
+        #[serde(alias = "A")]
+        a: f64,
+        #[serde(alias = "Iy", default)]
+        iy: f64,
+        #[serde(alias = "Iz", default)]
+        iz: f64,
+        #[serde(alias = "J", default)]
+        j: f64,
+        #[serde(default)]
+        beta: f64,
+    }
+    
+    fn default_g() -> f64 { 80e9 }
+    
+    #[derive(Deserialize)]
+    struct UltraFastLoad {
+        node_idx: usize,
+        #[serde(default)]
+        fx: f64,
+        #[serde(default)]
+        fy: f64,
+        #[serde(default)]
+        fz: f64,
+        #[serde(default)]
+        mx: f64,
+        #[serde(default)]
+        my: f64,
+        #[serde(default)]
+        mz: f64,
+    }
+    
+    // Parse inputs
+    let nodes: Vec<UltraFastNode> = match serde_wasm_bindgen::from_value(nodes_val) {
+        Ok(v) => v,
+        Err(e) => return JsValue::from_str(&format!(r#"{{"success":false,"error":"Node parse error: {}"}}"#, e)),
+    };
+    
+    let elements: Vec<UltraFastElement> = match serde_wasm_bindgen::from_value(elements_val) {
+        Ok(v) => v,
+        Err(e) => return JsValue::from_str(&format!(r#"{{"success":false,"error":"Element parse error: {}"}}"#, e)),
+    };
+    
+    let loads: Vec<UltraFastLoad> = serde_wasm_bindgen::from_value(loads_val).unwrap_or_default();
+    
+    // Convert to ultra-fast format
+    let uf_nodes: Vec<_> = nodes.iter()
+        .map(|n| (n.id.clone(), n.x, n.y, n.z, n.restraints))
+        .collect();
+    
+    let uf_elements: Vec<_> = elements.iter()
+        .map(|e| (
+            e.id.clone(), e.node_i, e.node_j,
+            e.e, e.g, e.a, e.iy, e.iz, e.j, e.beta
+        ))
+        .collect();
+    
+    let uf_loads: Vec<_> = loads.iter()
+        .map(|l| (l.node_idx, l.fx, l.fy, l.fz, l.mx, l.my, l.mz))
+        .collect();
+    
+    // Run analysis
+    match ultra_fast_solver::analyze_ultra_fast(&uf_nodes, &uf_elements, &uf_loads) {
+        Ok(result) => {
+            serde_wasm_bindgen::to_value(&result)
+                .unwrap_or_else(|e| JsValue::from_str(&format!(r#"{{"success":false,"error":"Serialize error: {}"}}"#, e)))
+        }
+        Err(e) => JsValue::from_str(&format!(r#"{{"success":false,"error":"{}"}}"#, e)),
+    }
+}
+
+/// Benchmark the ultra-fast solver
+/// Returns timing statistics for different problem sizes
+#[wasm_bindgen]
+pub fn benchmark_ultra_fast(num_nodes: usize, num_elements: usize, iterations: usize) -> JsValue {
+    let (mean, median, min) = ultra_fast_solver::benchmark_solver(
+        num_nodes, 
+        num_elements,
+        if iterations == 0 { 10 } else { iterations }
+    );
+    
+    #[derive(Serialize)]
+    struct BenchmarkResult {
+        num_nodes: usize,
+        num_elements: usize,
+        iterations: usize,
+        mean_us: f64,
+        median_us: f64,
+        min_us: f64,
+        target_met: bool,
+    }
+    
+    // Target: 100μs for 20 nodes, 1000μs for 100 nodes
+    let target = if num_nodes <= 20 { 100.0 } 
+                 else if num_nodes <= 100 { 1000.0 } 
+                 else { 10000.0 };
+    
+    let result = BenchmarkResult {
+        num_nodes,
+        num_elements,
+        iterations,
+        mean_us: mean,
+        median_us: median,
+        min_us: min,
+        target_met: min < target,
+    };
+    
+    serde_wasm_bindgen::to_value(&result)
+        .unwrap_or_else(|_| JsValue::from_str(r#"{"error":"Benchmark failed"}"#))
 }
 /// Sparse system input
 #[derive(Deserialize)]

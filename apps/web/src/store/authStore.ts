@@ -11,8 +11,8 @@
  * - Auto-refresh tokens
  */
 
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create, StateCreator } from 'zustand';
+import { persist, PersistOptions, createJSONStorage } from 'zustand/middleware';
 
 // ============================================
 // TYPES
@@ -118,9 +118,21 @@ const parseJWT = (token: string): { exp: number; sub: string } | null => {
 // AUTH STORE
 // ============================================
 
-export const useAuthStore = create<AuthState>()(
-    persist(
-        (set, get) => ({
+// Type for persisted state
+type PersistedAuthState = Pick<AuthState, 'user' | 'tokens'>;
+
+// Persist options
+const persistOptions: PersistOptions<AuthState, PersistedAuthState> = {
+    name: 'beamlab-auth',
+    storage: createJSONStorage(() => localStorage),
+    partialize: (state) => ({
+        user: state.user,
+        tokens: state.tokens
+    })
+};
+
+// Store creator
+const authStoreCreator: StateCreator<AuthState> = (set, get) => ({
             // Initial state
             user: null,
             tokens: null,
@@ -514,15 +526,12 @@ export const useAuthStore = create<AuthState>()(
 
                 return tokens.accessToken;
             }
-        }),
-        {
-            name: 'beamlab-auth',
-            partialize: (state) => ({
-                user: state.user,
-                tokens: state.tokens
-            })
-        }
-    )
+        });
+
+// Create the store with persist middleware
+// Note: Using type assertion due to zustand middleware type inference issue between persist and temporal
+export const useAuthStore = create<AuthState>()(
+    persist(authStoreCreator, persistOptions) as unknown as StateCreator<AuthState, [], []>
 );
 
 // ============================================

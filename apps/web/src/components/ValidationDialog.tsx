@@ -3,7 +3,7 @@
  * Shows structural validation errors and warnings before analysis
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -14,8 +14,9 @@ import {
 } from './ui/dialog';
 import { Button } from './ui/button';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { AlertCircle, AlertTriangle, Info, XCircle } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Info, XCircle, Wrench, CheckCircle } from 'lucide-react';
 import type { ValidationError } from '../utils/structuralValidation';
+import { useModelStore } from '../store/model';
 
 interface ValidationDialogProps {
     isOpen: boolean;
@@ -23,6 +24,7 @@ interface ValidationDialogProps {
     errors: ValidationError[];
     warnings: ValidationError[];
     onProceedAnyway?: () => void;
+    onRevalidate?: () => void;
 }
 
 export const ValidationDialog: React.FC<ValidationDialogProps> = ({
@@ -30,14 +32,44 @@ export const ValidationDialog: React.FC<ValidationDialogProps> = ({
     onClose,
     errors,
     warnings,
-    onProceedAnyway
+    onProceedAnyway,
+    onRevalidate
 }) => {
+    const [fixResults, setFixResults] = useState<{ fixed: string[]; errors: string[] } | null>(null);
+    const [isFixing, setIsFixing] = useState(false);
+    const autoFixModel = useModelStore(state => state.autoFixModel);
+    
     const criticalErrors = errors.filter(e => e.type === 'critical');
     const regularErrors = errors.filter(e => e.type === 'error');
     const hasCriticalErrors = criticalErrors.length > 0;
 
+    const handleAutoFix = async () => {
+        setIsFixing(true);
+        try {
+            const results = autoFixModel();
+            setFixResults(results);
+            
+            // After fixing, trigger revalidation if callback provided
+            if (results.fixed.length > 0 && onRevalidate) {
+                setTimeout(() => {
+                    onRevalidate();
+                }, 500);
+            }
+        } catch (error) {
+            console.error('Auto-fix failed:', error);
+            setFixResults({ fixed: [], errors: ['Auto-fix failed: ' + String(error)] });
+        } finally {
+            setIsFixing(false);
+        }
+    };
+
+    const handleClose = () => {
+        setFixResults(null);
+        onClose();
+    };
+
     return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
+        <Dialog open={isOpen} onOpenChange={handleClose}>
             <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
@@ -61,6 +93,21 @@ export const ValidationDialog: React.FC<ValidationDialogProps> = ({
                 </DialogHeader>
 
                 <div className="space-y-4 py-4">
+                    {/* Auto-Fix Results */}
+                    {fixResults && fixResults.fixed.length > 0 && (
+                        <Alert className="border-green-300 bg-green-50">
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            <AlertTitle className="text-green-900">Auto-Fix Applied</AlertTitle>
+                            <AlertDescription className="mt-2 text-green-800 text-sm">
+                                <ul className="list-disc list-inside space-y-1">
+                                    {fixResults.fixed.map((fix, idx) => (
+                                        <li key={idx}>{fix}</li>
+                                    ))}
+                                </ul>
+                            </AlertDescription>
+                        </Alert>
+                    )}
+
                     {/* Critical Errors */}
                     {criticalErrors.map((error, idx) => (
                         <Alert key={`critical-${idx}`} variant="destructive">
@@ -120,13 +167,33 @@ export const ValidationDialog: React.FC<ValidationDialogProps> = ({
                                 <li><strong>Disconnected:</strong> Delete unused nodes or connect with members</li>
                                 <li><strong>Mechanism:</strong> Add more members or supports to stabilize</li>
                             </ul>
+                            <div className="mt-3">
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    onClick={handleAutoFix}
+                                    disabled={isFixing}
+                                    className="bg-blue-100 hover:bg-blue-200 text-blue-800 border-blue-300"
+                                >
+                                    <Wrench className="h-4 w-4 mr-2" />
+                                    {isFixing ? 'Fixing...' : 'Auto-Fix Common Issues'}
+                                </Button>
+                            </div>
                         </AlertDescription>
                     </Alert>
                 </div>
 
-                <DialogFooter>
-                    <Button variant="outline" onClick={onClose}>
+                <DialogFooter className="gap-2">
+                    <Button variant="outline" onClick={handleClose}>
                         Close
+                    </Button>
+                    <Button 
+                        variant="secondary" 
+                        onClick={handleAutoFix}
+                        disabled={isFixing}
+                    >
+                        <Wrench className="h-4 w-4 mr-2" />
+                        {isFixing ? 'Fixing...' : 'Auto-Fix'}
                     </Button>
                     {!hasCriticalErrors && onProceedAnyway && (
                         <Button variant="default" onClick={onProceedAnyway}>

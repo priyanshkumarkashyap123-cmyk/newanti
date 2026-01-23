@@ -71,6 +71,13 @@ class Logger {
   }
 
   /**
+   * Log - alias for info level (backward compatibility)
+   */
+  log(...args: any[]) {
+    this.info(...args);
+  }
+
+  /**
    * Success level - success messages in development
    */
   success(...args: any[]) {

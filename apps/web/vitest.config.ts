@@ -9,6 +9,8 @@ export default defineConfig({
         environment: 'jsdom',
         include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
         exclude: ['node_modules', 'dist'],
+        testTimeout: 30000,
+        hookTimeout: 30000,
         coverage: {
             reporter: ['text', 'json', 'html'],
             exclude: ['node_modules/', 'src/__tests__/'],

@@ -149,32 +149,99 @@ export function analyzeDeterminacy(
     
     /**
      * For structure to be stable (kinematically determinate):
-     * Number of constraints must equal or exceed number of possible movements
+     * Total constraints (supports + member contributions) >= Total DOF
      * 
-     * DKI = (total DOF) - (restraint reactions) - (member constraints)
+     * For frames: member constraints = number of internal force/moment resultants
+     * For trusses: member constraints = 1 per member (axial only)
      * 
-     * If DKI < 0: Structure is UNSTABLE (mechanism)
-     * If DKI = 0: Structure is STABLE and KINEMATICALLY DETERMINATE
-     * If DKI > 0: Structure is STABLE but has REDUNDANT constraints
+     * DKI = freeDOF - memberConstraints
+     * But this simplification doesn't always work for 3D structures.
+     * 
+     * A more robust approach: Check if the structure can resist arbitrary loading
+     * without mechanism motion. We use the equilibrium matrix rank approach.
+     * 
+     * Simplified check for stability:
+     * - For 2D: Need at least 3 independent reactions + proper member connectivity
+     * - For 3D: Need at least 6 independent reactions + proper member connectivity
      */
     
+    // Use a more practical stability check
+    const minReactionsNeeded = structureType === '2D' ? 3 : 6;
+    const hasMinReactions = restrainedDOF >= minReactionsNeeded;
+    
+    // Check member connectivity - each unrestrained node needs to be connected
     const memberConstraints = calculateMemberConstraints(members, structureType);
-    const DKI = freeDOF - memberConstraints;
+    
+    // Alternative DKI calculation: For frame structures
+    // In frame analysis, each member provides full rigidity between its nodes
+    // The structure is stable if the connectivity matrix has sufficient rank
+    
+    // Simplified stability: If we have enough supports and all nodes are connected
+    const connectedNodes = new Set<string>();
+    members.forEach(m => {
+        connectedNodes.add(m.startNodeId);
+        connectedNodes.add(m.endNodeId);
+    });
+    const allNodesConnected = nodes.every(n => 
+        connectedNodes.has(n.id) || 
+        (n.restraints && Object.values(n.restraints).some(v => v))
+    );
+    
+    // For typical frame structures: if we have proper supports, it's stable
+    // The DKI approach is more relevant for mechanisms/trusses
+    const isTruss = members.every(m => isTrussMember(m));
+    
+    let DKI: number;
+    if (isTruss) {
+        // For trusses: DKI = 2n - (m + r) for 2D, 3n - (m + r) for 3D
+        const j = nodes.length;
+        const m_count = members.length;
+        if (structureType === '2D') {
+            DKI = 2 * j - m_count - restrainedDOF;
+        } else {
+            DKI = 3 * j - m_count - restrainedDOF;
+        }
+    } else {
+        // For frames: More permissive - frames are inherently more stable
+        // Each member provides full rigidity, so we mainly check support adequacy
+        // DKI = freeDOF - memberConstraints (but memberConstraints now properly calculated)
+        DKI = freeDOF - memberConstraints;
+    }
     
     result.degreeOfKinematicIndeterminacy = DKI;
-    result.isStable = DKI <= 0;
-    result.isKinematicallyDeterminate = DKI === 0;
     
-    if (DKI < 0) {
-        result.kinematicDescription = `UNSTABLE - Mechanism (${Math.abs(DKI)} missing constraints)`;
+    // Stability decision - be more practical for frame structures
+    if (isTruss) {
+        result.isStable = DKI <= 0 && hasMinReactions && allNodesConnected;
+    } else {
+        // Frame structures: stable if properly supported and connected
+        result.isStable = hasMinReactions && allNodesConnected && DKI <= 0;
+        // Override for large indeterminate frames - they're definitely stable
+        if (DKI < -10 && hasMinReactions) {
+            result.isStable = true;
+        }
+    }
+    
+    result.isKinematicallyDeterminate = DKI === 0 && result.isStable;
+    
+    if (!result.isStable) {
+        if (!hasMinReactions) {
+            result.kinematicDescription = `UNSTABLE - Insufficient supports (need ${minReactionsNeeded}, have ${restrainedDOF})`;
+            result.errors.push(`Insufficient supports: need at least ${minReactionsNeeded} restraints for ${structureType}, found ${restrainedDOF}`);
+        } else if (!allNodesConnected) {
+            result.kinematicDescription = 'UNSTABLE - Disconnected nodes present';
+            result.errors.push('Some nodes are not connected to any members');
+        } else {
+            result.kinematicDescription = `UNSTABLE - Mechanism (${Math.abs(DKI)} DOF unrestrained)`;
+            result.errors.push(`Structure is unstable - behaves as a mechanism with ${Math.abs(DKI)} degrees of freedom`);
+        }
         result.hasRigidBodyModes = true;
         result.rigidBodyModes = identifyRigidBodyModes(nodes, structureType);
-        result.errors.push(`Structure is unstable - behaves as a mechanism with ${Math.abs(DKI)} degrees of freedom`);
         result.recommendations.push('Add supports or members to eliminate rigid body motion');
     } else if (DKI === 0) {
         result.kinematicDescription = 'STABLE - Kinematically determinate';
     } else {
-        result.kinematicDescription = `STABLE - Over-constrained (${DKI} redundant constraints)`;
+        result.kinematicDescription = `STABLE - Highly constrained (${Math.abs(DKI)} redundant DOF)`;
     }
     
     // ========================================================================
@@ -204,7 +271,7 @@ export function analyzeDeterminacy(
      * Note: Internal releases (hinges) reduce degree of indeterminacy
      */
     
-    const isTruss = members.every(m => isTrussMember(m));
+    // Note: isTruss already defined above
     
     let DSI: number;
     
@@ -240,19 +307,22 @@ export function analyzeDeterminacy(
         result.errors.push(`Structure is statically unstable with deficiency of ${Math.abs(DSI)}`);
     } else if (DSI === 0) {
         result.staticDescription = 'STATICALLY DETERMINATE - Can be solved using equilibrium equations alone';
-        result.warnings.push('Determinate structures are sensitive to support settlements and temperature changes');
+        // Only show as info, not warning - determinate structures are perfectly fine
+        result.recommendations.push('Tip: Determinate structures are simple to analyze but may be sensitive to settlements');
     } else {
         result.staticDescription = `STATICALLY INDETERMINATE to degree ${DSI}`;
-        result.warnings.push(`Structure has ${DSI} redundant constraints - requires stiffness method for analysis`);
+        // This is NOT an error - just informational. Indeterminate structures are common and good!
+        result.recommendations.push(`Structure has ${DSI} degrees of redundancy - will use matrix/stiffness method for analysis (standard practice)`);
     }
     
     // ========================================================================
     // DETAILED STABILITY CHECKS
     // ========================================================================
     
-    // Check minimum support requirements
+    // Note: Minimum support requirements already checked in kinematic stability section above
+    // Only add error if not already flagged
     const minRestraints = structureType === '2D' ? 3 : 6;
-    if (restrainedDOF < minRestraints) {
+    if (restrainedDOF < minRestraints && !result.errors.some(e => e.includes('Insufficient supports'))) {
         result.errors.push(`Insufficient supports: need at least ${minRestraints} restraints for ${structureType} stability, found ${restrainedDOF}`);
         result.recommendations.push(
             structureType === '2D' 
@@ -356,25 +426,79 @@ function countInternalReleases(members: Member[], structureType: StructureType):
 
 /**
  * Determine if member is a truss member (both ends pinned)
+ * Supports both old format (releaseStart/releaseEnd) and new store format (releases)
  */
 function isTrussMember(member: Member): boolean {
     if (member.type === 'truss') return true;
     
-    // Check if both ends have moment releases
-    const startPinned = member.releaseStart?.mz === true;
-    const endPinned = member.releaseEnd?.mz === true;
+    // Check if both ends have moment releases (old format)
+    const startPinnedOld = member.releaseStart?.mz === true;
+    const endPinnedOld = member.releaseEnd?.mz === true;
     
-    return startPinned && endPinned;
+    if (startPinnedOld && endPinnedOld) return true;
+    
+    // Check new store format (releases.mzStart/mzEnd)
+    const storeReleases = (member as any).releases;
+    if (storeReleases) {
+        const startPinnedNew = storeReleases.mzStart === true || storeReleases.startMoment === true;
+        const endPinnedNew = storeReleases.mzEnd === true || storeReleases.endMoment === true;
+        if (startPinnedNew && endPinnedNew) return true;
+    }
+    
+    return false;
 }
 
 /**
  * Calculate constraints provided by members
- * For 2D: Each rigid member constrains 1 DOF (prevents relative displacement)
- * For 3D: Each rigid member constrains 1 DOF in 3D space
+ * 
+ * For FRAME/BEAM members:
+ * - 2D: Each member provides 3 constraint equations (axial, shear, moment equilibrium)
+ * - 3D: Each member provides 6 constraint equations (3 forces + 3 moments)
+ * 
+ * For TRUSS members (pinned at both ends):
+ * - Both 2D and 3D: Each member provides 1 constraint (axial only)
+ * 
+ * The key insight: A rigid member connecting two nodes removes the relative
+ * motion DOFs between those nodes. For frames this is more restrictive.
  */
 function calculateMemberConstraints(members: Member[], structureType: StructureType): number {
-    // Each member provides 1 constraint equation (force equilibrium along member axis)
-    return members.length;
+    let totalConstraints = 0;
+    
+    members.forEach(member => {
+        if (isTrussMember(member)) {
+            // Truss members only resist axial forces - 1 constraint
+            totalConstraints += 1;
+        } else {
+            // Frame/beam members resist axial, shear, and bending
+            if (structureType === '2D') {
+                // 2D frame: resists axial + shear + moment = 3 internal forces
+                // But actually provides 3 constraint equations per member
+                totalConstraints += 3;
+            } else {
+                // 3D frame: resists Fx, Fy, Fz, Mx, My, Mz = 6 internal forces
+                // Provides 6 constraint equations per member
+                totalConstraints += 6;
+            }
+        }
+        
+        // Reduce for releases
+        if (member.releaseStart) {
+            if (member.releaseStart.mz) totalConstraints -= 1;
+            if (structureType === '3D') {
+                if (member.releaseStart.mx) totalConstraints -= 1;
+                if (member.releaseStart.my) totalConstraints -= 1;
+            }
+        }
+        if (member.releaseEnd) {
+            if (member.releaseEnd.mz) totalConstraints -= 1;
+            if (structureType === '3D') {
+                if (member.releaseEnd.mx) totalConstraints -= 1;
+                if (member.releaseEnd.my) totalConstraints -= 1;
+            }
+        }
+    });
+    
+    return totalConstraints;
 }
 
 /**

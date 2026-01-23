@@ -19,6 +19,7 @@ import { SignUpPage } from './pages/SignUpPage';
 import { SettingsPage } from './pages/SettingsPage';
 import SettingsPageEnhanced from './pages/SettingsPageEnhanced';
 import { PricingPage } from './pages/PricingPage';
+import { EnhancedPricingPage } from './pages/EnhancedPricingPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
@@ -45,6 +46,10 @@ import { RequireAuth } from './components/layout/RequireAuth';
 
 // Design Pages
 import { SteelDesignPage } from './pages/SteelDesignPage';
+import { ConnectionDesignPage } from './modules/connections';
+import { ReinforcementDesignPage } from './modules/reinforcement';
+import { WeldedConnectionsPage } from './modules/connections/welded';
+import { DetailingDesignPage } from './modules/detailing';
 
 // Modern Modeler Component
 import { ModernModeler } from './components/ModernModeler';
@@ -399,7 +404,8 @@ function App() {
                 } />
 
                 {/* Pricing Page */}
-                <Route path="/pricing" element={<PricingPage />} />
+                <Route path="/pricing" element={<EnhancedPricingPage />} />
+                <Route path="/pricing-old" element={<PricingPage />} />
 
                 {/* Forgot Password */}
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -471,6 +477,34 @@ function App() {
                 <Route path="/design/steel" element={
                     <RequireAuth>
                         <SteelDesignPage />
+                    </RequireAuth>
+                } />
+
+                {/* Connection Design Module - Professional bolted/welded connection design */}
+                <Route path="/design/connections" element={
+                    <RequireAuth>
+                        <ConnectionDesignPage />
+                    </RequireAuth>
+                } />
+
+                {/* Welded Connections Module - Fillet, Groove, Base Plates */}
+                <Route path="/design/welded-connections" element={
+                    <RequireAuth>
+                        <WeldedConnectionsPage />
+                    </RequireAuth>
+                } />
+
+                {/* Reinforcement Design Module - Stirrups, Development Length, Lap Splices */}
+                <Route path="/design/reinforcement" element={
+                    <RequireAuth>
+                        <ReinforcementDesignPage />
+                    </RequireAuth>
+                } />
+
+                {/* RC Detailing Design Module - Foundations, Columns, Beams, Slabs, Walls */}
+                <Route path="/design/detailing" element={
+                    <RequireAuth>
+                        <DetailingDesignPage />
                     </RequireAuth>
                 } />
 

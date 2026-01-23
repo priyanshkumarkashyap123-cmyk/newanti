@@ -24,16 +24,31 @@ export interface Node {
     id: number;
     x: number;
     y: number;
-    fixed: [boolean, boolean, boolean]; // [dx, dy, rotation]
+    z?: number; // Optional for 2D models
+    // Support both 2D (3 DOF) and 3D (6 DOF) restraint formats
+    // Format 1: fixed [dx, dy, rz] for 2D backward compatibility
+    fixed?: [boolean, boolean, boolean];
+    // Format 2: restraints [Fx, Fy, Fz, Mx, My, Mz] for full 3D
+    restraints?: boolean[];
 }
 
 export interface Element {
     id: number;
-    node_start: number;
-    node_end: number;
-    e: number; // Young's Modulus (Pa)
-    i: number; // Moment of Inertia (m^4)
-    a: number; // Cross-sectional Area (m^2)
+    // 2D format (backward compatibility)
+    node_start?: number;
+    node_end?: number;
+    e?: number; // Young's Modulus (Pa)
+    i?: number; // Moment of Inertia (m^4)
+    a?: number; // Cross-sectional Area (m^2)
+    // 3D format (Rust native naming)
+    node_i?: string; // Start node ID
+    node_j?: string; // End node ID
+    E?: number; // Young's Modulus (Pa)
+    G?: number; // Shear Modulus (Pa)
+    A?: number; // Cross-sectional Area (m^2)
+    Iy?: number; // Moment of Inertia Y (m^4)
+    Iz?: number; // Moment of Inertia Z (m^4)
+    J?: number;  // Torsional constant (m^4)
 }
 
 export interface PointLoad {

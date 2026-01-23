@@ -127,25 +127,30 @@ function getLocalStiffnessMatrix(
 
     set(11, 11, k_bz_3);
 
-    // Bending about Y (affects z and ry)
+    // Bending about Y (affects z and ry) - XZ plane bending
+    // Sign convention matches STAAD.Pro and Rust solver_3d.rs
+    // For bending in XZ plane with positive θy (about Y-axis):
+    // - Positive z displacement at node i couples with NEGATIVE θy (hence -k3y)
+    // Reference: McGuire, Gallagher & Ziemian, Matrix Structural Analysis
     const k_by_1 = 12 * E * Iy_L3;
     const k_by_2 = 6 * E * Iy_L2;
     const k_by_3 = 4 * E * Iy_L;
     const k_by_4 = 2 * E * Iy_L;
 
-    set(2, 2, k_by_1);
-    set(2, 4, -k_by_2);
-    set(2, 8, -k_by_1);
-    set(2, 10, -k_by_2);
-
-    set(4, 4, k_by_3);
-    set(4, 8, k_by_2);
-    set(4, 10, k_by_4);
-
-    set(8, 8, k_by_1);
-    set(8, 10, k_by_2);
-
-    set(10, 10, k_by_3);
+    // DOF mapping: z1=2, θy1=4, z2=8, θy2=10
+    set(2, 2, k_by_1);     // z1-z1
+    set(2, 4, -k_by_2);    // z1-θy1 (negative coupling)
+    set(2, 8, -k_by_1);    // z1-z2
+    set(2, 10, -k_by_2);   // z1-θy2 (negative coupling)
+    
+    set(4, 4, k_by_3);     // θy1-θy1
+    set(4, 8, k_by_2);     // θy1-z2 (positive - opposite sign)
+    set(4, 10, k_by_4);    // θy1-θy2
+    
+    set(8, 8, k_by_1);     // z2-z2
+    set(8, 10, k_by_2);    // z2-θy2 (positive - opposite sign)
+    
+    set(10, 10, k_by_3);   // θy2-θy2
 
     return k;
 }

@@ -43,7 +43,7 @@ import { QuickStartModal } from './QuickStartModal';
 import { ProjectDetailsDialog } from './ProjectDetailsDialog';
 import { ResultsToolbar } from './results/ResultsToolbar';
 import ModalControls from './ModalControls';
-import { AICommandCenter, AIAssistantChat, AIAssistantButton } from './ai';
+import { AICommandCenter, AIAssistantChat, AIAssistantButton, AutonomousAIAgent } from './ai';
 import { LoadInputDialog } from './ui/LoadInputDialog';
 import { TutorialOverlay } from './TutorialOverlay';
 import { StructureWizard } from './StructureWizard';
@@ -724,26 +724,35 @@ export const ModernModeler: FC = () => {
                     // Initialize WASM module
                     await initSolver();
 
-                    // Convert nodes to WASM format
+                    // Convert nodes to WASM format with full 6 DOF restraints for 3D analysis
+                    // DOF order: [Fx, Fy, Fz, Mx, My, Mz] = [dx, dy, dz, rx, ry, rz]
                     const wasmNodes = nodesArray.map(n => ({
                         id: parseInt(n.id),
                         x: n.x,
                         y: n.y,
-                        fixed: [
-                            n.restraints?.fx || false,
-                            n.restraints?.fy || false,
-                            n.restraints?.fz || false
-                        ] as [boolean, boolean, boolean]
+                        z: n.z ?? 0,  // Include Z coordinate for 3D
+                        // Use full 6 DOF restraints array (Rust deserializer accepts this format)
+                        restraints: [
+                            n.restraints?.fx || false,  // Translation X
+                            n.restraints?.fy || false,  // Translation Y
+                            n.restraints?.fz || false,  // Translation Z
+                            n.restraints?.mx || false,  // Rotation X
+                            n.restraints?.my || false,  // Rotation Y
+                            n.restraints?.mz || false   // Rotation Z
+                        ]
                     }));
 
-                    // Convert members to WASM format
+                    // Convert members to WASM format with full 3D section properties
                     const wasmElements = membersArray.map(m => ({
                         id: parseInt(m.id),
-                        node_start: parseInt(m.startNodeId),
-                        node_end: parseInt(m.endNodeId),
-                        e: m.E || 200e9,
-                        i: m.Iy || 8.33e-6,
-                        a: m.A || 0.01
+                        node_i: m.startNodeId,    // Use node_i (Rust native name)
+                        node_j: m.endNodeId,      // Use node_j (Rust native name)
+                        E: m.E || 200e9,          // Young's modulus [Pa]
+                        G: m.G || 80e9,           // Shear modulus [Pa]
+                        A: m.A || 0.01,           // Cross-sectional area [m²]
+                        Iy: m.Iy || 8.33e-6,      // Moment of inertia Y [m⁴]
+                        Iz: m.Iz || 8.33e-6,      // Moment of inertia Z [m⁴]
+                        J: m.J || 1e-5            // Torsional constant [m⁴]
                     }));
 
                     // Run WASM analysis WITH LOADS
@@ -757,54 +766,101 @@ export const ModernModeler: FC = () => {
                     modelerLogger.log('[Analysis] WASM Result received');
 
                     // Convert WASM result to expected format
-                    // WASM returns HashMaps: { "nodeId": [dx, dy, rz], ... }
+                    // WASM 3D solver returns HashMaps: { "nodeId": [dx, dy, dz, rx, ry, rz], ... }
                     
-                    // Parse displacements - HashMap<i32, [f64; 3]> → { "1": [dx, dy, rz] }
+                    // Parse displacements - 6 DOF for 3D analysis
                     const nodesDict: Record<string, any> = {};
                     const displacements = wasmResult.displacements || {};
                     for (const [nodeId, disp] of Object.entries(displacements)) {
-                        const dispArray = disp as [number, number, number];
+                        const dispArray = disp as number[];
+                        // Handle both 3 DOF (2D) and 6 DOF (3D) results
                         nodesDict[nodeId] = {
                             nodeId,
-                            DX: dispArray[0],  // Already in meters from Rust
-                            DY: dispArray[1],
-                            DZ: 0,
-                            RZ: dispArray[2],  // Rotation in radians
-                            RX: 0,
-                            RY: 0
+                            DX: dispArray[0] || 0,  // Already in meters from Rust
+                            DY: dispArray[1] || 0,
+                            DZ: dispArray[2] || 0,
+                            RX: dispArray[3] || 0,  // Rotation about X in radians
+                            RY: dispArray[4] || 0,  // Rotation about Y in radians
+                            RZ: dispArray[5] || dispArray[2] || 0  // 3D: RZ at [5], 2D: rz at [2]
                         };
                     }
                     modelerLogger.log(`[Analysis] Parsed ${Object.keys(nodesDict).length} displacements`);
 
-                    // Parse reactions - HashMap<i32, [f64; 3]> → { "1": [fx, fy, mz] }
+                    // Parse reactions - 6 DOF for 3D analysis
                     const reactionsDict: Record<string, number[]> = {};
                     const reactions = wasmResult.reactions || {};
                     for (const [nodeId, rxn] of Object.entries(reactions)) {
-                        const rxnArray = rxn as [number, number, number];
+                        const rxnArray = rxn as number[];
+                        // Handle both 3 DOF (2D) and 6 DOF (3D) results
                         reactionsDict[nodeId] = [
-                            rxnArray[0] / 1000,  // Convert N to kN
-                            rxnArray[1] / 1000,
-                            0,  // Fz (2D)
-                            0,  // Mx (2D)
-                            0,  // My (2D)
-                            rxnArray[2] / 1000   // Mz: Convert N·m to kN·m
+                            (rxnArray[0] || 0) / 1000,  // Fx: Convert N to kN
+                            (rxnArray[1] || 0) / 1000,  // Fy
+                            (rxnArray[2] || 0) / 1000,  // Fz
+                            (rxnArray[3] || 0) / 1000,  // Mx: Convert N·m to kN·m
+                            (rxnArray[4] || 0) / 1000,  // My
+                            (rxnArray[5] || rxnArray[2] || 0) / 1000   // Mz (3D: [5], 2D: [2])
                         ];
                     }
                     modelerLogger.log(`[Analysis] Parsed ${Object.keys(reactionsDict).length} reactions`);
 
-                    // Parse member forces - HashMap<i32, MemberForces>
+                    // Parse member forces - 3D MemberForces with full 6 DOF at each end
                     const membersDict: Record<string, any> = {};
                     const memberForcesMap = wasmResult.member_forces || {};
                     for (const [elemId, forces] of Object.entries(memberForcesMap)) {
-                        const mf = forces as { axial: number; shear_start: number; moment_start: number; shear_end: number; moment_end: number };
-                        membersDict[elemId] = {
-                            memberId: elemId,
-                            axial: mf.axial / 1000,           // Convert N to kN
-                            shearStart: mf.shear_start / 1000,
-                            shearEnd: mf.shear_end / 1000,
-                            momentStart: mf.moment_start / 1000,  // Convert N·m to kN·m
-                            momentEnd: mf.moment_end / 1000
+                        const mf = forces as {
+                            // 2D format (backward compatibility)
+                            axial?: number;
+                            shear_start?: number;
+                            moment_start?: number;
+                            shear_end?: number;
+                            moment_end?: number;
+                            // 3D format (full Rust MemberForces struct)
+                            forces_i?: number[];  // [Fx, Fy, Fz, Mx, My, Mz]
+                            forces_j?: number[];  // [Fx, Fy, Fz, Mx, My, Mz]
+                            max_shear_y?: number;
+                            max_shear_z?: number;
+                            max_moment_y?: number;
+                            max_moment_z?: number;
+                            max_axial?: number;
+                            max_torsion?: number;
                         };
+                        
+                        // Handle both 2D and 3D formats
+                        if (mf.forces_i && mf.forces_j) {
+                            // 3D format: Full member end forces
+                            membersDict[elemId] = {
+                                memberId: elemId,
+                                // Force at node i: [Fx, Fy, Fz, Mx, My, Mz]
+                                axial: (mf.forces_i[0] || 0) / 1000,         // Axial (Fx) in kN
+                                shearY: (mf.forces_i[1] || 0) / 1000,        // Shear Y (Fy) in kN
+                                shearZ: (mf.forces_i[2] || 0) / 1000,        // Shear Z (Fz) in kN
+                                torsion: (mf.forces_i[3] || 0) / 1000,       // Torsion (Mx) in kN·m
+                                momentY: (mf.forces_i[4] || 0) / 1000,       // Moment Y (My) in kN·m
+                                momentZ: (mf.forces_i[5] || 0) / 1000,       // Moment Z (Mz) in kN·m
+                                // End forces
+                                shearStart: (mf.forces_i[1] || 0) / 1000,
+                                shearEnd: (mf.forces_j[1] || 0) / 1000,
+                                momentStart: (mf.forces_i[5] || 0) / 1000,
+                                momentEnd: (mf.forces_j[5] || 0) / 1000,
+                                // Maximum values
+                                maxShearY: (mf.max_shear_y || 0) / 1000,
+                                maxShearZ: (mf.max_shear_z || 0) / 1000,
+                                maxMomentY: (mf.max_moment_y || 0) / 1000,
+                                maxMomentZ: (mf.max_moment_z || 0) / 1000,
+                                maxAxial: (mf.max_axial || 0) / 1000,
+                                maxTorsion: (mf.max_torsion || 0) / 1000
+                            };
+                        } else {
+                            // 2D format (backward compatibility)
+                            membersDict[elemId] = {
+                                memberId: elemId,
+                                axial: (mf.axial || 0) / 1000,
+                                shearStart: (mf.shear_start || 0) / 1000,
+                                shearEnd: (mf.shear_end || 0) / 1000,
+                                momentStart: (mf.moment_start || 0) / 1000,
+                                momentEnd: (mf.moment_end || 0) / 1000
+                            };
+                        }
                     }
                     modelerLogger.log(`[Analysis] Parsed ${Object.keys(membersDict).length} member forces`);
 
@@ -1580,6 +1636,18 @@ export const ModernModeler: FC = () => {
                     // User wants to proceed despite warnings - run analysis
                     setTimeout(() => executeAnalysis(), 100);
                 }}
+                onRevalidate={() => {
+                    // Re-run validation after auto-fix
+                    const validationResult = validateStructure(nodes, members);
+                    setStructuralValidationErrors(validationResult.errors);
+                    setStructuralValidationWarnings(validationResult.warnings);
+                    
+                    // If all errors fixed, close dialog and optionally run analysis
+                    if (validationResult.valid && validationResult.errors.length === 0) {
+                        setShowValidationDialog(false);
+                        setTimeout(() => executeAnalysis(), 200);
+                    }
+                }}
             />
 
             {/* Validation Error Display */}
@@ -1636,9 +1704,9 @@ export const ModernModeler: FC = () => {
                 isOpen={isAIAssistantOpen}
                 onClose={() => setIsAIAssistantOpen(false)}
             />
-            <AIAssistantButton
-                onClick={() => setIsAIAssistantOpen(!isAIAssistantOpen)}
-            />
+            
+            {/* Autonomous AI Agent - Primary AI Interface */}
+            <AutonomousAIAgent />
 
             {/* Structure Gallery - Iconic Civil Engineering Structures */}
             <StructureGallery

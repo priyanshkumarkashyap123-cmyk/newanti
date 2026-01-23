@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { useModelStore } from '../../store/model';
 import { analysisService } from '../../services/AnalysisService';
-import type { PDeltaAnalysisResult, Displacement } from '../../types/analysis';
+import type { PDeltaAnalysisResult } from '../../types/analysis';
 
 export function PDeltaAnalysisPanel() {
     const store = useModelStore();
@@ -44,7 +44,15 @@ export function PDeltaAnalysisPanel() {
                 tolerance: params.tolerance
             });
             
-            setResults(analysisResults);
+            // Convert to PDeltaAnalysisResult format
+            const pDeltaResult: PDeltaAnalysisResult = {
+                converged: analysisResults.success ?? true,
+                iterations: params.maxIterations,
+                displacements: analysisResults.displacements as PDeltaAnalysisResult['displacements'],
+                reactions: analysisResults.reactions,
+                memberForces: analysisResults.memberForces as PDeltaAnalysisResult['memberForces'],
+            };
+            setResults(pDeltaResult);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'P-Delta analysis failed');
         } finally {
@@ -184,13 +192,14 @@ export function PDeltaAnalysisPanel() {
                         <div style={{ marginTop: '20px' }}>
                             <h4>Maximum Displacements</h4>
                             <div style={{ marginTop: '10px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
-                                {['dx', 'dy', 'dz'].map((dir) => {
-                                    const maxDisp = results.displacements.reduce((max: number, d: Displacement) => 
-                                        Math.max(max, Math.abs(d[dir as keyof Displacement] as number || 0)), 0
+                                {['DX', 'DY', 'DZ'].map((dir) => {
+                                    const disps = Object.values(results.displacements!);
+                                    const maxDisp = disps.reduce((max: number, d) => 
+                                        Math.max(max, Math.abs(d[dir as keyof typeof d] || 0)), 0
                                     );
                                     return (
                                         <div key={dir} style={{ padding: '15px', background: '#1e1e1e', borderRadius: '4px' }}>
-                                            <div style={{ color: '#888', fontSize: '12px' }}>{dir.toUpperCase()}</div>
+                                            <div style={{ color: '#888', fontSize: '12px' }}>{dir}</div>
                                             <div style={{ fontSize: '20px', color: '#4fc3f7', marginTop: '5px' }}>
                                                 {maxDisp.toFixed(3)} mm
                                             </div>
@@ -201,14 +210,14 @@ export function PDeltaAnalysisPanel() {
                         </div>
                     )}
 
-                    {results.amplification_factor && (
+                    {results.amplificationFactors && (
                         <div style={{ marginTop: '20px', padding: '15px', background: '#1e1e1e', borderRadius: '4px' }}>
                             <strong>P-Delta Amplification Factor: </strong>
                             <span style={{ fontSize: '20px', color: '#ff9800', marginLeft: '10px' }}>
-                                {results.amplification_factor.toFixed(3)}
+                                {results.amplificationFactors.combined.toFixed(3)}
                             </span>
                             <div style={{ marginTop: '10px', fontSize: '14px', color: '#bbb' }}>
-                                {results.amplification_factor > 1.4 
+                                {results.amplificationFactors.combined > 1.4 
                                     ? '⚠️ High amplification - Structure sensitive to P-Delta effects' 
                                     : '✓ Moderate amplification - P-Delta effects within acceptable range'}
                             </div>

@@ -57,7 +57,7 @@ export class CanvasErrorBoundary extends Component<SafeCanvasWrapperProps, Error
         return { hasError: true, error };
     }
 
-    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
         console.error('[CanvasErrorBoundary] Caught error:', error);
         console.error('[CanvasErrorBoundary] Error info:', errorInfo);
         
@@ -88,7 +88,9 @@ export class CanvasErrorBoundary extends Component<SafeCanvasWrapperProps, Error
     handleClearModel = () => {
         // Clear the model to free memory
         const store = useModelStore.getState();
-        store.clearAll?.();
+        // Clear nodes and members to reset the model
+        store.nodes.clear();
+        store.members.clear();
         
         this.setState({
             hasError: false,
@@ -98,7 +100,7 @@ export class CanvasErrorBoundary extends Component<SafeCanvasWrapperProps, Error
         });
     };
 
-    render() {
+    override render() {
         const { hasError, error, retryCount } = this.state;
         const { children, fallback, maxRetries = 3 } = this.props;
 

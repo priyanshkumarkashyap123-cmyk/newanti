@@ -43,6 +43,12 @@ export class Renderer {
  */
 export function analyze_buckling(_nodes_val: any, _elements_val: any, _point_loads_val: any, _num_modes: number): any;
 
+/**
+ * Benchmark the ultra-fast solver
+ * Returns timing statistics for different problem sizes
+ */
+export function benchmark_ultra_fast(num_nodes: number, num_elements: number, iterations: number): any;
+
 export function calculate_aisc_capacity(d: number, bf: number, tw: number, tf: number, rx: number, ry: number, zx: number, zy: number, sx: number, sy: number, j: number, cw: number, ag: number, fy: number, E: number, lb: number, lc_x: number, lc_y: number, cb: number): any;
 
 export function calculate_beam_capacity(b: number, d: number, fck: number, fy: number, ast: number): number;
@@ -62,14 +68,21 @@ export function modal_analysis(nodes_val: any, elements_val: any, num_modes: num
 export function set_panic_hook(): void;
 
 /**
+ * 2D Frame analysis WITH nodal loads
+ * This is the recommended function for 2D analysis with applied loads
+ */
+export function solve_2d_frame_with_loads(nodes_val: any, elements_val: any, loads_val: any): any;
+
+/**
  * 3D Frame analysis (new advanced solver)
  */
 export function solve_3d_frame(nodes_val: any, elements_val: any, nodal_loads_val: any, distributed_loads_val: any): any;
 
 /**
- * P-Delta analysis (stub for backward compatibility)
+ * P-Delta analysis - iterative geometric nonlinear analysis
+ * Accounts for secondary moments from axial loads (P) acting on lateral displacements (Δ)
  */
-export function solve_p_delta(_nodes_val: any, _elements_val: any, _point_loads_val: any, _member_loads_val: any, _max_iterations: number, _tolerance: number): any;
+export function solve_p_delta(nodes_val: any, elements_val: any, point_loads_val: any, member_loads_val: any, max_iterations: number, tolerance: number): any;
 
 /**
  * Response Spectrum Analysis (Seismic)
@@ -83,7 +96,7 @@ export function solve_response_spectrum(modal_result_val: any, zone_factor: numb
 export function solve_sparse_system_json(input_json: string): string;
 
 /**
- * 2D Frame analysis (backward compatible)
+ * 2D Frame analysis (backward compatible - no loads)
  */
 export function solve_structure_wasm(nodes_val: any, elements_val: any): any;
 
@@ -93,20 +106,32 @@ export function solve_structure_wasm(nodes_val: any, elements_val: any): any;
  */
 export function solve_system(stiffness_array: Float64Array, force_array: Float64Array, dof: number): Float64Array;
 
+/**
+ * Ultra-fast 3D frame analysis with performance metrics
+ * Returns microsecond-level analysis times for small-medium structures
+ */
+export function solve_ultra_fast(nodes_val: any, elements_val: any, loads_val: any): any;
+
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
+  readonly benchmark_ultra_fast: (a: number, b: number, c: number) => any;
   readonly get_solver_info: () => [number, number];
   readonly modal_analysis: (a: any, b: any, c: number) => any;
+  readonly solve_2d_frame_with_loads: (a: any, b: any, c: any) => any;
   readonly solve_3d_frame: (a: any, b: any, c: any, d: any) => any;
+  readonly solve_p_delta: (a: any, b: any, c: any, d: any, e: number, f: number) => any;
   readonly solve_response_spectrum: (a: any, b: number, c: number, d: number, e: number) => any;
   readonly solve_sparse_system_json: (a: number, b: number) => [number, number];
   readonly solve_structure_wasm: (a: any, b: any) => any;
   readonly solve_system: (a: number, b: number, c: number, d: number, e: number) => [number, number, number];
+  readonly solve_ultra_fast: (a: any, b: any, c: any) => any;
   readonly analyze_buckling: (a: any, b: any, c: any, d: number) => any;
   readonly set_panic_hook: () => void;
-  readonly solve_p_delta: (a: any, b: any, c: any, d: any, e: number, f: number) => any;
+  readonly calculate_aisc_capacity: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number, r: number, s: number) => any;
+  readonly calculate_beam_capacity: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly calculate_seismic_base_shear: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
   readonly __wbg_aiarchitect_free: (a: number, b: number) => void;
   readonly __wbg_renderer_free: (a: number, b: number) => void;
   readonly aiarchitect_suggest_beam_size: (a: number, b: number) => [number, number];
@@ -117,9 +142,6 @@ export interface InitOutput {
   readonly renderer_width: (a: number) => number;
   readonly renderer_render: (a: number) => [number, number];
   readonly aiarchitect_new: () => number;
-  readonly calculate_aisc_capacity: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number, r: number, s: number) => any;
-  readonly calculate_beam_capacity: (a: number, b: number, c: number, d: number, e: number) => number;
-  readonly calculate_seismic_base_shear: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_exn_store: (a: number) => void;

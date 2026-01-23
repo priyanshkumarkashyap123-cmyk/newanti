@@ -291,6 +291,7 @@ interface ModelState {
     // Model Management
     clearModel: () => void;  // Clears entire model for fresh start
     loadStructure: (nodes: Node[], members: Member[]) => void;  // Loads generated structure
+    autoFixModel: () => { fixed: string[]; errors: string[] };  // Auto-fix common modeling errors
 
     // Geometry Operations
     removeMember: (id: string) => void;
@@ -936,6 +937,139 @@ export const useModelStore = create<ModelState>()(
                     nextNodeNumber: 1,
                     nextMemberNumber: 1
                 }),
+
+                autoFixModel: () => {
+                    const fixed: string[] = [];
+                    const errors: string[] = [];
+                    
+                    set((state) => {
+                        const newNodes = new Map(state.nodes);
+                        const newMembers = new Map(state.members);
+                        
+                        // 1. Remove zero-length members
+                        for (const [id, member] of newMembers) {
+                            const startNode = newNodes.get(member.startNodeId);
+                            const endNode = newNodes.get(member.endNodeId);
+                            
+                            if (member.startNodeId === member.endNodeId) {
+                                newMembers.delete(id);
+                                fixed.push(`Removed zero-length member ${id} (same start/end node)`);
+                                continue;
+                            }
+                            
+                            if (startNode && endNode) {
+                                const dx = endNode.x - startNode.x;
+                                const dy = endNode.y - startNode.y;
+                                const dz = endNode.z - startNode.z;
+                                const length = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                                
+                                if (length < 0.001) { // Less than 1mm
+                                    newMembers.delete(id);
+                                    fixed.push(`Removed zero-length member ${id} (length < 1mm)`);
+                                }
+                            }
+                        }
+                        
+                        // 2. Remove disconnected nodes (not connected to any member)
+                        const connectedNodeIds = new Set<string>();
+                        for (const member of newMembers.values()) {
+                            connectedNodeIds.add(member.startNodeId);
+                            connectedNodeIds.add(member.endNodeId);
+                        }
+                        
+                        for (const [id] of newNodes) {
+                            if (!connectedNodeIds.has(id) && newMembers.size > 0) {
+                                newNodes.delete(id);
+                                fixed.push(`Removed disconnected node ${id}`);
+                            }
+                        }
+                        
+                        // 3. Remove members referencing non-existent nodes
+                        for (const [id, member] of newMembers) {
+                            if (!newNodes.has(member.startNodeId) || !newNodes.has(member.endNodeId)) {
+                                newMembers.delete(id);
+                                fixed.push(`Removed member ${id} (references non-existent node)`);
+                            }
+                        }
+                        
+                        // 4. Ensure at least one support exists
+                        let hasSupport = false;
+                        for (const node of newNodes.values()) {
+                            if (node.restraints && (node.restraints.fx || node.restraints.fy || node.restraints.fz)) {
+                                hasSupport = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!hasSupport && newNodes.size > 0) {
+                            // Find the node with minimum Y (lowest point) - likely a base
+                            let lowestNode: Node | null = null;
+                            let lowestY = Infinity;
+                            for (const node of newNodes.values()) {
+                                if (node.y < lowestY) {
+                                    lowestY = node.y;
+                                    lowestNode = node;
+                                }
+                            }
+                            
+                            if (lowestNode) {
+                                newNodes.set(lowestNode.id, {
+                                    ...lowestNode,
+                                    restraints: { fx: true, fy: true, fz: true, mx: true, my: true, mz: true }
+                                });
+                                fixed.push(`Added fixed support to node ${lowestNode.id} (lowest point)`);
+                            }
+                        }
+                        
+                        // 5. Check for duplicate nodes (same coordinates) and merge
+                        const nodesByCoord = new Map<string, string>();
+                        const nodesToMerge: [string, string][] = [];
+                        
+                        for (const [id, node] of newNodes) {
+                            const coordKey = `${node.x.toFixed(3)},${node.y.toFixed(3)},${node.z.toFixed(3)}`;
+                            if (nodesByCoord.has(coordKey)) {
+                                nodesToMerge.push([id, nodesByCoord.get(coordKey)!]);
+                            } else {
+                                nodesByCoord.set(coordKey, id);
+                            }
+                        }
+                        
+                        for (const [duplicateId, keepId] of nodesToMerge) {
+                            // Update all members referencing the duplicate node
+                            for (const [memberId, member] of newMembers) {
+                                let updated = false;
+                                const updates: Partial<Member> = {};
+                                
+                                if (member.startNodeId === duplicateId) {
+                                    updates.startNodeId = keepId;
+                                    updated = true;
+                                }
+                                if (member.endNodeId === duplicateId) {
+                                    updates.endNodeId = keepId;
+                                    updated = true;
+                                }
+                                
+                                if (updated) {
+                                    newMembers.set(memberId, { ...member, ...updates });
+                                }
+                            }
+                            
+                            // Preserve restraints from duplicate if keep node has none
+                            const keepNode = newNodes.get(keepId)!;
+                            const dupNode = newNodes.get(duplicateId)!;
+                            if (!keepNode.restraints && dupNode.restraints) {
+                                newNodes.set(keepId, { ...keepNode, restraints: dupNode.restraints });
+                            }
+                            
+                            newNodes.delete(duplicateId);
+                            fixed.push(`Merged duplicate node ${duplicateId} into ${keepId}`);
+                        }
+                        
+                        return { nodes: newNodes, members: newMembers };
+                    });
+                    
+                    return { fixed, errors };
+                },
 
                 loadStructure: (newNodes, newMembers) => set((state) => {
                     const nodesMap = new Map<string, Node>();

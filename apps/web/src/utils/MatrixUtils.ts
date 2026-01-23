@@ -238,24 +238,27 @@ export class MatrixUtils {
         k.set([11, 11], 4 * EIz_L);
 
         // ---- Bending in XZ plane (w, θy) - DOFs 2, 4, 8, 10 ----
+        // Note: Sign convention follows standard structural analysis (McGuire, Gallagher, Ziemian)
+        // θy positive = clockwise when viewed from +Y axis
+        // This matches STAAD.Pro conventions
         k.set([2, 2], 12 * EIy_L3);
-        k.set([2, 4], -6 * EIy_L2);
+        k.set([2, 4], -6 * EIy_L2);    // Negative: +w at start causes -θy
         k.set([2, 8], -12 * EIy_L3);
-        k.set([2, 10], -6 * EIy_L2);
+        k.set([2, 10], -6 * EIy_L2);   // Negative: +w at start causes -θy at end
 
-        k.set([4, 2], -6 * EIy_L2);
+        k.set([4, 2], -6 * EIy_L2);    // Symmetric
         k.set([4, 4], 4 * EIy_L);
-        k.set([4, 8], 6 * EIy_L2);
+        k.set([4, 8], 6 * EIy_L2);     // Positive: +θy at start causes +w at end
         k.set([4, 10], 2 * EIy_L);
 
-        k.set([8, 2], -12 * EIy_L3);
-        k.set([8, 4], 6 * EIy_L2);
+        k.set([8, 2], -12 * EIy_L3);   // Symmetric
+        k.set([8, 4], 6 * EIy_L2);     // Symmetric
         k.set([8, 8], 12 * EIy_L3);
-        k.set([8, 10], 6 * EIy_L2);
+        k.set([8, 10], 6 * EIy_L2);    // Positive: +w at end causes +θy at end
 
-        k.set([10, 2], -6 * EIy_L2);
+        k.set([10, 2], -6 * EIy_L2);   // Symmetric
         k.set([10, 4], 2 * EIy_L);
-        k.set([10, 8], 6 * EIy_L2);
+        k.set([10, 8], 6 * EIy_L2);    // Symmetric
         k.set([10, 10], 4 * EIy_L);
 
         return k;

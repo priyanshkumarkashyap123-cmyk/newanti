@@ -6,7 +6,7 @@
  */
 
 import { useModelStore, MemberLoad } from './model';
-import { shallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/shallow';
 
 const REFERENCE_LOAD = 100; // 100 kN reference for scaling
 
@@ -16,8 +16,7 @@ const REFERENCE_LOAD = 100; // 100 kN reference for scaling
  */
 export const useMemberLoadById = (id: string): MemberLoad | undefined => {
     return useModelStore(
-        (state) => state.memberLoads.find(l => l.id === id),
-        shallow
+        useShallow((state) => state.memberLoads.find(l => l.id === id))
     );
 };
 
@@ -34,8 +33,7 @@ export const useMemberLoadCount = (): number => {
  */
 export const useMemberLoadIds = (): string[] => {
     return useModelStore(
-        (state) => state.memberLoads.map(l => l.id),
-        shallow
+        useShallow((state) => state.memberLoads.map(l => l.id))
     );
 };
 
@@ -61,7 +59,7 @@ export const useMaxLoadMagnitude = (): number => {
  * Uses shallow comparison to prevent unnecessary re-renders
  */
 export const useNodes = () => {
-    return useModelStore((state) => state.nodes, shallow);
+    return useModelStore(useShallow((state) => state.nodes));
 };
 
 /**
@@ -69,14 +67,14 @@ export const useNodes = () => {
  * Uses shallow comparison to prevent unnecessary re-renders
  */
 export const useMembers = () => {
-    return useModelStore((state) => state.members, shallow);
+    return useModelStore(useShallow((state) => state.members));
 };
 
 /**
  * Select analysis results with shallow comparison
  */
 export const useAnalysisResults = () => {
-    return useModelStore((state) => state.analysisResults, shallow);
+    return useModelStore(useShallow((state) => state.analysisResults));
 };
 
 /**
@@ -85,13 +83,12 @@ export const useAnalysisResults = () => {
  */
 export const useDiagramVisibility = () => {
     return useModelStore(
-        (state) => ({
+        useShallow((state) => ({
             showSFD: state.showSFD,
             showBMD: state.showBMD,
             showAFD: state.showAFD,
             showStressOverlay: state.showStressOverlay,
             showDeflectedShape: state.showDeflectedShape,
-        }),
-        shallow
+        }))
     );
 };
