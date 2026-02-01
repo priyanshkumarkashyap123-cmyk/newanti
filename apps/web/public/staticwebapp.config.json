@@ -1,77 +1,89 @@
 {
-    "navigationFallback": {
-        "rewrite": "/index.html",
-        "exclude": [
-            "/assets/*",
-            "*.{css,js,json,png,jpg,jpeg,gif,ico,svg,woff,woff2,ttf,eot,wasm}"
-        ]
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": [
+      "/assets/*",
+      "*.{css,js,json,png,jpg,jpeg,gif,ico,svg,woff,woff2,ttf,eot,wasm}"
+    ]
+  },
+  "mimeTypes": {
+    ".js": "application/javascript",
+    ".mjs": "application/javascript",
+    ".json": "application/json",
+    ".wasm": "application/wasm"
+  },
+  "routes": [
+    {
+      "route": "/assets/*",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
     },
-    "mimeTypes": {
-        ".js": "application/javascript",
-        ".mjs": "application/javascript",
-        ".json": "application/json",
-        ".wasm": "application/wasm"
+    {
+      "route": "/index.html",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate"
+      }
     },
-    "routes": [
-        {
-            "route": "/assets/*.js",
-            "headers": {
-                "Content-Type": "application/javascript"
-            }
-        },
-        {
-            "route": "/assets/*.wasm",
-            "headers": {
-                "Content-Type": "application/wasm"
-            }
-        },
-        {
-            "route": "/sign-in/*",
-            "rewrite": "/index.html"
-        },
-        {
-            "route": "/sign-up/*",
-            "rewrite": "/index.html"
-        },
-        {
-            "route": "/dashboard",
-            "rewrite": "/index.html"
-        },
-        {
-            "route": "/app",
-            "rewrite": "/index.html"
-        },
-        {
-            "route": "/demo",
-            "rewrite": "/index.html"
-        },
-        {
-            "route": "/settings",
-            "rewrite": "/index.html"
-        },
-        {
-            "route": "/capabilities",
-            "rewrite": "/index.html"
-        },
-        {
-            "route": "/workspace/*",
-            "rewrite": "/index.html"
-        },
-        {
-            "route": "/pricing",
-            "rewrite": "/index.html"
-        }
-    ],
-    "responseOverrides": {
-        "404": {
-            "rewrite": "/index.html",
-            "statusCode": 200
-        }
+    {
+      "route": "/",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate"
+      }
     },
-    "globalHeaders": {
-        "Cache-Control": "public, max-age=3600",
-        "X-Content-Type-Options": "nosniff",
-        "Referrer-Policy": "strict-origin-when-cross-origin",
-        "Permissions-Policy": "geolocation=(), microphone=(), camera=()"
+    {
+      "route": "/assets/*.js",
+      "headers": {
+        "Content-Type": "application/javascript"
+      }
+    },
+    {
+      "route": "/assets/*.wasm",
+      "headers": {
+        "Content-Type": "application/wasm"
+      }
+    },
+    {
+      "route": "/sign-in/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/sign-up/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/dashboard",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/app",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/demo",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/settings",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/capabilities",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/workspace/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/pricing",
+      "rewrite": "/index.html"
     }
+  ],
+  "globalHeaders": {
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "geolocation=(), microphone=(), camera=()"
+  }
 }
