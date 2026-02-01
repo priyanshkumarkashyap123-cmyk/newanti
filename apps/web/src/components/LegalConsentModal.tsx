@@ -194,24 +194,27 @@ export function useCheckLegalConsent() {
     const [hasConsent, setHasConsent] = useState<boolean | null>(null);
 
     useEffect(() => {
-        const stored = localStorage.getItem(CONSENT_STORAGE_KEY);
-        if (stored) {
-            try {
-                const data = JSON.parse(stored);
-                // Check if consent is still valid (you can add expiration logic here)
-                const isValid = data.version === 'v1' &&
-                    data.terms &&
-                    data.privacy &&
-                    data.disclaimer &&
-                    data.verification &&
-                    data.liability;
-                setHasConsent(isValid);
-            } catch {
+        // Defer to avoid synchronous setState at effect start
+        queueMicrotask(() => {
+            const stored = localStorage.getItem(CONSENT_STORAGE_KEY);
+            if (stored) {
+                try {
+                    const data = JSON.parse(stored);
+                    // Check if consent is still valid (you can add expiration logic here)
+                    const isValid = data.version === 'v1' &&
+                        data.terms &&
+                        data.privacy &&
+                        data.disclaimer &&
+                        data.verification &&
+                        data.liability;
+                    setHasConsent(isValid);
+                } catch {
+                    setHasConsent(false);
+                }
+            } else {
                 setHasConsent(false);
             }
-        } else {
-            setHasConsent(false);
-        }
+        });
     }, []);
 
     const clearConsent = () => {

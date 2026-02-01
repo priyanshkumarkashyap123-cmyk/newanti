@@ -78,6 +78,7 @@ export const ResultsTable: FC = () => {
 
     const [activeTab, setActiveTab] = useState<TabType>('displacements');
     const [sorting, setSorting] = useState<SortingState>([]);
+    const parentRef = useRef<HTMLDivElement>(null);
 
     // Convert Map data to arrays
     const displacementData = useMemo<DisplacementRow[]>(() => {
@@ -187,6 +188,24 @@ export const ResultsTable: FC = () => {
         getSortedRowModel: getSortedRowModel(),
     });
 
+    // Moved before early return to satisfy Rules of Hooks
+    const activeTable = useMemo(() => {
+        switch (activeTab) {
+            case 'displacements': return displacementTable;
+            case 'reactions': return reactionTable;
+            case 'forces': return forceTable;
+        }
+    }, [activeTab, displacementTable, reactionTable, forceTable]);
+
+    const rows = activeTable.getRowModel().rows;
+
+    const rowVirtualizer = useVirtualizer({
+        count: rows.length,
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => 35, // approximate row height
+        overscan: 10,
+    });
+
     const handleRowClick = (id: string) => {
         select(id, false);
     };
@@ -212,26 +231,6 @@ export const ResultsTable: FC = () => {
             </div>
         );
     }
-
-    // Virtualization setup
-    const parentRef = useRef<HTMLDivElement>(null);
-
-    const activeTable = useMemo(() => {
-        switch (activeTab) {
-            case 'displacements': return displacementTable;
-            case 'reactions': return reactionTable;
-            case 'forces': return forceTable;
-        }
-    }, [activeTab, displacementTable, reactionTable, forceTable]);
-
-    const { rows } = activeTable.getRowModel();
-
-    const rowVirtualizer = useVirtualizer({
-        count: rows.length,
-        getScrollElement: () => parentRef.current,
-        estimateSize: () => 35, // approximate row height
-        overscan: 10,
-    });
 
     const renderTable = (table: any) => (
         <table className="w-full text-left border-collapse text-xs" style={{ display: 'grid' }}>

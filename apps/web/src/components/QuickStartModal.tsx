@@ -51,8 +51,11 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
     // Check for saved project on mount
     useEffect(() => {
         if (isOpen) {
-            const info = getSavedProjectInfo();
-            setSavedProject(info);
+            // Defer to avoid synchronous setState at effect start
+            queueMicrotask(() => {
+                const info = getSavedProjectInfo();
+                setSavedProject(info);
+            });
         }
     }, [isOpen]);
 

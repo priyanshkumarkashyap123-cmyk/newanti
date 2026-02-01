@@ -188,6 +188,29 @@ ${apiStatus}
     return () => unsubscribe();
   }, []);
 
+  // Listen for analysis error events to auto-open and diagnose
+  useEffect(() => {
+    const handleDiagnoseError = (event: CustomEvent<{ error: string }>) => {
+      setIsExpanded(true);
+      const errorMessage = event.detail?.error || 'Unknown analysis error';
+      // Add error message to conversation
+      setMessages(prev => [...prev, {
+        id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        role: 'system',
+        content: `⚠️ **Analysis Error Detected**\n\n\`${errorMessage}\`\n\nAnalyzing the issue...`,
+        timestamp: new Date(),
+        type: 'error',
+      }]);
+      // Auto-submit diagnosis request
+      setTimeout(() => {
+        setInput(`Please diagnose this analysis error and suggest fixes: ${errorMessage}`);
+      }, 500);
+    };
+
+    window.addEventListener('ai-diagnose-error', handleDiagnoseError as EventListener);
+    return () => window.removeEventListener('ai-diagnose-error', handleDiagnoseError as EventListener);
+  }, []);
+
   // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

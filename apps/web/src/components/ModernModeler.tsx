@@ -43,7 +43,7 @@ import { QuickStartModal } from './QuickStartModal';
 import { ProjectDetailsDialog } from './ProjectDetailsDialog';
 import { ResultsToolbar } from './results/ResultsToolbar';
 import ModalControls from './ModalControls';
-import { AICommandCenter, AIAssistantChat, AIAssistantButton, AutonomousAIAgent, PowerAIPanel } from './ai';
+import { AICommandCenter, AutonomousAIAgent } from './ai';
 import { LoadInputDialog } from './ui/LoadInputDialog';
 import { TutorialOverlay } from './TutorialOverlay';
 import { StructureWizard } from './StructureWizard';
@@ -1502,11 +1502,10 @@ export const ModernModeler: FC = () => {
                                 }
                             }}
                         >
-                            {activeCategory === 'MODELING' && (
-                                <div className="absolute top-4 left-4 z-20">
-                                    <ModelingToolbar />
-                                </div>
-                            )}
+                            {/* Modeling Toolbar - Always visible for quick access */}
+                            <div className="absolute top-4 left-4 z-20">
+                                <ModelingToolbar />
+                            </div>
                             <ViewportManager />
 
                             {/* Status Bar Overlay */}
@@ -1793,17 +1792,8 @@ export const ModernModeler: FC = () => {
                     onLoad={handleCloudLoad}
                 />
 
-                {/* AI Assistant Components */}
-                <AIAssistantChat
-                    isOpen={isAIAssistantOpen}
-                    onClose={() => setIsAIAssistantOpen(false)}
-                />
-
-                {/* Autonomous AI Agent - Primary AI Interface */}
+                {/* Unified AI Architect - Single Powerful AI Interface */}
                 <AutonomousAIAgent />
-
-                {/* Power AI Panel - Enhanced AI with Confidence Scores & Expert Mode */}
-                <PowerAIPanel />
 
                 {/* Structure Gallery - Iconic Civil Engineering Structures */}
                 <StructureGallery

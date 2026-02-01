@@ -79,7 +79,8 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
     // Auto-analyze failed member when provided
     useEffect(() => {
         if (failedMember && isOpen) {
-            analyzeFailedMember(failedMember);
+            // Defer to avoid synchronous setState at effect start
+            queueMicrotask(() => analyzeFailedMember(failedMember));
         }
     }, [failedMember, isOpen]);
 

@@ -355,20 +355,23 @@ export const FoundationDesignDialog: FC<FoundationDesignDialogProps> = ({ isOpen
     // Auto-populate from reactions
     useEffect(() => {
         if (analysisResults?.reactions) {
-            // Find maximum reaction
-            let maxReaction = 0;
-            let maxMoment = 0;
-            analysisResults.reactions.forEach((reaction) => {
-                const totalVertical = Math.abs(reaction.fy);
-                if (totalVertical > maxReaction) {
-                    maxReaction = totalVertical;
-                    maxMoment = Math.abs(reaction.mz || 0);
+            // Defer to avoid synchronous setState at effect start
+            queueMicrotask(() => {
+                // Find maximum reaction
+                let maxReaction = 0;
+                let maxMoment = 0;
+                analysisResults.reactions.forEach((reaction) => {
+                    const totalVertical = Math.abs(reaction.fy);
+                    if (totalVertical > maxReaction) {
+                        maxReaction = totalVertical;
+                        maxMoment = Math.abs(reaction.mz || 0);
+                    }
+                });
+                if (maxReaction > 0) {
+                    setColumnLoad(Math.round(maxReaction));
+                    setMoment(Math.round(maxMoment));
                 }
             });
-            if (maxReaction > 0) {
-                setColumnLoad(Math.round(maxReaction));
-                setMoment(Math.round(maxMoment));
-            }
         }
     }, [analysisResults]);
 

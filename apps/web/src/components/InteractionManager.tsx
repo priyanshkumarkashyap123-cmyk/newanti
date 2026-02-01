@@ -62,6 +62,10 @@ export const InteractionManager: FC<InteractionManagerProps> = ({
     const [startPoint, setStartPoint] = useState<THREE.Vector3 | null>(null);
     const [startNodeId, setStartNodeId] = useState<string | null>(null);
 
+    // State for render-time access (refs can't be accessed during render)
+    const [showNodeHighlight, setShowNodeHighlight] = useState(false);
+    const [highlightPosition, setHighlightPosition] = useState<THREE.Vector3>(new THREE.Vector3());
+
     // Calculate plane rotation and position based on working plane
     const planeTransform = useMemo(() => {
         switch (workingPlane) {
@@ -186,6 +190,15 @@ export const InteractionManager: FC<InteractionManagerProps> = ({
         const showCursor = (activeTool === 'node' || activeTool === 'member') && isHovering.current;
         cursorRef.current.visible = showCursor;
         if (cursorRingRef.current) cursorRingRef.current.visible = showCursor;
+
+        // Sync state for render (refs can't be accessed during render)
+        const shouldShowHighlight = hoveredNodeId.current !== null;
+        if (shouldShowHighlight !== showNodeHighlight) {
+            setShowNodeHighlight(shouldShowHighlight);
+        }
+        if (shouldShowHighlight && !highlightPosition.equals(currentSnapPos.current)) {
+            setHighlightPosition(currentSnapPos.current.clone());
+        }
     });
 
     // Handle pointer down

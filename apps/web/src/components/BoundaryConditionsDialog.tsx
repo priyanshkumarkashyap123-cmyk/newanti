@@ -72,35 +72,39 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
     // Update custom restraints when selecting a preset
     useEffect(() => {
         if (selectedType !== 'custom' && SUPPORT_PRESETS[selectedType].restraints) {
-            setCustomRestraints(SUPPORT_PRESETS[selectedType].restraints!);
+            // Defer to avoid synchronous setState at effect start
+            queueMicrotask(() => setCustomRestraints(SUPPORT_PRESETS[selectedType].restraints!));
         }
     }, [selectedType]);
 
     // Detect existing support type from selection
     useEffect(() => {
         if (selectedNodes.length > 0 && open) {
-            const firstNode = selectedNodes[0];
-            if (!firstNode.restraints) {
-                setSelectedType('none');
-            } else {
-                // Try to match to a preset
-                const restraints = firstNode.restraints;
-                for (const [type, preset] of Object.entries(SUPPORT_PRESETS)) {
-                    if (preset.restraints &&
-                        preset.restraints.fx === restraints.fx &&
-                        preset.restraints.fy === restraints.fy &&
-                        preset.restraints.fz === restraints.fz &&
-                        preset.restraints.mx === restraints.mx &&
-                        preset.restraints.my === restraints.my &&
-                        preset.restraints.mz === restraints.mz) {
-                        setSelectedType(type as SupportType);
-                        return;
+            // Defer to avoid synchronous setState at effect start
+            queueMicrotask(() => {
+                const firstNode = selectedNodes[0];
+                if (!firstNode.restraints) {
+                    setSelectedType('none');
+                } else {
+                    // Try to match to a preset
+                    const restraints = firstNode.restraints;
+                    for (const [type, preset] of Object.entries(SUPPORT_PRESETS)) {
+                        if (preset.restraints &&
+                            preset.restraints.fx === restraints.fx &&
+                            preset.restraints.fy === restraints.fy &&
+                            preset.restraints.fz === restraints.fz &&
+                            preset.restraints.mx === restraints.mx &&
+                            preset.restraints.my === restraints.my &&
+                            preset.restraints.mz === restraints.mz) {
+                            setSelectedType(type as SupportType);
+                            return;
+                        }
                     }
+                    // No match - must be custom
+                    setSelectedType('custom');
+                    setCustomRestraints(restraints);
                 }
-                // No match - must be custom
-                setSelectedType('custom');
-                setCustomRestraints(restraints);
-            }
+            });
         }
     }, [selectedNodes.length, open]);
 

@@ -43,25 +43,28 @@ export const ProjectDetailsDialog: FC<ProjectDetailsDialogProps> = ({
     // Sync form with store when dialog opens
     useEffect(() => {
         if (isOpen) {
-            if (isNewProject) {
-                // Reset for new project
-                setFormData({
-                    name: 'New Project',
-                    client: '',
-                    engineer: '',
-                    jobNo: '',
-                    rev: '0',
-                    date: new Date(),
-                    description: ''
-                });
-            } else {
-                // Load existing project info
-                setFormData({
-                    ...projectInfo,
-                    date: projectInfo.date instanceof Date ? projectInfo.date : new Date(projectInfo.date)
-                });
-            }
-            setErrors({});
+            // Defer to avoid synchronous setState at effect start
+            queueMicrotask(() => {
+                if (isNewProject) {
+                    // Reset for new project
+                    setFormData({
+                        name: 'New Project',
+                        client: '',
+                        engineer: '',
+                        jobNo: '',
+                        rev: '0',
+                        date: new Date(),
+                        description: ''
+                    });
+                } else {
+                    // Load existing project info
+                    setFormData({
+                        ...projectInfo,
+                        date: projectInfo.date instanceof Date ? projectInfo.date : new Date(projectInfo.date)
+                    });
+                }
+                setErrors({});
+            });
         }
     }, [isOpen, isNewProject, projectInfo]);
 
