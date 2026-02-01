@@ -16,7 +16,7 @@ import { NotificationProvider, useNotifications, createNotificationHelpers } fro
 import { ConfirmProvider } from '../ui/ConfirmDialog';
 import { CommandPalette, useCommandPalette } from '../ui/CommandPalette';
 import { KeyboardShortcuts, useKeyboardShortcuts } from '../ui/KeyboardShortcuts';
-import { ToastProvider } from '../../providers/ToastProvider';
+import { ToastProvider } from '../ui/ToastSystem';
 
 // ============================================
 // Global Keyboard Features Component

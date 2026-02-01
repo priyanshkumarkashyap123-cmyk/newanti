@@ -620,15 +620,15 @@ function App() {
 
                         {/* Fallback */}
                         <Route path="*" element={<Navigate to="/" replace />} />
-                    </Routes>
-                </Suspense>
+                </Routes>
+            </Suspense>
 
-                {/* Legal Consent Modal - shows on first use */}
-                <LegalConsentModal
-                    open={showConsentModal}
-                    onAccept={handleAcceptConsent}
-                    canClose={false}
-                />
+            {/* Legal Consent Modal - shows on first use */}
+            <LegalConsentModal
+                open={showConsentModal}
+                onAccept={handleAcceptConsent}
+                canClose={false}
+            />
         </ErrorBoundary>
     );
 }
