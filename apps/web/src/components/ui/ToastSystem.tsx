@@ -347,10 +347,26 @@ export const ToastProvider: FC<ToastProviderProps> = ({
 // USE TOAST HOOK
 // ============================================================================
 
+// No-op toast implementation for when provider is not available
+const noOpToast: ToastContextValue = {
+  toasts: [],
+  addToast: () => '',
+  removeToast: () => {},
+  removeAllToasts: () => {},
+  updateToast: () => {},
+  success: () => '',
+  error: () => '',
+  warning: () => '',
+  info: () => '',
+  loading: () => '',
+  promise: async (promise) => promise,
+};
+
 export function useToast(): ToastContextValue {
   const context = useContext(ToastContext);
   if (!context) {
-    throw new Error('useToast must be used within ToastProvider');
+    console.warn('useToast called outside ToastProvider - using no-op implementation');
+    return noOpToast;
   }
   return context;
 }
