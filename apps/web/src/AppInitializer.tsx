@@ -53,6 +53,34 @@ export const AppProvider = ({ children }: AppProviderProps) => {
         services: beamlab
     });
 
+    const publicPaths = [
+        '/',
+        '/pricing',
+        '/capabilities',
+        '/about',
+        '/contact',
+        '/help',
+        '/privacy',
+        '/terms',
+        '/sign-in',
+        '/sign-up',
+        '/forgot-password',
+        '/reset-password',
+        '/workspace-demo',
+        '/rust-wasm-demo',
+        '/demo',
+        '/worker-test',
+        '/ai-dashboard',
+        '/ai-power',
+        '/privacy-policy',
+        '/terms-of-service'
+    ];
+
+    const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
+    const isPublicPath = publicPaths.some(path =>
+        currentPath === path || (path !== '/' && currentPath.startsWith(path + '/'))
+    );
+
     const initialize = async () => {
         console.log('[BeamLab] 🚀 Initializing application...');
 
@@ -105,12 +133,18 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     };
 
     useEffect(() => {
+        if (isPublicPath) {
+            setState(prev => ({ ...prev, loading: false, error: null }));
+            return;
+        }
         initialize();
-    }, []);
+    }, [isPublicPath]);
 
     return (
         <AppContext.Provider value={{ ...state, reinitialize }}>
-            {state.loading ? (
+            {isPublicPath ? (
+                children
+            ) : state.loading ? (
                 <LoadingScreen />
             ) : state.error ? (
                 <ErrorScreen error={state.error} onRetry={reinitialize} />
