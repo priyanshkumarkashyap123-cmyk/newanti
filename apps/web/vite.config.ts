@@ -14,8 +14,8 @@ const securityHeaders = {
   // Content Security Policy - Restrict resource loading
   'Content-Security-Policy': [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com https://clerk.beamlabultimate.tech blob:",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.clerk.com https://*.clerk.dev https://clerk.beamlabultimate.tech",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://*.clerk.accounts.dev https://*.clerk.dev https://clerk.com https://*.clerk.com https://clerk.beamlabultimate.tech blob:",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev https://clerk.beamlabultimate.tech",
     "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com data:",
     "img-src 'self' data: blob: https:",
     "connect-src 'self' https://*.beamlabultimate.tech https://beamlab-backend-node.azurewebsites.net https://beamlab-rust-api.azurewebsites.net https://*.clerk.accounts.dev https://*.clerk.com https://*.clerk.dev wss://*.clerk.accounts.dev wss://clerk.beamlabultimate.tech https://api.anthropic.com https://generativelanguage.googleapis.com",

@@ -4,7 +4,7 @@
  * Uses Clerk for authentication with Premium Navy Theme
  */
 
-import { SignIn } from '@clerk/clerk-react';
+import { ClerkLoaded, ClerkLoading, SignIn } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import { Cpu, CheckCircle } from 'lucide-react';
 
@@ -111,44 +111,51 @@ export const SignInPage = () => {
 
                     {/* Clerk Sign In */}
                     <div className="clerk-signin-container">
-                        <SignIn
-                            appearance={{
-                                elements: {
-                                    rootBox: 'w-full',
-                                    card: 'bg-slate-900 border border-slate-800 shadow-xl rounded-xl p-0 overflow-hidden',
-                                    headerTitle: 'hidden', // We have our own header
-                                    headerSubtitle: 'hidden',
-                                    formFieldLabel: 'text-slate-300 font-medium text-sm',
-                                    formFieldInput: 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all',
-                                    formButtonPrimary: 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-2.5 rounded-lg shadow-lg shadow-blue-500/20 transition-all',
-                                    footerActionLink: 'text-blue-400 hover:text-blue-300 font-medium',
-                                    identityPreviewText: 'text-slate-300',
-                                    identityPreviewEditButton: 'text-blue-400 hover:text-blue-300',
-                                    socialButtonsBlockButton: 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:border-slate-600 rounded-lg transition-all',
-                                    socialButtonsBlockButtonText: 'font-medium',
-                                    dividerLine: 'bg-slate-800',
-                                    dividerText: 'text-slate-500 uppercase text-xs tracking-wider bg-slate-900 px-2',
-                                    formFieldInputShowPasswordButton: 'text-slate-400 hover:text-slate-300',
-                                    otpCodeFieldInput: 'bg-slate-800 border-slate-700 text-white text-center font-mono font-bold text-lg focus:ring-blue-500',
-                                    footer: 'bg-slate-900/50 p-6 border-t border-slate-800'
-                                },
-                                layout: {
-                                    socialButtonsPlacement: 'top',
-                                    showOptionalFields: false
-                                },
-                                variables: {
-                                    colorPrimary: '#3b82f6',
-                                    colorText: '#f8fafc',
-                                    colorBackground: '#0f172a',
-                                    fontFamily: 'Inter, sans-serif',
-                                    borderRadius: '0.5rem'
-                                }
-                            }}
-                            routing="path"
-                            path="/sign-in"
-                            signUpUrl="/sign-up"
-                            forceRedirectUrl="/app"
-                        />
+                        <ClerkLoading>
+                            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 text-slate-300 text-sm">
+                                Loading secure sign-in…
+                            </div>
+                        </ClerkLoading>
+                        <ClerkLoaded>
+                            <SignIn
+                                appearance={{
+                                    elements: {
+                                        rootBox: 'w-full',
+                                        card: 'bg-slate-900 border border-slate-800 shadow-xl rounded-xl p-0 overflow-hidden',
+                                        headerTitle: 'hidden', // We have our own header
+                                        headerSubtitle: 'hidden',
+                                        formFieldLabel: 'text-slate-300 font-medium text-sm',
+                                        formFieldInput: 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all',
+                                        formButtonPrimary: 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-2.5 rounded-lg shadow-lg shadow-blue-500/20 transition-all',
+                                        footerActionLink: 'text-blue-400 hover:text-blue-300 font-medium',
+                                        identityPreviewText: 'text-slate-300',
+                                        identityPreviewEditButton: 'text-blue-400 hover:text-blue-300',
+                                        socialButtonsBlockButton: 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:border-slate-600 rounded-lg transition-all',
+                                        socialButtonsBlockButtonText: 'font-medium',
+                                        dividerLine: 'bg-slate-800',
+                                        dividerText: 'text-slate-500 uppercase text-xs tracking-wider bg-slate-900 px-2',
+                                        formFieldInputShowPasswordButton: 'text-slate-400 hover:text-slate-300',
+                                        otpCodeFieldInput: 'bg-slate-800 border-slate-700 text-white text-center font-mono font-bold text-lg focus:ring-blue-500',
+                                        footer: 'bg-slate-900/50 p-6 border-t border-slate-800'
+                                    },
+                                    layout: {
+                                        socialButtonsPlacement: 'top',
+                                        showOptionalFields: false
+                                    },
+                                    variables: {
+                                        colorPrimary: '#3b82f6',
+                                        colorText: '#f8fafc',
+                                        colorBackground: '#0f172a',
+                                        fontFamily: 'Inter, sans-serif',
+                                        borderRadius: '0.5rem'
+                                    }
+                                }}
+                                routing="path"
+                                path="/sign-in"
+                                signUpUrl="/sign-up"
+                                forceRedirectUrl="/app"
+                            />
+                        </ClerkLoaded>
                     </div>
 
                     {/* Additional Links */}
