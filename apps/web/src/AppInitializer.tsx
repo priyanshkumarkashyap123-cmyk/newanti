@@ -48,7 +48,7 @@ interface AppProviderProps {
 export const AppProvider = ({ children }: AppProviderProps) => {
     const [state, setState] = useState<AppState>({
         initialized: false,
-        loading: true,
+        loading: false,  // Start with false to prevent flash
         error: null,
         services: beamlab
     });
@@ -76,10 +76,41 @@ export const AppProvider = ({ children }: AppProviderProps) => {
         '/terms-of-service'
     ];
 
-    const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
+    // Make this reactive to pathname changes
+    const [currentPath, setCurrentPath] = useState(typeof window !== 'undefined' ? window.location.pathname : '/');
     const isPublicPath = publicPaths.some(path =>
         currentPath === path || (path !== '/' && currentPath.startsWith(path + '/'))
     );
+
+    // Listen for pathname changes
+    useEffect(() => {
+        const handleLocationChange = () => {
+            setCurrentPath(window.location.pathname);
+        };
+
+        // Listen to popstate (browser back/forward)
+        window.addEventListener('popstate', handleLocationChange);
+
+        // Listen to pushstate/replacestate (programmatic navigation)
+        const originalPushState = window.history.pushState;
+        const originalReplaceState = window.history.replaceState;
+
+        window.history.pushState = function(...args) {
+            originalPushState.apply(this, args);
+            handleLocationChange();
+        };
+
+        window.history.replaceState = function(...args) {
+            originalReplaceState.apply(this, args);
+            handleLocationChange();
+        };
+
+        return () => {
+            window.removeEventListener('popstate', handleLocationChange);
+            window.history.pushState = originalPushState;
+            window.history.replaceState = originalReplaceState;
+        };
+    }, []);
 
     const initialize = async () => {
         console.log('[BeamLab] 🚀 Initializing application...');
