@@ -16,6 +16,7 @@ import { NotificationProvider, useNotifications, createNotificationHelpers } fro
 import { ConfirmProvider } from '../ui/ConfirmDialog';
 import { CommandPalette, useCommandPalette } from '../ui/CommandPalette';
 import { KeyboardShortcuts, useKeyboardShortcuts } from '../ui/KeyboardShortcuts';
+import { ToastProvider } from '../../providers/ToastProvider';
 
 // ============================================
 // Global Keyboard Features Component
@@ -55,8 +56,10 @@ export const AppProviders: FC<AppProvidersProps> = ({ children }) => {
         <ErrorBoundary>
             <NotificationProvider position="bottom-right" maxVisible={5}>
                 <ConfirmProvider>
-                    {children}
-                    <GlobalKeyboardFeatures />
+                    <ToastProvider>
+                        {children}
+                        <GlobalKeyboardFeatures />
+                    </ToastProvider>
                 </ConfirmProvider>
             </NotificationProvider>
         </ErrorBoundary>
