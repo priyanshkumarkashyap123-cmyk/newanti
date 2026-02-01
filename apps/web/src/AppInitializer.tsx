@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useState, createContext, useContext, ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
 import { beamlab, errorHandler, ERROR_CODES } from './services/ServiceRegistry';
 
 // ============================================
@@ -45,72 +46,44 @@ interface AppProviderProps {
     children: ReactNode;
 }
 
+// List of public routes that don't require initialization
+const PUBLIC_PATHS = [
+    '/',
+    '/pricing',
+    '/capabilities',
+    '/about',
+    '/contact',
+    '/help',
+    '/privacy',
+    '/terms',
+    '/sign-in',
+    '/sign-up',
+    '/forgot-password',
+    '/reset-password',
+    '/workspace-demo',
+    '/rust-wasm-demo',
+    '/demo',
+    '/worker-test',
+    '/ai-dashboard',
+    '/ai-power',
+    '/privacy-policy',
+    '/terms-of-service'
+];
+
+const isPublicRoute = (pathname: string): boolean => {
+    return PUBLIC_PATHS.some(path =>
+        pathname === path || (path !== '/' && pathname.startsWith(path + '/'))
+    );
+};
+
 export const AppProvider = ({ children }: AppProviderProps) => {
+    const location = useLocation();
     const [state, setState] = useState<AppState>({
         initialized: false,
-        loading: false,  // Start with false to prevent flash
+        loading: false,
         error: null,
         services: beamlab
     });
-
-    const publicPaths = [
-        '/',
-        '/pricing',
-        '/capabilities',
-        '/about',
-        '/contact',
-        '/help',
-        '/privacy',
-        '/terms',
-        '/sign-in',
-        '/sign-up',
-        '/forgot-password',
-        '/reset-password',
-        '/workspace-demo',
-        '/rust-wasm-demo',
-        '/demo',
-        '/worker-test',
-        '/ai-dashboard',
-        '/ai-power',
-        '/privacy-policy',
-        '/terms-of-service'
-    ];
-
-    // Make this reactive to pathname changes
-    const [currentPath, setCurrentPath] = useState(typeof window !== 'undefined' ? window.location.pathname : '/');
-    const isPublicPath = publicPaths.some(path =>
-        currentPath === path || (path !== '/' && currentPath.startsWith(path + '/'))
-    );
-
-    // Listen for pathname changes
-    useEffect(() => {
-        const handleLocationChange = () => {
-            setCurrentPath(window.location.pathname);
-        };
-
-        // Listen to popstate (browser back/forward)
-        window.addEventListener('popstate', handleLocationChange);
-
-        // Listen to pushstate/replacestate (programmatic navigation)
-        const originalPushState = window.history.pushState;
-        const originalReplaceState = window.history.replaceState;
-
-        window.history.pushState = function(...args) {
-            originalPushState.apply(this, args);
-            handleLocationChange();
-        };
-
-        window.history.replaceState = function(...args) {
-            originalReplaceState.apply(this, args);
-            handleLocationChange();
-        };
-
-        return () => {
-            window.removeEventListener('popstate', handleLocationChange);
-            window.history.pushState = originalPushState;
-            window.history.replaceState = originalReplaceState;
-        };
-    }, []);
 
     const initialize = async () => {
         console.log('[BeamLab] 🚀 Initializing application...');
@@ -162,6 +135,8 @@ export const AppProvider = ({ children }: AppProviderProps) => {
         setState(prev => ({ ...prev, loading: true, error: null }));
         await initialize();
     };
+
+    const isPublicPath = isPublicRoute(location.pathname);
 
     useEffect(() => {
         if (isPublicPath) {
