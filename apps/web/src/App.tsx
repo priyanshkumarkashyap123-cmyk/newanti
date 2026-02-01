@@ -111,9 +111,6 @@ const BucklingAnalysisPanel = lazy(() => import('./components/analysis/BucklingA
 const CableAnalysisPanel = lazy(() => import('./components/analysis/CableAnalysisPanel').then(module => ({ default: module.CableAnalysisPanel })));
 const PDeltaAnalysisPanel = lazy(() => import('./components/analysis/PDeltaAnalysisPanel').then(module => ({ default: module.PDeltaAnalysisPanel })));
 
-// Toast Provider
-import { ToastProvider } from './providers/ToastProvider';
-
 // Loading Component
 import { DashboardSkeleton } from './components/ui/DashboardSkeleton';
 const PageLoader = () => (
@@ -258,9 +255,8 @@ function App() {
 
     return (
         <ErrorBoundary>
-            <ToastProvider>
-                <Suspense fallback={<PageLoader />}>
-                    <Routes>
+            <Suspense fallback={<PageLoader />}>
+                <Routes>
                         {/* Landing Page */}
                         <Route path="/" element={<LandingPage />} />
 
@@ -633,7 +629,6 @@ function App() {
                     onAccept={handleAcceptConsent}
                     canClose={false}
                 />
-            </ToastProvider>
         </ErrorBoundary>
     );
 }
