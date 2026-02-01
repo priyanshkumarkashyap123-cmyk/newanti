@@ -52,19 +52,19 @@ export const AUTH_CONFIG = {
 // ============================================
 export const API_CONFIG = {
     // Main backend (Node.js/Express)
-    baseUrl: getEnv('VITE_API_URL', 
-        import.meta.env.PROD 
-            ? 'https://api.beamlabultimate.tech' 
+    baseUrl: getEnv('VITE_API_URL',
+        import.meta.env.PROD
+            ? 'https://api.beamlabultimate.tech'
             : 'http://localhost:3001'
     ),
-    
+
     // Python API (FastAPI)
     pythonUrl: getEnv('VITE_PYTHON_API_URL',
         import.meta.env.PROD
             ? 'https://beamlab-backend-python.azurewebsites.net'
             : 'http://localhost:8081'
     ),
-    
+
     timeout: getNumEnv('VITE_API_TIMEOUT', 30000),
 } as const;
 
@@ -122,24 +122,25 @@ export const APP_ENV = {
  */
 export function validateEnvironment(): void {
     const errors: string[] = [];
-    
+
     // Critical checks for production
     if (APP_ENV.isProd) {
         if (!AUTH_CONFIG.clerkPublishableKey) {
-            errors.push('VITE_CLERK_PUBLISHABLE_KEY is required in production');
+            // Log warning but don't throw - allows app to load and show appropriate error UI
+            console.warn('[Auth] ⚠️ VITE_CLERK_PUBLISHABLE_KEY is not configured. Authentication features may not work.');
         }
-        
+
         if (!API_CONFIG.baseUrl.startsWith('https://')) {
             errors.push('VITE_API_URL must use HTTPS in production');
         }
     }
-    
+
     if (errors.length > 0) {
         throw new Error(
             `❌ Environment Configuration Error:\n${errors.map(e => `  - ${e}`).join('\n')}`
         );
     }
-    
+
     // Log configuration in development
     if (APP_ENV.isDev && MONITORING_CONFIG.debug) {
         console.log('🔧 Environment Configuration:', {
