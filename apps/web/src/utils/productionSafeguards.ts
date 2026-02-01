@@ -190,7 +190,6 @@ class ProductionSafeguards {
         } catch (e) {
             // Silent fail
         }
-        }
     }
     
     /**
