@@ -18,13 +18,38 @@ from typing import Optional, List, Dict
 import os
 from datetime import datetime
 
-from models import (
-    StructuralModel, GenerateResponse,
-    ContinuousBeamRequest, TrussRequest, FrameRequest
-)
-from factory import StructuralFactory
-from ai_routes import router as ai_router
-from analysis.report_generator import ReportGenerator, ReportSettings
+# Wrap imports in try-except to handle missing packages gracefully
+try:
+    from models import (
+        StructuralModel, GenerateResponse,
+        ContinuousBeamRequest, TrussRequest, FrameRequest
+    )
+    HAS_MODELS = True
+except ImportError as e:
+    print(f"[WARNING] Could not import models: {e}")
+    HAS_MODELS = False
+
+try:
+    from factory import StructuralFactory
+    HAS_FACTORY = True
+except ImportError as e:
+    print(f"[WARNING] Could not import factory: {e}")
+    HAS_FACTORY = False
+
+try:
+    from ai_routes import router as ai_router
+    HAS_AI_ROUTES = True
+except ImportError as e:
+    print(f"[WARNING] Could not import ai_routes: {e}")
+    HAS_AI_ROUTES = False
+
+try:
+    from analysis.report_generator import ReportGenerator, ReportSettings
+    HAS_REPORT_GEN = True
+except ImportError as e:
+    print(f"[WARNING] Could not import report_generator: {e}")
+    HAS_REPORT_GEN = False
+
 import base64
 
 
@@ -80,6 +105,11 @@ print(f"[STARTUP] GEMINI_API_KEY configured: {bool(GEMINI_API_KEY and GEMINI_API
 print(f"[STARTUP] USE_MOCK_AI: {USE_MOCK_AI}")
 print(f"[STARTUP] FRONTEND_URL: {FRONTEND_URL}")
 print(f"[STARTUP] Environment: {'LOCAL/MOCK' if USE_MOCK_AI else 'PRODUCTION'}")
+print(f"\n[COMPONENTS]")
+print(f"  Models Import: {'✓ OK' if HAS_MODELS else '✗ FAILED'}")
+print(f"  Factory Import: {'✓ OK' if HAS_FACTORY else '✗ FAILED'}")
+print(f"  AI Routes Import: {'✓ OK' if HAS_AI_ROUTES else '✗ FAILED'}")
+print(f"  Report Generator: {'✓ OK' if HAS_REPORT_GEN else '✗ FAILED'}")
 print(f"{'='*60}\n")
 
 # ============================================
@@ -146,7 +176,13 @@ async def root():
     return {
         "status": "healthy",
         "service": "BeamLab Structural Engine",
-        "version": "2.0.0"
+        "version": "2.0.0",
+        "components": {
+            "models": "ok" if HAS_MODELS else "degraded",
+            "factory": "ok" if HAS_FACTORY else "degraded",
+            "ai_routes": "ok" if HAS_AI_ROUTES else "degraded",
+            "report_generator": "ok" if HAS_REPORT_GEN else "degraded"
+        }
     }
 
 
@@ -166,7 +202,11 @@ async def health_check():
 # ROUTER REGISTRATION
 # ============================================
 
-app.include_router(ai_router)
+if HAS_AI_ROUTES:
+    app.include_router(ai_router)
+    print("[STARTUP] AI routes registered")
+else:
+    print("[STARTUP] AI routes NOT available (import failed)")
 
 # PINN Solver Routes (Physics-Informed Neural Networks)
 try:
@@ -176,22 +216,29 @@ try:
 except ImportError as e:
     print(f"[STARTUP] PINN solver not available (install jax): {e}")
 
-    print(f"[STARTUP] PINN solver not available (install jax): {e}")
-
 # Project Persistence Routes (Phase 3)
-from project_routes import router as project_router
-app.include_router(project_router, prefix="/projects", tags=["Projects"])
-print("[STARTUP] Project routes registered at /projects/*")
+try:
+    from project_routes import router as project_router
+    app.include_router(project_router, prefix="/projects", tags=["Projects"])
+    print("[STARTUP] Project routes registered at /projects/*")
+except ImportError as e:
+    print(f"[STARTUP] Project routes not available: {e}")
 
 # Real-time Collaboration Routes (Phase 4.2)
-from ws_routes import router as ws_router
-app.include_router(ws_router, tags=["Collaboration"])
-print("[STARTUP] WebSocket routes registered at /ws/*")
+try:
+    from ws_routes import router as ws_router
+    app.include_router(ws_router, tags=["Collaboration"])
+    print("[STARTUP] WebSocket routes registered at /ws/*")
+except ImportError as e:
+    print(f"[STARTUP] WebSocket routes not available: {e}")
 
 # Database Persistence Routes (Critical Analysis Fix)
-from db_routes import router as db_router
-app.include_router(db_router, prefix="/db", tags=["Database"])
-print("[STARTUP] Database routes registered at /db/*")
+try:
+    from db_routes import router as db_router
+    app.include_router(db_router, prefix="/db", tags=["Database"])
+    print("[STARTUP] Database routes registered at /db/*")
+except ImportError as e:
+    print(f"[STARTUP] Database routes not available: {e}")
 
 class MeshPlateRequest(BaseModel):
     corners: List[Dict[str, float]]  # [{x, y, z}, ...]

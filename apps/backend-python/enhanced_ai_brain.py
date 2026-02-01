@@ -925,34 +925,6 @@ class EnhancedAIBrain:
             })
 
         return suggestions
-                'sectionId': 'ISMB350',
-                'type': 'column'
-            })
-            changes.append(f"Column: {member_id}")
-            next_member += 1
-        
-        # Create new beams (horizontal between new nodes)
-        sorted_new = sorted(new_nodes, key=lambda n: (n.get('z', 0), n.get('x', 0)))
-        for i in range(len(sorted_new) - 1):
-            n1, n2 = sorted_new[i], sorted_new[i + 1]
-            if abs(n1.get('z', 0) - n2.get('z', 0)) < 0.1:  # Same Z = same frame
-                member_id = f"M{next_member}"
-                members.append({
-                    'id': member_id,
-                    'startNodeId': n1['id'],
-                    'endNodeId': n2['id'],
-                    'sectionId': 'ISMB300',
-                    'type': 'beam'
-                })
-                changes.append(f"Beam: {member_id}")
-                next_member += 1
-        
-        return {
-            "success": True,
-            "model": model,
-            "message": f"✓ Added new story ({len(new_nodes)} nodes, {len(changes) - len(new_nodes)} members)",
-            "changes": changes
-        }
     
     def _add_bay(self, model: Dict[str, Any], direction: str) -> Dict[str, Any]:
         """Add a new bay to the structure"""
