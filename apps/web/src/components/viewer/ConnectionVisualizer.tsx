@@ -165,9 +165,7 @@ interface WeldedConnectionDetailProps {
 
 function WeldedConnectionDetail({ position, rotation = [0, 0, 0], connection, length = 0.2 }: WeldedConnectionDetailProps) {
     const weldDetails = connection.weldDetails;
-    if (!weldDetails) return null;
-
-    const weldSize = (weldDetails.weldSize || 6) * 0.001; // Convert mm to m
+    const weldSize = ((weldDetails?.weldSize || 6) * 0.001); // Convert mm to m
     const weldLength = length;
 
     // Fillet weld shape (triangular cross-section)
@@ -179,6 +177,8 @@ function WeldedConnectionDetail({ position, rotation = [0, 0, 0], connection, le
         shape.closePath();
         return shape;
     }, [weldSize]);
+
+    if (!weldDetails) return null;
 
     const extrudeSettings = {
         steps: 1,

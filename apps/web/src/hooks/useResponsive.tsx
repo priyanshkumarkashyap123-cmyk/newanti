@@ -16,7 +16,7 @@
  * @version 1.0.0
  */
 
-import { useState, useEffect, useCallback, useMemo, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, useCallback, useMemo, createContext, useContext, ReactNode, useRef } from 'react';
 
 // ============================================================================
 // BREAKPOINT CONFIGURATION
@@ -141,6 +141,9 @@ export interface TouchState {
 }
 
 export function useTouchDevice(): TouchState {
+  // Use a ref to track if this is the initial mount
+  const hasMounted = useRef(false);
+  
   const [state, setState] = useState<TouchState>(() => {
     if (typeof window === 'undefined') {
       return {
@@ -155,8 +158,13 @@ export function useTouchDevice(): TouchState {
   });
 
   useEffect(() => {
+    // Only run on subsequent renders to avoid SSR hydration mismatch
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
     setState(detectTouchCapabilities());
-  }, []);
+  });
 
   return state;
 }

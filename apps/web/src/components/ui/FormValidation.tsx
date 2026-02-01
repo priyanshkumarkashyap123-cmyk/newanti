@@ -57,15 +57,17 @@ export const ValidatedInput: FC<ValidatedInputProps> = ({
         if (validate) {
             const syncError = validate(value);
             if (syncError) {
-                setState('invalid');
-                setError(syncError);
+                queueMicrotask(() => {
+                    setState('invalid');
+                    setError(syncError);
+                });
                 return undefined;
             }
         }
 
         // Async validation
         if (asyncValidate) {
-            setState('validating');
+            queueMicrotask(() => setState('validating'));
             const timeout = setTimeout(async () => {
                 try {
                     const asyncError = await asyncValidate(value);
@@ -85,10 +87,12 @@ export const ValidatedInput: FC<ValidatedInputProps> = ({
         }
 
         // No async validation, mark as valid
-        if (!validate || !validate(value)) {
-            setState(value ? 'valid' : 'idle');
-            setError(null);
-        }
+        queueMicrotask(() => {
+            if (!validate || !validate(value)) {
+                setState(value ? 'valid' : 'idle');
+                setError(null);
+            }
+        });
         return undefined;
     }, [value, touched, validate, asyncValidate]);
 

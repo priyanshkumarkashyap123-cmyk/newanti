@@ -140,10 +140,15 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
     useEffect(() => {
         if (isPublicPath) {
-            setState(prev => ({ ...prev, loading: false, error: null }));
+            queueMicrotask(() => {
+                setState(prev => ({ ...prev, loading: false, error: null }));
+            });
             return;
         }
-        initialize();
+        // Use queueMicrotask to avoid synchronous setState in effect
+        queueMicrotask(() => {
+            initialize();
+        });
     }, [isPublicPath]);
 
     return (

@@ -148,7 +148,7 @@ export const TutorialOverlay: FC<TutorialOverlayProps> = ({ isOpen, onClose, onC
     // Reset on open
     useEffect(() => {
         if (isOpen) {
-            setCurrentStep(0);
+            queueMicrotask(() => setCurrentStep(0));
         }
     }, [isOpen]);
 

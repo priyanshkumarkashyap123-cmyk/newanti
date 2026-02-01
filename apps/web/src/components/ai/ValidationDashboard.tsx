@@ -213,7 +213,7 @@ export const ValidationDashboard: React.FC<DashboardProps> = ({
     // Auto-run validation when results change
     useEffect(() => {
         if (analysisResults && beamConfig && state.status === 'idle') {
-            runValidation();
+            queueMicrotask(() => runValidation());
         }
     }, [analysisResults, beamConfig, runValidation, state.status]);
 

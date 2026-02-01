@@ -329,6 +329,32 @@ function CalculationTypeSelector({
 }
 
 // ============================================================================
+// STATUS ICON COMPONENT (moved outside to prevent re-creation on each render)
+// ============================================================================
+
+function CalculationStatusIcon({ status }: { status: string }) {
+  switch (status) {
+    case 'OK':
+      return <CheckCircle className="h-4 w-4 text-green-500" />;
+    case 'WARNING':
+      return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+    case 'FAIL':
+      return <XCircle className="h-4 w-4 text-red-500" />;
+    default:
+      return null;
+  }
+}
+
+// Helper function for formatting relative time (pure function - avoids impure Date.now() in render)
+function formatRelativeTime(date: Date, now: number): string {
+  const diff = now - date.getTime();
+  const hours = Math.floor(diff / 3600000);
+  if (hours < 1) return 'Just now';
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+}
+
+// ============================================================================
 // RECENT CALCULATIONS LIST
 // ============================================================================
 
@@ -339,26 +365,16 @@ function RecentCalculationsList({
   calculations: RecentCalculation[];
   onSelect: (calc: RecentCalculation) => void;
 }) {
-  const formatTime = (date: Date) => {
-    const diff = Date.now() - date.getTime();
-    const hours = Math.floor(diff / 3600000);
-    if (hours < 1) return 'Just now';
-    if (hours < 24) return `${hours}h ago`;
-    return `${Math.floor(hours / 24)}d ago`;
-  };
+  // Capture current time once with useRef to avoid calling Date.now() during render
+  const currentTimeRef = React.useRef<number | null>(null);
+  if (currentTimeRef.current === null) {
+    currentTimeRef.current = Date.now();
+  }
+  const currentTime = currentTimeRef.current;
   
-  const StatusIcon = ({ status }: { status: string }) => {
-    switch (status) {
-      case 'OK':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'WARNING':
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
-      case 'FAIL':
-        return <XCircle className="h-4 w-4 text-red-500" />;
-      default:
-        return null;
-    }
-  };
+  const formatTime = React.useCallback((date: Date) => {
+    return formatRelativeTime(date, currentTime);
+  }, [currentTime]);
   
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
@@ -381,7 +397,7 @@ function RecentCalculationsList({
               onClick={() => onSelect(calc)}
               className="w-full p-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors text-left"
             >
-              <StatusIcon status={calc.status} />
+              <CalculationStatusIcon status={calc.status} />
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm text-gray-900 dark:text-white truncate">
                   {calc.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}

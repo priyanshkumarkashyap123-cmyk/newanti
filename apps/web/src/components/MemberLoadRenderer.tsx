@@ -273,7 +273,7 @@ export const MemberLoadRenderer: FC = () => {
             maxMag = Math.max(maxMag, w1, w2, P);
         }
         return maxMag;
-    }, [memberLoads.length]); // Only recalculate when count changes
+    }, [memberLoads]); // Recalculate when loads change
 
     return (
         <group name="member-loads">

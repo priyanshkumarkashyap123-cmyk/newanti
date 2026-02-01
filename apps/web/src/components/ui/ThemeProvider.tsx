@@ -275,8 +275,10 @@ export function ThemeProvider({
       const stored = localStorage.getItem(storageKey);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed.theme) setThemeState(parsed.theme);
-        if (parsed.accent) setAccentColorState(parsed.accent);
+        queueMicrotask(() => {
+          if (parsed.theme) setThemeState(parsed.theme);
+          if (parsed.accent) setAccentColorState(parsed.accent);
+        });
       }
     } catch (e) {
       console.warn('Failed to load theme preferences:', e);

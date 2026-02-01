@@ -336,8 +336,8 @@ export const InteractionManager: FC<InteractionManagerProps> = ({
             )}
 
             {/* Node Highlight Indicator */}
-            {hoveredNodeId.current && (
-                <NodeHighlight position={currentSnapPos.current} />
+            {showNodeHighlight && (
+                <NodeHighlight position={highlightPosition} />
             )}
         </>
     );

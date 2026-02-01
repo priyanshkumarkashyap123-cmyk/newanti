@@ -46,9 +46,11 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
     // Reset on open
     useEffect(() => {
         if (isOpen) {
-            setLoadType(targetMemberId ? 'udl' : 'point');
-            setMagnitude('10');
-            setDirection('down');
+            queueMicrotask(() => {
+                setLoadType(targetMemberId ? 'udl' : 'point');
+                setMagnitude('10');
+                setDirection('down');
+            });
         }
     }, [isOpen, targetMemberId]);
 

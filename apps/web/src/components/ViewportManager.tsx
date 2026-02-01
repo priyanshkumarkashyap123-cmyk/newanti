@@ -427,13 +427,15 @@ export const ViewportManager: FC = () => {
 
     useEffect(() => {
         const result = checkWebglSupport();
-        if (result.supported) {
-            setWebglStatus('ok');
-        } else {
-            setWebglStatus('unsupported');
-            setWebglError(result.reason || 'WebGL is unavailable on this device.');
-            setUseWebGpu(false);
-        }
+        queueMicrotask(() => {
+            if (result.supported) {
+                setWebglStatus('ok');
+            } else {
+                setWebglStatus('unsupported');
+                setWebglError(result.reason || 'WebGL is unavailable on this device.');
+                setUseWebGpu(false);
+            }
+        });
     }, [setUseWebGpu]);
 
     if (webglStatus === 'pending') {

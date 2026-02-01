@@ -359,13 +359,13 @@ export const UnifiedDashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
     const isClerkEnabled = isUsingClerk();
     const userName = isSignedIn && user?.firstName ? user.firstName : 'Engineer';
 
-    // Get greeting based on time
-    const getGreeting = () => {
+    // Get greeting based on time - memoized to avoid impure Date call during render
+    const greeting = useMemo(() => {
         const hour = new Date().getHours();
         if (hour < 12) return 'Good Morning';
         if (hour < 17) return 'Good Afternoon';
         return 'Good Evening';
-    };
+    }, []);
 
     // Filter projects
     const filteredProjects = useMemo(() => {
@@ -461,7 +461,7 @@ export const UnifiedDashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                 {/* Welcome Section */}
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-white mb-2">
-                        {getGreeting()}, {userName}! 👋
+                        {greeting}, {userName}! 👋
                     </h1>
                     <p className="text-slate-400">
                         Ready to design something amazing? Let's build the future of structural engineering.

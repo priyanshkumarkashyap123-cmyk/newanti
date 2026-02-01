@@ -97,7 +97,7 @@ export const VoiceCommandPanel: React.FC<{
             }
         });
 
-        setHistory(voiceInput.getHistory(10));
+        queueMicrotask(() => setHistory(voiceInput.getHistory(10)));
 
         return () => {
             unsubState();

@@ -118,17 +118,19 @@ export const ProductTour: FC<ProductTourProps> = ({ isOpen, onClose, onComplete 
 
   // Update highlight position when step changes
   useEffect(() => {
-    if (step.targetSelector) {
-      const element = document.querySelector(step.targetSelector);
-      if (element) {
-        const rect = element.getBoundingClientRect();
-        setHighlightRect(rect);
+    queueMicrotask(() => {
+      if (step.targetSelector) {
+        const element = document.querySelector(step.targetSelector);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          setHighlightRect(rect);
+        } else {
+          setHighlightRect(null);
+        }
       } else {
         setHighlightRect(null);
       }
-    } else {
-      setHighlightRect(null);
-    }
+    });
   }, [currentStep, step.targetSelector]);
 
   const handleNext = () => {

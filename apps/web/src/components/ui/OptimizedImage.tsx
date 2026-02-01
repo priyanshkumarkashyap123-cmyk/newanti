@@ -112,9 +112,11 @@ function useImage(src: string, fallbackSrc?: string): UseImageReturn {
   const [imageSrc, setImageSrc] = useState(src);
 
   useEffect(() => {
-    setIsLoaded(false);
-    setIsError(false);
-    setImageSrc(src);
+    queueMicrotask(() => {
+      setIsLoaded(false);
+      setIsError(false);
+      setImageSrc(src);
+    });
 
     const img = new Image();
     img.src = src;

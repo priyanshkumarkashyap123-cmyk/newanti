@@ -692,7 +692,9 @@ export const Spacer: React.FC<SpacerProps> = ({
   responsive,
   axis = 'both',
 }) => {
-  const breakpoint = useBreakpointUp('lg') ? 'lg' : useBreakpointUp('md') ? 'md' : 'sm';
+  const isLg = useBreakpointUp('lg');
+  const isMd = useBreakpointUp('md');
+  const breakpoint = isLg ? 'lg' : isMd ? 'md' : 'sm';
   const responsiveSize = responsive?.[breakpoint] ?? size;
   const pixels = responsiveSize * 4;
 

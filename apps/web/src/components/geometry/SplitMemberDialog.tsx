@@ -42,9 +42,11 @@ export function SplitMemberDialog({ isOpen, onClose, memberId }: SplitMemberDial
     // Reset state when opening
     useEffect(() => {
         if (isOpen) {
-            setMethod('midpoint');
-            setValue('0.5');
-            setReference('start');
+            queueMicrotask(() => {
+                setMethod('midpoint');
+                setValue('0.5');
+                setReference('start');
+            });
         }
     }, [isOpen, memberId]);
 

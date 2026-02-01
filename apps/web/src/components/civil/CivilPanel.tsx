@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from 'react';
+import { FC, useState, useEffect, useCallback } from 'react';
 import { useUIStore } from '../../store/uiStore';
 import { useModelStore } from '../../store/model';
 import {
@@ -48,7 +48,25 @@ const GeotechPanel: FC = () => {
 
     // ...
 
-    const calculateBearing = () => {
+    const visualizeFooting = useCallback((w: number, pid: string) => {
+        const half = w / 2;
+        const y = 0;
+        const n1 = { id: getNextNodeId(), x: -half, y, z: -half };
+        const n2 = { id: getNextNodeId(), x: half, y, z: -half };
+        const n3 = { id: getNextNodeId(), x: half, y, z: half };
+        const n4 = { id: getNextNodeId(), x: -half, y, z: half };
+
+        addNode(n1); addNode(n2); addNode(n3); addNode(n4);
+        addPlate({
+            id: pid,
+            nodeIds: [n1.id, n2.id, n3.id, n4.id],
+            thickness: 0.5,
+            materialType: 'concrete'
+        });
+        showNotification('info', 'Footing visualized in 3D');
+    }, [getNextNodeId, addNode, addPlate, showNotification]);
+
+    const calculateBearing = useCallback(() => {
         const res = geotechnical.calculateBearingCapacity(
             { type: 'spread', width, length: width, depth, load: 1000 },
             { unitWeight: 18, cohesion: 20, frictionAngle: 30, saturatedWeight: 20, elasticModulus: 20000, poissonRatio: 0.3 }
@@ -69,36 +87,19 @@ const GeotechPanel: FC = () => {
 
         // Persist to Model Store (Phase 2)
         const plateId = getNextPlateId();
+        const now = Date.now();
         addCivilResult({
-            id: `geo_${Date.now()}`,
+            id: `geo_${now}`,
             moduleId: 'geotech',
             type: 'bearing_capacity',
-            timestamp: Date.now(),
+            timestamp: now,
             input: { width, depth },
             output: res,
             linkedElementIds: [plateId]
         });
 
         visualizeFooting(width, plateId);
-    };
-
-    const visualizeFooting = (w: number, pid: string) => {
-        const half = w / 2;
-        const y = 0;
-        const n1 = { id: getNextNodeId(), x: -half, y, z: -half };
-        const n2 = { id: getNextNodeId(), x: half, y, z: -half };
-        const n3 = { id: getNextNodeId(), x: half, y, z: half };
-        const n4 = { id: getNextNodeId(), x: -half, y, z: half };
-
-        addNode(n1); addNode(n2); addNode(n3); addNode(n4);
-        addPlate({
-            id: pid,
-            nodeIds: [n1.id, n2.id, n3.id, n4.id],
-            thickness: 0.5,
-            materialType: 'concrete'
-        });
-        showNotification('info', 'Footing visualized in 3D');
-    };
+    }, [width, depth, getNextPlateId, addCivilResult, showNotification, visualizeFooting]);
 
     return (
         <div className="space-y-4">

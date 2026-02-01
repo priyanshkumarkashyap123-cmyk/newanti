@@ -83,7 +83,9 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
 
   useEffect(() => {
     if (results.length > 0 && !selectedMember) {
-      setSelectedMember(results[0].member_id);
+      queueMicrotask(() => {
+        setSelectedMember(results[0].member_id);
+      });
     }
   }, [results, selectedMember]);
 

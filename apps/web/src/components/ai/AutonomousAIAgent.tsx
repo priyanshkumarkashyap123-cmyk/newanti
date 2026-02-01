@@ -129,19 +129,20 @@ export const AutonomousAIAgent: FC = () => {
   // Check API key on mount
   useEffect(() => {
     const hasKey = geminiAI.hasApiKey();
-    setHasApiKey(hasKey);
-    console.log('[AI Agent] Gemini API key status:', hasKey ? 'Connected' : 'Not configured');
-    
-    // Set initial welcome message with correct API status
-    if (messages.length === 0) {
-      const apiStatus = hasKey 
-        ? '✅ **Gemini API connected** - Full autonomous capabilities enabled' 
-        : '⚠️ **Gemini API key not set** - Click settings (⚙️) to enable advanced reasoning';
+    queueMicrotask(() => {
+      setHasApiKey(hasKey);
+      console.log('[AI Agent] Gemini API key status:', hasKey ? 'Connected' : 'Not configured');
       
-      setMessages([{
-        id: '1',
-        role: 'assistant',
-        content: `# 🤖 BeamLab AI Agent
+      // Set initial welcome message with correct API status
+      if (messages.length === 0) {
+        const apiStatus = hasKey 
+          ? '✅ **Gemini API connected** - Full autonomous capabilities enabled' 
+          : '⚠️ **Gemini API key not set** - Click settings (⚙️) to enable advanced reasoning';
+        
+        setMessages([{
+          id: '1',
+          role: 'assistant',
+          content: `# 🤖 BeamLab AI Agent
 
 Welcome! I'm your **autonomous structural engineering assistant** powered by advanced AI.
 
@@ -171,6 +172,7 @@ ${apiStatus}
         type: 'text',
       }]);
     }
+    });
   }, []);
   
   useEffect(() => {

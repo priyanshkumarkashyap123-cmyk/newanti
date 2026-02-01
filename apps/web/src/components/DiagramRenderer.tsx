@@ -184,20 +184,18 @@ export const DiagramRenderer: FC<DiagramRendererProps> = ({
         return { linePoints: points, fillShape };
     }, [diagramData, type, scale, showFill]);
 
-    if (!diagramData || linePoints.length < 2) {
-        return null;
-    }
-
-    const { dir, localY, localZ, startPos, L } = diagramData;
-
-    // Determine correct plot vector (plane)
-    let plotVector = localY.clone();
-    if (type === 'MY' || type === 'FZ') {
-        plotVector = localZ.clone();
-    }
-
-    // Calculate rotation to align fill shape with member
+    // Calculate rotation to align fill shape with member (moved before early return to comply with React hooks rules)
     const fillRotation = useMemo(() => {
+        if (!diagramData) return new THREE.Euler();
+        
+        const { dir, localY, localZ } = diagramData;
+        
+        // Determine correct plot vector (plane)
+        let plotVector = localY.clone();
+        if (type === 'MY' || type === 'FZ') {
+            plotVector = localZ.clone();
+        }
+        
         // Create a matrix that transforms from local to world coordinates
         const matrix = new THREE.Matrix4();
 
@@ -214,7 +212,19 @@ export const DiagramRenderer: FC<DiagramRendererProps> = ({
         euler.setFromRotationMatrix(matrix);
 
         return euler;
-    }, [dir, plotVector]);
+    }, [diagramData, type]);
+
+    if (!diagramData || linePoints.length < 2) {
+        return null;
+    }
+
+    const { dir, localY, localZ, startPos, L } = diagramData;
+
+    // Determine correct plot vector (plane)
+    let plotVector = localY.clone();
+    if (type === 'MY' || type === 'FZ') {
+        plotVector = localZ.clone();
+    }
 
     return (
         <group>

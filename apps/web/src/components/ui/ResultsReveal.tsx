@@ -162,7 +162,7 @@ export const ResultsReveal: FC<ResultsRevealProps> = ({
             const timer = setTimeout(() => setShowContent(true), delay);
             return () => clearTimeout(timer);
         } else {
-            setShowContent(false);
+            queueMicrotask(() => setShowContent(false));
         }
         return undefined;
     }, [isVisible, delay]);

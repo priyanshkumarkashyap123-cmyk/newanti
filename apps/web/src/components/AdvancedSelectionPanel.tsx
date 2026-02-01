@@ -26,10 +26,7 @@ export const AdvancedSelectionPanel: FC = () => {
     // Property state
     const [selectedPropValue, setSelectedPropValue] = useState<string>('');
 
-    // Only show if tool is active
-    if (activeTool !== 'select_range') return null;
-
-    // Get unique properties from model
+    // Get unique properties from model (moved before early return to comply with React hooks rules)
     const uniqueSections = useMemo(() => {
         const sections = new Set<string>();
         members.forEach(m => {
@@ -37,6 +34,9 @@ export const AdvancedSelectionPanel: FC = () => {
         });
         return Array.from(sections).sort();
     }, [members]);
+
+    // Only show if tool is active
+    if (activeTool !== 'select_range') return null;
 
     const handleRangeSelect = () => {
         const min = parseFloat(minVal);

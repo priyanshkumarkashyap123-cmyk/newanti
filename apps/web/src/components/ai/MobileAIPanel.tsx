@@ -38,7 +38,9 @@ export const MobileAIPanel: React.FC<MobileAIPanelProps> = ({
 
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);
-        setIsOnline(navigator.onLine);
+        queueMicrotask(() => {
+            setIsOnline(navigator.onLine);
+        });
 
         return () => {
             window.removeEventListener('online', handleOnline);
@@ -48,11 +50,15 @@ export const MobileAIPanel: React.FC<MobileAIPanelProps> = ({
 
     useEffect(() => {
         const unsub = voiceInput.onStateChange((state) => {
-            setIsListening(state.isListening);
+            queueMicrotask(() => {
+                setIsListening(state.isListening);
+            });
         });
 
         const unsubCmd = voiceInput.onCommand((cmd) => {
-            setMessages(prev => [...prev, { role: 'user', text: `🎤 "${cmd.transcript}"` }]);
+            queueMicrotask(() => {
+                setMessages(prev => [...prev, { role: 'user', text: `🎤 "${cmd.transcript}"` }]);
+            });
             onCommand?.(cmd);
         });
 

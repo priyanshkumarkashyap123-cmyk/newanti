@@ -52,40 +52,42 @@ export const NodeInputDialog: FC<NodeInputDialogProps> = ({
     // Initialize from editNodeId or initialPosition
     useEffect(() => {
         if (isOpen) {
-            if (editNodeId && nodes.has(editNodeId)) {
-                const node = nodes.get(editNodeId)!;
-                setX(node.x.toString());
-                setY(node.y.toString());
-                setZ(node.z.toString());
-                if (node.restraints) {
-                    setRestraints(node.restraints);
-                    // Determine support type
-                    const r = node.restraints;
-                    if (r.fx && r.fy && r.fz && r.mx && r.my && r.mz) {
-                        setSupportType('fixed');
-                    } else if (r.fx && r.fy && r.fz) {
-                        setSupportType('pinned');
-                    } else if (r.fy && !r.fx) {
-                        setSupportType('roller-x');
-                    } else if (r.fx && !r.fy) {
-                        setSupportType('roller-y');
-                    } else {
-                        setSupportType('none');
+            queueMicrotask(() => {
+                if (editNodeId && nodes.has(editNodeId)) {
+                    const node = nodes.get(editNodeId)!;
+                    setX(node.x.toString());
+                    setY(node.y.toString());
+                    setZ(node.z.toString());
+                    if (node.restraints) {
+                        setRestraints(node.restraints);
+                        // Determine support type
+                        const r = node.restraints;
+                        if (r.fx && r.fy && r.fz && r.mx && r.my && r.mz) {
+                            setSupportType('fixed');
+                        } else if (r.fx && r.fy && r.fz) {
+                            setSupportType('pinned');
+                        } else if (r.fy && !r.fx) {
+                            setSupportType('roller-x');
+                        } else if (r.fx && !r.fy) {
+                            setSupportType('roller-y');
+                        } else {
+                            setSupportType('none');
+                        }
                     }
+                } else if (initialPosition) {
+                    setX(initialPosition.x.toString());
+                    setY(initialPosition.y.toString());
+                    setZ(initialPosition.z.toString());
+                    setRestraints({ fx: false, fy: false, fz: false, mx: false, my: false, mz: false });
+                    setSupportType('none');
+                } else {
+                    setX('0');
+                    setY('0');
+                    setZ('0');
+                    setRestraints({ fx: false, fy: false, fz: false, mx: false, my: false, mz: false });
+                    setSupportType('none');
                 }
-            } else if (initialPosition) {
-                setX(initialPosition.x.toString());
-                setY(initialPosition.y.toString());
-                setZ(initialPosition.z.toString());
-                setRestraints({ fx: false, fy: false, fz: false, mx: false, my: false, mz: false });
-                setSupportType('none');
-            } else {
-                setX('0');
-                setY('0');
-                setZ('0');
-                setRestraints({ fx: false, fy: false, fz: false, mx: false, my: false, mz: false });
-                setSupportType('none');
-            }
+            });
             // Focus X input
             setTimeout(() => xInputRef.current?.focus(), 100);
         }
