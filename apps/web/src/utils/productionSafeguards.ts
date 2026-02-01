@@ -176,18 +176,20 @@ class ProductionSafeguards {
      * Replace with actual service like Sentry, LogRocket, etc.
      */
     private sendToErrorTracking(error: ErrorLog) {
-        // Example: Send to backend API
+        // Note: Sentry is enabled via .env VITE_SENTRY_DSN
+        // This function kept for legacy/fallback purposes
+        // Azure Static Web Apps doesn't have a backend API for error logging
+        // Use Sentry integration instead
         try {
-            fetch('/api/log-error', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(error),
-                keepalive: true // Ensures request completes even if page unloads
-            }).catch(() => {
-                // Silent fail - don't crash on logging error
-            });
+            // Don't attempt to POST to /api/log-error as static web app has no API
+            // Error tracking is handled by Sentry if configured
+            if (typeof window !== 'undefined' && (window as any).__SENTRY__) {
+                // Sentry is available, errors are already tracked
+                return;
+            }
         } catch (e) {
             // Silent fail
+        }
         }
     }
     
