@@ -113,32 +113,37 @@ interface StoreyResult {
 // ============================================================================
 
 /**
- * Get spectral acceleration coefficient (Sa/g) - IS 1893 Cl. 6.4.2
+ * Get spectral acceleration coefficient (Sa/g) - IS 1893:2016 Cl. 6.4.2
+ * For 5% damping. Use damping correction for other values.
  */
 function getSpectralAcceleration(T: number, soilType: string, dampingRatio: number = 0.05): number {
-  // Damping correction factor
-  const dampingFactor = Math.sqrt(10 / (5 + dampingRatio * 100));
+  // Damping correction factor for ξ ≠ 5%
+  // Factor = √(10 / (5 + 100ξ)) per IS 1893 Cl. 6.4.2
+  const dampingFactor = dampingRatio === 0.05 ? 1.0 : Math.sqrt(10 / (5 + dampingRatio * 100));
   
   let Sa_g: number;
   
   if (soilType === 'I') {
-    // Rock/Hard Soil
-    if (T <= 0.10) Sa_g = 1 + 15 * T;
+    // Type I: Rock or Hard Soil (N > 30)
+    if (T <= 0.00) Sa_g = 1.0;
+    else if (T <= 0.10) Sa_g = 1 + 15 * T;
     else if (T <= 0.40) Sa_g = 2.5;
     else if (T <= 4.0) Sa_g = 1.0 / T;
-    else Sa_g = 0.25;
+    else Sa_g = 0.25;  // T > 4s (extrapolation)
   } else if (soilType === 'II') {
-    // Medium Soil
-    if (T <= 0.10) Sa_g = 1 + 15 * T;
+    // Type II: Medium Soil (10 < N ≤ 30)
+    if (T <= 0.00) Sa_g = 1.0;
+    else if (T <= 0.10) Sa_g = 1 + 15 * T;
     else if (T <= 0.55) Sa_g = 2.5;
     else if (T <= 4.0) Sa_g = 1.36 / T;
-    else Sa_g = 0.34;
+    else Sa_g = 0.34;  // T > 4s (extrapolation)
   } else {
-    // Soft Soil (Type III)
-    if (T <= 0.10) Sa_g = 1 + 15 * T;
+    // Type III: Soft Soil (N ≤ 10)
+    if (T <= 0.00) Sa_g = 1.0;
+    else if (T <= 0.10) Sa_g = 1 + 15 * T;
     else if (T <= 0.67) Sa_g = 2.5;
     else if (T <= 4.0) Sa_g = 1.67 / T;
-    else Sa_g = 0.42;
+    else Sa_g = 0.42;  // T > 4s (extrapolation)
   }
   
   return Sa_g * dampingFactor;

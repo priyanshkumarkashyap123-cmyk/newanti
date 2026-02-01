@@ -1,7 +1,16 @@
 {
   "name": "backend-rust",
   "type": "module",
+  "collaborators": [
+    "Civil Engineering Team"
+  ],
+  "description": "High-performance civil engineering computation engine with WASM support",
   "version": "0.1.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/civil-engineering-rust"
+  },
   "files": [
     "backend_rust_bg.wasm",
     "backend_rust.js",
@@ -11,5 +20,12 @@
   "types": "backend_rust.d.ts",
   "sideEffects": [
     "./snippets/*"
+  ],
+  "keywords": [
+    "structural-analysis",
+    "civil-engineering",
+    "wasm",
+    "fem",
+    "finite-element"
   ]
 }

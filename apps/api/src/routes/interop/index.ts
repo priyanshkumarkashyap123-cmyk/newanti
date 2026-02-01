@@ -7,12 +7,12 @@
  * - Report generation
  */
 
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, type IRouter } from 'express';
 import { spawn } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const router = Router();
+const router: IRouter = Router();
 
 // ESM-compatible __dirname
 const __filename = fileURLToPath(import.meta.url);

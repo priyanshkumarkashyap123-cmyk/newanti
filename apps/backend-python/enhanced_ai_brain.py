@@ -798,6 +798,133 @@ class EnhancedAIBrain:
                 'id': member_id,
                 'startNodeId': old_id,
                 'endNodeId': new_id,
+                'sectionId': 'ISMB300',
+                'type': 'column'
+            })
+            changes.append(f"Member: {member_id} (Column)")
+            next_member += 1
+        
+        # Create new beams (horizontal)
+        # Simple Logic: Connect adjacent nodes in the new story
+        # Ideally we'd mirror the floor below, but simple ring connection for now
+        for i in range(len(new_nodes) - 1):
+             member_id = f"M{next_member}"
+             members.append({
+                'id': member_id,
+                'startNodeId': new_nodes[i]['id'],
+                'endNodeId': new_nodes[i+1]['id'],
+                'sectionId': 'ISMB250',
+                'type': 'beam'
+             })
+             changes.append(f"Member: {member_id} (Beam)")
+             next_member += 1
+             
+        return {
+            "success": True,
+            "model": model,
+            "message": f"✓ Added new story ({story_height}m height)",
+            "changes": changes
+        }
+
+    def _add_bay(self, model: Dict[str, Any], direction: str) -> Dict[str, Any]:
+        # Placeholder for bay extension logic
+        return {"success": False, "model": model, "message": "Bay extension not fully implemented yet", "changes": []}
+
+    # ============================================
+    # DESIGN SUGGESTIONS SYSTEM
+    # ============================================
+
+    def generate_suggestions(
+        self, 
+        model: Dict[str, Any], 
+        step: str = 'general',
+        analysis_results: Optional[Dict[str, Any]] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Generate intelligent design suggestions based on model state and analysis
+        """
+        suggestions = []
+        nodes = model.get('nodes', [])
+        members = model.get('members', [])
+        
+        # 1. Geometry & Stability Checks
+        if step in ['geometry_input', 'general']:
+            # Check for supports
+            has_support = any(
+                n.get('restraints', {}).get('fx') or n.get('restraints', {}).get('fy') or n.get('restraints', {}).get('fz')
+                for n in nodes
+            )
+            if not has_support:
+                suggestions.append({
+                    "id": "sug_geom_1",
+                    "step": "geometry_input",
+                    "type": "warning",
+                    "message": "Structure is unstable (no supports). Add supports at the base.",
+                    "action_intent": "auto_fix_support"
+                })
+                
+            # Check for floating nodes (nodes with 0 members connected)
+            node_ids = {n['id'] for n in nodes}
+            connected_nodes = set()
+            for m in members:
+                connected_nodes.add(m['startNodeId'])
+                connected_nodes.add(m['endNodeId'])
+            
+            floating = node_ids - connected_nodes
+            if floating:
+                suggestions.append({
+                    "id": "sug_geom_2",
+                    "step": "geometry_input",
+                    "type": "warning",
+                    "message": f"{len(floating)} nodes are not connected to any members.",
+                    "action_intent": "select_floating_nodes"
+                })
+
+        # 2. Member Design Optimization
+        if step in ['member_design', 'general'] and analysis_results:
+            # Check for over-designed members (low utilization)
+            # This requires utilization ratios, or we approximate from forces
+            # For this MVP, we'll simulate logic if we had utilization data
+            pass
+            
+        # 3. Heuristic Suggestions (Rule of Thumb)
+        if step in ['project_setup', 'general']:
+            # Check spans
+            long_spans = []
+            for m in members:
+                start = next((n for n in nodes if n['id'] == m['startNodeId']), None)
+                end = next((n for n in nodes if n['id'] == m['endNodeId']), None)
+                if start and end:
+                    dx = start['x'] - end['x']
+                    dy = start['y'] - end['y']
+                    dz = start['z'] - end['z']
+                    length = (dx*dx + dy*dy + dz*dz)**0.5
+                    if length > 12: # Meters
+                        long_spans.append(m['id'])
+            
+            if long_spans:
+                suggestions.append({
+                    "id": "sug_opt_1",
+                    "step": "member_design",
+                    "type": "optimization",
+                    "message": f"Found {len(long_spans)} members with span > 12m. Consider using trusses or cellular beams for economy.",
+                })
+
+        # 4. Code Compliance (IS 800)
+        if step in ['loading', 'general']:
+            # Check if loads are realistic
+            loads_applied = False
+            # (Assuming loads are stored on nodes or members - simplistic check)
+            # This depends on how loads are structured in the model dict passed here
+            # For now, just a generic tip
+            suggestions.append({
+                "id": "sug_code_1",
+                "step": "loading",
+                "type": "tip",
+                "message": "For residential buildings, IS 875 recommends 2.0 kN/m² Live Load.",
+            })
+
+        return suggestions
                 'sectionId': 'ISMB350',
                 'type': 'column'
             })

@@ -1,3 +1,4 @@
+/// <reference types="@webgpu/types" />
 /**
  * GPUAcceleratedSolver.ts - WebGPU-Powered Structural Analysis
  * 
@@ -555,7 +556,7 @@ export class GPUAcceleratedSolver {
           maxComputeWorkgroupSizeY: 256,
           maxComputeWorkgroupsPerDimension: 65535,
         },
-      });
+      }) as unknown as GPUDevice;
       
       // Compile shaders
       await this.compileShaders();
@@ -767,13 +768,13 @@ export class GPUAcceleratedSolver {
     maxIterations: number = 1000
   ): Promise<{ x: Float32Array; iterations: number; residualNorm: number }> {
     // Initial guess: x = 0
-    let x = new Float32Array(n);
+    const x = new Float32Array(n);
     
     // r = f - K*x = f (since x=0)
-    let r = new Float32Array(f);
+    const r = new Float32Array(f);
     
     // p = r
-    let p = new Float32Array(r);
+    const p = new Float32Array(r);
     
     // rTr = r^T * r
     let rTr = this.dotProduct(r, r);

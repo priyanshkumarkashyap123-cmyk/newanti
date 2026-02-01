@@ -61,11 +61,11 @@ export class IsolatedFootingCalculator {
     const flexure_x = this.designFlexure(input, dimensions, 'X', steps);
     const flexure_y = this.designFlexure(input, dimensions, 'Y', steps);
     
-    // Step 6: Check development length
-    const development = this.checkDevelopment(input, dimensions, Math.max(
-      flexure_x.bars.size,
-      flexure_y.bars.size
-    ), steps);
+    // Step 6: Check development length - use larger bar size
+    const barSizeX = parseInt(flexure_x.bars.size.replace('#', ''));
+    const barSizeY = parseInt(flexure_y.bars.size.replace('#', ''));
+    const largerBarSize = barSizeX >= barSizeY ? flexure_x.bars.size : flexure_y.bars.size;
+    const development = this.checkDevelopment(input, dimensions, largerBarSize, steps);
     
     // Step 7: Design dowels
     const dowels = this.designDowels(input, steps);

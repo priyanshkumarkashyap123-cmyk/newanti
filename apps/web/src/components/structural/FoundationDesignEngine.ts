@@ -148,13 +148,18 @@ function getPunchingPerimeter(
 }
 
 /**
- * Calculate permissible punching shear stress
+ * Calculate permissible punching shear stress - IS 456:2000 Cl. 31.6.3
+ * τc = ks × 0.25 × √fck, where ks = 0.5 + βc but ≤ 1.0
+ * βc = shorter dimension / longer dimension of column
  */
 function getPunchingShearCapacity(fck: number, beta: number): number {
-  // IS 456:2000 Cl. 31.6.3
-  const ks = Math.min(1, 0.5 + beta);
-  const tau_c = 0.25 * Math.sqrt(fck);
-  return ks * tau_c;
+  // IS 456:2000 Cl. 31.6.3.1
+  // βc is the ratio of short side to long side of column (inverse of input beta)
+  const betaC = 1 / Math.max(beta, 1);
+  const ks = Math.min(1.0, 0.5 + betaC);
+  // τc = ks × 0.25 × √fck (MPa)
+  const tau_c = ks * 0.25 * Math.sqrt(fck);
+  return tau_c;
 }
 
 // ============================================================================

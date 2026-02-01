@@ -368,6 +368,120 @@ select:focus {
 }
 
 /* ============================================
+   Micro-Animations (UI Polish - CTO Focus)
+   ============================================ */
+
+@keyframes buttonPress {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(0.97);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes successPop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes skeletonPulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+
+  70% {
+    transform: scale(0.9);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* ============================================
    Utility Classes
    ============================================ */
 
@@ -390,6 +504,80 @@ select:focus {
   border-top-color: #2b7cee;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+}
+
+/* ============================================
+   Micro-Animation Utility Classes
+   ============================================ */
+
+/* Button press feedback */
+.animate-press:active:not(:disabled) {
+  animation: buttonPress 0.15s ease-out;
+}
+
+/* Toast slide animations */
+.animate-slide-in {
+  animation: slideInRight 0.3s ease-out forwards;
+}
+
+.animate-slide-out {
+  animation: slideOutRight 0.3s ease-out forwards;
+}
+
+/* Success celebration */
+.animate-success {
+  animation: successPop 0.4s ease-out;
+}
+
+/* Bounce in for modals and dialogs */
+.animate-bounce-in {
+  animation: bounceIn 0.5s ease-out;
+}
+
+/* Shimmer effect for CTA buttons */
+.animate-shimmer {
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s ease infinite;
+}
+
+/* Skeleton loading placeholder */
+.skeleton {
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0.05) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease infinite;
+  border-radius: 4px;
+}
+
+/* Animated gradient background */
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite;
+}
+
+/* Interactive card hover lift */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Subtle scale on hover */
+.hover-scale {
+  transition: transform 0.2s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
 }
 
 /* Selection */
@@ -430,6 +618,73 @@ select:focus {
 
 .shadow-glow-accent {
   box-shadow: 0 0 30px rgba(244, 226, 37, 0.2);
+}
+
+/* Interactive Glow Effects */
+.glow-blue {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+.glow-purple {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+.glow-green {
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+}
+
+/* Focus ring for accessibility */
+.focus-ring {
+  transition: box-shadow 0.2s ease;
+}
+
+.focus-ring:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+}
+
+/* Status Indicators */
+.pulse-dot {
+  position: relative;
+}
+
+.pulse-dot::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  animation: pulse-ring 1.5s ease-in-out infinite;
+  background: inherit;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+}
+
+/* Interactive States */
+.interactive {
+  transition: all 0.2s ease;
+}
+
+.interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.interactive:active {
+  transform: translateY(0);
 }
 
 /* ============================================
@@ -511,4 +766,299 @@ select:focus {
 
 .toggle-switch.active::after {
   transform: translateX(20px);
+}
+
+/* ============================================
+   Accessibility Improvements
+   ============================================ */
+
+/* Skip to main content link (a11y best practice) */
+.skip-to-content {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: 1rem 2rem;
+  background: #3b82f6;
+  color: white;
+  font-weight: 600;
+  border-radius: 0 0 0.5rem 0.5rem;
+  transition: top 0.3s ease;
+  text-decoration: none;
+}
+
+.skip-to-content:focus {
+  top: 0;
+  outline: 3px solid #fbbf24;
+  outline-offset: 2px;
+}
+
+/* Enhanced focus visible states for keyboard navigation */
+.focus-visible-enhanced:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .card,
+  .glass {
+    border-width: 2px;
+    border-color: currentColor;
+  }
+  
+  button,
+  a {
+    text-decoration: underline;
+  }
+}
+
+/* Touch target size improvement for mobile */
+@media (pointer: coarse) {
+  button,
+  a,
+  input,
+  select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* ============================================
+   Empty States
+   ============================================ */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+  color: #94a3b8;
+}
+
+.empty-state-icon {
+  width: 4rem;
+  height: 4rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.5;
+  color: #475569;
+}
+
+.empty-state-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state-description {
+  font-size: 0.875rem;
+  color: #64748b;
+  max-width: 20rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.empty-state-action {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  color: white;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.empty-state-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+}
+
+/* ============================================
+   Loading States Enhancement
+   ============================================ */
+
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+}
+
+.loading-text {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: #94a3b8;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Progress bar animation */
+.progress-bar {
+  height: 4px;
+  background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%);
+  background-size: 200% 100%;
+  animation: gradientShift 2s ease infinite;
+  border-radius: 2px;
+}
+
+/* ============================================
+   CTA Button Hierarchy
+   ============================================ */
+
+/* Primary CTA - Most important action */
+.cta-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 2rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+}
+
+.cta-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.4);
+}
+
+.cta-primary:active {
+  transform: translateY(0);
+}
+
+/* Secondary CTA - Alternative action */
+.cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 2rem;
+  background: transparent;
+  color: #e2e8f0;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: 0.75rem;
+  border: 2px solid #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cta-secondary:hover {
+  background: rgba(71, 85, 105, 0.3);
+  border-color: #64748b;
+  transform: translateY(-1px);
+}
+
+/* Tertiary CTA - Less prominent */
+.cta-tertiary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: #3b82f6;
+  font-weight: 500;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.cta-tertiary:hover {
+  color: #60a5fa;
+  text-decoration: underline;
+}
+
+/* ============================================
+   Micro-interactions Enhancement
+   ============================================ */
+
+/* Ripple effect for buttons */
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.3) 0%, transparent 70%);
+  opacity: 0;
+  transform: scale(0);
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.ripple:active::after {
+  opacity: 1;
+  transform: scale(2);
+  transition: opacity 0s, transform 0.1s;
+}
+
+/* Tooltip arrow enhancement */
+.tooltip-arrow {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: inherit;
+  transform: rotate(45deg);
+}
+
+/* Success checkmark animation */
+@keyframes checkmark {
+  0% {
+    stroke-dashoffset: 100;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-checkmark {
+  stroke-dasharray: 100;
+  animation: checkmark 0.5s ease forwards;
+}
+
+/* Notification badge bounce */
+.notification-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.375rem;
+  background: #ef4444;
+  color: white;
+  font-size: 0.625rem;
+  font-weight: 700;
+  border-radius: 9999px;
+  animation: bounceIn 0.4s ease;
 }

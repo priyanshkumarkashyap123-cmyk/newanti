@@ -120,6 +120,86 @@ pub struct SparseSolverInput {
 }
 
 // ============================================
+// CIVIL ENGINEERING ENGINES
+// ============================================
+
+// --- GEOTECHNICAL ENGINE ---
+
+#[derive(Serialize, Deserialize)]
+pub struct FootingInput {
+    pub width: f64,    // B (m)
+    pub length: f64,   // L (m)
+    pub depth: f64,    // Df (m)
+    pub cohesion: f64, // c (kPa, kN/m²)
+    pub phi: f64,      // Friction Angle (degrees)
+    pub gamma: f64,    // Unit Weight (kN/m³)
+    pub fs: f64,       // Factor of Safety (default 3.0)
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct BearingCapacityResult {
+    pub q_ult: f64,    // Ultimate Capacity (kPa)
+    pub q_allow: f64,  // Allowable Capacity (kPa)
+    pub nc: f64,
+    pub nq: f64,
+    pub n_gamma: f64,
+}
+
+/// Calculate Bearing Capacity using Terzaghi's/Meyerhof's combined approach
+/// Ultra-fast implementation for Monte Carlo simulations
+#[wasm_bindgen]
+pub fn calculate_bearing_capacity(input_json: &str) -> String {
+    let input: FootingInput = match serde_json::from_str(input_json) {
+        Ok(i) => i,
+        Err(_) => return "{}".to_string(),
+    };
+
+    let phi_rad = input.phi.to_radians();
+    
+    // Meyerhof Factors
+    // Nq = e^(pi * tan(phi)) * tan^2(45 + phi/2)
+    let nq = (std::f64::consts::PI * phi_rad.tan()).exp() * (45.0f64.to_radians() + phi_rad / 2.0).tan().powi(2);
+    
+    // Nc = (Nq - 1) * cot(phi)
+    let nc = if input.phi > 0.0 {
+        (nq - 1.0) * (1.0 / phi_rad.tan())
+    } else {
+        5.14 // Undrained condition
+    };
+
+    // N_gamma = 2 * (Nq + 1) * tan(phi)
+    let n_gamma = 2.0 * (nq + 1.0) * phi_rad.tan();
+
+    // Shape Factors (Generic)
+    let sc = 1.0 + 0.2 * (input.width / input.length); // Shape factor for cohesion
+    let sq = 1.0 + 0.1 * (input.width / input.length) * phi_rad.sin(); // Shape factor for surcharge
+    let s_gamma = 1.0 - 0.3 * (input.width / input.length); // Shape factor for weight
+
+    // Ultimate Bearing Capacity (General Equation)
+    // q_ult = c*Nc*sc + q*Nq*sq + 0.5*gamma*B*N_gamma*s_gamma
+    // q = gamma * Df (Surcharge)
+    let q_surcharge = input.gamma * input.depth;
+    
+    let term1 = input.cohesion * nc * sc;
+    let term2 = q_surcharge * nq * sq;
+    let term3 = 0.5 * input.gamma * input.width * n_gamma * s_gamma;
+
+    let q_ult = term1 + term2 + term3;
+    let q_allow = q_ult / input.fs;
+
+    let result = BearingCapacityResult {
+        q_ult,
+        q_allow,
+        nc,
+        nq,
+        n_gamma
+    };
+
+    serde_json::to_string(&result).unwrap_or_default()
+}
+
+
+// ============================================
 // MAIN SOLVER FUNCTIONS
 // ============================================
 

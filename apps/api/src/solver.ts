@@ -128,8 +128,8 @@ export function analyzeStructure(request: AnalysisRequest): AnalysisResult {
     const totalDofs = numNodes * dofsPerNode;
 
     // Initialize global stiffness matrix and force vector
-    let K: number[][] = Array(totalDofs).fill(null).map(() => Array(totalDofs).fill(0));
-    let F: number[] = Array(totalDofs).fill(0);
+    const K: number[][] = Array(totalDofs).fill(null).map(() => Array(totalDofs).fill(0));
+    const F: number[] = Array(totalDofs).fill(0);
 
     // Assemble global stiffness matrix
     for (const member of members) {

@@ -160,10 +160,14 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
 
             if (res.ok) {
                 const data = await res.json();
-                // TODO: Implement loadProject in modelStore
-                // useModelStore.getState().loadProject(data.project.data);
-                setSuccess('Project loaded!');
-                onClose();
+                // Load project using the new loadProject function
+                const loaded = useModelStore.getState().loadProject(data.project.data);
+                if (loaded) {
+                    setSuccess('Project loaded!');
+                    onClose();
+                } else {
+                    setError('Failed to parse project data');
+                }
             } else {
                 setError('Failed to load project');
             }

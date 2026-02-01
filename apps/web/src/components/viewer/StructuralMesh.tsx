@@ -11,7 +11,7 @@
 
 import { FC, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Edges } from '@react-three/drei';
+import { Edges, Outlines } from '@react-three/drei';
 import * as THREE from 'three';
 
 // ============================================
@@ -495,6 +495,11 @@ export const StructuralMember: FC<StructuralMemberProps> = ({
                     threshold={EDGE_THRESHOLD}
                     color={EDGE_COLOR}
                 />
+
+                {/* Selection Outline - Premium Glow Effect */}
+                {selected && (
+                    <Outlines thickness={3} color="#ffffff" angle={0} />
+                )}
             </mesh>
         </group>
     );

@@ -7,6 +7,8 @@ import {
     createColumnHelper,
     type SortingState,
 } from '@tanstack/react-table';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { useRef, useEffect } from 'react';
 import { useModelStore } from '../store/model';
 
 type TabType = 'displacements' | 'reactions' | 'forces';
@@ -211,17 +213,37 @@ export const ResultsTable: FC = () => {
         );
     }
 
-    // Helper to render active table
+    // Virtualization setup
+    const parentRef = useRef<HTMLDivElement>(null);
+
+    const activeTable = useMemo(() => {
+        switch (activeTab) {
+            case 'displacements': return displacementTable;
+            case 'reactions': return reactionTable;
+            case 'forces': return forceTable;
+        }
+    }, [activeTab, displacementTable, reactionTable, forceTable]);
+
+    const { rows } = activeTable.getRowModel();
+
+    const rowVirtualizer = useVirtualizer({
+        count: rows.length,
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => 35, // approximate row height
+        overscan: 10,
+    });
+
     const renderTable = (table: any) => (
-        <table className="w-full text-left border-collapse text-xs">
-            <thead>
+        <table className="w-full text-left border-collapse text-xs" style={{ display: 'grid' }}>
+            <thead style={{ display: 'grid', position: 'sticky', top: 0, zIndex: 10 }}>
                 {table.getHeaderGroups().map((headerGroup: any) => (
-                    <tr key={headerGroup.id}>
+                    <tr key={headerGroup.id} style={{ display: 'flex', width: '100%' }}>
                         {headerGroup.headers.map((header: any) => (
                             <th
                                 key={header.id}
                                 onClick={header.column.getToggleSortingHandler()}
-                                className="sticky top-0 z-10 bg-slate-900 p-3 font-semibold text-slate-300 border-b border-slate-700 cursor-pointer hover:text-white transition-colors"
+                                style={{ width: header.getSize() }}
+                                className="bg-slate-900 p-3 font-semibold text-slate-300 border-b border-slate-700 cursor-pointer hover:text-white transition-colors flex-1"
                             >
                                 <div className="flex items-center gap-1">
                                     {flexRender(header.column.columnDef.header, header.getContext())}
@@ -235,20 +257,42 @@ export const ResultsTable: FC = () => {
                     </tr>
                 ))}
             </thead>
-            <tbody>
-                {table.getRowModel().rows.map((row: any) => (
-                    <tr
-                        key={row.id}
-                        onClick={() => handleRowClick(row.original.nodeId || row.original.memberId)}
-                        className="hover:bg-blue-600/10 cursor-pointer transition-colors border-b border-slate-800/50"
-                    >
-                        {row.getVisibleCells().map((cell: any) => (
-                            <td key={cell.id} className="p-2.5 font-mono text-slate-200">
-                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                            </td>
-                        ))}
-                    </tr>
-                ))}
+            <tbody
+                style={{
+                    display: 'grid',
+                    height: `${rowVirtualizer.getTotalSize()}px`,
+                    position: 'relative',
+                }}
+            >
+                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                    const row = rows[virtualRow.index];
+                    return (
+                        <tr
+                            key={row.id}
+                            onClick={() => {
+                                const orig = row.original as DisplacementRow | ReactionRow | ForceRow;
+                                const id = 'nodeId' in orig ? orig.nodeId : 'memberId' in orig ? orig.memberId : undefined;
+                                if (id) handleRowClick(id);
+                            }}
+                            style={{
+                                display: 'flex',
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: '100%',
+                                height: `${virtualRow.size}px`,
+                                transform: `translateY(${virtualRow.start}px)`,
+                            }}
+                            className="hover:bg-blue-600/10 cursor-pointer transition-colors border-b border-slate-800/50"
+                        >
+                            {row.getVisibleCells().map((cell: any) => (
+                                <td key={cell.id} className="p-2.5 font-mono text-slate-200 flex-1 truncate">
+                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                </td>
+                            ))}
+                        </tr>
+                    );
+                })}
             </tbody>
         </table>
     );
@@ -293,7 +337,7 @@ export const ResultsTable: FC = () => {
             </div>
 
             {/* Table Area */}
-            <div className="flex-1 overflow-auto custom-scrollbar bg-slate-900">
+            <div ref={parentRef} className="flex-1 overflow-auto custom-scrollbar bg-slate-900">
                 {activeTab === 'displacements' && renderTable(displacementTable)}
                 {activeTab === 'reactions' && renderTable(reactionTable)}
                 {activeTab === 'forces' && renderTable(forceTable)}

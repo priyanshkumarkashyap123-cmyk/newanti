@@ -1,124 +1,27 @@
-version: '3.9'
-
-# ============================================
-# BeamLab Ultimate - Production Ready Stack
-# ============================================
-# Frontend: http://localhost:5173
-# API Gateway (Node): http://localhost:3001
-# Python Engine: http://localhost:3002
-# Rust Engine (High Perf): http://localhost:3003
-# Monitor: http://localhost:8080 (Adminer)
+version: '3.8'
 
 services:
-  # ============================================
-  # Frontend - React + Vite
-  # ============================================
-  frontend:
-    container_name: beamlab-frontend
+  backend-python:
     build:
-      context: ./apps/web
+      context: ./apps/backend-python
       dockerfile: Dockerfile
     ports:
-      - "5173:5173"
+      - "8000:8000"
     environment:
-      - VITE_API_URL=http://localhost:3001 // Browser accesses via localhost
-      - VITE_PYTHON_API_URL=http://localhost:3002
-      - VITE_RUST_API_URL=http://localhost:3003
-      - VITE_APP_NAME=BeamLab Ultimate
+      - USE_MOCK_AI=true
     volumes:
-      - ./apps/web/src:/app/src
-      - ./apps/web/public:/app/public
-    depends_on:
-      - api
-      - python-api
-      - rust-api
-    networks:
-      - beamlab-net
+      - ./apps/backend-python:/app
+    restart: always
 
-  # ============================================
-  # Node.js API (Auth, Projects)
-  # ============================================
-  api:
-    container_name: beamlab-node-api
+  api-node:
     build:
       context: ./apps/api
       dockerfile: Dockerfile
     ports:
       - "3001:3001"
     environment:
-      - PORT=3001
       - NODE_ENV=development
-      - MONGODB_URI=mongodb://mongo:27017/beamlab-ultimate
-      - PYTHON_API_URL=http://python-api:3002 // Internal docker networking
-      - RUST_API_URL=http://rust-api:3003
+      - PORT=3001
     depends_on:
-      - mongo
-    networks:
-      - beamlab-net
-
-  # ============================================
-  # Python API (AI, Design Codes)
-  # ============================================
-  python-api:
-    container_name: beamlab-python-api
-    build:
-      context: ./apps/backend-python
-      dockerfile: Dockerfile
-    ports:
-      - "3002:3002"
-    environment:
-      - PORT=3002
-      - MONGODB_URI=mongodb://mongo:27017/beamlab-ultimate
-    depends_on:
-      - mongo
-    networks:
-      - beamlab-net
-
-  # ============================================
-  # Rust API (Solver, Dynamics)
-  # ============================================
-  rust-api:
-    container_name: beamlab-rust-api
-    build:
-      context: ./apps/rust-api
-      dockerfile: Dockerfile
-    ports:
-      - "3003:3003"
-    environment:
-      - PORT=3003
-      - MONGODB_URI=mongodb://mongo:27017/beamlab-ultimate
-      - RUST_LOG=info
-    depends_on:
-      - mongo
-    networks:
-      - beamlab-net
-
-  # ============================================
-  # Infrastructure (DB, Cache)
-  # ============================================
-  mongo:
-    container_name: beamlab-mongo
-    image: mongo:latest
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-    networks:
-      - beamlab-net
-
-  adminer:
-    container_name: beamlab-adminer
-    image: adminer
-    ports:
-      - "8080:8080"
-    environment:
-      - ADMINER_DEFAULT_SERVER=mongo
-    networks:
-      - beamlab-net
-
-volumes:
-  mongo_data:
-
-networks:
-  beamlab-net:
-    driver: bridge
+      - backend-python
+    restart: always

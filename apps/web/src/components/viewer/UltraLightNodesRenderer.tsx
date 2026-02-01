@@ -201,7 +201,7 @@ export const UltraLightNodesRenderer: React.FC = React.memo(() => {
         const indexMap = new Map<number, string>();
         
         let currentIndex = 0;
-        let colorArray: Float32Array | null = config.enablePerInstanceColor
+        const colorArray: Float32Array | null = config.enablePerInstanceColor
             ? new Float32Array(toRender * 3)
             : null;
         

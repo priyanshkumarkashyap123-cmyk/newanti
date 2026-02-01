@@ -1,6 +1,6 @@
 
 import express, { Request, Response, Router } from 'express';
-import { requireAuth, getAuth } from '@clerk/express';
+import { requireAuth, getAuth } from '../middleware/authMiddleware.js';
 import { Project, User, IUser } from '../models.js';
 import mongoose from 'mongoose';
 

@@ -24,6 +24,9 @@ from models import (
 )
 from factory import StructuralFactory
 from ai_routes import router as ai_router
+from analysis.report_generator import ReportGenerator, ReportSettings
+import base64
+
 
 
 # ============================================
@@ -173,9 +176,22 @@ try:
 except ImportError as e:
     print(f"[STARTUP] PINN solver not available (install jax): {e}")
 
-# ============================================
-# MESHING ENDPOINTS
-# ============================================
+    print(f"[STARTUP] PINN solver not available (install jax): {e}")
+
+# Project Persistence Routes (Phase 3)
+from project_routes import router as project_router
+app.include_router(project_router, prefix="/projects", tags=["Projects"])
+print("[STARTUP] Project routes registered at /projects/*")
+
+# Real-time Collaboration Routes (Phase 4.2)
+from ws_routes import router as ws_router
+app.include_router(ws_router, tags=["Collaboration"])
+print("[STARTUP] WebSocket routes registered at /ws/*")
+
+# Database Persistence Routes (Critical Analysis Fix)
+from db_routes import router as db_router
+app.include_router(db_router, prefix="/db", tags=["Database"])
+print("[STARTUP] Database routes registered at /db/*")
 
 class MeshPlateRequest(BaseModel):
     corners: List[Dict[str, float]]  # [{x, y, z}, ...]
@@ -785,6 +801,79 @@ async def generate_template(
 
 @app.post("/generate/continuous-beam", response_model=GenerateResponse, tags=["Generation"])
 async def generate_continuous_beam(request: ContinuousBeamRequest):
+    """
+    Generate a continuous beam model.
+    """
+    try:
+        model = StructuralFactory.generate_continuous_beam(
+            spans=request.spans,
+            intermediate_nodes=request.intermediate_nodes
+        )
+        return GenerateResponse(success=True, model=model)
+    except Exception as e:
+        return GenerateResponse(success=False, error=str(e))
+
+
+# ============================================
+# REPORT GENERATION ENDPOINT
+# ============================================
+
+class ReportRequest(BaseModel):
+    settings: Dict[str, Any]
+    analysis_data: Dict[str, Any]
+
+@app.post("/reports/generate", tags=["Reports"])
+async def generate_report_endpoint(request: ReportRequest):
+    """
+    Generate professional PDF report using ReportLab.
+    Returns base64 encoded PDF string.
+    """
+    try:
+        import tempfile
+        import os
+        
+        # Create settings
+        settings_dict = request.settings
+        settings = ReportSettings(
+            company_name=settings_dict.get('company_name', 'BeamLab Ultimate'),
+            project_name=settings_dict.get('project_name', 'Structural Analysis'),
+            engineer_name=settings_dict.get('engineer_name', ''),
+            job_number=settings_dict.get('job_number', '')  # Note: report_generator uses project_number, let's fix in adapter if needed
+        )
+        
+        # Override any other settings
+        for k, v in settings_dict.items():
+            if hasattr(settings, k):
+                setattr(settings, k, v)
+        
+        # Initialize generator
+        generator = ReportGenerator(settings)
+        
+        # Generate to temp file
+        with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp:
+            output_path = tmp.name
+            
+        generator.generate_report(request.analysis_data, output_path)
+        
+        # Read back as base64
+        with open(output_path, "rb") as f:
+            pdf_bytes = f.read()
+            pdf_base64 = base64.b64encode(pdf_bytes).decode('utf-8')
+            
+        # Cleanup
+        os.unlink(output_path)
+        
+        return {
+            "success": True,
+            "pdf_base64": pdf_base64,
+            "filename": f"{settings.project_name.replace(' ', '_')}_Report.pdf"
+        }
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
     """Generate a continuous beam with multiple spans."""
     try:
         model = StructuralFactory.generate_continuous_beam(

@@ -1,0 +1,29 @@
+{
+  "meta": {
+    "domain": "seismic",
+    "name": "base_shear_asce7_regular",
+    "code": "ASCE7-16",
+    "clause": "Eq. 12.8-1 and Table 12.2-1 (R, Cd, Ω0)",
+    "units": "SI"
+  },
+  "input": {
+    "seismicWeight_kN": 12000,
+    "Ss_g": 1.0,
+    "S1_g": 0.4,
+    "siteClass": "D",
+    "riskCategory": "II",
+    "structuralSystem": "moment-frame",
+    "ductility": "special",
+    "importanceFactor": 1.0,
+    "R": 8.0,
+    "period_T_sec": 1.0,
+    "approx_Ta_sec": 0.9
+  },
+  "expected": {
+    "Cs": 0.184, 
+    "baseShear_kN": 2208
+  },
+  "tolerance": {
+    "rel": { "Cs": 0.02, "baseShear_kN": 0.02 }
+  }
+}

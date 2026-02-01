@@ -22,6 +22,7 @@ import {
   BarCoating,
   ExposureCondition,
   MemberType,
+  SeismicCategory,
   ConcreteProperties,
   RebarProperties,
   DevelopmentLengthInput,
@@ -123,7 +124,7 @@ class ACI318DevelopmentCalculator {
     const ldc1 = (0.02 * fy / (sqrtFc)) * db;
     const ldc2 = 0.0003 * fy * db;
     
-    let ldc = Math.max(ldc1, ldc2, 8);
+    const ldc = Math.max(ldc1, ldc2, 8);
     
     return {
       ldc,
@@ -155,10 +156,10 @@ class ACI318DevelopmentCalculator {
     const psi_e = isEpoxyCoated ? 1.2 : 1.0;
     
     // ψ_c - Cover factor
-    const psi_c = (cover >= 2.5 && hookType === HookType.HOOK_90) ? 0.7 : 1.0;
+    const psi_c = (cover >= 2.5 && hookType === HookType.STANDARD_90) ? 0.7 : 1.0;
     
     // ψ_o - Location factor for 180° hooks
-    const psi_o = (hookType === HookType.HOOK_180 && cover >= 2.5) ? 0.7 : 1.0;
+    const psi_o = (hookType === HookType.STANDARD_180 && cover >= 2.5) ? 0.7 : 1.0;
     
     // λ - Lightweight concrete factor
     const lambda = isLightweight ? 0.75 : 1.0;
@@ -177,13 +178,13 @@ class ACI318DevelopmentCalculator {
     let extension: number;
     
     switch (hookType) {
-      case HookType.HOOK_90:
+      case HookType.STANDARD_90:
         extension = 12 * db;
         break;
-      case HookType.HOOK_180:
+      case HookType.STANDARD_180:
         extension = 4 * db;
         break;
-      case HookType.HOOK_135_SEISMIC:
+      case HookType.STIRRUP_135:
         extension = 6 * db;
         break;
       default:
@@ -344,13 +345,13 @@ class EC2DevelopmentCalculator {
     
     let extension: number;
     switch (hookType) {
-      case HookType.HOOK_90:
+      case HookType.STANDARD_90:
         extension = Math.max(5 * db, 70);
         break;
-      case HookType.HOOK_180:
+      case HookType.STANDARD_180:
         extension = Math.max(3.5 * db, 50);
         break;
-      case HookType.HOOK_135_SEISMIC:
+      case HookType.STIRRUP_135:
         extension = Math.max(6 * db, 75);
         break;
       default:
@@ -424,10 +425,10 @@ class IS456DevelopmentCalculator {
     // Anchorage value of hooks per IS 456 Clause 26.2.2.1
     let anchorageValue: number;
     switch (hookType) {
-      case HookType.HOOK_90:
+      case HookType.STANDARD_90:
         anchorageValue = 8 * db;
         break;
-      case HookType.HOOK_180:
+      case HookType.STANDARD_180:
         anchorageValue = 16 * db;
         break;
       default:
@@ -443,9 +444,9 @@ class IS456DevelopmentCalculator {
     // Hook geometry per IS 456 Clause 26.2.2.1
     const bendRadius = db < 25 ? 2 * db : 3 * db;
     let extension: number;
-    if (hookType === HookType.HOOK_90) {
+    if (hookType === HookType.STANDARD_90) {
       extension = 12 * db;
-    } else if (hookType === HookType.HOOK_180) {
+    } else if (hookType === HookType.STANDARD_180) {
       extension = 4 * db;
     } else {
       extension = 8 * db;
@@ -478,7 +479,7 @@ export class DevelopmentLengthCalculator {
         return this.calculateACI(input);
       case ConcreteDesignCode.EUROCODE_2:
         return this.calculateEC2(input);
-      case ConcreteDesignCode.IS_456:
+      case ConcreteDesignCode.IS_456_2000:
         return this.calculateIS456(input);
       default:
         return this.calculateACI(input);
@@ -489,114 +490,109 @@ export class DevelopmentLengthCalculator {
    * Calculate development length per ACI 318-19
    */
   private calculateACI(input: DevelopmentLengthInput): DevelopmentLengthResult {
-    const isMetric = input.barDiameter > 2; // > 2 means metric mm
+    const db = input.bar.diameter;
+    const isMetric = db > 2; // > 2 means metric mm
     
     // Convert to US units if needed
-    let fc: number, fy: number, db: number, cover: number, spacing: number;
+    let fc: number, fy: number, cover: number, spacing: number, dbInches: number;
     
     if (isMetric) {
-      fc = input.concrete.fc * 145.038; // MPa to psi
-      fy = input.rebar.fy * 145.038;
-      db = input.barDiameter / 25.4; // mm to inches
-      cover = input.clearCover / 25.4;
-      spacing = input.barSpacing / 25.4;
+      fc = input.concrete.compressiveStrength * 145.038; // MPa to psi
+      fy = input.bar.yieldStrength * 145.038;
+      dbInches = db / 25.4; // mm to inches
+      cover = input.cover / 25.4;
+      spacing = input.clearSpacing / 25.4;
     } else {
-      fc = input.concrete.fc;
-      fy = input.rebar.fy;
-      db = input.barDiameter;
-      cover = input.clearCover;
-      spacing = input.barSpacing;
+      fc = input.concrete.compressiveStrength;
+      fy = input.bar.yieldStrength;
+      dbInches = db;
+      cover = input.cover;
+      spacing = input.clearSpacing;
     }
     
     const isEpoxyCoated = input.coating === BarCoating.EPOXY_COATED;
-    const isLightweight = input.concrete.fc < 4000 && false; // Assume normal weight
+    const isLightweight = input.lightweightFactor !== undefined && input.lightweightFactor < 1;
+    const isTopBar = input.barLocation === 'TOP';
     
-    let result: DevelopmentLengthResult;
-    
-    if (input.developmentType === 'tension') {
+    if (input.stressType === 'TENSION') {
       const tensionResult = this.aciCalc.calculateTensionDevelopment(
-        fc, fy, db, cover, spacing,
-        input.isTopBar || false,
+        fc, fy, dbInches, cover, spacing,
+        isTopBar,
         isEpoxyCoated,
-        isLightweight
+        isLightweight,
+        input.transverseIndex || 0,
+        input.isConfined || false
       );
       
       const ld = isMetric ? tensionResult.ld * 25.4 : tensionResult.ld;
       
-      result = {
-        designCode: input.designCode,
-        developmentType: 'tension',
-        barSize: input.barSize,
-        barDiameter: input.barDiameter,
-        straightDevelopment: ld,
-        modificationFactors: tensionResult.factors,
-        equation: tensionResult.equation
+      const result: DevelopmentLengthResult = {
+        basicLength: ld,
+        modifiedLength: ld,
+        minimumLength: Math.max(ld, isMetric ? 300 : 12),
+        requiredLength: ld,
+        factors: Object.entries(tensionResult.factors).map(([name, value]) => ({
+          name,
+          symbol: name,
+          value: value as number,
+          description: `ACI factor ${name}`
+        })),
+        calculations: [],
+        codeReference: 'ACI 318-19 Section 25.4.2'
       };
       
       // Calculate hook development if requested
-      if (input.hookType) {
+      if (input.hookType && input.hookType !== HookType.NONE) {
         const hookResult = this.aciCalc.calculateHookDevelopment(
-          fc, fy, db, input.hookType,
-          cover, isEpoxyCoated, isLightweight
+          fc, fy, dbInches, input.hookType,
+          cover, isEpoxyCoated, isLightweight,
+          input.isConfined || false
         );
         
-        result.hookDevelopment = isMetric ? hookResult.ldh * 25.4 : hookResult.ldh;
-        result.hookGeometry = {
-          bendRadius: isMetric ? hookResult.hookGeometry.bendRadius * 25.4 : hookResult.hookGeometry.bendRadius,
-          extension: isMetric ? hookResult.hookGeometry.extension * 25.4 : hookResult.hookGeometry.extension,
-          hookType: input.hookType
+        const ldh = isMetric ? hookResult.ldh * 25.4 : hookResult.ldh;
+        const bendDiam = isMetric ? hookResult.hookGeometry.bendRadius * 2 * 25.4 : hookResult.hookGeometry.bendRadius * 2;
+        const extension = isMetric ? hookResult.hookGeometry.extension * 25.4 : hookResult.hookGeometry.extension;
+        
+        result.hookedLength = {
+          straightPortion: ldh,
+          hookExtension: extension,
+          insideBendDiameter: bendDiam,
+          totalLength: ldh + extension
         };
       }
       
-      // Calculate headed bar development if applicable
-      if (input.hookType === HookType.HEADED) {
-        const headedResult = this.aciCalc.calculateHeadedBarDevelopment(
-          fc, fy, db, cover, isEpoxyCoated, isLightweight
-        );
-        
-        result.headedDevelopment = isMetric ? headedResult.ldt * 25.4 : headedResult.ldt;
-        result.headedBarRequirements = {
-          minHeadArea: isMetric ? headedResult.minHeadArea * 645.16 : headedResult.minHeadArea
-        };
-      }
+      return result;
       
     } else {
       // Compression development
-      const compResult = this.aciCalc.calculateCompressionDevelopment(fc, fy, db);
+      const compResult = this.aciCalc.calculateCompressionDevelopment(fc, fy, dbInches);
       const ldc = isMetric ? compResult.ldc * 25.4 : compResult.ldc;
       
-      result = {
-        designCode: input.designCode,
-        developmentType: 'compression',
-        barSize: input.barSize,
-        barDiameter: input.barDiameter,
-        straightDevelopment: ldc,
-        equation: compResult.equation
+      const result: DevelopmentLengthResult = {
+        basicLength: ldc,
+        modifiedLength: ldc,
+        minimumLength: Math.max(ldc, isMetric ? 200 : 8),
+        requiredLength: ldc,
+        factors: [],
+        calculations: [],
+        codeReference: 'ACI 318-19 Section 25.4.9'
       };
+      
+      return result;
     }
-    
-    // Add minimum requirements and recommendations
-    result.minimumLength = Math.max(
-      result.straightDevelopment,
-      isMetric ? 300 : 12
-    );
-    
-    result.recommendations = this.generateRecommendations(input, result);
-    
-    return result;
   }
 
   /**
    * Calculate development length per Eurocode 2
    */
   private calculateEC2(input: DevelopmentLengthInput): DevelopmentLengthResult {
-    const fck = input.concrete.fc; // MPa
-    const fyk = input.rebar.fy; // MPa
-    const db = input.barDiameter; // mm
-    const cover = input.clearCover; // mm
-    const spacing = input.barSpacing; // mm
+    const fck = input.concrete.compressiveStrength; // MPa
+    const fyk = input.bar.yieldStrength; // MPa
+    const db = input.bar.diameter; // mm
+    const cover = input.cover; // mm
+    const spacing = input.clearSpacing; // mm
     
-    const bondCondition = input.isTopBar ? 'poor' : 'good';
+    const bondCondition = input.barLocation === 'TOP' ? 'poor' : 'good';
     
     // Calculate design anchorage length
     const anchorageResult = this.ec2Calc.calculateDesignAnchorageLength(
@@ -604,34 +600,38 @@ export class DevelopmentLengthCalculator {
       bondCondition,
       input.hookType ? 'hook' : 'straight',
       false,
-      input.AsRequired || 1,
-      input.AsProvided || 1
+      input.excessRebarFactor || 1,
+      1
     );
     
     const result: DevelopmentLengthResult = {
-      designCode: input.designCode,
-      developmentType: input.developmentType,
-      barSize: input.barSize,
-      barDiameter: db,
-      straightDevelopment: anchorageResult.lbd,
-      modificationFactors: anchorageResult.factors,
-      minimumLength: anchorageResult.lbMin
+      basicLength: anchorageResult.lbd,
+      modifiedLength: anchorageResult.lbd,
+      minimumLength: anchorageResult.lbMin,
+      requiredLength: anchorageResult.lbd,
+      factors: Object.entries(anchorageResult.factors || {}).map(([name, value]) => ({
+        name,
+        symbol: name,
+        value: value as number,
+        description: `EC2 factor ${name}`
+      })),
+      calculations: [],
+      codeReference: 'EN 1992-1-1 Section 8.4'
     };
     
     // Add hook geometry if applicable
-    if (input.hookType && input.hookType !== HookType.HEADED) {
+    if (input.hookType && input.hookType !== HookType.HEADED && input.hookType !== HookType.NONE) {
       const hookGeom = this.ec2Calc.calculateHookGeometry(db, input.hookType);
-      result.hookGeometry = {
-        bendRadius: hookGeom.bendRadius,
-        extension: hookGeom.extension,
-        hookType: input.hookType
-      };
       
       // Hook reduces required length
-      result.hookDevelopment = anchorageResult.lbd * 0.7;
+      const hookLength = anchorageResult.lbd * 0.7;
+      result.hookedLength = {
+        straightPortion: hookLength,
+        hookExtension: hookGeom.extension,
+        insideBendDiameter: hookGeom.bendRadius * 2,
+        totalLength: hookLength + hookGeom.extension
+      };
     }
-    
-    result.recommendations = this.generateRecommendations(input, result);
     
     return result;
   }
@@ -640,40 +640,46 @@ export class DevelopmentLengthCalculator {
    * Calculate development length per IS 456
    */
   private calculateIS456(input: DevelopmentLengthInput): DevelopmentLengthResult {
-    const fck = input.concrete.fc; // MPa
-    const fy = input.rebar.fy; // MPa
-    const db = input.barDiameter; // mm
+    const fck = input.concrete.compressiveStrength; // MPa
+    const fy = input.bar.yieldStrength; // MPa
+    const db = input.bar.diameter; // mm
+    
+    const stressType = input.stressType === 'TENSION' ? 'tension' : 'compression';
     
     const devResult = this.is456Calc.calculateDevelopmentLength(
-      fck, fy, db, 'deformed', input.developmentType
+      fck, fy, db, 'deformed', stressType
     );
     
     const result: DevelopmentLengthResult = {
-      designCode: input.designCode,
-      developmentType: input.developmentType,
-      barSize: input.barSize,
-      barDiameter: db,
-      straightDevelopment: devResult.Ld,
-      equation: devResult.equation,
-      modificationFactors: { tau_bd: devResult.tau_bd }
+      basicLength: devResult.Ld,
+      modifiedLength: devResult.Ld,
+      minimumLength: Math.max(devResult.Ld, 12 * db),
+      requiredLength: devResult.Ld,
+      factors: [
+        {
+          name: 'tau_bd',
+          symbol: 'τ_bd',
+          value: devResult.tau_bd,
+          description: 'Design bond stress'
+        }
+      ],
+      calculations: [],
+      codeReference: 'IS 456:2000 Clause 26.2.1'
     };
     
     // Add hook development if applicable
-    if (input.hookType && input.hookType !== HookType.HEADED) {
+    if (input.hookType && input.hookType !== HookType.HEADED && input.hookType !== HookType.NONE) {
       const hookResult = this.is456Calc.calculateHookDevelopment(
         fck, fy, db, input.hookType
       );
       
-      result.hookDevelopment = hookResult.Lhook;
-      result.hookGeometry = {
-        bendRadius: hookResult.hookGeometry.bendRadius,
-        extension: hookResult.hookGeometry.extension,
-        hookType: input.hookType
+      result.hookedLength = {
+        straightPortion: hookResult.Lhook,
+        hookExtension: hookResult.hookGeometry.extension,
+        insideBendDiameter: hookResult.hookGeometry.bendRadius * 2,
+        totalLength: hookResult.Lhook + hookResult.hookGeometry.extension
       };
     }
-    
-    result.minimumLength = Math.max(devResult.Ld, 12 * db);
-    result.recommendations = this.generateRecommendations(input, result);
     
     return result;
   }
@@ -686,19 +692,20 @@ export class DevelopmentLengthCalculator {
     result: DevelopmentLengthResult
   ): string[] {
     const recommendations: string[] = [];
+    const db = input.bar.diameter;
     
     // Check if hook would reduce length significantly
-    if (!input.hookType && result.straightDevelopment > 40 * input.barDiameter) {
+    if (!input.hookType && result.requiredLength > 40 * db) {
       recommendations.push('Consider using standard hooks to reduce development length.');
     }
     
     // Check for large bars
-    if (input.barDiameter >= 32 || (input.barDiameter >= 1.27 && input.barDiameter <= 2)) {
+    if (db >= 32 || (db >= 1.27 && db <= 2)) {
       recommendations.push('Large bar size may require increased concrete cover and spacing.');
     }
     
     // Top bar factor
-    if (input.isTopBar) {
+    if (input.barLocation === 'TOP') {
       recommendations.push('Top bar factor applied - ensure proper concrete consolidation.');
     }
     
@@ -708,7 +715,7 @@ export class DevelopmentLengthCalculator {
     }
     
     // Headed bars for congested areas
-    if (result.straightDevelopment > 600 && !input.hookType) {
+    if (result.requiredLength > 600 && !input.hookType) {
       recommendations.push('Consider headed bars for congested reinforcement areas.');
     }
     
@@ -747,56 +754,66 @@ export class DevelopmentLengthCalculator {
     const isMetric = designCode !== ConcreteDesignCode.ACI_318_19 && 
                      designCode !== ConcreteDesignCode.ACI_318_14;
     
-    const barSizes = isMetric 
-      ? Object.values(MetricBarSize).filter(v => typeof v === 'string')
-      : Object.values(USBarSize).filter(v => typeof v === 'string');
-    
     const barData = isMetric ? METRIC_BAR_DATA : US_BAR_DATA;
     
-    for (const size of barSizes) {
-      const data = barData[size as keyof typeof barData];
-      if (!data) continue;
+    for (const data of barData) {
+      const diameter = isMetric ? data.diameter_mm : data.diameter_in;
       
-      const input: DevelopmentLengthInput = {
+      const baseInput: DevelopmentLengthInput = {
         designCode,
-        developmentType: 'tension',
-        barSize: size as string,
-        barDiameter: data.diameter,
-        concrete: { fc, lambda: 1.0 } as ConcreteProperties,
-        rebar: { fy, fu: fy * 1.25 } as RebarProperties,
-        clearCover: cover,
-        barSpacing: 3 * data.diameter,
-        isTopBar: false,
-        coating: BarCoating.UNCOATED
+        bar: {
+          size: data.size,
+          diameter: diameter,
+          area: isMetric ? data.area_mm2 : data.area_in2,
+          perimeter: data.perimeter_mm,
+          unitWeight: isMetric ? data.weight_kg_m : data.weight_lb_ft,
+          grade: RebarGrade.GRADE_60,
+          yieldStrength: fy,
+          ultimateStrength: fy * 1.25,
+          elasticModulus: 200000,
+          coating: BarCoating.UNCOATED
+        },
+        concrete: {
+          compressiveStrength: fc,
+          grade: `C${fc}`,
+          elasticModulus: 4700 * Math.sqrt(fc),
+          tensileStrength: 0.62 * Math.sqrt(fc),
+          density: 2400,
+          aggregateType: 'NORMAL',
+          maxAggregateSize: 20,
+          unitSystem: isMetric ? 'SI' : 'IMPERIAL'
+        },
+        barLocation: 'BOTTOM',
+        coating: BarCoating.UNCOATED,
+        cover: cover,
+        clearSpacing: 3 * diameter,
+        stressType: 'TENSION',
+        memberType: MemberType.BEAM
       };
       
       // Calculate tension development
-      const tensionResult = this.calculate(input);
+      const tensionResult = this.calculate(baseInput);
       
       // Calculate compression development
-      input.developmentType = 'compression';
-      const compResult = this.calculate(input);
+      const compInput = { ...baseInput, stressType: 'COMPRESSION' as const };
+      const compResult = this.calculate(compInput);
       
       // Calculate hook development
-      input.developmentType = 'tension';
-      input.hookType = HookType.HOOK_90;
-      const hookResult = this.calculate(input);
+      const hookInput = { ...baseInput, hookType: HookType.STANDARD_90 };
+      const hookResult = this.calculate(hookInput);
       
       schedule.push({
-        barSize: size as string,
-        diameter: data.diameter,
-        tensionLd: Math.ceil(tensionResult.straightDevelopment),
-        compressionLd: Math.ceil(compResult.straightDevelopment),
-        hookLd: Math.ceil(hookResult.hookDevelopment || tensionResult.straightDevelopment * 0.7)
+        barSize: data.size,
+        diameter: diameter,
+        tensionLd: Math.ceil(tensionResult.requiredLength),
+        compressionLd: Math.ceil(compResult.requiredLength),
+        hookLd: Math.ceil(hookResult.hookedLength?.totalLength || tensionResult.requiredLength * 0.7)
       });
     }
     
     return schedule;
   }
 }
-
-// Need to import SeismicCategory for recommendations
-import { SeismicCategory } from '../types/ReinforcementTypes';
 
 // Export singleton instance
 export const developmentLengthCalculator = new DevelopmentLengthCalculator();

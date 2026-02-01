@@ -10,6 +10,15 @@
  */
 
 // ============================================
+// AI SERVICE INTEGRATIONS
+// ============================================
+
+import { aiValidation, AccuracyMetrics } from './AIValidationService';
+import { auditTrail, AuditEntry } from './AuditTrailService';
+import { codeCompliance, IS800Checker, SteelSection, SteelMaterial, MemberForces, ComplianceReport } from './CodeComplianceEngine';
+import { connectionDesign, ConnectionDesign, ConnectionForces } from './ConnectionDesignService';
+
+// ============================================
 // TYPES
 // ============================================
 
@@ -327,9 +336,9 @@ Remember: You're their structural engineering partner - knowledgeable, helpful, 
 
 const CONVERSATIONAL_PROMPTS = {
   greeting: `The user is greeting you or making casual conversation. Respond warmly and ask how you can help with their structural engineering project.`,
-  
+
   unclear: `The user's request is unclear. Ask a friendly clarifying question to better understand what they need help with.`,
-  
+
   problemSolving: (problem: string, context: AIModelContext) => `
 The user is experiencing an issue: "${problem}"
 
@@ -495,7 +504,7 @@ class GeminiAIService {
   private conversationHistory: AIConversation[] = [];
   private listeners: Set<(event: string, data: any) => void> = new Set();
   private isProcessing: boolean = false;
-  
+
   // ============================================
   // ENHANCED ARCHITECTURE FOR POWERFUL AI
   // ============================================
@@ -505,10 +514,177 @@ class GeminiAIService {
   private maxContextLength: number = 15; // Keep last 15 messages
   private lastModelState: AIModelContext | null = null;
 
+  // ============================================
+  // 🚀 POWER AI ENHANCEMENTS (C-Suite Approved)
+  // ============================================
+  private expertMode: 'assistant' | 'expert' | 'mentor' = 'assistant';
+  private performanceMetrics: {
+    totalQueries: number;
+    successfulQueries: number;
+    avgResponseTime: number;
+    codeReferencesUsed: number;
+  } = {
+    totalQueries: 0,
+    successfulQueries: 0,
+    avgResponseTime: 0,
+    codeReferencesUsed: 0
+  };
+
   constructor() {
     // Try to get API key from environment or localStorage
     this.apiKey = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('gemini_api_key');
-    console.log('[GeminiAI] Service initialized, API key status:', this.apiKey ? 'Found' : 'Not found');
+    console.log('[GeminiAI] 🚀 Power AI Service initialized, API key status:', this.apiKey ? 'Found' : 'Not found');
+  }
+
+  // ============================================
+  // 🚀 POWER AI METHODS
+  // ============================================
+
+  /**
+   * Set expert mode for response formatting
+   */
+  setExpertMode(mode: 'assistant' | 'expert' | 'mentor'): void {
+    this.expertMode = mode;
+    console.log('[GeminiAI] Expert mode set to:', mode);
+  }
+
+  /**
+   * Get current expert mode
+   */
+  getExpertMode(): 'assistant' | 'expert' | 'mentor' {
+    return this.expertMode;
+  }
+
+  /**
+   * Calculate confidence score for a response
+   */
+  calculateConfidenceScore(query: string, response: string, context: AIModelContext): {
+    overall: number;
+    codeCompliance: number;
+    engineeringLogic: number;
+    calculationAccuracy: number;
+    contextRelevance: number;
+  } {
+    let codeCompliance = 40;
+    let engineeringLogic = 40;
+    let calculationAccuracy = 40;
+    let contextRelevance = 40;
+
+    // Code Compliance - Check for code references
+    if (/IS\s*800/i.test(response)) codeCompliance += 20;
+    if (/IS\s*456/i.test(response)) codeCompliance += 15;
+    if (/IS\s*1893/i.test(response)) codeCompliance += 15;
+    if (/IS\s*875/i.test(response)) codeCompliance += 10;
+    if (/AISC|Eurocode|EN\s*\d+/i.test(response)) codeCompliance += 10;
+    if (/clause|section|table/i.test(response)) codeCompliance += 10;
+
+    // Engineering Logic - Check for formulas and reasoning
+    if (/[M|V|P|σ|τ]\s*[=<>]/.test(response)) engineeringLogic += 15;
+    if (/(kN|MPa|mm|N\/mm²|kNm)/.test(response)) engineeringLogic += 10;
+    if (/(γ|factor of safety|FOS|capacity|demand)/i.test(response)) engineeringLogic += 10;
+    if (/(ultimate|serviceability|SLS|ULS)/i.test(response)) engineeringLogic += 10;
+    if (/(step|first|then|therefore|because)/i.test(response)) engineeringLogic += 15;
+
+    // Calculation Accuracy - Check for numerical work
+    if (/\d+\s*[×*/+\-]\s*\d+/.test(response)) calculationAccuracy += 15;
+    if (/=\s*\d+/.test(response)) calculationAccuracy += 10;
+    if (/(ratio|limit|check)/i.test(response)) calculationAccuracy += 10;
+    if (/(OK|PASS|SAFE|adequate)/i.test(response)) calculationAccuracy += 15;
+
+    // Context Relevance - Check model awareness
+    if (context.nodes.length > 0 && /current|your|this.*model/i.test(response)) contextRelevance += 20;
+    if (context.analysisResults && /(result|stress|deflection|moment)/i.test(response)) contextRelevance += 15;
+    if (/\d+\s*nodes?|\d+\s*members?/i.test(response)) contextRelevance += 15;
+
+    // Cap scores at 100
+    codeCompliance = Math.min(codeCompliance, 100);
+    engineeringLogic = Math.min(engineeringLogic, 100);
+    calculationAccuracy = Math.min(calculationAccuracy, 100);
+    contextRelevance = Math.min(contextRelevance, 100);
+
+    // Calculate overall with weights
+    const overall = Math.round(
+      codeCompliance * 0.3 +
+      engineeringLogic * 0.3 +
+      calculationAccuracy * 0.25 +
+      contextRelevance * 0.15
+    );
+
+    return {
+      overall,
+      codeCompliance,
+      engineeringLogic,
+      calculationAccuracy,
+      contextRelevance
+    };
+  }
+
+  /**
+   * Get enhanced response with expert mode formatting
+   */
+  formatForExpertMode(response: string): string {
+    switch (this.expertMode) {
+      case 'expert':
+        // Concise - extract key points only
+        return this.extractKeyPoints(response);
+      case 'mentor':
+        // Add educational content
+        return response + this.addMentorNotes(response);
+      default:
+        // Full response
+        return response;
+    }
+  }
+
+  private extractKeyPoints(response: string): string {
+    const lines = response.split('\n');
+    const keyLines = lines.filter(line =>
+      line.trim().startsWith('-') ||
+      line.trim().startsWith('•') ||
+      line.includes('=') ||
+      /^\d+\./.test(line.trim()) ||
+      line.includes('kN') ||
+      line.includes('MPa') ||
+      line.includes('mm')
+    );
+    return keyLines.length > 0 ? keyLines.join('\n') : response.substring(0, 500);
+  }
+
+  private addMentorNotes(response: string): string {
+    const notes: string[] = [];
+
+    // Add learning notes based on content
+    if (/bending|moment/i.test(response)) {
+      notes.push('\n\n💡 **Learning Note:** Bending moment is the internal reaction of a beam to an applied load. Study IS 800 Clause 8 for detailed design procedures.');
+    }
+    if (/buckling/i.test(response)) {
+      notes.push('\n\n💡 **Learning Note:** Buckling is a stability failure mode. Review Euler\'s formula and IS 800 Section 9 for compression member design.');
+    }
+    if (/seismic|earthquake/i.test(response)) {
+      notes.push('\n\n💡 **Learning Note:** Seismic design requires understanding IS 1893 response spectrum method. Consider reviewing the zone factors and R values.');
+    }
+
+    return notes.join('');
+  }
+
+  /**
+   * Get performance metrics
+   */
+  getPerformanceMetrics(): typeof this.performanceMetrics {
+    return { ...this.performanceMetrics };
+  }
+
+  /**
+   * Record query for analytics
+   */
+  recordQueryMetrics(responseTime: number, wasSuccessful: boolean): void {
+    this.performanceMetrics.totalQueries++;
+    if (wasSuccessful) this.performanceMetrics.successfulQueries++;
+    
+    // Update average response time
+    this.performanceMetrics.avgResponseTime = 
+      (this.performanceMetrics.avgResponseTime * (this.performanceMetrics.totalQueries - 1) + responseTime) /
+      this.performanceMetrics.totalQueries;
   }
 
   // ============================================
@@ -522,6 +698,41 @@ class GeminiAIService {
 
   hasApiKey(): boolean {
     return !!this.apiKey;
+  }
+
+  /**
+   * Parse a structural command from voice/text input
+   */
+  async parseStructuralCommand(transcript: string): Promise<{ action: string; target: string; parameters: Record<string, any> } | null> {
+    // Simple pattern-based parsing for common commands
+    const lower = transcript.toLowerCase();
+    
+    // Add patterns
+    if (lower.includes('add') || lower.includes('create')) {
+      if (lower.includes('node') || lower.includes('point')) {
+        return { action: 'add', target: 'node', parameters: {} };
+      }
+      if (lower.includes('member') || lower.includes('beam') || lower.includes('column')) {
+        return { action: 'add', target: 'member', parameters: {} };
+      }
+      if (lower.includes('load') || lower.includes('force')) {
+        return { action: 'add', target: 'load', parameters: {} };
+      }
+    }
+    
+    // Remove/delete patterns
+    if (lower.includes('remove') || lower.includes('delete')) {
+      if (lower.includes('node')) return { action: 'remove', target: 'node', parameters: {} };
+      if (lower.includes('member')) return { action: 'remove', target: 'member', parameters: {} };
+      if (lower.includes('load')) return { action: 'remove', target: 'load', parameters: {} };
+    }
+    
+    // Analyze patterns
+    if (lower.includes('analyze') || lower.includes('run analysis')) {
+      return { action: 'analyze', target: 'model', parameters: {} };
+    }
+    
+    return null;
   }
 
   setModel(model: string): void {
@@ -593,7 +804,7 @@ Be specific and actionable.`;
       const maxX = Math.max(...xCoords);
       const minY = Math.min(...yCoords);
       const maxY = Math.max(...yCoords);
-      
+
       context += `CURRENT MODEL GEOMETRY:\n`;
       context += `- Bounding box: X[${minX.toFixed(1)}, ${maxX.toFixed(1)}], Y[${minY.toFixed(1)}, ${maxY.toFixed(1)}]\n`;
       context += `- ${modelContext.nodes.length} nodes, ${modelContext.nodes.filter(n => n.hasSupport).length} supported\n`;
@@ -871,7 +1082,7 @@ Provide detailed reasoning with formulas shown.`;
 
     // Greetings and casual conversation
     if (q.match(/^(hi|hello|hey|good morning|good afternoon|good evening|howdy|greetings)/i) ||
-        q.match(/^(how are you|how's it going|what's up|whats up)/i)) {
+      q.match(/^(how are you|how's it going|what's up|whats up)/i)) {
       return 'greeting';
     }
 
@@ -882,7 +1093,7 @@ Provide detailed reasoning with formulas shown.`;
 
     // Help requests
     if (q.match(/^(help|what can you do|capabilities|features)/i) ||
-        q === '?' || q === 'help me') {
+      q === '?' || q === 'help me') {
       return 'help';
     }
 
@@ -892,26 +1103,26 @@ Provide detailed reasoning with formulas shown.`;
     }
 
     // Model review/check
-    if (q.match(/review|check my|look at|inspect|evaluate|assess/i) && 
-        q.match(/model|structure|design|work/i)) {
+    if (q.match(/review|check my|look at|inspect|evaluate|assess/i) &&
+      q.match(/model|structure|design|work/i)) {
       return 'review_model';
     }
 
     // Structure creation patterns
     if (q.match(/create|build|make|generate|design|model|draw|add|new/i) &&
-        q.match(/frame|truss|beam|column|building|structure|bridge|cantilever|portal|slab|foundation/i)) {
+      q.match(/frame|truss|beam|column|building|structure|bridge|cantilever|portal|slab|foundation/i)) {
       return 'create_structure';
     }
 
     // Analysis patterns
     if (q.match(/analyze|analysis|run|calculate|solve|compute/i) &&
-        !q.match(/how|what|why|explain/i)) {
+      !q.match(/how|what|why|explain/i)) {
       return 'run_analysis';
     }
 
     // Results interpretation
     if (q.match(/result|displacement|stress|moment|reaction|deflection|interpret|show me/i) &&
-        q.match(/result|analysis|output|value/i)) {
+      q.match(/result|analysis|output|value/i)) {
       return 'interpret_results';
     }
 
@@ -922,13 +1133,13 @@ Provide detailed reasoning with formulas shown.`;
 
     // Design check
     if (q.match(/check|verify|validate|code|compliance|safe|adequate|pass|fail/i) &&
-        q.match(/design|code|is 800|aisc|aci|standard|requirement/i)) {
+      q.match(/design|code|is 800|aisc|aci|standard|requirement/i)) {
       return 'design_check';
     }
 
     // Clear/reset model
     if (q.match(/clear|reset|delete|remove|start over|new model|fresh/i) &&
-        q.match(/model|all|everything|structure/i)) {
+      q.match(/model|all|everything|structure/i)) {
       return 'clear_model';
     }
 
@@ -952,7 +1163,7 @@ Provide detailed reasoning with formulas shown.`;
 
   async planStructureCreation(description: string, context: AIModelContext): Promise<AIPlan> {
     const prompt = TASK_PROMPTS.createStructure(description, context);
-    
+
     // First try using Gemini API for intelligent planning
     if (this.apiKey) {
       try {
@@ -986,7 +1197,7 @@ Provide detailed reasoning with formulas shown.`;
     'ULS_4': { name: '1.5(DL+EQ)', DL: 1.5, LL: 0, WL: 0, EQ: 1.5 },
     'ULS_5': { name: '1.2(DL+LL+EQ)', DL: 1.2, LL: 1.2, WL: 0, EQ: 1.2 },
     'ULS_6': { name: '0.9DL+1.5WL', DL: 0.9, LL: 0, WL: 1.5, EQ: 0 }, // Uplift check
-    
+
     // Serviceability Limit State (SLS) - Deflection
     'SLS_1': { name: '1.0(DL+LL)', DL: 1.0, LL: 1.0, WL: 0, EQ: 0 },
     'SLS_2': { name: '1.0(DL+0.8LL+0.8WL)', DL: 1.0, LL: 0.8, WL: 0.8, EQ: 0 },
@@ -1024,45 +1235,45 @@ Provide detailed reasoning with formulas shown.`;
     rxx: number;      // cm (radius of gyration)
     ryy: number;      // cm
   }> = {
-    // ISMB Sections (I-Sections, Medium Weight)
-    'ISMB 150': { depth: 150, width: 80, tw: 4.8, tf: 7.6, area: 19.0, weight: 14.9, Ixx: 726, Iyy: 53, Zxx: 96.9, rxx: 6.18, ryy: 1.67 },
-    'ISMB 200': { depth: 200, width: 100, tw: 5.7, tf: 10.8, area: 32.3, weight: 25.4, Ixx: 2235, Iyy: 150, Zxx: 224, rxx: 8.32, ryy: 2.15 },
-    'ISMB 250': { depth: 250, width: 125, tw: 6.9, tf: 12.5, area: 47.1, weight: 37.3, Ixx: 5132, Iyy: 335, Zxx: 411, rxx: 10.4, ryy: 2.67 },
-    'ISMB 300': { depth: 300, width: 140, tw: 7.7, tf: 13.1, area: 58.9, weight: 46.2, Ixx: 8603, Iyy: 454, Zxx: 574, rxx: 12.1, ryy: 2.78 },
-    'ISMB 350': { depth: 350, width: 140, tw: 8.1, tf: 14.2, area: 66.7, weight: 52.4, Ixx: 13630, Iyy: 538, Zxx: 779, rxx: 14.3, ryy: 2.84 },
-    'ISMB 400': { depth: 400, width: 140, tw: 8.9, tf: 16.0, area: 78.5, weight: 61.6, Ixx: 20500, Iyy: 622, Zxx: 1022, rxx: 16.2, ryy: 2.82 },
-    'ISMB 450': { depth: 450, width: 150, tw: 9.4, tf: 17.4, area: 92.3, weight: 72.4, Ixx: 30390, Iyy: 834, Zxx: 1350, rxx: 18.1, ryy: 3.01 },
-    'ISMB 500': { depth: 500, width: 180, tw: 10.2, tf: 17.2, area: 110.7, weight: 86.9, Ixx: 45220, Iyy: 1370, Zxx: 1808, rxx: 20.2, ryy: 3.52 },
-    'ISMB 550': { depth: 550, width: 190, tw: 11.2, tf: 19.3, area: 132.1, weight: 103.7, Ixx: 64900, Iyy: 1830, Zxx: 2360, rxx: 22.2, ryy: 3.73 },
-    'ISMB 600': { depth: 600, width: 210, tw: 12.0, tf: 20.8, area: 156.2, weight: 122.6, Ixx: 91800, Iyy: 2650, Zxx: 3060, rxx: 24.2, ryy: 4.12 },
-    
-    // ISHB Sections (I-Sections, Heavy Weight - for Columns)
-    'ISHB 150': { depth: 150, width: 150, tw: 5.4, tf: 9.0, area: 34.5, weight: 27.1, Ixx: 1456, Iyy: 432, Zxx: 194, rxx: 6.50, ryy: 3.54 },
-    'ISHB 200': { depth: 200, width: 200, tw: 6.1, tf: 9.0, area: 47.5, weight: 37.3, Ixx: 3608, Iyy: 967, Zxx: 361, rxx: 8.72, ryy: 4.51 },
-    'ISHB 250': { depth: 250, width: 250, tw: 6.9, tf: 9.7, area: 65.0, weight: 51.0, Ixx: 7740, Iyy: 1961, Zxx: 619, rxx: 10.9, ryy: 5.49 },
-    'ISHB 300': { depth: 300, width: 250, tw: 7.6, tf: 10.6, area: 75.0, weight: 58.8, Ixx: 12550, Iyy: 2194, Zxx: 837, rxx: 12.9, ryy: 5.41 },
-    'ISHB 350': { depth: 350, width: 250, tw: 8.3, tf: 11.6, area: 85.6, weight: 67.4, Ixx: 19160, Iyy: 2451, Zxx: 1094, rxx: 15.0, ryy: 5.35 },
-    'ISHB 400': { depth: 400, width: 250, tw: 9.1, tf: 12.7, area: 97.8, weight: 76.8, Ixx: 28080, Iyy: 2728, Zxx: 1404, rxx: 16.9, ryy: 5.28 },
-    'ISHB 450': { depth: 450, width: 250, tw: 9.8, tf: 13.7, area: 109.7, weight: 86.1, Ixx: 39210, Iyy: 2987, Zxx: 1743, rxx: 18.9, ryy: 5.22 },
-    
-    // ISMC Sections (Channels - for Purlins, Truss Chords)
-    'ISMC 75': { depth: 75, width: 40, tw: 4.4, tf: 7.3, area: 8.7, weight: 6.8, Ixx: 76, Iyy: 12.5, Zxx: 20.2, rxx: 2.95, ryy: 1.20 },
-    'ISMC 100': { depth: 100, width: 50, tw: 5.0, tf: 7.7, area: 11.7, weight: 9.2, Ixx: 187, Iyy: 26.0, Zxx: 37.3, rxx: 4.00, ryy: 1.49 },
-    'ISMC 125': { depth: 125, width: 65, tw: 5.3, tf: 8.2, area: 16.2, weight: 12.7, Ixx: 416, Iyy: 60.0, Zxx: 66.5, rxx: 5.07, ryy: 1.92 },
-    'ISMC 150': { depth: 150, width: 75, tw: 5.7, tf: 9.0, area: 20.9, weight: 16.4, Ixx: 779, Iyy: 103, Zxx: 104, rxx: 6.11, ryy: 2.22 },
-    'ISMC 200': { depth: 200, width: 75, tw: 6.2, tf: 11.4, area: 28.2, weight: 22.1, Ixx: 1819, Iyy: 141, Zxx: 182, rxx: 8.03, ryy: 2.24 },
-    'ISMC 250': { depth: 250, width: 80, tw: 7.1, tf: 14.1, area: 39.0, weight: 30.6, Ixx: 3817, Iyy: 211, Zxx: 306, rxx: 9.89, ryy: 2.33 },
-    'ISMC 300': { depth: 300, width: 90, tw: 7.8, tf: 13.6, area: 46.3, weight: 36.3, Ixx: 6362, Iyy: 310, Zxx: 424, rxx: 11.7, ryy: 2.59 },
-    
-    // ISA Sections (Equal Angles - for Bracing, Truss Web Members)
-    'ISA 50x50x5': { depth: 50, width: 50, tw: 5, tf: 5, area: 4.8, weight: 3.8, Ixx: 11.0, Iyy: 11.0, Zxx: 3.1, rxx: 1.51, ryy: 1.51 },
-    'ISA 65x65x6': { depth: 65, width: 65, tw: 6, tf: 6, area: 7.4, weight: 5.8, Ixx: 28.2, Iyy: 28.2, Zxx: 6.1, rxx: 1.95, ryy: 1.95 },
-    'ISA 75x75x8': { depth: 75, width: 75, tw: 8, tf: 8, area: 11.4, weight: 8.9, Ixx: 59.3, Iyy: 59.3, Zxx: 11.1, rxx: 2.28, ryy: 2.28 },
-    'ISA 90x90x10': { depth: 90, width: 90, tw: 10, tf: 10, area: 17.0, weight: 13.4, Ixx: 127, Iyy: 127, Zxx: 19.8, rxx: 2.73, ryy: 2.73 },
-    'ISA 100x100x10': { depth: 100, width: 100, tw: 10, tf: 10, area: 19.0, weight: 14.9, Ixx: 177, Iyy: 177, Zxx: 24.9, rxx: 3.05, ryy: 3.05 },
-    'ISA 100x100x12': { depth: 100, width: 100, tw: 12, tf: 12, area: 22.6, weight: 17.7, Ixx: 207, Iyy: 207, Zxx: 29.3, rxx: 3.03, ryy: 3.03 },
-    'ISA 150x150x15': { depth: 150, width: 150, tw: 15, tf: 15, area: 43.0, weight: 33.8, Ixx: 699, Iyy: 699, Zxx: 66.4, rxx: 4.03, ryy: 4.03 },
-  };
+      // ISMB Sections (I-Sections, Medium Weight)
+      'ISMB 150': { depth: 150, width: 80, tw: 4.8, tf: 7.6, area: 19.0, weight: 14.9, Ixx: 726, Iyy: 53, Zxx: 96.9, rxx: 6.18, ryy: 1.67 },
+      'ISMB 200': { depth: 200, width: 100, tw: 5.7, tf: 10.8, area: 32.3, weight: 25.4, Ixx: 2235, Iyy: 150, Zxx: 224, rxx: 8.32, ryy: 2.15 },
+      'ISMB 250': { depth: 250, width: 125, tw: 6.9, tf: 12.5, area: 47.1, weight: 37.3, Ixx: 5132, Iyy: 335, Zxx: 411, rxx: 10.4, ryy: 2.67 },
+      'ISMB 300': { depth: 300, width: 140, tw: 7.7, tf: 13.1, area: 58.9, weight: 46.2, Ixx: 8603, Iyy: 454, Zxx: 574, rxx: 12.1, ryy: 2.78 },
+      'ISMB 350': { depth: 350, width: 140, tw: 8.1, tf: 14.2, area: 66.7, weight: 52.4, Ixx: 13630, Iyy: 538, Zxx: 779, rxx: 14.3, ryy: 2.84 },
+      'ISMB 400': { depth: 400, width: 140, tw: 8.9, tf: 16.0, area: 78.5, weight: 61.6, Ixx: 20500, Iyy: 622, Zxx: 1022, rxx: 16.2, ryy: 2.82 },
+      'ISMB 450': { depth: 450, width: 150, tw: 9.4, tf: 17.4, area: 92.3, weight: 72.4, Ixx: 30390, Iyy: 834, Zxx: 1350, rxx: 18.1, ryy: 3.01 },
+      'ISMB 500': { depth: 500, width: 180, tw: 10.2, tf: 17.2, area: 110.7, weight: 86.9, Ixx: 45220, Iyy: 1370, Zxx: 1808, rxx: 20.2, ryy: 3.52 },
+      'ISMB 550': { depth: 550, width: 190, tw: 11.2, tf: 19.3, area: 132.1, weight: 103.7, Ixx: 64900, Iyy: 1830, Zxx: 2360, rxx: 22.2, ryy: 3.73 },
+      'ISMB 600': { depth: 600, width: 210, tw: 12.0, tf: 20.8, area: 156.2, weight: 122.6, Ixx: 91800, Iyy: 2650, Zxx: 3060, rxx: 24.2, ryy: 4.12 },
+
+      // ISHB Sections (I-Sections, Heavy Weight - for Columns)
+      'ISHB 150': { depth: 150, width: 150, tw: 5.4, tf: 9.0, area: 34.5, weight: 27.1, Ixx: 1456, Iyy: 432, Zxx: 194, rxx: 6.50, ryy: 3.54 },
+      'ISHB 200': { depth: 200, width: 200, tw: 6.1, tf: 9.0, area: 47.5, weight: 37.3, Ixx: 3608, Iyy: 967, Zxx: 361, rxx: 8.72, ryy: 4.51 },
+      'ISHB 250': { depth: 250, width: 250, tw: 6.9, tf: 9.7, area: 65.0, weight: 51.0, Ixx: 7740, Iyy: 1961, Zxx: 619, rxx: 10.9, ryy: 5.49 },
+      'ISHB 300': { depth: 300, width: 250, tw: 7.6, tf: 10.6, area: 75.0, weight: 58.8, Ixx: 12550, Iyy: 2194, Zxx: 837, rxx: 12.9, ryy: 5.41 },
+      'ISHB 350': { depth: 350, width: 250, tw: 8.3, tf: 11.6, area: 85.6, weight: 67.4, Ixx: 19160, Iyy: 2451, Zxx: 1094, rxx: 15.0, ryy: 5.35 },
+      'ISHB 400': { depth: 400, width: 250, tw: 9.1, tf: 12.7, area: 97.8, weight: 76.8, Ixx: 28080, Iyy: 2728, Zxx: 1404, rxx: 16.9, ryy: 5.28 },
+      'ISHB 450': { depth: 450, width: 250, tw: 9.8, tf: 13.7, area: 109.7, weight: 86.1, Ixx: 39210, Iyy: 2987, Zxx: 1743, rxx: 18.9, ryy: 5.22 },
+
+      // ISMC Sections (Channels - for Purlins, Truss Chords)
+      'ISMC 75': { depth: 75, width: 40, tw: 4.4, tf: 7.3, area: 8.7, weight: 6.8, Ixx: 76, Iyy: 12.5, Zxx: 20.2, rxx: 2.95, ryy: 1.20 },
+      'ISMC 100': { depth: 100, width: 50, tw: 5.0, tf: 7.7, area: 11.7, weight: 9.2, Ixx: 187, Iyy: 26.0, Zxx: 37.3, rxx: 4.00, ryy: 1.49 },
+      'ISMC 125': { depth: 125, width: 65, tw: 5.3, tf: 8.2, area: 16.2, weight: 12.7, Ixx: 416, Iyy: 60.0, Zxx: 66.5, rxx: 5.07, ryy: 1.92 },
+      'ISMC 150': { depth: 150, width: 75, tw: 5.7, tf: 9.0, area: 20.9, weight: 16.4, Ixx: 779, Iyy: 103, Zxx: 104, rxx: 6.11, ryy: 2.22 },
+      'ISMC 200': { depth: 200, width: 75, tw: 6.2, tf: 11.4, area: 28.2, weight: 22.1, Ixx: 1819, Iyy: 141, Zxx: 182, rxx: 8.03, ryy: 2.24 },
+      'ISMC 250': { depth: 250, width: 80, tw: 7.1, tf: 14.1, area: 39.0, weight: 30.6, Ixx: 3817, Iyy: 211, Zxx: 306, rxx: 9.89, ryy: 2.33 },
+      'ISMC 300': { depth: 300, width: 90, tw: 7.8, tf: 13.6, area: 46.3, weight: 36.3, Ixx: 6362, Iyy: 310, Zxx: 424, rxx: 11.7, ryy: 2.59 },
+
+      // ISA Sections (Equal Angles - for Bracing, Truss Web Members)
+      'ISA 50x50x5': { depth: 50, width: 50, tw: 5, tf: 5, area: 4.8, weight: 3.8, Ixx: 11.0, Iyy: 11.0, Zxx: 3.1, rxx: 1.51, ryy: 1.51 },
+      'ISA 65x65x6': { depth: 65, width: 65, tw: 6, tf: 6, area: 7.4, weight: 5.8, Ixx: 28.2, Iyy: 28.2, Zxx: 6.1, rxx: 1.95, ryy: 1.95 },
+      'ISA 75x75x8': { depth: 75, width: 75, tw: 8, tf: 8, area: 11.4, weight: 8.9, Ixx: 59.3, Iyy: 59.3, Zxx: 11.1, rxx: 2.28, ryy: 2.28 },
+      'ISA 90x90x10': { depth: 90, width: 90, tw: 10, tf: 10, area: 17.0, weight: 13.4, Ixx: 127, Iyy: 127, Zxx: 19.8, rxx: 2.73, ryy: 2.73 },
+      'ISA 100x100x10': { depth: 100, width: 100, tw: 10, tf: 10, area: 19.0, weight: 14.9, Ixx: 177, Iyy: 177, Zxx: 24.9, rxx: 3.05, ryy: 3.05 },
+      'ISA 100x100x12': { depth: 100, width: 100, tw: 12, tf: 12, area: 22.6, weight: 17.7, Ixx: 207, Iyy: 207, Zxx: 29.3, rxx: 3.03, ryy: 3.03 },
+      'ISA 150x150x15': { depth: 150, width: 150, tw: 15, tf: 15, area: 43.0, weight: 33.8, Ixx: 699, Iyy: 699, Zxx: 66.4, rxx: 4.03, ryy: 4.03 },
+    };
 
   /**
    * Calculate realistic loads based on Indian Standards (IS 875)
@@ -1097,12 +1308,12 @@ Provide detailed reasoning with formulas shown.`;
     };
     description: string;
   } {
-    const { 
-      span, 
-      height = 4, 
-      bayWidth = 6, 
-      tributaryWidth = 3, 
-      occupancy = 'office', 
+    const {
+      span,
+      height = 4,
+      bayWidth = 6,
+      tributaryWidth = 3,
+      occupancy = 'office',
       roofType = 'metal',
       seismicZone = 'III',
       terrainCategory = 2,
@@ -1112,7 +1323,7 @@ Provide detailed reasoning with formulas shown.`;
     // ========== DEAD LOADS (IS 875 Part 1) ==========
     // These values are from actual IS 875-1 tables
     let deadLoadIntensity = 0; // kN/m²
-    
+
     switch (structureType) {
       case 'building':
       case 'frame':
@@ -1125,7 +1336,7 @@ Provide detailed reasoning with formulas shown.`;
         // - Partitions (IS 875-2, clause 3.1.2): 1.0 kN/m²
         deadLoadIntensity = 6.75; // Total DL for typical floor
         break;
-      
+
       case 'roof':
       case 'truss':
         if (roofType === 'rcc') {
@@ -1140,7 +1351,7 @@ Provide detailed reasoning with formulas shown.`;
           deadLoadIntensity = 0.50;
         }
         break;
-      
+
       case 'industrial':
         // Industrial floor (heavy duty)
         // - 200mm RCC slab: 5.0 kN/m²
@@ -1148,12 +1359,12 @@ Provide detailed reasoning with formulas shown.`;
         // - Services: 1.5 kN/m²
         deadLoadIntensity = 8.0;
         break;
-        
+
       case 'beam':
         // Floor beam - tributary area load
         deadLoadIntensity = 5.5;
         break;
-      
+
       default:
         deadLoadIntensity = 5.0;
     }
@@ -1185,7 +1396,7 @@ Provide detailed reasoning with formulas shown.`;
       'roof_access': 1.5,           // Roof with access (Table 2)
       'roof_no_access': 0.75,       // Roof without access (Table 2)
     };
-    
+
     const liveLoadIntensity = liveLoadTable[occupancy] || 3.0;
 
     // ========== ROOF LIVE LOAD (IS 875 Part 2, Clause 4.1) ==========
@@ -1197,10 +1408,10 @@ Provide detailed reasoning with formulas shown.`;
       'I': 33, 'II': 39, 'III': 44, 'IV': 47, 'V': 50, 'VI': 55
     };
     const Vb = windZones['III']; // Basic wind speed (m/s)
-    
+
     // Risk coefficient k1 (Table 1, IS 875-3)
     const k1 = 1.0; // 50 year return period
-    
+
     // Terrain & height factor k2 (Table 2, IS 875-3)
     // Category 2 = Open terrain with scattered obstructions
     const k2Table: Record<number, Record<string, number>> = {
@@ -1211,16 +1422,16 @@ Provide detailed reasoning with formulas shown.`;
     };
     const heightBracket = height <= 10 ? '10' : height <= 15 ? '15' : height <= 20 ? '20' : height <= 30 ? '30' : '50';
     const k2 = k2Table[terrainCategory]?.[heightBracket] || 1.0;
-    
+
     // Topography factor k3 (Clause 6.3)
     const k3 = 1.0; // Flat terrain
-    
+
     // Design wind speed
     const Vz = Vb * k1 * k2 * k3;
-    
+
     // Design wind pressure (Clause 7.2)
     const pz = 0.6 * Vz * Vz / 1000; // kN/m²
-    
+
     // Pressure coefficients for rectangular building (Table 5)
     const Cp_windward = 0.8;
     const Cp_leeward = -0.4; // Suction
@@ -1234,17 +1445,17 @@ Provide detailed reasoning with formulas shown.`;
     const Z = seismicZones[seismicZone] || 0.16;
     const I = importanceFactor;
     const R = 5.0; // Response reduction factor (SMRF)
-    
+
     // Approximate fundamental period T = 0.075h^0.75 (steel frame)
     const T = 0.075 * Math.pow(height, 0.75);
-    
+
     // Spectral acceleration Sa/g (Medium soil, Type II)
     let SaByG = 1.0;
     if (T <= 0.10) SaByG = 1.0 + 15 * T;
     else if (T <= 0.55) SaByG = 2.5;
     else if (T <= 4.0) SaByG = 1.36 / T;
     else SaByG = 0.34;
-    
+
     const Ah = (Z / 2) * (I / R) * SaByG;
 
     // ========== MEMBER SELF-WEIGHT ==========
@@ -1273,13 +1484,13 @@ Provide detailed reasoning with formulas shown.`;
 
     // ========== CALCULATE TOTAL LOADS ==========
     const tributaryArea = bayWidth * tributaryWidth;
-    
+
     // Total UDL on beam (kN/m)
     const totalUDL = (deadLoadIntensity + liveLoadIntensity) * tributaryWidth + selfWeight;
-    
+
     // Point load at node (for simplified analysis)
     const totalPointLoad = (deadLoadIntensity + liveLoadIntensity) * tributaryArea;
-    
+
     // Factored loads for design (IS 800:2007)
     const factoredLoads = {
       uls: 1.5 * totalPointLoad,                           // ULS: 1.5(DL+LL)
@@ -1336,7 +1547,7 @@ Provide detailed reasoning with formulas shown.`;
   private selectRealisticSection(memberType: string, span: number, load: number): string {
     // Section selection based on rigorous design practice
     // Reference: IS 800:2007, SP:6 Steel Tables
-    
+
     // Get section properties from database
     const getSectionMomentCapacity = (sectionName: string): number => {
       const section = this.STEEL_SECTIONS[sectionName];
@@ -1349,11 +1560,11 @@ Provide detailed reasoning with formulas shown.`;
     if (memberType === 'beam') {
       // Required moment = wL²/8 or wL²/12 depending on fixity
       const requiredMoment = (load * span * span) / 8; // kNm for simply supported
-      
+
       // Select smallest section that satisfies moment requirement
-      const beamSections = ['ISMB 150', 'ISMB 200', 'ISMB 250', 'ISMB 300', 'ISMB 350', 
-                           'ISMB 400', 'ISMB 450', 'ISMB 500', 'ISMB 550', 'ISMB 600'];
-      
+      const beamSections = ['ISMB 150', 'ISMB 200', 'ISMB 250', 'ISMB 300', 'ISMB 350',
+        'ISMB 400', 'ISMB 450', 'ISMB 500', 'ISMB 550', 'ISMB 600'];
+
       for (const section of beamSections) {
         if (getSectionMomentCapacity(section) >= requiredMoment * 1.1) { // 10% margin
           return section;
@@ -1361,7 +1572,7 @@ Provide detailed reasoning with formulas shown.`;
       }
       return 'ISMB 600';
     }
-    
+
     if (memberType === 'column') {
       // Column selection based on axial load and slenderness
       if (load <= 500) return 'ISHB 200';
@@ -1371,25 +1582,25 @@ Provide detailed reasoning with formulas shown.`;
       if (load <= 4000) return 'ISHB 400';
       return 'ISHB 450';
     }
-    
+
     if (memberType === 'truss_chord') {
       if (span <= 15) return 'ISMC 150';
       if (span <= 25) return 'ISMC 200';
       if (span <= 35) return 'ISMC 250';
       return 'ISMC 300';
     }
-    
+
     if (memberType === 'truss_web') {
       if (span <= 15) return 'ISA 65x65x6';
       if (span <= 25) return 'ISA 75x75x8';
       if (span <= 35) return 'ISA 90x90x10';
       return 'ISA 100x100x10';
     }
-    
+
     if (memberType === 'bracing') {
       return 'ISA 75x75x8';
     }
-    
+
     return 'ISMB 300'; // Default
   }
 
@@ -1401,13 +1612,13 @@ Provide detailed reasoning with formulas shown.`;
 
     // Parse dimensions from description with multiple patterns
     const spanMatch = d.match(/(\d+(?:\.\d+)?)\s*m?\s*(span|wide|width|long|length|meter)/i) ||
-                      d.match(/(span|width|length)\s*(?:of\s*)?(\d+(?:\.\d+)?)\s*m?/i);
+      d.match(/(span|width|length)\s*(?:of\s*)?(\d+(?:\.\d+)?)\s*m?/i);
     const heightMatch = d.match(/(\d+(?:\.\d+)?)\s*m?\s*(height|tall|high|deep|depth)/i) ||
-                        d.match(/(\d+)\s*(story|storey|floor|level)/i);
+      d.match(/(\d+)\s*(story|storey|floor|level)/i);
     const bayMatch = d.match(/(\d+)\s*bay/i);
     const storyMatch = d.match(/(\d+)\s*(story|storey|floor|level)/i);
     const loadMatch = d.match(/(\d+(?:\.\d+)?)\s*(kn|kilo|load)/i);
-    
+
     // Detect occupancy type from description
     let occupancy = 'office';
     if (d.includes('warehouse') || d.includes('storage')) occupancy = 'warehouse_light';
@@ -1419,21 +1630,21 @@ Provide detailed reasoning with formulas shown.`;
     if (d.includes('assembly') || d.includes('auditorium') || d.includes('hall')) occupancy = 'assembly';
     if (d.includes('library')) occupancy = 'library';
     if (d.includes('parking') || d.includes('garage')) occupancy = 'parking';
-    
+
     // Extract values with smart defaults based on structure type
-    let span = spanMatch ? parseFloat(spanMatch[1]) : 12;
-    let height = heightMatch ? parseFloat(heightMatch[1]) : 6;
+    const span = spanMatch ? parseFloat(spanMatch[1]) : 12;
+    const height = heightMatch ? parseFloat(heightMatch[1]) : 6;
     const bays = bayMatch ? parseInt(bayMatch[1]) : 3;
     const stories = storyMatch ? parseInt(storyMatch[1]) : 3;
-    
+
     // Use realistic load if not specified - calculate based on IS 875
     const specifiedLoad = loadMatch ? parseFloat(loadMatch[1]) : null;
-    
+
     // Calculate realistic structural proportions
     const bayWidth = span / Math.max(bays, 1);
     const storyHeight = stories > 1 ? Math.min(height / stories, 4.0) : height;
     const tributaryWidth = 6; // Typical purlin/joist spacing
-    
+
     // Default realistic load based on structure type (will be overridden per structure)
     const defaultLoads = this.calculateRealisticLoads('building', { span, height, bayWidth, tributaryWidth, occupancy });
     const loadValue = specifiedLoad || defaultLoads.totalPointLoad;
@@ -1443,17 +1654,17 @@ Provide detailed reasoning with formulas shown.`;
       const panels = Math.max(6, Math.round(span / 2) % 2 === 0 ? Math.round(span / 2) : Math.round(span / 2) + 1);
       const depth = span / 8; // Typical depth/span ratio for trusses
       const panelWidth = span / panels;
-      
+
       // Number of trusses in Z-direction
       const numTrusses = d.includes('single') ? 1 : Math.max(3, bays);
       const trussSpacing = 6; // Typical spacing in Z direction
       const buildingLength = (numTrusses - 1) * trussSpacing;
-      
+
       // Calculate realistic roof loads
-      const loads = this.calculateRealisticLoads('truss', { 
-        span, height: depth, bayWidth: panelWidth, tributaryWidth: trussSpacing, occupancy, roofType: 'metal' 
+      const loads = this.calculateRealisticLoads('truss', {
+        span, height: depth, bayWidth: panelWidth, tributaryWidth: trussSpacing, occupancy, roofType: 'metal'
       });
-      
+
       // Point load per node = (DL + LL) × tributary area per node
       const nodeSpacing = panelWidth;
       const nodeLoad = specifiedLoad || (loads.deadLoad + loads.roofLiveLoad!) * trussSpacing * nodeSpacing;
@@ -1473,7 +1684,7 @@ Provide detailed reasoning with formulas shown.`;
 ┌─────────────────────────────────────────────────────────────────┐
 │ Truss Span (X)       : ${span.toFixed(1).padStart(8)} m                              │
 │ Building Length (Z)  : ${buildingLength.toFixed(1).padStart(8)} m                              │
-│ Truss Depth (Y)      : ${depth.toFixed(2).padStart(8)} m (L/${Math.round(span/depth)})                   │
+│ Truss Depth (Y)      : ${depth.toFixed(2).padStart(8)} m (L/${Math.round(span / depth)})                   │
 │ Number of Trusses    : ${numTrusses.toString().padStart(8)} @ ${trussSpacing}m c/c                   │
 │ Number of Panels     : ${panels.toString().padStart(8)} per truss                     │
 │ Panel Width          : ${panelWidth.toFixed(2).padStart(8)} m                              │
@@ -1525,7 +1736,7 @@ Provide detailed reasoning with formulas shown.`;
       // STEP 1: Create nodes for all Warren trusses in Z direction
       for (let truss = 0; truss < numTrusses; truss++) {
         const z = truss * trussSpacing;
-        
+
         // Bottom chord nodes
         for (let i = 0; i <= panels; i++) {
           const isSupport = i === 0 || i === panels;
@@ -1551,11 +1762,11 @@ Provide detailed reasoning with formulas shown.`;
           nodeMap[key] = nodeId;
           steps.push({
             type: 'addNode',
-            params: { 
-              id: `N${nodeId}`, 
-              x: (i + 0.5) * panelWidth, 
-              y: depth, 
-              z: z 
+            params: {
+              id: `N${nodeId}`,
+              x: (i + 0.5) * panelWidth,
+              y: depth,
+              z: z
             },
             description: `Truss ${truss + 1}: Top chord node ${i + 1}`
           });
@@ -1569,11 +1780,11 @@ Provide detailed reasoning with formulas shown.`;
         for (let i = 0; i < panels; i++) {
           steps.push({
             type: 'addMember',
-            params: { 
-              start: `N${nodeMap[`bottom-${truss}-${i}`]}`, 
-              end: `N${nodeMap[`bottom-${truss}-${i + 1}`]}`, 
-              section: chordSection, 
-              memberType: 'truss' 
+            params: {
+              start: `N${nodeMap[`bottom-${truss}-${i}`]}`,
+              end: `N${nodeMap[`bottom-${truss}-${i + 1}`]}`,
+              section: chordSection,
+              memberType: 'truss'
             },
             description: `Truss ${truss + 1}: Bottom chord ${i + 1}`
           });
@@ -1583,11 +1794,11 @@ Provide detailed reasoning with formulas shown.`;
         for (let i = 0; i < panels - 1; i++) {
           steps.push({
             type: 'addMember',
-            params: { 
-              start: `N${nodeMap[`top-${truss}-${i}`]}`, 
-              end: `N${nodeMap[`top-${truss}-${i + 1}`]}`, 
-              section: chordSection, 
-              memberType: 'truss' 
+            params: {
+              start: `N${nodeMap[`top-${truss}-${i}`]}`,
+              end: `N${nodeMap[`top-${truss}-${i + 1}`]}`,
+              section: chordSection,
+              memberType: 'truss'
             },
             description: `Truss ${truss + 1}: Top chord ${i + 1}`
           });
@@ -1597,21 +1808,21 @@ Provide detailed reasoning with formulas shown.`;
         for (let i = 0; i < panels; i++) {
           steps.push({
             type: 'addMember',
-            params: { 
-              start: `N${nodeMap[`bottom-${truss}-${i}`]}`, 
-              end: `N${nodeMap[`top-${truss}-${i}`]}`, 
-              section: webSection, 
-              memberType: 'truss' 
+            params: {
+              start: `N${nodeMap[`bottom-${truss}-${i}`]}`,
+              end: `N${nodeMap[`top-${truss}-${i}`]}`,
+              section: webSection,
+              memberType: 'truss'
             },
             description: `Truss ${truss + 1}: Diagonal up ${i + 1}`
           });
           steps.push({
             type: 'addMember',
-            params: { 
-              start: `N${nodeMap[`top-${truss}-${i}`]}`, 
-              end: `N${nodeMap[`bottom-${truss}-${i + 1}`]}`, 
-              section: webSection, 
-              memberType: 'truss' 
+            params: {
+              start: `N${nodeMap[`top-${truss}-${i}`]}`,
+              end: `N${nodeMap[`bottom-${truss}-${i + 1}`]}`,
+              section: webSection,
+              memberType: 'truss'
             },
             description: `Truss ${truss + 1}: Diagonal down ${i + 1}`
           });
@@ -1625,30 +1836,30 @@ Provide detailed reasoning with formulas shown.`;
           for (let i = 0; i < panels; i++) {
             steps.push({
               type: 'addMember',
-              params: { 
-                start: `N${nodeMap[`top-${truss}-${i}`]}`, 
-                end: `N${nodeMap[`top-${truss + 1}-${i}`]}`, 
+              params: {
+                start: `N${nodeMap[`top-${truss}-${i}`]}`,
+                end: `N${nodeMap[`top-${truss + 1}-${i}`]}`,
                 section: purlinSection
               },
               description: `Purlin at panel ${i + 1}, Bay ${truss + 1}`
             });
           }
-          
+
           // Eave purlins at bottom chord ends
           steps.push({
             type: 'addMember',
-            params: { 
-              start: `N${nodeMap[`bottom-${truss}-0`]}`, 
-              end: `N${nodeMap[`bottom-${truss + 1}-0`]}`, 
+            params: {
+              start: `N${nodeMap[`bottom-${truss}-0`]}`,
+              end: `N${nodeMap[`bottom-${truss + 1}-0`]}`,
               section: purlinSection
             },
             description: `Eave purlin left, Bay ${truss + 1}`
           });
           steps.push({
             type: 'addMember',
-            params: { 
-              start: `N${nodeMap[`bottom-${truss}-${panels}`]}`, 
-              end: `N${nodeMap[`bottom-${truss + 1}-${panels}`]}`, 
+            params: {
+              start: `N${nodeMap[`bottom-${truss}-${panels}`]}`,
+              end: `N${nodeMap[`bottom-${truss + 1}-${panels}`]}`,
               section: purlinSection
             },
             description: `Eave purlin right, Bay ${truss + 1}`
@@ -1662,9 +1873,9 @@ Provide detailed reasoning with formulas shown.`;
         for (let i = 0; i < panels - 1; i += 2) {
           steps.push({
             type: 'addMember',
-            params: { 
-              start: `N${nodeMap[`top-0-${i}`]}`, 
-              end: `N${nodeMap[`top-1-${i + 1}`]}`, 
+            params: {
+              start: `N${nodeMap[`top-0-${i}`]}`,
+              end: `N${nodeMap[`top-1-${i + 1}`]}`,
               section: bracingSection,
               memberType: 'truss'
             },
@@ -1673,9 +1884,9 @@ Provide detailed reasoning with formulas shown.`;
           if (i + 1 < panels) {
             steps.push({
               type: 'addMember',
-              params: { 
-                start: `N${nodeMap[`top-1-${i}`]}`, 
-                end: `N${nodeMap[`top-0-${i + 1}`]}`, 
+              params: {
+                start: `N${nodeMap[`top-1-${i}`]}`,
+                end: `N${nodeMap[`top-0-${i + 1}`]}`,
                 section: bracingSection,
                 memberType: 'truss'
               },
@@ -1683,16 +1894,16 @@ Provide detailed reasoning with formulas shown.`;
             });
           }
         }
-        
+
         // Last bay bracing
         if (numTrusses > 2) {
           const lastTruss = numTrusses - 1;
           for (let i = 0; i < panels - 1; i += 2) {
             steps.push({
               type: 'addMember',
-              params: { 
-                start: `N${nodeMap[`top-${lastTruss - 1}-${i}`]}`, 
-                end: `N${nodeMap[`top-${lastTruss}-${i + 1}`]}`, 
+              params: {
+                start: `N${nodeMap[`top-${lastTruss - 1}-${i}`]}`,
+                end: `N${nodeMap[`top-${lastTruss}-${i + 1}`]}`,
                 section: bracingSection,
                 memberType: 'truss'
               },
@@ -1706,7 +1917,7 @@ Provide detailed reasoning with formulas shown.`;
       for (let truss = 0; truss < numTrusses; truss++) {
         const isEndTruss = truss === 0 || truss === numTrusses - 1;
         const loadMultiplier = isEndTruss ? 0.5 : 1.0;
-        
+
         for (let i = 0; i < panels; i++) {
           steps.push({
             type: 'addLoad',
@@ -1715,7 +1926,7 @@ Provide detailed reasoning with formulas shown.`;
           });
         }
       }
-      
+
       // STEP 6: Add wind suction at center
       const centerTruss = Math.floor(numTrusses / 2);
       const centerPanel = Math.floor(panels / 2);
@@ -1755,13 +1966,13 @@ Provide detailed reasoning with formulas shown.`;
       const panels = Math.max(4, Math.round(span / 3));
       const depth = span / 8;
       const panelWidth = span / panels;
-      
+
       // Calculate realistic roof loads
-      const loads = this.calculateRealisticLoads('truss', { 
-        span, height: depth, bayWidth: panelWidth, tributaryWidth, occupancy, roofType: 'metal' 
+      const loads = this.calculateRealisticLoads('truss', {
+        span, height: depth, bayWidth: panelWidth, tributaryWidth, occupancy, roofType: 'metal'
       });
       const nodeLoad = specifiedLoad || (loads.deadLoad + loads.roofLiveLoad!) * tributaryWidth * panelWidth;
-      
+
       const chordSection = this.selectRealisticSection('truss_chord', span, nodeLoad);
       const webSection = this.selectRealisticSection('truss_web', span, nodeLoad);
 
@@ -1769,7 +1980,7 @@ Provide detailed reasoning with formulas shown.`;
       reasoning = `Pratt truss: verticals in compression, diagonals in tension. Ideal for steel construction.
 
 📐 **Design Parameters:**
-• Span: ${span}m, Depth: ${depth.toFixed(2)}m (L/${Math.round(span/depth)})
+• Span: ${span}m, Depth: ${depth.toFixed(2)}m (L/${Math.round(span / depth)})
 • Panels: ${panels}, Panel width: ${panelWidth.toFixed(2)}m
 
 📊 **Load Calculation (IS 875):**
@@ -1966,26 +2177,26 @@ Provide detailed reasoning with formulas shown.`;
       // Simplified version:
       steps.push(
         { type: 'addNode', params: { id: 'N1', x: 0, y: 0, z: 0, support: 'pinned' }, description: 'Left support' },
-        { type: 'addNode', params: { id: 'N2', x: span/4, y: 0, z: 0 }, description: 'Bottom 1/4' },
-        { type: 'addNode', params: { id: 'N3', x: span/2, y: 0, z: 0 }, description: 'Bottom center' },
-        { type: 'addNode', params: { id: 'N4', x: 3*span/4, y: 0, z: 0 }, description: 'Bottom 3/4' },
+        { type: 'addNode', params: { id: 'N2', x: span / 4, y: 0, z: 0 }, description: 'Bottom 1/4' },
+        { type: 'addNode', params: { id: 'N3', x: span / 2, y: 0, z: 0 }, description: 'Bottom center' },
+        { type: 'addNode', params: { id: 'N4', x: 3 * span / 4, y: 0, z: 0 }, description: 'Bottom 3/4' },
         { type: 'addNode', params: { id: 'N5', x: span, y: 0, z: 0, support: 'roller' }, description: 'Right support' },
         { type: 'addNode', params: { id: 'N6', x: 0, y: depth, z: 0 }, description: 'Top left' },
-        { type: 'addNode', params: { id: 'N7', x: span/4, y: depth, z: 0 }, description: 'Top 1/4' },
-        { type: 'addNode', params: { id: 'N8', x: span/2, y: depth, z: 0 }, description: 'Top center' },
-        { type: 'addNode', params: { id: 'N9', x: 3*span/4, y: depth, z: 0 }, description: 'Top 3/4' },
+        { type: 'addNode', params: { id: 'N7', x: span / 4, y: depth, z: 0 }, description: 'Top 1/4' },
+        { type: 'addNode', params: { id: 'N8', x: span / 2, y: depth, z: 0 }, description: 'Top center' },
+        { type: 'addNode', params: { id: 'N9', x: 3 * span / 4, y: depth, z: 0 }, description: 'Top 3/4' },
         { type: 'addNode', params: { id: 'N10', x: span, y: depth, z: 0 }, description: 'Top right' },
-        { type: 'addNode', params: { id: 'N11', x: span/4, y: depth/2, z: 0 }, description: 'Mid vertical 1' },
-        { type: 'addNode', params: { id: 'N12', x: 3*span/4, y: depth/2, z: 0 }, description: 'Mid vertical 2' },
+        { type: 'addNode', params: { id: 'N11', x: span / 4, y: depth / 2, z: 0 }, description: 'Mid vertical 1' },
+        { type: 'addNode', params: { id: 'N12', x: 3 * span / 4, y: depth / 2, z: 0 }, description: 'Mid vertical 2' },
       );
       // Add members (bottom, top, verticals, K-diagonals)
       // Bottom chord
       for (let i = 1; i <= 4; i++) {
-        steps.push({ type: 'addMember', params: { start: `N${i}`, end: `N${i+1}`, section: 'ISMC 200', memberType: 'truss' }, description: `Bottom chord ${i}` });
+        steps.push({ type: 'addMember', params: { start: `N${i}`, end: `N${i + 1}`, section: 'ISMC 200', memberType: 'truss' }, description: `Bottom chord ${i}` });
       }
       // Top chord
       for (let i = 6; i <= 9; i++) {
-        steps.push({ type: 'addMember', params: { start: `N${i}`, end: `N${i+1}`, section: 'ISMC 200', memberType: 'truss' }, description: `Top chord ${i-5}` });
+        steps.push({ type: 'addMember', params: { start: `N${i}`, end: `N${i + 1}`, section: 'ISMC 200', memberType: 'truss' }, description: `Top chord ${i - 5}` });
       }
       // End verticals
       steps.push({ type: 'addMember', params: { start: 'N1', end: 'N6', section: 'ISA 75x75x8', memberType: 'truss' }, description: 'Left vertical' });
@@ -2001,15 +2212,15 @@ Provide detailed reasoning with formulas shown.`;
       steps.push({ type: 'addMember', params: { start: 'N12', end: 'N10', section: 'ISA 65x65x6', memberType: 'truss' }, description: 'K diagonal 4' });
       steps.push({ type: 'addMember', params: { start: 'N3', end: 'N8', section: 'ISA 65x65x6', memberType: 'truss' }, description: 'Center vertical' });
       // Loads
-      steps.push({ type: 'addLoad', params: { nodeId: 'N7', fy: -loadValue/3 }, description: 'Load 1' });
-      steps.push({ type: 'addLoad', params: { nodeId: 'N8', fy: -loadValue/3 }, description: 'Load 2' });
-      steps.push({ type: 'addLoad', params: { nodeId: 'N9', fy: -loadValue/3 }, description: 'Load 3' });
+      steps.push({ type: 'addLoad', params: { nodeId: 'N7', fy: -loadValue / 3 }, description: 'Load 1' });
+      steps.push({ type: 'addLoad', params: { nodeId: 'N8', fy: -loadValue / 3 }, description: 'Load 2' });
+      steps.push({ type: 'addLoad', params: { nodeId: 'N9', fy: -loadValue / 3 }, description: 'Load 3' });
     }
     // ==================== CONTINUOUS BEAM ====================
     else if (d.includes('continuous') && d.includes('beam')) {
       const spans = bayMatch ? parseInt(bayMatch[1]) : 3;
       const spanLength = span / spans;
-      
+
       goal = `Create a ${spans}-span continuous beam (total ${span}m)`;
       reasoning = 'Continuous beam over multiple supports. Creates negative moments over supports and reduced positive moments at midspan. More efficient than simply supported.';
 
@@ -2053,9 +2264,9 @@ Provide detailed reasoning with formulas shown.`;
 
       steps.push(
         { type: 'addNode', params: { id: 'N1', x: 0, y: 0, z: 0, support: 'fixed' }, description: 'Left fixed support' },
-        { type: 'addNode', params: { id: 'N2', x: span/3, y: 0, z: 0 }, description: '1/3 span' },
-        { type: 'addNode', params: { id: 'N3', x: span/2, y: 0, z: 0 }, description: 'Midspan' },
-        { type: 'addNode', params: { id: 'N4', x: 2*span/3, y: 0, z: 0 }, description: '2/3 span' },
+        { type: 'addNode', params: { id: 'N2', x: span / 3, y: 0, z: 0 }, description: '1/3 span' },
+        { type: 'addNode', params: { id: 'N3', x: span / 2, y: 0, z: 0 }, description: 'Midspan' },
+        { type: 'addNode', params: { id: 'N4', x: 2 * span / 3, y: 0, z: 0 }, description: '2/3 span' },
         { type: 'addNode', params: { id: 'N5', x: span, y: 0, z: 0, support: 'fixed' }, description: 'Right fixed support' },
         { type: 'addMember', params: { start: 'N1', end: 'N2', section: 'ISMB 400' }, description: 'Beam 1' },
         { type: 'addMember', params: { start: 'N2', end: 'N3', section: 'ISMB 400' }, description: 'Beam 2' },
@@ -2071,14 +2282,14 @@ Provide detailed reasoning with formulas shown.`;
 
       steps.push(
         { type: 'addNode', params: { id: 'N1', x: 0, y: 0, z: 0, support: 'fixed' }, description: 'Fixed support' },
-        { type: 'addNode', params: { id: 'N2', x: span/3, y: 0, z: 0 }, description: '1/3 span' },
-        { type: 'addNode', params: { id: 'N3', x: 2*span/3, y: 0, z: 0 }, description: '2/3 span' },
+        { type: 'addNode', params: { id: 'N2', x: span / 3, y: 0, z: 0 }, description: '1/3 span' },
+        { type: 'addNode', params: { id: 'N3', x: 2 * span / 3, y: 0, z: 0 }, description: '2/3 span' },
         { type: 'addNode', params: { id: 'N4', x: span, y: 0, z: 0, support: 'roller' }, description: 'Prop (roller) support' },
         { type: 'addMember', params: { start: 'N1', end: 'N2', section: 'ISMB 350' }, description: 'Beam 1' },
         { type: 'addMember', params: { start: 'N2', end: 'N3', section: 'ISMB 350' }, description: 'Beam 2' },
         { type: 'addMember', params: { start: 'N3', end: 'N4', section: 'ISMB 350' }, description: 'Beam 3' },
-        { type: 'addLoad', params: { nodeId: 'N2', fy: -loadValue/2 }, description: 'Load at 1/3' },
-        { type: 'addLoad', params: { nodeId: 'N3', fy: -loadValue/2 }, description: 'Load at 2/3' }
+        { type: 'addLoad', params: { nodeId: 'N2', fy: -loadValue / 2 }, description: 'Load at 1/3' },
+        { type: 'addLoad', params: { nodeId: 'N3', fy: -loadValue / 2 }, description: 'Load at 2/3' }
       );
     }
     // ==================== GABLE FRAME (PITCHED ROOF) ====================
@@ -2093,7 +2304,7 @@ Provide detailed reasoning with formulas shown.`;
       steps.push(
         { type: 'addNode', params: { id: 'N1', x: 0, y: 0, z: 0, support: 'pinned' }, description: 'Left base - pinned' },
         { type: 'addNode', params: { id: 'N2', x: 0, y: height, z: 0 }, description: 'Left eave' },
-        { type: 'addNode', params: { id: 'N3', x: span/2, y: height + rise, z: 0 }, description: 'Ridge' },
+        { type: 'addNode', params: { id: 'N3', x: span / 2, y: height + rise, z: 0 }, description: 'Ridge' },
         { type: 'addNode', params: { id: 'N4', x: span, y: height, z: 0 }, description: 'Right eave' },
         { type: 'addNode', params: { id: 'N5', x: span, y: 0, z: 0, support: 'pinned' }, description: 'Right base - pinned' },
         { type: 'addMember', params: { start: 'N1', end: 'N2', section: 'ISMB 350' }, description: 'Left column' },
@@ -2119,9 +2330,9 @@ Provide detailed reasoning with formulas shown.`;
         { type: 'addMember', params: { start: 'N3', end: 'N4', section: 'ISMB 350' }, description: 'Beam' },
         { type: 'addMember', params: { start: 'N1', end: 'N4', section: 'ISA 75x75x8' }, description: 'X-brace 1' },
         { type: 'addMember', params: { start: 'N2', end: 'N3', section: 'ISA 75x75x8' }, description: 'X-brace 2' },
-        { type: 'addLoad', params: { nodeId: 'N3', fy: -loadValue/2 }, description: 'Gravity load left' },
-        { type: 'addLoad', params: { nodeId: 'N4', fy: -loadValue/2 }, description: 'Gravity load right' },
-        { type: 'addLoad', params: { nodeId: 'N3', fx: loadValue/4 }, description: 'Lateral load' }
+        { type: 'addLoad', params: { nodeId: 'N3', fy: -loadValue / 2 }, description: 'Gravity load left' },
+        { type: 'addLoad', params: { nodeId: 'N4', fy: -loadValue / 2 }, description: 'Gravity load right' },
+        { type: 'addLoad', params: { nodeId: 'N3', fx: loadValue / 4 }, description: 'Lateral load' }
       );
     }
     // ==================== 3D PORTAL FRAME / INDUSTRIAL SHED ====================
@@ -2130,7 +2341,7 @@ Provide detailed reasoning with formulas shown.`;
       const numFrames = d.includes('single') ? 1 : Math.max(3, bays);
       const frameSpacing = 6; // Typical frame spacing
       const buildingLength = (numFrames - 1) * frameSpacing;
-      
+
       // Calculate realistic portal frame loads
       const portalLoads = this.calculateRealisticLoads('industrial', {
         span,
@@ -2140,19 +2351,19 @@ Provide detailed reasoning with formulas shown.`;
         occupancy: 'industrial_light',
         roofType: 'metal'
       });
-      
+
       const roofPitch = 10; // degrees
       const rise = span * Math.tan(roofPitch * Math.PI / 180) / 2;
-      
+
       // Purlin and girt spacing
       const purlinSpacing = 1.5;
       const girtSpacing = 2.0;
       const numPurlinsPerRafter = Math.ceil((span / 2) / purlinSpacing);
-      
+
       // Point loads
       const purlinLoad = (portalLoads.deadLoad + portalLoads.roofLiveLoad!) * frameSpacing * purlinSpacing;
       const windOnColumn = portalLoads.windLoad! * frameSpacing * height / 2;
-      
+
       // Section selection
       const columnSection = this.selectRealisticSection('column', height, purlinLoad * numPurlinsPerRafter);
       const rafterSection = this.selectRealisticSection('beam', span / 2, purlinLoad * 2);
@@ -2213,7 +2424,7 @@ Provide detailed reasoning with formulas shown.`;
       // STEP 1: Create nodes for all portal frames in Z direction
       for (let frame = 0; frame < numFrames; frame++) {
         const z = frame * frameSpacing;
-        
+
         // Base nodes (with supports)
         const leftBaseKey = `base-left-${frame}`;
         nodeMap[leftBaseKey] = nodeId;
@@ -2223,7 +2434,7 @@ Provide detailed reasoning with formulas shown.`;
           description: `Frame ${frame + 1}: Left base (fixed)`
         });
         nodeId++;
-        
+
         const rightBaseKey = `base-right-${frame}`;
         nodeMap[rightBaseKey] = nodeId;
         steps.push({
@@ -2232,7 +2443,7 @@ Provide detailed reasoning with formulas shown.`;
           description: `Frame ${frame + 1}: Right base (fixed)`
         });
         nodeId++;
-        
+
         // Eave nodes
         const leftEaveKey = `eave-left-${frame}`;
         nodeMap[leftEaveKey] = nodeId;
@@ -2242,7 +2453,7 @@ Provide detailed reasoning with formulas shown.`;
           description: `Frame ${frame + 1}: Left eave`
         });
         nodeId++;
-        
+
         const rightEaveKey = `eave-right-${frame}`;
         nodeMap[rightEaveKey] = nodeId;
         steps.push({
@@ -2251,7 +2462,7 @@ Provide detailed reasoning with formulas shown.`;
           description: `Frame ${frame + 1}: Right eave`
         });
         nodeId++;
-        
+
         // Ridge node
         const ridgeKey = `ridge-${frame}`;
         nodeMap[ridgeKey] = nodeId;
@@ -2261,7 +2472,7 @@ Provide detailed reasoning with formulas shown.`;
           description: `Frame ${frame + 1}: Ridge (apex)`
         });
         nodeId++;
-        
+
         // Rafter intermediate nodes for load application
         const leftMidKey = `rafter-left-mid-${frame}`;
         nodeMap[leftMidKey] = nodeId;
@@ -2271,7 +2482,7 @@ Provide detailed reasoning with formulas shown.`;
           description: `Frame ${frame + 1}: Left rafter midpoint`
         });
         nodeId++;
-        
+
         const rightMidKey = `rafter-right-mid-${frame}`;
         nodeMap[rightMidKey] = nodeId;
         steps.push({
@@ -2291,7 +2502,7 @@ Provide detailed reasoning with formulas shown.`;
         const ridge = `N${nodeMap[`ridge-${frame}`]}`;
         const leftMid = `N${nodeMap[`rafter-left-mid-${frame}`]}`;
         const rightMid = `N${nodeMap[`rafter-right-mid-${frame}`]}`;
-        
+
         // Columns
         steps.push({
           type: 'addMember',
@@ -2303,7 +2514,7 @@ Provide detailed reasoning with formulas shown.`;
           params: { start: rightBase, end: rightEave, section: columnSection },
           description: `Frame ${frame + 1}: Right column`
         });
-        
+
         // Rafters (4 segments for better load distribution)
         steps.push({
           type: 'addMember',
@@ -2333,50 +2544,50 @@ Provide detailed reasoning with formulas shown.`;
           // Eave purlins
           steps.push({
             type: 'addMember',
-            params: { 
-              start: `N${nodeMap[`eave-left-${frame}`]}`, 
-              end: `N${nodeMap[`eave-left-${frame + 1}`]}`, 
-              section: purlinSection 
+            params: {
+              start: `N${nodeMap[`eave-left-${frame}`]}`,
+              end: `N${nodeMap[`eave-left-${frame + 1}`]}`,
+              section: purlinSection
             },
             description: `Eave purlin left, Bay ${frame + 1}`
           });
           steps.push({
             type: 'addMember',
-            params: { 
-              start: `N${nodeMap[`eave-right-${frame}`]}`, 
-              end: `N${nodeMap[`eave-right-${frame + 1}`]}`, 
-              section: purlinSection 
+            params: {
+              start: `N${nodeMap[`eave-right-${frame}`]}`,
+              end: `N${nodeMap[`eave-right-${frame + 1}`]}`,
+              section: purlinSection
             },
             description: `Eave purlin right, Bay ${frame + 1}`
           });
-          
+
           // Ridge purlins
           steps.push({
             type: 'addMember',
-            params: { 
-              start: `N${nodeMap[`ridge-${frame}`]}`, 
-              end: `N${nodeMap[`ridge-${frame + 1}`]}`, 
-              section: purlinSection 
+            params: {
+              start: `N${nodeMap[`ridge-${frame}`]}`,
+              end: `N${nodeMap[`ridge-${frame + 1}`]}`,
+              section: purlinSection
             },
             description: `Ridge purlin, Bay ${frame + 1}`
           });
-          
+
           // Mid-rafter purlins
           steps.push({
             type: 'addMember',
-            params: { 
-              start: `N${nodeMap[`rafter-left-mid-${frame}`]}`, 
-              end: `N${nodeMap[`rafter-left-mid-${frame + 1}`]}`, 
-              section: purlinSection 
+            params: {
+              start: `N${nodeMap[`rafter-left-mid-${frame}`]}`,
+              end: `N${nodeMap[`rafter-left-mid-${frame + 1}`]}`,
+              section: purlinSection
             },
             description: `Intermediate purlin left, Bay ${frame + 1}`
           });
           steps.push({
             type: 'addMember',
-            params: { 
-              start: `N${nodeMap[`rafter-right-mid-${frame}`]}`, 
-              end: `N${nodeMap[`rafter-right-mid-${frame + 1}`]}`, 
-              section: purlinSection 
+            params: {
+              start: `N${nodeMap[`rafter-right-mid-${frame}`]}`,
+              end: `N${nodeMap[`rafter-right-mid-${frame + 1}`]}`,
+              section: purlinSection
             },
             description: `Intermediate purlin right, Bay ${frame + 1}`
           });
@@ -2390,19 +2601,19 @@ Provide detailed reasoning with formulas shown.`;
           // Here we connect at eave level as struts
           steps.push({
             type: 'addMember',
-            params: { 
-              start: `N${nodeMap[`base-left-${frame}`]}`, 
-              end: `N${nodeMap[`base-left-${frame + 1}`]}`, 
-              section: girtSection 
+            params: {
+              start: `N${nodeMap[`base-left-${frame}`]}`,
+              end: `N${nodeMap[`base-left-${frame + 1}`]}`,
+              section: girtSection
             },
             description: `Bottom girt left, Bay ${frame + 1}`
           });
           steps.push({
             type: 'addMember',
-            params: { 
-              start: `N${nodeMap[`base-right-${frame}`]}`, 
-              end: `N${nodeMap[`base-right-${frame + 1}`]}`, 
-              section: girtSection 
+            params: {
+              start: `N${nodeMap[`base-right-${frame}`]}`,
+              end: `N${nodeMap[`base-right-${frame + 1}`]}`,
+              section: girtSection
             },
             description: `Bottom girt right, Bay ${frame + 1}`
           });
@@ -2414,9 +2625,9 @@ Provide detailed reasoning with formulas shown.`;
         // First bay roof bracing
         steps.push({
           type: 'addMember',
-          params: { 
-            start: `N${nodeMap['eave-left-0']}`, 
-            end: `N${nodeMap['ridge-1']}`, 
+          params: {
+            start: `N${nodeMap['eave-left-0']}`,
+            end: `N${nodeMap['ridge-1']}`,
             section: bracingSection,
             memberType: 'truss'
           },
@@ -2424,23 +2635,23 @@ Provide detailed reasoning with formulas shown.`;
         });
         steps.push({
           type: 'addMember',
-          params: { 
-            start: `N${nodeMap['ridge-0']}`, 
-            end: `N${nodeMap['eave-left-1']}`, 
+          params: {
+            start: `N${nodeMap['ridge-0']}`,
+            end: `N${nodeMap['eave-left-1']}`,
             section: bracingSection,
             memberType: 'truss'
           },
           description: `Roof X-brace 2, End bay 1`
         });
-        
+
         // Last bay roof bracing if more than 2 frames
         if (numFrames > 2) {
           const lastFrame = numFrames - 1;
           steps.push({
             type: 'addMember',
-            params: { 
-              start: `N${nodeMap[`eave-right-${lastFrame - 1}`]}`, 
-              end: `N${nodeMap[`ridge-${lastFrame}`]}`, 
+            params: {
+              start: `N${nodeMap[`eave-right-${lastFrame - 1}`]}`,
+              end: `N${nodeMap[`ridge-${lastFrame}`]}`,
               section: bracingSection,
               memberType: 'truss'
             },
@@ -2448,9 +2659,9 @@ Provide detailed reasoning with formulas shown.`;
           });
           steps.push({
             type: 'addMember',
-            params: { 
-              start: `N${nodeMap[`ridge-${lastFrame - 1}`]}`, 
-              end: `N${nodeMap[`eave-right-${lastFrame}`]}`, 
+            params: {
+              start: `N${nodeMap[`ridge-${lastFrame - 1}`]}`,
+              end: `N${nodeMap[`eave-right-${lastFrame}`]}`,
               section: bracingSection,
               memberType: 'truss'
             },
@@ -2464,9 +2675,9 @@ Provide detailed reasoning with formulas shown.`;
         // Left wall bracing
         steps.push({
           type: 'addMember',
-          params: { 
-            start: `N${nodeMap['base-left-0']}`, 
-            end: `N${nodeMap['eave-left-1']}`, 
+          params: {
+            start: `N${nodeMap['base-left-0']}`,
+            end: `N${nodeMap['eave-left-1']}`,
             section: bracingSection,
             memberType: 'truss'
           },
@@ -2474,21 +2685,21 @@ Provide detailed reasoning with formulas shown.`;
         });
         steps.push({
           type: 'addMember',
-          params: { 
-            start: `N${nodeMap['base-left-1']}`, 
-            end: `N${nodeMap['eave-left-0']}`, 
+          params: {
+            start: `N${nodeMap['base-left-1']}`,
+            end: `N${nodeMap['eave-left-0']}`,
             section: bracingSection,
             memberType: 'truss'
           },
           description: `Wall X-brace 2, Left side`
         });
-        
+
         // Right wall bracing
         steps.push({
           type: 'addMember',
-          params: { 
-            start: `N${nodeMap['base-right-0']}`, 
-            end: `N${nodeMap['eave-right-1']}`, 
+          params: {
+            start: `N${nodeMap['base-right-0']}`,
+            end: `N${nodeMap['eave-right-1']}`,
             section: bracingSection,
             memberType: 'truss'
           },
@@ -2496,9 +2707,9 @@ Provide detailed reasoning with formulas shown.`;
         });
         steps.push({
           type: 'addMember',
-          params: { 
-            start: `N${nodeMap['base-right-1']}`, 
-            end: `N${nodeMap['eave-right-0']}`, 
+          params: {
+            start: `N${nodeMap['base-right-1']}`,
+            end: `N${nodeMap['eave-right-0']}`,
             section: bracingSection,
             memberType: 'truss'
           },
@@ -2510,7 +2721,7 @@ Provide detailed reasoning with formulas shown.`;
       for (let frame = 0; frame < numFrames; frame++) {
         const isEndFrame = frame === 0 || frame === numFrames - 1;
         const loadMultiplier = isEndFrame ? 0.5 : 1.0; // End frames take half tributary
-        
+
         // Loads at rafter nodes
         const rafterLoad = purlinLoad * loadMultiplier * 2;
         steps.push({
@@ -2566,7 +2777,7 @@ Provide detailed reasoning with formulas shown.`;
             },
             description: `Roof sheeting, Left slope, Bay ${frame + 1}`
           });
-          
+
           // Right roof plate
           steps.push({
             type: 'addPlate',
@@ -2593,11 +2804,11 @@ Provide detailed reasoning with formulas shown.`;
       // Detect X and Z bays separately
       const numBaysX = bays; // Bays in X direction
       const numBaysZ = d.includes('square') ? bays : Math.max(2, Math.ceil(bays / 1.5)); // Bays in Z direction
-      
+
       const bayWidthX = span / numBaysX; // Bay width in X direction
       const bayWidthZ = d.includes('square') ? bayWidthX : bayWidthX * 0.8; // Bay width in Z direction (slightly less)
       const storyHeightCalc = height > 10 ? height / numStories : 3.5;
-      
+
       // Calculate realistic building loads
       const buildingLoads = this.calculateRealisticLoads('building', {
         span: bayWidthX,
@@ -2608,12 +2819,12 @@ Provide detailed reasoning with formulas shown.`;
         seismicZone: 'III',
         importanceFactor: occupancy === 'hospital' ? 1.5 : 1.0
       });
-      
+
       // Calculate tributary area loads for different node positions
       const cornerLoad = buildingLoads.totalPointLoad * 0.25;
       const edgeLoad = buildingLoads.totalPointLoad * 0.5;
       const interiorLoad = buildingLoads.totalPointLoad;
-      
+
       // Select sections based on load and height
       const totalFloorLoad = interiorLoad * numBaysX * numBaysZ;
       const lowerColumnSection = this.selectRealisticSection('column', storyHeightCalc, totalFloorLoad * numStories / 4);
@@ -2621,7 +2832,7 @@ Provide detailed reasoning with formulas shown.`;
       const mainBeamSection = this.selectRealisticSection('beam', bayWidthX, interiorLoad);
       const secondaryBeamSection = this.selectRealisticSection('beam', bayWidthZ, interiorLoad * 0.7);
       const bracingSection = this.selectRealisticSection('bracing', storyHeightCalc, totalFloorLoad * 0.1);
-      
+
       const totalWidth = numBaysX * bayWidthX;
       const totalDepth = numBaysZ * bayWidthZ;
       const totalHeight = numStories * storyHeightCalc;
@@ -2671,8 +2882,8 @@ Provide detailed reasoning with formulas shown.`;
 
 🔧 **SECTION SELECTION (IS 800:2007):**
 ┌─────────────────────────────────────────────────────────────────┐
-│ Lower Story Columns    : ${lowerColumnSection.padEnd(15)} (Stories 1-${Math.ceil(numStories/2)})         │
-│ Upper Story Columns    : ${upperColumnSection.padEnd(15)} (Stories ${Math.ceil(numStories/2)+1}-${numStories})         │
+│ Lower Story Columns    : ${lowerColumnSection.padEnd(15)} (Stories 1-${Math.ceil(numStories / 2)})         │
+│ Upper Story Columns    : ${upperColumnSection.padEnd(15)} (Stories ${Math.ceil(numStories / 2) + 1}-${numStories})         │
 │ Main Beams (X-dir)     : ${mainBeamSection.padEnd(15)}                          │
 │ Secondary Beams (Z-dir): ${secondaryBeamSection.padEnd(15)}                          │
 │ Vertical Bracing       : ${bracingSection.padEnd(15)} (X-type)               │
@@ -2707,7 +2918,7 @@ Provide detailed reasoning with formulas shown.`;
             const z = iz * bayWidthZ;
             const nodeKey = `${story}-${ix}-${iz}`;
             nodeMap[nodeKey] = nodeId;
-            
+
             steps.push({
               type: 'addNode',
               params: {
@@ -2717,8 +2928,8 @@ Provide detailed reasoning with formulas shown.`;
                 z: z,
                 support: isBase ? 'fixed' : undefined
               },
-              description: isBase 
-                ? `Fixed base at Grid (${ix},${iz})` 
+              description: isBase
+                ? `Fixed base at Grid (${ix},${iz})`
                 : `Floor ${story}, Grid (${ix},${iz}) [${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)}]`
             });
             nodeId++;
@@ -2733,13 +2944,13 @@ Provide detailed reasoning with formulas shown.`;
             const bottomKey = `${story}-${ix}-${iz}`;
             const topKey = `${story + 1}-${ix}-${iz}`;
             const section = story < Math.ceil(numStories / 2) ? lowerColumnSection : upperColumnSection;
-            
+
             steps.push({
               type: 'addMember',
-              params: { 
-                start: `N${nodeMap[bottomKey]}`, 
-                end: `N${nodeMap[topKey]}`, 
-                section: section 
+              params: {
+                start: `N${nodeMap[bottomKey]}`,
+                end: `N${nodeMap[topKey]}`,
+                section: section
               },
               description: `Column S${story + 1} at (${ix},${iz}) - ${section}`
             });
@@ -2753,13 +2964,13 @@ Provide detailed reasoning with formulas shown.`;
           for (let iz = 0; iz <= numBaysZ; iz++) {
             const leftKey = `${story}-${ix}-${iz}`;
             const rightKey = `${story}-${ix + 1}-${iz}`;
-            
+
             steps.push({
               type: 'addMember',
-              params: { 
-                start: `N${nodeMap[leftKey]}`, 
-                end: `N${nodeMap[rightKey]}`, 
-                section: mainBeamSection 
+              params: {
+                start: `N${nodeMap[leftKey]}`,
+                end: `N${nodeMap[rightKey]}`,
+                section: mainBeamSection
               },
               description: `Main Beam X-dir, Floor ${story}, Grid Z=${iz}`
             });
@@ -2773,13 +2984,13 @@ Provide detailed reasoning with formulas shown.`;
           for (let iz = 0; iz < numBaysZ; iz++) {
             const frontKey = `${story}-${ix}-${iz}`;
             const backKey = `${story}-${ix}-${iz + 1}`;
-            
+
             steps.push({
               type: 'addMember',
-              params: { 
-                start: `N${nodeMap[frontKey]}`, 
-                end: `N${nodeMap[backKey]}`, 
-                section: secondaryBeamSection 
+              params: {
+                start: `N${nodeMap[frontKey]}`,
+                end: `N${nodeMap[backKey]}`,
+                section: secondaryBeamSection
               },
               description: `Secondary Beam Z-dir, Floor ${story}, Grid X=${ix}`
             });
@@ -2796,12 +3007,12 @@ Provide detailed reasoning with formulas shown.`;
           const br = `${story}-1-${iz}`;
           const tl = `${story + 1}-0-${iz}`;
           const tr = `${story + 1}-1-${iz}`;
-          
+
           steps.push({
             type: 'addMember',
-            params: { 
-              start: `N${nodeMap[bl]}`, 
-              end: `N${nodeMap[tr]}`, 
+            params: {
+              start: `N${nodeMap[bl]}`,
+              end: `N${nodeMap[tr]}`,
               section: bracingSection,
               memberType: 'truss'
             },
@@ -2809,28 +3020,28 @@ Provide detailed reasoning with formulas shown.`;
           });
           steps.push({
             type: 'addMember',
-            params: { 
-              start: `N${nodeMap[br]}`, 
-              end: `N${nodeMap[tl]}`, 
+            params: {
+              start: `N${nodeMap[br]}`,
+              end: `N${nodeMap[tl]}`,
               section: bracingSection,
               memberType: 'truss'
             },
             description: `X-Brace diagonal 2, Story ${story + 1}, Side ${iz === 0 ? 'Front' : 'Back'}`
           });
         }
-        
+
         // X-bracing on X-Y plane (end walls) at ix=0 and ix=numBaysX
         for (const ix of [0, numBaysX]) {
           const bf = `${story}-${ix}-0`;
           const bb = `${story}-${ix}-1`;
           const tf = `${story + 1}-${ix}-0`;
           const tb = `${story + 1}-${ix}-1`;
-          
+
           steps.push({
             type: 'addMember',
-            params: { 
-              start: `N${nodeMap[bf]}`, 
-              end: `N${nodeMap[tb]}`, 
+            params: {
+              start: `N${nodeMap[bf]}`,
+              end: `N${nodeMap[tb]}`,
               section: bracingSection,
               memberType: 'truss'
             },
@@ -2838,9 +3049,9 @@ Provide detailed reasoning with formulas shown.`;
           });
           steps.push({
             type: 'addMember',
-            params: { 
-              start: `N${nodeMap[bb]}`, 
-              end: `N${nodeMap[tf]}`, 
+            params: {
+              start: `N${nodeMap[bb]}`,
+              end: `N${nodeMap[tf]}`,
               section: bracingSection,
               memberType: 'truss'
             },
@@ -2857,7 +3068,7 @@ Provide detailed reasoning with formulas shown.`;
             const n2 = `${story}-${ix + 1}-${iz}`;
             const n3 = `${story}-${ix + 1}-${iz + 1}`;
             const n4 = `${story}-${ix}-${iz + 1}`;
-            
+
             steps.push({
               type: 'addPlate',
               params: {
@@ -2885,7 +3096,7 @@ Provide detailed reasoning with formulas shown.`;
             const nodeKey = `${story}-${ix}-${iz}`;
             const isCorner = (ix === 0 || ix === numBaysX) && (iz === 0 || iz === numBaysZ);
             const isEdge = (ix === 0 || ix === numBaysX) || (iz === 0 || iz === numBaysZ);
-            
+
             let loadMagnitude: number;
             if (isCorner) {
               loadMagnitude = cornerLoad;
@@ -2894,10 +3105,10 @@ Provide detailed reasoning with formulas shown.`;
             } else {
               loadMagnitude = interiorLoad;
             }
-            
+
             // Reduce roof load (less live load)
             if (isRoof) loadMagnitude *= 0.7;
-            
+
             steps.push({
               type: 'addLoad',
               params: { nodeId: `N${nodeMap[nodeKey]}`, fy: -loadMagnitude },
@@ -2927,12 +3138,12 @@ Provide detailed reasoning with formulas shown.`;
         const heightFactor = story / ((numStories * (numStories + 1)) / 2);
         const floorSeismicLoad = seismicBaseShear * heightFactor;
         const loadPerNode = floorSeismicLoad / ((numBaysX + 1) * (numBaysZ + 1));
-        
+
         // Apply to center of mass (simplified: at interior nodes)
         const centerX = Math.floor(numBaysX / 2);
         const centerZ = Math.floor(numBaysZ / 2);
         const nodeKey = `${story}-${centerX}-${centerZ}`;
-        
+
         steps.push({
           type: 'addLoad',
           params: { nodeId: `N${nodeMap[nodeKey]}`, fz: floorSeismicLoad },
@@ -3024,7 +3235,7 @@ Provide detailed reasoning with formulas shown.`;
       for (let i = 1; i < panels; i++) {
         steps.push({
           type: 'addLoad',
-          params: { nodeId: `N${panels + 1 + i}`, fy: -loadValue/panels },
+          params: { nodeId: `N${panels + 1 + i}`, fy: -loadValue / panels },
           description: `Load at top chord node ${i}`
         });
       }
@@ -3032,7 +3243,7 @@ Provide detailed reasoning with formulas shown.`;
     // ==================== SIMPLE BEAM ====================
     else if (d.includes('beam') || d.includes('cantilever')) {
       const isCantilever = d.includes('cantilever');
-      
+
       // Calculate realistic beam loads
       const beamLoads = this.calculateRealisticLoads('beam', {
         span,
@@ -3040,16 +3251,16 @@ Provide detailed reasoning with formulas shown.`;
         bayWidth: span,
         occupancy
       });
-      
+
       // UDL equivalent point load at quarter points
       const totalLoad = beamLoads.totalUDL * span;
       const quarterPointLoad = totalLoad / 4;
       const midspanLoad = totalLoad / 2;
-      
+
       const beamSection = this.selectRealisticSection('beam', span, totalLoad / 2);
 
       goal = `Create a ${isCantilever ? 'cantilever' : 'simply supported'} beam: ${span}m span (${occupancy})`;
-      reasoning = isCantilever 
+      reasoning = isCantilever
         ? `Cantilever beam designed per IS 800. Fixed support provides moment resistance.
 
 📐 **Geometry:**
@@ -3084,23 +3295,23 @@ Provide detailed reasoning with formulas shown.`;
       if (isCantilever) {
         steps.push(
           { type: 'addNode', params: { id: 'N1', x: 0, y: 0, z: 0, support: 'fixed' }, description: 'Fixed support (moment connection)' },
-          { type: 'addNode', params: { id: 'N2', x: span/3, y: 0, z: 0 }, description: '1/3 span' },
-          { type: 'addNode', params: { id: 'N3', x: 2*span/3, y: 0, z: 0 }, description: '2/3 span' },
+          { type: 'addNode', params: { id: 'N2', x: span / 3, y: 0, z: 0 }, description: '1/3 span' },
+          { type: 'addNode', params: { id: 'N3', x: 2 * span / 3, y: 0, z: 0 }, description: '2/3 span' },
           { type: 'addNode', params: { id: 'N4', x: span, y: 0, z: 0 }, description: 'Free end (tip)' },
           { type: 'addMember', params: { start: 'N1', end: 'N2', section: beamSection }, description: `Cantilever segment 1 (${beamSection})` },
           { type: 'addMember', params: { start: 'N2', end: 'N3', section: beamSection }, description: `Cantilever segment 2` },
           { type: 'addMember', params: { start: 'N3', end: 'N4', section: beamSection }, description: `Cantilever segment 3` },
           // Distributed load represented as point loads
-          { type: 'addLoad', params: { nodeId: 'N2', fy: -totalLoad/3 }, description: `DL+LL at 1/3: ${(totalLoad/3).toFixed(1)} kN` },
-          { type: 'addLoad', params: { nodeId: 'N3', fy: -totalLoad/3 }, description: `DL+LL at 2/3: ${(totalLoad/3).toFixed(1)} kN` },
-          { type: 'addLoad', params: { nodeId: 'N4', fy: -totalLoad/3 }, description: `DL+LL at tip: ${(totalLoad/3).toFixed(1)} kN` }
+          { type: 'addLoad', params: { nodeId: 'N2', fy: -totalLoad / 3 }, description: `DL+LL at 1/3: ${(totalLoad / 3).toFixed(1)} kN` },
+          { type: 'addLoad', params: { nodeId: 'N3', fy: -totalLoad / 3 }, description: `DL+LL at 2/3: ${(totalLoad / 3).toFixed(1)} kN` },
+          { type: 'addLoad', params: { nodeId: 'N4', fy: -totalLoad / 3 }, description: `DL+LL at tip: ${(totalLoad / 3).toFixed(1)} kN` }
         );
       } else {
         steps.push(
           { type: 'addNode', params: { id: 'N1', x: 0, y: 0, z: 0, support: 'pinned' }, description: 'Pinned support (left)' },
-          { type: 'addNode', params: { id: 'N2', x: span/4, y: 0, z: 0 }, description: 'Quarter span (L/4)' },
-          { type: 'addNode', params: { id: 'N3', x: span/2, y: 0, z: 0 }, description: 'Midspan (L/2) - max moment' },
-          { type: 'addNode', params: { id: 'N4', x: 3*span/4, y: 0, z: 0 }, description: 'Three-quarter span (3L/4)' },
+          { type: 'addNode', params: { id: 'N2', x: span / 4, y: 0, z: 0 }, description: 'Quarter span (L/4)' },
+          { type: 'addNode', params: { id: 'N3', x: span / 2, y: 0, z: 0 }, description: 'Midspan (L/2) - max moment' },
+          { type: 'addNode', params: { id: 'N4', x: 3 * span / 4, y: 0, z: 0 }, description: 'Three-quarter span (3L/4)' },
           { type: 'addNode', params: { id: 'N5', x: span, y: 0, z: 0, support: 'roller' }, description: 'Roller support (right)' },
           { type: 'addMember', params: { start: 'N1', end: 'N2', section: beamSection }, description: `Beam segment 1 (${beamSection})` },
           { type: 'addMember', params: { start: 'N2', end: 'N3', section: beamSection }, description: `Beam segment 2` },
@@ -3123,12 +3334,12 @@ Provide detailed reasoning with formulas shown.`;
         tributaryWidth: 6,
         occupancy
       });
-      
+
       const jointLoad = defaultLoadsCalc.totalPointLoad / 2;
       const windLoad = defaultLoadsCalc.windLoad! * 6 * height / 2;
       const columnSection = this.selectRealisticSection('column', height, jointLoad);
       const beamSectionDefault = this.selectRealisticSection('beam', span, jointLoad);
-      
+
       goal = `Create a rigid frame: ${span}m span × ${height}m height (${occupancy})`;
       reasoning = `Default rigid frame with realistic IS 875 loads.
 
@@ -3147,11 +3358,11 @@ Provide detailed reasoning with formulas shown.`;
 • "4-story office building 6m bays"
 • "15m span portal frame for factory"
 • "8m cantilever beam for balcony"`;
-      
+
       steps.push(
         { type: 'addNode', params: { id: 'N1', x: 0, y: 0, z: 0, support: 'fixed' }, description: 'Fixed support (foundation)' },
         { type: 'addNode', params: { id: 'N2', x: 0, y: height, z: 0 }, description: 'Left beam-column joint' },
-        { type: 'addNode', params: { id: 'N3', x: span/2, y: height, z: 0 }, description: 'Beam midspan' },
+        { type: 'addNode', params: { id: 'N3', x: span / 2, y: height, z: 0 }, description: 'Beam midspan' },
         { type: 'addNode', params: { id: 'N4', x: span, y: height, z: 0 }, description: 'Right beam-column joint' },
         { type: 'addNode', params: { id: 'N5', x: span, y: 0, z: 0, support: 'fixed' }, description: 'Fixed support (foundation)' },
         { type: 'addMember', params: { start: 'N1', end: 'N2', section: columnSection }, description: `Left column (${columnSection})` },
@@ -3224,29 +3435,29 @@ Click "Run Analysis" or say "Analyze the structure" to proceed.`;
     }
 
     const { maxDisplacement, maxStress, maxMoment } = context.analysisResults;
-    
+
     // Typical limits
     const deflectionLimit = 20; // mm, typical L/250
     const stressLimit = 165; // MPa, typical for Grade 250 steel
-    
+
     const deflectionOk = maxDisplacement < deflectionLimit;
     const stressOk = maxStress < stressLimit;
-    
+
     let assessment = `## 📊 Analysis Results Interpretation\n\n`;
-    
+
     assessment += `### Displacement\n`;
     assessment += `- Maximum: **${maxDisplacement.toFixed(2)} mm**\n`;
     assessment += `- Limit (L/250): ${deflectionLimit} mm\n`;
     assessment += `- Status: ${deflectionOk ? '✅ OK' : '⚠️ Exceeds limit'}\n\n`;
-    
+
     assessment += `### Stress\n`;
     assessment += `- Maximum: **${maxStress.toFixed(1)} MPa**\n`;
     assessment += `- Allowable (0.66Fy): ${stressLimit} MPa\n`;
     assessment += `- Status: ${stressOk ? '✅ OK' : '⚠️ Overstressed'}\n\n`;
-    
+
     assessment += `### Bending Moment\n`;
     assessment += `- Maximum: **${maxMoment.toFixed(1)} kN·m**\n\n`;
-    
+
     if (deflectionOk && stressOk) {
       assessment += `### ✅ Overall: Structure is ADEQUATE\n`;
       assessment += `The structure meets serviceability and strength requirements.`;
@@ -3341,19 +3552,19 @@ Click "Run Analysis" or say "Analyze the structure" to proceed.`;
       const maxStress = context.analysisResults.maxStress;
       const maxDisp = context.analysisResults.maxDisplacement;
       const maxMoment = context.analysisResults.maxMoment;
-      
+
       // Calculate utilization
       const fy = 250; // MPa for Grade 250 steel
       const allowableStress = fy / 1.1 * 0.66; // Allowable = 0.66 × fy / γm0
       const stressUtil = maxStress / allowableStress;
-      
+
       report += `───────────────────────────────────────────────────────────────────\n`;
       report += `                      ANALYSIS RESULTS SUMMARY                     \n`;
       report += `───────────────────────────────────────────────────────────────────\n`;
       report += `\n`;
       report += `  DISPLACEMENTS:\n`;
       report += `    Maximum Displacement    = ${maxDisp.toFixed(3).padStart(10)} mm\n`;
-      report += `    Deflection Limit (L/300)= ${(12000/300).toFixed(3).padStart(10)} mm\n`;
+      report += `    Deflection Limit (L/300)= ${(12000 / 300).toFixed(3).padStart(10)} mm\n`;
       report += `    Status                  : ${maxDisp < 40 ? 'PASS ✓' : 'FAIL ✗'}\n`;
       report += `\n`;
       report += `  STRESSES (IS 800:2007 Cl. 8):\n`;
@@ -3368,7 +3579,7 @@ Click "Run Analysis" or say "Analyze the structure" to proceed.`;
       report += `───────────────────────────────────────────────────────────────────\n`;
       report += `                      OVERALL DESIGN STATUS                        \n`;
       report += `───────────────────────────────────────────────────────────────────\n`;
-      
+
       const overallPass = stressUtil < 1.0 && maxDisp < 40;
       if (overallPass) {
         report += `\n`;
@@ -3401,7 +3612,7 @@ Click "Run Analysis" or say "Analyze the structure" to proceed.`;
       report += `  Please run Linear Static Analysis first to obtain design forces.\n`;
       report += `───────────────────────────────────────────────────────────────────\n`;
     }
-    
+
     report += `\n`;
     report += `═══════════════════════════════════════════════════════════════════\n`;
     report += `                     END OF DESIGN CHECK REPORT                     \n`;
@@ -4614,7 +4825,7 @@ What would you like to explore first?`;
       suggestions.push("Try: \"Create a simple beam\" or \"Build a portal frame\"");
     } else {
       const supportedNodes = context.nodes.filter(n => n.hasSupport);
-      
+
       if (supportedNodes.length === 0) {
         issues.push("⚠️ **No supports defined** - Structure is unstable");
         suggestions.push("Add supports: \"Add fixed support at the base\" or \"Pin the left node\"");
@@ -4694,7 +4905,7 @@ If you're still having problems, can you describe what's going wrong? For exampl
 
     // Build assessment
     let assessment = `## 📋 Model Review\n\n`;
-    
+
     // Structure info
     assessment += `### Structure Overview\n`;
     assessment += `- **Nodes:** ${context.nodes.length}\n`;
@@ -4706,7 +4917,7 @@ If you're still having problems, can you describe what's going wrong? For exampl
     assessment += `### Stability Assessment\n`;
     const degreesOfFreedom = context.nodes.length * 3; // 2D assumption
     const restraints = supportedNodes.length * 3; // Simplified
-    
+
     if (supportedNodes.length === 0) {
       assessment += `⚠️ **Unstable** - No supports defined. Structure will move freely.\n\n`;
     } else if (supportedNodes.length < 2 && context.members.length > 1) {
@@ -4720,7 +4931,7 @@ If you're still having problems, can you describe what's going wrong? For exampl
     if (context.loads.length === 0) {
       assessment += `⚠️ No loads applied. Structure will show zero response.\n\n`;
     } else {
-      const totalLoad = context.loads.reduce((sum, l) => 
+      const totalLoad = context.loads.reduce((sum, l) =>
         sum + Math.abs(l.fx || 0) + Math.abs(l.fy || 0) + Math.abs(l.fz || 0), 0);
       assessment += `✅ ${context.loads.length} load(s) applied (total magnitude: ~${totalLoad.toFixed(0)} kN)\n\n`;
     }
@@ -4743,7 +4954,7 @@ Provide 2-3 specific recommendations to improve this model. Be practical and act
     }
 
     assessment += `\n*Would you like me to run analysis or make any changes?*`;
-    
+
     return assessment;
   }
 
@@ -4758,23 +4969,23 @@ Provide 2-3 specific recommendations to improve this model. Be practical and act
     // ===== ENHANCED ARCHITECTURE =====
     // Step 1: Decompose complex queries
     const subtasks = query.length > 100 ? await this.decomposeTask(query, context) : [query];
-    
+
     // Step 2: Build multi-turn context
     const enrichedPrompt = this.buildMultiTurnPrompt(query, context);
-    
+
     // Step 3: Store model state for context
     this.lastModelState = context;
-    
+
     // Step 4: Try Gemini with enhanced context
     if (this.apiKey) {
       try {
         let response: string;
-        
+
         // For complex queries, use multi-step reasoning
         if (subtasks.length > 1) {
           console.log('[GeminiAI] Complex query detected, using multi-step reasoning');
           const responses: string[] = [];
-          
+
           for (const subtask of subtasks) {
             try {
               const subResponse = await this.callGemini(
@@ -4786,7 +4997,7 @@ Provide 2-3 specific recommendations to improve this model. Be practical and act
               console.warn('[GeminiAI] Subtask failed:', e);
             }
           }
-          
+
           // Synthesize responses if multiple subtasks
           if (responses.length > 1) {
             response = await this.callGemini(
@@ -4800,7 +5011,7 @@ Provide 2-3 specific recommendations to improve this model. Be practical and act
           // Single task - use standard enhanced prompt
           response = await this.callGemini(enrichedPrompt, SYSTEM_PROMPT);
         }
-        
+
         // Update memory
         this.updateReasoningMemory(response);
         return response;
@@ -4818,7 +5029,7 @@ Provide 2-3 specific recommendations to improve this model. Be practical and act
    */
   private generateLocalConversationalResponse(query: string, context: AIModelContext): string {
     const q = query.toLowerCase();
-    
+
     // Greetings
     if (q.match(/^(hi|hello|hey|good\s*(morning|afternoon|evening)|howdy)/)) {
       const greetings = [
@@ -4872,10 +5083,10 @@ What would you like to explore?`;
     // Generic helpful response
     return `I'd be happy to help with that! 
 
-${context.nodes.length === 0 
-  ? "I notice you don't have a model yet. Would you like me to create one? Just describe what you need, like \"Create a 20m span truss\" or \"Build a simple beam.\""
-  : `You currently have a model with ${context.nodes.length} nodes and ${context.members.length} members. Would you like me to analyze it, add more elements, or help with something else?`
-}
+${context.nodes.length === 0
+        ? "I notice you don't have a model yet. Would you like me to create one? Just describe what you need, like \"Create a 20m span truss\" or \"Build a simple beam.\""
+        : `You currently have a model with ${context.nodes.length} nodes and ${context.members.length} members. Would you like me to analyze it, add more elements, or help with something else?`
+      }
 
 Feel free to ask me anything about structural engineering - I'm here to help! 🏗️`;
   }
@@ -4889,9 +5100,9 @@ Feel free to ask me anything about structural engineering - I'm here to help! �
     }
 
     const supportedNodes = context.nodes.filter(n => n.hasSupport);
-    
+
     let description = `## 📊 Current Model Overview\n\n`;
-    
+
     // Structure composition
     description += `**Structure Composition:**\n`;
     description += `- 📍 **${context.nodes.length} nodes** (${supportedNodes.length} with supports)\n`;
@@ -4915,7 +5126,7 @@ Feel free to ask me anything about structural engineering - I'm here to help! �
     }
 
     description += `\n*What would you like to do with this model?*`;
-    
+
     return description;
   }
 
@@ -4958,19 +5169,19 @@ How can I assist you today?`;
     let response = `## 🎯 ${plan.goal}\n\n`;
     response += `**Reasoning:** ${plan.reasoning}\n\n`;
     response += `**Planned Actions:** (${plan.steps.length} steps)\n\n`;
-    
+
     plan.steps.slice(0, 10).forEach((step, i) => {
       const icon = this.getActionIcon(step.type);
       response += `${i + 1}. ${icon} ${step.description}\n`;
     });
-    
+
     if (plan.steps.length > 10) {
       response += `\n... and ${plan.steps.length - 10} more steps\n`;
     }
-    
+
     response += `\n**Confidence:** ${(plan.confidence * 100).toFixed(0)}%\n`;
     response += `\n_Click "Execute Plan" to build this structure._`;
-    
+
     return response;
   }
 

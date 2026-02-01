@@ -54,11 +54,13 @@ const ToolButton: FC<ToolButtonProps> = ({ tool, isActive, onClick, showLabel = 
                 }
       `}
             title={`${tool.tooltip}${tool.shortcut ? ` (${tool.shortcut})` : ''}`}
+            aria-label={tool.label}
+            aria-pressed={isActive}
         >
-            <Icon className="w-4 h-4" />
+            <Icon className="w-4 h-4" aria-hidden="true" />
             {showLabel && <span>{tool.label}</span>}
             {tool.shortcut && (
-                <span className="text-[10px] text-zinc-500 ml-auto">{tool.shortcut}</span>
+                <span className="text-[10px] text-zinc-500 ml-auto" aria-hidden="true">{tool.shortcut}</span>
             )}
         </button>
     );
@@ -101,10 +103,13 @@ const ToolGroupDropdown: FC<ToolGroupDropdownProps> = ({ group, activeTool, onTo
                         : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
                     }
         `}
+                aria-haspopup="true"
+                aria-expanded={isOpen}
+                aria-label={`${group.label} tools`}
             >
-                <DisplayIcon className="w-4 h-4" />
+                <DisplayIcon className="w-4 h-4" aria-hidden="true" />
                 <span className="hidden sm:inline">{group.label}</span>
-                <ChevronDown className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
             </button>
 
             {isOpen && (
@@ -161,7 +166,7 @@ export const ModelingToolbar: FC = () => {
     // Helper function to set tool in both stores
     const handleToolSelect = useCallback((toolId: string) => {
         setActiveTool(toolId);
-        
+
         // Map UI tool names to model tool names
         const toolMap: Record<string, string> = {
             'SELECT': 'select',
@@ -171,7 +176,7 @@ export const ModelingToolbar: FC = () => {
             'LOAD': 'load',
             'MEMBER_LOAD': 'memberLoad',
         };
-        
+
         const modelTool = toolMap[toolId] || toolId.toLowerCase();
         setModelTool(modelTool as any);
     }, [setActiveTool, setModelTool]);

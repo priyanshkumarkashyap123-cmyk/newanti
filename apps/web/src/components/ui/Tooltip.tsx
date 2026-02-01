@@ -80,14 +80,20 @@ export const Tooltip: FC<TooltipProps> = ({
                 ref={triggerRef}
                 onMouseEnter={showTooltip}
                 onMouseLeave={hideTooltip}
+                onFocus={showTooltip}
+                onBlur={hideTooltip}
                 className={className}
+                aria-describedby={isVisible ? 'tooltip-content' : undefined}
             >
                 {children}
             </div>
             {isVisible && createPortal(
                 <div
                     ref={tooltipRef}
-                    className="fixed z-[1000] px-3 py-1.5 bg-slate-900 border border-slate-700 text-slate-100 text-xs rounded shadow-xl whitespace-nowrap pointer-events-none animate-in fade-in zoom-in-95 duration-100"
+                    id="tooltip-content"
+                    role="tooltip"
+                    aria-live="polite"
+                    className="fixed z-[1000] px-3 py-1.5 bg-slate-900 border border-slate-700 text-slate-100 text-xs rounded-lg shadow-xl whitespace-nowrap pointer-events-none animate-in fade-in zoom-in-95 duration-100"
                     style={{
                         top: position.top,
                         left: position.left,
@@ -97,9 +103,9 @@ export const Tooltip: FC<TooltipProps> = ({
                     <div className="flex items-center gap-2">
                         <span className="font-medium">{content}</span>
                         {shortcut && (
-                            <span className="bg-slate-700 border border-slate-600 px-1 rounded text-[10px] text-slate-300 font-mono">
+                            <kbd className="bg-slate-700 border border-slate-600 px-1.5 py-0.5 rounded text-[10px] text-slate-300 font-mono">
                                 {shortcut}
-                            </span>
+                            </kbd>
                         )}
                     </div>
                 </div>,

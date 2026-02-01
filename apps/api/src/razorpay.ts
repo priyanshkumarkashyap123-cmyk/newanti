@@ -4,7 +4,7 @@
  */
 
 import * as crypto from 'crypto';
-import { Request, Response, Router } from 'express';
+import { Request, Response, Router, type IRouter } from 'express';
 import { User, Subscription } from './models.js';
 import { createRequire } from 'module';
 
@@ -324,7 +324,7 @@ import { requireAuth, getAuth } from './middleware/authMiddleware.js';
 
 // ... (existing imports)
 
-export const razorpayRouter = Router();
+export const razorpayRouter: IRouter = Router();
 
 /**
  * POST /api/create-subscription

@@ -1,15 +1,17 @@
 /**
  * HelpPage.tsx - Help & Tutorials
- * Video tutorials grid, FAQ section, and support CTA
+ * Dark themed video tutorials grid, FAQ section, and support CTA
  */
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
-    Search, PlayCircle, HelpCircle, MessageCircle, Mail,
-    ChevronDown, ChevronUp, ExternalLink, Plus, Shield,
-    Zap, BookOpen
+    Search, PlayCircle, MessageCircle, Mail,
+    ChevronDown, ChevronUp, ExternalLink, Plus,
+    Zap, BookOpen, ArrowLeft
 } from 'lucide-react';
+import beamLabLogo from '../assets/beamlab_logo.png';
 
 // ============================================
 // TYPES & DATA
@@ -21,7 +23,6 @@ interface VideoTutorial {
     description: string;
     duration: string;
     level: 'Beginner' | 'Intermediate' | 'Advanced';
-    thumbnail: string;
 }
 
 interface FAQ {
@@ -37,7 +38,6 @@ const tutorials: VideoTutorial[] = [
         description: 'Learn how to define geometry, set up support conditions, and navigate the workspace in minutes.',
         duration: '5:02',
         level: 'Beginner',
-        thumbnail: '/api/placeholder/400/225',
     },
     {
         id: '2',
@@ -45,7 +45,6 @@ const tutorials: VideoTutorial[] = [
         description: 'Master point loads, distributed loads, and create complex load combinations for your analysis.',
         duration: '8:45',
         level: 'Intermediate',
-        thumbnail: '/api/placeholder/400/225',
     },
     {
         id: '3',
@@ -53,7 +52,27 @@ const tutorials: VideoTutorial[] = [
         description: 'A deep dive into shear forces, bending moments, and deflection diagrams to optimize your design.',
         duration: '12:10',
         level: 'Intermediate',
-        thumbnail: '/api/placeholder/400/225',
+    },
+    {
+        id: '4',
+        title: 'AI-Assisted Design Optimization',
+        description: 'Use the AI assistant to get section recommendations and optimize your structural design.',
+        duration: '10:30',
+        level: 'Advanced',
+    },
+    {
+        id: '5',
+        title: 'Multi-Story Frame Analysis',
+        description: 'Complete walkthrough of modeling and analyzing a 3D multi-story building frame.',
+        duration: '18:45',
+        level: 'Advanced',
+    },
+    {
+        id: '6',
+        title: 'Generating Professional Reports',
+        description: 'Create comprehensive PDF reports with custom branding for your clients.',
+        duration: '7:20',
+        level: 'Beginner',
     },
 ];
 
@@ -61,22 +80,22 @@ const faqs: FAQ[] = [
     {
         id: '1',
         question: 'How do I export my analysis report to PDF?',
-        answer: 'To export your report, navigate to the Reports tab in the main navigation. Click on the "Generate Report" button in the top right corner. From the dropdown menu, select "Export as PDF". You can customize which sections (Geometry, Loads, Results) are included in the final document.',
+        answer: 'Navigate to the Reports tab in the main navigation. Click on "Generate Report" and select "Export as PDF". You can customize which sections are included in the final document.',
     },
     {
         id: '2',
         question: 'What design codes are currently supported?',
-        answer: 'BeamLab Ultimate supports AISC 360-16, Eurocode 3, IS 800, and AS 4100 for steel design. Concrete design codes include ACI 318-19, Eurocode 2, and IS 456. We regularly update our code library based on user feedback.',
+        answer: 'BeamLab supports AISC 360-16, Eurocode 3, IS 800, and AS 4100 for steel. Concrete codes include ACI 318-19, Eurocode 2, and IS 456. We regularly update based on user feedback.',
     },
     {
         id: '3',
         question: 'How do I fix "Geometric Instability" errors?',
-        answer: 'This error typically occurs when your structure has insufficient supports or releases that create a mechanism. Check that: 1) All supports are properly constrained, 2) Member releases don\'t create hinges that allow rigid-body motion, 3) The structure is properly connected without floating nodes.',
+        answer: 'This error occurs when your structure has insufficient supports. Check that: 1) All supports are properly constrained, 2) Member releases don\'t create mechanisms, 3) The structure is properly connected.',
     },
     {
         id: '4',
         question: 'Can I collaborate with other team members?',
-        answer: 'Yes! Pro and Enterprise plans support real-time collaboration. You can invite team members to your project and work together on the same model. Changes sync automatically and you can see who\'s working on what in real-time.',
+        answer: 'Yes! Pro and Enterprise plans support real-time collaboration. Invite team members to your project and work together with automatic sync.',
     },
 ];
 
@@ -84,15 +103,19 @@ const faqs: FAQ[] = [
 // COMPONENTS
 // ============================================
 
-const VideoCard = ({ tutorial }: { tutorial: VideoTutorial }) => (
-    <div className="group bg-white dark:bg-zinc-800 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 hover:shadow-lg hover:border-blue-500/30 dark:hover:border-blue-500/50 transition-all duration-300 cursor-pointer flex flex-col h-full">
-        <div className="relative aspect-video bg-zinc-100 dark:bg-zinc-900 overflow-hidden">
+const VideoCard = ({ tutorial, index }: { tutorial: VideoTutorial; index: number }) => (
+    <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.1 }}
+        className="group bg-slate-900 rounded-xl overflow-hidden border border-slate-800 hover:border-blue-500/30 transition-all duration-300 cursor-pointer flex flex-col h-full hover-lift"
+    >
+        <div className="relative aspect-video bg-slate-800 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20 flex items-center justify-center">
-                <BookOpen className="w-16 h-16 text-blue-600/40" />
+                <BookOpen className="w-16 h-16 text-blue-500/30" />
             </div>
-            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm">
+                <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg">
                     <PlayCircle className="w-8 h-8 text-blue-600 ml-0.5" />
                 </div>
             </div>
@@ -101,37 +124,37 @@ const VideoCard = ({ tutorial }: { tutorial: VideoTutorial }) => (
             </span>
         </div>
         <div className="p-5 flex flex-col flex-1">
-            <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2 group-hover:text-blue-600 transition-colors">
+            <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">
                 {tutorial.title}
             </h3>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4 line-clamp-2">
+            <p className="text-sm text-slate-400 mb-4 line-clamp-2">
                 {tutorial.description}
             </p>
-            <div className="mt-auto flex items-center gap-2 text-xs font-medium text-zinc-400 uppercase tracking-wider">
+            <div className="mt-auto flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
                 <span className={`w-2 h-2 rounded-full ${tutorial.level === 'Beginner' ? 'bg-green-500' :
-                        tutorial.level === 'Intermediate' ? 'bg-yellow-500' : 'bg-red-500'
+                    tutorial.level === 'Intermediate' ? 'bg-yellow-500' : 'bg-red-500'
                     }`} />
                 {tutorial.level}
             </div>
         </div>
-    </div>
+    </motion.div>
 );
 
 const FAQItem = ({ faq, isOpen, onToggle }: { faq: FAQ; isOpen: boolean; onToggle: () => void }) => (
-    <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 overflow-hidden">
+    <div className="border border-slate-800 rounded-lg bg-slate-900 overflow-hidden">
         <button
             onClick={onToggle}
-            className="w-full flex items-center justify-between p-5 text-left hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors"
+            className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-800/50 transition-colors"
         >
-            <span className="font-bold text-zinc-900 dark:text-white pr-4">{faq.question}</span>
+            <span className="font-bold text-white pr-4">{faq.question}</span>
             {isOpen ? (
-                <ChevronUp className="w-5 h-5 text-zinc-400 flex-shrink-0" />
+                <ChevronUp className="w-5 h-5 text-slate-400 flex-shrink-0" />
             ) : (
-                <ChevronDown className="w-5 h-5 text-zinc-400 flex-shrink-0" />
+                <ChevronDown className="w-5 h-5 text-slate-400 flex-shrink-0" />
             )}
         </button>
         {isOpen && (
-            <div className="p-5 pt-0 border-t border-zinc-100 dark:border-zinc-700/50 text-zinc-600 dark:text-zinc-300 text-sm leading-relaxed">
+            <div className="p-5 pt-0 border-t border-slate-800 text-slate-400 text-sm leading-relaxed">
                 <p className="mt-4">{faq.answer}</p>
             </div>
         )}
@@ -147,78 +170,86 @@ export const HelpPage = () => {
     const [openFAQ, setOpenFAQ] = useState<string | null>('1');
 
     return (
-        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900 flex flex-col">
-            {/* Header */}
-            <header className="sticky top-0 z-50 border-b border-zinc-200 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm">
-                <div className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto w-full">
-                    <Link to="/" className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                            <Zap className="w-5 h-5 text-white" />
-                        </div>
-                        <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">BeamLab Ultimate</h2>
-                    </Link>
-                    <div className="hidden md:flex items-center gap-8">
-                        <nav className="flex items-center gap-6">
-                            <Link to="/dashboard" className="text-zinc-600 dark:text-zinc-300 hover:text-blue-600 text-sm font-medium transition-colors">Dashboard</Link>
-                            <Link to="/app" className="text-zinc-600 dark:text-zinc-300 hover:text-blue-600 text-sm font-medium transition-colors">Projects</Link>
-                            <Link to="/reports" className="text-zinc-600 dark:text-zinc-300 hover:text-blue-600 text-sm font-medium transition-colors">Reports</Link>
-                            <Link to="/help" className="text-blue-600 font-semibold text-sm transition-colors">Help</Link>
-                        </nav>
-                        <Link to="/app" className="flex items-center gap-2 rounded-lg h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold transition-colors">
-                            <Plus className="w-4 h-4" />
-                            New Project
+        <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col font-sans selection:bg-blue-500/30">
+            {/* Header - Dark Theme */}
+            <nav className="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/90 backdrop-blur-xl">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-16">
+                        <Link to="/" className="flex items-center gap-3 group">
+                            <div className="relative w-9 h-9 flex items-center justify-center rounded-lg shadow-lg overflow-hidden">
+                                <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-cover" />
+                            </div>
+                            <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+                                BeamLab Ultimate
+                            </span>
                         </Link>
+                        <div className="hidden md:flex items-center gap-8">
+                            <Link to="/dashboard" className="text-slate-400 hover:text-white text-sm font-medium transition-colors">Dashboard</Link>
+                            <Link to="/app" className="text-slate-400 hover:text-white text-sm font-medium transition-colors">Projects</Link>
+                            <Link to="/help" className="text-white font-semibold text-sm">Help</Link>
+                            <Link to="/app" className="flex items-center gap-2 rounded-full h-9 px-5 bg-white text-slate-950 text-sm font-bold hover:bg-slate-100 transition-colors">
+                                <Plus className="w-4 h-4" />
+                                New Project
+                            </Link>
+                        </div>
                     </div>
                 </div>
-            </header>
+            </nav>
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col items-center w-full px-6 py-10">
-                <div className="w-full max-w-5xl flex flex-col gap-10">
+            <main className="flex-1 flex flex-col items-center w-full px-6 py-12">
+                <div className="w-full max-w-6xl flex flex-col gap-12">
                     {/* Page Heading & Search */}
-                    <section className="flex flex-col gap-8 text-center md:text-left">
-                        <div className="flex flex-col gap-3 max-w-2xl">
-                            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white">
+                    <section className="text-center">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex flex-col gap-4 max-w-2xl mx-auto mb-8"
+                        >
+                            <span className="text-blue-400 text-sm font-semibold uppercase tracking-wider">
+                                Documentation
+                            </span>
+                            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
                                 Help & Tutorials
                             </h1>
-                            <p className="text-lg text-zinc-500 dark:text-zinc-400">
-                                Master structural analysis with our comprehensive video guides, documentation, and expert support.
+                            <p className="text-lg text-slate-400">
+                                Master structural analysis with our comprehensive video guides and expert support.
                             </p>
-                        </div>
+                        </motion.div>
 
                         {/* Search Bar */}
-                        <div className="relative w-full max-w-2xl">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
+                        <div className="relative w-full max-w-2xl mx-auto">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search for topics, commands, or errors (e.g. 'Moment Distribution')"
-                                className="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 pl-12 pr-4 py-4 text-base text-zinc-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 placeholder:text-zinc-400 transition-all"
+                                placeholder="Search for topics, commands, or errors..."
+                                className="w-full rounded-xl border border-slate-800 bg-slate-900 pl-12 pr-4 py-4 text-base text-white shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-slate-500 transition-all"
                             />
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                                <kbd className="hidden sm:inline-flex items-center rounded border border-zinc-200 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-700 px-2 py-1 font-sans text-xs text-zinc-400">
-                                    ⌘K
-                                </kbd>
-                            </div>
+                            <kbd className="absolute right-4 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center rounded border border-slate-700 bg-slate-800 px-2 py-1 font-sans text-xs text-slate-400">
+                                ⌘K
+                            </kbd>
                         </div>
                     </section>
 
                     {/* Video Tutorials Grid */}
                     <section>
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                                <PlayCircle className="w-6 h-6 text-blue-600" />
+                            <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-blue-500/10">
+                                    <PlayCircle className="w-6 h-6 text-blue-400" />
+                                </div>
                                 Video Tutorials
                             </h2>
-                            <button className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 group">
+                            <button className="text-sm font-medium text-blue-400 hover:text-blue-300 flex items-center gap-1 group">
                                 View all videos
                                 <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                             </button>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {tutorials.map((tutorial) => (
-                                <VideoCard key={tutorial.id} tutorial={tutorial} />
+                            {tutorials.map((tutorial, index) => (
+                                <VideoCard key={tutorial.id} tutorial={tutorial} index={index} />
                             ))}
                         </div>
                     </section>
@@ -226,18 +257,18 @@ export const HelpPage = () => {
                     {/* FAQ Section */}
                     <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-4">
                         <div className="md:col-span-1">
-                            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">
+                            <h2 className="text-2xl font-bold text-white mb-4">
                                 Frequently Asked Questions
                             </h2>
-                            <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
+                            <p className="text-slate-400 text-sm mb-6">
                                 Can't find the answer you're looking for? Browse our full documentation or reach out to support.
                             </p>
                             <a
                                 href="#"
-                                className="inline-flex items-center text-blue-600 font-bold text-sm hover:underline"
+                                className="inline-flex items-center text-blue-400 font-bold text-sm hover:text-blue-300 transition-colors"
                             >
                                 Go to Documentation Center
-                                <ExternalLink className="ml-1 w-4 h-4" />
+                                <ExternalLink className="ml-2 w-4 h-4" />
                             </a>
                         </div>
                         <div className="md:col-span-2 flex flex-col gap-4">
@@ -253,25 +284,25 @@ export const HelpPage = () => {
                     </section>
 
                     {/* Support CTA */}
-                    <section className="mt-8 mb-12">
-                        <div className="bg-zinc-900 dark:bg-blue-950/30 rounded-2xl p-8 md:p-12 relative overflow-hidden">
+                    <section className="mt-4 mb-8">
+                        <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-8 md:p-12 relative overflow-hidden border border-slate-800">
                             {/* Decorative background */}
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
-                            <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/20 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none" />
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+                            <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/10 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none" />
 
                             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
                                 <div className="max-w-xl">
                                     <h3 className="text-2xl font-bold text-white mb-3">Still need help?</h3>
-                                    <p className="text-zinc-300">
+                                    <p className="text-slate-400">
                                         Our dedicated structural engineering support team is ready to assist you with complex modeling questions or technical issues.
                                     </p>
                                 </div>
                                 <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-                                    <button className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors w-full sm:w-auto">
+                                    <button className="flex items-center justify-center gap-2 bg-white text-slate-950 font-bold py-3 px-6 rounded-lg transition-all hover:bg-slate-100 shadow-lg w-full sm:w-auto">
                                         <MessageCircle className="w-5 h-5" />
                                         Chat with Support
                                     </button>
-                                    <button className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold py-3 px-6 rounded-lg transition-colors w-full sm:w-auto">
+                                    <button className="flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 text-white border border-slate-600 font-bold py-3 px-6 rounded-lg transition-colors w-full sm:w-auto">
                                         <Mail className="w-5 h-5" />
                                         Email Us
                                     </button>
@@ -282,14 +313,14 @@ export const HelpPage = () => {
                 </div>
             </main>
 
-            {/* Footer */}
-            <footer className="border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-8">
-                <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-zinc-500 dark:text-zinc-400">
-                    <p>© 2024 BeamLab Software. All rights reserved.</p>
+            {/* Footer - Dark Theme */}
+            <footer className="border-t border-slate-800 bg-slate-950 py-8">
+                <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
+                    <p>© 2026 BeamLab Ultimate. All rights reserved.</p>
                     <div className="flex gap-6">
-                        <Link to="/privacy" className="hover:text-blue-600 transition-colors">Privacy Policy</Link>
-                        <Link to="/terms" className="hover:text-blue-600 transition-colors">Terms of Service</Link>
-                        <a href="#" className="hover:text-blue-600 transition-colors">Status</a>
+                        <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+                        <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+                        <a href="#" className="hover:text-white transition-colors">Status</a>
                     </div>
                 </div>
             </footer>

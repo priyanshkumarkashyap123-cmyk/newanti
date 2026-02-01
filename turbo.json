@@ -20,7 +20,8 @@
         ".next",
         "dist",
         "build",
-        "out"
+        "out",
+        "pkg"
       ],
       "cache": true,
       "dependsOn": [

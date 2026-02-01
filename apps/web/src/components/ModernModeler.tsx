@@ -43,7 +43,7 @@ import { QuickStartModal } from './QuickStartModal';
 import { ProjectDetailsDialog } from './ProjectDetailsDialog';
 import { ResultsToolbar } from './results/ResultsToolbar';
 import ModalControls from './ModalControls';
-import { AICommandCenter, AIAssistantChat, AIAssistantButton, AutonomousAIAgent } from './ai';
+import { AICommandCenter, AIAssistantChat, AIAssistantButton, AutonomousAIAgent, PowerAIPanel } from './ai';
 import { LoadInputDialog } from './ui/LoadInputDialog';
 import { TutorialOverlay } from './TutorialOverlay';
 import { StructureWizard } from './StructureWizard';
@@ -72,7 +72,7 @@ import { DesignCodesDialog } from './DesignCodesDialog';
 import { ModelingToolbar } from './toolbar/ModelingToolbar';
 import { ModalAnalysisPanel } from './analysis/ModalAnalysisPanel';
 import { ExportDialog } from './ExportDialog';
-import { ActionToast, type ToastType } from './ui/ActionToast';
+import { useToast } from './ui/ToastSystem';
 import type { Node, Member } from '../store/model';
 import consentService from '../services/ConsentService';
 import { useAuth } from '../providers/AuthProvider';
@@ -100,6 +100,11 @@ import { useTierAccess } from '../hooks/useTierAccess';
 import { CloudProjectManager } from './CloudProjectManager';
 import { ProjectService, Project } from '../services/ProjectService';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+
+// Multiplayer
+import { MultiplayerProvider, useMultiplayerContext } from './collaborators/MultiplayerContext';
+import { Collaborators } from './collaborators/Collaborators';
+import { ServerUpdate } from '../hooks/useMultiplayer';
 
 // ============================================
 
@@ -183,7 +188,7 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = ({ coll
 
     if (collapsed) {
         return (
-            <div className="w-10 h-full bg-slate-900 border-l border-slate-800 flex flex-col items-center py-2">
+            <div className="w-10 h-full bg-slate-900 border-l border-slate-800 flex flex-col items-center py-2 absolute right-0 z-20 md:relative shadow-lg md:shadow-none">
                 <button
                     onClick={onToggle}
                     className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg"
@@ -196,7 +201,7 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = ({ coll
     }
 
     return (
-        <div className="w-72 h-full bg-slate-900 border-l border-slate-800 flex flex-col flex-shrink-0">
+        <div className="w-72 h-full bg-slate-900 border-l border-slate-800 flex flex-col flex-shrink-0 absolute right-0 z-40 md:relative shadow-xl">
             <div className="flex items-center justify-between px-3 py-2 border-b border-slate-800">
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                     Properties
@@ -333,6 +338,19 @@ export const ModernModeler: FC = () => {
         hideNotification,
         showNotification
     } = useUIStore();
+    
+    const toastSystem = useToast();
+    
+    // Handle notifications from UIStore via ToastSystem
+    useEffect(() => {
+        if (notification?.show) {
+            const method = notification.type === 'success' ? toastSystem.success
+                         : notification.type === 'error' ? toastSystem.error
+                         : toastSystem.info;
+            method(notification.message, { duration: 3000 });
+            hideNotification();
+        }
+    }, [notification, toastSystem, hideNotification]);
 
     // Wiring for Generator Tools
     useEffect(() => {
@@ -767,7 +785,7 @@ export const ModernModeler: FC = () => {
 
                     // Convert WASM result to expected format
                     // WASM 3D solver returns HashMaps: { "nodeId": [dx, dy, dz, rx, ry, rz], ... }
-                    
+
                     // Parse displacements - 6 DOF for 3D analysis
                     const nodesDict: Record<string, any> = {};
                     const displacements = wasmResult.displacements || {};
@@ -824,7 +842,7 @@ export const ModernModeler: FC = () => {
                             max_axial?: number;
                             max_torsion?: number;
                         };
-                        
+
                         // Handle both 2D and 3D formats
                         if (mf.forces_i && mf.forces_j) {
                             // 3D format: Full member end forces
@@ -1312,414 +1330,495 @@ export const ModernModeler: FC = () => {
     //     }
     // }, [setCategory]);
 
+    // Handle sync from server
+    const handleServerUpdate = useCallback((update: ServerUpdate) => {
+        // Sync logic - apply changes to local store
+        const state = useModelStore.getState();
+
+        switch (update.type) {
+            case 'node_update': {
+                const nData = update.data;
+                state.addNode({
+                    id: nData.nodeId,
+                    x: nData.x, y: nData.y, z: nData.z,
+                    restraints: nData.restraints
+                });
+                break;
+            }
+            case 'member_update': {
+                const mData = update.data;
+                state.addMember({
+                    id: mData.memberId,
+                    startNodeId: mData.startNodeId,
+                    endNodeId: mData.endNodeId,
+                    sectionId: mData.sectionId,
+                    E: mData.E, A: mData.A, I: mData.I
+                });
+                break;
+            }
+        }
+    }, []);
+
+    // Multiplayer Wrapper Component to access context
+    const MultiplayerUI = () => {
+        try {
+             
+            const mp = useMultiplayerContext();
+            return (
+                <Collaborators
+                    users={mp.remoteUsers}
+                    currentUserColor={mp.userColor}
+                    isConnected={mp.isConnected}
+                />
+            );
+        } catch (e) {
+            return null;
+        }
+    };
+
+    // Mobile Sidebar State
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    useEffect(() => {
+        const handleToggle = () => setIsSidebarOpen(prev => !prev);
+        document.addEventListener('toggle-sidebar', handleToggle);
+        return () => document.removeEventListener('toggle-sidebar', handleToggle);
+    }, []);
+
     return (
-        <div className="h-screen w-screen flex flex-col bg-zinc-950 text-white overflow-hidden">
-            {/* Top Bar - Minimal Header */}
-            <header className="h-8 bg-zinc-950 border-b border-zinc-800 flex items-center justify-between px-4 flex-shrink-0 select-none">
-                {/* Logo Area */}
-                <div className="flex items-center gap-2">
-                    <span className="text-xl text-blue-500">⬡</span>
-                    <span className="font-bold text-sm tracking-tight">BeamLab <span className="text-xs font-normal text-zinc-500">ULTIMATE</span></span>
-                </div>
+        <MultiplayerProvider
+            projectId={useModelStore.getState().projectInfo.cloudId || 'demo-project'}
+            userName={user?.firstName || 'Guest'}
+            onServerUpdate={handleServerUpdate}
+        >
+            <div className="h-screen w-screen flex flex-col bg-zinc-950 text-white overflow-hidden relative">
+                <MultiplayerUI />
+                {/* Top Bar - Minimal Header */}
+                <header className="h-8 bg-zinc-950 border-b border-zinc-800 flex items-center justify-between px-4 flex-shrink-0 select-none">
+                    {/* Logo Area */}
+                    <div className="flex items-center gap-3">
+                        {/* Mobile Menu Button */}
+                        <button
+                            className="md:hidden text-zinc-400 hover:text-white"
+                            onClick={() => document.dispatchEvent(new CustomEvent('toggle-sidebar'))}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                        </button>
 
-                {/* Window Controls / User */}
-                <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                            <span className="text-xl text-blue-500">⬡</span>
+                            <span className="font-bold text-sm tracking-tight">BeamLab <span className="text-xs font-normal text-zinc-500">ULTIMATE</span></span>
+                        </div>
+                    </div>
 
-                    <span className="text-xs text-zinc-600">v24.01.00</span>
-                </div>
-            </header>
+                    {/* Window Controls / User */}
+                    <div className="flex items-center gap-3">
 
-            {/* Main Application Layout (Flex Row) */}
-            <div className="flex-1 flex overflow-hidden">
+                        <span className="text-xs text-zinc-600">v24.01.00</span>
+                    </div>
+                </header>
 
-                {/* 1. Workflow Sidebar (Left) */}
-                <div className="w-48 flex-shrink-0 h-full z-20 shadow-xl">
-                    <WorkflowSidebar
-                        activeCategory={activeCategory}
-                        onCategoryChange={setCategory}
+                {/* Main Application Layout (Flex Row) */}
+                <div className="flex-1 flex overflow-hidden relative">
+
+                    {/* 1. Workflow Sidebar (Left) */}
+                    <div className={`
+                    w-48 flex-shrink-0 h-full z-30 shadow-xl bg-zinc-900 
+                    transition-transform duration-300 
+                    absolute md:relative 
+                    ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+                `}>
+                        <WorkflowSidebar
+                            activeCategory={activeCategory}
+                            onCategoryChange={(cat) => {
+                                setCategory(cat);
+                                setIsSidebarOpen(false); // Close on selection on mobile
+                            }}
+                        />
+                    </div>
+
+                    {/* 2. Main Workspace (Ribbon + Canvas) */}
+                    <div className="flex-1 flex flex-col min-w-0">
+
+                        {/* Top Ribbon */}
+                        <div className="flex-shrink-0 z-10 shadow-md">
+                            <EngineeringRibbon activeCategory={activeCategory} />
+                        </div>
+
+                        {/* 3D Canvas Area */}
+                        <div
+                            className="flex-1 bg-zinc-900 relative"
+                            onContextMenu={(e) => {
+                                // Determine what was clicked and show appropriate context menu
+                                const selectedId = selectedIds.size === 1 ? Array.from(selectedIds)[0] : undefined;
+                                if (selectedId && nodes.has(selectedId)) {
+                                    contextMenu.show(e, getNodeContextMenuItems(selectedId, {
+                                        onEdit: () => { },
+                                        onAddBeamFrom: () => useModelStore.getState().setTool('member'),
+                                        onAssignSupport: () => useModelStore.getState().setTool('support'),
+                                        onAssignLoad: () => openModal('loadDialog'),
+                                        onMerge: () => {
+                                            const nodeIds = Array.from(selectedIds).filter(id => id.startsWith('N'));
+                                            if (nodeIds.length >= 2) {
+                                                useModelStore.getState().mergeNodes(nodeIds[0], nodeIds[1]);
+                                            }
+                                        },
+                                        canMerge: selectedIds.size > 1 && Array.from(selectedIds).every(id => id.startsWith('N')),
+                                        onDelete: () => useModelStore.getState().removeNode(selectedId)
+                                    }));
+                                } else if (selectedId && members.has(selectedId)) {
+                                    contextMenu.show(e, getMemberContextMenuItems(selectedId, {
+                                        onEdit: () => { },
+                                        onAssignSection: () => openModal('structureWizard'),
+                                        onAssignMaterial: () => { },
+                                        onInsertNode: () => {
+                                            setSplitMemberId(selectedId);
+                                            setShowSplitDialog(true);
+                                        },
+                                        onSplit: () => {
+                                            const model = useModelStore.getState();
+                                            // Simple split at 0.5 for context menu action
+                                            model.splitMemberById(selectedId, 0.5);
+                                        },
+                                        onAssignLoad: () => openModal('loadDialog'),
+                                        onReleases: () => {
+                                            setSpecMemberId(selectedId);
+                                            setShowSpecDialog(true);
+                                        },
+                                        onSpecifications: () => {
+                                            setSpecMemberId(selectedId);
+                                            setShowSpecDialog(true);
+                                        },
+                                        onDelete: () => useModelStore.getState().removeMember(selectedId)
+                                    }));
+                                } else {
+                                    contextMenu.show(e, getEmptyContextMenuItems({
+                                        onAddNodeHere: () => useModelStore.getState().setTool('node'),
+                                        onPaste: () => { },
+                                        onFitView: () => document.dispatchEvent(new CustomEvent('fit-view')),
+                                        onToggleGrid: () => document.dispatchEvent(new CustomEvent('toggle-grid')),
+                                        onViewSettings: () => { }
+                                    }));
+                                }
+                            }}
+                        >
+                            {activeCategory === 'MODELING' && (
+                                <div className="absolute top-4 left-4 z-20">
+                                    <ModelingToolbar />
+                                </div>
+                            )}
+                            <ViewportManager />
+
+                            {/* Status Bar Overlay */}
+                            <div className="absolute bottom-0 w-full z-10">
+                                <StatusBar isAnalyzing={isAnalyzing} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 3. Right Inspector Panel (Context Aware) */}
+                    <InspectorPanel
+                        collapsed={inspectorCollapsed}
+                        onToggle={() => setInspectorCollapsed(!inspectorCollapsed)}
                     />
                 </div>
 
-                {/* 2. Main Workspace (Ribbon + Canvas) */}
-                <div className="flex-1 flex flex-col min-w-0">
+                {/* Modals & Overlays */}
 
-                    {/* Top Ribbon */}
-                    <div className="flex-shrink-0 z-10 shadow-md">
-                        <EngineeringRibbon activeCategory={activeCategory} />
-                    </div>
+                {/* Quick Commands Toolbar (Spacebar) */}
+                {QuickCommandsToolbar}
 
-                    {/* 3D Canvas Area */}
-                    <div
-                        className="flex-1 bg-zinc-900 relative"
-                        onContextMenu={(e) => {
-                            // Determine what was clicked and show appropriate context menu
-                            const selectedId = selectedIds.size === 1 ? Array.from(selectedIds)[0] : undefined;
-                            if (selectedId && nodes.has(selectedId)) {
-                                contextMenu.show(e, getNodeContextMenuItems(selectedId, {
-                                    onEdit: () => { },
-                                    onAddBeamFrom: () => useModelStore.getState().setTool('member'),
-                                    onAssignSupport: () => useModelStore.getState().setTool('support'),
-                                    onAssignLoad: () => openModal('loadDialog'),
-                                    onMerge: () => {
-                                        const nodeIds = Array.from(selectedIds).filter(id => id.startsWith('N'));
-                                        if (nodeIds.length >= 2) {
-                                            useModelStore.getState().mergeNodes(nodeIds[0], nodeIds[1]);
-                                        }
-                                    },
-                                    canMerge: selectedIds.size > 1 && Array.from(selectedIds).every(id => id.startsWith('N')),
-                                    onDelete: () => useModelStore.getState().removeNode(selectedId)
-                                }));
-                            } else if (selectedId && members.has(selectedId)) {
-                                contextMenu.show(e, getMemberContextMenuItems(selectedId, {
-                                    onEdit: () => { },
-                                    onAssignSection: () => openModal('structureWizard'),
-                                    onAssignMaterial: () => { },
-                                    onInsertNode: () => {
-                                        setSplitMemberId(selectedId);
-                                        setShowSplitDialog(true);
-                                    },
-                                    onSplit: () => {
-                                        const model = useModelStore.getState();
-                                        // Simple split at 0.5 for context menu action
-                                        model.splitMemberById(selectedId, 0.5);
-                                    },
-                                    onAssignLoad: () => openModal('loadDialog'),
-                                    onReleases: () => {
-                                        setSpecMemberId(selectedId);
-                                        setShowSpecDialog(true);
-                                    },
-                                    onSpecifications: () => {
-                                        setSpecMemberId(selectedId);
-                                        setShowSpecDialog(true);
-                                    },
-                                    onDelete: () => useModelStore.getState().removeMember(selectedId)
-                                }));
-                            } else {
-                                contextMenu.show(e, getEmptyContextMenuItems({
-                                    onAddNodeHere: () => useModelStore.getState().setTool('node'),
-                                    onPaste: () => { },
-                                    onFitView: () => document.dispatchEvent(new CustomEvent('fit-view')),
-                                    onToggleGrid: () => document.dispatchEvent(new CustomEvent('toggle-grid')),
-                                    onViewSettings: () => { }
-                                }));
-                            }
-                        }}
-                    >
-                        {activeCategory === 'MODELING' && (
-                            <div className="absolute top-4 left-4 z-20">
-                                <ModelingToolbar />
-                            </div>
-                        )}
-                        <ViewportManager />
-
-                        {/* Status Bar Overlay */}
-                        <div className="absolute bottom-0 w-full z-10">
-                            <StatusBar isAnalyzing={isAnalyzing} />
-                        </div>
-                    </div>
-                </div>
-
-                {/* 3. Right Inspector Panel (Context Aware) */}
-                <InspectorPanel
-                    collapsed={inspectorCollapsed}
-                    onToggle={() => setInspectorCollapsed(!inspectorCollapsed)}
+                <ExportDialog
+                    isOpen={showExportDialog}
+                    onClose={() => setShowExportDialog(false)}
                 />
-            </div>
 
-            {/* Modals & Overlays */}
+                {showProgressModal && (
+                    <AnalysisProgressModal
+                        isOpen={showProgressModal}
+                        stage={analysisStage}
+                        progress={analysisProgress}
+                        error={analysisError}
+                        onClose={() => setShowProgressModal(false)}
+                        stats={analysisStats}
+                    />
+                )}
 
-            {/* Modals & Overlays */}
+                {/* Results Toolbar - Shows after successful analysis */}
+                {showResultsToolbar && analysisResults && (
+                    <ResultsToolbar onClose={() => setShowResultsToolbar(false)} />
+                )}
 
-            {notification?.show && (
-                <ActionToast
-                    message={notification.message}
-                    type={notification.type as any}
-                    onClose={hideNotification}
+                {/* Tools & Dialogs */}
+                <AdvancedSelectionPanel />
+                <QuickStartModal
+                    isOpen={showQuickStart}
+                    onClose={() => setShowQuickStart(false)}
+                    onNewProject={handleNewProject}
+                    onOpenWizard={() => openModal('structureWizard')}
+                    onOpenFoundation={() => openModal('foundationDesign')}
+                    onOpenLoads={() => openModal('is875Load')}
                 />
-            )}
-
-            {/* Quick Commands Toolbar (Spacebar) */}
-            {QuickCommandsToolbar}
-
-            <ExportDialog
-                isOpen={showExportDialog}
-                onClose={() => setShowExportDialog(false)}
-            />
-
-            {showProgressModal && (
-                <AnalysisProgressModal
-                    isOpen={showProgressModal}
-                    stage={analysisStage}
-                    progress={analysisProgress}
-                    error={analysisError}
-                    onClose={() => setShowProgressModal(false)}
-                    stats={analysisStats}
+                {/* Project Details Dialog */}
+                <ProjectDetailsDialog
+                    isOpen={showProjectDetails}
+                    onClose={() => setShowProjectDetails(false)}
+                    onSave={handleProjectSave}
+                    isNewProject={isNewProject}
                 />
-            )}
 
-            {/* Results Toolbar - Shows after successful analysis */}
-            {showResultsToolbar && analysisResults && (
-                <ResultsToolbar onClose={() => setShowResultsToolbar(false)} />
-            )}
-
-            {/* Tools & Dialogs */}
-            <AdvancedSelectionPanel />
-            <QuickStartModal
-                isOpen={showQuickStart}
-                onClose={() => setShowQuickStart(false)}
-                onNewProject={handleNewProject}
-                onOpenWizard={() => openModal('structureWizard')}
-                onOpenFoundation={() => openModal('foundationDesign')}
-                onOpenLoads={() => openModal('is875Load')}
-            />
-            {/* Project Details Dialog */}
-            <ProjectDetailsDialog
-                isOpen={showProjectDetails}
-                onClose={() => setShowProjectDetails(false)}
-                onSave={handleProjectSave}
-                isNewProject={isNewProject}
-            />
-
-            {/* Global Dialogs triggered by Ribbon */}
-            <StructureWizard isOpen={modals.structureWizard} onClose={() => closeModal('structureWizard')} onGenerate={(structure) => {
-                // Convert generated structure to model format
-                const nodes: Node[] = structure.nodes.map(n => ({
-                    id: n.id,
-                    x: n.x,
-                    y: n.y,
-                    z: n.z,
-                    restraints: n.restraints
-                }));
-                const members: Member[] = structure.members.map(m => ({
-                    id: m.id,
-                    startNodeId: m.startNodeId,
-                    endNodeId: m.endNodeId,
-                    sectionId: 'ISMB300'
-                }));
-                loadStructure(nodes, members);
-                closeModal('structureWizard');
-            }}
-            />
-
-            {/* Foundation Design Dialog */}
-            <FoundationDesignDialog
-                isOpen={showFoundationDesign}
-                onClose={() => closeModal('foundationDesign')}
-            />
-
-            {/* IS 875 Load Generator Dialog */}
-            <IS875LoadDialog
-                isOpen={showIS875Load}
-                onClose={() => closeModal('is875Load')}
-            />
-
-            {/* Geometry Tools Panel */}
-            <GeometryToolsPanel
-                isOpen={showGeometryTools}
-                onClose={() => closeModal('geometryTools')}
-            />
-
-            {/* Import/Export Dialog */}
-            <InteroperabilityDialog
-                isOpen={showInterop}
-                onClose={() => closeModal('interoperability')}
-            />
-
-            {/* Railway Bridge Design Dialog */}
-            <RailwayBridgeDialog
-                isOpen={showRailwayBridge}
-                onClose={() => closeModal('railwayBridge')}
-            />
-
-            {/* FEA Meshing Panel */}
-            <MeshingPanel
-                isOpen={modals.meshing}
-                onClose={() => closeModal('meshing')}
-            />
-
-            {/* Plate Creation Dialog */}
-            <PlateCreationDialog
-                isOpen={modals.plateDialog}
-                onClose={() => closeModal('plateDialog')}
-            />
-
-            {/* Comprehensive Loading Manager */}
-            <LoadDialog
-                isOpen={showLoadingManager}
-                onClose={() => closeModal('loadDialog')}
-            />
-
-            {/* Wind Load Generator (IS 875) */}
-            <WindLoadDialog />
-
-            {/* Seismic Load Generator (IS 1893) */}
-            <SeismicLoadDialog />
-
-            {/* Moving Load Analysis (IRC 6 / AASHTO) */}
-            <MovingLoadDialog />
-
-            {/* Boundary Conditions Dialog - NEW */}
-            <BoundaryConditionsDialog
-                open={modals.boundaryConditionsDialog}
-                onClose={() => closeModal('boundaryConditionsDialog')}
-            />
-
-            {/* Plate Creation Dialog - NEW */}
-            <PlateCreationDialog
-                isOpen={modals.plateDialog}
-                onClose={() => closeModal('plateDialog')}
-            />
-
-            {/* Advanced Selection Toolbar - NEW */}
-            <SelectionToolbar
-                open={modals.selectionToolbar}
-                onClose={() => closeModal('selectionToolbar')}
-            />
-
-            {/* Dead Load Generator - NEW */}
-            <DeadLoadGenerator
-                open={modals.deadLoadGenerator}
-                onClose={() => closeModal('deadLoadGenerator')}
-            />
-
-            {/* UI Dialogs */}
-            <MemberSpecificationsDialog
-                isOpen={showSpecDialog}
-                onClose={() => setShowSpecDialog(false)}
-                memberId={specMemberId}
-            />
-
-            <LoadInputDialog
-                isOpen={showLoadDialog}
-                onClose={() => setShowLoadDialog(false)}
-                targetMemberId={loadDialogMemberId}
-                targetNodeId={selectedIds.size === 1 && Array.from(selectedIds)[0]?.startsWith('N') ? Array.from(selectedIds)[0] : undefined}
-            />
-
-            {/* Split Member Dialog */}
-            <SplitMemberDialog
-                isOpen={showSplitDialog}
-                onClose={() => setShowSplitDialog(false)}
-                memberId={splitMemberId ?? undefined}
-            />
-
-            <AdvancedAnalysisDialog
-                isOpen={modals.advancedAnalysis}
-                onClose={() => closeModal('advancedAnalysis')}
-                isPro={subscription?.tier === 'pro' || subscription?.tier === 'enterprise'}
-            />
-
-            {/* DesignCodes Dialog */}
-            <DesignCodesDialog
-                isOpen={modals.designCodes}
-                onClose={() => closeModal('designCodes')}
-                isPro={subscription?.tier === 'pro' || subscription?.tier === 'enterprise'}
-            />
-
-            {/* ASCE 7 Seismic Load Generator */}
-            <ASCE7SeismicLoadDialog />
-
-            {/* ASCE 7 Wind Load Generator */}
-            <ASCE7WindLoadDialog />
-
-            {/* Load Combinations Dialog */}
-            <LoadCombinationsDialog />
-
-            {/* Structural Validation Dialog - Shows errors BEFORE analysis */}
-            <ValidationDialog
-                isOpen={showValidationDialog}
-                onClose={() => setShowValidationDialog(false)}
-                errors={structuralValidationErrors}
-                warnings={structuralValidationWarnings}
-                onProceedAnyway={() => {
-                    setShowValidationDialog(false);
-                    // User wants to proceed despite warnings - run analysis
-                    setTimeout(() => executeAnalysis(), 100);
+                {/* Global Dialogs triggered by Ribbon */}
+                <StructureWizard isOpen={modals.structureWizard} onClose={() => closeModal('structureWizard')} onGenerate={(structure) => {
+                    // Convert generated structure to model format
+                    const nodes: Node[] = structure.nodes.map(n => ({
+                        id: n.id,
+                        x: n.x,
+                        y: n.y,
+                        z: n.z,
+                        restraints: n.restraints
+                    }));
+                    const members: Member[] = structure.members.map(m => ({
+                        id: m.id,
+                        startNodeId: m.startNodeId,
+                        endNodeId: m.endNodeId,
+                        sectionId: 'ISMB300'
+                    }));
+                    loadStructure(nodes, members);
+                    closeModal('structureWizard');
                 }}
-                onRevalidate={() => {
-                    // Re-run validation after auto-fix
-                    const validationResult = validateStructure(nodes, members);
-                    setStructuralValidationErrors(validationResult.errors);
-                    setStructuralValidationWarnings(validationResult.warnings);
-                    
-                    // If all errors fixed, close dialog and optionally run analysis
-                    if (validationResult.valid && validationResult.errors.length === 0) {
+                />
+
+                {/* Foundation Design Dialog */}
+                <FoundationDesignDialog
+                    isOpen={showFoundationDesign}
+                    onClose={() => closeModal('foundationDesign')}
+                />
+
+                {/* IS 875 Load Generator Dialog */}
+                <IS875LoadDialog
+                    isOpen={showIS875Load}
+                    onClose={() => closeModal('is875Load')}
+                />
+
+                {/* Geometry Tools Panel */}
+                <GeometryToolsPanel
+                    isOpen={showGeometryTools}
+                    onClose={() => closeModal('geometryTools')}
+                />
+
+                {/* Import/Export Dialog */}
+                <InteroperabilityDialog
+                    isOpen={showInterop}
+                    onClose={() => closeModal('interoperability')}
+                />
+
+                {/* Railway Bridge Design Dialog */}
+                <RailwayBridgeDialog
+                    isOpen={showRailwayBridge}
+                    onClose={() => closeModal('railwayBridge')}
+                />
+
+                {/* FEA Meshing Panel */}
+                <MeshingPanel
+                    isOpen={modals.meshing}
+                    onClose={() => closeModal('meshing')}
+                />
+
+                {/* Plate Creation Dialog */}
+                <PlateCreationDialog
+                    isOpen={modals.plateDialog}
+                    onClose={() => closeModal('plateDialog')}
+                />
+
+                {/* Comprehensive Loading Manager */}
+                <LoadDialog
+                    isOpen={showLoadingManager}
+                    onClose={() => closeModal('loadDialog')}
+                />
+
+                {/* Wind Load Generator (IS 875) */}
+                <WindLoadDialog />
+
+                {/* Seismic Load Generator (IS 1893) */}
+                <SeismicLoadDialog />
+
+                {/* Moving Load Analysis (IRC 6 / AASHTO) */}
+                <MovingLoadDialog />
+
+                {/* Boundary Conditions Dialog - NEW */}
+                <BoundaryConditionsDialog
+                    open={modals.boundaryConditionsDialog}
+                    onClose={() => closeModal('boundaryConditionsDialog')}
+                />
+
+                {/* Plate Creation Dialog - NEW */}
+                <PlateCreationDialog
+                    isOpen={modals.plateDialog}
+                    onClose={() => closeModal('plateDialog')}
+                />
+
+                {/* Advanced Selection Toolbar - NEW */}
+                <SelectionToolbar
+                    open={modals.selectionToolbar}
+                    onClose={() => closeModal('selectionToolbar')}
+                />
+
+                {/* Dead Load Generator - NEW */}
+                <DeadLoadGenerator
+                    open={modals.deadLoadGenerator}
+                    onClose={() => closeModal('deadLoadGenerator')}
+                />
+
+                {/* UI Dialogs */}
+                <MemberSpecificationsDialog
+                    isOpen={showSpecDialog}
+                    onClose={() => setShowSpecDialog(false)}
+                    memberId={specMemberId}
+                />
+
+                <LoadInputDialog
+                    isOpen={showLoadDialog}
+                    onClose={() => setShowLoadDialog(false)}
+                    targetMemberId={loadDialogMemberId}
+                    targetNodeId={selectedIds.size === 1 && Array.from(selectedIds)[0]?.startsWith('N') ? Array.from(selectedIds)[0] : undefined}
+                />
+
+                {/* Split Member Dialog */}
+                <SplitMemberDialog
+                    isOpen={showSplitDialog}
+                    onClose={() => setShowSplitDialog(false)}
+                    memberId={splitMemberId ?? undefined}
+                />
+
+                <AdvancedAnalysisDialog
+                    isOpen={modals.advancedAnalysis}
+                    onClose={() => closeModal('advancedAnalysis')}
+                    isPro={subscription?.tier === 'pro' || subscription?.tier === 'enterprise'}
+                />
+
+                {/* DesignCodes Dialog */}
+                <DesignCodesDialog
+                    isOpen={modals.designCodes}
+                    onClose={() => closeModal('designCodes')}
+                    isPro={subscription?.tier === 'pro' || subscription?.tier === 'enterprise'}
+                />
+
+                {/* ASCE 7 Seismic Load Generator */}
+                <ASCE7SeismicLoadDialog />
+
+                {/* ASCE 7 Wind Load Generator */}
+                <ASCE7WindLoadDialog />
+
+                {/* Load Combinations Dialog */}
+                <LoadCombinationsDialog />
+
+                {/* Structural Validation Dialog - Shows errors BEFORE analysis */}
+                <ValidationDialog
+                    isOpen={showValidationDialog}
+                    onClose={() => setShowValidationDialog(false)}
+                    errors={structuralValidationErrors}
+                    warnings={structuralValidationWarnings}
+                    onProceedAnyway={() => {
                         setShowValidationDialog(false);
-                        setTimeout(() => executeAnalysis(), 200);
-                    }
-                }}
-            />
+                        // User wants to proceed despite warnings - run analysis
+                        setTimeout(() => executeAnalysis(), 100);
+                    }}
+                    onRevalidate={() => {
+                        // Re-run validation after auto-fix
+                        const validationResult = validateStructure(nodes, members);
+                        setStructuralValidationErrors(validationResult.errors);
+                        setStructuralValidationWarnings(validationResult.warnings);
 
-            {/* Validation Error Display */}
-            {showValidationErrors && validationErrors && (
-                <ValidationErrorDisplay
-                    results={validationErrors}
-                    onDismiss={() => {
-                        setShowValidationErrors(false);
-                        setValidationErrors(null);
-                    }}
-                    onAutoFix={(issue) => {
-                        // TODO: Implement auto-fix functionality
-                        uiLogger.log('Auto-fix requested for issue:', issue);
-                    }}
-                />
-            )}
-
-            {/* Stress Visualization */}
-            {showStressVisualization && stressResults && (
-                <StressVisualization
-                    results={stressResults}
-                    stressType={currentStressType}
-                    onClose={() => {
-                        setShowStressVisualization(false);
-                    }}
-                    onStressTypeChange={(type) => {
-                        setCurrentStressType(type);
-                        // Recalculate with new stress type
-                        if (analysisResults?.memberForces) {
-                            calculateStresses(analysisResults.memberForces, members);
+                        // If all errors fixed, close dialog and optionally run analysis
+                        if (validationResult.valid && validationResult.errors.length === 0) {
+                            setShowValidationDialog(false);
+                            setTimeout(() => executeAnalysis(), 200);
                         }
                     }}
                 />
-            )}
 
-            {/* Modal Analysis Controls - Shows when modal results exist */}
-            <ModalControls />
+                {/* Validation Error Display */}
+                {showValidationErrors && validationErrors && (
+                    <ValidationErrorDisplay
+                        results={validationErrors}
+                        onDismiss={() => {
+                            setShowValidationErrors(false);
+                            setValidationErrors(null);
+                        }}
+                        onAutoFix={(issue) => {
+                            // Run auto-fix from model store
+                            const result = useModelStore.getState().autoFixModel();
+                            uiLogger.log('Auto-fix result:', result);
+                            
+                            if (result.fixed.length > 0) {
+                                // Re-validate after fix
+                                setValidationErrors(null);
+                                setShowValidationErrors(false);
+                            }
+                        }}
+                    />
+                )}
 
-            {/* Modal Analysis Panel */}
-            <ModalAnalysisPanel
-                isOpen={showModalAnalysis}
-                onClose={() => setShowModalAnalysis(false)}
-            />
+                {/* Stress Visualization */}
+                {showStressVisualization && stressResults && (
+                    <StressVisualization
+                        results={stressResults}
+                        stressType={currentStressType}
+                        onClose={() => {
+                            setShowStressVisualization(false);
+                        }}
+                        onStressTypeChange={(type) => {
+                            setCurrentStressType(type);
+                            // Recalculate with new stress type
+                            if (analysisResults?.memberForces) {
+                                calculateStresses(analysisResults.memberForces, members);
+                            }
+                        }}
+                    />
+                )}
 
-            {/* Cloud Project Manager */}
-            <CloudProjectManager
-                isOpen={showCloudManager}
-                onClose={() => setShowCloudManager(false)}
-                onLoad={handleCloudLoad}
-            />
+                {/* Modal Analysis Controls - Shows when modal results exist */}
+                <ModalControls />
 
-            {/* AI Assistant Components */}
-            <AIAssistantChat
-                isOpen={isAIAssistantOpen}
-                onClose={() => setIsAIAssistantOpen(false)}
-            />
-            
-            {/* Autonomous AI Agent - Primary AI Interface */}
-            <AutonomousAIAgent />
+                {/* Modal Analysis Panel */}
+                <ModalAnalysisPanel
+                    isOpen={showModalAnalysis}
+                    onClose={() => setShowModalAnalysis(false)}
+                />
 
-            {/* Structure Gallery - Iconic Civil Engineering Structures */}
-            <StructureGallery
-                isOpen={modals.structureGallery}
-                onClose={() => closeModal('structureGallery')}
-            />
+                {/* Cloud Project Manager */}
+                <CloudProjectManager
+                    isOpen={showCloudManager}
+                    onClose={() => setShowCloudManager(false)}
+                    onLoad={handleCloudLoad}
+                />
 
-            {/* Command Palette - Quick Access (Cmd+K) */}
-            <CommandPalette
-                isOpen={commandPalette.isOpen}
-                onClose={commandPalette.close}
-            />
-        </div>
+                {/* AI Assistant Components */}
+                <AIAssistantChat
+                    isOpen={isAIAssistantOpen}
+                    onClose={() => setIsAIAssistantOpen(false)}
+                />
+
+                {/* Autonomous AI Agent - Primary AI Interface */}
+                <AutonomousAIAgent />
+
+                {/* Power AI Panel - Enhanced AI with Confidence Scores & Expert Mode */}
+                <PowerAIPanel />
+
+                {/* Structure Gallery - Iconic Civil Engineering Structures */}
+                <StructureGallery
+                    isOpen={modals.structureGallery}
+                    onClose={() => closeModal('structureGallery')}
+                />
+
+                {/* Command Palette - Quick Access (Cmd+K) */}
+                <CommandPalette
+                    isOpen={commandPalette.isOpen}
+                    onClose={commandPalette.close}
+                />
+                {/* End of Main UI */}
+            </div>
+        </MultiplayerProvider >
     );
 };
 

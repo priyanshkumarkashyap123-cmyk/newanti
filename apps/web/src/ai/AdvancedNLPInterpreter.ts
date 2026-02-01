@@ -152,8 +152,8 @@ const ENGINEERING_SYNONYMS: Record<string, string[]> = {
 // ============================================
 
 class IntentClassifier {
-  private intentPatterns: Map<IntentType, RegExp[]>;
-  private domainPatterns: Map<EngineeringDomain, RegExp[]>;
+  private intentPatterns: Map<IntentType, RegExp[]> = new Map();
+  private domainPatterns: Map<EngineeringDomain, RegExp[]> = new Map();
 
   constructor() {
     this.initializePatterns();

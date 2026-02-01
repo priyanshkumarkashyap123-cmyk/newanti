@@ -162,7 +162,7 @@ function QuickStats({ recentCalculations }: { recentCalculations: RecentCalculat
     : 0;
   
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div>
@@ -487,13 +487,19 @@ export default function StructuralDashboard() {
           </div>
           
           <div className="flex items-center gap-2">
-            <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <button 
+              aria-label="Help and documentation"
+              className="p-3 min-h-[44px] min-w-[44px] rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-center">
               <HelpCircle className="h-5 w-5 text-gray-500" />
             </button>
-            <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <button 
+              aria-label="Settings"
+              className="p-3 min-h-[44px] min-w-[44px] rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-center">
               <Settings className="h-5 w-5 text-gray-500" />
             </button>
-            <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <button 
+              aria-label="Documentation"
+              className="p-3 min-h-[44px] min-w-[44px] rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-center">
               <BookOpen className="h-5 w-5 text-gray-500" />
             </button>
           </div>
@@ -508,9 +514,9 @@ export default function StructuralDashboard() {
         </div>
         
         {/* Main Grid */}
-        <div className="grid grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Sidebar - Calculation Types */}
-          <div className="col-span-3 space-y-4">
+          <div className="lg:col-span-3 space-y-4">
             <CalculationTypeSelector
               selectedType={selectedType}
               selectedCode={selectedCode}
@@ -524,7 +530,7 @@ export default function StructuralDashboard() {
           </div>
           
           {/* Center - Calculator */}
-          <div className="col-span-6">
+          <div className="lg:col-span-6">
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
               {/* Tabs */}
               <div className="border-b border-gray-200 dark:border-gray-700 px-4">
@@ -566,11 +572,9 @@ export default function StructuralDashboard() {
                         <span className="ml-2 text-sm font-normal text-gray-500">({selectedCode.replace('_', ' ')})</span>
                       </h2>
                       <StructuralCalculator
-                        calculationType={selectedType as CalculationType}
-                        designCode={selectedCode}
-                        onCalculationComplete={handleCalculationComplete}
-                        showSteps={true}
-                        showCodeChecks={true}
+                        defaultType={selectedType as CalculationType}
+                        defaultCode={selectedCode}
+                        onCalculate={handleCalculationComplete}
                       />
                     </motion.div>
                   )}
@@ -595,11 +599,23 @@ export default function StructuralDashboard() {
                                   Cross Section
                                 </h3>
                                 <BeamCrossSection
-                                  width={currentInputs.width || 300}
-                                  depth={currentInputs.depth || 500}
-                                  cover={currentInputs.clear_cover || 40}
-                                  topBars={{ count: 2, diameter: 12 }}
-                                  bottomBars={{ count: currentInputs.main_bar_count || 3, diameter: currentInputs.main_bar_dia || 16 }}
+                                  width={Number(currentInputs.width) || 300}
+                                  depth={Number(currentInputs.depth) || 500}
+                                  cover={Number(currentInputs.clear_cover) || 40}
+                                  reinforcement={[
+                                    {
+                                      y: Number(currentInputs.clear_cover) || 40,
+                                      count: 2,
+                                      diameter: 12,
+                                      type: 'compression'
+                                    },
+                                    {
+                                      y: (Number(currentInputs.depth) || 500) - (Number(currentInputs.clear_cover) || 40),
+                                      count: Number(currentInputs.main_bar_count) || 3,
+                                      diameter: Number(currentInputs.main_bar_dia) || 16,
+                                      type: 'tension'
+                                    }
+                                  ]}
                                 />
                               </div>
                               
@@ -617,7 +633,10 @@ export default function StructuralDashboard() {
                                     { M: currentResult.capacity * 0.4, P: -currentResult.capacity * 0.2 },
                                     { M: 0, P: -currentResult.capacity * 0.3 },
                                   ]}
-                                  loadPoint={{ M: currentResult.demand, P: currentResult.demand * 0.5 }}
+                                  Pu={currentResult.demand * 0.5}
+                                  Mu={currentResult.demand}
+                                  Po={currentResult.capacity || 0}
+                                  Mo={currentResult.capacity * 0.6}
                                 />
                               </div>
                             </div>
@@ -662,8 +681,6 @@ export default function StructuralDashboard() {
                       {reportData ? (
                         <CalculationReport
                           data={reportData}
-                          companyLogo="/logo.png"
-                          showWatermark={true}
                         />
                       ) : (
                         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
@@ -679,8 +696,8 @@ export default function StructuralDashboard() {
           </div>
           
           {/* Right Sidebar - Result Summary */}
-          <div className="col-span-3">
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden sticky top-24">
+          <div className="lg:col-span-3">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden lg:sticky lg:top-24">
               <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                 <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                   <Shield className="h-4 w-4" />

@@ -266,7 +266,7 @@ export const SEISMIC_COLUMN_REQUIREMENTS = {
     rho_g_max: 0.06,
     lo_factor: Math.max,     // lo = max(h, L_clear/6, 18")
     lo_min: 18,              // Minimum confinement zone
-    s_max_lo: [0.25 * 'h', 6, 'so'], // s ≤ min(h/4, 6×db_long, so)
+    s_max_lo: [0.25, 6, 1], // s ≤ min(h/4, 6×db_long, so) - coefficients
     Ash_factor: 0.3,         // Ash = 0.3×s×bc×(f'c/fyt)×(Ag/Ach - 1)
   },
   
@@ -275,7 +275,7 @@ export const SEISMIC_COLUMN_REQUIREMENTS = {
     rho_g_max: 0.06,
     lo_factor: Math.max,
     lo_min: 18,
-    s_max_lo: [8, 24, 0.5 * 'h'],
+    s_max_lo: [8, 24, 0.5],
   },
   
   // Ordinary - same as ACI_COLUMN_LIMITS

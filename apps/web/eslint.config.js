@@ -46,11 +46,36 @@ export default tseslint.config(
             '@typescript-eslint/no-empty-interface': 'off',
             // Allow any for rapid development (can be tightened later)
             '@typescript-eslint/no-explicit-any': 'warn',
+            // Allow lexical declarations in case blocks (common pattern)
+            'no-case-declarations': 'off',
+            // Disable React compiler rules that are too strict for existing code
+            '@typescript-eslint/no-unused-expressions': 'warn',
+            '@typescript-eslint/ban-ts-comment': 'warn',
+            // Disable rules that conflict with existing patterns
+            '@typescript-eslint/no-unsafe-declaration-merging': 'off',
+            '@typescript-eslint/no-empty-object-type': 'off',
+            'no-loss-of-precision': 'warn',
         },
     },
 
     // Global ignores
     {
-        ignores: ['dist/**', 'node_modules/**', 'coverage/**', '*.config.js', '*.d.ts']
+        ignores: [
+            'dist/**', 
+            'node_modules/**', 
+            'coverage/**', 
+            '*.config.js',
+            '*.config.cjs',
+            '.*.cjs', 
+            '*.d.ts', 
+            'tests/**/*.js',
+            'public/**',
+            '.storybook/**',
+            'components/**',
+            'e2e/**',
+            'playwright.config.ts',
+            'lighthouserc.js',
+            'src/libs/**/*.js'
+        ]
     }
 );

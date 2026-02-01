@@ -41,24 +41,24 @@ export interface AuthenticatedRequest extends Request {
  * Clerk authentication middleware
  * Validates JWT tokens and attaches auth info to request
  */
-export const authMiddleware: RequestHandler = clerkMiddleware();
+export const authMiddleware: RequestHandler = clerkMiddleware() as unknown as RequestHandler;
 
 /**
  * Require authentication middleware
  * Returns 401 if user is not authenticated
  */
 export const requireAuth = (): RequestHandler => {
-    return clerkRequireAuth();
+    return clerkRequireAuth() as unknown as RequestHandler;
 };
 
 /**
  * Get authentication info from request
  */
 export const getAuth = (req: Request) => {
-    const auth = clerkGetAuth(req);
+    const auth = clerkGetAuth(req as any);
     return {
-        userId: auth.userId ?? null,
-        sessionId: auth.sessionId ?? null,
+        userId: (auth as any).userId ?? null,
+        sessionId: (auth as any).sessionId ?? null,
         email: null as string | null // Email must be fetched from Clerk user API separately
     };
 };
@@ -67,16 +67,16 @@ export const getAuth = (req: Request) => {
  * Get user ID from request (convenience helper)
  */
 export const getUserId = (req: Request): string | null => {
-    const auth = clerkGetAuth(req);
-    return auth.userId ?? null;
+    const auth = clerkGetAuth(req as any);
+    return (auth as any).userId ?? null;
 };
 
 /**
  * Check if request is authenticated
  */
 export const isAuthenticated = (req: Request): boolean => {
-    const auth = clerkGetAuth(req);
-    return !!auth.userId;
+    const auth = clerkGetAuth(req as any);
+    return !!(auth as any).userId;
 };
 
 // ============================================
@@ -86,11 +86,11 @@ export const isAuthenticated = (req: Request): boolean => {
 /**
  * Require specific roles (can be extended based on Clerk metadata)
  */
-export const requireRole = (roles: string[]): RequestHandler => {
+export const requireRole = (_roles: string[]): RequestHandler => {
     return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        const auth = clerkGetAuth(req);
+        const auth = clerkGetAuth(req as any);
 
-        if (!auth.userId) {
+        if (!(auth as any).userId) {
             res.status(401).json({
                 success: false,
                 message: 'Authentication required'

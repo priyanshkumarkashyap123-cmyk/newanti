@@ -107,16 +107,143 @@ export async function runLocalAnalysis(): Promise<{ success: boolean; message: s
             }
         });
 
-        // Calculate reactions and member forces
-        // For now, we'll placeholder/calculate member forces in JS
-        // Ideally this should also be done in WASM if performance critical
-        // But for visualization, doing it here is okay for 50k elements as long as we don't block too long
-        // (This should move to Web Worker next)
+        // Calculate reactions at support nodes
+        const reactionsMap = new Map<string, { fx: number; fy: number; fz: number; mx: number; my: number; mz: number }>();
+        
+        state.nodes.forEach(node => {
+            if (node.restraints && (node.restraints.fx || node.restraints.fy || node.restraints.fz || 
+                node.restraints.mx || node.restraints.my || node.restraints.mz)) {
+                // For supported DOFs, reaction = applied stiffness forces - applied loads
+                // In a properly assembled system, reactions can be calculated from K*u - F for restrained DOFs
+                const startIdx = nodeMapping.get(node.id);
+                if (startIdx !== undefined) {
+                    // Calculate reaction forces from member contributions
+                    let rx = 0, ry = 0, rz = 0, rmx = 0, rmy = 0, rmz = 0;
+                    
+                    // Sum contributions from connected members
+                    state.members.forEach(member => {
+                        if (member.startNodeId === node.id || member.endNodeId === node.id) {
+                            const startNode = state.nodes.get(member.startNodeId);
+                            const endNode = state.nodes.get(member.endNodeId);
+                            if (!startNode || !endNode) return;
+                            
+                            const dx = endNode.x - startNode.x;
+                            const dy = endNode.y - startNode.y;
+                            const dz = endNode.z - startNode.z;
+                            const L = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                            if (L < 1e-10) return;
+                            
+                            const E = member.E ?? 200000; // MPa (200 GPa steel)
+                            const A = member.A ?? 1000; // mm²
+                            const I = member.I ?? 1e6; // mm⁴
+                            
+                            // Direction cosines
+                            const cx = dx / L, cy = dy / L, cz = dz / L;
+                            
+                            // Get displacements at member ends
+                            const d1 = displacementsMap.get(member.startNodeId) || { dx: 0, dy: 0, dz: 0, rx: 0, ry: 0, rz: 0 };
+                            const d2 = displacementsMap.get(member.endNodeId) || { dx: 0, dy: 0, dz: 0, rx: 0, ry: 0, rz: 0 };
+                            
+                            // Axial deformation and force
+                            const du = (d2.dx - d1.dx) * cx + (d2.dy - d1.dy) * cy + (d2.dz - d1.dz) * cz;
+                            const axialForce = (E * A / L) * du;
+                            
+                            // Transform to global and add to reaction
+                            if (member.startNodeId === node.id) {
+                                rx -= axialForce * cx;
+                                ry -= axialForce * cy;
+                                rz -= axialForce * cz;
+                            } else {
+                                rx += axialForce * cx;
+                                ry += axialForce * cy;
+                                rz += axialForce * cz;
+                            }
+                        }
+                    });
+                    
+                    // Only store non-zero reactions for restrained DOFs
+                    reactionsMap.set(node.id, {
+                        fx: node.restraints.fx ? rx : 0,
+                        fy: node.restraints.fy ? ry : 0,
+                        fz: node.restraints.fz ? rz : 0,
+                        mx: node.restraints.mx ? rmx : 0,
+                        my: node.restraints.my ? rmy : 0,
+                        mz: node.restraints.mz ? rmz : 0
+                    });
+                }
+            }
+        });
+
+        // Calculate member forces
+        const memberForcesMap = new Map<string, {
+            axial: number;
+            shearY: number;
+            shearZ: number;
+            momentY: number;
+            momentZ: number;
+            torsion: number;
+        }>();
+        
+        state.members.forEach(member => {
+            const startNode = state.nodes.get(member.startNodeId);
+            const endNode = state.nodes.get(member.endNodeId);
+            if (!startNode || !endNode) return;
+            
+            const dx = endNode.x - startNode.x;
+            const dy = endNode.y - startNode.y;
+            const dz = endNode.z - startNode.z;
+            const L = Math.sqrt(dx*dx + dy*dy + dz*dz);
+            if (L < 1e-10) return;
+            
+            const E = member.E ?? 200000; // MPa (200 GPa steel)
+            const A = member.A ?? 1000; // mm²
+            const Ix = member.I ?? 1e6; // mm⁴ (using I for primary axis)
+            const Iy = member.I ?? 1e6; // mm⁴ (simplified: same as Ix)
+            const J = (member.I ?? 1e6) * 0.1; // mm⁴ (approximate torsional constant)
+            const G = E / 2.6; // Shear modulus (steel)
+            
+            // Direction cosines
+            const cx = dx / L, cy = dy / L, cz = dz / L;
+            
+            // Get displacements at member ends
+            const d1 = displacementsMap.get(member.startNodeId) || { dx: 0, dy: 0, dz: 0, rx: 0, ry: 0, rz: 0 };
+            const d2 = displacementsMap.get(member.endNodeId) || { dx: 0, dy: 0, dz: 0, rx: 0, ry: 0, rz: 0 };
+            
+            // Transform to local coordinates
+            // For simplicity, using small-deformation beam theory
+            
+            // Axial deformation and force
+            const du = (d2.dx - d1.dx) * cx + (d2.dy - d1.dy) * cy + (d2.dz - d1.dz) * cz;
+            const axialForce = (E * A / L) * du;
+            
+            // Transverse deformations (simplified for beams aligned with axes)
+            const v1 = d1.dy, v2 = d2.dy;
+            const theta1 = d1.rz, theta2 = d2.rz;
+            
+            // Beam bending forces (Euler-Bernoulli)
+            const EI_L3 = E * Ix / (L * L * L);
+            const shearY = 12 * EI_L3 * (v1 - v2) + 6 * E * Ix / (L * L) * (theta1 + theta2);
+            const momentZ_start = 6 * E * Ix / (L * L) * (v1 - v2) + 4 * E * Ix / L * theta1 + 2 * E * Ix / L * theta2;
+            const momentZ_end = 6 * E * Ix / (L * L) * (v1 - v2) + 2 * E * Ix / L * theta1 + 4 * E * Ix / L * theta2;
+            
+            // Torsion
+            const torsion = G * J / L * (d2.rx - d1.rx);
+            
+            memberForcesMap.set(member.id, {
+                // Max values as per MemberForceData interface
+                axial: Math.max(Math.abs(-axialForce), Math.abs(axialForce)),
+                shearY: Math.abs(shearY),
+                shearZ: 0, // Simplified
+                momentY: 0, // Simplified
+                momentZ: Math.max(Math.abs(momentZ_start), Math.abs(momentZ_end)),
+                torsion: Math.abs(torsion),
+            });
+        });
 
         const analysisResults: AnalysisResults = {
             displacements: displacementsMap,
-            reactions: new Map(), // TODO: Calculate reactions
-            memberForces: new Map() // TODO: Calculate member forces
+            reactions: reactionsMap,
+            memberForces: memberForcesMap
         };
 
         state.setAnalysisResults(analysisResults);

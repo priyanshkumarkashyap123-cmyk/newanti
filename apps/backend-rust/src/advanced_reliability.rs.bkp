@@ -1,0 +1,1118 @@
+//! Advanced Reliability Methods
+//!
+//! Industry-standard reliability analysis beyond basic FORM/SORM.
+//! Critical gaps vs Strurel, FERUM, UQLab Reliability.
+//!
+//! ## Industry Gap Analysis
+//!
+//! | Feature | Strurel | FERUM | UQLab | This Module |
+//! |---------|---------|-------|-------|-------------|
+//! | AK-MCS | ✗ | ✓ | ✓ | ✓ |
+//! | AK-IS | ✗ | ✗ | ✓ | ✓ |
+//! | Time-variant reliability | ✓ | ✗ | ✗ | ✓ |
+//! | PHI2 method | ✓ | ✓ | ✓ | ✓ |
+//! | Response surface FORM | ✓ | ✓ | ✓ | ✓ |
+//! | Interval analysis | ✗ | ✗ | ✓ | ✓ |
+
+use serde::{Deserialize, Serialize};
+use std::f64::consts::PI;
+use crate::special_functions::*;
+
+
+fn standard_normal_pdf(x: f64) -> f64 {
+    (-0.5 * x * x).exp() / (2.0 * std::f64::consts::PI).sqrt()
+}
+
+
+fn standard_normal_inverse_cdf(p: f64) -> f64 {
+    2.0_f64.sqrt() * crate::special_functions::erfinv(2.0 * p - 1.0)
+}
+
+// ============================================================================
+// ACTIVE LEARNING RELIABILITY (AK-MCS)
+// ============================================================================
+
+/// AK-MCS: Active learning reliability with Kriging + Monte Carlo
+/// Industry standard: UQLab Reliability, FERUM
+///
+/// Combines Kriging surrogate with MCS for efficient reliability estimation.
+/// Uses the U learning function to select most informative training points.
+#[derive(Debug, Clone)]
+pub struct AKMCS {
+    pub n_initial: usize,
+    pub n_candidates: usize,
+    pub convergence_threshold: f64,
+    pub max_iterations: usize,
+    /// Training points
+    pub training_x: Vec<Vec<f64>>,
+    pub training_y: Vec<f64>,
+    /// Results
+    pub pf_estimate: f64,
+    pub beta_estimate: f64,
+    pub cov: f64,
+    pub n_calls: usize,
+}
+
+impl AKMCS {
+    pub fn new() -> Self {
+        AKMCS {
+            n_initial: 12,
+            n_candidates: 10000,
+            convergence_threshold: 2.0,  // U-function threshold
+            max_iterations: 100,
+            training_x: Vec::new(),
+            training_y: Vec::new(),
+            pf_estimate: 0.0,
+            beta_estimate: 0.0,
+            cov: 0.0,
+            n_calls: 0,
+        }
+    }
+
+    /// Run AK-MCS analysis
+    pub fn analyze<F>(&mut self, dimension: usize, limit_state: F)
+    where
+        F: Fn(&[f64]) -> f64,
+    {
+        let mut rng_state = 42u64;
+
+        // Generate MCS population (standard normal)
+        let candidates: Vec<Vec<f64>> = (0..self.n_candidates)
+            .map(|_| {
+                (0..dimension).map(|_| box_muller_normal(&mut rng_state)).collect()
+            })
+            .collect();
+
+        // Initial training with LHS
+        self.training_x = self.latin_hypercube_sample(dimension, self.n_initial, &mut rng_state);
+        self.training_y = self.training_x.iter()
+            .map(|x| limit_state(x))
+            .collect();
+        self.n_calls = self.n_initial;
+
+        // Build initial Kriging model
+        let mut kriging = SimpleKriging::new(&self.training_x, &self.training_y);
+
+        for iter in 0..self.max_iterations {
+            // Predict on all candidates
+            let predictions: Vec<(f64, f64)> = candidates.iter()
+                .map(|x| kriging.predict(x))
+                .collect();
+
+            // Compute U function: U(x) = |μ(x)| / σ(x)
+            let u_values: Vec<f64> = predictions.iter()
+                .map(|(mu, sigma)| mu.abs() / sigma.max(1e-10))
+                .collect();
+
+            // Find minimum U
+            let (min_idx, min_u) = u_values.iter().enumerate()
+                .min_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+                .unwrap();
+
+            // Convergence check
+            if *min_u > self.convergence_threshold {
+                break;
+            }
+
+            // Add best candidate to training set
+            let new_x = candidates[min_idx].clone();
+            let new_y = limit_state(&new_x);
+            
+            self.training_x.push(new_x);
+            self.training_y.push(new_y);
+            self.n_calls += 1;
+
+            // Rebuild Kriging model
+            kriging = SimpleKriging::new(&self.training_x, &self.training_y);
+        }
+
+        // Final MCS estimate
+        let predictions: Vec<(f64, f64)> = candidates.iter()
+            .map(|x| kriging.predict(x))
+            .collect();
+
+        let n_failure = predictions.iter()
+            .filter(|(mu, _)| *mu <= 0.0)
+            .count();
+
+        self.pf_estimate = n_failure as f64 / self.n_candidates as f64;
+        self.beta_estimate = -standard_normal_inverse_cdf(self.pf_estimate);
+
+        // COV estimate
+        let variance = self.pf_estimate * (1.0 - self.pf_estimate) / self.n_candidates as f64;
+        self.cov = variance.sqrt() / self.pf_estimate.max(1e-10);
+    }
+
+    fn latin_hypercube_sample(&self, d: usize, n: usize, rng_state: &mut u64) -> Vec<Vec<f64>> {
+        let mut samples = vec![vec![0.0; d]; n];
+
+        for dim in 0..d {
+            let mut perm: Vec<usize> = (0..n).collect();
+            
+            // Shuffle
+            for i in (1..n).rev() {
+                let j = (lcg_random(rng_state) * (i + 1) as f64) as usize;
+                perm.swap(i, j);
+            }
+
+            for (i, &p) in perm.iter().enumerate() {
+                let u = (p as f64 + lcg_random(rng_state)) / n as f64;
+                samples[i][dim] = standard_normal_inverse_cdf(u);
+            }
+        }
+
+        samples
+    }
+}
+
+/// Simplified Kriging for AK-MCS
+struct SimpleKriging {
+    x_train: Vec<Vec<f64>>,
+    y_train: Vec<f64>,
+    theta: Vec<f64>,
+    r_inv: Vec<Vec<f64>>,
+    beta: f64,
+    sigma2: f64,
+}
+
+impl SimpleKriging {
+    fn new(x: &[Vec<f64>], y: &[f64]) -> Self {
+        let n = x.len();
+        let d = x[0].len();
+
+        // Fixed length scales (would optimize in production)
+        let theta = vec![1.0; d];
+
+        // Build correlation matrix
+        let mut r = vec![vec![0.0; n]; n];
+        for i in 0..n {
+            for j in 0..n {
+                let dist_sq: f64 = x[i].iter().zip(x[j].iter()).zip(theta.iter())
+                    .map(|((&xi, &xj), &t)| t * (xi - xj).powi(2))
+                    .sum();
+                r[i][j] = (-dist_sq).exp();
+            }
+            r[i][i] += 1e-8; // Nugget
+        }
+
+        let r_inv = invert_matrix(&r);
+        
+        // Regression coefficient
+        let ones = vec![1.0; n];
+        let r_inv_1 = mat_vec_mult(&r_inv, &ones);
+        let r_inv_y = mat_vec_mult(&r_inv, y);
+        
+        let beta = dot(&ones, &r_inv_y) / dot(&ones, &r_inv_1);
+        
+        // Process variance
+        let y_centered: Vec<f64> = y.iter().map(|&yi| yi - beta).collect();
+        let sigma2 = dot(&y_centered, &mat_vec_mult(&r_inv, &y_centered)) / n as f64;
+
+        SimpleKriging {
+            x_train: x.to_vec(),
+            y_train: y.to_vec(),
+            theta,
+            r_inv,
+            beta,
+            sigma2,
+        }
+    }
+
+    fn predict(&self, x: &[f64]) -> (f64, f64) {
+        let n = self.x_train.len();
+
+        // Correlation with training points
+        let r: Vec<f64> = self.x_train.iter()
+            .map(|xi| {
+                let dist_sq: f64 = xi.iter().zip(x.iter()).zip(self.theta.iter())
+                    .map(|((&xti, &xp), &t)| t * (xti - xp).powi(2))
+                    .sum();
+                (-dist_sq).exp()
+            })
+            .collect();
+
+        // Mean prediction
+        let y_centered: Vec<f64> = self.y_train.iter().map(|&y| y - self.beta).collect();
+        let r_inv_y_c = mat_vec_mult(&self.r_inv, &y_centered);
+        let mu = self.beta + dot(&r, &r_inv_y_c);
+
+        // Variance prediction
+        let r_inv_r = mat_vec_mult(&self.r_inv, &r);
+        let var = self.sigma2 * (1.0 - dot(&r, &r_inv_r)).max(0.0);
+        let sigma = var.sqrt();
+
+        (mu, sigma)
+    }
+}
+
+// ============================================================================
+// AK-IS: ACTIVE KRIGING WITH IMPORTANCE SAMPLING
+// ============================================================================
+
+/// AK-IS: Combines Kriging with Importance Sampling
+/// More efficient than AK-MCS for small failure probabilities
+#[derive(Debug, Clone)]
+pub struct AKIS {
+    pub n_initial: usize,
+    pub n_is_samples: usize,
+    pub design_point: Vec<f64>,
+    pub pf_estimate: f64,
+    pub beta_estimate: f64,
+    pub n_calls: usize,
+}
+
+impl AKIS {
+    pub fn new() -> Self {
+        AKIS {
+            n_initial: 12,
+            n_is_samples: 5000,
+            design_point: Vec::new(),
+            pf_estimate: 0.0,
+            beta_estimate: 0.0,
+            n_calls: 0,
+        }
+    }
+
+    /// Run AK-IS with provided design point
+    pub fn analyze<F>(&mut self, dimension: usize, design_point: &[f64], limit_state: F)
+    where
+        F: Fn(&[f64]) -> f64,
+    {
+        let mut rng_state = 42u64;
+        self.design_point = design_point.to_vec();
+
+        // Initial training set around design point
+        let mut training_x: Vec<Vec<f64>> = Vec::new();
+        let mut training_y: Vec<f64> = Vec::new();
+
+        // Design point
+        training_x.push(design_point.to_vec());
+        training_y.push(limit_state(design_point));
+
+        // Points around design point
+        for _ in 0..(self.n_initial - 1) {
+            let x: Vec<f64> = design_point.iter()
+                .map(|&dp| dp + 0.5 * box_muller_normal(&mut rng_state))
+                .collect();
+            training_y.push(limit_state(&x));
+            training_x.push(x);
+        }
+
+        self.n_calls = self.n_initial;
+
+        // Build Kriging
+        let mut kriging = SimpleKriging::new(&training_x, &training_y);
+
+        // IS centered at design point
+        let is_samples: Vec<Vec<f64>> = (0..self.n_is_samples)
+            .map(|_| {
+                design_point.iter()
+                    .map(|&dp| dp + box_muller_normal(&mut rng_state))
+                    .collect()
+            })
+            .collect();
+
+        // Active learning loop
+        for _ in 0..50 {
+            let predictions: Vec<(f64, f64)> = is_samples.iter()
+                .map(|x| kriging.predict(x))
+                .collect();
+
+            // Learning function H (for IS)
+            let h_values: Vec<f64> = predictions.iter()
+                .enumerate()
+                .map(|(i, (mu, sigma))| {
+                    let w = self.is_weight(&is_samples[i], design_point);
+                    let u = mu.abs() / sigma.max(1e-10);
+                    
+                    // H = w * (1 - Φ(U))
+                    w * standard_normal_cdf(-u)
+                })
+                .collect();
+
+            // Find maximum H
+            let (max_idx, max_h) = h_values.iter().enumerate()
+                .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+                .unwrap();
+
+            if *max_h < 1e-4 {
+                break;
+            }
+
+            // Add best point
+            let new_x = is_samples[max_idx].clone();
+            let new_y = limit_state(&new_x);
+            training_x.push(new_x);
+            training_y.push(new_y);
+            self.n_calls += 1;
+
+            kriging = SimpleKriging::new(&training_x, &training_y);
+        }
+
+        // Final IS estimate
+        let mut pf_sum = 0.0;
+        
+        for (i, x) in is_samples.iter().enumerate() {
+            let (mu, _) = kriging.predict(x);
+            let indicator = if mu <= 0.0 { 1.0 } else { 0.0 };
+            let w = self.is_weight(x, design_point);
+            pf_sum += indicator * w;
+        }
+
+        self.pf_estimate = pf_sum / self.n_is_samples as f64;
+        self.beta_estimate = -standard_normal_inverse_cdf(self.pf_estimate);
+    }
+
+    fn is_weight(&self, x: &[f64], design_point: &[f64]) -> f64 {
+        // w = f(x)/g(x) where g is centered at design point
+        let log_f: f64 = -0.5 * x.iter().map(|&xi| xi * xi).sum::<f64>();
+        let log_g: f64 = -0.5 * x.iter().zip(design_point.iter())
+            .map(|(&xi, &dp)| (xi - dp).powi(2))
+            .sum::<f64>();
+        
+        (log_f - log_g).exp()
+    }
+}
+
+// ============================================================================
+// TIME-VARIANT RELIABILITY
+// ============================================================================
+
+/// Time-variant reliability analysis
+/// Industry standard: Strurel, specialized literature
+///
+/// Handles time-varying loads, degradation, and time-to-failure analysis.
+#[derive(Debug, Clone)]
+pub struct TimeVariantReliability {
+    pub time_span: (f64, f64),
+    pub n_time_steps: usize,
+    pub n_simulations: usize,
+    pub survival_probability: Vec<f64>,
+    pub hazard_rate: Vec<f64>,
+    pub mean_time_to_failure: f64,
+}
+
+impl TimeVariantReliability {
+    pub fn new(t_start: f64, t_end: f64, n_steps: usize) -> Self {
+        TimeVariantReliability {
+            time_span: (t_start, t_end),
+            n_time_steps: n_steps,
+            n_simulations: 1000,
+            survival_probability: Vec::new(),
+            hazard_rate: Vec::new(),
+            mean_time_to_failure: 0.0,
+        }
+    }
+
+    /// Analyze system with time-varying limit state
+    pub fn analyze<F>(&mut self, n_rvs: usize, limit_state: F)
+    where
+        F: Fn(&[f64], f64) -> f64,  // g(X, t)
+    {
+        let mut rng_state = 42u64;
+        let dt = (self.time_span.1 - self.time_span.0) / self.n_time_steps as f64;
+        let times: Vec<f64> = (0..=self.n_time_steps)
+            .map(|i| self.time_span.0 + i as f64 * dt)
+            .collect();
+
+        let mut n_surviving = vec![0usize; self.n_time_steps + 1];
+        let mut failure_times = Vec::new();
+
+        for _ in 0..self.n_simulations {
+            // Sample random variables (assume time-invariant for simplicity)
+            let x: Vec<f64> = (0..n_rvs).map(|_| box_muller_normal(&mut rng_state)).collect();
+
+            let mut failed = false;
+            let mut failure_time = self.time_span.1;
+
+            for (step, &t) in times.iter().enumerate() {
+                if !failed {
+                    n_surviving[step] += 1;
+                    
+                    if limit_state(&x, t) <= 0.0 {
+                        failed = true;
+                        failure_time = t;
+                    }
+                }
+            }
+
+            if failed {
+                failure_times.push(failure_time);
+            }
+        }
+
+        // Survival probability
+        self.survival_probability = n_surviving.iter()
+            .map(|&n| n as f64 / self.n_simulations as f64)
+            .collect();
+
+        // Hazard rate: h(t) = -d(ln R(t))/dt
+        self.hazard_rate = Vec::new();
+        for i in 1..self.survival_probability.len() {
+            let r_prev = self.survival_probability[i - 1].max(1e-10);
+            let r_curr = self.survival_probability[i].max(1e-10);
+            
+            let h = -(r_curr.ln() - r_prev.ln()) / dt;
+            self.hazard_rate.push(h.max(0.0));
+        }
+
+        // Mean time to failure
+        if !failure_times.is_empty() {
+            self.mean_time_to_failure = failure_times.iter().sum::<f64>() / failure_times.len() as f64;
+        } else {
+            self.mean_time_to_failure = self.time_span.1;
+        }
+    }
+
+    /// PHI2 method for outcrossing rate
+    pub fn outcrossing_rate<F, G>(&self, x: &[f64], t: f64, limit_state: F, velocity: G) -> f64
+    where
+        F: Fn(&[f64], f64) -> f64,
+        G: Fn(&[f64], f64) -> Vec<f64>,
+    {
+        // PHI2 method: ν(t) = integral of joint PDF at g=0
+        // Simplified approximation using FORM-like approach
+        
+        let g = limit_state(x, t);
+        let v = velocity(x, t);
+        
+        // Gradient with respect to x
+        let eps = 1e-6;
+        let grad_g: Vec<f64> = (0..x.len())
+            .map(|i| {
+                let mut x_plus = x.to_vec();
+                x_plus[i] += eps;
+                (limit_state(&x_plus, t) - g) / eps
+            })
+            .collect();
+
+        // Time derivative
+        let dg_dt = (limit_state(x, t + eps) - g) / eps;
+
+        // Compute v+ (positive rate)
+        let grad_norm: f64 = grad_g.iter().map(|&gi| gi * gi).sum::<f64>().sqrt();
+        
+        if grad_norm < 1e-10 {
+            return 0.0;
+        }
+
+        // Outcrossing rate approximation
+        let beta = -g / grad_norm;
+        let phi_beta = standard_normal_pdf(beta);
+        
+        let v_process = dg_dt + dot(&grad_g, &v);
+        
+        phi_beta * (v_process / grad_norm).max(0.0)
+    }
+}
+
+// ============================================================================
+// RESPONSE SURFACE FORM
+// ============================================================================
+
+/// Response surface based FORM
+/// Industry standard: Strurel, FERUM
+///
+/// Uses polynomial response surface to approximate limit state
+/// for efficient reliability analysis.
+#[derive(Debug, Clone)]
+pub struct ResponseSurfaceFORM {
+    pub polynomial_order: usize,
+    pub surface_coefficients: Vec<f64>,
+    pub design_point: Vec<f64>,
+    pub beta: f64,
+    pub pf: f64,
+}
+
+impl ResponseSurfaceFORM {
+    pub fn new(order: usize) -> Self {
+        ResponseSurfaceFORM {
+            polynomial_order: order,
+            surface_coefficients: Vec::new(),
+            design_point: Vec::new(),
+            beta: 0.0,
+            pf: 0.0,
+        }
+    }
+
+    /// Fit response surface and run FORM
+    pub fn analyze<F>(&mut self, dimension: usize, limit_state: F)
+    where
+        F: Fn(&[f64]) -> f64,
+    {
+        let mut rng_state = 42u64;
+
+        // Generate training points
+        let n_train = ((self.polynomial_order + 1) * dimension + 5).max(20);
+        let mut x_train = Vec::new();
+        let mut y_train = Vec::new();
+
+        // Central point
+        x_train.push(vec![0.0; dimension]);
+        y_train.push(limit_state(&x_train[0]));
+
+        // Axial points
+        for d in 0..dimension {
+            for sign in [-1.0, 1.0] {
+                let mut x = vec![0.0; dimension];
+                x[d] = sign * 2.0;
+                y_train.push(limit_state(&x));
+                x_train.push(x);
+            }
+        }
+
+        // Additional random points
+        while x_train.len() < n_train {
+            let x: Vec<f64> = (0..dimension)
+                .map(|_| 3.0 * (lcg_random(&mut rng_state) * 2.0 - 1.0))
+                .collect();
+            y_train.push(limit_state(&x));
+            x_train.push(x);
+        }
+
+        // Build polynomial basis matrix
+        let basis = self.build_polynomial_basis(&x_train, dimension);
+        
+        // Least squares fit
+        self.surface_coefficients = self.least_squares_fit(&basis, &y_train);
+
+        // FORM on response surface
+        let rs_func = |x: &[f64]| self.evaluate_response_surface(x, dimension);
+        
+        let (design_point, beta) = self.form_search(dimension, rs_func);
+        
+        self.design_point = design_point;
+        self.beta = beta;
+        self.pf = standard_normal_cdf(-beta);
+    }
+
+    fn build_polynomial_basis(&self, x: &[Vec<f64>], d: usize) -> Vec<Vec<f64>> {
+        x.iter()
+            .map(|xi| self.polynomial_features(xi, d))
+            .collect()
+    }
+
+    fn polynomial_features(&self, x: &[f64], d: usize) -> Vec<f64> {
+        let mut features = vec![1.0];  // Constant
+
+        // Linear terms
+        features.extend(x.iter().cloned());
+
+        // Quadratic terms
+        if self.polynomial_order >= 2 {
+            for i in 0..d {
+                features.push(x[i] * x[i]);
+            }
+            for i in 0..d {
+                for j in (i + 1)..d {
+                    features.push(x[i] * x[j]);
+                }
+            }
+        }
+
+        features
+    }
+
+    fn least_squares_fit(&self, basis: &[Vec<f64>], y: &[f64]) -> Vec<f64> {
+        let n = basis.len();
+        let p = basis[0].len();
+
+        // A^T A
+        let mut ata = vec![vec![0.0; p]; p];
+        for i in 0..p {
+            for j in 0..p {
+                ata[i][j] = basis.iter().map(|row| row[i] * row[j]).sum();
+            }
+        }
+
+        // A^T y
+        let aty: Vec<f64> = (0..p)
+            .map(|i| basis.iter().zip(y.iter()).map(|(row, &yi)| row[i] * yi).sum())
+            .collect();
+
+        // Solve
+        let ata_inv = invert_matrix(&ata);
+        mat_vec_mult(&ata_inv, &aty)
+    }
+
+    fn evaluate_response_surface(&self, x: &[f64], d: usize) -> f64 {
+        let features = self.polynomial_features(x, d);
+        dot(&self.surface_coefficients, &features)
+    }
+
+    fn form_search<F>(&self, d: usize, g: F) -> (Vec<f64>, f64)
+    where
+        F: Fn(&[f64]) -> f64,
+    {
+        // HL-RF algorithm
+        let mut u = vec![0.0; d];
+        let eps = 1e-6;
+
+        for _ in 0..50 {
+            let g_u = g(&u);
+            
+            // Gradient
+            let grad: Vec<f64> = (0..d)
+                .map(|i| {
+                    let mut u_plus = u.clone();
+                    u_plus[i] += eps;
+                    (g(&u_plus) - g_u) / eps
+                })
+                .collect();
+
+            let grad_norm: f64 = grad.iter().map(|&gi| gi * gi).sum::<f64>().sqrt();
+            
+            if grad_norm < 1e-10 { break; }
+
+            let alpha: Vec<f64> = grad.iter().map(|&gi| gi / grad_norm).collect();
+            let beta = (dot(&grad, &u) - g_u) / grad_norm;
+
+            let u_new: Vec<f64> = alpha.iter().map(|&ai| beta * ai).collect();
+            
+            let diff: f64 = u_new.iter().zip(u.iter())
+                .map(|(&a, &b)| (a - b).abs())
+                .sum();
+
+            u = u_new;
+
+            if diff < 1e-6 { break; }
+        }
+
+        let beta = u.iter().map(|&ui| ui * ui).sum::<f64>().sqrt();
+        (u, beta)
+    }
+}
+
+// ============================================================================
+// INTERVAL ANALYSIS
+// ============================================================================
+
+/// Interval analysis for epistemic uncertainty
+/// Industry standard: UQLab, specialized software
+#[derive(Debug, Clone)]
+pub struct IntervalAnalysis {
+    pub intervals: Vec<(f64, f64)>,
+    pub output_interval: (f64, f64),
+}
+
+impl IntervalAnalysis {
+    pub fn new(intervals: Vec<(f64, f64)>) -> Self {
+        IntervalAnalysis {
+            intervals,
+            output_interval: (0.0, 0.0),
+        }
+    }
+
+    /// Natural interval extension
+    pub fn natural_extension<F>(&mut self, func: F)
+    where
+        F: Fn(&[f64]) -> f64,
+    {
+        // Optimization-based approach
+        let n = self.intervals.len();
+        let mut rng_state = 42u64;
+
+        let mut min_val = f64::INFINITY;
+        let mut max_val = f64::NEG_INFINITY;
+
+        // Multi-start optimization
+        for _ in 0..1000 {
+            // Random point in intervals
+            let x: Vec<f64> = self.intervals.iter()
+                .map(|&(lo, hi)| lo + lcg_random(&mut rng_state) * (hi - lo))
+                .collect();
+
+            let y = func(&x);
+            min_val = min_val.min(y);
+            max_val = max_val.max(y);
+        }
+
+        // Vertex enumeration for small n
+        if n <= 10 {
+            let vertices = self.enumerate_vertices();
+            for v in vertices {
+                let y = func(&v);
+                min_val = min_val.min(y);
+                max_val = max_val.max(y);
+            }
+        }
+
+        self.output_interval = (min_val, max_val);
+    }
+
+    fn enumerate_vertices(&self) -> Vec<Vec<f64>> {
+        let n = self.intervals.len();
+        let n_vertices = 1 << n;
+        let mut vertices = Vec::new();
+
+        for i in 0..n_vertices {
+            let v: Vec<f64> = (0..n)
+                .map(|j| {
+                    if (i >> j) & 1 == 0 {
+                        self.intervals[j].0
+                    } else {
+                        self.intervals[j].1
+                    }
+                })
+                .collect();
+            vertices.push(v);
+        }
+
+        vertices
+    }
+
+    /// Affine arithmetic for tighter bounds
+    pub fn affine_arithmetic<F>(&mut self, func: F)
+    where
+        F: Fn(&[AffineForm]) -> AffineForm,
+    {
+        let forms: Vec<AffineForm> = self.intervals.iter().enumerate()
+            .map(|(i, &(lo, hi))| AffineForm::from_interval(lo, hi, i))
+            .collect();
+
+        let result = func(&forms);
+        self.output_interval = result.to_interval();
+    }
+}
+
+/// Affine form for reduced dependency problem
+#[derive(Debug, Clone)]
+pub struct AffineForm {
+    pub center: f64,
+    pub coefficients: Vec<(usize, f64)>,  // (noise symbol index, coefficient)
+    pub error: f64,  // Accumulated rounding error
+}
+
+impl AffineForm {
+    pub fn from_interval(lo: f64, hi: f64, symbol: usize) -> Self {
+        let center = (lo + hi) / 2.0;
+        let radius = (hi - lo) / 2.0;
+        
+        AffineForm {
+            center,
+            coefficients: vec![(symbol, radius)],
+            error: 0.0,
+        }
+    }
+
+    pub fn constant(c: f64) -> Self {
+        AffineForm {
+            center: c,
+            coefficients: Vec::new(),
+            error: 0.0,
+        }
+    }
+
+    pub fn to_interval(&self) -> (f64, f64) {
+        let radius: f64 = self.coefficients.iter()
+            .map(|(_, c)| c.abs())
+            .sum::<f64>() + self.error;
+        
+        (self.center - radius, self.center + radius)
+    }
+
+    pub fn add(&self, other: &AffineForm) -> AffineForm {
+        let center = self.center + other.center;
+        
+        // Merge coefficients
+        let mut coeffs = self.coefficients.clone();
+        for &(sym, coef) in &other.coefficients {
+            if let Some(pos) = coeffs.iter().position(|&(s, _)| s == sym) {
+                coeffs[pos].1 += coef;
+            } else {
+                coeffs.push((sym, coef));
+            }
+        }
+
+        AffineForm {
+            center,
+            coefficients: coeffs,
+            error: self.error + other.error,
+        }
+    }
+
+    pub fn multiply(&self, other: &AffineForm, new_symbol: usize) -> AffineForm {
+        // x * y ≈ x0*y0 + x0*Σy_i*ε_i + y0*Σx_i*ε_i + non-affine term
+        let center = self.center * other.center;
+        
+        let mut coeffs = Vec::new();
+        
+        // x0 * y_i
+        for &(sym, coef) in &other.coefficients {
+            coeffs.push((sym, self.center * coef));
+        }
+        
+        // y0 * x_i
+        for &(sym, coef) in &self.coefficients {
+            if let Some(pos) = coeffs.iter().position(|&(s, _)| s == sym) {
+                coeffs[pos].1 += other.center * coef;
+            } else {
+                coeffs.push((sym, other.center * coef));
+            }
+        }
+
+        // Non-affine error
+        let self_rad: f64 = self.coefficients.iter().map(|(_, c)| c.abs()).sum();
+        let other_rad: f64 = other.coefficients.iter().map(|(_, c)| c.abs()).sum();
+        let nonaffine = self_rad * other_rad;
+
+        // Add as new noise symbol or error
+        if nonaffine > 1e-10 {
+            coeffs.push((new_symbol, nonaffine));
+        }
+
+        AffineForm {
+            center,
+            coefficients: coeffs,
+            error: self.error * other.center.abs() + other.error * self.center.abs(),
+        }
+    }
+}
+
+// ============================================================================
+// GLOBAL SENSITIVITY FOR RELIABILITY
+// ============================================================================
+
+/// PAWN sensitivity indices for reliability
+#[derive(Debug, Clone)]
+pub struct PAWNSensitivity {
+    pub dimension: usize,
+    pub pawn_indices: Vec<f64>,
+}
+
+impl PAWNSensitivity {
+    pub fn new(dimension: usize) -> Self {
+        PAWNSensitivity {
+            dimension,
+            pawn_indices: vec![0.0; dimension],
+        }
+    }
+
+    /// Compute PAWN indices using KS statistic
+    pub fn compute<F>(&mut self, n_samples: usize, func: F)
+    where
+        F: Fn(&[f64]) -> f64,
+    {
+        let mut rng_state = 42u64;
+
+        // Generate unconditional samples
+        let x_unc: Vec<Vec<f64>> = (0..n_samples)
+            .map(|_| {
+                (0..self.dimension).map(|_| box_muller_normal(&mut rng_state)).collect()
+            })
+            .collect();
+        
+        let y_unc: Vec<f64> = x_unc.iter().map(|x| func(x)).collect();
+
+        // For each dimension
+        for d in 0..self.dimension {
+            let mut max_ks = 0.0;
+
+            // Condition on several values of x_d
+            let n_cond = 10;
+            for c in 0..n_cond {
+                let cond_val = standard_normal_inverse_cdf((c as f64 + 0.5) / n_cond as f64);
+
+                // Generate conditional samples
+                let y_cond: Vec<f64> = (0..n_samples / n_cond)
+                    .map(|_| {
+                        let mut x: Vec<f64> = (0..self.dimension)
+                            .map(|_| box_muller_normal(&mut rng_state))
+                            .collect();
+                        x[d] = cond_val;
+                        func(&x)
+                    })
+                    .collect();
+
+                // KS statistic between unconditional and conditional
+                let ks = self.ks_statistic(&y_unc, &y_cond);
+                max_ks = f64::max(max_ks, ks);
+            }
+
+            self.pawn_indices[d] = max_ks;
+        }
+    }
+
+    fn ks_statistic(&self, sample1: &[f64], sample2: &[f64]) -> f64 {
+        let mut sorted1 = sample1.to_vec();
+        let mut sorted2 = sample2.to_vec();
+        sorted1.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        sorted2.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+        let n1 = sorted1.len();
+        let n2 = sorted2.len();
+        
+        let mut max_diff: f64 = 0.0;
+        let mut i1 = 0;
+        let mut i2 = 0;
+
+        while i1 < n1 && i2 < n2 {
+            let x1 = sorted1[i1];
+            let x2 = sorted2[i2];
+
+            let f1 = i1 as f64 / n1 as f64;
+            let f2 = i2 as f64 / n2 as f64;
+            
+            max_diff = f64::max(max_diff, (f1 - f2).abs());
+
+            if x1 <= x2 {
+                i1 += 1;
+            } else {
+                i2 += 1;
+            }
+        }
+
+        max_diff
+    }
+}
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
+fn lcg_random(state: &mut u64) -> f64 {
+    *state = state.wrapping_mul(6364136223846793005).wrapping_add(1);
+    (*state as f64) / (u64::MAX as f64)
+}
+
+fn box_muller_normal(state: &mut u64) -> f64 {
+    let u1 = lcg_random(state);
+    let u2 = lcg_random(state);
+    (-2.0 * u1.ln()).sqrt() * (2.0 * PI * u2).cos()
+}
+
+fn dot(a: &[f64], b: &[f64]) -> f64 {
+    a.iter().zip(b.iter()).map(|(&ai, &bi)| ai * bi).sum()
+}
+
+fn mat_vec_mult(a: &[Vec<f64>], x: &[f64]) -> Vec<f64> {
+    a.iter().map(|row| dot(row, x)).collect()
+}
+
+fn invert_matrix(a: &[Vec<f64>]) -> Vec<Vec<f64>> {
+    let n = a.len();
+    let mut aug = vec![vec![0.0; 2 * n]; n];
+
+    for i in 0..n {
+        for j in 0..n {
+            aug[i][j] = a[i][j];
+            aug[i][n + j] = if i == j { 1.0 } else { 0.0 };
+        }
+    }
+
+    for i in 0..n {
+        let mut max_row = i;
+        for k in (i + 1)..n {
+            if aug[k][i].abs() > aug[max_row][i].abs() {
+                max_row = k;
+            }
+        }
+        aug.swap(i, max_row);
+
+        let pivot = aug[i][i];
+        if pivot.abs() < 1e-14 { continue; }
+
+        for j in 0..(2 * n) {
+            aug[i][j] /= pivot;
+        }
+
+        for k in 0..n {
+            if k == i { continue; }
+            let factor = aug[k][i];
+            for j in 0..(2 * n) {
+                aug[k][j] -= factor * aug[i][j];
+            }
+        }
+    }
+
+    let mut inv = vec![vec![0.0; n]; n];
+    for i in 0..n {
+        for j in 0..n {
+            inv[i][j] = aug[i][n + j];
+        }
+    }
+    inv
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_ak_mcs() {
+        let mut ak = AKMCS::new();
+        ak.n_initial = 10;
+        ak.n_candidates = 1000;
+        ak.max_iterations = 20;
+
+        let limit_state = |x: &[f64]| 3.0 - x[0] - x[1];
+        
+        ak.analyze(2, limit_state);
+        
+        assert!(ak.n_calls < 50);
+        assert!(ak.pf_estimate > 0.0);
+    }
+
+    #[test]
+    fn test_ak_is() {
+        let mut ak = AKIS::new();
+        ak.n_initial = 10;
+        ak.n_is_samples = 1000;
+
+        let limit_state = |x: &[f64]| 3.0 - x[0] - x[1];
+        let design_point = vec![1.5, 1.5];
+        
+        ak.analyze(2, &design_point, limit_state);
+        
+        assert!(ak.pf_estimate > 0.0);
+    }
+
+    #[test]
+    fn test_time_variant() {
+        let mut tv = TimeVariantReliability::new(0.0, 10.0, 20);
+        tv.n_simulations = 500;
+
+        // Degrading resistance
+        let limit_state = |x: &[f64], t: f64| 10.0 - 0.1 * t - x[0];
+        
+        tv.analyze(1, limit_state);
+        
+        assert!(tv.survival_probability[0] >= *tv.survival_probability.last().unwrap());
+    }
+
+    #[test]
+    fn test_response_surface_form() {
+        let mut rsf = ResponseSurfaceFORM::new(2);
+        
+        let limit_state = |x: &[f64]| 3.0 - x[0] - x[1];
+        
+        rsf.analyze(2, limit_state);
+        
+        assert!(rsf.beta > 0.0);
+        assert!(rsf.beta < 5.0);
+    }
+
+    #[test]
+    fn test_interval_analysis() {
+        let mut ia = IntervalAnalysis::new(vec![(1.0, 2.0), (3.0, 5.0)]);
+        
+        let func = |x: &[f64]| x[0] * x[1];
+        
+        ia.natural_extension(func);
+        
+        assert!(ia.output_interval.0 <= 3.0);  // 1*3
+        assert!(ia.output_interval.1 >= 10.0); // 2*5
+    }
+
+    #[test]
+    fn test_pawn() {
+        let mut pawn = PAWNSensitivity::new(2);
+        
+        let func = |x: &[f64]| x[0] + 0.1 * x[1];
+        
+        pawn.compute(500, func);
+        
+        // x[0] should be more important than x[1]
+        assert!(pawn.pawn_indices[0] > pawn.pawn_indices[1]);
+    }
+}

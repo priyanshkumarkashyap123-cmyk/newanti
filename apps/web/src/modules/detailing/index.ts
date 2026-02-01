@@ -16,20 +16,31 @@
  * @version 1.0.0
  */
 
-// Foundation Design Module
+// Foundation Design Module - import and re-export to avoid conflicts
+export {
+  type CalculationStep,
+  type ColumnLoadInput,
+  type ShearResult,
+} from './foundations';
+
+// Re-export foundations selectively (avoiding conflicts)
 export * from './foundations';
 
-// Column Design Module
-export * from './columns';
+// Column Design Module - use namespace import to avoid conflicts
+import * as ColumnsModule from './columns';
+export { ColumnsModule };
 
-// Beam Design Module
-export * from './beams';
+// Beam Design Module - use namespace import to avoid conflicts  
+import * as BeamsModule from './beams';
+export { BeamsModule };
 
 // Slab Design Module
-export * from './slabs';
+import * as SlabsModule from './slabs';
+export { SlabsModule };
 
 // Wall/Shear Wall Design Module
-export * from './walls';
+import * as WallsModule from './walls';
+export { WallsModule };
 
 // Design Page Component
 export { DetailingDesignPage } from './DetailingDesignPage';

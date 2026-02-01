@@ -15,35 +15,35 @@ import { persist } from 'zustand/middleware';
 /**
  * The five main workflow categories (Umbrellas)
  */
-export type Category = 'MODELING' | 'PROPERTIES' | 'LOADING' | 'ANALYSIS' | 'DESIGN';
+export type Category = 'MODELING' | 'PROPERTIES' | 'LOADING' | 'ANALYSIS' | 'DESIGN' | 'CIVIL';
 
 /**
- * Sidebar display mode
+ * Sidebar display modes
  */
-export type SidebarMode = 'EXPANDED' | 'COLLAPSED';
+export type SidebarMode = 'expanded' | 'collapsed' | 'hidden' | 'EXPANDED' | 'COLLAPSED' | 'HIDDEN';
 
 /**
- * Validation result for category switching
- */
-export interface ValidationResult {
-    valid: boolean;
-    message?: string;
-    warnings?: string[];
-}
-
-/**
- * Analysis results structure (minimal interface)
+ * Analysis results interface
  */
 export interface AnalysisResults {
-    completed: boolean;
-    timestamp?: number;
-    displacements?: Map<string, number[]>;
-    reactions?: Map<string, number[]>;
+  completed: boolean;
+  timestamp?: number;
+  type?: string;
+  data?: Record<string, unknown>;
 }
 
-// ============================================
-// TOOLS PER CATEGORY
-// ============================================
+/**
+ * Validation result interface
+ */
+export interface ValidationResult {
+  isValid: boolean;
+  valid?: boolean; // backwards compat
+  errors?: string[];
+  warnings?: string[];
+  message?: string;
+}
+
+// ... (existing code)
 
 export const CATEGORY_TOOLS: Record<Category, string[]> = {
     MODELING: [
@@ -98,6 +98,14 @@ export const CATEGORY_TOOLS: Record<Category, string[]> = {
         // Additional design tools
         'TIMBER_DESIGN', 'COMPOSITE_DESIGN', 'SEISMIC_DETAIL',
         'CROSS_SECTION_CHECK', 'DEFLECTION_CHECK'
+    ],
+    CIVIL: [
+        'GEOTECH_CALC', 'FOUNDATION_ANALYSIS', 'SLOPE_STABILITY',
+        'TRANS_GEOMETRIC', 'PAVEMENT_DESIGN', 'TRAFFIC_ANALYSIS',
+        'HYDRAULICS_CHANNEL', 'HYDRAULICS_PIPE', 'CULVERT_DESIGN',
+        'ENV_WTP', 'ENV_STP', 'ENV_AQI',
+        'CONST_SCHEDULE', 'COST_ESTIMATE',
+        'SURVEY_TRAVERSE', 'SURVEY_VOLUME'
     ]
 };
 
@@ -217,6 +225,7 @@ const validateModelConnectivity = (): ValidationResult => {
     // TODO: Import and use useModelStore to validate
     // For now, return a mock validation
     return {
+        isValid: true,
         valid: true,
         message: 'Model validation passed',
         warnings: []

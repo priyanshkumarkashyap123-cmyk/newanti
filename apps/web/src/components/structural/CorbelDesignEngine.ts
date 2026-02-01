@@ -117,8 +117,8 @@ export class CorbelDesignEngine {
     });
     
     // ----- STEP 2: Check Bearing Stress -----
-    let bearingWidth = input.bearingPlateWidth || 100;
-    let bearingLength = input.bearingPlateLength || b;
+    const bearingWidth = input.bearingPlateWidth || 100;
+    const bearingLength = input.bearingPlateLength || b;
     const bearingArea = bearingWidth * bearingLength;
     const bearingStress = (Vu * 1000) / bearingArea;
     const allowableBearing = 0.4 * fck;

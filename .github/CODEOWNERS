@@ -1,0 +1,68 @@
+# CODEOWNERS
+#
+# This file defines code ownership for the repository.
+# Each line is a file pattern followed by one or more owners.
+# 
+# Order matters - later patterns override earlier ones.
+# Learn more: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# ============================================================================
+# Default Owners (all files)
+# ============================================================================
+* @rakshittiwari
+
+# ============================================================================
+# Frontend (React/TypeScript)
+# ============================================================================
+/apps/web/ @rakshittiwari
+/apps/web/src/components/ @rakshittiwari
+/apps/web/src/pages/ @rakshittiwari
+/apps/web/src/hooks/ @rakshittiwari
+/apps/web/src/lib/ @rakshittiwari
+/apps/web/src/stores/ @rakshittiwari
+
+# ============================================================================
+# Backend (API)
+# ============================================================================
+/apps/api/ @rakshittiwari
+
+# ============================================================================
+# Rust/WASM Solver
+# ============================================================================
+/packages/solver-core/ @rakshittiwari
+/packages/solver-wasm/ @rakshittiwari
+*.rs @rakshittiwari
+Cargo.toml @rakshittiwari
+Cargo.lock @rakshittiwari
+
+# ============================================================================
+# Infrastructure & DevOps
+# ============================================================================
+/.github/ @rakshittiwari
+/docker-compose*.yml @rakshittiwari
+/Dockerfile* @rakshittiwari
+*.sh @rakshittiwari
+
+# ============================================================================
+# Configuration Files
+# ============================================================================
+package.json @rakshittiwari
+pnpm-workspace.yaml @rakshittiwari
+tsconfig*.json @rakshittiwari
+vite.config.ts @rakshittiwari
+vitest.config.ts @rakshittiwari
+playwright.config.ts @rakshittiwari
+tailwind.config.* @rakshittiwari
+
+# ============================================================================
+# Documentation
+# ============================================================================
+*.md @rakshittiwari
+/docs/ @rakshittiwari
+
+# ============================================================================
+# Security-sensitive files (require additional review)
+# ============================================================================
+.env* @rakshittiwari
+**/auth/** @rakshittiwari
+**/security/** @rakshittiwari

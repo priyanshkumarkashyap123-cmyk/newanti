@@ -426,8 +426,8 @@ export function analyzeStructure3D(request: AnalysisRequest3D): AnalysisResult3D
 
     // ===== INITIALIZE GLOBAL MATRICES =====
     const assemblyStart = performance.now();
-    let K: number[][] = Array(totalDofs).fill(null).map(() => Array(totalDofs).fill(0));
-    let F: number[] = Array(totalDofs).fill(0);
+    const K: number[][] = Array(totalDofs).fill(null).map(() => Array(totalDofs).fill(0));
+    const F: number[] = Array(totalDofs).fill(0);
 
     // ===== ASSEMBLE GLOBAL STIFFNESS MATRIX =====
     for (const member of members) {
@@ -675,4 +675,4 @@ export function analyzeStructure3D(request: AnalysisRequest3D): AnalysisResult3D
 // ============================================
 
 // Re-export original 2D interfaces and functions for backwards compatibility
-export { analyzeStructure } from './solver';
+export { analyzeStructure } from './solver.js';

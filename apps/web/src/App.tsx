@@ -4,65 +4,128 @@
  */
 
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { Component, ReactNode, ErrorInfo, useState } from 'react';
+import { Component, ReactNode, ErrorInfo, useState, Suspense, lazy } from 'react';
 
-// Pages
+// Eagerly loaded critical components (Landing, Auth)
 import { LandingPage } from './pages/LandingPage';
-
-import { Dashboard } from './pages/Dashboard';
-import DashboardEnhanced from './pages/DashboardEnhanced';
-import { StreamDashboard } from './pages/StreamDashboard';
-import { UnifiedDashboard } from './pages/UnifiedDashboard';
-import { Capabilities } from './pages/Capabilities';
 import { SignInPage } from './pages/SignInPage';
 import { SignUpPage } from './pages/SignUpPage';
-import { SettingsPage } from './pages/SettingsPage';
-import SettingsPageEnhanced from './pages/SettingsPageEnhanced';
-import { PricingPage } from './pages/PricingPage';
-import { EnhancedPricingPage } from './pages/EnhancedPricingPage';
-import { ResetPasswordPage } from './pages/ResetPasswordPage';
-import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
-import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
-import TermsPage from './pages/TermsPage';
-import { TermsOfServicePage } from './pages/TermsOfServicePage';
-import { PrivacyPolicyPageNew } from './pages/PrivacyPolicyPageNew';
-import { HelpPage } from './pages/HelpPage';
-import { ContactPage } from './pages/ContactPage';
-import { AboutPage } from './pages/AboutPage';
-import { ReportsPage } from './pages/ReportsPage';
-import ReportViewerEnhanced from './pages/ReportViewerEnhanced';
-import { WorkspaceDemo } from './pages/WorkspaceDemo';
-import { RustWasmDemo } from './pages/RustWasmDemo';
-import { WorkerValidation } from './components/WorkerValidation';
-import { ModalAnalysisPanel } from './components/analysis/ModalAnalysisPanel';
-import { TimeHistoryPanel } from './components/analysis/TimeHistoryPanel';
-import { SeismicAnalysisPanel } from './components/analysis/SeismicAnalysisPanel';
-import { BucklingAnalysisPanel } from './components/analysis/BucklingAnalysisPanel';
-import { CableAnalysisPanel } from './components/analysis/CableAnalysisPanel';
-import { PDeltaAnalysisPanel } from './components/analysis/PDeltaAnalysisPanel';
-// Layouts
-import { WorkspaceLayout } from './layouts/WorkspaceLayout';
 import { RequireAuth } from './components/layout/RequireAuth';
-
-// Design Pages
-import { SteelDesignPage } from './pages/SteelDesignPage';
-import { ConnectionDesignPage } from './modules/connections';
-import { ReinforcementDesignPage } from './modules/reinforcement';
-import { WeldedConnectionsPage } from './modules/connections/welded';
-import { DetailingDesignPage } from './modules/detailing';
-
-// Modern Modeler Component
-import { ModernModeler } from './components/ModernModeler';
-
-// Legacy Modeler Components (kept for backward compat)
-import { ViewportManager } from './components/ViewportManager';
-import { Toolbar } from './components/Toolbar';
-import { PropertiesPanel } from './components/PropertiesPanel';
-import { ResultsTable } from './components/ResultsTable';
-import { useModelStore } from './store/model';
-import { AICommandCenter } from './components/ai';
 import { LegalConsentModal, useCheckLegalConsent } from './components/LegalConsentModal';
 import './App.css';
+import './utils/generateTestGrid';
+
+// Lazy loaded components (Code Splitting)
+const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
+const UnifiedDashboard = lazy(() => import('./pages/UnifiedDashboard').then(module => ({ default: module.UnifiedDashboard })));
+const Capabilities = lazy(() => import('./pages/Capabilities').then(module => ({ default: module.Capabilities })));
+const SettingsPage = lazy(() => import('./pages/SettingsPage').then(module => ({ default: module.SettingsPage })));
+const SettingsPageEnhanced = lazy(() => import('./pages/SettingsPageEnhanced'));
+const EnhancedPricingPage = lazy(() => import('./pages/EnhancedPricingPage').then(module => ({ default: module.EnhancedPricingPage })));
+const PricingPage = lazy(() => import('./pages/PricingPage').then(module => ({ default: module.PricingPage })));
+
+// Civil Engineering Suite (Lazy Loaded)
+const CivilEngineeringBookLanding = lazy(() => import('./app/civil-engineering/library/page'));
+const BookApp = lazy(() => import('./modules/civil-engine/components/BookApp').then(module => ({ default: module.BookApp })));
+const RealisticBook = lazy(() => import('./modules/civil-engine/components/RealisticBook').then(module => ({ default: module.RealisticBook })));
+const TransportationDesigner = lazy(() => import('./modules/civil-engine/components/TransportationDesigner').then(module => ({ default: module.TransportationDesigner })));
+const ConstructionManager = lazy(() => import('./modules/civil-engine/components/ConstructionManager').then(module => ({ default: module.ConstructionManager })));
+const HydraulicsDesigner = lazy(() => import('./modules/civil-engine/components/HydraulicsDesigner').then(module => ({ default: module.HydraulicsDesigner })));
+
+// Structural Design (Lazy Loaded)
+const SteelDesignPage = lazy(() => import('./pages/SteelDesignPage').then(module => ({ default: module.SteelDesignPage })));
+const StructuralDesignCenter = lazy(() => import('./pages/StructuralDesignCenter')); // Default export
+const ModernModeler = lazy(() => import('./components/ModernModeler').then(module => ({ default: module.ModernModeler })));
+const RustWasmDemo = lazy(() => import('./pages/RustWasmDemo').then(module => ({ default: module.RustWasmDemo })));
+const UIShowcase = lazy(() => import('./pages/UIShowcase').then(module => ({ default: module.UIShowcase })));
+
+// Auth & Info Pages (Lazy Loaded) - All have default exports
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
+const PrivacyPolicyPageNew = lazy(() => import('./pages/PrivacyPolicyPageNew'));
+const TermsOfServicePage = lazy(() => import('./pages/TermsOfServicePage'));
+const HelpPage = lazy(() => import('./pages/HelpPage'));
+const AboutPage = lazy(() => import('./pages/AboutPage'));
+const ContactPage = lazy(() => import('./pages/ContactPage'));
+const ReportsPage = lazy(() => import('./pages/ReportsPage'));
+const WorkerValidation = lazy(() => import('./components/WorkerValidation'));
+
+// Phase 12 Design Modules
+const ConnectionDesignPage = lazy(() => import('./pages/ConnectionDesignPage'));
+const WeldedConnectionsPage = lazy(() => import('./pages/ConnectionDesignPage')); // Reusing Connection Page
+const DetailingDesignPage = lazy(() => import('./pages/DetailingDesignPage'));
+const ReinforcementDesignPage = lazy(() => import('./pages/DetailingDesignPage')); // Reusing Detailing Page
+
+// New Complete Design Pages (CEO Gap Closure - Phase 13)
+const ConcreteDesignPage = lazy(() => import('./pages/ConcreteDesignPage'));
+const FoundationDesignPage = lazy(() => import('./pages/FoundationDesignPage'));
+const LoadCombinationPage = lazy(() => import('./pages/LoadCombinationPage'));
+const SectionDatabasePage = lazy(() => import('./pages/SectionDatabasePage'));
+const PushoverAnalysisPage = lazy(() => import('./pages/PushoverAnalysisPage'));
+
+// Enhanced Analysis Pages (CEO Industry Gap Closure - Phase 14)
+const TimeHistoryAnalysisPage = lazy(() => import('./pages/TimeHistoryAnalysisPage'));
+const ModalAnalysisPage = lazy(() => import('./pages/ModalAnalysisPage'));
+const NonlinearAnalysisPage = lazy(() => import('./pages/NonlinearAnalysisPage'));
+const DynamicAnalysisPage = lazy(() => import('./pages/DynamicAnalysisPage'));
+const AdvancedSettingsPage = lazy(() => import('./pages/AdvancedSettingsPage'));
+
+// Phase 15: Professional Tools (Industry Parity)
+const ProfessionalReportGenerator = lazy(() => import('./pages/ProfessionalReportGenerator'));
+const ConnectionDesignDatabase = lazy(() => import('./pages/ConnectionDesignDatabase'));
+const PerformanceMonitorDashboard = lazy(() => import('./pages/PerformanceMonitorDashboard'));
+
+// Phase 16: Enterprise Features (Industry Parity Complete)
+const BIMExportEnhanced = lazy(() => import('./pages/BIMExportEnhanced'));
+const CADIntegrationHub = lazy(() => import('./pages/CADIntegrationHub'));
+const CollaborationHub = lazy(() => import('./pages/CollaborationHub'));
+const APIIntegrationDashboard = lazy(() => import('./pages/APIIntegrationDashboard'));
+const MaterialsDatabasePage = lazy(() => import('./pages/MaterialsDatabasePage'));
+const CodeComplianceChecker = lazy(() => import('./pages/CodeComplianceChecker'));
+
+// Phase 17-19: Industry Parity Final
+const CloudStorageDashboard = lazy(() => import('./pages/CloudStorageDashboard'));
+const AdvancedMeshingDashboard = lazy(() => import('./pages/AdvancedMeshingDashboard'));
+const SensitivityOptimizationDashboard = lazy(() => import('./pages/SensitivityOptimizationDashboard'));
+
+// Phase 20-22: Industry Parity Complete (95+)
+const Visualization3DEngine = lazy(() => import('./pages/Visualization3DEngine'));
+const ResultAnimationViewer = lazy(() => import('./pages/ResultAnimationViewer'));
+const PrintExportCenter = lazy(() => import('./pages/PrintExportCenter'));
+
+// Gap-closure UI shells (Phase 1)
+const BIMIntegrationPage = lazy(() => import('./pages/BIMIntegrationPage'));
+const QuantitySurveyPage = lazy(() => import('./pages/QuantitySurveyPage'));
+const ReportBuilderPage = lazy(() => import('./pages/ReportBuilderPage'));
+const VisualizationHubPage = lazy(() => import('./pages/VisualizationHubPage'));
+
+// AI Power Dashboard (Lazy Loaded)
+const AIPowerDashboard = lazy(() => import('./components/ai/AIPowerDashboard').then(module => ({ default: module.AIPowerDashboard })));
+const PowerAIPanel = lazy(() => import('./components/ai/PowerAIPanel').then(module => ({ default: module.PowerAIPanel })));
+
+// Analysis Panels (Lazy Loaded)
+const ModalAnalysisPanel = lazy(() => import('./components/analysis/ModalAnalysisPanel').then(module => ({ default: module.ModalAnalysisPanel })));
+const TimeHistoryPanel = lazy(() => import('./components/analysis/TimeHistoryPanel').then(module => ({ default: module.TimeHistoryPanel })));
+const SeismicAnalysisPanel = lazy(() => import('./components/analysis/SeismicAnalysisPanel').then(module => ({ default: module.SeismicAnalysisPanel })));
+const BucklingAnalysisPanel = lazy(() => import('./components/analysis/BucklingAnalysisPanel').then(module => ({ default: module.BucklingAnalysisPanel })));
+const CableAnalysisPanel = lazy(() => import('./components/analysis/CableAnalysisPanel').then(module => ({ default: module.CableAnalysisPanel })));
+const PDeltaAnalysisPanel = lazy(() => import('./components/analysis/PDeltaAnalysisPanel').then(module => ({ default: module.PDeltaAnalysisPanel })));
+
+// Toast Provider
+import { ToastProvider } from './providers/ToastProvider';
+
+// Loading Component
+import { DashboardSkeleton } from './components/ui/DashboardSkeleton';
+const PageLoader = () => (
+    <div className="flex items-center justify-center min-h-screen bg-slate-900">
+        <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+            <p className="text-slate-400 text-sm font-medium animate-pulse">Loading Module...</p>
+        </div>
+    </div>
+);
+
+
 
 // Performance Testing Utility - Load grid generator globally
 import './utils/generateTestGrid';
@@ -137,172 +200,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
     }
 }
 
-// ============================================
-// MODELER COMPONENT (Legacy Wrapper for Canvas)
-// ============================================
 
-function Modeler() {
-    const showResults = useModelStore((state) => state.showResults);
-    const nodes = useModelStore((state) => state.nodes);
-    const members = useModelStore((state) => state.members);
-    const loads = useModelStore((state) => state.loads);
-    const selectedIds = useModelStore((state) => state.selectedIds);
-
-    return (
-        <div className="app-container">
-            {/* Professional Header */}
-            <header className="modeler-header">
-                <div className="header-left">
-                    <div className="logo">
-                        <span className="logo-icon">⬡</span>
-                        <span className="logo-text">BeamLab</span>
-                        <span className="logo-badge">ULTIMATE</span>
-                    </div>
-                    <div className="header-divider" />
-                    <nav className="header-menu">
-                        <button className="menu-btn"><span>📁</span> File</button>
-                        <button className="menu-btn"><span>✏️</span> Edit</button>
-                        <button className="menu-btn"><span>👁️</span> View</button>
-                        <button className="menu-btn"><span>🔧</span> Model</button>
-                        <button className="menu-btn"><span>📊</span> Analyze</button>
-                        <button className="menu-btn"><span>🏗️</span> Design</button>
-                        <button className="menu-btn"><span>❓</span> Help</button>
-                    </nav>
-                </div>
-                <div className="header-right">
-                    <div className="project-badge">
-                        <span className="project-icon">📐</span>
-                        <span className="project-name">Demo Project</span>
-                        <span className="save-indicator saved">● Saved</span>
-                    </div>
-                    <button className="upgrade-btn">⚡ Upgrade to Pro</button>
-                </div>
-            </header>
-
-            {/* Quick Actions Bar */}
-            <div className="quick-actions-bar">
-                <div className="action-group">
-                    <button className="action-btn" title="New Project"><span>📄</span></button>
-                    <button className="action-btn" title="Open Project"><span>📂</span></button>
-                    <button className="action-btn" title="Save Project"><span>💾</span></button>
-                    <button className="action-btn" title="Export"><span>📤</span></button>
-                </div>
-                <div className="action-divider" />
-                <div className="action-group">
-                    <button className="action-btn" title="Undo (Ctrl+Z)"><span>↩️</span></button>
-                    <button className="action-btn" title="Redo (Ctrl+Y)"><span>↪️</span></button>
-                </div>
-                <div className="action-divider" />
-                <div className="action-group">
-                    <button className="action-btn" title="Zoom In"><span>🔍+</span></button>
-                    <button className="action-btn" title="Zoom Out"><span>🔍-</span></button>
-                    <button className="action-btn" title="Fit View"><span>⊡</span></button>
-                </div>
-                <div className="flex-spacer" />
-                <div className="model-stats">
-                    <span className="stat">
-                        <span className="stat-icon">●</span>
-                        <span className="stat-value">{nodes.size}</span>
-                        <span className="stat-label">Nodes</span>
-                    </span>
-                    <span className="stat">
-                        <span className="stat-icon">━</span>
-                        <span className="stat-value">{members.size}</span>
-                        <span className="stat-label">Members</span>
-                    </span>
-                    <span className="stat">
-                        <span className="stat-icon">↓</span>
-                        <span className="stat-value">{loads.length}</span>
-                        <span className="stat-label">Loads</span>
-                    </span>
-                </div>
-            </div>
-
-            {/* Main Content Area */}
-            <div className="modeler-main">
-                {/* Left Sidebar */}
-                <aside className="left-sidebar">
-                    <div className="sidebar-section">
-                        <h4 className="sidebar-title">🗂️ Model Tree</h4>
-                        <div className="tree-item"><span>📐 Structure</span></div>
-                        <div className="tree-item sub"><span>● Nodes ({nodes.size})</span></div>
-                        <div className="tree-item sub"><span>━ Members ({members.size})</span></div>
-                        <div className="tree-item sub"><span>📌 Supports</span></div>
-                        <div className="tree-item"><span>⬇️ Loads ({loads.length})</span></div>
-                    </div>
-                    <div className="sidebar-section">
-                        <h4 className="sidebar-title">📋 Quick Actions</h4>
-                        <button className="sidebar-action"><span>➕</span> Add Node</button>
-                        <button className="sidebar-action"><span>📏</span> Add Member</button>
-                        <button className="sidebar-action"><span>📌</span> Add Support</button>
-                        <button className="sidebar-action"><span>⬇️</span> Add Load</button>
-                    </div>
-
-                    {/* AI Architect Section */}
-                    <div className="ai-architect-section">
-                        <AICommandCenter />
-                    </div>
-                </aside>
-
-                {/* Viewport Area */}
-                <div className="viewport-container">
-                    <ViewportManager />
-                    <Toolbar />
-                </div>
-
-                {/* Right Sidebar - Properties */}
-                <aside className="right-sidebar">
-                    <PropertiesPanel />
-                    <div className="selection-info">
-                        <h4 className="sidebar-title">🔍 Selection</h4>
-                        {selectedIds.size === 0 ? (
-                            <p className="hint-text">Click on a node or member to view/edit its properties</p>
-                        ) : (
-                            <p className="hint-text">{selectedIds.size} item(s) selected</p>
-                        )}
-                    </div>
-                </aside>
-            </div>
-
-            {/* Results Table - conditional */}
-            {showResults && <ResultsTable />}
-
-            {/* Status Bar */}
-            <footer className="status-bar">
-                <div className="status-left">
-                    <span className="status-item"><span className="status-dot ready"></span> Ready</span>
-                    <span className="status-divider">|</span>
-                    <span className="status-item">Units: kN, m</span>
-                    <span className="status-divider">|</span>
-                    <span className="status-item">Grid: 1.0m</span>
-                </div>
-                <div className="status-center">
-                    <span className="status-coords">X: 0.00m, Y: 0.00m, Z: 0.00m</span>
-                </div>
-                <div className="status-right">
-                    <span className="status-item">View: Perspective</span>
-                    <span className="status-divider">|</span>
-                    <span className="status-item">Zoom: 100%</span>
-                </div>
-            </footer>
-        </div>
-    );
-}
-
-// ============================================
-// WORKSPACE PAGE (with WorkspaceLayout)
-// ============================================
-
-function WorkspacePage({ moduleType }: { moduleType: string }) {
-    // Users start with an empty model - they can create their own or load a sample
-    return (
-        <WorkspaceLayout>
-            {/* The 3D canvas content */}
-            <ViewportManager />
-            <Toolbar />
-        </WorkspaceLayout>
-    );
-}
 
 // ============================================
 // MAIN APP WITH ROUTING
@@ -325,8 +223,6 @@ function App() {
     // This fixes the scroll issue on landing pages as the modal locks body scroll
     const publicPaths = [
         '/',
-
-        '/pricing',
         '/pricing',
         '/capabilities',
         '/about',
@@ -341,7 +237,9 @@ function App() {
         '/workspace-demo',
         '/rust-wasm-demo',
         '/demo',
-        '/worker-test'
+        '/worker-test',
+        '/ai-dashboard',
+        '/ai-power'
     ];
 
     // Check if current path is public (exact match or starts with for sub-routes)
@@ -360,175 +258,382 @@ function App() {
 
     return (
         <ErrorBoundary>
-            <Routes>
-                {/* Landing Page */}
-                <Route path="/" element={<LandingPage />} />
+            <ToastProvider>
+                <Suspense fallback={<PageLoader />}>
+                    <Routes>
+                        {/* Landing Page */}
+                        <Route path="/" element={<LandingPage />} />
 
-                {/* Enhanced Landing Page - NEW Advanced Template */}
+                        {/* Enhanced Landing Page - NEW Advanced Template */}
 
 
-                {/* Stream Dashboard - Main Entry Point (Now uses UnifiedDashboard) */}
-                <Route path="/stream" element={
-                    <RequireAuth>
-                        <UnifiedDashboard />
-                    </RequireAuth>
-                } />
+                        {/* Stream Dashboard - Main Entry Point (Now uses UnifiedDashboard) */}
+                        <Route path="/stream" element={
+                            <RequireAuth>
+                                <Suspense fallback={<DashboardSkeleton />}>
+                                    <UnifiedDashboard />
+                                </Suspense>
+                            </RequireAuth>
+                        } />
 
-                {/* Legacy Dashboard - redirects to unified */}
-                <Route path="/dashboard" element={<Navigate to="/stream" replace />} />
+                        {/* Legacy Dashboard - redirects to unified */}
+                        <Route path="/dashboard" element={<Navigate to="/stream" replace />} />
 
-                {/* Enhanced Dashboard - redirects to unified */}
-                <Route path="/dashboard-enhanced" element={<Navigate to="/stream" replace />} />
+                        {/* Enhanced Dashboard - redirects to unified */}
+                        <Route path="/dashboard-enhanced" element={<Navigate to="/stream" replace />} />
 
-                {/* Capabilities Page */}
-                <Route path="/capabilities" element={<Capabilities />} />
+                        {/* Capabilities Page */}
+                        <Route path="/capabilities" element={<Capabilities />} />
 
-                {/* Custom Auth Pages */}
-                <Route path="/sign-in/*" element={<SignInPage />} />
-                <Route path="/sign-up/*" element={<SignUpPage />} />
+                        {/* Custom Auth Pages */}
+                        <Route path="/sign-in/*" element={<SignInPage />} />
+                        <Route path="/sign-up/*" element={<SignUpPage />} />
 
-                {/* Settings Page */}
-                {/* Settings Page */}
-                <Route path="/settings" element={
-                    <RequireAuth>
-                        <SettingsPage />
-                    </RequireAuth>
-                } />
+                        {/* Settings Page */}
+                        {/* Settings Page */}
+                        <Route path="/settings" element={
+                            <RequireAuth>
+                                <SettingsPage />
+                            </RequireAuth>
+                        } />
 
-                {/* Enhanced Settings - NEW Advanced Template */}
-                {/* Enhanced Settings - NEW Advanced Template */}
-                <Route path="/settings-enhanced" element={
-                    <RequireAuth>
-                        <SettingsPageEnhanced />
-                    </RequireAuth>
-                } />
+                        {/* Enhanced Settings - NEW Advanced Template */}
+                        {/* Enhanced Settings - NEW Advanced Template */}
+                        <Route path="/settings-enhanced" element={
+                            <RequireAuth>
+                                <SettingsPageEnhanced />
+                            </RequireAuth>
+                        } />
 
-                {/* Pricing Page */}
-                <Route path="/pricing" element={<EnhancedPricingPage />} />
-                <Route path="/pricing-old" element={<PricingPage />} />
+                        {/* Advanced Settings - Comprehensive Analysis Configuration */}
+                        <Route path="/settings/advanced" element={
+                            <RequireAuth>
+                                <AdvancedSettingsPage />
+                            </RequireAuth>
+                        } />
 
-                {/* Forgot Password */}
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                        {/* Pricing Page */}
+                        <Route path="/pricing" element={<EnhancedPricingPage />} />
+                        <Route path="/pricing-old" element={<PricingPage />} />
 
-                {/* Reset Password */}
-                <Route path="/reset-password" element={<ResetPasswordPage />} />
+                        {/* Forgot Password */}
+                        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-                {/* Privacy Policy - New comprehensive page for Clerk */}
-                <Route path="/privacy-policy" element={<PrivacyPolicyPageNew />} />
-                <Route path="/privacy" element={<Navigate to="/privacy-policy" replace />} />
+                        {/* Reset Password */}
+                        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-                {/* Terms of Service - New comprehensive page for Clerk */}
-                <Route path="/terms-of-service" element={<TermsOfServicePage />} />
-                <Route path="/terms" element={<Navigate to="/terms-of-service" replace />} />
+                        {/* Privacy Policy - New comprehensive page for Clerk */}
+                        <Route path="/privacy-policy" element={<PrivacyPolicyPageNew />} />
+                        <Route path="/privacy" element={<Navigate to="/privacy-policy" replace />} />
 
-                {/* Help & Tutorials */}
-                <Route path="/help" element={<HelpPage />} />
+                        {/* Terms of Service - New comprehensive page for Clerk */}
+                        <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+                        <Route path="/terms" element={<Navigate to="/terms-of-service" replace />} />
 
-                {/* About & Contact */}
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/contact" element={<ContactPage />} />
+                        {/* Help & Tutorials */}
+                        <Route path="/help" element={<HelpPage />} />
 
-                {/* Reports */}
-                {/* Reports */}
-                <Route path="/reports" element={
-                    <RequireAuth>
-                        <ReportsPage />
-                    </RequireAuth>
-                } />
+                        {/* About & Contact */}
+                        <Route path="/about" element={<AboutPage />} />
+                        <Route path="/contact" element={<ContactPage />} />
 
-                {/* Report Viewer - NEW Advanced Template */}
-                {/* Report Viewer - NEW Advanced Template */}
-                <Route path="/report/:reportId" element={
-                    <RequireAuth>
-                        <ReportViewerEnhanced />
-                    </RequireAuth>
-                } />
+                        {/* Civil Engineering – Book-style Interface */}
+                        <Route path="/civil-engineering/library" element={<CivilEngineeringBookLanding />} />
+                        <Route path="/civil-engineering/book" element={<BookApp />} />
+                        <Route path="/civil-engineering/book/realistic" element={<RealisticBook />} />
 
-                {/* Workspace Demo - NEW Advanced UI Templates */}
-                <Route path="/workspace-demo" element={<WorkspaceDemo />} />
+                        {/* Civil Engineering Suite - NEW Modules */}
+                        <Route path="/civil/hydraulics" element={
+                            <RequireAuth>
+                                <HydraulicsDesigner />
+                            </RequireAuth>
+                        } />
+                        <Route path="/civil/transportation" element={
+                            <RequireAuth>
+                                <TransportationDesigner />
+                            </RequireAuth>
+                        } />
+                        <Route path="/civil/construction" element={
+                            <RequireAuth>
+                                <ConstructionManager />
+                            </RequireAuth>
+                        } />
 
-                {/* Main App - Modern Modeler with integrated sidebar */}
-                {/* Main App - Modern Modeler with integrated sidebar */}
-                <Route path="/app" element={
-                    <RequireAuth>
-                        <ModernModeler />
-                    </RequireAuth>
-                } />
+                        {/* Reports */}
+                        {/* Reports */}
+                        <Route path="/reports" element={
+                            <RequireAuth>
+                                <ReportsPage />
+                            </RequireAuth>
+                        } />
 
-                {/* Demo Route - Modern Modeler */}
-                <Route path="/demo" element={<ModernModeler />} />
+                        {/* Main App - Modern Modeler with integrated sidebar */}
+                        {/* Main App - Modern Modeler with integrated sidebar */}
+                        <Route path="/app" element={
+                            <RequireAuth>
+                                <ModernModeler />
+                            </RequireAuth>
+                        } />
 
-                {/* Rust WASM Performance Demo */}
-                <Route path="/rust-wasm-demo" element={<RustWasmDemo />} />
+                        {/* Demo Route - Modern Modeler */}
+                        <Route path="/demo" element={<ModernModeler />} />
 
-                {/* Worker Validation Route */}
-                <Route path="/worker-test" element={<WorkerValidation />} />
+                        {/* UI Component Showcase - Phase 13+ Integration Demo */}
+                        <Route path="/ui-showcase" element={<UIShowcase />} />
 
-                {/* Advanced Analysis Panels (Rust-powered, 20-100x faster) */}
-                <Route path="/analysis/modal" element={<ModalAnalysisPanel isOpen={true} onClose={() => { }} />} />
-                <Route path="/analysis/time-history" element={<TimeHistoryPanel />} />
-                <Route path="/analysis/seismic" element={<SeismicAnalysisPanel />} />
-                <Route path="/analysis/buckling" element={<BucklingAnalysisPanel />} />
-                <Route path="/analysis/cable" element={<CableAnalysisPanel />} />
-                <Route path="/analysis/pdelta" element={<PDeltaAnalysisPanel />} />
-                <Route path="/analysis/nonlinear" element={<PDeltaAnalysisPanel />} /> {/* Alias for P-Delta */}
+                        {/* AI Power Dashboard - NEW C-Suite Analytics */}
+                        <Route path="/ai-dashboard" element={
+                            <RequireAuth>
+                                <AIPowerDashboard />
+                            </RequireAuth>
+                        } />
 
-                {/* Design Modules (Rust-powered, 10x faster) */}
-                <Route path="/design/steel" element={
-                    <RequireAuth>
-                        <SteelDesignPage />
-                    </RequireAuth>
-                } />
+                        {/* AI Power Panel - Next-Gen AI Interface */}
+                        <Route path="/ai-power" element={
+                            <RequireAuth>
+                                <PowerAIPanel />
+                            </RequireAuth>
+                        } />
 
-                {/* Connection Design Module - Professional bolted/welded connection design */}
-                <Route path="/design/connections" element={
-                    <RequireAuth>
-                        <ConnectionDesignPage />
-                    </RequireAuth>
-                } />
+                        {/* Rust WASM Performance Demo */}
+                        <Route path="/rust-wasm-demo" element={<RustWasmDemo />} />
 
-                {/* Welded Connections Module - Fillet, Groove, Base Plates */}
-                <Route path="/design/welded-connections" element={
-                    <RequireAuth>
-                        <WeldedConnectionsPage />
-                    </RequireAuth>
-                } />
+                        {/* Worker Validation Route */}
+                        <Route path="/worker-test" element={<WorkerValidation />} />
 
-                {/* Reinforcement Design Module - Stirrups, Development Length, Lap Splices */}
-                <Route path="/design/reinforcement" element={
-                    <RequireAuth>
-                        <ReinforcementDesignPage />
-                    </RequireAuth>
-                } />
+                        {/* Advanced Analysis Panels (Rust-powered, 20-100x faster) */}
+                        <Route path="/analysis/modal" element={<ModalAnalysisPanel isOpen={true} onClose={() => { }} />} />
+                        <Route path="/analysis/time-history" element={<TimeHistoryPanel />} />
+                        <Route path="/analysis/seismic" element={<SeismicAnalysisPanel />} />
+                        <Route path="/analysis/buckling" element={<BucklingAnalysisPanel />} />
+                        <Route path="/analysis/cable" element={<CableAnalysisPanel />} />
+                        <Route path="/analysis/pdelta" element={<PDeltaAnalysisPanel />} />
+                        <Route path="/analysis/nonlinear" element={<PDeltaAnalysisPanel />} /> {/* Alias for P-Delta */}
+                        
+                        {/* Enhanced Analysis Pages (CEO Industry Gap Closure - Phase 14) */}
+                        <Route path="/analysis/modal-page" element={
+                            <RequireAuth>
+                                <ModalAnalysisPage />
+                            </RequireAuth>
+                        } />
+                        <Route path="/analysis/time-history-page" element={
+                            <RequireAuth>
+                                <TimeHistoryAnalysisPage />
+                            </RequireAuth>
+                        } />
+                        <Route path="/analysis/nonlinear-page" element={
+                            <RequireAuth>
+                                <NonlinearAnalysisPage />
+                            </RequireAuth>
+                        } />
+                        <Route path="/analysis/dynamic" element={
+                            <RequireAuth>
+                                <DynamicAnalysisPage />
+                            </RequireAuth>
+                        } />
+                        
+                        {/* Pushover Analysis - Nonlinear Static for Performance-Based Design */}
+                        <Route path="/analysis/pushover" element={
+                            <RequireAuth>
+                                <PushoverAnalysisPage />
+                            </RequireAuth>
+                        } />
 
-                {/* RC Detailing Design Module - Foundations, Columns, Beams, Slabs, Walls */}
-                <Route path="/design/detailing" element={
-                    <RequireAuth>
-                        <DetailingDesignPage />
-                    </RequireAuth>
-                } />
+                        {/* Design Modules (Rust-powered, 10x faster) */}
+                        <Route path="/design/steel" element={
+                            <RequireAuth>
+                                <SteelDesignPage />
+                            </RequireAuth>
+                        } />
 
-                {/* Workspace Routes */}
-                {/* Workspace Routes */}
-                <Route path="/workspace/:moduleType" element={
-                    <RequireAuth>
-                        <WorkspacePageWrapper />
-                    </RequireAuth>
-                } />
+                        {/* Connection Design Module - Professional bolted/welded connection design */}
+                        <Route path="/design/connections" element={
+                            <RequireAuth>
+                                <ConnectionDesignPage />
+                            </RequireAuth>
+                        } />
 
-                {/* Legacy Modeler Route (backward compat) */}
-                <Route path="/modeler" element={<Modeler />} />
+                        {/* Welded Connections Module - Fillet, Groove, Base Plates */}
+                        <Route path="/design/welded-connections" element={
+                            <RequireAuth>
+                                <WeldedConnectionsPage />
+                            </RequireAuth>
+                        } />
 
-                {/* Fallback */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+                        {/* Reinforcement Design Module - Stirrups, Development Length, Lap Splices */}
+                        <Route path="/design/reinforcement" element={
+                            <RequireAuth>
+                                <ReinforcementDesignPage />
+                            </RequireAuth>
+                        } />
 
-            {/* Legal Consent Modal - shows on first use */}
-            <LegalConsentModal
-                open={showConsentModal}
-                onAccept={handleAcceptConsent}
-                canClose={false}
-            />
+                        {/* RC Detailing Design Module - Foundations, Columns, Beams, Slabs, Walls */}
+                        <Route path="/design/detailing" element={
+                            <RequireAuth>
+                                <DetailingDesignPage />
+                            </RequireAuth>
+                        } />
+
+                        {/* Concrete Design Module - Complete IS 456/ACI 318 RC Beam/Column/Slab Design */}
+                        <Route path="/design/concrete" element={
+                            <RequireAuth>
+                                <ConcreteDesignPage />
+                            </RequireAuth>
+                        } />
+
+                        {/* Foundation Design Module - Isolated/Combined/Strap/Mat Footings per IS 456/ACI 318 */}
+                        <Route path="/design/foundation" element={
+                            <RequireAuth>
+                                <FoundationDesignPage />
+                            </RequireAuth>
+                        } />
+
+                        {/* Load Combination Generator - Auto-generate IS 1893/ASCE 7/Eurocode combinations */}
+                        <Route path="/tools/load-combinations" element={
+                            <RequireAuth>
+                                <LoadCombinationPage />
+                            </RequireAuth>
+                        } />
+
+                        {/* Section Database Browser - ISMB/AISC/IPE/UB section properties */}
+                        <Route path="/tools/section-database" element={
+                            <RequireAuth>
+                                <SectionDatabasePage />
+                            </RequireAuth>
+                        } />
+
+                        {/* Gap closure: BIM, QS, Reports, Visualization hubs */}
+                        <Route path="/bim" element={
+                            <RequireAuth>
+                                <BIMIntegrationPage />
+                            </RequireAuth>
+                        } />
+                        <Route path="/quantity" element={
+                            <RequireAuth>
+                                <QuantitySurveyPage />
+                            </RequireAuth>
+                        } />
+                        <Route path="/reports/builder" element={
+                            <RequireAuth>
+                                <ReportBuilderPage />
+                            </RequireAuth>
+                        } />
+                        <Route path="/visualization" element={
+                            <RequireAuth>
+                                <VisualizationHubPage />
+                            </RequireAuth>
+                        } />
+
+                        {/* Structural Design Center - Complete RC/Steel/Bridge/Foundation Design */}
+                        <Route path="/design-center" element={
+                            <RequireAuth>
+                                <StructuralDesignCenter />
+                            </RequireAuth>
+                        } />
+
+                        {/* Phase 15: Professional Tools - Industry Parity */}
+                        <Route path="/reports/professional" element={
+                            <RequireAuth>
+                                <ProfessionalReportGenerator />
+                            </RequireAuth>
+                        } />
+                        <Route path="/connections/database" element={
+                            <RequireAuth>
+                                <ConnectionDesignDatabase />
+                            </RequireAuth>
+                        } />
+                        <Route path="/performance/monitor" element={
+                            <RequireAuth>
+                                <PerformanceMonitorDashboard />
+                            </RequireAuth>
+                        } />
+
+                        {/* Phase 16: Enterprise Features - Industry Parity Complete */}
+                        <Route path="/bim/export-enhanced" element={
+                            <RequireAuth>
+                                <BIMExportEnhanced />
+                            </RequireAuth>
+                        } />
+                        <Route path="/cad/integration" element={
+                            <RequireAuth>
+                                <CADIntegrationHub />
+                            </RequireAuth>
+                        } />
+                        <Route path="/collaboration" element={
+                            <RequireAuth>
+                                <CollaborationHub />
+                            </RequireAuth>
+                        } />
+                        <Route path="/api/dashboard" element={
+                            <RequireAuth>
+                                <APIIntegrationDashboard />
+                            </RequireAuth>
+                        } />
+                        <Route path="/materials/database" element={
+                            <RequireAuth>
+                                <MaterialsDatabasePage />
+                            </RequireAuth>
+                        } />
+                        <Route path="/compliance/checker" element={
+                            <RequireAuth>
+                                <CodeComplianceChecker />
+                            </RequireAuth>
+                        } />
+
+                        {/* Phase 17-19: Industry Parity Final */}
+                        <Route path="/cloud/storage" element={
+                            <RequireAuth>
+                                <CloudStorageDashboard />
+                            </RequireAuth>
+                        } />
+                        <Route path="/meshing/advanced" element={
+                            <RequireAuth>
+                                <AdvancedMeshingDashboard />
+                            </RequireAuth>
+                        } />
+                        <Route path="/optimization" element={
+                            <RequireAuth>
+                                <SensitivityOptimizationDashboard />
+                            </RequireAuth>
+                        } />
+                        
+                        {/* Phase 20-22: Industry Parity Complete */}
+                        <Route path="/visualization/3d" element={
+                            <RequireAuth>
+                                <Visualization3DEngine />
+                            </RequireAuth>
+                        } />
+                        <Route path="/results/animation" element={
+                            <RequireAuth>
+                                <ResultAnimationViewer />
+                            </RequireAuth>
+                        } />
+                        <Route path="/print-export" element={
+                            <RequireAuth>
+                                <PrintExportCenter />
+                            </RequireAuth>
+                        } />
+
+                        {/* Workspace Routes */}
+                        {/* Workspace Routes */}
+                        <Route path="/workspace/:moduleType" element={
+                            <RequireAuth>
+                                <WorkspacePageWrapper />
+                            </RequireAuth>
+                        } />
+
+                        {/* Fallback */}
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                </Suspense>
+
+                {/* Legal Consent Modal - shows on first use */}
+                <LegalConsentModal
+                    open={showConsentModal}
+                    onAccept={handleAcceptConsent}
+                    canClose={false}
+                />
+            </ToastProvider>
         </ErrorBoundary>
     );
 }

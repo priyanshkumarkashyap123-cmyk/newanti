@@ -4,6 +4,9 @@ import { ExportToolbar } from './export/ExportToolbar';
 import { useModelStore } from '../store/model';
 import { ExportData } from '../services/ExportService';
 import { useUIStore } from '../store/uiStore';
+import { ReportingService } from '../services/ReportingService';
+import { SteelDesignResults } from '../services/SteelDesignService';
+import { FileText, TableProperties } from 'lucide-react';
 
 /**
  * ExportDialog - Modal for exporting analysis results
@@ -97,7 +100,66 @@ export const ExportDialog: FC<{
                             </div>
 
                             <div className="flex flex-col gap-4">
-                                <h3 className="text-sm font-medium text-white">Select Format</h3>
+                                <h3 className="text-sm font-medium text-white">Generate Reports</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <button
+                                        onClick={() => {
+                                            if (projectInfo && nodes && members) {
+                                                ReportingService.generateCalculationBook(
+                                                    projectInfo, 
+                                                    nodes, 
+                                                    members, 
+                                                    analysisResults, 
+                                                    new Map() // TODO: Pass actual design results if available from store
+                                                );
+                                            }
+                                        }}
+                                        className="flex flex-col items-center gap-2 p-4 bg-zinc-800 hover:bg-zinc-700 rounded-lg border border-zinc-700 transition-colors"
+                                    >
+                                        <div className="p-3 bg-blue-500/10 rounded-full">
+                                            <FileText className="w-6 h-6 text-blue-500" />
+                                        </div>
+                                        <div className="text-center">
+                                            <div className="font-medium text-sm text-zinc-200">Calculation Book</div>
+                                            <div className="text-xs text-zinc-500">PDF Report</div>
+                                        </div>
+                                    </button>
+
+                                    <button
+                                        onClick={() => {
+                                            if (projectInfo && nodes && members) {
+                                                const bom = ReportingService.generateBOM(Array.from(members.values()), nodes);
+                                                // Create a mini report just for BOM or CSV
+                                                // For now, let's trigger the full BOM report via the service method we can add, 
+                                                // or just reuse the main one. Let's start with basic BOM CSV download for this specific button.
+                                                
+                                                const csvContent = "data:text/csv;charset=utf-8," 
+                                                    + "Section,Count,Total Length (m),Unit Wt (kg/m),Total Wt (kg)\n"
+                                                    + bom.items.map(e => `${e.section},${e.count},${e.totalLength.toFixed(2)},${e.unitWeight.toFixed(2)},${e.totalWeight.toFixed(2)}`).join("\n")
+                                                    + `\nTOTAL,,,${bom.items.length},${bom.totalWeight.toFixed(2)}`;
+                                                    
+                                                const encodedUri = encodeURI(csvContent);
+                                                const link = document.createElement("a");
+                                                link.setAttribute("href", encodedUri);
+                                                link.setAttribute("download", `BOM_${projectInfo.name}.csv`);
+                                                document.body.appendChild(link);
+                                                link.click();
+                                                document.body.removeChild(link);
+                                            }
+                                        }}
+                                        className="flex flex-col items-center gap-2 p-4 bg-zinc-800 hover:bg-zinc-700 rounded-lg border border-zinc-700 transition-colors"
+                                    >
+                                        <div className="p-3 bg-emerald-500/10 rounded-full">
+                                            <TableProperties className="w-6 h-6 text-emerald-500" />
+                                        </div>
+                                        <div className="text-center">
+                                            <div className="font-medium text-sm text-zinc-200">Bill of Materials</div>
+                                            <div className="text-xs text-zinc-500">CSV Export</div>
+                                        </div>
+                                    </button>
+                                </div>
+
+                                <h3 className="text-sm font-medium text-white mt-2">Export Data</h3>
                                 <div className="p-4 bg-zinc-900 rounded-lg border border-zinc-800 flex justify-center">
                                     <ExportToolbar
                                         exportData={exportData}
@@ -110,8 +172,8 @@ export const ExportDialog: FC<{
                             </div>
                         </div>
                     ) : null}
-                </div>
-            </DialogContent>
-        </Dialog>
+            </div>
+        </DialogContent>
+        </Dialog >
     );
 };

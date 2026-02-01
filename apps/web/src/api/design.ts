@@ -10,10 +10,7 @@
  * Now using high-performance Rust API for design checks
  */
 
-// Use Rust API for design checks (faster)
-const RUST_API = import.meta.env.VITE_RUST_API_URL || 'http://localhost:3002';
-// Node.js API for legacy endpoints
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import { api } from '@/utils/api';
 
 // ============================================
 // TYPES
@@ -248,26 +245,22 @@ export interface FootingResult {
 // API FUNCTIONS
 // ============================================
 
-async function apiCall<T>(endpoint: string, data: any): Promise<T> {
-    const response = await fetch(`${API_BASE}${endpoint}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-    });
+async function apiCall<T>(endpoint: string, data: unknown): Promise<T> {
+    const { data: response } = await api.post<{ success?: boolean; result?: T; error?: string }>(
+        endpoint,
+        data
+    );
 
-    if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: 'Request failed' }));
-        throw new Error(error.error || 'Design request failed');
+    if (response?.success === false) {
+        throw new Error(response.error || 'Design failed');
     }
 
-    const result = await response.json();
-    if (!result.success) {
-        throw new Error(result.error || 'Design failed');
+    if (response?.result !== undefined) {
+        return response.result;
     }
 
-    return result.result;
+    // Fallback: if backend returns raw data without wrapper
+    return response as unknown as T;
 }
 
 /**
@@ -324,9 +317,14 @@ export async function getDesignCodes(): Promise<{
     connections: Array<{ code: string; name: string; country: string }>;
     foundations: Array<{ code: string; name: string; country: string }>;
 }> {
-    const response = await fetch(`${API_BASE}/api/design/codes`);
-    const result = await response.json();
-    return result.codes;
+    const { data } = await api.get<{ codes: {
+        steel: Array<{ code: string; name: string; country: string }>;
+        concrete: Array<{ code: string; name: string; country: string }>;
+        connections: Array<{ code: string; name: string; country: string }>;
+        foundations: Array<{ code: string; name: string; country: string }>;
+    } }>('/api/design/codes');
+
+    return data.codes;
 }
 
 // ============================================
@@ -431,6 +429,11 @@ export const BOLT_GRADES = [
 
 const PYTHON_API = import.meta.env.VITE_PYTHON_API_URL || 'http://localhost:8081';
 
+async function pythonApiCall<T>(endpoint: string, payload: unknown): Promise<T> {
+    const { data } = await api.post<T>(endpoint, payload, { baseURL: PYTHON_API });
+    return data;
+}
+
 /**
  * Design RC beam per IS 456:2000 using Python backend
  */
@@ -452,26 +455,15 @@ export async function designBeamIS456(params: {
     status: string;
     checks: string[];
 }> {
-    const response = await fetch(`${PYTHON_API}/design/beam`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            width: params.width,
-            depth: params.depth,
-            cover: params.cover ?? 40,
-            Mu: params.Mu,
-            Vu: params.Vu,
-            fck: params.fck ?? 25,
-            fy: params.fy ?? 500
-        })
+    return pythonApiCall('/design/beam', {
+        width: params.width,
+        depth: params.depth,
+        cover: params.cover ?? 40,
+        Mu: params.Mu,
+        Vu: params.Vu,
+        fck: params.fck ?? 25,
+        fy: params.fy ?? 500
     });
-
-    if (!response.ok) {
-        const error = await response.json().catch(() => ({ detail: 'Design failed' }));
-        throw new Error(error.detail || 'Beam design failed');
-    }
-
-    return response.json();
 }
 
 /**
@@ -499,29 +491,18 @@ export async function designColumnIS456(params: {
     status: string;
     checks: string[];
 }> {
-    const response = await fetch(`${PYTHON_API}/design/column`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            width: params.width,
-            depth: params.depth,
-            cover: params.cover ?? 40,
-            Pu: params.Pu,
-            Mux: params.Mux ?? 0,
-            Muy: params.Muy ?? 0,
-            unsupported_length: params.unsupported_length,
-            effective_length_factor: params.effective_length_factor ?? 1.0,
-            fck: params.fck ?? 25,
-            fy: params.fy ?? 500
-        })
+    return pythonApiCall('/design/column', {
+        width: params.width,
+        depth: params.depth,
+        cover: params.cover ?? 40,
+        Pu: params.Pu,
+        Mux: params.Mux ?? 0,
+        Muy: params.Muy ?? 0,
+        unsupported_length: params.unsupported_length,
+        effective_length_factor: params.effective_length_factor ?? 1.0,
+        fck: params.fck ?? 25,
+        fy: params.fy ?? 500
     });
-
-    if (!response.ok) {
-        const error = await response.json().catch(() => ({ detail: 'Design failed' }));
-        throw new Error(error.detail || 'Column design failed');
-    }
-
-    return response.json();
 }
 
 /**
@@ -549,27 +530,16 @@ export async function designSlabIS456(params: {
     status: string;
     checks: string[];
 }> {
-    const response = await fetch(`${PYTHON_API}/design/slab`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            lx: params.lx,
-            ly: params.ly ?? 0,
-            live_load: params.live_load,
-            floor_finish: params.floor_finish ?? 1.0,
-            support_type: params.support_type ?? 'simple',
-            edge_conditions: params.edge_conditions ?? 'all_simple',
-            fck: params.fck ?? 25,
-            fy: params.fy ?? 500
-        })
+    return pythonApiCall('/design/slab', {
+        lx: params.lx,
+        ly: params.ly ?? 0,
+        live_load: params.live_load,
+        floor_finish: params.floor_finish ?? 1.0,
+        support_type: params.support_type ?? 'simple',
+        edge_conditions: params.edge_conditions ?? 'all_simple',
+        fck: params.fck ?? 25,
+        fy: params.fy ?? 500
     });
-
-    if (!response.ok) {
-        const error = await response.json().catch(() => ({ detail: 'Design failed' }));
-        throw new Error(error.detail || 'Slab design failed');
-    }
-
-    return response.json();
 }
 
 /**

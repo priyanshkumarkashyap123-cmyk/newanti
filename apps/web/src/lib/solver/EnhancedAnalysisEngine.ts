@@ -324,12 +324,12 @@ export class EnhancedAnalysisEngine {
     nodalLoads: NodalLoad[],
     distributedLoads: DistributedLoad[]
   ): Promise<EnhancedAnalysisResult> {
+    // Basic wrapper to the hybrid engine
     const result = await hybridEngine.analyze(nodes, elements, nodalLoads, distributedLoads);
-    
     return {
       ...result,
-      analysisType: 'linear',
-    };
+      analysisType: 'linear'
+    } as EnhancedAnalysisResult;
   }
   
   // ==========================================
@@ -911,8 +911,8 @@ export class EnhancedAnalysisEngine {
     const vehicleLoads = this.getVehicleLoads(options.vehicleType);
     
     // Track envelopes
-    let maxPositive: { displacements: Map<string, number[]>; forces: Map<string, MemberForces>; position: number } | null = null;
-    let maxNegative: { displacements: Map<string, number[]>; forces: Map<string, MemberForces>; position: number } | null = null;
+    let maxPositive: { displacements: Map<string, number[]>; forces: Map<string, MemberForces>; vehiclePosition: number } | null = null;
+    let maxNegative: { displacements: Map<string, number[]>; forces: Map<string, MemberForces>; vehiclePosition: number } | null = null;
     
     // Analyze for each position
     for (let increment = 0; increment <= config.numIncrements; increment++) {
@@ -938,12 +938,12 @@ export class EnhancedAnalysisEngine {
         maxPositive = {
           displacements: result.displacements,
           forces: result.memberForces ?? new Map(),
-          position,
+          vehiclePosition: position,
         };
         maxNegative = {
           displacements: result.displacements,
           forces: result.memberForces ?? new Map(),
-          position,
+          vehiclePosition: position,
         };
       }
     }

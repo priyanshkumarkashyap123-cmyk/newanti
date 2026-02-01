@@ -4,7 +4,7 @@
  */
 
 import Stripe from 'stripe';
-import { Request, Response, Router } from 'express';
+import { Request, Response, Router, type IRouter } from 'express';
 import { User, Subscription } from './models.js';
 
 // ============================================
@@ -47,7 +47,7 @@ export class BillingService {
         cancelUrl?: string
     ): Promise<Stripe.Checkout.Session> {
         // Get or create Stripe customer
-        let user = await User.findOne({ clerkId: userId });
+        const user = await User.findOne({ clerkId: userId });
         let customerId: string;
 
         if (user?.subscription) {
@@ -266,7 +266,7 @@ export class BillingService {
 // EXPRESS ROUTER
 // ============================================
 
-export const billingRouter = Router();
+export const billingRouter: IRouter = Router();
 
 /**
  * POST /api/checkout

@@ -251,7 +251,8 @@ export function calculateBeamDesignIS456(inputs: BeamDesignInputs): CalculationR
   // Step 2: Limiting Moment Capacity
   const xuMax_d = STEEL_GRADES[fy]?.xuMax_d || 0.456;
   const xuMax = xuMax_d * d;
-  const MuLim = 0.36 * fck * b * xuMax * (d - 0.42 * xuMax) / 1e6;
+  // IS 456 Annex G: Mu,lim = 0.36 × fck × b × xu,max × (d - 0.416 × xu,max)
+  const MuLim = 0.36 * fck * b * xuMax * (d - 0.416 * xuMax) / 1e6;
   
   steps.push({
     title: 'Limiting Moment Capacity',

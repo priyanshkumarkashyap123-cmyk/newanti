@@ -1,11 +1,13 @@
 /**
  * ResetPasswordPage.tsx - Password Reset Form
  * Allows users to set a new password with strength validation
+ * Uses Clerk for authentication
  */
 
 import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Check, ArrowLeft, Lock, Shield } from 'lucide-react';
+import { useSignIn } from '@clerk/clerk-react';
 
 // ============================================
 // PASSWORD STRENGTH CALCULATOR
@@ -59,6 +61,14 @@ export const ResetPasswordPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
+    const { signIn, isLoaded } = useSignIn();
+    
+    // Get reset code from URL (sent via email link)
+    const resetCode = searchParams.get('code');
 
     const strength = useMemo(() => calculatePasswordStrength(password), [password]);
     const passwordsMatch = password === confirmPassword && password.length > 0;
@@ -66,13 +76,37 @@ export const ResetPasswordPage = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (strength.score < 75 || !passwordsMatch) return;
+        if (!isLoaded || !signIn) return;
 
         setIsSubmitting(true);
-        // TODO: Implement actual password reset logic
-        setTimeout(() => {
+        setError(null);
+        
+        try {
+            // Use Clerk's password reset flow
+            if (resetCode) {
+                // Complete the reset with the code from email
+                const result = await signIn.attemptFirstFactor({
+                    strategy: 'reset_password_email_code',
+                    code: resetCode,
+                    password: password,
+                });
+                
+                if (result.status === 'complete') {
+                    // Password reset successful, redirect to sign in
+                    navigate('/sign-in?reset=success');
+                } else {
+                    setError('Password reset incomplete. Please try again.');
+                }
+            } else {
+                // No reset code - redirect to forgot password flow
+                setError('Invalid reset link. Please request a new password reset.');
+            }
+        } catch (err) {
+            console.error('Password reset error:', err);
+            setError(err instanceof Error ? err.message : 'Failed to reset password. Please try again.');
+        } finally {
             setIsSubmitting(false);
-            alert('Password reset successful!');
-        }, 1500);
+        }
     };
 
     return (

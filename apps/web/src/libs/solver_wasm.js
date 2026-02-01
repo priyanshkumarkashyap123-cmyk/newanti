@@ -1,8 +1,11 @@
 let wasm;
 
-function addToExternrefTable0(obj) {
-    const idx = wasm.__externref_table_alloc();
-    wasm.__wbindgen_externrefs.set(idx, obj);
+function addHeapObject(obj) {
+    if (heap_next === heap.length) heap.push(heap.length + 1);
+    const idx = heap_next;
+    heap_next = heap[idx];
+
+    heap[idx] = obj;
     return idx;
 }
 
@@ -71,6 +74,17 @@ function debugString(val) {
     return className;
 }
 
+function dropObject(idx) {
+    if (idx < 132) return;
+    heap[idx] = heap_next;
+    heap_next = idx;
+}
+
+function getArrayF64FromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    return getFloat64ArrayMemory0().subarray(ptr / 8, ptr / 8 + len);
+}
+
 function getArrayU8FromWasm0(ptr, len) {
     ptr = ptr >>> 0;
     return getUint8ArrayMemory0().subarray(ptr / 1, ptr / 1 + len);
@@ -97,14 +111,6 @@ function getStringFromWasm0(ptr, len) {
     return decodeText(ptr, len);
 }
 
-let cachedUint32ArrayMemory0 = null;
-function getUint32ArrayMemory0() {
-    if (cachedUint32ArrayMemory0 === null || cachedUint32ArrayMemory0.byteLength === 0) {
-        cachedUint32ArrayMemory0 = new Uint32Array(wasm.memory.buffer);
-    }
-    return cachedUint32ArrayMemory0;
-}
-
 let cachedUint8ArrayMemory0 = null;
 function getUint8ArrayMemory0() {
     if (cachedUint8ArrayMemory0 === null || cachedUint8ArrayMemory0.byteLength === 0) {
@@ -113,24 +119,23 @@ function getUint8ArrayMemory0() {
     return cachedUint8ArrayMemory0;
 }
 
+function getObject(idx) { return heap[idx]; }
+
 function handleError(f, args) {
     try {
         return f.apply(this, args);
     } catch (e) {
-        const idx = addToExternrefTable0(e);
-        wasm.__wbindgen_exn_store(idx);
+        wasm.__wbindgen_export3(addHeapObject(e));
     }
 }
 
+let heap = new Array(128).fill(undefined);
+heap.push(undefined, null, true, false);
+
+let heap_next = heap.length;
+
 function isLikeNone(x) {
     return x === undefined || x === null;
-}
-
-function passArray32ToWasm0(arg, malloc) {
-    const ptr = malloc(arg.length * 4, 4) >>> 0;
-    getUint32ArrayMemory0().set(arg, ptr / 4);
-    WASM_VECTOR_LEN = arg.length;
-    return ptr;
 }
 
 function passArrayF64ToWasm0(arg, malloc) {
@@ -177,10 +182,10 @@ function passStringToWasm0(arg, malloc, realloc) {
     return ptr;
 }
 
-function takeFromExternrefTable0(idx) {
-    const value = wasm.__wbindgen_externrefs.get(idx);
-    wasm.__externref_table_dealloc(idx);
-    return value;
+function takeObject(idx) {
+    const ret = getObject(idx);
+    dropObject(idx);
+    return ret;
 }
 
 let cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: true });
@@ -216,21 +221,21 @@ const AIArchitectFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_aiarchitect_free(ptr >>> 0, 1));
 
-const GpuContextFinalization = (typeof FinalizationRegistry === 'undefined')
+const MacnealHarderWasmFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
-    : new FinalizationRegistry(ptr => wasm.__wbg_gpucontext_free(ptr >>> 0, 1));
-
-const GpuSolverConfigFinalization = (typeof FinalizationRegistry === 'undefined')
-    ? { register: () => {}, unregister: () => {} }
-    : new FinalizationRegistry(ptr => wasm.__wbg_gpusolverconfig_free(ptr >>> 0, 1));
+    : new FinalizationRegistry(ptr => wasm.__wbg_macnealharderwasm_free(ptr >>> 0, 1));
 
 const RendererFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_renderer_free(ptr >>> 0, 1));
 
-const UltraSolverFinalization = (typeof FinalizationRegistry === 'undefined')
+const WasmHHTIntegratorFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
-    : new FinalizationRegistry(ptr => wasm.__wbg_ultrasolver_free(ptr >>> 0, 1));
+    : new FinalizationRegistry(ptr => wasm.__wbg_wasmhhtintegrator_free(ptr >>> 0, 1));
+
+const WasmSparseMatrixFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_wasmsparsematrix_free(ptr >>> 0, 1));
 
 export class AIArchitect {
     static __wrap(ptr) {
@@ -259,12 +264,16 @@ export class AIArchitect {
         let deferred1_0;
         let deferred1_1;
         try {
-            const ret = wasm.aiarchitect_suggest_beam_size(span, load);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.aiarchitect_suggest_beam_size(retptr, span, load);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            deferred1_0 = r0;
+            deferred1_1 = r1;
+            return getStringFromWasm0(r0, r1);
         } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_export4(deferred1_0, deferred1_1, 1);
         }
     }
     /**
@@ -277,243 +286,38 @@ export class AIArchitect {
 }
 if (Symbol.dispose) AIArchitect.prototype[Symbol.dispose] = AIArchitect.prototype.free;
 
-/**
- * GPU computation context
- */
-export class GpuContext {
+export class MacnealHarderWasm {
     __destroy_into_raw() {
         const ptr = this.__wbg_ptr;
         this.__wbg_ptr = 0;
-        GpuContextFinalization.unregister(this);
+        MacnealHarderWasmFinalization.unregister(this);
         return ptr;
     }
     free() {
         const ptr = this.__destroy_into_raw();
-        wasm.__wbg_gpucontext_free(ptr, 0);
+        wasm.__wbg_macnealharderwasm_free(ptr, 0);
     }
     /**
-     * Check if WebGPU is available
-     * Note: Full WebGPU detection requires JavaScript interop
-     * @returns {boolean}
+     * @returns {any}
      */
-    is_available() {
-        const ret = wasm.gpucontext_is_available(this.__wbg_ptr);
-        return ret !== 0;
+    static get_quad4_patch() {
+        const ret = wasm.macnealharderwasm_get_quad4_patch();
+        return takeObject(ret);
     }
     /**
-     * @returns {string}
+     * @param {number} n_elem
+     * @returns {any}
      */
-    get_dot_shader() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const ret = wasm.gpucontext_get_dot_shader(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * @returns {string}
-     */
-    get_axpy_shader() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const ret = wasm.gpucontext_get_axpy_shader(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * Get all shader source code
-     * @returns {string}
-     */
-    get_spmv_shader() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const ret = wasm.gpucontext_get_spmv_shader(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * @returns {string}
-     */
-    get_jacobi_shader() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const ret = wasm.gpucontext_get_jacobi_shader(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * @returns {string}
-     */
-    get_cg_update_shader() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const ret = wasm.gpucontext_get_cg_update_shader(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * Create new GPU context
-     */
-    constructor() {
-        const ret = wasm.gpucontext_new();
-        this.__wbg_ptr = ret >>> 0;
-        GpuContextFinalization.register(this, this.__wbg_ptr, this);
-        return this;
+    static generate_twisted_beam(n_elem) {
+        const ret = wasm.macnealharderwasm_generate_twisted_beam(n_elem);
+        return takeObject(ret);
     }
 }
-if (Symbol.dispose) GpuContext.prototype[Symbol.dispose] = GpuContext.prototype.free;
+if (Symbol.dispose) MacnealHarderWasm.prototype[Symbol.dispose] = MacnealHarderWasm.prototype.free;
 
 /**
- * Configuration for GPU-accelerated solver
- */
-export class GpuSolverConfig {
-    static __wrap(ptr) {
-        ptr = ptr >>> 0;
-        const obj = Object.create(GpuSolverConfig.prototype);
-        obj.__wbg_ptr = ptr;
-        GpuSolverConfigFinalization.register(obj, obj.__wbg_ptr, obj);
-        return obj;
-    }
-    __destroy_into_raw() {
-        const ptr = this.__wbg_ptr;
-        this.__wbg_ptr = 0;
-        GpuSolverConfigFinalization.unregister(this);
-        return ptr;
-    }
-    free() {
-        const ptr = this.__destroy_into_raw();
-        wasm.__wbg_gpusolverconfig_free(ptr, 0);
-    }
-    /**
-     * Create high-accuracy configuration
-     * @returns {GpuSolverConfig}
-     */
-    static high_accuracy() {
-        const ret = wasm.gpusolverconfig_high_accuracy();
-        return GpuSolverConfig.__wrap(ret);
-    }
-    /**
-     * Create default configuration
-     */
-    constructor() {
-        const ret = wasm.gpusolverconfig_new();
-        this.__wbg_ptr = ret >>> 0;
-        GpuSolverConfigFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * Create fast configuration (trades accuracy for speed)
-     * @returns {GpuSolverConfig}
-     */
-    static fast() {
-        const ret = wasm.gpusolverconfig_fast();
-        return GpuSolverConfig.__wrap(ret);
-    }
-    /**
-     * Workgroup size (typically 256)
-     * @returns {number}
-     */
-    get workgroup_size() {
-        const ret = wasm.__wbg_get_gpusolverconfig_workgroup_size(this.__wbg_ptr);
-        return ret >>> 0;
-    }
-    /**
-     * Workgroup size (typically 256)
-     * @param {number} arg0
-     */
-    set workgroup_size(arg0) {
-        wasm.__wbg_set_gpusolverconfig_workgroup_size(this.__wbg_ptr, arg0);
-    }
-    /**
-     * Maximum iterations
-     * @returns {number}
-     */
-    get max_iterations() {
-        const ret = wasm.__wbg_get_gpusolverconfig_max_iterations(this.__wbg_ptr);
-        return ret >>> 0;
-    }
-    /**
-     * Maximum iterations
-     * @param {number} arg0
-     */
-    set max_iterations(arg0) {
-        wasm.__wbg_set_gpusolverconfig_max_iterations(this.__wbg_ptr, arg0);
-    }
-    /**
-     * Convergence tolerance
-     * @returns {number}
-     */
-    get tolerance() {
-        const ret = wasm.__wbg_get_gpusolverconfig_tolerance(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Convergence tolerance
-     * @param {number} arg0
-     */
-    set tolerance(arg0) {
-        wasm.__wbg_set_gpusolverconfig_tolerance(this.__wbg_ptr, arg0);
-    }
-    /**
-     * Use single precision (f32) for speed
-     * @returns {boolean}
-     */
-    get use_single_precision() {
-        const ret = wasm.__wbg_get_gpusolverconfig_use_single_precision(this.__wbg_ptr);
-        return ret !== 0;
-    }
-    /**
-     * Use single precision (f32) for speed
-     * @param {boolean} arg0
-     */
-    set use_single_precision(arg0) {
-        wasm.__wbg_set_gpusolverconfig_use_single_precision(this.__wbg_ptr, arg0);
-    }
-    /**
-     * Use async GPU operations
-     * @returns {boolean}
-     */
-    get use_async() {
-        const ret = wasm.__wbg_get_gpusolverconfig_use_async(this.__wbg_ptr);
-        return ret !== 0;
-    }
-    /**
-     * Use async GPU operations
-     * @param {boolean} arg0
-     */
-    set use_async(arg0) {
-        wasm.__wbg_set_gpusolverconfig_use_async(this.__wbg_ptr, arg0);
-    }
-}
-if (Symbol.dispose) GpuSolverConfig.prototype[Symbol.dispose] = GpuSolverConfig.prototype.free;
-
-/**
- * Placeholder renderer - actual rendering done in TypeScript/Three.js
+ * Stub renderer for WASM builds
+ * The actual 3D rendering is performed by Three.js in the frontend
  */
 export class Renderer {
     __destroy_into_raw() {
@@ -527,29 +331,76 @@ export class Renderer {
         wasm.__wbg_renderer_free(ptr, 0);
     }
     /**
-     * Create stub renderer
+     * Create a new renderer stub
      * @param {HTMLCanvasElement} _canvas
      */
     constructor(_canvas) {
-        const ret = wasm.renderer_new(_canvas);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.renderer_new(retptr, addHeapObject(_canvas));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            this.__wbg_ptr = r0 >>> 0;
+            RendererFinalization.register(this, this.__wbg_ptr, this);
+            return this;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
         }
-        this.__wbg_ptr = ret[0] >>> 0;
-        RendererFinalization.register(this, this.__wbg_ptr, this);
-        return this;
     }
     /**
-     * Render stub
+     * Clear canvas stub - no-op
+     */
+    clear() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.renderer_clear(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            if (r1) {
+                throw takeObject(r0);
+            }
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Get canvas width
+     * @returns {number}
+     */
+    width() {
+        const ret = wasm.renderer_width(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+     * Get canvas height
+     * @returns {number}
+     */
+    height() {
+        const ret = wasm.renderer_height(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+     * Render frame stub - no-op
      */
     render() {
-        const ret = wasm.renderer_render(this.__wbg_ptr);
-        if (ret[1]) {
-            throw takeFromExternrefTable0(ret[0]);
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.renderer_clear(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            if (r1) {
+                throw takeObject(r0);
+            }
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
         }
     }
     /**
-     * Resize stub
+     * Resize stub - no-op
      * @param {number} width
      * @param {number} height
      */
@@ -559,140 +410,426 @@ export class Renderer {
 }
 if (Symbol.dispose) Renderer.prototype[Symbol.dispose] = Renderer.prototype.free;
 
-/**
- * Ultra-high-performance solver for massive civil engineering structures
- * Automatically selects the best algorithm based on problem size
- */
-export class UltraSolver {
+export class WasmHHTIntegrator {
     __destroy_into_raw() {
         const ptr = this.__wbg_ptr;
         this.__wbg_ptr = 0;
-        UltraSolverFinalization.unregister(this);
+        WasmHHTIntegratorFinalization.unregister(this);
         return ptr;
     }
     free() {
         const ptr = this.__destroy_into_raw();
-        wasm.__wbg_ultrasolver_free(ptr, 0);
+        wasm.__wbg_wasmhhtintegrator_free(ptr, 0);
     }
     /**
-     * Set tolerance
-     * @param {number} tol
+     * @param {Float64Array} u0
+     * @param {Float64Array} v0
      */
-    set_tolerance(tol) {
-        wasm.ultrasolver_set_tolerance(this.__wbg_ptr, tol);
+    set_initial(u0, v0) {
+        const ptr0 = passArrayF64ToWasm0(u0, wasm.__wbindgen_export);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passArrayF64ToWasm0(v0, wasm.__wbindgen_export);
+        const len1 = WASM_VECTOR_LEN;
+        wasm.wasmhhtintegrator_set_initial(this.__wbg_ptr, ptr0, len0, ptr1, len1);
     }
     /**
-     * Create new solver with default settings
+     * @returns {Float64Array}
      */
-    constructor() {
-        const ret = wasm.ultrasolver_new();
+    get_velocity() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.wasmhhtintegrator_get_velocity(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var v1 = getArrayF64FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_export4(r0, r1 * 8, 8);
+            return v1;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * @returns {Float64Array}
+     */
+    get_acceleration() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.wasmhhtintegrator_get_acceleration(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var v1 = getArrayF64FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_export4(r0, r1 * 8, 8);
+            return v1;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * @returns {Float64Array}
+     */
+    get_displacement() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.wasmhhtintegrator_get_displacement(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var v1 = getArrayF64FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_export4(r0, r1 * 8, 8);
+            return v1;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * @param {number} alpha
+     * @param {Float64Array} mass
+     * @param {Float64Array} damping
+     * @param {Float64Array} stiffness
+     * @param {number} dt
+     */
+    constructor(alpha, mass, damping, stiffness, dt) {
+        const ptr0 = passArrayF64ToWasm0(mass, wasm.__wbindgen_export);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passArrayF64ToWasm0(damping, wasm.__wbindgen_export);
+        const len1 = WASM_VECTOR_LEN;
+        const ptr2 = passArrayF64ToWasm0(stiffness, wasm.__wbindgen_export);
+        const len2 = WASM_VECTOR_LEN;
+        const ret = wasm.wasmhhtintegrator_new(alpha, ptr0, len0, ptr1, len1, ptr2, len2, dt);
         this.__wbg_ptr = ret >>> 0;
-        UltraSolverFinalization.register(this, this.__wbg_ptr, this);
+        WasmHHTIntegratorFinalization.register(this, this.__wbg_ptr, this);
         return this;
     }
     /**
-     * Solve large sparse system
-     * Input: CSR format arrays
-     * Returns: JSON with displacements and performance info
-     * @param {Uint32Array} row_ptrs
-     * @param {Uint32Array} col_indices
-     * @param {Float64Array} values
-     * @param {Float64Array} forces
-     * @param {number} size
-     * @returns {string}
+     * @param {Float64Array} force
+     * @returns {any}
      */
-    solve(row_ptrs, col_indices, values, forces, size) {
-        let deferred5_0;
-        let deferred5_1;
+    step(force) {
         try {
-            const ptr0 = passArray32ToWasm0(row_ptrs, wasm.__wbindgen_malloc);
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passArrayF64ToWasm0(force, wasm.__wbindgen_export);
             const len0 = WASM_VECTOR_LEN;
-            const ptr1 = passArray32ToWasm0(col_indices, wasm.__wbindgen_malloc);
-            const len1 = WASM_VECTOR_LEN;
-            const ptr2 = passArrayF64ToWasm0(values, wasm.__wbindgen_malloc);
-            const len2 = WASM_VECTOR_LEN;
-            const ptr3 = passArrayF64ToWasm0(forces, wasm.__wbindgen_malloc);
-            const len3 = WASM_VECTOR_LEN;
-            const ret = wasm.ultrasolver_solve(this.__wbg_ptr, ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3, size);
-            deferred5_0 = ret[0];
-            deferred5_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
+            wasm.wasmhhtintegrator_step(retptr, this.__wbg_ptr, ptr0, len0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return takeObject(r0);
         } finally {
-            wasm.__wbindgen_free(deferred5_0, deferred5_1, 1);
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * @returns {number}
+     */
+    get_time() {
+        const ret = wasm.wasmhhtintegrator_get_time(this.__wbg_ptr);
+        return ret;
+    }
+}
+if (Symbol.dispose) WasmHHTIntegrator.prototype[Symbol.dispose] = WasmHHTIntegrator.prototype.free;
+
+export class WasmSparseMatrix {
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        WasmSparseMatrixFinalization.unregister(this);
+        return ptr;
+    }
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_wasmsparsematrix_free(ptr, 0);
+    }
+    /**
+     * Get memory usage stats
+     * @returns {number}
+     */
+    memory_usage() {
+        const ret = wasm.wasmsparsematrix_memory_usage(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+     * Create from triplets (row, col, value)
+     * Expects triplets as a flat array [r0, c0, v0, r1, c1, v1, ...]
+     * @param {number} nrows
+     * @param {number} ncols
+     * @param {Float64Array} triplets_flat
+     */
+    constructor(nrows, ncols, triplets_flat) {
+        const ptr0 = passArrayF64ToWasm0(triplets_flat, wasm.__wbindgen_export);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.wasmsparsematrix_new(nrows, ncols, ptr0, len0);
+        this.__wbg_ptr = ret >>> 0;
+        WasmSparseMatrixFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * Sparse matrix-vector multiplication (y = A*x)
+     * @param {Float64Array} x
+     * @returns {Float64Array}
+     */
+    spmv(x) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passArrayF64ToWasm0(x, wasm.__wbindgen_export);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.wasmsparsematrix_spmv(retptr, this.__wbg_ptr, ptr0, len0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var v2 = getArrayF64FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_export4(r0, r1 * 8, 8);
+            return v2;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
         }
     }
 }
-if (Symbol.dispose) UltraSolver.prototype[Symbol.dispose] = UltraSolver.prototype.free;
+if (Symbol.dispose) WasmSparseMatrix.prototype[Symbol.dispose] = WasmSparseMatrix.prototype.free;
 
 /**
- * Buckling analysis - eigenvalue problem to find critical loads
- * Solves: [K_e - λ*K_g]{φ} = 0
- * @param {any} nodes_json
- * @param {any} elements_json
- * @param {any} point_loads_json
- * @param {number} num_modes
+ * Buckling analysis (stub for backward compatibility)
+ * @param {any} _nodes_val
+ * @param {any} _elements_val
+ * @param {any} _point_loads_val
+ * @param {number} _num_modes
  * @returns {any}
  */
-export function analyze_buckling(nodes_json, elements_json, point_loads_json, num_modes) {
-    const ret = wasm.analyze_buckling(nodes_json, elements_json, point_loads_json, num_modes);
+export function analyze_buckling(_nodes_val, _elements_val, _point_loads_val, _num_modes) {
+    const ret = wasm.analyze_buckling(addHeapObject(_nodes_val), addHeapObject(_elements_val), addHeapObject(_point_loads_val), _num_modes);
+    return takeObject(ret);
+}
+
+/**
+ * Benchmark the ultra-fast solver
+ * Returns timing statistics for different problem sizes
+ * @param {number} num_nodes
+ * @param {number} num_elements
+ * @param {number} iterations
+ * @returns {any}
+ */
+export function benchmark_ultra_fast(num_nodes, num_elements, iterations) {
+    const ret = wasm.benchmark_ultra_fast(num_nodes, num_elements, iterations);
+    return takeObject(ret);
+}
+
+/**
+ * @param {number} d
+ * @param {number} bf
+ * @param {number} tw
+ * @param {number} tf
+ * @param {number} rx
+ * @param {number} ry
+ * @param {number} zx
+ * @param {number} zy
+ * @param {number} sx
+ * @param {number} sy
+ * @param {number} j
+ * @param {number} cw
+ * @param {number} ag
+ * @param {number} fy
+ * @param {number} E
+ * @param {number} lb
+ * @param {number} lc_x
+ * @param {number} lc_y
+ * @param {number} cb
+ * @returns {any}
+ */
+export function calculate_aisc_capacity(d, bf, tw, tf, rx, ry, zx, zy, sx, sy, j, cw, ag, fy, E, lb, lc_x, lc_y, cb) {
+    const ret = wasm.calculate_aisc_capacity(d, bf, tw, tf, rx, ry, zx, zy, sx, sy, j, cw, ag, fy, E, lb, lc_x, lc_y, cb);
+    return takeObject(ret);
+}
+
+/**
+ * @param {number} b
+ * @param {number} d
+ * @param {number} fck
+ * @param {number} fy
+ * @param {number} ast
+ * @returns {number}
+ */
+export function calculate_beam_capacity(b, d, fck, fy, ast) {
+    const ret = wasm.calculate_beam_capacity(b, d, fck, fy, ast);
     return ret;
 }
 
 /**
- * Calculate number of workgroups needed
- * @param {number} n
- * @param {number} workgroup_size
- * @returns {number}
- */
-export function calculate_workgroups(n, workgroup_size) {
-    const ret = wasm.calculate_workgroups(n, workgroup_size);
-    return ret >>> 0;
-}
-
-/**
- * Check if matrix is well-conditioned
- * @param {Float64Array} stiffness_array
- * @param {number} dof
+ * Calculate foundation springs using Winkler method
+ * Returns vertical and rotational stiffnesses for soil-structure interaction
+ * @param {number} length
+ * @param {number} width
+ * @param {number} soil_modulus_kpa
+ * @param {number} poisson_ratio
  * @returns {string}
  */
-export function check_matrix_condition(stiffness_array, dof) {
-    let deferred2_0;
-    let deferred2_1;
+export function calculate_foundation_springs(length, width, soil_modulus_kpa, poisson_ratio) {
+    let deferred1_0;
+    let deferred1_1;
     try {
-        const ptr0 = passArrayF64ToWasm0(stiffness_array, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.check_matrix_condition(ptr0, len0, dof);
-        deferred2_0 = ret[0];
-        deferred2_1 = ret[1];
-        return getStringFromWasm0(ret[0], ret[1]);
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+        wasm.calculate_foundation_springs(retptr, length, width, soil_modulus_kpa, poisson_ratio);
+        var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+        var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+        deferred1_0 = r0;
+        deferred1_1 = r1;
+        return getStringFromWasm0(r0, r1);
     } finally {
-        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        wasm.__wbindgen_add_to_stack_pointer(16);
+        wasm.__wbindgen_export4(deferred1_0, deferred1_1, 1);
     }
 }
 
 /**
- * Compute eigenvalues and eigenvectors for modal analysis
- * Returns JSON with eigenvalues (natural frequencies) and mode shapes
- * @param {Float64Array} stiffness_array
- * @param {Float64Array} mass_array
- * @param {number} dof
- * @param {number} num_modes
+ * Calculate AISC 360-22 Direct Analysis Method notional loads
+ * Returns notional load factors and second-order effects
+ * @param {string} story_gravity_loads_json
+ * @param {string} story_heights_json
+ * @param {number} first_order_drift_ratio
  * @returns {string}
  */
-export function compute_eigenvalues(stiffness_array, mass_array, dof, num_modes) {
+export function calculate_notional_loads(story_gravity_loads_json, story_heights_json, first_order_drift_ratio) {
     let deferred3_0;
     let deferred3_1;
     try {
-        const ptr0 = passArrayF64ToWasm0(stiffness_array, wasm.__wbindgen_malloc);
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+        const ptr0 = passStringToWasm0(story_gravity_loads_json, wasm.__wbindgen_export, wasm.__wbindgen_export2);
         const len0 = WASM_VECTOR_LEN;
-        const ptr1 = passArrayF64ToWasm0(mass_array, wasm.__wbindgen_malloc);
+        const ptr1 = passStringToWasm0(story_heights_json, wasm.__wbindgen_export, wasm.__wbindgen_export2);
         const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.compute_eigenvalues(ptr0, len0, ptr1, len1, dof, num_modes);
-        deferred3_0 = ret[0];
-        deferred3_1 = ret[1];
-        return getStringFromWasm0(ret[0], ret[1]);
+        wasm.calculate_notional_loads(retptr, ptr0, len0, ptr1, len1, first_order_drift_ratio);
+        var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+        var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+        deferred3_0 = r0;
+        deferred3_1 = r1;
+        return getStringFromWasm0(r0, r1);
     } finally {
-        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        wasm.__wbindgen_add_to_stack_pointer(16);
+        wasm.__wbindgen_export4(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
+ * @param {number} zone
+ * @param {number} importance
+ * @param {number} r_factor
+ * @param {number} period
+ * @param {number} soil
+ * @param {number} weight
+ * @returns {number}
+ */
+export function calculate_seismic_base_shear(zone, importance, r_factor, period, soil, weight) {
+    const ret = wasm.calculate_seismic_base_shear(zone, importance, r_factor, period, soil, weight);
+    return ret;
+}
+
+/**
+ * Calculate von Mises stress from stress tensor
+ * Returns von Mises, principal stresses, and stress invariants
+ * @param {number} sigma_xx
+ * @param {number} sigma_yy
+ * @param {number} sigma_zz
+ * @param {number} tau_xy
+ * @param {number} tau_yz
+ * @param {number} tau_xz
+ * @returns {string}
+ */
+export function calculate_von_mises(sigma_xx, sigma_yy, sigma_zz, tau_xy, tau_yz, tau_xz) {
+    let deferred1_0;
+    let deferred1_1;
+    try {
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+        wasm.calculate_von_mises(retptr, sigma_xx, sigma_yy, sigma_zz, tau_xy, tau_yz, tau_xz);
+        var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+        var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+        deferred1_0 = r0;
+        deferred1_1 = r1;
+        return getStringFromWasm0(r0, r1);
+    } finally {
+        wasm.__wbindgen_add_to_stack_pointer(16);
+        wasm.__wbindgen_export4(deferred1_0, deferred1_1, 1);
+    }
+}
+
+/**
+ * Check IS 13920:2016 ductile detailing requirements for beams
+ * @param {number} width_mm
+ * @param {number} depth_mm
+ * @param {number} clear_span_mm
+ * @param {number} top_steel_mm2
+ * @param {number} bottom_steel_mm2
+ * @param {number} stirrup_dia_mm
+ * @param {number} stirrup_spacing_mm
+ * @param {number} fck_mpa
+ * @param {number} fy_mpa
+ * @returns {string}
+ */
+export function check_is13920_beam_ductility(width_mm, depth_mm, clear_span_mm, top_steel_mm2, bottom_steel_mm2, stirrup_dia_mm, stirrup_spacing_mm, fck_mpa, fy_mpa) {
+    let deferred1_0;
+    let deferred1_1;
+    try {
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+        wasm.check_is13920_beam_ductility(retptr, width_mm, depth_mm, clear_span_mm, top_steel_mm2, bottom_steel_mm2, stirrup_dia_mm, stirrup_spacing_mm, fck_mpa, fy_mpa);
+        var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+        var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+        deferred1_0 = r0;
+        deferred1_1 = r1;
+        return getStringFromWasm0(r0, r1);
+    } finally {
+        wasm.__wbindgen_add_to_stack_pointer(16);
+        wasm.__wbindgen_export4(deferred1_0, deferred1_1, 1);
+    }
+}
+
+/**
+ * Calculate seismic story drift per ASCE 7 / IS 1893 / EC8
+ * Returns drift ratios and compliance status for each story
+ * @param {string} story_heights_json
+ * @param {string} story_displacements_json
+ * @param {string} code
+ * @param {number} importance_factor
+ * @returns {string}
+ */
+export function check_seismic_drift(story_heights_json, story_displacements_json, code, importance_factor) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+        const ptr0 = passStringToWasm0(story_heights_json, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(story_displacements_json, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        const len1 = WASM_VECTOR_LEN;
+        const ptr2 = passStringToWasm0(code, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        const len2 = WASM_VECTOR_LEN;
+        wasm.check_seismic_drift(retptr, ptr0, len0, ptr1, len1, ptr2, len2, importance_factor);
+        var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+        var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+        deferred4_0 = r0;
+        deferred4_1 = r1;
+        return getStringFromWasm0(r0, r1);
+    } finally {
+        wasm.__wbindgen_add_to_stack_pointer(16);
+        wasm.__wbindgen_export4(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
+ * Get solver and platform info
+ * @returns {string}
+ */
+export function get_platform_info() {
+    let deferred1_0;
+    let deferred1_1;
+    try {
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+        wasm.get_platform_info(retptr);
+        var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+        var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+        deferred1_0 = r0;
+        deferred1_1 = r1;
+        return getStringFromWasm0(r0, r1);
+    } finally {
+        wasm.__wbindgen_add_to_stack_pointer(16);
+        wasm.__wbindgen_export4(deferred1_0, deferred1_1, 1);
     }
 }
 
@@ -704,83 +841,94 @@ export function get_solver_info() {
     let deferred1_0;
     let deferred1_1;
     try {
-        const ret = wasm.get_solver_info();
-        deferred1_0 = ret[0];
-        deferred1_1 = ret[1];
-        return getStringFromWasm0(ret[0], ret[1]);
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+        wasm.get_solver_info(retptr);
+        var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+        var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+        deferred1_0 = r0;
+        deferred1_1 = r1;
+        return getStringFromWasm0(r0, r1);
     } finally {
-        wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        wasm.__wbindgen_add_to_stack_pointer(16);
+        wasm.__wbindgen_export4(deferred1_0, deferred1_1, 1);
     }
 }
 
 /**
- * Initialize panic hook for better error messages in browser console
- */
-export function init() {
-    wasm.init();
-}
-
-/**
- * Quick demo: train and predict with defaults
- * @returns {string}
- */
-export function pinn_demo() {
-    let deferred1_0;
-    let deferred1_1;
-    try {
-        const ret = wasm.pinn_demo();
-        deferred1_0 = ret[0];
-        deferred1_1 = ret[1];
-        return getStringFromWasm0(ret[0], ret[1]);
-    } finally {
-        wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-    }
-}
-
-/**
- * P-Delta analysis with second-order effects
- * Iterative solution considering geometric nonlinearity
- * @param {any} nodes_json
- * @param {any} elements_json
- * @param {any} point_loads_json
- * @param {any} member_loads_json
- * @param {number | null} [max_iterations]
- * @param {number | null} [tolerance]
+ * Modal analysis for dynamic properties
+ * @param {any} nodes_val
+ * @param {any} elements_val
+ * @param {number} num_modes
  * @returns {any}
  */
-export function solve_p_delta(nodes_json, elements_json, point_loads_json, member_loads_json, max_iterations, tolerance) {
-    const ret = wasm.solve_p_delta(nodes_json, elements_json, point_loads_json, member_loads_json, isLikeNone(max_iterations) ? 0x100000001 : (max_iterations) >>> 0, !isLikeNone(tolerance), isLikeNone(tolerance) ? 0 : tolerance);
-    return ret;
+export function modal_analysis(nodes_val, elements_val, num_modes) {
+    const ret = wasm.modal_analysis(addHeapObject(nodes_val), addHeapObject(elements_val), num_modes);
+    return takeObject(ret);
+}
+
+export function set_panic_hook() {
+    wasm.set_panic_hook();
 }
 
 /**
- * Solve a sparse linear system using CG with direct TypedArray input and LU fallback
- * Avoids OOM issues with large JSON strings
- * @param {Uint32Array} row_indices
- * @param {Uint32Array} col_indices
- * @param {Float64Array} values
- * @param {Float64Array} forces
- * @param {number} size
- * @returns {Float64Array}
+ * 2D Frame analysis WITH nodal loads
+ * This is the recommended function for 2D analysis with applied loads
+ * @param {any} nodes_val
+ * @param {any} elements_val
+ * @param {any} loads_val
+ * @returns {any}
  */
-export function solve_sparse_system(row_indices, col_indices, values, forces, size) {
-    const ptr0 = passArray32ToWasm0(row_indices, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ptr1 = passArray32ToWasm0(col_indices, wasm.__wbindgen_malloc);
-    const len1 = WASM_VECTOR_LEN;
-    const ptr2 = passArrayF64ToWasm0(values, wasm.__wbindgen_malloc);
-    const len2 = WASM_VECTOR_LEN;
-    const ptr3 = passArrayF64ToWasm0(forces, wasm.__wbindgen_malloc);
-    const len3 = WASM_VECTOR_LEN;
-    const ret = wasm.solve_sparse_system(ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3, size);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
+export function solve_2d_frame_with_loads(nodes_val, elements_val, loads_val) {
+    const ret = wasm.solve_2d_frame_with_loads(addHeapObject(nodes_val), addHeapObject(elements_val), addHeapObject(loads_val));
+    return takeObject(ret);
 }
 
 /**
- * Solve a sparse linear system using CG (Conjugate Gradient) with LU fallback
+ * 3D Frame analysis (new advanced solver)
+ * @param {any} nodes_val
+ * @param {any} elements_val
+ * @param {any} nodal_loads_val
+ * @param {any} distributed_loads_val
+ * @returns {any}
+ */
+export function solve_3d_frame(nodes_val, elements_val, nodal_loads_val, distributed_loads_val) {
+    const ret = wasm.solve_3d_frame(addHeapObject(nodes_val), addHeapObject(elements_val), addHeapObject(nodal_loads_val), addHeapObject(distributed_loads_val));
+    return takeObject(ret);
+}
+
+/**
+ * P-Delta analysis - iterative geometric nonlinear analysis
+ * Accounts for secondary moments from axial loads (P) acting on lateral displacements (Δ)
+ * @param {any} nodes_val
+ * @param {any} elements_val
+ * @param {any} point_loads_val
+ * @param {any} member_loads_val
+ * @param {number} max_iterations
+ * @param {number} tolerance
+ * @returns {any}
+ */
+export function solve_p_delta(nodes_val, elements_val, point_loads_val, member_loads_val, max_iterations, tolerance) {
+    const ret = wasm.solve_p_delta(addHeapObject(nodes_val), addHeapObject(elements_val), addHeapObject(point_loads_val), addHeapObject(member_loads_val), max_iterations, tolerance);
+    return takeObject(ret);
+}
+
+/**
+ * Response Spectrum Analysis (Seismic)
+ * @param {any} modal_result_val
+ * @param {number} zone_factor
+ * @param {number} importance_factor
+ * @param {number} response_reduction
+ * @param {number} soil_type
+ * @returns {any}
+ */
+export function solve_response_spectrum(modal_result_val, zone_factor, importance_factor, response_reduction, soil_type) {
+    const ret = wasm.solve_response_spectrum(addHeapObject(modal_result_val), zone_factor, importance_factor, response_reduction, soil_type);
+    return takeObject(ret);
+}
+
+/**
+ * Solve sparse system using Conjugate Gradient
+ * This handles large structures (e.g. 10k+ nodes) without OOM.
  * @param {string} input_json
  * @returns {string}
  */
@@ -788,218 +936,71 @@ export function solve_sparse_system_json(input_json) {
     let deferred2_0;
     let deferred2_1;
     try {
-        const ptr0 = passStringToWasm0(input_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+        const ptr0 = passStringToWasm0(input_json, wasm.__wbindgen_export, wasm.__wbindgen_export2);
         const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.solve_sparse_system_json(ptr0, len0);
-        deferred2_0 = ret[0];
-        deferred2_1 = ret[1];
-        return getStringFromWasm0(ret[0], ret[1]);
+        wasm.solve_sparse_system_json(retptr, ptr0, len0);
+        var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+        var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+        deferred2_0 = r0;
+        deferred2_1 = r1;
+        return getStringFromWasm0(r0, r1);
     } finally {
-        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        wasm.__wbindgen_add_to_stack_pointer(16);
+        wasm.__wbindgen_export4(deferred2_0, deferred2_1, 1);
     }
 }
 
 /**
- * Solve a frame structure using Direct Stiffness Method
- * Takes nodes, elements, and loads, returns displacements, reactions, and member forces
- * @param {any} nodes_json
- * @param {any} elements_json
- * @param {any} point_loads_json
- * @param {any} member_loads_json
+ * 2D Frame analysis (backward compatible - no loads)
+ * @param {any} nodes_val
+ * @param {any} elements_val
  * @returns {any}
  */
-export function solve_structure_wasm(nodes_json, elements_json, point_loads_json, member_loads_json) {
-    const ret = wasm.solve_structure_wasm(nodes_json, elements_json, point_loads_json, member_loads_json);
-    return ret;
+export function solve_structure_wasm(nodes_val, elements_val) {
+    const ret = wasm.solve_structure_wasm(addHeapObject(nodes_val), addHeapObject(elements_val));
+    return takeObject(ret);
 }
 
 /**
  * Solve a linear system K * u = F using LU decomposition
- *
- * # Arguments
- * * `stiffness_array` - Flattened stiffness matrix (row-major)
- * * `force_array` - Force vector
- * * `dof` - Number of degrees of freedom
- *
- * # Returns
- * * Displacement vector as Float64Array
+ * Backported from legacy solver-wasm for compatibility with StructuralSolverWorker
  * @param {Float64Array} stiffness_array
  * @param {Float64Array} force_array
  * @param {number} dof
  * @returns {Float64Array}
  */
 export function solve_system(stiffness_array, force_array, dof) {
-    const ptr0 = passArrayF64ToWasm0(stiffness_array, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ptr1 = passArrayF64ToWasm0(force_array, wasm.__wbindgen_malloc);
-    const len1 = WASM_VECTOR_LEN;
-    const ret = wasm.solve_system(ptr0, len0, ptr1, len1, dof);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * Solve using Cholesky decomposition (faster for symmetric positive-definite matrices)
- * @param {Float64Array} stiffness_array
- * @param {Float64Array} force_array
- * @param {number} dof
- * @returns {Float64Array}
- */
-export function solve_system_cholesky(stiffness_array, force_array, dof) {
-    const ptr0 = passArrayF64ToWasm0(stiffness_array, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ptr1 = passArrayF64ToWasm0(force_array, wasm.__wbindgen_malloc);
-    const len1 = WASM_VECTOR_LEN;
-    const ret = wasm.solve_system_cholesky(ptr0, len0, ptr1, len1, dof);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * Solve with full result information (JSON interface)
- * @param {string} input_json
- * @returns {string}
- */
-export function solve_system_json(input_json) {
-    let deferred2_0;
-    let deferred2_1;
     try {
-        const ptr0 = passStringToWasm0(input_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+        const ptr0 = passArrayF64ToWasm0(stiffness_array, wasm.__wbindgen_export);
         const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.solve_system_json(ptr0, len0);
-        deferred2_0 = ret[0];
-        deferred2_1 = ret[1];
-        return getStringFromWasm0(ret[0], ret[1]);
-    } finally {
-        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
-    }
-}
-
-/**
- * Convert COO format to CSR and solve
- * More convenient input format from JavaScript
- * @param {Uint32Array} rows
- * @param {Uint32Array} cols
- * @param {Float64Array} values
- * @param {Float64Array} forces
- * @param {number} size
- * @returns {string}
- */
-export function solve_ultra_coo(rows, cols, values, forces, size) {
-    let deferred5_0;
-    let deferred5_1;
-    try {
-        const ptr0 = passArray32ToWasm0(rows, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ptr1 = passArray32ToWasm0(cols, wasm.__wbindgen_malloc);
+        const ptr1 = passArrayF64ToWasm0(force_array, wasm.__wbindgen_export);
         const len1 = WASM_VECTOR_LEN;
-        const ptr2 = passArrayF64ToWasm0(values, wasm.__wbindgen_malloc);
-        const len2 = WASM_VECTOR_LEN;
-        const ptr3 = passArrayF64ToWasm0(forces, wasm.__wbindgen_malloc);
-        const len3 = WASM_VECTOR_LEN;
-        const ret = wasm.solve_ultra_coo(ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3, size);
-        deferred5_0 = ret[0];
-        deferred5_1 = ret[1];
-        return getStringFromWasm0(ret[0], ret[1]);
+        wasm.solve_system(retptr, ptr0, len0, ptr1, len1, dof);
+        var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+        var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+        var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+        if (r2) {
+            throw takeObject(r1);
+        }
+        return takeObject(r0);
     } finally {
-        wasm.__wbindgen_free(deferred5_0, deferred5_1, 1);
+        wasm.__wbindgen_add_to_stack_pointer(16);
     }
 }
 
 /**
- * Solve a massive sparse linear system
- * Designed for 100,000+ node civil engineering structures
- * @param {Uint32Array} row_ptrs
- * @param {Uint32Array} col_indices
- * @param {Float64Array} values
- * @param {Float64Array} forces
- * @param {number} size
- * @returns {string}
+ * Ultra-fast 3D frame analysis with performance metrics
+ * Returns microsecond-level analysis times for small-medium structures
+ * @param {any} nodes_val
+ * @param {any} elements_val
+ * @param {any} loads_val
+ * @returns {any}
  */
-export function solve_ultra_sparse(row_ptrs, col_indices, values, forces, size) {
-    let deferred5_0;
-    let deferred5_1;
-    try {
-        const ptr0 = passArray32ToWasm0(row_ptrs, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ptr1 = passArray32ToWasm0(col_indices, wasm.__wbindgen_malloc);
-        const len1 = WASM_VECTOR_LEN;
-        const ptr2 = passArrayF64ToWasm0(values, wasm.__wbindgen_malloc);
-        const len2 = WASM_VECTOR_LEN;
-        const ptr3 = passArrayF64ToWasm0(forces, wasm.__wbindgen_malloc);
-        const len3 = WASM_VECTOR_LEN;
-        const ret = wasm.solve_ultra_sparse(ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3, size);
-        deferred5_0 = ret[0];
-        deferred5_1 = ret[1];
-        return getStringFromWasm0(ret[0], ret[1]);
-    } finally {
-        wasm.__wbindgen_free(deferred5_0, deferred5_1, 1);
-    }
-}
-
-/**
- * Train PINN and return model as JSON (for persistence)
- * @param {string} config_json
- * @returns {string}
- */
-export function train_beam_pinn(config_json) {
-    let deferred2_0;
-    let deferred2_1;
-    try {
-        const ptr0 = passStringToWasm0(config_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.train_beam_pinn(ptr0, len0);
-        deferred2_0 = ret[0];
-        deferred2_1 = ret[1];
-        return getStringFromWasm0(ret[0], ret[1]);
-    } finally {
-        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
-    }
-}
-
-/**
- * WASM-exported axpy
- * @param {number} alpha
- * @param {Float64Array} x
- * @param {Float64Array} y
- */
-export function wasm_axpy(alpha, x, y) {
-    const ptr0 = passArrayF64ToWasm0(x, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    var ptr1 = passArrayF64ToWasm0(y, wasm.__wbindgen_malloc);
-    var len1 = WASM_VECTOR_LEN;
-    wasm.wasm_axpy(alpha, ptr0, len0, ptr1, len1, y);
-}
-
-/**
- * WASM-exported dot product
- * @param {Float64Array} a
- * @param {Float64Array} b
- * @returns {number}
- */
-export function wasm_dot(a, b) {
-    const ptr0 = passArrayF64ToWasm0(a, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ptr1 = passArrayF64ToWasm0(b, wasm.__wbindgen_malloc);
-    const len1 = WASM_VECTOR_LEN;
-    const ret = wasm.wasm_dot(ptr0, len0, ptr1, len1);
-    return ret;
-}
-
-/**
- * WASM-exported vector norm
- * @param {Float64Array} a
- * @returns {number}
- */
-export function wasm_norm(a) {
-    const ptr0 = passArrayF64ToWasm0(a, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.wasm_norm(ptr0, len0);
-    return ret;
+export function solve_ultra_fast(nodes_val, elements_val, loads_val) {
+    const ret = wasm.solve_ultra_fast(addHeapObject(nodes_val), addHeapObject(elements_val), addHeapObject(loads_val));
+    return takeObject(ret);
 }
 
 const EXPECTED_RESPONSE_TYPES = new Set(['basic', 'cors', 'default']);
@@ -1039,69 +1040,80 @@ function __wbg_get_imports() {
     imports.wbg = {};
     imports.wbg.__wbg_Error_52673b7de5a0ca89 = function(arg0, arg1) {
         const ret = Error(getStringFromWasm0(arg0, arg1));
-        return ret;
+        return addHeapObject(ret);
     };
     imports.wbg.__wbg_Number_2d1dcfcf4ec51736 = function(arg0) {
-        const ret = Number(arg0);
+        const ret = Number(getObject(arg0));
         return ret;
     };
     imports.wbg.__wbg_String_8f0eb39a4a4c2f66 = function(arg0, arg1) {
-        const ret = String(arg1);
-        const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const ret = String(getObject(arg1));
+        const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_export, wasm.__wbindgen_export2);
         const len1 = WASM_VECTOR_LEN;
         getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
         getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
     };
+    imports.wbg.__wbg___wbindgen_bigint_get_as_i64_6e32f5e6aff02e1d = function(arg0, arg1) {
+        const v = getObject(arg1);
+        const ret = typeof(v) === 'bigint' ? v : undefined;
+        getDataViewMemory0().setBigInt64(arg0 + 8 * 1, isLikeNone(ret) ? BigInt(0) : ret, true);
+        getDataViewMemory0().setInt32(arg0 + 4 * 0, !isLikeNone(ret), true);
+    };
     imports.wbg.__wbg___wbindgen_boolean_get_dea25b33882b895b = function(arg0) {
-        const v = arg0;
+        const v = getObject(arg0);
         const ret = typeof(v) === 'boolean' ? v : undefined;
         return isLikeNone(ret) ? 0xFFFFFF : ret ? 1 : 0;
     };
-    imports.wbg.__wbg___wbindgen_copy_to_typed_array_db832bc4df7216c1 = function(arg0, arg1, arg2) {
-        new Uint8Array(arg2.buffer, arg2.byteOffset, arg2.byteLength).set(getArrayU8FromWasm0(arg0, arg1));
-    };
     imports.wbg.__wbg___wbindgen_debug_string_adfb662ae34724b6 = function(arg0, arg1) {
-        const ret = debugString(arg1);
-        const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const ret = debugString(getObject(arg1));
+        const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_export, wasm.__wbindgen_export2);
         const len1 = WASM_VECTOR_LEN;
         getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
         getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
     };
     imports.wbg.__wbg___wbindgen_in_0d3e1e8f0c669317 = function(arg0, arg1) {
-        const ret = arg0 in arg1;
+        const ret = getObject(arg0) in getObject(arg1);
+        return ret;
+    };
+    imports.wbg.__wbg___wbindgen_is_bigint_0e1a2e3f55cfae27 = function(arg0) {
+        const ret = typeof(getObject(arg0)) === 'bigint';
         return ret;
     };
     imports.wbg.__wbg___wbindgen_is_function_8d400b8b1af978cd = function(arg0) {
-        const ret = typeof(arg0) === 'function';
+        const ret = typeof(getObject(arg0)) === 'function';
         return ret;
     };
     imports.wbg.__wbg___wbindgen_is_object_ce774f3490692386 = function(arg0) {
-        const val = arg0;
+        const val = getObject(arg0);
         const ret = typeof(val) === 'object' && val !== null;
         return ret;
     };
     imports.wbg.__wbg___wbindgen_is_string_704ef9c8fc131030 = function(arg0) {
-        const ret = typeof(arg0) === 'string';
+        const ret = typeof(getObject(arg0)) === 'string';
         return ret;
     };
     imports.wbg.__wbg___wbindgen_is_undefined_f6b95eab589e0269 = function(arg0) {
-        const ret = arg0 === undefined;
+        const ret = getObject(arg0) === undefined;
+        return ret;
+    };
+    imports.wbg.__wbg___wbindgen_jsval_eq_b6101cc9cef1fe36 = function(arg0, arg1) {
+        const ret = getObject(arg0) === getObject(arg1);
         return ret;
     };
     imports.wbg.__wbg___wbindgen_jsval_loose_eq_766057600fdd1b0d = function(arg0, arg1) {
-        const ret = arg0 == arg1;
+        const ret = getObject(arg0) == getObject(arg1);
         return ret;
     };
     imports.wbg.__wbg___wbindgen_number_get_9619185a74197f95 = function(arg0, arg1) {
-        const obj = arg1;
+        const obj = getObject(arg1);
         const ret = typeof(obj) === 'number' ? obj : undefined;
         getDataViewMemory0().setFloat64(arg0 + 8 * 1, isLikeNone(ret) ? 0 : ret, true);
         getDataViewMemory0().setInt32(arg0 + 4 * 0, !isLikeNone(ret), true);
     };
     imports.wbg.__wbg___wbindgen_string_get_a2a31e16edf96e42 = function(arg0, arg1) {
-        const obj = arg1;
+        const obj = getObject(arg1);
         const ret = typeof(obj) === 'string' ? obj : undefined;
-        var ptr1 = isLikeNone(ret) ? 0 : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        var ptr1 = isLikeNone(ret) ? 0 : passStringToWasm0(ret, wasm.__wbindgen_export, wasm.__wbindgen_export2);
         var len1 = WASM_VECTOR_LEN;
         getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
         getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
@@ -1110,12 +1122,16 @@ function __wbg_get_imports() {
         throw new Error(getStringFromWasm0(arg0, arg1));
     };
     imports.wbg.__wbg_call_abb4ff46ce38be40 = function() { return handleError(function (arg0, arg1) {
-        const ret = arg0.call(arg1);
-        return ret;
+        const ret = getObject(arg0).call(getObject(arg1));
+        return addHeapObject(ret);
     }, arguments) };
     imports.wbg.__wbg_done_62ea16af4ce34b24 = function(arg0) {
-        const ret = arg0.done;
+        const ret = getObject(arg0).done;
         return ret;
+    };
+    imports.wbg.__wbg_entries_83c79938054e065f = function(arg0) {
+        const ret = Object.entries(getObject(arg0));
+        return addHeapObject(ret);
     };
     imports.wbg.__wbg_error_7534b8e9a36f1ab4 = function(arg0, arg1) {
         let deferred0_0;
@@ -1125,25 +1141,35 @@ function __wbg_get_imports() {
             deferred0_1 = arg1;
             console.error(getStringFromWasm0(arg0, arg1));
         } finally {
-            wasm.__wbindgen_free(deferred0_0, deferred0_1, 1);
+            wasm.__wbindgen_export4(deferred0_0, deferred0_1, 1);
         }
     };
     imports.wbg.__wbg_get_6b7bd52aca3f9671 = function(arg0, arg1) {
-        const ret = arg0[arg1 >>> 0];
-        return ret;
+        const ret = getObject(arg0)[arg1 >>> 0];
+        return addHeapObject(ret);
     };
     imports.wbg.__wbg_get_af9dab7e9603ea93 = function() { return handleError(function (arg0, arg1) {
-        const ret = Reflect.get(arg0, arg1);
-        return ret;
+        const ret = Reflect.get(getObject(arg0), getObject(arg1));
+        return addHeapObject(ret);
     }, arguments) };
     imports.wbg.__wbg_get_with_ref_key_1dc361bd10053bfe = function(arg0, arg1) {
-        const ret = arg0[arg1];
-        return ret;
+        const ret = getObject(arg0)[getObject(arg1)];
+        return addHeapObject(ret);
     };
     imports.wbg.__wbg_instanceof_ArrayBuffer_f3320d2419cd0355 = function(arg0) {
         let result;
         try {
-            result = arg0 instanceof ArrayBuffer;
+            result = getObject(arg0) instanceof ArrayBuffer;
+        } catch (_) {
+            result = false;
+        }
+        const ret = result;
+        return ret;
+    };
+    imports.wbg.__wbg_instanceof_Map_084be8da74364158 = function(arg0) {
+        let result;
+        try {
+            result = getObject(arg0) instanceof Map;
         } catch (_) {
             result = false;
         }
@@ -1153,17 +1179,7 @@ function __wbg_get_imports() {
     imports.wbg.__wbg_instanceof_Uint8Array_da54ccc9d3e09434 = function(arg0) {
         let result;
         try {
-            result = arg0 instanceof Uint8Array;
-        } catch (_) {
-            result = false;
-        }
-        const ret = result;
-        return ret;
-    };
-    imports.wbg.__wbg_instanceof_Window_b5cf7783caa68180 = function(arg0) {
-        let result;
-        try {
-            result = arg0 instanceof Window;
+            result = getObject(arg0) instanceof Uint8Array;
         } catch (_) {
             result = false;
         }
@@ -1171,130 +1187,114 @@ function __wbg_get_imports() {
         return ret;
     };
     imports.wbg.__wbg_isArray_51fd9e6422c0a395 = function(arg0) {
-        const ret = Array.isArray(arg0);
+        const ret = Array.isArray(getObject(arg0));
         return ret;
     };
     imports.wbg.__wbg_isSafeInteger_ae7d3f054d55fa16 = function(arg0) {
-        const ret = Number.isSafeInteger(arg0);
+        const ret = Number.isSafeInteger(getObject(arg0));
         return ret;
     };
     imports.wbg.__wbg_iterator_27b7c8b35ab3e86b = function() {
         const ret = Symbol.iterator;
-        return ret;
+        return addHeapObject(ret);
     };
     imports.wbg.__wbg_length_22ac23eaec9d8053 = function(arg0) {
-        const ret = arg0.length;
+        const ret = getObject(arg0).length;
         return ret;
     };
     imports.wbg.__wbg_length_d45040a40c570362 = function(arg0) {
-        const ret = arg0.length;
+        const ret = getObject(arg0).length;
         return ret;
     };
     imports.wbg.__wbg_new_1ba21ce319a06297 = function() {
         const ret = new Object();
-        return ret;
+        return addHeapObject(ret);
     };
     imports.wbg.__wbg_new_25f239778d6112b9 = function() {
-        const ret = new Array();
-        return ret;
+        const ret = [];
+        return addHeapObject(ret);
     };
     imports.wbg.__wbg_new_6421f6084cc5bc5a = function(arg0) {
-        const ret = new Uint8Array(arg0);
-        return ret;
+        const ret = new Uint8Array(getObject(arg0));
+        return addHeapObject(ret);
     };
     imports.wbg.__wbg_new_8a6f238a6ece86ea = function() {
         const ret = new Error();
-        return ret;
+        return addHeapObject(ret);
     };
     imports.wbg.__wbg_new_b546ae120718850e = function() {
         const ret = new Map();
-        return ret;
-    };
-    imports.wbg.__wbg_new_no_args_cb138f77cf6151ee = function(arg0, arg1) {
-        const ret = new Function(getStringFromWasm0(arg0, arg1));
-        return ret;
+        return addHeapObject(ret);
     };
     imports.wbg.__wbg_new_with_length_806b9e5b8290af7c = function(arg0) {
         const ret = new Float64Array(arg0 >>> 0);
-        return ret;
+        return addHeapObject(ret);
     };
     imports.wbg.__wbg_next_138a17bbf04e926c = function(arg0) {
-        const ret = arg0.next;
-        return ret;
+        const ret = getObject(arg0).next;
+        return addHeapObject(ret);
     };
     imports.wbg.__wbg_next_3cfe5c0fe2a4cc53 = function() { return handleError(function (arg0) {
-        const ret = arg0.next();
-        return ret;
+        const ret = getObject(arg0).next();
+        return addHeapObject(ret);
     }, arguments) };
-    imports.wbg.__wbg_now_8cf15d6e317793e1 = function(arg0) {
-        const ret = arg0.now();
+    imports.wbg.__wbg_now_69d776cd24f5215b = function() {
+        const ret = Date.now();
         return ret;
-    };
-    imports.wbg.__wbg_performance_c77a440eff2efd9b = function(arg0) {
-        const ret = arg0.performance;
-        return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
     };
     imports.wbg.__wbg_prototypesetcall_dfe9b766cdc1f1fd = function(arg0, arg1, arg2) {
-        Uint8Array.prototype.set.call(getArrayU8FromWasm0(arg0, arg1), arg2);
+        Uint8Array.prototype.set.call(getArrayU8FromWasm0(arg0, arg1), getObject(arg2));
     };
     imports.wbg.__wbg_set_3f1d0b984ed272ed = function(arg0, arg1, arg2) {
-        arg0[arg1] = arg2;
+        getObject(arg0)[takeObject(arg1)] = takeObject(arg2);
     };
     imports.wbg.__wbg_set_7df433eea03a5c14 = function(arg0, arg1, arg2) {
-        arg0[arg1 >>> 0] = arg2;
+        getObject(arg0)[arg1 >>> 0] = takeObject(arg2);
     };
     imports.wbg.__wbg_set_efaaf145b9377369 = function(arg0, arg1, arg2) {
-        const ret = arg0.set(arg1, arg2);
-        return ret;
+        const ret = getObject(arg0).set(getObject(arg1), getObject(arg2));
+        return addHeapObject(ret);
     };
     imports.wbg.__wbg_set_index_021489b2916af13e = function(arg0, arg1, arg2) {
-        arg0[arg1 >>> 0] = arg2;
+        getObject(arg0)[arg1 >>> 0] = arg2;
     };
     imports.wbg.__wbg_stack_0ed75d68575b0f3c = function(arg0, arg1) {
-        const ret = arg1.stack;
-        const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const ret = getObject(arg1).stack;
+        const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_export, wasm.__wbindgen_export2);
         const len1 = WASM_VECTOR_LEN;
         getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
         getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
     };
-    imports.wbg.__wbg_static_accessor_GLOBAL_769e6b65d6557335 = function() {
-        const ret = typeof global === 'undefined' ? null : global;
-        return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
-    };
-    imports.wbg.__wbg_static_accessor_GLOBAL_THIS_60cf02db4de8e1c1 = function() {
-        const ret = typeof globalThis === 'undefined' ? null : globalThis;
-        return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
-    };
-    imports.wbg.__wbg_static_accessor_SELF_08f5a74c69739274 = function() {
-        const ret = typeof self === 'undefined' ? null : self;
-        return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
-    };
-    imports.wbg.__wbg_static_accessor_WINDOW_a8924b26aa92d024 = function() {
-        const ret = typeof window === 'undefined' ? null : window;
-        return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
-    };
     imports.wbg.__wbg_value_57b7b035e117f7ee = function(arg0) {
-        const ret = arg0.value;
-        return ret;
+        const ret = getObject(arg0).value;
+        return addHeapObject(ret);
     };
     imports.wbg.__wbindgen_cast_2241b6af4c4b2941 = function(arg0, arg1) {
         // Cast intrinsic for `Ref(String) -> Externref`.
         const ret = getStringFromWasm0(arg0, arg1);
-        return ret;
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbindgen_cast_4625c577ab2ec9ee = function(arg0) {
+        // Cast intrinsic for `U64 -> Externref`.
+        const ret = BigInt.asUintN(64, arg0);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbindgen_cast_9ae0607507abb057 = function(arg0) {
+        // Cast intrinsic for `I64 -> Externref`.
+        const ret = arg0;
+        return addHeapObject(ret);
     };
     imports.wbg.__wbindgen_cast_d6cd19b81560fd6e = function(arg0) {
         // Cast intrinsic for `F64 -> Externref`.
         const ret = arg0;
-        return ret;
+        return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_init_externref_table = function() {
-        const table = wasm.__wbindgen_externrefs;
-        const offset = table.grow(4);
-        table.set(0, undefined);
-        table.set(offset + 0, undefined);
-        table.set(offset + 1, null);
-        table.set(offset + 2, true);
-        table.set(offset + 3, false);
+    imports.wbg.__wbindgen_object_clone_ref = function(arg0) {
+        const ret = getObject(arg0);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbindgen_object_drop_ref = function(arg0) {
+        takeObject(arg0);
     };
 
     return imports;
@@ -1305,11 +1305,10 @@ function __wbg_finalize_init(instance, module) {
     __wbg_init.__wbindgen_wasm_module = module;
     cachedDataViewMemory0 = null;
     cachedFloat64ArrayMemory0 = null;
-    cachedUint32ArrayMemory0 = null;
     cachedUint8ArrayMemory0 = null;
 
 
-    wasm.__wbindgen_start();
+
     return wasm;
 }
 
@@ -1346,7 +1345,7 @@ async function __wbg_init(module_or_path) {
     }
 
     if (typeof module_or_path === 'undefined') {
-        module_or_path = new URL('solver_wasm_bg.wasm', import.meta.url);
+        module_or_path = new URL('backend_rust_bg.wasm', import.meta.url);
     }
     const imports = __wbg_get_imports();
 

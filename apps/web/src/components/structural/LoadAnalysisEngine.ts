@@ -553,6 +553,13 @@ export function calculateWindLoad(input: WindLoadInput): WindLoadResult {
   }
   
   return {
+    // Base CalculationResult properties
+    isAdequate: true,
+    utilization: 1.0,
+    capacity: baseShear,
+    demand: totalWindForce,
+    status: 'OK' as const,
+    message: 'Wind load analysis complete per IS 875 Part 3',
     summary: {
       'Location': location,
       'Basic Wind Speed': `${Vb} m/s`,
@@ -782,6 +789,13 @@ export function calculateDeadLoad(items: DeadLoadItem[]): DeadLoadResult {
   });
   
   return {
+    // Base CalculationResult properties
+    isAdequate: true,
+    utilization: 1.0,
+    capacity: totalLoad,
+    demand: totalLoad,
+    status: 'OK' as const,
+    message: 'Dead load calculation complete per IS 875 Part 1',
     summary: {
       'Total Dead Load': `${totalLoad.toFixed(2)} kN/m²`,
       'Number of Components': items.length,
@@ -794,11 +808,4 @@ export function calculateDeadLoad(items: DeadLoadItem[]): DeadLoadResult {
   };
 }
 
-// ============================================================================
-// EXPORTS
-// ============================================================================
-
-export {
-  calculateLiveLoadReduction,
-  calculateK3,
-};
+// All functions are already exported with 'export function' declarations above

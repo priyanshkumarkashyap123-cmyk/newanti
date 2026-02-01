@@ -71,7 +71,7 @@ export const Toolbar: FC = () => {
                 // 3. Map Results back to Store format
                 // Displacements key: nodeId -> { dx, dy, ... }
                 const displacementMap = new Map();
-                const reactionMap = new Map(); // TODO: Worker should calculate reactions
+                const reactionMap = new Map();
 
                 // The worker preserves node order from input array
                 nodesArray.forEach((node, index) => {
@@ -87,7 +87,7 @@ export const Toolbar: FC = () => {
                         });
                     }
 
-                    // Placeholders for reactions (if calculated)
+                    // Extract reactions from worker result
                     if (result.reactions && offset < result.reactions.length) {
                         reactionMap.set(node.id, {
                             fx: result.reactions[offset + 0] || 0,

@@ -280,7 +280,9 @@ export class RCSlabCalculator {
     // Panel moments
     const Mu_neg_int = factors.negative * Mo;
     const Mu_pos = factors.positive * Mo;
-    const Mu_neg_ext = 'exterior_neg' in factors ? factors.exterior_neg * Mo : undefined;
+    const Mu_neg_ext = 'exterior_neg' in factors && typeof factors.exterior_neg === 'number' 
+      ? factors.exterior_neg * Mo 
+      : undefined;
     
     this.addStep(
       `Distribute moments (${direction}-direction)`,

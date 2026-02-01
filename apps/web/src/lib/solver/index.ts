@@ -180,22 +180,22 @@ export async function analyze(
 /**
  * Create a new structural model
  */
-export function createModel() {
-  const { AdvancedModelingEngine } = require('./AdvancedModelingEngine');
+export async function createModel() {
+  const { AdvancedModelingEngine } = await import('./AdvancedModelingEngine');
   return new AdvancedModelingEngine();
 }
 
 /**
  * Validate a model before analysis
  */
-export function validateModel(
+export async function validateModel(
   nodes: Map<string, import('./AdvancedModelingEngine').ModelNode>,
   elements: Map<string, import('./AdvancedModelingEngine').ModelElement>,
   sections: Map<string, import('./AdvancedModelingEngine').SectionDefinition>,
   materials: Map<string, import('./AdvancedModelingEngine').MaterialDefinition>,
   loadPatterns: Map<string, import('./AdvancedModelingEngine').LoadPattern>
 ) {
-  const { ModelValidator } = require('./ModelValidator');
+  const { ModelValidator } = await import('./ModelValidator');
   const validator = new ModelValidator();
   return validator.validate(nodes, elements, sections, materials, loadPatterns);
 }

@@ -117,7 +117,7 @@ export class WaterTankDesignEngine {
     // ----- STEP 2: Wall Thickness (Preliminary) -----
     // Minimum wall thickness
     const minThickness = Math.max(150, H * 1000 / 30 + 75); // mm
-    let wallThickness = Math.ceil(minThickness / 25) * 25; // Round to 25mm
+    const wallThickness = Math.ceil(minThickness / 25) * 25; // Round to 25mm
     
     // For liquid retaining: use permissible stress method
     const sigma_ct = 1.5; // MPa - permissible tensile stress in concrete (IS 3370)

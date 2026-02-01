@@ -95,3 +95,5 @@ export function WorkerValidation() {
         </div>
     );
 }
+
+export default WorkerValidation;

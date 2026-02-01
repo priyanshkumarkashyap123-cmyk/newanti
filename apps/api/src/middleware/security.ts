@@ -4,7 +4,7 @@
  * HTTP security headers, rate limiting, and request logging
  */
 
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, RequestHandler } from 'express';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 
@@ -52,7 +52,7 @@ export const securityHeaders = helmet({
 // ============================================
 
 // General API rate limit: 100 requests per minute
-export const generalRateLimit = rateLimit({
+export const generalRateLimit: RequestHandler = rateLimit({
     windowMs: 60 * 1000, // 1 minute
     max: 100,
     message: {
@@ -63,10 +63,10 @@ export const generalRateLimit = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     skip: (req) => req.path === '/health'
-});
+}) as unknown as RequestHandler;
 
 // Analysis API rate limit: 10 requests per minute
-export const analysisRateLimit = rateLimit({
+export const analysisRateLimit: RequestHandler = rateLimit({
     windowMs: 60 * 1000,
     max: 10,
     message: {
@@ -76,10 +76,10 @@ export const analysisRateLimit = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false
-});
+}) as unknown as RequestHandler;
 
 // Billing API rate limit: 5 requests per minute (prevent abuse)
-export const billingRateLimit = rateLimit({
+export const billingRateLimit: RequestHandler = rateLimit({
     windowMs: 60 * 1000,
     max: 5,
     message: {
@@ -89,10 +89,10 @@ export const billingRateLimit = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false
-});
+}) as unknown as RequestHandler;
 
 // Auth endpoints rate limit: 5 requests per minute (prevent brute force)
-export const authRateLimit = rateLimit({
+export const authRateLimit: RequestHandler = rateLimit({
     windowMs: 60 * 1000,
     max: 5,
     message: {
@@ -102,7 +102,25 @@ export const authRateLimit = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false
-});
+}) as unknown as RequestHandler;
+
+// AI API rate limit: 20 requests per minute (prevent abuse)
+export const aiRateLimit: RequestHandler = rateLimit({
+    windowMs: 60 * 1000,
+    max: 20,
+    message: {
+        success: false,
+        error: 'AI rate limit exceeded. Please wait before sending more requests.',
+        retryAfter: 60
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => {
+        // Rate limit per user if authenticated, otherwise by IP
+        const userId = (req as any).auth?.userId || req.ip;
+        return `ai:${userId}`;
+    }
+}) as unknown as RequestHandler;
 
 // ============================================
 // REQUEST LOGGING
@@ -144,15 +162,5 @@ export const secureErrorHandler = (
 };
 
 // ============================================
-// EXPORTS
+// EXPORTS (individual exports already above - default export removed for type compatibility)
 // ============================================
-
-export default {
-    securityHeaders,
-    generalRateLimit,
-    analysisRateLimit,
-    billingRateLimit,
-    authRateLimit,
-    requestLogger,
-    secureErrorHandler
-};

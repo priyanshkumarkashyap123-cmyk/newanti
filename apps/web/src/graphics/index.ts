@@ -127,7 +127,7 @@ export {
 import { AdvancedRenderingEngine } from './AdvancedRenderingEngine';
 import { SectionProfileLibrary } from './ProfessionalModelingTools';
 import { DiagramGenerator, DeflectedShapeVisualizer, LoadVisualizer, ReactionVisualizer } from './StructuralVisualization';
-import { StressContourRenderer, UtilizationRenderer, ModeShapeAnimator } from './AnalysisResultRenderer';
+import { StressContourRenderer, UtilizationRenderer, ModeShapeAnimator, ResultTableGenerator } from './AnalysisResultRenderer';
 import * as THREE from 'three';
 
 /**

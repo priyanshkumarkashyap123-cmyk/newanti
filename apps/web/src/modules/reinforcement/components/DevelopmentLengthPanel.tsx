@@ -32,13 +32,27 @@ import {
   HookType,
   BarCoating,
   SeismicCategory,
+  MemberType,
   DevelopmentLengthInput,
   DevelopmentLengthResult,
   createConcreteProperties,
   createRebarProperties,
   US_BAR_DATA,
-  METRIC_BAR_DATA
+  METRIC_BAR_DATA,
+  BarDimensionTable,
+  RebarGrade
 } from '../types/ReinforcementTypes';
+
+// Extended result type for UI display (backwards compat with component expectations)
+type ExtendedDevelopmentLengthResult = DevelopmentLengthResult & {
+  developmentType?: string;
+  straightDevelopment?: number;
+  hookDevelopment?: number;
+  hookGeometry?: { bendRadius: number; extension: number };
+  modificationFactors?: Record<string, number | string>;
+  equation?: string;
+  recommendations?: string[];
+};
 
 // ============================================================================
 // Component
@@ -62,7 +76,7 @@ export function DevelopmentLengthPanel() {
   const [barSpacing, setBarSpacing] = useState<number>(6);
   
   // Result
-  const [result, setResult] = useState<DevelopmentLengthResult | null>(null);
+  const [result, setResult] = useState<ExtendedDevelopmentLengthResult | null>(null);
   const [showTable, setShowTable] = useState(false);
   const [tableData, setTableData] = useState<Array<{
     barSize: string;
@@ -74,39 +88,41 @@ export function DevelopmentLengthPanel() {
   
   // Determine if using metric
   const isMetric = designCode === ConcreteDesignCode.EUROCODE_2 || 
-                   designCode === ConcreteDesignCode.IS_456;
+                   designCode === ConcreteDesignCode.IS_456_2000;
   
   // Bar data
-  const barData = useMemo(() => {
+  const barData = useMemo((): BarDimensionTable | undefined => {
     const data = isMetric ? METRIC_BAR_DATA : US_BAR_DATA;
-    return data[selectedBarSize as keyof typeof data];
+    return data.find(bar => bar.size === selectedBarSize);
   }, [selectedBarSize, isMetric]);
   
   // Bar size options
   const barSizeOptions = isMetric 
-    ? Object.keys(METRIC_BAR_DATA)
-    : Object.keys(US_BAR_DATA);
+    ? METRIC_BAR_DATA.map(b => b.size)
+    : US_BAR_DATA.map(b => b.size);
 
   // Handle calculation
   const handleCalculate = () => {
     if (!barData) return;
     
+    const rebarProps = createRebarProperties(selectedBarSize, isMetric ? RebarGrade.FE_500 : RebarGrade.GRADE_60, coating);
+    if (!rebarProps) return;
+    
     const input: DevelopmentLengthInput = {
       designCode,
-      developmentType,
-      barSize: selectedBarSize,
-      barDiameter: barData.diameter,
-      concrete: createConcreteProperties(fc, isMetric),
-      rebar: createRebarProperties(fy, isMetric),
-      clearCover: isMetric ? clearCover : clearCover,
-      barSpacing: isMetric ? barSpacing : barSpacing,
-      isTopBar,
+      bar: rebarProps,
+      concrete: createConcreteProperties(fc, 'NORMAL'),
+      barLocation: isTopBar ? 'TOP' : 'BOTTOM',
       coating,
-      hookType: hookType as HookType || undefined
+      cover: clearCover,
+      clearSpacing: barSpacing,
+      stressType: developmentType === 'tension' ? 'TENSION' : 'COMPRESSION',
+      hookType: hookType as HookType || undefined,
+      memberType: MemberType.BEAM
     };
     
     const calcResult = developmentLengthCalculator.calculate(input);
-    setResult(calcResult);
+    setResult(calcResult as ExtendedDevelopmentLengthResult);
   };
   
   // Generate full table
@@ -365,8 +381,8 @@ export function DevelopmentLengthPanel() {
               <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                 <p className="text-sm text-green-700 dark:text-green-300">
                   <Info className="w-4 h-4 inline mr-1" />
-                  {selectedBarSize}: Diameter = {barData.diameter}{isMetric ? 'mm' : '"'}, 
-                  Area = {barData.area.toFixed(isMetric ? 1 : 3)}{isMetric ? 'mm²' : 'in²'}
+                  {selectedBarSize}: Diameter = {isMetric ? barData.diameter_mm : barData.diameter_in}{isMetric ? 'mm' : '"'}, 
+                  Area = {(isMetric ? barData.area_mm2 : barData.area_in2).toFixed(isMetric ? 1 : 3)}{isMetric ? 'mm²' : 'in²'}
                 </p>
               </div>
             )}
@@ -447,7 +463,7 @@ export function DevelopmentLengthPanel() {
                     {result.developmentType === 'tension' ? 'Tension' : 'Compression'} Development Length
                   </p>
                   <p className="text-4xl font-bold text-green-900 dark:text-green-100">
-                    {result.straightDevelopment.toFixed(isMetric ? 0 : 1)}
+                    {(result.straightDevelopment ?? result.requiredLength ?? 0).toFixed(isMetric ? 0 : 1)}
                   </p>
                   <p className="text-lg text-green-700 dark:text-green-300">
                     {isMetric ? 'mm' : 'inches'}
@@ -500,7 +516,7 @@ export function DevelopmentLengthPanel() {
                       <div key={key} className="flex justify-between p-2 bg-white dark:bg-gray-700 rounded">
                         <span className="text-gray-600 dark:text-gray-400">{key}</span>
                         <span className="font-mono text-gray-900 dark:text-white">
-                          {typeof value === 'number' ? value.toFixed(3) : value}
+                          {typeof value === 'number' ? value.toFixed(3) : String(value)}
                         </span>
                       </div>
                     ))}
@@ -527,7 +543,7 @@ export function DevelopmentLengthPanel() {
                     Recommendations
                   </h4>
                   <ul className="space-y-1">
-                    {result.recommendations.map((rec, idx) => (
+                    {result.recommendations.map((rec: string, idx: number) => (
                       <li key={idx} className="text-sm text-purple-700 dark:text-purple-300 flex items-start gap-2">
                         <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
                         {rec}

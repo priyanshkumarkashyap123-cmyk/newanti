@@ -164,7 +164,10 @@ function getBoltArea(diameter: number): { gross: number; net: number } {
 }
 
 /**
- * Calculate bolt shear capacity - IS 800 Cl. 10.3.3
+ * Calculate bolt shear capacity - IS 800:2007 Cl. 10.3.3
+ * Vdsb = Vnsb / γmb
+ * Vnsb = fub × nn × Anb / √3 + fub × ns × Asb / √3
+ * Where nn = number of shear planes with threads, ns = without threads
  */
 function getBoltShearCapacity(
   diameter: number,
@@ -176,10 +179,17 @@ function getBoltShearCapacity(
   const { gross, net } = getBoltArea(diameter);
   const { gamma_mb } = PARTIAL_SAFETY_FACTORS;
   
+  // Anb = net tensile stress area (threads in shear plane)
+  // Asb = gross area (threads excluded from shear plane)
   const An = threadsInShearPlane ? net : gross;
-  const Vnsb = fub * An * numShearPlanes / (Math.sqrt(3) * gamma_mb);
   
-  return Vnsb / 1000; // kN
+  // Nominal shear capacity: Vnsb = fub × An × n / √3 (in N)
+  const Vnsb = (fub * An * numShearPlanes) / Math.sqrt(3);
+  
+  // Design shear capacity: Vdsb = Vnsb / γmb
+  const Vdsb = Vnsb / gamma_mb;
+  
+  return Vdsb / 1000; // Convert to kN
 }
 
 /**

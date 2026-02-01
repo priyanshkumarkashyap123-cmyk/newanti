@@ -2,7 +2,10 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import wasm from 'vite-plugin-wasm';
 import topLevelAwait from 'vite-plugin-top-level-await';
+import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
+
+
 
 // ============================================
 // SECURITY HEADERS CONFIGURATION
@@ -22,19 +25,19 @@ const securityHeaders = {
     "base-uri 'self'",
     "form-action 'self'",
   ].join('; '),
-  
+
   // Prevent clickjacking
   'X-Frame-Options': 'SAMEORIGIN',
-  
+
   // Prevent MIME type sniffing
   'X-Content-Type-Options': 'nosniff',
-  
+
   // Enable XSS filter
   'X-XSS-Protection': '1; mode=block',
-  
+
   // Control referrer information
   'Referrer-Policy': 'strict-origin-when-cross-origin',
-  
+
   // Permissions Policy - Restrict browser features
   'Permissions-Policy': [
     'accelerometer=()',
@@ -46,7 +49,7 @@ const securityHeaders = {
     'payment=()',
     'usb=()',
   ].join(', '),
-  
+
   // Strict Transport Security (for production)
   // 'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
 };
@@ -63,6 +66,49 @@ export default defineConfig({
     }),
     wasm(),
     topLevelAwait(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
+      manifest: {
+        name: 'BeamLab Ultimate',
+        short_name: 'BeamLab',
+        description: 'Advanced Structural Engineering Platform',
+        theme_color: '#0b1120',
+        background_color: '#0b1120',
+        icons: [
+          {
+            src: 'pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          }
+        ]
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,wasm}'],
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10 MB - for large WASM files
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365 // <== 365 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          }
+        ]
+      }
+    }),
   ],
   resolve: {
     alias: {

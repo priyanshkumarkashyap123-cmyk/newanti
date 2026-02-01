@@ -397,3 +397,182 @@ async def check_steel_members(request: SteelDesignRequest):
             ))
             
     return results
+
+
+# ============================================
+# CONNECTION DESIGN (IS 800)
+# ============================================
+
+class ConnectionRequest(BaseModel):
+    type: str # "shear_bolt", "moment_bolt", "base_plate"
+    load_shear: float = 0 # kN
+    load_moment: float = 0 # kNm
+    load_axial: float = 0 # kN
+    # Geometry
+    beam_depth: Optional[float] = None
+    plate_width: Optional[float] = None
+    plate_length: Optional[float] = None
+    # Material
+    bolt_grade: str = "8.8"
+    bolt_diameter: float = 20
+    concrete_grade: float = 25 # for base plate
+    steel_grade: float = 250 # fy
+
+@router.post("/connection/check")
+async def check_connection(request: ConnectionRequest):
+    try:
+        from design.connections.steel_joints import ConnectionDesigner, BoltGrade, BasePlate
+        
+        designer = ConnectionDesigner(fy=request.steel_grade)
+        result = None
+        
+        # Map bolt grade string to enum
+        bg_map = {"4.6": BoltGrade.GRADE_4_6, "8.8": BoltGrade.GRADE_8_8, "10.9": BoltGrade.GRADE_10_9}
+        bg = bg_map.get(request.bolt_grade, BoltGrade.GRADE_8_8)
+        
+        if request.type == "shear_bolt":
+            if not request.beam_depth:
+                raise ValueError("Beam depth required for shear connection")
+            conn, res = designer.design_simple_shear_connection(
+                Vu=request.load_shear,
+                beam_depth=request.beam_depth,
+                bolt_diameter=request.bolt_diameter,
+                bolt_grade=bg
+            )
+            result = {
+                "connection": str(conn),
+                "capacity": res.capacity,
+                "ratio": res.ratio,
+                "status": res.status,
+                "checks": res.checks
+            }
+            
+        elif request.type == "moment_bolt":
+            if not request.beam_depth:
+                raise ValueError("Beam depth required for moment connection")
+            conn, res = designer.design_moment_end_plate(
+                Mu=request.load_moment,
+                Vu=request.load_shear,
+                beam_depth=request.beam_depth,
+                bolt_diameter=request.bolt_diameter,
+                bolt_grade=bg
+            )
+            result = {
+                "connection": str(conn),
+                "capacity": res.capacity,
+                "ratio": res.ratio,
+                "status": res.status,
+                "checks": res.checks
+            }
+            
+        elif request.type == "base_plate":
+            if not request.plate_width or not request.plate_length:
+                 raise ValueError("Plate dimensions required")
+            
+            bp = BasePlate(
+                width=request.plate_width,
+                length=request.plate_length,
+                thickness=20, # Initial guess, check will design it
+                fy_plate=request.steel_grade,
+                concrete_fck=request.concrete_grade,
+                pedestal_width=request.plate_width + 100,
+                pedestal_length=request.plate_length + 100
+            )
+            
+            res = designer.design_base_plate(
+                plate=bp,
+                Pu=request.load_axial,
+                Mu=request.load_moment,
+                Vu=request.load_shear
+            )
+             
+            result = {
+                "capacity": res.capacity,
+                "ratio": res.ratio,
+                "status": res.status,
+                "checks": res.checks
+            }
+            
+        else:
+             raise HTTPException(status_code=400, detail="Unknown connection type")
+             
+        return {"success": True, "result": result}
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================
+# FOUNDATION DESIGN (IS 456)
+# ============================================
+
+class FoundationRequest(BaseModel):
+    type: str = "isolated" # isolated, combined
+    load_p: float # kN
+    load_mx: float = 0 # kNm
+    load_my: float = 0 # kNm
+    sbc: float # kPa
+    soil_type: str = "Medium Clay"
+    # Dimensions hint (optional)
+    width: Optional[float] = None
+    length: Optional[float] = None
+    
+@router.post("/foundation/check")
+async def check_foundation(request: FoundationRequest):
+    try:
+        from design.foundation.footing import FoundationDesigner, SoilProfile, SoilType, ColumnLoad, IsolatedFooting
+        
+        # Setup Soil
+        # Map string to SoilType enum
+        st_map = {
+            "Soft Clay": SoilType.SOFT_CLAY, "Medium Clay": SoilType.MEDIUM_CLAY, 
+            "Stiff Clay": SoilType.STIFF_CLAY, "Loose Sand": SoilType.LOOSE_SAND,
+            "Medium Sand": SoilType.MEDIUM_SAND, "Dense Sand": SoilType.DENSE_SAND,
+            "Gravel": SoilType.GRAVEL, "Rock": SoilType.ROCK
+        }
+        st = st_map.get(request.soil_type, SoilType.MEDIUM_CLAY)
+        
+        soil = SoilProfile(
+            bearing_capacity=request.sbc,
+            soil_type=st,
+            depth_to_water=10,
+            subgrade_modulus=20000
+        )
+        
+        designer = FoundationDesigner(soil)
+        
+        col_load = ColumnLoad(P=request.load_p, Mx=request.load_mx, My=request.load_my)
+        
+        if request.type == "isolated":
+            if request.width and request.length:
+                 # Check existing
+                 ftg = IsolatedFooting(length=request.length, width=request.width, depth=0.5) # depth default
+                 res = designer.design_isolated_footing(ftg, col_load)
+            else:
+                 # Design new
+                 ftg = designer.size_isolated_footing(col_load)
+                 res = designer.design_isolated_footing(ftg, col_load)
+                 
+            return {
+                "success": True,
+                "dimensions": res.dimensions,
+                "reinforcement": res.reinforcement,
+                "checks": res.checks,
+                "status": res.status,
+                "ratios": {
+                    "bearing": res.bearing_check,
+                    "punching": res.punching_check,
+                    "flexure": res.flexure_check
+                }
+            }
+            
+        else:
+             raise HTTPException(status_code=400, detail="Only isolated footing supported currently via API")
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+

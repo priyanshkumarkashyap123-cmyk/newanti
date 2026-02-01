@@ -1,6 +1,9 @@
 
-import { analyzeStructure3D } from './solver3d';
-import { AnalysisRequest3D, Node3D, Member3D, Support3D, Load3D, Material, Section, BeamTheory } from './solver3d';
+import { analyzeStructure3D } from './solver3d.js';
+import { AnalysisRequest3D, Node3D, Member3D, NodeLoad, Material, Section, BeamTheory } from './solver3d.js';
+
+// Type alias for backwards compatibility
+type Load3D = NodeLoad;
 
 console.log("==========================================");
 console.log("VERIFYING 3D SOLVER (solver3d.ts)");
@@ -33,7 +36,7 @@ const members: Member3D[] = [
 ];
 
 const loads: Load3D[] = [
-    { nodeId: 'n2', fy: P }
+    { id: 'load1', nodeId: 'n2', fy: P }
 ];
 
 // Correct structure for analysis request
@@ -70,7 +73,7 @@ try {
 
     const T = 5.0;
     const loads2: Load3D[] = [
-        { nodeId: 'n2', mx: T }
+        { id: 'load2', nodeId: 'n2', mx: T }
     ];
 
     const result2 = analyzeStructure3D({ ...request, loads: loads2 });

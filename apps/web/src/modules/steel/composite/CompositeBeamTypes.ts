@@ -11,8 +11,8 @@
 
 import { SteelGrade, WShapeProperties, CalculationStep } from '../beams/SteelBeamTypes';
 
-// Re-export common types
-export { SteelGrade, WShapeProperties, CalculationStep };
+// Re-export common types using `export type` for isolatedModules
+export type { SteelGrade, WShapeProperties, CalculationStep };
 
 /**
  * Composite action level

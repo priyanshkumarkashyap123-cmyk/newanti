@@ -1,0 +1,276 @@
+/**
+ * Prisma Type Stubs
+ * 
+ * Local type definitions until Prisma is fully configured.
+ * These mirror what @prisma/client would provide once schema is generated.
+ * 
+ * TODO: Remove this file once Prisma is properly configured with:
+ *   pnpm add @prisma/client prisma
+ *   npx prisma generate
+ */
+
+// ============================================
+// ENUMS
+// ============================================
+
+export enum AuditType {
+  DESIGN_DECISION = 'DESIGN_DECISION',
+  DESIGN_CHECK = 'DESIGN_CHECK',
+  ANALYSIS = 'ANALYSIS',
+  ANALYSIS_RUN = 'ANALYSIS_RUN',
+  MATERIAL_SELECTION = 'MATERIAL_SELECTION',
+  CODE_CHECK = 'CODE_CHECK',
+  OPTIMIZATION = 'OPTIMIZATION',
+  AI_RECOMMENDATION = 'AI_RECOMMENDATION',
+  USER_OVERRIDE = 'USER_OVERRIDE',
+  EXPORT = 'EXPORT',
+  IMPORT = 'IMPORT',
+  PROJECT_CREATE = 'PROJECT_CREATE',
+  PROJECT_UPDATE = 'PROJECT_UPDATE',
+  ERROR = 'ERROR',
+}
+
+export enum FeedbackType {
+  BUG = 'BUG',
+  FEATURE = 'FEATURE',
+  IMPROVEMENT = 'IMPROVEMENT',
+  GENERAL = 'GENERAL',
+  CORRECTION = 'CORRECTION',
+  RATING = 'RATING',
+  SUGGESTION = 'SUGGESTION',
+  ERROR_REPORT = 'ERROR_REPORT',
+}
+
+export enum FeedbackStatus {
+  NEW = 'NEW',
+  ACKNOWLEDGED = 'ACKNOWLEDGED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  RESOLVED = 'RESOLVED',
+  WONT_FIX = 'WONT_FIX',
+}
+
+// ============================================
+// MODELS
+// ============================================
+
+export interface AuditEntry {
+  id: string;
+  projectId: string;
+  sessionId: string;
+  type: AuditType;
+  action: string;
+  details: string;
+  aiGenerated: boolean;
+  confidence: number | null;
+  modelUsed: string | null;
+  metadata: Record<string, unknown>;
+  timestamp: Date;
+  
+  // PE Signature fields
+  signedBy?: string;
+  signedAt?: Date;
+  signatureHash?: string;
+  licenseNo?: string;
+}
+
+export interface FeedbackEntry {
+  id: string;
+  projectId?: string | null;
+  userId?: string | null;
+  sessionId: string;
+  type: FeedbackType;
+  feature: string | null;
+  message: string;
+  email: string | null;
+  status: FeedbackStatus;
+  rating: number | null;
+  originalInput: string;
+  originalOutput?: unknown;
+  correctedOutput?: unknown;
+  comment?: string | null;
+  processed: boolean;
+  usedForTraining?: boolean;
+  exportedAt?: Date;
+  metadata: Record<string, unknown>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// ============================================
+// PRISMA CLIENT STUB
+// ============================================
+
+interface CountOptions {
+  where?: Record<string, unknown>;
+}
+
+interface FindManyOptions {
+  where?: Record<string, unknown>;
+  orderBy?: Record<string, 'asc' | 'desc'>;
+  take?: number;
+  skip?: number;
+}
+
+interface CreateOptions<T> {
+  data: Partial<T>;
+}
+
+interface UpdateOptions<T> {
+  where: { id: string };
+  data: Partial<T>;
+}
+
+interface GroupByOptions {
+  by: string[];
+  where?: Record<string, unknown>;
+  _count?: boolean;
+}
+
+interface ModelDelegate<T> {
+  findMany(options?: FindManyOptions & { select?: Record<string, boolean> }): Promise<T[]>;
+  findUnique(options: { where: { id: string } }): Promise<T | null>;
+  create(options: CreateOptions<T>): Promise<T>;
+  update(options: UpdateOptions<T>): Promise<T>;
+  updateMany(options: { where: Record<string, unknown>; data: Partial<T> }): Promise<{ count: number }>;
+  delete(options: { where: { id: string } }): Promise<T>;
+  count(options?: CountOptions): Promise<number>;
+  groupBy(options: GroupByOptions): Promise<Array<{ type?: string; feature?: string; _count: number }>>;
+  aggregate(options: Record<string, unknown>): Promise<Record<string, unknown>>;
+}
+
+/**
+ * Stub PrismaClient for development without actual database
+ * Replace with real PrismaClient once database is configured
+ */
+export class PrismaClient {
+  auditEntry: ModelDelegate<AuditEntry>;
+  feedbackEntry: ModelDelegate<FeedbackEntry>;
+  feedback: ModelDelegate<FeedbackEntry>;  // Alias for feedbackEntry
+
+  private auditStore: AuditEntry[] = [];
+  private feedbackStore: FeedbackEntry[] = [];
+
+  constructor() {
+    // In-memory implementation for development
+    this.auditEntry = this.createDelegate(this.auditStore);
+    this.feedbackEntry = this.createDelegate(this.feedbackStore);
+    this.feedback = this.feedbackEntry;  // Alias
+  }
+
+  private createDelegate<T extends { id: string }>(store: T[]): ModelDelegate<T> {
+    return {
+      findMany: async (options?: FindManyOptions): Promise<T[]> => {
+        let results = [...store];
+        
+        if (options?.where) {
+          results = results.filter(item => {
+            return Object.entries(options.where!).every(([key, value]) => {
+              if (value === undefined) return true;
+              return (item as Record<string, unknown>)[key] === value;
+            });
+          });
+        }
+        
+        if (options?.orderBy) {
+          const [field, order] = Object.entries(options.orderBy)[0];
+          results.sort((a, b) => {
+            const aVal = (a as Record<string, unknown>)[field];
+            const bVal = (b as Record<string, unknown>)[field];
+            if (aVal === bVal) return 0;
+            const comparison = aVal! < bVal! ? -1 : 1;
+            return order === 'desc' ? -comparison : comparison;
+          });
+        }
+        
+        if (options?.skip) results = results.slice(options.skip);
+        if (options?.take) results = results.slice(0, options.take);
+        
+        return results;
+      },
+      
+      findUnique: async (options: { where: { id: string } }): Promise<T | null> => {
+        return store.find(item => item.id === options.where.id) || null;
+      },
+      
+      create: async (options: CreateOptions<T>): Promise<T> => {
+        const id = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+        const entry = { ...options.data, id } as T;
+        store.push(entry);
+        return entry;
+      },
+      
+      update: async (options: UpdateOptions<T>): Promise<T> => {
+        const index = store.findIndex(item => item.id === options.where.id);
+        if (index === -1) throw new Error('Record not found');
+        store[index] = { ...store[index], ...options.data };
+        return store[index];
+      },
+      
+      delete: async (options: { where: { id: string } }): Promise<T> => {
+        const index = store.findIndex(item => item.id === options.where.id);
+        if (index === -1) throw new Error('Record not found');
+        const [deleted] = store.splice(index, 1);
+        return deleted;
+      },
+      
+      updateMany: async (options: { where: Record<string, unknown>; data: Partial<T> }): Promise<{ count: number }> => {
+        let count = 0;
+        store.forEach((item, index) => {
+          const matches = Object.entries(options.where).every(([key, value]) => {
+            if (value === undefined) return true;
+            // Handle 'in' operator
+            if (typeof value === 'object' && value !== null && 'in' in value) {
+              return (value as { in: unknown[] }).in.includes((item as Record<string, unknown>)[key]);
+            }
+            return (item as Record<string, unknown>)[key] === value;
+          });
+          if (matches) {
+            store[index] = { ...store[index], ...options.data };
+            count++;
+          }
+        });
+        return { count };
+      },
+      
+      count: async (options?: CountOptions): Promise<number> => {
+        if (!options?.where) return store.length;
+        return store.filter(item => {
+          return Object.entries(options.where!).every(([key, value]) => {
+            if (value === undefined) return true;
+            return (item as Record<string, unknown>)[key] === value;
+          });
+        }).length;
+      },
+      
+      groupBy: async (options: GroupByOptions): Promise<Array<{ type?: string; feature?: string; _count: number }>> => {
+        const groups = new Map<string, number>();
+        const field = options.by[0];
+        
+        store.forEach(item => {
+          const key = String((item as Record<string, unknown>)[field]);
+          groups.set(key, (groups.get(key) || 0) + 1);
+        });
+        
+        return Array.from(groups.entries()).map(([key, count]) => ({
+          [field]: key,
+          _count: count,
+        })) as Array<{ type?: string; feature?: string; _count: number }>;
+      },
+      
+      aggregate: async (): Promise<Record<string, unknown>> => {
+        return { _avg: { rating: 0 }, _count: store.length };
+      },
+    };
+  }
+
+  async $connect(): Promise<void> {
+    console.log('[PrismaStub] Connected (in-memory mode)');
+  }
+
+  async $disconnect(): Promise<void> {
+    console.log('[PrismaStub] Disconnected');
+  }
+}
+
+// Re-export for compatibility
+export default PrismaClient;

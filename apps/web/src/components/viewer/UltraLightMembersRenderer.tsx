@@ -250,7 +250,7 @@ export const UltraLightMembersRenderer: React.FC = React.memo(() => {
         
         // Use chunked processing to avoid blocking
         let currentIndex = 0;
-        let colorArray: Float32Array | null = config.enablePerInstanceColor 
+        const colorArray: Float32Array | null = config.enablePerInstanceColor 
             ? new Float32Array(toRender * 3) 
             : null;
         

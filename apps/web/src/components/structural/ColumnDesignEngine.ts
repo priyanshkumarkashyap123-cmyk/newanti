@@ -335,14 +335,16 @@ export function calculateColumnDesignIS456(inputs: ColumnDesignInputs): Calculat
   const d_prime = clear_cover + 10; // Assuming 10mm stirrup + half bar dia
   
   // ==================== Step 6: Axial Load Capacity ====================
+  // IS 456:2000 Cl. 39.3: Pu = 0.4 × fck × Ac + 0.67 × fy × Asc
   const Puz = getPureAxialCapacity(b, D, fck, fy, Asc);
   
   steps.push({
     title: 'Pure Axial Capacity',
-    description: 'Maximum axial load capacity without moment',
-    formula: 'Puz = 0.45 × fck × Ac + 0.75 × fy × Asc',
+    description: 'Maximum axial load capacity without moment per IS 456 Cl. 39.3',
+    formula: 'Puz = 0.4 × fck × Ac + 0.67 × fy × Asc',
     values: {
       'Ag': `${Ag} mm²`,
+      'Ac (= Ag - Asc)': `${(Ag - Asc).toFixed(0)} mm²`,
       'Assumed pt': `${ptAssumed}%`,
       'Asc (assumed)': `${Asc.toFixed(0)} mm²`,
       'Puz': `${Puz.toFixed(1)} kN`,

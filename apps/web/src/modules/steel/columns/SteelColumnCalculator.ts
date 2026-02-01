@@ -371,8 +371,8 @@ export class SteelColumnCalculator {
     const Mcy = designMethod === 'LRFD' ? phi_b * Mpy : Mpy / omega_b;
     
     // Required moments
-    let Mux = loads.Mux || 0;
-    let Muy = loads.Muy || 0;
+    const Mux = loads.Mux || 0;
+    const Muy = loads.Muy || 0;
     
     // Second-order amplification if required
     let B1x: number | undefined;

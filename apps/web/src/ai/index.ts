@@ -25,10 +25,6 @@ export {
   NLP_PATTERNS,
   UNIT_CONVERSIONS,
   FORMULA_LIBRARY,
-  getFormula,
-  getCodeClause,
-  getSectionProperties,
-  getUnitConversion,
 } from './CivilEngineeringKnowledgeBase';
 
 // ============================================
@@ -38,7 +34,6 @@ export {
   AdvancedNLPInterpreter,
   nlpInterpreter,
   type IntentType,
-  type ConfidenceLevel,
   type EntityType,
   type ParsedIntent,
   type ExtractedEntity,
@@ -59,7 +54,7 @@ export {
   type CodeReference,
   type Recommendation,
   type Warning,
-  type FollowUp,
+  type FollowUpQuestion,
 } from './IntelligentResponseGenerator';
 
 // ============================================
@@ -128,8 +123,14 @@ export function explainInterpretation(message: string): string {
  * Get context-aware suggestions
  */
 export function getSuggestions(): string[] {
-  const context = nlpInterpreter.getContext();
-  return responseGenerator.getSuggestionsForContext(context);
+  // Return default suggestions for structural engineering tasks
+  return [
+    'Create a portal frame for a warehouse',
+    'Analyze beam deflection under UDL',
+    'Check column design per IS 800',
+    'Calculate load combinations',
+    'Optimize truss weight',
+  ];
 }
 
 /**

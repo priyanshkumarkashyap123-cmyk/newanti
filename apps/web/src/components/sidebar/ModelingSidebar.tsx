@@ -21,7 +21,9 @@ import {
 } from 'lucide-react';
 import { fetchTemplate, TemplateType, TemplateParams } from '../../services/factoryService';
 import { useModelStore } from '../../store/model';
+import { Bridge } from '../../services/bridgeService';
 import { FAMOUS_STRUCTURES_TEMPLATES, generateFromTemplate } from '../../services/StructureFactory';
+import { Save, FolderOpen, RefreshCcw } from 'lucide-react';
 
 // ============================================
 // TYPES
@@ -316,6 +318,59 @@ export const ModelingSidebar: FC = () => {
                     <p className="text-[10px] text-zinc-500 mt-1">
                         {TEMPLATE_BANK.reduce((acc, cat) => acc + cat.items.length, 0)} sample structures
                     </p>
+                </div>
+
+                {/* Persistence Actions (Phase 3) */}
+                <div className="grid grid-cols-2 gap-2 px-3 pb-3 border-b border-zinc-800">
+                    <button
+                        onClick={async () => {
+                            showToast('Saving Project...', 'loading');
+                            const state = useModelStore.getState();
+                            const data = {
+                                projectInfo: state.projectInfo,
+                                nodes: Array.from(state.nodes.values()),
+                                members: Array.from(state.members.values()),
+                                civilData: Array.from(state.civilData.values()) || []
+                            };
+                            const res = await Bridge.saveProject(data);
+                            if (res) showToast('Project Saved!', 'success');
+                            else showToast('Save Failed', 'error');
+                        }}
+                        className="flex items-center justify-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors"
+                    >
+                        <Save className="w-3 h-3" />
+                        Save
+                    </button>
+                    <button
+                        onClick={async () => {
+                            showToast('Fetching Projects...', 'loading');
+                            const projects = await Bridge.listProjects();
+                            if (projects.length > 0) {
+                                // For now, just load the first one or alert count
+                                // Ideally open a modal. Simulating load of most recent:
+                                const latest = projects[0];
+                                const fullProject = await Bridge.loadProject(latest.id);
+                                if (fullProject) {
+                                    clearModel();
+                                    fullProject.nodes.forEach((n: any) => addNode(n));
+                                    fullProject.members.forEach((m: any) => addMember(m));
+                                    // Load civil data if stored
+                                    if (fullProject.civilData) {
+                                        // We haven't exposed addCivilResult in component props, but we can get from store
+                                        const { addCivilResult } = useModelStore.getState();
+                                        fullProject.civilData.forEach((cd: any) => addCivilResult(cd));
+                                    }
+                                    showToast(`Loaded: ${latest.name}`, 'success');
+                                }
+                            } else {
+                                showToast('No saved projects found', 'error');
+                            }
+                        }}
+                        className="flex items-center justify-center gap-2 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded text-xs font-medium transition-colors"
+                    >
+                        <FolderOpen className="w-3 h-3" />
+                        Load
+                    </button>
                 </div>
 
                 {/* Categories */}

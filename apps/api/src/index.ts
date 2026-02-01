@@ -1,4 +1,4 @@
-import express, { type Request, type Response } from 'express';
+import express, { type Request, type Response, type RequestHandler } from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import { clerkMiddleware, requireAuth, getAuth } from '@clerk/express';
@@ -22,6 +22,22 @@ import {
     requestLogger,
     secureErrorHandler
 } from './middleware/security.js';
+import * as Sentry from '@sentry/node';
+import { nodeProfilingIntegration } from '@sentry/profiling-node';
+
+// Initialize Sentry
+if (process.env.SENTRY_DSN) {
+    Sentry.init({
+        dsn: process.env.SENTRY_DSN,
+        integrations: [
+            nodeProfilingIntegration(),
+        ],
+        // Performance Monitoring
+        tracesSampleRate: 1.0,
+        // Set sampling rate for profiling - this is relative to tracesSampleRate
+        profilesSampleRate: 1.0,
+    });
+}
 
 const app = express();
 const PORT = process.env['PORT'] ?? 3001;
@@ -83,7 +99,7 @@ app.use(express.json({ limit: '10mb' }));  // Limit payload size
 // USE_CLERK=true -> Clerk, otherwise -> in-house JWT
 if (isUsingClerk()) {
     console.log('🔐 Using Clerk authentication');
-    app.use(clerkMiddleware());
+    app.use(clerkMiddleware() as unknown as RequestHandler);
 } else {
     console.log('🔐 Using in-house JWT authentication');
     app.use(inHouseAuthMiddleware);

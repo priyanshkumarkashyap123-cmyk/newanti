@@ -19,11 +19,38 @@
  */
 
 import {
-  createCalculationStep,
+  createCalculationStep as createCalcStepObject,
   roundTo,
   CalculationStep,
   DiagramType,
+  DesignCode,
 } from '../core/CalculationEngine';
+
+// Helper to support legacy 5-argument call pattern
+let stepCounter = 0;
+function createCalculationStep(
+  title: string,
+  description: string,
+  formula: string,
+  values: Record<string, number | string>,
+  clause: string
+): CalculationStep {
+  stepCounter++;
+  const formattedValues: Record<string, { value: number | string }> = {};
+  for (const [k, v] of Object.entries(values)) {
+    formattedValues[k] = { value: v };
+  }
+  return createCalcStepObject({
+    step: stepCounter,
+    title,
+    description,
+    formula,
+    values: formattedValues,
+    result: { value: 'N/A' },
+    code: DesignCode.IS_13920,
+    clause,
+  });
+}
 
 // ============================================================================
 // CONSTANTS FROM IS 13920:2016

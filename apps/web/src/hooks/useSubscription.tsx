@@ -5,6 +5,8 @@
 
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { useAuth, isUsingClerk } from '../providers/AuthProvider';
+import { API_CONFIG } from '@/config/env';
+import { createLogger } from '../utils/logger';
 
 // ============================================
 // SUBSCRIPTION TYPES
@@ -70,6 +72,7 @@ interface SubscriptionContextType {
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType | null>(null);
+const subscriptionLogger = createLogger('Subscription');
 
 // ============================================
 // SUBSCRIPTION PROVIDER
@@ -106,7 +109,7 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
             const token = await getToken();
             
             // Fetch from backend API
-            const apiUrl = import.meta.env.VITE_API_URL || 'https://api.beamlabultimate.tech';
+            const apiUrl = API_CONFIG.baseUrl;
             const headers: Record<string, string> = {
                 'Content-Type': 'application/json',
             };
@@ -127,7 +130,7 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
                     const { tier, features, expiresAt } = result.data;
                     // Cache tier in localStorage for quick access on next load
                     localStorage.setItem('beamlab_subscription_tier', tier);
-                    console.log('[Subscription] Fetched tier from API:', tier, features);
+                    subscriptionLogger.info('Fetched tier from API', { tier, features });
                     setSubscription({
                         tier: tier as SubscriptionTier,
                         isLoading: false,
@@ -137,7 +140,7 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
                     return;
                 }
             } else {
-                console.warn('[Subscription] API returned non-OK status:', response.status);
+                subscriptionLogger.warn('API returned non-OK status', { status: response.status });
             }
 
             // Fallback to localStorage for demo mode
@@ -152,7 +155,7 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
                 features: TIER_FEATURES[tier]
             });
         } catch (error) {
-            console.error('Failed to fetch subscription:', error);
+            subscriptionLogger.error('Failed to fetch subscription', error);
             // Fallback to localStorage
             const savedTier = localStorage.getItem('beamlab_subscription_tier') as SubscriptionTier | null;
             // Default to enterprise tier if no tier is saved

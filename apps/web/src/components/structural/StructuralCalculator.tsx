@@ -81,6 +81,7 @@ export interface CalculationResult {
   codeChecks: CodeCheck[];
   warnings: string[];
   // Optional extended results
+  summary?: Record<string, string | number>;
   designSummary?: Record<string, string | number>;
   storeyForces?: Array<{ level: number; height: string; force: string; shear: string }>;
   modalResults?: Array<{ mode: number; period: string; participation: string; baseShear: string }>;
@@ -92,14 +93,18 @@ export interface CalculationStep {
   formula: string;
   values: Record<string, string | number>;
   reference?: string;
+  result?: string;
 }
 
 export interface CodeCheck {
   clause: string;
   description: string;
-  required: string;
-  provided: string;
-  status: 'PASS' | 'FAIL' | 'WARNING';
+  required?: string;
+  provided?: string;
+  limit?: string;
+  actual?: string;
+  utilization?: number;
+  status: 'PASS' | 'FAIL' | 'WARNING' | 'OK';
 }
 
 export interface InputField {

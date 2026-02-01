@@ -268,3 +268,171 @@ export function getLoadingAriaProps(isLoading: boolean, loadingMessage = 'Loadin
         ...(isLoading && { 'aria-label': loadingMessage }),
     };
 }
+
+// ============================================
+// ENHANCED FOCUS MANAGEMENT HOOKS
+// ============================================
+
+/**
+ * Hook for managing focus trap in modals/dialogs
+ * Returns a ref to attach to the container element
+ */
+export function useFocusTrap(isActive: boolean = true) {
+    const containerRef = { current: null as HTMLElement | null };
+    const previousFocusRef = { current: null as HTMLElement | null };
+    
+    // Setup effect
+    if (typeof window !== 'undefined' && isActive && containerRef.current) {
+        previousFocusRef.current = document.activeElement as HTMLElement;
+        const cleanup = trapFocus(containerRef.current);
+        
+        // Return cleanup that also restores focus
+        return {
+            containerRef,
+            cleanup: () => {
+                cleanup();
+                previousFocusRef.current?.focus();
+            }
+        };
+    }
+    
+    return { containerRef, cleanup: () => {} };
+}
+
+/**
+ * Roving tabindex for toolbar/menu navigation
+ */
+export function createRovingTabIndex(container: HTMLElement, selector: string) {
+    const items = Array.from(container.querySelectorAll<HTMLElement>(selector));
+    let activeIndex = 0;
+    
+    // Set initial tabindex
+    items.forEach((item, i) => {
+        item.setAttribute('tabindex', i === 0 ? '0' : '-1');
+    });
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+        const currentIndex = items.findIndex(item => item === document.activeElement);
+        if (currentIndex === -1) return;
+        
+        let newIndex = currentIndex;
+        
+        switch (e.key) {
+            case 'ArrowRight':
+            case 'ArrowDown':
+                e.preventDefault();
+                newIndex = (currentIndex + 1) % items.length;
+                break;
+            case 'ArrowLeft':
+            case 'ArrowUp':
+                e.preventDefault();
+                newIndex = (currentIndex - 1 + items.length) % items.length;
+                break;
+            case 'Home':
+                e.preventDefault();
+                newIndex = 0;
+                break;
+            case 'End':
+                e.preventDefault();
+                newIndex = items.length - 1;
+                break;
+            default:
+                return;
+        }
+        
+        items[currentIndex].setAttribute('tabindex', '-1');
+        items[newIndex].setAttribute('tabindex', '0');
+        items[newIndex].focus();
+        activeIndex = newIndex;
+    };
+    
+    container.addEventListener('keydown', handleKeyDown);
+    
+    return () => container.removeEventListener('keydown', handleKeyDown);
+}
+
+// ============================================
+// SKIP LINK UTILITY
+// ============================================
+
+/**
+ * Create skip link for keyboard users
+ */
+export function createSkipLink(targetId: string = 'main-content', label: string = 'Skip to main content') {
+    if (typeof document === 'undefined') return;
+    
+    const existingLink = document.getElementById('skip-link');
+    if (existingLink) return;
+    
+    const skipLink = document.createElement('a');
+    skipLink.id = 'skip-link';
+    skipLink.href = `#${targetId}`;
+    skipLink.textContent = label;
+    skipLink.className = `
+        sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 
+        focus:z-[9999] focus:bg-blue-600 focus:text-white focus:px-4 focus:py-2 
+        focus:rounded-lg focus:shadow-lg focus:outline-none
+    `.trim().replace(/\s+/g, ' ');
+    
+    skipLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.getElementById(targetId);
+        if (target) {
+            target.tabIndex = -1;
+            target.focus();
+            target.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+    
+    document.body.insertBefore(skipLink, document.body.firstChild);
+}
+
+// ============================================
+// LOADING STATE ANNOUNCER
+// ============================================
+
+/**
+ * Announce loading state changes to screen readers
+ */
+export function announceLoadingState(
+    isLoading: boolean,
+    messages: { loading?: string; complete?: string; error?: string } = {}
+) {
+    const { 
+        loading = 'Loading, please wait...', 
+        complete = 'Content loaded successfully' 
+    } = messages;
+    
+    if (isLoading) {
+        announce(loading);
+    } else {
+        announce(complete);
+    }
+}
+
+// ============================================
+// UNIQUE ID GENERATOR FOR ARIA
+// ============================================
+
+let idCounter = 0;
+
+/**
+ * Generate unique ID for ARIA relationships
+ */
+export function generateAriaId(prefix: string = 'aria'): string {
+    return `${prefix}-${++idCounter}-${Date.now().toString(36)}`;
+}
+
+/**
+ * Create linked ARIA IDs for label/describedby relationships
+ */
+export function createAriaLinkage(prefix: string = 'field') {
+    const id = generateAriaId(prefix);
+    return {
+        inputId: id,
+        labelId: `${id}-label`,
+        descriptionId: `${id}-desc`,
+        errorId: `${id}-error`,
+    };
+}
+

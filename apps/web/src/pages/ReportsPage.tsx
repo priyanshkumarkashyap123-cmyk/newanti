@@ -16,6 +16,7 @@ import beamLabLogo from '../assets/beamlab_logo.png';
 import { generateDesignReport } from '../services/PDFReportService';
 import { generateDXF, downloadDXF } from '../services/DXFExportService';
 import { generateIFC, downloadIFC } from '../services/IFCExportService';
+import { exportProjectData } from '../services/ExcelExportService';
 
 export const ReportsPage = () => {
     // Connect to real data store
@@ -34,23 +35,41 @@ export const ReportsPage = () => {
         window.print();
     };
 
-    const handleExportPDF = () => {
-        // Generate professional PDF
+    const handleExportPDF = async () => {
+        // Generate professional PDF via Backend (Python)
         const memberList = Array.from(members.values());
         const nodeList = Array.from(nodes.values());
 
-        generateDesignReport(
-            {
-                name: "BeamLab Project",
-                engineer: userName,
-                date: currentDate,
-                description: "Analysis Report"
-            },
-            memberList,
-            nodeList,
-            analysisResults,
-            new Map() // Design results not available globally yet
-        );
+        // Show loading state could be good here, but for now just call
+        try {
+            await import('../services/PDFReportService').then(m => m.generateProfessionalReport(
+                {
+                    name: "BeamLab Project",
+                    engineer: userName,
+                    date: currentDate,
+                    description: "Analysis Report"
+                },
+                memberList,
+                nodeList,
+                analysisResults,
+                new Map() // Design results
+            ));
+        } catch (e) {
+            // Fallback to client-side
+            console.warn("Backend report failed, using client-side fallback");
+            generateDesignReport(
+                {
+                    name: "BeamLab Project",
+                    engineer: userName,
+                    date: currentDate,
+                    description: "Analysis Report"
+                },
+                memberList,
+                nodeList,
+                analysisResults,
+                new Map()
+            );
+        }
     };
 
     const handleExportDXF = () => {
@@ -65,6 +84,15 @@ export const ReportsPage = () => {
             members
         );
         downloadIFC(ifcContent, "BeamLab_Model.ifc");
+    };
+
+    const handleExportExcel = () => {
+        exportProjectData(
+            "BeamLab Project",
+            nodes,
+            members,
+            analysisResults
+        );
     };
 
     return (
@@ -304,6 +332,14 @@ export const ReportsPage = () => {
                 >
                     <FileCode className="w-5 h-5 text-amber-600" />
                     <span className="hidden md:inline">IFC</span>
+                </button>
+                <button
+                    onClick={handleExportExcel}
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-zinc-800 border-2 border-green-600 dark:border-green-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-600 dark:text-gray-300 font-medium text-sm"
+                    title="Export Results to Excel (CSV)"
+                >
+                    <TableProperties className="w-5 h-5 text-green-600" />
+                    <span className="hidden md:inline">Excel</span>
                 </button>
             </div>
         </div>

@@ -313,6 +313,125 @@ export const Bridge = {
             height,
             roof_angle: roofAngle
         });
+    },
+
+    // ============================================
+    // PROJECT PERSISTENCE (Phase 3)
+    // ============================================
+
+    /**
+     * List all saved projects
+     */
+    async listProjects(): Promise<any[]> {
+        try {
+            const response = await fetch(`${PYTHON_API}/projects/`, {
+                method: 'GET'
+            });
+            if (!response.ok) return [];
+            return await response.json();
+        } catch (e) {
+            console.error('[Bridge] Failed to list projects', e);
+            return [];
+        }
+    },
+
+    /**
+     * Save project to backend
+     */
+    async saveProject(data: any): Promise<{ id: string, status: string } | null> {
+        try {
+            const response = await fetch(`${PYTHON_API}/projects/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return await response.json();
+        } catch (e) {
+            console.error('[Bridge] Failed to save project', e);
+            return null;
+        }
+    },
+
+    /**
+     * Load project from backend
+     */
+    async loadProject(id: string): Promise<any | null> {
+        try {
+            const response = await fetch(`${PYTHON_API}/projects/${id}`, {
+                method: 'GET'
+            });
+            if (!response.ok) return null;
+            return await response.json();
+        } catch (e) {
+            console.error('[Bridge] Failed to load project', e);
+            return null;
+        }
+    },
+
+    /**
+     * Delete project
+     */
+    async deleteProject(id: string): Promise<boolean> {
+        try {
+            const response = await fetch(`${PYTHON_API}/projects/${id}`, {
+                method: 'DELETE'
+            });
+            return response.ok;
+        } catch (e) {
+            return false;
+        }
+    },
+
+    // ============================================
+    // PINN AI PHYSICS (Phase 4)
+    // ============================================
+
+    /**
+     * Train a Physics-Informed Neural Network
+     */
+    async trainPINN(config: any): Promise<any> {
+        try {
+            const response = await fetch(`${PYTHON_API}/pinn/train`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(config)
+            });
+            return await response.json();
+        } catch (e) {
+            console.error('[Bridge] PINN Training failed', e);
+            return null;
+        }
+    },
+
+    /**
+     * Get PINN Training Status
+     */
+    async getPINNStatus(jobId: string): Promise<any> {
+        try {
+            const response = await fetch(`${PYTHON_API}/pinn/status/${jobId}`, {
+                method: 'GET'
+            });
+            return await response.json();
+        } catch (e) {
+            return null;
+        }
+    },
+
+    /**
+     * Predict using trained PINN
+     */
+    async predictPINN(modelId: string, points = 100): Promise<any> {
+        try {
+            const response = await fetch(`${PYTHON_API}/pinn/predict`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ model_id: modelId, num_points: points })
+            });
+            return await response.json();
+        } catch (e) {
+            return null;
+        }
     }
 };
 

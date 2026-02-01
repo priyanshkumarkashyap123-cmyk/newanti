@@ -107,12 +107,17 @@ export const LandingPage: FC = () => {
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30">
+            {/* Skip to main content - Accessibility */}
+            <a href="#main-content" className="skip-to-content">
+                Skip to main content
+            </a>
+            
             {/* Navbar */}
-            <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/5 bg-slate-950/90 backdrop-blur-xl">
+            <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/5 bg-slate-950/90 backdrop-blur-xl" role="navigation" aria-label="Main navigation">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         {/* Logo */}
-                        <Link to="/" className="flex items-center gap-3 group flex-shrink-0">
+                        <Link to="/" className="flex items-center gap-3 group flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg" aria-label="BeamLab Ultimate - Home">
                             <div className="relative w-9 h-9 flex items-center justify-center rounded-lg shadow-lg group-hover:shadow-blue-500/25 transition-all overflow-hidden">
                                 <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-cover" />
                             </div>
@@ -146,71 +151,82 @@ export const LandingPage: FC = () => {
 
                         {/* Mobile Menu Button */}
                         <button
-                            className="md:hidden p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+                            className="md:hidden p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            aria-label="Toggle menu"
+                            aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+                            aria-expanded={mobileMenuOpen}
+                            aria-controls="mobile-menu"
                         >
-                            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                            {mobileMenuOpen ? <X className="w-5 h-5" aria-hidden="true" /> : <Menu className="w-5 h-5" aria-hidden="true" />}
                         </button>
                     </div>
                 </div>
 
-                {/* Mobile Menu - Improved design */}
+                {/* Mobile Menu - Improved design with accessibility */}
                 {mobileMenuOpen && (
-                    <div className="md:hidden bg-slate-900/95 backdrop-blur-xl border-b border-white/10 p-6 space-y-4">
-                        <a href="#features" className="block text-slate-300 hover:text-white text-base font-medium py-2 px-3 rounded-lg hover:bg-slate-800 transition-colors">
+                    <nav 
+                        id="mobile-menu"
+                        className="md:hidden bg-slate-900/95 backdrop-blur-xl border-b border-white/10 p-6 space-y-4"
+                        role="navigation"
+                        aria-label="Mobile navigation"
+                    >
+                        <a href="#features" className="block text-slate-300 hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
                             Features
                         </a>
-                        <a href="#pricing" className="block text-slate-300 hover:text-white text-base font-medium py-2 px-3 rounded-lg hover:bg-slate-800 transition-colors">
+                        <a href="#pricing" className="block text-slate-300 hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
                             Pricing
                         </a>
-                        <Link to="/help" className="block text-slate-300 hover:text-white text-base font-medium py-2 px-3 rounded-lg hover:bg-slate-800 transition-colors">
+                        <Link to="/help" className="block text-slate-300 hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
                             Docs
                         </Link>
-                        <Link to="/demo" className="block text-slate-300 hover:text-white text-base font-medium py-2 px-3 rounded-lg hover:bg-slate-800 transition-colors">
+                        <Link to="/demo" className="block text-slate-300 hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
                             Demo
                         </Link>
-                        <hr className="border-white/10 my-4" />
+                        <hr className="border-white/10 my-4" aria-hidden="true" />
                         <div className="space-y-3">
-                            <Link to="/sign-in" className="block text-center text-slate-300 hover:text-white text-base font-medium py-2 px-3 rounded-lg hover:bg-slate-800 transition-colors">
+                            <Link to="/sign-in" className="block text-center text-slate-300 hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
                                 Log in
                             </Link>
-                            <button onClick={handleGetStarted} className="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-semibold text-white shadow-lg shadow-blue-500/20 transition-all">
+                            <button onClick={handleGetStarted} className="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-semibold text-white shadow-lg shadow-blue-500/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500">
                                 Get Started Free
                             </button>
                         </div>
-                    </div>
+                    </nav>
                 )}
             </nav>
 
             {/* Hero Section */}
-            <section className="relative pt-28 pb-20 lg:pt-40 lg:pb-32 overflow-hidden">
-                {/* Background Blobs */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
-                    <div className="absolute top-20 left-10 w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-[100px] opacity-40 mix-blend-screen animate-pulse" style={{ animationDuration: '4s' }} />
-                    <div className="absolute top-40 right-10 w-[400px] h-[400px] bg-purple-500/20 rounded-full blur-[100px] opacity-40 mix-blend-screen animate-pulse" style={{ animationDuration: '7s' }} />
-                </div>
+            <main id="main-content" role="main">
+                <section className="relative pt-28 pb-20 lg:pt-40 lg:pb-32 overflow-hidden" aria-labelledby="hero-heading">
+                    {/* Background Blobs - decorative, hidden from screen readers */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none" aria-hidden="true">
+                        <div className="absolute top-20 left-10 w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-[100px] opacity-40 mix-blend-screen animate-pulse" style={{ animationDuration: '4s' }} />
+                        <div className="absolute top-40 right-10 w-[400px] h-[400px] bg-purple-500/20 rounded-full blur-[100px] opacity-40 mix-blend-screen animate-pulse" style={{ animationDuration: '7s' }} />
+                    </div>
 
-                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <motion.div
-                        initial="hidden"
-                        animate="visible"
-                        variants={fadeInUp}
-                        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-semibold uppercase tracking-wider mb-8"
-                    >
-                        <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                        v2.0 Now Live — 300K+ Members Supported
-                    </motion.div>
+                    <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                        <motion.div
+                            initial="hidden"
+                            animate="visible"
+                            variants={fadeInUp}
+                            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-semibold uppercase tracking-wider mb-8"
+                            role="status"
+                            aria-label="Version 2.0 now live with 300,000+ members supported"
+                        >
+                            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" aria-hidden="true" />
+                            v2.0 Now Live — 300K+ Members Supported
+                        </motion.div>
 
-                    <motion.h1
-                        initial="hidden"
-                        animate="visible"
-                        variants={fadeInUp}
-                        className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.1]"
-                    >
-                        Structural Analysis{' '}
-                        <br className="hidden sm:block" />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400">
+                        <motion.h1
+                            id="hero-heading"
+                            initial="hidden"
+                            animate="visible"
+                            variants={fadeInUp}
+                            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.1]"
+                        >
+                            Structural Analysis{' '}
+                            <br className="hidden sm:block" />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400">
                             Reimagined for Web
                         </span>
                     </motion.h1>
@@ -411,18 +427,19 @@ export const LandingPage: FC = () => {
             </section>
 
             {/* CTA Section */}
-            <section className="py-24 relative overflow-hidden">
+            <section className="py-24 relative overflow-hidden" aria-labelledby="cta-heading">
                 <CTABanner onGetStarted={handleGetStarted} />
             </section>
+            </main>
 
             {/* Footer */}
-            <footer className="border-t border-slate-800 py-12 sm:py-16 bg-slate-950">
+            <footer className="border-t border-slate-800 py-12 sm:py-16 bg-slate-950" role="contentinfo">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
                         <div className="col-span-2">
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="w-9 h-9 flex items-center justify-center rounded-lg overflow-hidden">
-                                    <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-cover" />
+                                    <img src={beamLabLogo} alt="" className="w-full h-full object-cover" aria-hidden="true" />
                                 </div>
                                 <span className="text-xl font-bold text-white">BeamLab Ultimate</span>
                             </div>
@@ -475,7 +492,7 @@ export const LandingPage: FC = () => {
 const FeatureCard = ({ icon, title, desc, bullets }: { icon: any, title: string, desc: string, bullets: string[] }) => (
     <motion.div
         variants={fadeInUp}
-        className="p-6 sm:p-8 rounded-2xl bg-slate-900 border border-slate-800 hover:border-blue-500/30 hover:bg-slate-800/50 transition-all group h-full flex flex-col"
+        className="p-6 sm:p-8 rounded-2xl bg-slate-900 border border-slate-800 hover:border-blue-500/30 hover:bg-slate-800/50 transition-all group h-full flex flex-col hover-lift"
     >
         <div className="w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center mb-6 group-hover:bg-blue-500/20 group-hover:text-blue-400 transition-colors flex-shrink-0">
             {icon}

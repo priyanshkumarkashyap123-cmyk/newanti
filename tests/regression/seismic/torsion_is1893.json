@@ -1,0 +1,23 @@
+{
+  "id": "seismic_torsion_is1893",
+  "name": "Accidental Torsion Check per IS 1893",
+  "module": "seismic",
+  "function": "calculateAccidentalTorsion",
+  "designCode": "IS1893:2016",
+  "inputs": {
+    "Bx": 30.0,
+    "By": 20.0,
+    "Fx": 1000,
+    "Fy": 800
+  },
+  "expected": {
+    "eccentricityX": { "value": 1.5, "tolerance": 0.01 },
+    "eccentricityY": { "value": 1.0, "tolerance": 0.01 },
+    "Mtx": { "value": 1500, "tolerance": 1 },
+    "Mty": { "value": 800, "tolerance": 1 },
+    "clause": "IS 1893:2016 Cl. 7.8.2.1"
+  },
+  "source": "Manual calculation: ex = 0.05 × 30 = 1.5m, Mtx = 1000 × 1.5 = 1500 kN·m",
+  "createdBy": "BeamLab QA",
+  "createdAt": "2025-01-15"
+}

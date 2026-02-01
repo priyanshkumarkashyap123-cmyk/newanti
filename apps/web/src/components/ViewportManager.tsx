@@ -6,6 +6,7 @@ import { BoxSelector } from './BoxSelector';
 import { WgpuCanvas } from './viewer/WgpuCanvas';
 import { SafeCanvasWrapper } from './viewer/SafeCanvasWrapper';
 import { useUIStore } from '../store/uiStore';
+import { useMultiplayerContext } from './collaborators/MultiplayerContext';
 import { Cpu, Zap, Box, GitBranch } from 'lucide-react';
 
 type ViewportLayout = 'SINGLE' | 'QUAD';
@@ -296,6 +297,16 @@ const ViewportContainer: FC<{ className?: string; layout: ViewportLayout; useWeb
     const rightRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
+    // Get multiplayer users safely
+    let remoteUsers: any[] = [];
+    try {
+         
+        const mp = useMultiplayerContext();
+        remoteUsers = mp?.remoteUsers || [];
+    } catch (e) {
+        // Not in provider
+    }
+
     const orthoControlProps = {
         enableRotate: false,
         enableZoom: true,
@@ -310,7 +321,7 @@ const ViewportContainer: FC<{ className?: string; layout: ViewportLayout; useWeb
     }
 
     return (
-        <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+        <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative', touchAction: 'none' }}>
             {/* CSS Grid Layout for Viewports */}
             <div
                 style={{
@@ -364,7 +375,7 @@ const ViewportContainer: FC<{ className?: string; layout: ViewportLayout; useWeb
                         enablePan={true}
                         panSpeed={1.5}
                     />
-                    <SharedScene />
+                    <SharedScene remoteUsers={remoteUsers} />
                     <BoxSelector />
                 </View>
 
@@ -375,7 +386,7 @@ const ViewportContainer: FC<{ className?: string; layout: ViewportLayout; useWeb
                             <color attach="background" args={['#1a1a1a']} />
                             <OrthographicCamera makeDefault position={[0, 50, 0]} zoom={15} up={[0, 0, -1]} />
                             <OrbitControls makeDefault {...orthoControlProps} />
-                            <SharedScene />
+                            <SharedScene remoteUsers={remoteUsers} />
                             <BoxSelector />
                         </View>
 
@@ -384,7 +395,7 @@ const ViewportContainer: FC<{ className?: string; layout: ViewportLayout; useWeb
                             <color attach="background" args={['#1a1a1a']} />
                             <OrthographicCamera makeDefault position={[0, 0, 50]} zoom={15} />
                             <OrbitControls makeDefault {...orthoControlProps} />
-                            <SharedScene />
+                            <SharedScene remoteUsers={remoteUsers} />
                             <BoxSelector />
                         </View>
 
@@ -393,7 +404,7 @@ const ViewportContainer: FC<{ className?: string; layout: ViewportLayout; useWeb
                             <color attach="background" args={['#1a1a1a']} />
                             <OrthographicCamera makeDefault position={[50, 0, 0]} zoom={15} />
                             <OrbitControls makeDefault {...orthoControlProps} />
-                            <SharedScene />
+                            <SharedScene remoteUsers={remoteUsers} />
                             <BoxSelector />
                         </View>
                     </>
@@ -434,7 +445,7 @@ export const ViewportManager: FC = () => {
     }
 
     return (
-        <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+        <div style={{ width: '100%', height: '100%', position: 'relative', touchAction: 'none' }}>
             {/* Viewport Layout Toggle - Top Right */}
             <div style={{
                 position: 'absolute',

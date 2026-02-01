@@ -161,6 +161,15 @@ const QUICK_ACTIONS: QuickAction[] = [
         badge: 'NEW'
     },
     {
+        id: 'ai-power',
+        title: 'AI Power',
+        description: 'Advanced AI Analytics',
+        icon: <Activity className="w-6 h-6" />,
+        color: 'from-cyan-600 to-cyan-700',
+        route: '/ai-dashboard',
+        badge: '🚀'
+    },
+    {
         id: 'templates',
         title: 'Templates',
         description: 'Pre-built structures',
@@ -414,11 +423,17 @@ export const UnifiedDashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
 
                         {/* User & Actions */}
                         <div className="flex items-center gap-4">
-                            <button className="p-2 rounded-lg text-slate-400 hover:bg-slate-800 transition-colors relative">
+                            <button
+                                className="p-2 rounded-lg text-slate-400 hover:bg-slate-800 transition-colors relative"
+                                aria-label="Notifications"
+                            >
                                 <Bell className="w-5 h-5" />
                                 <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" />
                             </button>
-                            <button className="p-2 rounded-lg text-slate-400 hover:bg-slate-800 transition-colors">
+                            <button
+                                className="p-2 rounded-lg text-slate-400 hover:bg-slate-800 transition-colors"
+                                aria-label="Help"
+                            >
                                 <HelpCircle className="w-5 h-5" />
                             </button>
                             <div className="h-6 w-px bg-slate-700" />
@@ -430,6 +445,7 @@ export const UnifiedDashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                                     <button
                                         onClick={() => signOut()}
                                         className="p-2 rounded-lg text-slate-400 hover:bg-slate-800 transition-colors"
+                                        aria-label="Sign Out"
                                     >
                                         <LogOut className="w-5 h-5" />
                                     </button>
@@ -543,9 +559,25 @@ export const UnifiedDashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                         </div>
 
                         {filteredProjects.length === 0 && (
-                            <div className="text-center py-12 text-slate-500">
-                                <FolderOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                                <p>No projects found matching your criteria</p>
+                            <div className="empty-state bg-slate-900/50 border border-slate-800 rounded-xl">
+                                <FolderOpen className="empty-state-icon" />
+                                <h3 className="empty-state-title">No projects found</h3>
+                                <p className="empty-state-description">
+                                    {searchQuery 
+                                        ? `No projects match "${searchQuery}". Try adjusting your search or filter.`
+                                        : "You haven't created any projects yet. Start building something amazing!"
+                                    }
+                                </p>
+                                <button 
+                                    onClick={() => navigate('/app')}
+                                    className="empty-state-action"
+                                    aria-label="Create your first project"
+                                >
+                                    <span className="flex items-center gap-2">
+                                        <Plus className="w-4 h-4" />
+                                        Create New Project
+                                    </span>
+                                </button>
                             </div>
                         )}
                     </div>

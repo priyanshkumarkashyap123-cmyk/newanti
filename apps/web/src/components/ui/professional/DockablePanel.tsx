@@ -413,7 +413,7 @@ interface PanelHeaderProps {
   onCollapse?: () => void;
   onPin?: () => void;
   onFloat?: () => void;
-  onDragStart?: () => void;
+  onDragStart?: (e: React.PointerEvent | React.MouseEvent) => void;
 }
 
 const PanelHeader: FC<PanelHeaderProps> = ({

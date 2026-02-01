@@ -679,7 +679,7 @@ export function designBeamIS456(input: IS456BeamInput): IS456BeamResult {
   const isDoublyReinforced = steelResult.isDoublyReinforced;
   
   let Ast_required = steelResult.Ast;
-  let Asc_required = steelResult.Asc;
+  const Asc_required = steelResult.Asc;
   
   // Minimum reinforcement per IS 456 Clause 26.5.1.1
   const Ast_min = 0.85 * b * d / fy;
@@ -802,8 +802,8 @@ export function designBeamIS456(input: IS456BeamInput): IS456BeamResult {
   // Shear reinforcement
   const shearResult = getShearReinforcement(Vu, Vc, fy, b, d);
   
-  let stirrup_dia_selected = 8;
-  let Asv = 2 * Math.PI * (stirrup_dia_selected / 2) ** 2; // 2-legged stirrup
+  const stirrup_dia_selected = 8;
+  const Asv = 2 * Math.PI * (stirrup_dia_selected / 2) ** 2; // 2-legged stirrup
   let sv = shearResult.Asv_s > 0 
     ? Asv / Math.max(shearResult.Asv_s, shearResult.minAsv_s)
     : Asv / shearResult.minAsv_s;

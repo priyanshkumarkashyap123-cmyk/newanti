@@ -397,7 +397,7 @@ function assembleMassMatrix(
         const rho = member.rho || 7850; // Steel default
         const A = member.A;
 
-        let me: number[][] = [];
+        const me: number[][] = [];
 
         const type = member.type || 'frame';
 
@@ -1366,8 +1366,8 @@ async function analyze(model: ModelData): Promise<ResultData> {
 
             let displacements: Float64Array = new Float64Array(0);
             let memberForces: any[] = [];
-            let stats: any = {};
-            let memberAxialForces: Record<string, number> = {};
+            const stats: any = {};
+            const memberAxialForces: Record<string, number> = {};
             let prevDisplacements: Float64Array | null = null;
             let converged = false;
 
@@ -1432,7 +1432,7 @@ async function analyze(model: ModelData): Promise<ResultData> {
             const targetFraction = config.targetVolume || 0.5;
 
             // Initial Densities
-            let densities: Record<string, number> = {};
+            const densities: Record<string, number> = {};
             model.members.forEach(m => densities[m.id] = targetFraction); // Start uniform? Or 1.0?
             // Better start: Uniform = Target.
 
@@ -1474,7 +1474,7 @@ async function analyze(model: ModelData): Promise<ResultData> {
                 // Or compute element energy here.
                 // We'll calculate Element Strain Energy explicitly.
 
-                let compliance = 0;
+                const compliance = 0;
 
                 model.members.forEach(member => {
                     const i = nodeIndexMap.get(member.startNodeId);
@@ -1490,7 +1490,7 @@ async function analyze(model: ModelData): Promise<ResultData> {
                     memberIds.push(member.id);
 
                     // Stiffness Matrix (Unscaled E0)
-                    let ke0: number[][] = [];
+                    const ke0: number[][] = [];
                     // ... Need compute KE0 ...
                     // This duplicates selection logic. Ideally refactor `computeElementK(member, rho=1)`.
                     // For brevity, assume Truss 2D/3D logic dominance or use simplified energy calc?

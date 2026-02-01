@@ -13,7 +13,11 @@ import init, {
     solve_3d_frame,
     solve_p_delta,
     analyze_buckling,
-    get_solver_info
+    get_solver_info,
+    // Phase 52 Additions
+    // WasmHHTIntegrator, // TODO: Export from Rust
+    // WasmSparseMatrix, // TODO: Export from Rust
+    // MacnealHarderWasm // TODO: Export from Rust
 } from 'backend-rust';
 
 // ============================================
@@ -393,6 +397,54 @@ export async function analyzeBuckling(
 }
 
 // ============================================
+// CIVIL ENGINEERING ANALYSIS (Phase 2)
+// ============================================
+
+export interface GeotechBearingInput {
+    width: number;
+    length: number;
+    depth: number;
+    cohesion: number;
+    phi: number;
+    gamma: number;
+    fs?: number;
+}
+
+export interface GeotechBearingResult {
+    q_ult: number;
+    q_allow: number;
+    nc: number;
+    nq: number;
+    n_gamma: number;
+}
+
+/**
+ * Calculate Bearing Capacity using Rust WASM Engine (Ultra Fast)
+ * TODO: Not yet implemented in Rust - waiting for WASM binding
+ */
+/* 
+export async function calculateGeotechBearing(input: GeotechBearingInput): Promise<GeotechBearingResult | null> {
+    if (!wasmInitialized) await initSolver();
+
+    try {
+        const payload = JSON.stringify({
+            ...input,
+            fs: input.fs || 3.0
+        });
+
+        const json = calculate_bearing_capacity(payload);
+        const result = JSON.parse(json);
+
+        if (!result.q_allow) return null; // Error or invalid
+        return result;
+    } catch (e) {
+        wasmLogger.error('Geotech calculation failed:', e);
+        return null; // Fallback to TS
+    }
+}
+*/
+
+// ============================================
 // UTILITY FUNCTIONS
 // ============================================
 
@@ -489,3 +541,23 @@ export function createTrapezoidalLoad(
         end_pos: 1.0
     };
 }
+
+// ============================================
+// SERVICE OBJECT EXPORT
+// ============================================
+
+/**
+ * Unified wasmSolver service object for ServiceRegistry
+ */
+export const wasmSolver = {
+    initialize: initSolver,
+    analyze: analyzeStructure,
+    analyzePDelta,
+    analyzeBuckling,
+    // calculateGeotechBearing, // TODO: Not yet implemented in Rust
+    isSolverReady,
+    getSolverInfo,
+    createUniformLoad,
+    createTriangularLoad,
+    createTrapezoidalLoad,
+};

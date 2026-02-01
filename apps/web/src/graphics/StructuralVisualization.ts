@@ -1083,16 +1083,4 @@ export class ReactionVisualizer {
 // EXPORT
 // ============================================
 
-export {
-  DiagramGenerator,
-  DeflectedShapeVisualizer,
-  LoadVisualizer,
-  ReactionVisualizer
-};
 
-export default {
-  DiagramGenerator,
-  DeflectedShapeVisualizer,
-  LoadVisualizer,
-  ReactionVisualizer
-};

@@ -206,15 +206,13 @@ export const InteractiveDemo: FC = () => {
               <button
                 key={demo.id}
                 onClick={() => setActiveDemo(demo.id)}
-                className={`w-full text-left p-4 rounded-xl transition-all ${
-                  activeDemo === demo.id
+                className={`w-full text-left p-4 rounded-xl transition-all ${activeDemo === demo.id
                     ? 'bg-blue-500/20 border-2 border-blue-500'
                     : 'bg-slate-900 border-2 border-slate-800 hover:border-slate-700'
-                }`}
+                  }`}
               >
-                <h4 className={`font-semibold mb-1 ${
-                  activeDemo === demo.id ? 'text-blue-400' : 'text-white'
-                }`}>
+                <h4 className={`font-semibold mb-1 ${activeDemo === demo.id ? 'text-blue-400' : 'text-white'
+                  }`}>
                   {demo.title}
                 </h4>
                 <p className="text-sm text-slate-400">{demo.description}</p>
@@ -272,21 +270,24 @@ export const Testimonials: FC = () => {
       author: "Priya Sharma",
       role: "Senior Structural Engineer",
       company: "Thornton Tomasetti India",
-      avatar: "PS"
+      avatar: "PS",
+      gradient: "from-pink-500 to-rose-500"
     },
     {
       quote: "Finally, a structural analysis tool that feels modern. The AI assistant alone has saved me hours on every project.",
       author: "James Chen",
       role: "Principal Engineer",
       company: "Arup Singapore",
-      avatar: "JC"
+      avatar: "JC",
+      gradient: "from-blue-500 to-cyan-500"
     },
     {
       quote: "We switched from ETABS and haven't looked back. The browser-based approach makes our remote team incredibly efficient.",
       author: "Maria Rodriguez",
       role: "Structural Lead",
       company: "WSP Mexico",
-      avatar: "MR"
+      avatar: "MR",
+      gradient: "from-emerald-500 to-teal-500"
     }
   ];
 
@@ -310,17 +311,20 @@ export const Testimonials: FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="p-6 rounded-2xl bg-slate-900 border border-slate-800"
+              className="group p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 hover:bg-slate-800/50 transition-all duration-300 hover-lift"
             >
               <div className="flex gap-1 mb-4">
                 {[...Array(5)].map((_, j) => (
-                  <Sparkles key={j} className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                  <Sparkles key={j} className="w-4 h-4 text-yellow-400 fill-yellow-400 group-hover:scale-110 transition-transform" style={{ transitionDelay: `${j * 50}ms` }} />
                 ))}
               </div>
               <p className="text-slate-300 mb-6 leading-relaxed">"{t.quote}"</p>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
-                  {t.avatar}
+                <div className={`relative w-12 h-12`}>
+                  <div className={`absolute inset-0 rounded-full bg-gradient-to-r ${t.gradient} blur-sm opacity-50 group-hover:opacity-100 transition-opacity`} />
+                  <div className={`relative w-12 h-12 rounded-full bg-gradient-to-r ${t.gradient} flex items-center justify-center text-white font-bold text-sm ring-2 ring-slate-800`}>
+                    {t.avatar}
+                  </div>
                 </div>
                 <div>
                   <p className="font-medium text-white">{t.author}</p>
@@ -384,7 +388,7 @@ export const CTABanner: FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =>
   <section className="py-20 relative overflow-hidden">
     <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-blue-600/20" />
     <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
-    
+
     <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -397,7 +401,7 @@ export const CTABanner: FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =>
         <p className="text-xl text-slate-300 mb-10 max-w-2xl mx-auto">
           Join 300,000+ engineers who've already made the switch. Start free, no credit card required.
         </p>
-        
+
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <button
             onClick={onGetStarted}
@@ -409,7 +413,7 @@ export const CTABanner: FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =>
             Schedule Demo
           </button>
         </div>
-        
+
         <p className="text-slate-500 text-sm mt-6">
           14-day Pro trial included • No credit card • Cancel anytime
         </p>

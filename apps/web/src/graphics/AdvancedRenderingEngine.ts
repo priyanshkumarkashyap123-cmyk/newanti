@@ -18,15 +18,24 @@
  */
 
 import * as THREE from 'three';
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
-import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass';
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
-import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass';
-import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
-import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader';
-import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectionShader';
+// @ts-ignore - Three.js postprocessing types may not be perfectly typed
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+// @ts-ignore
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+// @ts-ignore
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+// @ts-ignore
+import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass.js';
+// @ts-ignore
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+// @ts-ignore
+import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js';
+// @ts-ignore
+import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
+// @ts-ignore
+import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
+// @ts-ignore
+import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectionShader.js';
 
 // ============================================
 // TYPE DEFINITIONS

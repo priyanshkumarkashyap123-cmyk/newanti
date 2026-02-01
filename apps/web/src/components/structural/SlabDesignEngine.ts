@@ -20,52 +20,56 @@ import type { CalculationResult, CalculationStep, CodeCheck } from './Structural
 // CONSTANTS
 // ============================================================================
 
-/** Bending moment coefficients for two-way slabs - IS 456 Table 26 */
+/** 
+ * Bending moment coefficients for two-way slabs - IS 456 Table 26
+ * Values are for ly/lx = 1.0, use interpolation for other ratios
+ * αx and αy: Mx = αx × w × lx², My = αy × w × lx²
+ */
 const TWO_WAY_COEFFICIENTS: Record<string, {
   alphaX_neg: number; alphaX_pos: number;
   alphaY_neg: number; alphaY_pos: number;
 }> = {
-  // Interior panel
+  // Case 1: Interior panel (all edges continuous)
   'interior': {
     alphaX_neg: 0.032, alphaX_pos: 0.024,
     alphaY_neg: 0.032, alphaY_pos: 0.024,
   },
-  // One short edge discontinuous
+  // Case 2: One short edge discontinuous
   'one_short_discont': {
     alphaX_neg: 0.037, alphaX_pos: 0.028,
     alphaY_neg: 0.037, alphaY_pos: 0.028,
   },
-  // One long edge discontinuous
+  // Case 3: One long edge discontinuous
   'one_long_discont': {
     alphaX_neg: 0.037, alphaX_pos: 0.028,
     alphaY_neg: 0.037, alphaY_pos: 0.028,
   },
-  // Two adjacent edges discontinuous
+  // Case 4: Two adjacent edges discontinuous
   'two_adjacent_discont': {
     alphaX_neg: 0.047, alphaX_pos: 0.035,
     alphaY_neg: 0.047, alphaY_pos: 0.035,
   },
-  // Two short edges discontinuous
+  // Case 5: Two short edges discontinuous
   'two_short_discont': {
     alphaX_neg: 0.045, alphaX_pos: 0.035,
-    alphaY_neg: 0.045, alphaY_pos: 0.035,
+    alphaY_neg: 0.000, alphaY_pos: 0.035,  // No negative moment on discontinuous edge
   },
-  // Two long edges discontinuous
+  // Case 6: Two long edges discontinuous
   'two_long_discont': {
-    alphaX_neg: 0.045, alphaX_pos: 0.035,
+    alphaX_neg: 0.000, alphaX_pos: 0.035,  // No negative moment on discontinuous edge
     alphaY_neg: 0.045, alphaY_pos: 0.035,
   },
-  // Three edges discontinuous (one long continuous)
+  // Case 7: Three edges discontinuous (one long edge continuous)
   'three_discont_long': {
     alphaX_neg: 0.057, alphaX_pos: 0.043,
-    alphaY_neg: 0.057, alphaY_pos: 0.043,
+    alphaY_neg: 0.000, alphaY_pos: 0.043,
   },
-  // Three edges discontinuous (one short continuous)
+  // Case 8: Three edges discontinuous (one short edge continuous)
   'three_discont_short': {
-    alphaX_neg: 0.057, alphaX_pos: 0.043,
+    alphaX_neg: 0.000, alphaX_pos: 0.043,
     alphaY_neg: 0.057, alphaY_pos: 0.043,
   },
-  // Four edges discontinuous (simply supported)
+  // Case 9: Four edges discontinuous (simply supported)
   'all_discont': {
     alphaX_neg: 0.000, alphaX_pos: 0.056,
     alphaY_neg: 0.000, alphaY_pos: 0.056,

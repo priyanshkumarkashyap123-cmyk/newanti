@@ -163,6 +163,12 @@ export const CalculationReport: React.FC<CalculationReportProps> = ({
     IS_1905: { name: 'IS 1905:1987', title: 'Structural Use of Unreinforced Masonry' },
     IS_883: { name: 'IS 883:1994', title: 'Design of Structural Timber in Building' },
     IS_2911: { name: 'IS 2911', title: 'Design and Construction of Pile Foundations' },
+    ACI_318: { name: 'ACI 318-19', title: 'Building Code Requirements for Structural Concrete' },
+    AISC_360: { name: 'AISC 360-22', title: 'Specification for Structural Steel Buildings' },
+    ASCE_7: { name: 'ASCE 7-22', title: 'Minimum Design Loads for Buildings' },
+    EC2: { name: 'EN 1992-1-1', title: 'Eurocode 2: Design of Concrete Structures' },
+    EC3: { name: 'EN 1993-1-1', title: 'Eurocode 3: Design of Steel Structures' },
+    EC8: { name: 'EN 1998-1', title: 'Eurocode 8: Design of Structures for Earthquake Resistance' },
   }[designCode] || { name: designCode, title: '' };
   
   const calcTypeInfo = {
@@ -171,6 +177,28 @@ export const CalculationReport: React.FC<CalculationReportProps> = ({
     slab_design: 'RC Slab Design',
     steel_beam: 'Steel Beam Design',
     steel_column: 'Steel Column Design',
+    base_plate: 'Base Plate Design',
+    bolted_connection: 'Bolted Connection Design',
+    combined_footing: 'Combined Footing Design',
+    connection: 'Connection Design',
+    continuous_beam: 'Continuous Beam Analysis',
+    deflection_analysis: 'Deflection Analysis',
+    foundation: 'Foundation Design',
+    influence_line: 'Influence Line Analysis',
+    isolated_footing: 'Isolated Footing Design',
+    load_combination: 'Load Combination',
+    masonry_wall: 'Masonry Wall Design',
+    pile: 'Pile Design',
+    portal_frame: 'Portal Frame Analysis',
+    prestressed_beam: 'Prestressed Concrete Beam',
+    retaining_wall: 'Retaining Wall Design',
+    seismic_analysis: 'Seismic Analysis',
+    seismic_equivalent_static: 'Equivalent Static Seismic Analysis',
+    seismic_response_spectrum: 'Response Spectrum Analysis',
+    shear_wall: 'Shear Wall Design',
+    timber_beam: 'Timber Beam Design',
+    welded_connection: 'Welded Connection Design',
+    wind_load: 'Wind Load Analysis',
   }[calculationType] || calculationType;
   
   return (

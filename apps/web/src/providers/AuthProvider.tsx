@@ -11,12 +11,14 @@
 
 import React, { createContext, useContext, useCallback, useMemo, ReactNode } from 'react';
 import { ClerkProvider, useAuth as useClerkAuth, useUser as useClerkUser, SignIn, SignUp } from '@clerk/clerk-react';
+import { AUTH_CONFIG } from '../config/env';
+import { authLogger } from '../utils/logger';
 
 // ============================================
 // CONFIGURATION
 // ============================================
 
-const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const CLERK_KEY = AUTH_CONFIG.clerkPublishableKey;
 
 // Fail fast with a clear UI if the publishable key is missing
 const MissingClerkKey: React.FC = () => (
@@ -37,10 +39,10 @@ const MissingClerkKey: React.FC = () => (
 );
 
 if (!CLERK_KEY) {
-    console.error('❌ VITE_CLERK_PUBLISHABLE_KEY is required!');
+    authLogger.error('VITE_CLERK_PUBLISHABLE_KEY is required!');
 }
 
-console.log('🔐 Auth Mode: Clerk');
+authLogger.info('Auth Mode: Clerk');
 
 // ============================================
 // UNIFIED AUTH CONTEXT TYPE

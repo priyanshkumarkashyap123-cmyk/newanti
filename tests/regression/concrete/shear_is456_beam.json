@@ -1,0 +1,25 @@
+{
+  "id": "rc_shear_is456_beam",
+  "name": "RC Beam Shear Design per IS 456",
+  "module": "concrete",
+  "function": "designShearIS456",
+  "designCode": "IS456:2000",
+  "inputs": {
+    "b": 300,
+    "d": 550,
+    "Vu": 180,
+    "fck": 25,
+    "fy": 415,
+    "Ast": 1570,
+    "stirrupDia": 8
+  },
+  "expected": {
+    "tau_v": { "value": 1.09, "tolerance": 0.02, "unit": "MPa" },
+    "tau_c": { "value": 0.72, "tolerance": 0.02, "unit": "MPa" },
+    "stirrupSpacing": { "value": 175, "tolerance": 10, "unit": "mm" },
+    "status": "REQUIRES_STIRRUPS"
+  },
+  "source": "IS 456:2000 Cl. 40.2, 40.3, 40.4",
+  "createdBy": "BeamLab QA",
+  "createdAt": "2025-01-15"
+}

@@ -16,61 +16,41 @@ import {
     Separator as PanelResizeHandle
 } from 'react-resizable-panels';
 import {
-    Box,
-    Layers,
-    Download,
-    BarChart3,
-    Ruler,
-    PenTool,
-    Wind,
-    Zap,
-    Target,
-    Settings,
-    FileText,
-    Calculator,
-    ChevronLeft,
-    ChevronRight,
-    Grid3X3,
-    FileInput,
-    ScanLine,
-    MousePointer2
-} from 'lucide-react';
-import { useUIStore, Category } from '../store/uiStore';
-// Logo from public folder
-const beamLabLogo = '/branding/logo.png';
+import {
+        Box,
+        Layers,
+        Download,
+        BarChart3,
+        Ruler,
+        PenTool,
+        Wind,
+        Zap,
+        Target,
+        Settings,
+        FileText,
+        Calculator,
+        ChevronLeft,
+        ChevronRight,
+        Grid3X3,
+        FileInput,
+        ScanLine,
+        MousePointer2,
+        HardHat,    // For Civil/Construction
+        Waves,      // For Hydraulics
+        TreePine,   // For Environmental
+        Mountain,   // For Geotech
+        Car         // For Transportation
+    } from 'lucide-react';
 
-// ============================================
-// TYPES
-// ============================================
-
-interface ModernWorkspaceProps {
-    children: ReactNode;
-}
-
-interface TabConfig {
-    id: Category;
-    label: string;
-    icon: ReactNode;
-    color: string;
-}
-
-interface SidebarItem {
-    id: string;
-    label: string;
-    icon: ReactNode;
-    action?: () => void;
-}
-
-// ============================================
-// CONFIGURATION
-// ============================================
+// ... (existing code)
 
 const UMBRELLA_TABS: TabConfig[] = [
     { id: 'MODELING', label: 'Modeling', icon: <Box className="w-4 h-4" />, color: 'blue' },
     { id: 'PROPERTIES', label: 'Properties', icon: <Layers className="w-4 h-4" />, color: 'purple' },
     { id: 'LOADING', label: 'Loading', icon: <Download className="w-4 h-4" />, color: 'orange' },
     { id: 'ANALYSIS', label: 'Analysis', icon: <BarChart3 className="w-4 h-4" />, color: 'green' },
-    { id: 'DESIGN', label: 'Design', icon: <Ruler className="w-4 h-4" />, color: 'red' }
+    { id: 'DESIGN', label: 'Design', icon: <Ruler className="w-4 h-4" />, color: 'red' },
+    { id: 'CIVIL', label: 'Civil', icon: <HardHat className="w-4 h-4" />, color: 'yellow' }
 ];
 
 // Sidebar content per category
@@ -109,6 +89,14 @@ const SIDEBAR_CONTENT: Record<Category, SidebarItem[]> = {
         { id: 'connection', label: 'Connection Design', icon: <Settings className="w-4 h-4" /> },
         { id: 'foundation', label: 'Foundation Design', icon: <Box className="w-4 h-4" /> },
         { id: 'report', label: 'Generate Report', icon: <FileText className="w-4 h-4" /> }
+    ],
+    CIVIL: [
+        { id: 'geotech', label: 'Geotechnical', icon: <Mountain className="w-4 h-4" /> },
+        { id: 'transport', label: 'Transportation', icon: <Car className="w-4 h-4" /> },
+        { id: 'hydraulics', label: 'Hydraulics', icon: <Waves className="w-4 h-4" /> },
+        { id: 'enviro', label: 'Environmental', icon: <TreePine className="w-4 h-4" /> },
+        { id: 'const', label: 'Construction', icon: <HardHat className="w-4 h-4" /> },
+        { id: 'survey', label: 'Surveying', icon: <Ruler className="w-4 h-4" /> }
     ]
 };
 
@@ -391,6 +379,10 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
 
                     <ResizeHandle direction="horizontal" />
 
+                    import CivilPanel from '../components/civil/CivilPanel';
+
+                    // ... (existing code)
+
                     {/* Right Panel - Inspector */}
                     <Panel
                         defaultSize={20}
@@ -398,18 +390,32 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
                         maxSize={35}
                         collapsible
                     >
-                        <InspectorPanel
-                            collapsed={!propertiesPanelOpen}
-                            onToggle={togglePropertiesPanel}
-                        />
+                        {activeCategory === 'CIVIL' ? (
+                            <div className="h-full bg-zinc-900 border-l border-zinc-800">
+                                <CivilPanel />
+                            </div>
+                        ) : (
+                            <InspectorPanel
+                                collapsed={!propertiesPanelOpen}
+                                onToggle={togglePropertiesPanel}
+                            />
+                        )}
                     </Panel>
                 </PanelGroup>
             </div>
 
+            import LearningAssistant from '../components/learning/LearningAssistant';
+
+            // ... (existing code)
+
             {/* Bottom Bar - Status */}
             <StatusBar />
+
+            {/* AI Learning Assistant Overlay */}
+            <LearningAssistant />
         </div>
     );
 };
+
 
 export default ModernWorkspace;

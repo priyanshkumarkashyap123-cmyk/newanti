@@ -3,7 +3,9 @@ from pydantic import BaseModel
 from typing import Dict, Any, Optional, List
 from ai_assistant import AIModelAssistant
 from enhanced_ai_brain import EnhancedAIBrain, get_ai_brain
+from ai_power_module import ai_power_engine, get_quick_actions
 import os
+import time
 
 # Create router
 router = APIRouter(prefix="/ai", tags=["AI Assistant"])
@@ -24,6 +26,12 @@ class SmartModifyRequest(BaseModel):
     model: Dict[str, Any]
     command: str
     context: Optional[Dict[str, Any]] = None
+
+class SuggestionRequest(BaseModel):
+    model: Dict[str, Any]
+    step: str = 'general'
+    analysis_results: Optional[Dict[str, Any]] = None
+
 
 # Helper dependencies
 def get_ai_assistant():
@@ -156,6 +164,216 @@ async def parse_command(request: ModifyRequest, brain: EnhancedAIBrain = Depends
             "entities": parsed.entities,
             "suggestions": parsed.suggestions,
             "raw_text": parsed.raw_text
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/suggest")
+async def suggest_improvements(request: SuggestionRequest, brain: EnhancedAIBrain = Depends(get_enhanced_brain)):
+    """
+    Generate intelligent design suggestions for the model.
+    """
+    try:
+        suggestions = brain.generate_suggestions(
+            model=request.model,
+            step=request.step,
+            analysis_results=request.analysis_results
+        )
+        return {"success": True, "suggestions": suggestions}
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================
+# 🚀 POWER AI ENDPOINTS (C-Suite Approved)
+# ============================================
+
+class ConfidenceRequest(BaseModel):
+    """Request for confidence scoring"""
+    query: str
+    response: str
+    context: Optional[Dict[str, Any]] = None
+
+class ExpertModeRequest(BaseModel):
+    """Request to set expert mode"""
+    mode: str  # assistant, expert, mentor
+
+class FormatRequest(BaseModel):
+    """Request to format response for expert mode"""
+    response: str
+
+
+@router.get("/power/status")
+async def power_ai_status():
+    """
+    Get Power AI system status and capabilities.
+    """
+    return {
+        "status": "operational",
+        "version": "Power AI 1.0",
+        "expert_mode": ai_power_engine.expert_mode.value,
+        "features": [
+            "Confidence scoring",
+            "Expert mode formatting",
+            "Engineering knowledge retrieval",
+            "Performance analytics",
+            "Response caching"
+        ],
+        "metrics": ai_power_engine.get_metrics()
+    }
+
+
+@router.post("/power/confidence")
+async def calculate_confidence(request: ConfidenceRequest):
+    """
+    Calculate confidence score for an AI response.
+    Returns detailed breakdown of confidence factors.
+    """
+    try:
+        start_time = time.time()
+        
+        context = request.context or {}
+        score = ai_power_engine.calculate_confidence(
+            request.query,
+            request.response,
+            context
+        )
+        
+        # Record metrics
+        response_time = (time.time() - start_time) * 1000
+        ai_power_engine.metrics.record_query(
+            response_time,
+            score.overall >= 70,
+            score.overall,
+            "confidence_check"
+        )
+        
+        return {
+            "success": True,
+            "confidence": score.to_dict()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/power/expert-mode")
+async def set_expert_mode(request: ExpertModeRequest):
+    """
+    Set the AI expert mode for response formatting.
+    
+    Modes:
+    - assistant: Full explanations (default)
+    - expert: Concise, key points only
+    - mentor: Educational with learning notes
+    """
+    try:
+        ai_power_engine.set_expert_mode(request.mode)
+        return {
+            "success": True,
+            "mode": ai_power_engine.expert_mode.value,
+            "description": {
+                "assistant": "Full explanations for all users",
+                "expert": "Concise responses for experienced engineers",
+                "mentor": "Educational mode with learning notes"
+            }.get(ai_power_engine.expert_mode.value, "")
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/power/expert-mode")
+async def get_expert_mode():
+    """Get current expert mode setting."""
+    return {
+        "mode": ai_power_engine.expert_mode.value
+    }
+
+
+@router.post("/power/format")
+async def format_response(request: FormatRequest):
+    """
+    Format a response according to current expert mode.
+    """
+    try:
+        formatted = ai_power_engine.format_response(request.response)
+        return {
+            "success": True,
+            "formatted": formatted,
+            "mode": ai_power_engine.expert_mode.value
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/power/quick-actions")
+async def get_power_quick_actions():
+    """
+    Get list of quick action templates.
+    """
+    return {
+        "success": True,
+        "actions": get_quick_actions()
+    }
+
+
+@router.get("/power/metrics")
+async def get_power_metrics():
+    """
+    Get AI performance metrics for dashboard.
+    """
+    return {
+        "success": True,
+        "metrics": ai_power_engine.get_metrics()
+    }
+
+
+class EngineeringContextRequest(BaseModel):
+    """Request for engineering context"""
+    query: str
+
+@router.post("/power/context")
+async def get_engineering_context(request: EngineeringContextRequest):
+    """
+    Get enriched engineering context for a query.
+    Useful for understanding what codes and checks are relevant.
+    """
+    try:
+        context = ai_power_engine.get_engineering_context(request.query)
+        return {
+            "success": True,
+            "context": {
+                "structureType": context.structure_type,
+                "loadingConditions": context.loading_conditions,
+                "designCodes": context.design_codes,
+                "criticalFactors": context.critical_factors,
+                "riskLevel": context.risk_level,
+                "recommendations": context.recommendations
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class CodeProvisionRequest(BaseModel):
+    """Request for code provisions"""
+    code: str
+    topic: Optional[str] = None
+
+@router.post("/power/code-provisions")
+async def get_code_provisions(request: CodeProvisionRequest):
+    """
+    Get specific code provisions and formulas.
+    """
+    try:
+        provisions = ai_power_engine.get_code_provisions(
+            request.code,
+            request.topic or ""
+        )
+        return {
+            "success": True,
+            "provisions": provisions
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

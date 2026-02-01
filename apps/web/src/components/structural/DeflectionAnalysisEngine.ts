@@ -661,7 +661,16 @@ export function analyzeDeflection(input: DeflectionAnalysisInput): DeflectionAna
   // Recommended precamber
   const recommendedPrecamber = immediateDeadLoad + longTermCreep * 0.5;
   
+  const isAdequate = deflectionStatus === 'OK';
+  
   return {
+    // Base CalculationResult properties
+    isAdequate,
+    utilization: utilizationRatio,
+    capacity: allowableDeflection,
+    demand: totalDeflection,
+    status: deflectionStatus === 'MARGINAL' ? 'WARNING' : (deflectionStatus === 'OK' ? 'OK' : 'FAIL'),
+    message: isAdequate ? 'Deflection within limits' : 'Deflection exceeds allowable limit',
     summary: {
       'Section': `${b} × ${D} mm`,
       'Span': `${(span / 1000).toFixed(2)} m`,
@@ -788,13 +797,4 @@ export function checkSpanDepthRatio(input: SpanDepthInput): SpanDepthResult {
   };
 }
 
-// ============================================================================
-// EXPORTS
-// ============================================================================
-
-export {
-  getConcreteProperties,
-  analyzeCrackedSection,
-  calculateEffectiveMoI,
-  calculateMaxDeflection,
-};
+// All functions are already exported with 'export function' declarations above

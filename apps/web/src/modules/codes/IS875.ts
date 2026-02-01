@@ -525,15 +525,19 @@ export function calculateWindLoadIS875(input: WindLoadInputIS875): WindLoadResul
     throw new Error('Either location or basicWindSpeed must be provided');
   }
   
+  const valuesForStep1: Record<string, { value: string | number; unit?: string; description?: string }> = {
+    'Vb': { value: Vb, unit: 'm/s', description: '3-second gust wind speed' },
+  };
+  if (location) {
+    valuesForStep1['Location'] = { value: location };
+  }
+  
   calculations.push(createCalculationStep({
     step: stepNo++,
     title: 'Basic Wind Speed',
     description: 'Determine basic wind speed from IS 875 Part 3 map or Table',
     formula: 'Vb from Appendix A (Fig 1)',
-    values: {
-      'Location': location ? { value: location } : undefined,
-      'Vb': { value: Vb, unit: 'm/s', description: '3-second gust wind speed' },
-    },
+    values: valuesForStep1,
     result: { value: Vb, unit: 'm/s', description: 'Basic wind speed' },
     code: DesignCode.IS_875_3,
     clause: '5.2',
@@ -648,7 +652,6 @@ export function calculateWindLoadIS875(input: WindLoadInputIS875): WindLoadResul
     title: 'Design Wind Pressure',
     description: 'Calculate design wind pressure',
     formula: 'pz = 0.6 × Vz²',
-    formulaLatex: 'p_z = 0.6 \\times V_z^2',
     values: {
       'Vz': { value: Vz, unit: 'm/s' },
     },

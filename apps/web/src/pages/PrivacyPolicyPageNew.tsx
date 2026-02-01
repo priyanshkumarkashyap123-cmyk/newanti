@@ -533,3 +533,5 @@ export const PrivacyPolicyPageNew = () => {
         </div>
     );
 };
+
+export default PrivacyPolicyPageNew;

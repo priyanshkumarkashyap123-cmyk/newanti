@@ -910,20 +910,4 @@ export class ResultTableGenerator {
   }
 }
 
-// ============================================
-// EXPORT
-// ============================================
-
-export {
-  StressContourRenderer,
-  UtilizationRenderer,
-  ModeShapeAnimator,
-  ResultTableGenerator
-};
-
-export default {
-  StressContourRenderer,
-  UtilizationRenderer,
-  ModeShapeAnimator,
-  ResultTableGenerator
-};
+// All classes are exported with 'export class' declarations above

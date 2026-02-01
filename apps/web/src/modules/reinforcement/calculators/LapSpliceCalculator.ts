@@ -471,7 +471,7 @@ export class LapSpliceCalculator {
         return this.calculateACI(input);
       case ConcreteDesignCode.EUROCODE_2:
         return this.calculateEC2(input);
-      case ConcreteDesignCode.IS_456:
+      case ConcreteDesignCode.IS_456_2000:
         return this.calculateIS456(input);
       default:
         return this.calculateACI(input);
@@ -482,141 +482,115 @@ export class LapSpliceCalculator {
    * Calculate lap splice per ACI 318-19
    */
   private calculateACI(input: LapSpliceInput): LapSpliceResult {
-    const isMetric = input.barDiameter > 2;
+    const db = input.bar.diameter;
+    const isMetric = db > 2;
     
     // Convert to US units if needed
-    let fc: number, fy: number, db: number, cover: number, spacing: number;
+    let fc: number, fy: number, cover: number, spacing: number;
     
     if (isMetric) {
-      fc = input.concrete.fc * 145.038;
-      fy = input.rebar.fy * 145.038;
-      db = input.barDiameter / 25.4;
-      cover = input.clearCover / 25.4;
-      spacing = input.barSpacing / 25.4;
+      fc = input.concrete.compressiveStrength * 145.038;
+      fy = input.bar.yieldStrength * 145.038;
+      cover = input.cover / 25.4;
+      spacing = input.clearSpacing / 25.4;
     } else {
-      fc = input.concrete.fc;
-      fy = input.rebar.fy;
-      db = input.barDiameter;
-      cover = input.clearCover;
-      spacing = input.barSpacing;
+      fc = input.concrete.compressiveStrength;
+      fy = input.bar.yieldStrength;
+      cover = input.cover;
+      spacing = input.clearSpacing;
     }
     
     const isEpoxyCoated = input.coating === BarCoating.EPOXY_COATED;
-    const percentSpliced = input.percentSplicedAtSection || 100;
+    const percentSpliced = input.percentSpliced || 100;
+    const dbInches = isMetric ? db / 25.4 : db;
     
-    // Determine splice class
+    // Determine splice class - use provided spliceClass or calculate
     const classification = this.aciCalc.determineSpliceClass(
-      input.AsProvided || 1,
-      input.AsRequired || 1,
+      1, // Default ratio if not provided
+      1,
       percentSpliced
     );
     
-    let result: LapSpliceResult;
+    const isTopBar = input.barLocation === 'TOP';
+    const isTension = input.stressType === 'TENSION';
     
-    if (input.spliceType === 'tension') {
+    if (isTension) {
       const tensionResult = this.aciCalc.calculateTensionSplice(
-        fc, fy, db, cover, spacing,
-        classification.spliceClass,
-        input.isTopBar || false,
+        fc, fy, dbInches, cover, spacing,
+        input.spliceClass || classification.spliceClass,
+        isTopBar,
         isEpoxyCoated,
         false,
-        input.hasConfiningReinf || false
+        input.hasTransverseReinf || false
       );
       
       const lapLength = isMetric ? tensionResult.lst * 25.4 : tensionResult.lst;
       const devLength = isMetric ? tensionResult.ldRequired * 25.4 : tensionResult.ldRequired;
       
-      result = {
-        designCode: input.designCode,
-        spliceType: 'tension',
-        spliceClass: classification.spliceClass,
-        barSize: input.barSize,
-        barDiameter: input.barDiameter,
-        lapSpliceLength: lapLength,
+      const result: LapSpliceResult = {
+        requiredLength: lapLength,
+        minimumLength: Math.max(lapLength, isMetric ? 300 : 12),
         developmentLength: devLength,
         spliceMultiplier: tensionResult.multiplier,
-        modificationFactors: tensionResult.factors,
-        percentSplicedAtSection: percentSpliced,
-        classificationReason: classification.reason
+        factors: Object.entries(tensionResult.factors).map(([name, value]) => ({
+          name,
+          value: value as number,
+          description: `Factor ${name}`
+        })),
+        staggerRequirements: {
+          minStagger: lapLength * 1.3,
+          maxPercentAtLocation: 50
+        },
+        calculations: [],
+        codeReference: 'ACI 318-19 Section 25.5.2'
       };
       
-      // Non-contact splice if applicable
-      if (input.isNonContact && input.clearSpaceBetweenBars) {
-        const clearSpace = isMetric ? input.clearSpaceBetweenBars / 25.4 : input.clearSpaceBetweenBars;
-        const nonContactResult = this.aciCalc.calculateNonContactSplice(
-          tensionResult.lst,
-          clearSpace,
-          0 // Simplified
-        );
-        
-        if (nonContactResult.isPermitted) {
-          const additionalLength = isMetric 
-            ? nonContactResult.additionalLength * 25.4 
-            : nonContactResult.additionalLength;
-          result.lapSpliceLength += additionalLength;
-          result.nonContactRequirements = nonContactResult.requirements;
-        } else {
-          result.warnings = nonContactResult.requirements;
-        }
-      }
+      return result;
       
     } else {
       // Compression splice
-      const compResult = this.aciCalc.calculateCompressionSplice(fc, fy, db);
+      const compResult = this.aciCalc.calculateCompressionSplice(fc, fy, dbInches);
       
-      result = {
-        designCode: input.designCode,
-        spliceType: 'compression',
-        spliceClass: LapSpliceClass.COMPRESSION,
-        barSize: input.barSize,
-        barDiameter: input.barDiameter,
-        lapSpliceLength: isMetric ? compResult.lsc * 25.4 : compResult.lsc,
+      const result: LapSpliceResult = {
+        requiredLength: isMetric ? compResult.lsc * 25.4 : compResult.lsc,
+        minimumLength: isMetric ? compResult.lsc * 25.4 : compResult.lsc,
         developmentLength: isMetric ? compResult.ldcRequired * 25.4 : compResult.ldcRequired,
         spliceMultiplier: 1.0,
-        percentSplicedAtSection: percentSpliced,
-        equation: compResult.equation
+        factors: [],
+        compressionSplice: {
+          basicLength: isMetric ? compResult.lsc * 25.4 : compResult.lsc,
+          endBearingAllowed: true
+        },
+        staggerRequirements: {
+          minStagger: 0,
+          maxPercentAtLocation: 100
+        },
+        calculations: [],
+        codeReference: 'ACI 318-19 Section 25.5.5'
       };
+      
+      return result;
     }
-    
-    // Bundled bar adjustments
-    if (input.bundleSize && input.bundleSize > 1) {
-      const bundleResult = this.aciCalc.calculateBundledBarSplice(
-        result.lapSpliceLength,
-        input.bundleSize,
-        input.barDiameter
-      );
-      result.lapSpliceLength = bundleResult.bundleSpliceLength;
-      result.bundledBarNotes = bundleResult.notes;
-      result.staggerRequirement = bundleResult.staggerRequirement;
-    }
-    
-    // Minimum length
-    result.minimumLength = Math.max(result.lapSpliceLength, isMetric ? 300 : 12);
-    
-    // Generate recommendations
-    result.recommendations = this.generateRecommendations(input, result);
-    
-    return result;
   }
 
   /**
    * Calculate lap splice per Eurocode 2
    */
   private calculateEC2(input: LapSpliceInput): LapSpliceResult {
-    const fck = input.concrete.fc;
-    const fyk = input.rebar.fy;
-    const db = input.barDiameter;
-    const cover = input.clearCover;
-    const spacing = input.barSpacing;
-    const percentSpliced = input.percentSplicedAtSection || 100;
+    const fck = input.concrete.compressiveStrength;
+    const fyk = input.bar.yieldStrength;
+    const db = input.bar.diameter;
+    const cover = input.cover;
+    const spacing = input.clearSpacing;
+    const percentSpliced = input.percentSpliced || 100;
     
-    const bondCondition = input.isTopBar ? 'poor' : 'good';
+    const bondCondition = input.barLocation === 'TOP' ? 'poor' : 'good';
     
     const lapResult = this.ec2Calc.calculateLapLength(
       fck, fyk, db, cover, spacing,
       percentSpliced,
       bondCondition,
-      input.hasConfiningReinf || false
+      input.hasTransverseReinf || false
     );
     
     // Transverse reinforcement requirements
@@ -624,30 +598,23 @@ export class LapSpliceCalculator {
       db, lapResult.l0, percentSpliced
     );
     
-    // Determine splice class based on percentage
-    let spliceClass: LapSpliceClass;
-    if (percentSpliced <= 25) {
-      spliceClass = LapSpliceClass.CLASS_A;
-    } else {
-      spliceClass = LapSpliceClass.CLASS_B;
-    }
-    
     const result: LapSpliceResult = {
-      designCode: input.designCode,
-      spliceType: input.spliceType,
-      spliceClass,
-      barSize: input.barSize,
-      barDiameter: db,
-      lapSpliceLength: lapResult.l0,
+      requiredLength: lapResult.l0,
+      minimumLength: Math.max(0.3 * lapResult.alpha6 * lapResult.lbRqd, 15 * db, 200),
       developmentLength: lapResult.lbRqd,
       spliceMultiplier: lapResult.alpha6,
-      modificationFactors: lapResult.factors,
-      percentSplicedAtSection: percentSpliced,
-      transverseRequirements: transverseReq,
-      minimumLength: Math.max(0.3 * lapResult.alpha6 * lapResult.lbRqd, 15 * db, 200)
+      factors: Object.entries(lapResult.factors || {}).map(([name, value]) => ({
+        name,
+        value: value as number,
+        description: `EC2 factor ${name}`
+      })),
+      staggerRequirements: {
+        minStagger: lapResult.l0 * 0.3,
+        maxPercentAtLocation: 50
+      },
+      calculations: [],
+      codeReference: 'EN 1992-1-1 Section 8.7'
     };
-    
-    result.recommendations = this.generateRecommendations(input, result);
     
     return result;
   }
@@ -656,14 +623,16 @@ export class LapSpliceCalculator {
    * Calculate lap splice per IS 456
    */
   private calculateIS456(input: LapSpliceInput): LapSpliceResult {
-    const fck = input.concrete.fc;
-    const fy = input.rebar.fy;
-    const db = input.barDiameter;
-    const percentSpliced = input.percentSplicedAtSection || 100;
+    const fck = input.concrete.compressiveStrength;
+    const fy = input.bar.yieldStrength;
+    const db = input.bar.diameter;
+    const percentSpliced = input.percentSpliced || 100;
+    
+    const spliceType = input.stressType === 'TENSION' ? 'tension' : 'compression';
     
     const lapResult = this.is456Calc.calculateLapLength(
       fck, fy, db,
-      input.spliceType,
+      spliceType,
       'deformed',
       percentSpliced
     );
@@ -671,29 +640,23 @@ export class LapSpliceCalculator {
     // Staggering requirements
     const staggerReq = this.is456Calc.calculateStaggeringRequirement(
       lapResult.Ls,
-      input.barSpacing,
-      input.memberWidth || 300
+      input.clearSpacing,
+      300 // Default member width
     );
     
     const result: LapSpliceResult = {
-      designCode: input.designCode,
-      spliceType: input.spliceType,
-      spliceClass: percentSpliced <= 50 ? LapSpliceClass.CLASS_A : LapSpliceClass.CLASS_B,
-      barSize: input.barSize,
-      barDiameter: db,
-      lapSpliceLength: lapResult.Ls,
+      requiredLength: lapResult.Ls,
+      minimumLength: spliceType === 'tension' ? 30 * db : 24 * db,
       developmentLength: lapResult.Ld,
       spliceMultiplier: lapResult.multiplier,
-      percentSplicedAtSection: percentSpliced,
-      equation: lapResult.equation,
-      staggerRequirement: staggerReq.staggerDistance,
-      minimumLength: input.spliceType === 'tension' ? 30 * db : 24 * db
+      factors: [],
+      staggerRequirements: {
+        minStagger: staggerReq.staggerDistance,
+        maxPercentAtLocation: 50
+      },
+      calculations: [],
+      codeReference: 'IS 456:2000 Clause 26.2.5'
     };
-    
-    result.recommendations = [
-      ...staggerReq.requirements,
-      ...this.generateRecommendations(input, result)
-    ];
     
     return result;
   }
@@ -706,14 +669,15 @@ export class LapSpliceCalculator {
     result: LapSpliceResult
   ): string[] {
     const recommendations: string[] = [];
+    const db = input.bar.diameter;
     
     // Percentage spliced warning
-    if ((input.percentSplicedAtSection || 100) > 50) {
+    if ((input.percentSpliced || 100) > 50) {
       recommendations.push('⚠️ More than 50% bars spliced at section - consider staggering.');
     }
     
     // Large bar warning
-    if (input.barDiameter >= 32 || (input.barDiameter >= 1.27 && input.barDiameter <= 2)) {
+    if (db >= 32 || (db >= 1.27 && db <= 2)) {
       recommendations.push('Large bars may require mechanical or welded splices.');
     }
     
@@ -724,17 +688,12 @@ export class LapSpliceCalculator {
     }
     
     // Alternative splice suggestion for long laps
-    if (result.lapSpliceLength > 60 * input.barDiameter) {
+    if (result.requiredLength > 60 * db) {
       recommendations.push('Consider mechanical splices (Type 1 or Type 2) to reduce congestion.');
     }
     
-    // Contact splice preferred
-    if (input.isNonContact) {
-      recommendations.push('Contact splices preferred when feasible for better force transfer.');
-    }
-    
     // Flexure splice location
-    if (input.spliceType === 'tension') {
+    if (input.stressType === 'TENSION') {
       recommendations.push('Locate tension splices away from regions of maximum stress.');
     }
     
@@ -805,37 +764,63 @@ export class LapSpliceCalculator {
     
     const barData = isMetric ? METRIC_BAR_DATA : US_BAR_DATA;
     
-    for (const [size, data] of Object.entries(barData)) {
-      const input: LapSpliceInput = {
+    for (const data of barData) {
+      const diameter = isMetric ? data.diameter_mm : data.diameter_in;
+      const area = isMetric ? data.area_mm2 : data.area_in2;
+      const weight = isMetric ? data.weight_kg_m : data.weight_lb_ft;
+      
+      const baseInput: LapSpliceInput = {
         designCode,
-        spliceType: 'tension',
-        barSize: size,
-        barDiameter: data.diameter,
-        concrete: { fc } as ConcreteProperties,
-        rebar: { fy } as RebarProperties,
-        clearCover: cover,
-        barSpacing: 3 * data.diameter,
-        percentSplicedAtSection: 25 // For Class A
+        bar: {
+          size: data.size,
+          diameter: diameter,
+          area: area,
+          perimeter: data.perimeter_mm,
+          unitWeight: weight,
+          grade: RebarGrade.GRADE_60,
+          yieldStrength: fy,
+          ultimateStrength: fy * 1.25,
+          elasticModulus: 200000,
+          coating: BarCoating.UNCOATED
+        },
+        concrete: {
+          compressiveStrength: fc,
+          grade: `C${fc}`,
+          elasticModulus: 4700 * Math.sqrt(fc),
+          tensileStrength: 0.62 * Math.sqrt(fc),
+          density: 2400,
+          aggregateType: 'NORMAL',
+          maxAggregateSize: 20,
+          unitSystem: isMetric ? 'SI' : 'IMPERIAL'
+        },
+        spliceClass: LapSpliceClass.CLASS_A,
+        percentSpliced: 25,
+        barLocation: 'BOTTOM',
+        coating: BarCoating.UNCOATED,
+        cover: cover,
+        clearSpacing: 3 * diameter,
+        hasTransverseReinf: false,
+        memberType: MemberType.BEAM,
+        stressType: 'TENSION'
       };
       
-      // Class A tension splice
-      input.percentSplicedAtSection = 25;
-      const classAResult = this.calculate(input);
+      // Class A tension splice (25% spliced)
+      const classAResult = this.calculate(baseInput);
       
-      // Class B tension splice
-      input.percentSplicedAtSection = 100;
-      const classBResult = this.calculate(input);
+      // Class B tension splice (100% spliced)
+      const classBInput = { ...baseInput, percentSpliced: 100, spliceClass: LapSpliceClass.CLASS_B };
+      const classBResult = this.calculate(classBInput);
       
       // Compression splice
-      input.spliceType = 'compression';
-      const compResult = this.calculate(input);
+      const compInput = { ...baseInput, stressType: 'COMPRESSION' as const };
+      const compResult = this.calculate(compInput);
       
       schedule.push({
-        barSize: size,
-        diameter: data.diameter,
-        tensionClassA: Math.ceil(classAResult.lapSpliceLength),
-        tensionClassB: Math.ceil(classBResult.lapSpliceLength),
-        compression: Math.ceil(compResult.lapSpliceLength)
+        barSize: data.size,
+        diameter: diameter,
+        tensionClassA: Math.ceil(classAResult.requiredLength),
+        tensionClassB: Math.ceil(classBResult.requiredLength),
+        compression: Math.ceil(compResult.requiredLength)
       });
     }
     

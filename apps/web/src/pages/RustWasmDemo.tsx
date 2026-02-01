@@ -10,11 +10,12 @@
 import { FC, useState, useEffect } from 'react';
 import { WgpuCanvas } from '../components/viewer/WgpuCanvas';
 import { WasmPerformanceDemo } from '../components/WasmPerformanceDemo';
+import { Phase52Benchmark } from '../components/Phase52Benchmark';
 import { useUIStore } from '../store/uiStore';
-import { Zap, Cpu, Activity, Info } from 'lucide-react';
+import { Zap, Cpu, Activity, Info, FlaskConical } from 'lucide-react';
 
 export const RustWasmDemo: FC = () => {
-    const [activeTab, setActiveTab] = useState<'solver' | 'renderer'>('solver');
+    const [activeTab, setActiveTab] = useState<'solver' | 'renderer' | 'phase52'>('solver');
     const useWebGpu = useUIStore(state => state.useWebGpu);
     const setUseWebGpu = useUIStore(state => state.setUseWebGpu);
 
@@ -65,6 +66,16 @@ export const RustWasmDemo: FC = () => {
                     >
                         <Zap className="w-5 h-5" />
                         WebGPU Rendering
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('phase52')}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${activeTab === 'phase52'
+                                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/50'
+                                : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
+                            }`}
+                    >
+                        <FlaskConical className="w-5 h-5" />
+                        Phase 52 (Advanced)
                     </button>
                 </div>
 
@@ -188,6 +199,20 @@ export const RustWasmDemo: FC = () => {
                                 The app automatically falls back to WebGL for maximum compatibility.
                             </div>
                         </div>
+                    </div>
+                )}
+
+                {activeTab === 'phase52' && (
+                    <div className="space-y-6">
+                        <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4 flex items-start gap-3">
+                            <Info className="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0" />
+                            <div className="text-sm text-purple-200">
+                                <strong>Industry Parity Features:</strong> This section demonstrates the Phase 52 integration modules.
+                                These run the exact same math kernels as ANSYS/ABAQUS (HHT-α, MacNeal-Harder) directly in your browser via WASM.
+                            </div>
+                        </div>
+
+                        <Phase52Benchmark />
                     </div>
                 )}
             </div>

@@ -17,7 +17,7 @@
  */
 
 // Layout & Navigation
-export { DockablePanel, DockProvider, useDock } from './DockablePanel';
+export { DockablePanel, DockProvider, useDockContext, DockContainer, PanelTabBar, FloatingPanel } from './DockablePanel';
 export type { PanelConfig, DockPosition, PanelState, DockState } from './DockablePanel';
 
 export { default as ProfessionalRibbon } from './ProfessionalRibbon';

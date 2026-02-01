@@ -137,7 +137,7 @@ export class PileCapacityCalculator {
     // Calculate shaft friction for each layer
     let Qs = 0;
     const Qs_byLayer: { layer: number; Qs: number }[] = [];
-    let cumulativeDepth = 0;
+    const cumulativeDepth = 0;
     
     for (let i = 0; i < soilLayers.length; i++) {
       const layer = soilLayers[i];

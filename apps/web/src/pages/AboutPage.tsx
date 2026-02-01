@@ -1,107 +1,256 @@
+/**
+ * AboutPage - Company About Page
+ * Dark theme matching landing page design system
+ */
 
 import { FC } from 'react';
 import { Link } from 'react-router-dom';
-import { Zap, Users, Globe, Target, Award, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Users, Globe, Target, Award, ArrowRight, Rocket, Code, Lightbulb } from 'lucide-react';
+import beamLabLogo from '../assets/beamlab_logo.png';
+
+const fadeInUp = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.5 }
+};
 
 export const AboutPage: FC = () => {
     return (
-        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900 flex flex-col font-sans">
-            {/* Header */}
-            <header className="sticky top-0 z-50 border-b border-zinc-200 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm">
-                <div className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto w-full">
-                    <Link to="/" className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                            <Zap className="w-5 h-5 text-white" />
+        <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col font-sans selection:bg-blue-500/30">
+            {/* Header - Dark Theme */}
+            <nav className="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/90 backdrop-blur-xl">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-16">
+                        <Link to="/" className="flex items-center gap-3 group">
+                            <div className="relative w-9 h-9 flex items-center justify-center rounded-lg shadow-lg overflow-hidden">
+                                <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-cover" />
+                            </div>
+                            <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+                                BeamLab Ultimate
+                            </span>
+                        </Link>
+                        <div className="hidden md:flex items-center gap-8">
+                            <Link to="/pricing" className="text-slate-400 hover:text-white text-sm font-medium transition-colors">Pricing</Link>
+                            <Link to="/contact" className="text-slate-400 hover:text-white text-sm font-medium transition-colors">Contact</Link>
+                            <Link to="/sign-in" className="text-slate-300 hover:text-white text-sm font-medium transition-colors">Log in</Link>
+                            <Link to="/sign-up" className="px-5 py-2 rounded-full bg-white text-slate-950 text-sm font-bold hover:bg-slate-100 transition-colors">
+                                Get Started
+                            </Link>
                         </div>
-                        <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">BeamLab Ultimate</h2>
-                    </Link>
-                    <nav className="hidden md:flex items-center gap-8">
-                        <Link to="/pricing" className="text-zinc-600 dark:text-zinc-300 hover:text-blue-600 text-sm font-medium transition-colors">Pricing</Link>
-                        <Link to="/contact" className="text-zinc-600 dark:text-zinc-300 hover:text-blue-600 text-sm font-medium transition-colors">Contact</Link>
-                    </nav>
+                    </div>
                 </div>
-            </header>
+            </nav>
 
             <main className="flex-1">
                 {/* Hero Section */}
-                <section className="bg-white dark:bg-zinc-900 py-20 px-6">
-                    <div className="max-w-4xl mx-auto text-center">
-                        <h1 className="text-4xl md:text-6xl font-bold text-zinc-900 dark:text-white mb-6">
-                            Building the Future of <br />
-                            <span className="text-blue-600">Structural Engineering</span>
+                <section className="py-24 px-6 relative overflow-hidden">
+                    {/* Background blobs */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
+                        <div className="absolute top-20 left-10 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[100px] opacity-60" />
+                        <div className="absolute bottom-0 right-10 w-[300px] h-[300px] bg-purple-500/10 rounded-full blur-[100px] opacity-60" />
+                    </div>
+
+                    <motion.div {...fadeInUp} className="max-w-4xl mx-auto text-center relative z-10">
+                        <span className="text-blue-400 text-sm font-semibold uppercase tracking-wider">
+                            About Us
+                        </span>
+                        <h1 className="text-4xl md:text-6xl font-bold text-white mt-4 mb-6">
+                            Building the Future of<br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400">
+                                Structural Engineering
+                            </span>
                         </h1>
-                        <p className="text-xl text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-2xl mx-auto">
+                        <p className="text-xl text-slate-400 leading-relaxed max-w-2xl mx-auto">
                             BeamLab Ultimate is a next-generation cloud platform designed to make professional structural analysis accessible, fast, and collaborative.
                         </p>
-                    </div>
+                    </motion.div>
                 </section>
 
                 {/* Mission Grid */}
-                <section className="py-20 px-6 bg-zinc-50 dark:bg-zinc-950/50">
-                    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
-                        <div className="flex flex-col gap-4">
-                            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                                <Target className="w-6 h-6 text-blue-600" />
+                <section className="py-20 px-6 bg-slate-900/50 border-y border-slate-800">
+                    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            className="flex flex-col gap-4 p-6 rounded-xl bg-slate-900 border border-slate-800 hover-lift"
+                        >
+                            <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center">
+                                <Target className="w-6 h-6 text-blue-400" />
                             </div>
-                            <h3 className="text-xl font-bold text-zinc-900 dark:text-white">Our Mission</h3>
-                            <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                            <h3 className="text-xl font-bold text-white">Our Mission</h3>
+                            <p className="text-slate-400 leading-relaxed">
                                 To democratize advanced structural analysis tools, removing barriers of cost and complexity for engineers, students, and firms worldwide.
                             </p>
-                        </div>
-                        <div className="flex flex-col gap-4">
-                            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
-                                <Globe className="w-6 h-6 text-purple-600" />
+                        </motion.div>
+
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.1 }}
+                            className="flex flex-col gap-4 p-6 rounded-xl bg-slate-900 border border-slate-800 hover-lift"
+                        >
+                            <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center">
+                                <Globe className="w-6 h-6 text-purple-400" />
                             </div>
-                            <h3 className="text-xl font-bold text-zinc-900 dark:text-white">Global Reach</h3>
-                            <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                            <h3 className="text-xl font-bold text-white">Global Reach</h3>
+                            <p className="text-slate-400 leading-relaxed">
                                 Used by engineers in over 50 countries, supporting international design codes (IS, AISC, Eurocode) to foster global collaboration.
                             </p>
-                        </div>
-                        <div className="flex flex-col gap-4">
-                            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
-                                <Award className="w-6 h-6 text-green-600" />
+                        </motion.div>
+
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.2 }}
+                            className="flex flex-col gap-4 p-6 rounded-xl bg-slate-900 border border-slate-800 hover-lift"
+                        >
+                            <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center">
+                                <Award className="w-6 h-6 text-emerald-400" />
                             </div>
-                            <h3 className="text-xl font-bold text-zinc-900 dark:text-white">Excellence</h3>
-                            <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                                We combine rigorous engineering standards with cutting-edge web technology (WASM, WebGL, AI) to deliver uncompromised precision and speed.
+                            <h3 className="text-xl font-bold text-white">Excellence</h3>
+                            <p className="text-slate-400 leading-relaxed">
+                                We combine rigorous engineering standards with cutting-edge web technology (WASM, WebGL, AI) to deliver uncompromised precision.
                             </p>
+                        </motion.div>
+                    </div>
+                </section>
+
+                {/* Technology Section */}
+                <section className="py-20 px-6">
+                    <div className="max-w-7xl mx-auto">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            viewport={{ once: true }}
+                            className="text-center mb-12"
+                        >
+                            <span className="text-blue-400 text-sm font-semibold uppercase tracking-wider">
+                                Our Technology
+                            </span>
+                            <h2 className="text-3xl font-bold text-white mt-2">
+                                Built for the Modern Era
+                            </h2>
+                        </motion.div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                className="text-center p-6"
+                            >
+                                <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                                    <Rocket className="w-7 h-7 text-blue-400" />
+                                </div>
+                                <h3 className="text-lg font-bold text-white mb-2">WebAssembly Powered</h3>
+                                <p className="text-slate-400 text-sm">
+                                    Near-native performance in the browser using compiled WASM solvers.
+                                </p>
+                            </motion.div>
+
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: 0.1 }}
+                                className="text-center p-6"
+                            >
+                                <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 flex items-center justify-center">
+                                    <Code className="w-7 h-7 text-purple-400" />
+                                </div>
+                                <h3 className="text-lg font-bold text-white mb-2">Real-time Collaboration</h3>
+                                <p className="text-slate-400 text-sm">
+                                    Work together with your team using live sync and shared sessions.
+                                </p>
+                            </motion.div>
+
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: 0.2 }}
+                                className="text-center p-6"
+                            >
+                                <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 flex items-center justify-center">
+                                    <Lightbulb className="w-7 h-7 text-emerald-400" />
+                                </div>
+                                <h3 className="text-lg font-bold text-white mb-2">AI-Assisted Design</h3>
+                                <p className="text-slate-400 text-sm">
+                                    Intelligent recommendations powered by machine learning models.
+                                </p>
+                            </motion.div>
                         </div>
                     </div>
                 </section>
 
                 {/* Team Section */}
-                <section className="py-20 px-6 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800">
+                <section className="py-20 px-6 bg-slate-900/50 border-t border-slate-800">
                     <div className="max-w-7xl mx-auto">
                         <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
                             <div>
-                                <h2 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">Developed By</h2>
-                                <p className="text-zinc-500 dark:text-zinc-400">The minds behind the platform.</p>
+                                <h2 className="text-3xl font-bold text-white mb-2">Developed By</h2>
+                                <p className="text-slate-400">The minds behind the platform.</p>
                             </div>
-                            <Link to="/contact" className="text-blue-600 font-bold flex items-center gap-2 hover:gap-3 transition-all">
-                                Join our team <ArrowRight className="w-4 h-4" />
+                            <Link to="/contact" className="text-blue-400 font-bold flex items-center gap-2 hover:gap-3 transition-all group">
+                                Join our team <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                             </Link>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                            {/* Lead Developer */}
-                            <div className="group">
-                                <div className="aspect-square bg-zinc-200 dark:bg-zinc-800 rounded-2xl mb-4 overflow-hidden relative">
-                                    <div className="absolute inset-0 flex items-center justify-center text-zinc-400">
-                                        <Users className="w-12 h-12" />
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                className="group"
+                            >
+                                <div className="aspect-square bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl mb-4 overflow-hidden relative border border-slate-800 group-hover:border-blue-500/30 transition-colors">
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <Users className="w-16 h-16 text-slate-700 group-hover:text-slate-600 transition-colors" />
                                     </div>
                                 </div>
-                                <h3 className="text-lg font-bold text-zinc-900 dark:text-white">Rakshit Tiwari</h3>
-                                <p className="text-sm text-blue-600 font-medium mb-2">Lead Architect & Developer</p>
-                                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                                <h3 className="text-lg font-bold text-white">Rakshit Tiwari</h3>
+                                <p className="text-sm text-blue-400 font-medium mb-2">Lead Architect & Developer</p>
+                                <p className="text-sm text-slate-400">
                                     Full-stack engineer passionate about structural mechanics and high-performance computing.
                                 </p>
-                            </div>
+                            </motion.div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* CTA Section */}
+                <section className="py-20 px-6">
+                    <div className="max-w-4xl mx-auto text-center">
+                        <h2 className="text-3xl font-bold text-white mb-4">
+                            Ready to transform your workflow?
+                        </h2>
+                        <p className="text-slate-400 mb-8">
+                            Join thousands of engineers using BeamLab Ultimate every day.
+                        </p>
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                            <Link
+                                to="/sign-up"
+                                className="px-8 py-3 rounded-full bg-white text-slate-950 font-bold hover:bg-slate-100 transition-colors shadow-lg"
+                            >
+                                Start Free Trial
+                            </Link>
+                            <Link
+                                to="/demo"
+                                className="px-8 py-3 rounded-full bg-slate-800 text-white font-medium border border-slate-700 hover:bg-slate-700 transition-colors"
+                            >
+                                View Demo
+                            </Link>
                         </div>
                     </div>
                 </section>
             </main>
 
-            <footer className="border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-8 text-center text-sm text-zinc-500">
+            {/* Footer */}
+            <footer className="border-t border-slate-800 bg-slate-950 py-8 text-center text-sm text-slate-500">
                 <p>© 2026 BeamLab Ultimate. All rights reserved.</p>
             </footer>
         </div>

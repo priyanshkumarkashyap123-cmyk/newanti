@@ -976,7 +976,7 @@ class StructureGenerators {
     const members: GeneratedMember[] = [];
     const supports: GeneratedSupport[] = [];
     
-    let nodeId = 0;
+    const nodeId = 0;
     let memberId = 0;
     
     // Generate frames

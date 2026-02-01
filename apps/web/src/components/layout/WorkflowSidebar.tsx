@@ -91,6 +91,8 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                             <button
                                 key={item.id}
                                 onClick={() => handleClick(item.id)}
+                                aria-label={item.label}
+                                aria-current={isActive ? 'step' : undefined}
                                 className={`
                                     group flex items-center gap-3 px-3 py-3 rounded-md text-left transition-all
                                     ${isActive
@@ -101,7 +103,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                                 <div className={`
                                     p-1.5 rounded-md transition-colors
                                     ${isActive ? 'bg-blue-500' : 'bg-zinc-800 group-hover:bg-zinc-700'}
-                                `}>
+                                `} aria-hidden="true">
                                     <item.icon className="w-4 h-4" />
                                 </div>
                                 <div className="flex flex-col items-start">
@@ -115,7 +117,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
 
                                 {/* Active Indicator Bar */}
                                 {isActive && (
-                                    <div className="absolute left-0 w-1 h-8 bg-blue-400 rounded-r-full" />
+                                    <div className="absolute left-0 w-1 h-8 bg-blue-400 rounded-r-full" aria-hidden="true" />
                                 )}
                             </button>
                         );
@@ -129,9 +131,9 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                     <button className="text-xs text-zinc-500 hover:text-white text-left">
                         Connection Client
                     </button>
-                    <div className="w-full h-px bg-zinc-800" />
+                    <div className="w-full h-px bg-zinc-800" aria-hidden="true" />
                     <button className="text-xs text-green-500 hover:text-green-400 text-left flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500" aria-hidden="true" />
                         Connected
                     </button>
                 </div>

@@ -268,7 +268,7 @@ interface FixedEndMoments {
   Rb: number;   // Reaction at end
 }
 
-function calculateFEM_UDL(w: number, L: number): FixedEndMoments {
+export function calculateFEM_UDL(w: number, L: number): FixedEndMoments {
   // Uniformly distributed load
   return {
     Mab: -w * L * L / 12,
@@ -278,7 +278,7 @@ function calculateFEM_UDL(w: number, L: number): FixedEndMoments {
   };
 }
 
-function calculateFEM_PointLoad(P: number, a: number, L: number): FixedEndMoments {
+export function calculateFEM_PointLoad(P: number, a: number, L: number): FixedEndMoments {
   const b = L - a;
   return {
     Mab: -P * a * b * b / (L * L),
@@ -288,7 +288,7 @@ function calculateFEM_PointLoad(P: number, a: number, L: number): FixedEndMoment
   };
 }
 
-function calculateFEM_TriangularLoad(w_max: number, L: number, ascending: boolean): FixedEndMoments {
+export function calculateFEM_TriangularLoad(w_max: number, L: number, ascending: boolean): FixedEndMoments {
   // Triangular distributed load (0 to w_max or w_max to 0)
   if (ascending) {
     return {
@@ -422,7 +422,7 @@ export function analyzeContinuousBeam(input: ContinuousBeamInput): ContinuousBea
   
   // Perform moment distribution iterations
   const iterations = 10;
-  let currentMoments = [...fixedEndMoments.map(f => [f.left, f.right])].flat();
+  const currentMoments = [...fixedEndMoments.map(f => [f.left, f.right])].flat();
   
   for (let iter = 0; iter < iterations; iter++) {
     // Balance each interior joint
@@ -615,7 +615,17 @@ export function analyzeContinuousBeam(input: ContinuousBeamInput): ContinuousBea
     warnings.push(`Deflection exceeds L/250 limit (actual: L/${spanRatio.toFixed(0)})`);
   }
   
+  const isAdequate = spanRatio >= 250;
+  const utilizationValue = 250 / spanRatio;
+  
   return {
+    // Base CalculationResult properties
+    isAdequate,
+    utilization: utilizationValue,
+    capacity: totalLength * 1000 / 250, // allowable deflection in mm
+    demand: maxDeflectionValue,
+    status: isAdequate ? 'OK' : 'FAIL',
+    message: isAdequate ? 'Continuous beam analysis complete - deflection OK' : 'Deflection exceeds limit',
     summary: {
       'Beam Configuration': `${numSpans}-span continuous beam`,
       'Total Length': `${totalLength.toFixed(2)} m`,
@@ -814,8 +824,16 @@ export function analyzePortalFrame(input: PortalFrameInput): PortalFrameResult {
   // Summary
   const maxColumnMoment = Math.max(...columnMoments.flatMap(c => [c.base, c.top]));
   const maxBeamMoment = Math.max(...beamMoments.flatMap(b => [Math.abs(b.left), Math.abs(b.right), b.midspan]));
+  const isAdequate = sidesway < 1/250;
   
   return {
+    // Base CalculationResult properties
+    isAdequate,
+    utilization: sidesway * 250,
+    capacity: height * 1000 / 250,
+    demand: lateralDisplacement,
+    status: isAdequate ? 'OK' : 'FAIL',
+    message: isAdequate ? 'Portal frame analysis complete' : 'Drift exceeds limit',
     summary: {
       'Frame Configuration': `${numBays}-bay × ${height}m portal frame`,
       'Analysis Method': method.toUpperCase(),
@@ -1107,7 +1125,7 @@ export function analyzeStresses(input: StressAnalysisInput): StressAnalysisResul
   }
   
   // Utilization
-  let allowable = materialType === 'steel' ? (fy || 250) : 0.45 * (fck || 25);
+  const allowable = materialType === 'steel' ? (fy || 250) : 0.45 * (fck || 25);
   const maxStress = materialType === 'steel' && vonMisesStress 
     ? vonMisesStress 
     : Math.max(Math.abs(combinedStress.max), Math.abs(combinedStress.min));
@@ -1123,12 +1141,4 @@ export function analyzeStresses(input: StressAnalysisInput): StressAnalysisResul
   };
 }
 
-// ============================================================================
-// EXPORTS
-// ============================================================================
-
-export {
-  calculateFEM_UDL,
-  calculateFEM_PointLoad,
-  calculateFEM_TriangularLoad,
-};
+// All functions are already exported with 'export function' declarations above

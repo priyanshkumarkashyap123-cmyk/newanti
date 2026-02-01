@@ -18,7 +18,7 @@
  * @version 2.0.0
  */
 
-// Types
+// Types - export first to establish base types
 export * from './types/BoltedConnectionTypes';
 
 // Analysis
@@ -37,20 +37,25 @@ export {
   IS800Calculator,
 } from './analysis/DesignCodeCalculators';
 
-// Welded Connections Module
-export * from './welded';
+// Welded Connections Module - import as namespace to avoid conflicts
+import * as WeldedModule from './welded';
+export { WeldedModule };
 
-// Moment Connections Module (AISC 358-22)
-export * from './moment';
+// Moment Connections Module (AISC 358-22) - import as namespace
+import * as MomentModule from './moment';
+export { MomentModule };
 
-// Bracing Connections Module (AISC 341/360)
-export * from './bracing';
+// Bracing Connections Module (AISC 341/360) - import as namespace
+import * as BracingModule from './bracing';
+export { BracingModule };
 
-// Beam-Column Joints Module (ACI 352R)
-export * from './joints';
+// Beam-Column Joints Module (ACI 352R) - import as namespace
+import * as JointsModule from './joints';
+export { JointsModule };
 
-// Splice Connections Module (AISC 360/341)
-export * from './splices';
+// Splice Connections Module (AISC 360/341) - import as namespace
+import * as SplicesModule from './splices';
+export { SplicesModule };
 
 // Components
 export { ConnectionModelingPanel } from './components/ConnectionModelingPanel';

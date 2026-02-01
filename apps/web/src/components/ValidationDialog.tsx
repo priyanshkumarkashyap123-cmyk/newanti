@@ -13,7 +13,6 @@ import {
     DialogTitle,
 } from './ui/dialog';
 import { Button } from './ui/button';
-import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { AlertCircle, AlertTriangle, Info, XCircle, Wrench, CheckCircle } from 'lucide-react';
 import type { ValidationError } from '../utils/structuralValidation';
 import { useModelStore } from '../store/model';
@@ -95,92 +94,102 @@ export const ValidationDialog: React.FC<ValidationDialogProps> = ({
                 <div className="space-y-4 py-4">
                     {/* Auto-Fix Results */}
                     {fixResults && fixResults.fixed.length > 0 && (
-                        <Alert className="border-green-300 bg-green-50">
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                            <AlertTitle className="text-green-900">Auto-Fix Applied</AlertTitle>
-                            <AlertDescription className="mt-2 text-green-800 text-sm">
-                                <ul className="list-disc list-inside space-y-1">
-                                    {fixResults.fixed.map((fix, idx) => (
-                                        <li key={idx}>{fix}</li>
-                                    ))}
-                                </ul>
-                            </AlertDescription>
-                        </Alert>
+                        <div className="border border-green-300 bg-green-50 p-4 rounded-lg flex gap-3">
+                            <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                            <div>
+                                <div className="font-semibold text-green-900 mb-2">Auto-Fix Applied</div>
+                                <div className="text-green-800 text-sm">
+                                    <ul className="list-disc list-inside space-y-1">
+                                        {fixResults.fixed.map((fix, idx) => (
+                                            <li key={idx}>{fix}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
                     )}
 
                     {/* Critical Errors */}
                     {criticalErrors.map((error, idx) => (
-                        <Alert key={`critical-${idx}`} variant="destructive">
-                            <AlertCircle className="h-4 w-4" />
-                            <AlertTitle className="font-bold">{error.message}</AlertTitle>
-                            <AlertDescription className="mt-2 whitespace-pre-line">
-                                {error.details}
-                                {error.affectedItems && error.affectedItems.length > 0 && (
-                                    <div className="mt-2 text-xs">
-                                        <strong>Affected:</strong> {error.affectedItems.join(', ')}
-                                    </div>
-                                )}
-                            </AlertDescription>
-                        </Alert>
+                        <div key={`critical-${idx}`} className="border border-red-300 bg-red-50 p-4 rounded-lg flex gap-3">
+                            <AlertCircle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
+                            <div>
+                                <div className="font-bold text-red-900 mb-2">{error.message}</div>
+                                <div className="text-red-800 whitespace-pre-line">
+                                    {error.details}
+                                    {error.affectedItems && error.affectedItems.length > 0 && (
+                                        <div className="mt-2 text-xs">
+                                            <strong>Affected:</strong> {error.affectedItems.join(', ')}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     ))}
 
                     {/* Regular Errors */}
                     {regularErrors.map((error, idx) => (
-                        <Alert key={`error-${idx}`} className="border-red-300 bg-red-50">
-                            <AlertCircle className="h-4 w-4 text-red-600" />
-                            <AlertTitle className="text-red-900">{error.message}</AlertTitle>
-                            <AlertDescription className="mt-2 text-red-800">
-                                {error.details}
-                                {error.affectedItems && error.affectedItems.length > 0 && (
-                                    <div className="mt-2 text-xs">
-                                        <strong>Affected:</strong> {error.affectedItems.join(', ')}
-                                    </div>
-                                )}
-                            </AlertDescription>
-                        </Alert>
+                        <div key={`error-${idx}`} className="border border-red-300 bg-red-50 p-4 rounded-lg flex gap-3">
+                            <AlertCircle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
+                            <div>
+                                <div className="font-semibold text-red-900 mb-2">{error.message}</div>
+                                <div className="text-red-800">
+                                    {error.details}
+                                    {error.affectedItems && error.affectedItems.length > 0 && (
+                                        <div className="mt-2 text-xs">
+                                            <strong>Affected:</strong> {error.affectedItems.join(', ')}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     ))}
 
                     {/* Warnings */}
                     {warnings.map((warning, idx) => (
-                        <Alert key={`warning-${idx}`} className="border-yellow-300 bg-yellow-50">
-                            <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                            <AlertTitle className="text-yellow-900">{warning.message}</AlertTitle>
-                            <AlertDescription className="mt-2 text-yellow-800">
-                                {warning.details}
-                                {warning.affectedItems && warning.affectedItems.length > 0 && (
-                                    <div className="mt-2 text-xs">
-                                        <strong>Affected:</strong> {warning.affectedItems.join(', ')}
-                                    </div>
-                                )}
-                            </AlertDescription>
-                        </Alert>
+                        <div key={`warning-${idx}`} className="border border-yellow-300 bg-yellow-50 p-4 rounded-lg flex gap-3">
+                            <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                            <div>
+                                <div className="font-semibold text-yellow-900 mb-2">{warning.message}</div>
+                                <div className="text-yellow-800">
+                                    {warning.details}
+                                    {warning.affectedItems && warning.affectedItems.length > 0 && (
+                                        <div className="mt-2 text-xs">
+                                            <strong>Affected:</strong> {warning.affectedItems.join(', ')}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     ))}
 
                     {/* Help section */}
-                    <Alert className="border-blue-300 bg-blue-50">
-                        <Info className="h-4 w-4 text-blue-600" />
-                        <AlertTitle className="text-blue-900">Quick Fixes</AlertTitle>
-                        <AlertDescription className="mt-2 text-blue-800 text-sm">
-                            <ul className="list-disc list-inside space-y-1">
-                                <li><strong>Unstable:</strong> Add supports - Pin (2 restraints) or Fixed (3 restraints)</li>
-                                <li><strong>Zero-length:</strong> Delete duplicate nodes or move them apart</li>
-                                <li><strong>Disconnected:</strong> Delete unused nodes or connect with members</li>
-                                <li><strong>Mechanism:</strong> Add more members or supports to stabilize</li>
-                            </ul>
-                            <div className="mt-3">
-                                <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    onClick={handleAutoFix}
-                                    disabled={isFixing}
-                                    className="bg-blue-100 hover:bg-blue-200 text-blue-800 border-blue-300"
-                                >
-                                    <Wrench className="h-4 w-4 mr-2" />
-                                    {isFixing ? 'Fixing...' : 'Auto-Fix Common Issues'}
-                                </Button>
+                    <div className="border border-blue-300 bg-blue-50 p-4 rounded-lg flex gap-3">
+                        <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1">
+                            <div className="font-semibold text-blue-900 mb-2">Quick Fixes</div>
+                            <div className="text-blue-800 text-sm">
+                                <ul className="list-disc list-inside space-y-1">
+                                    <li><strong>Unstable:</strong> Add supports - Pin (2 restraints) or Fixed (3 restraints)</li>
+                                    <li><strong>Zero-length:</strong> Delete duplicate nodes or move them apart</li>
+                                    <li><strong>Disconnected:</strong> Delete unused nodes or connect with members</li>
+                                    <li><strong>Mechanism:</strong> Add more members or supports to stabilize</li>
+                                </ul>
+                                <div className="mt-3">
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        onClick={handleAutoFix}
+                                        disabled={isFixing}
+                                        className="bg-blue-100 hover:bg-blue-200 text-blue-800 border-blue-300"
+                                    >
+                                        <Wrench className="h-4 w-4 mr-2" />
+                                        {isFixing ? 'Fixing...' : 'Auto-Fix Common Issues'}
+                                    </Button>
+                                </div>
                             </div>
-                        </AlertDescription>
-                    </Alert>
+                        </div>
+                    </div>
                 </div>
 
                 <DialogFooter className="gap-2">

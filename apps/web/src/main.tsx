@@ -4,9 +4,35 @@ import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './providers/AuthProvider';
 import { SubscriptionProvider } from './hooks/useSubscription';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { AppProvider } from './AppInitializer';
+import { AppProviders } from './components/providers/AppProviders';
 import { safeguards } from './utils/productionSafeguards';
 import { logger } from './utils/logger';
+import * as Sentry from "@sentry/react";
+import env from './config/env';
 import './index.css';
+
+// Validate environment configuration
+env.validate();
+
+// Initialize Sentry for error tracking
+if (env.monitoring.isSentryEnabled) {
+    Sentry.init({
+        dsn: env.monitoring.sentryDsn,
+        integrations: [
+            Sentry.browserTracingIntegration(),
+            Sentry.replayIntegration(),
+        ],
+        // Performance Monitoring
+        tracesSampleRate: 1.0,
+        tracePropagationTargets: ["localhost", /^https:\/\/yourserver\.io\/api/],
+        // Session Replay
+        replaysSessionSampleRate: 0.1,
+        replaysOnErrorSampleRate: 1.0,
+    });
+} else {
+    // console.log("ℹ️ Sentry DSN not found, skipping initialization");
+}
 
 // Initialize production safeguards (global error handlers, performance monitoring)
 safeguards.initialize();
@@ -24,10 +50,11 @@ const initializeApp = async () => {
         }
 
         logger.info('🎨 Rendering App...');
-        
+
         // Use unified AuthProvider which handles both Clerk and in-house auth
         // SubscriptionProvider provides subscription/tier context for feature gating
         // ErrorBoundary catches and displays any runtime errors gracefully
+        // AppProviders adds: NotificationProvider, ConfirmProvider, CommandPalette (⌘K), KeyboardShortcuts (⌘/)
         createRoot(rootElement).render(
             <StrictMode>
                 <ErrorBoundary onError={(error, errorInfo) => {
@@ -37,14 +64,19 @@ const initializeApp = async () => {
                     <BrowserRouter>
                         <AuthProvider>
                             <SubscriptionProvider>
-                                <App />
+                                <AppProvider>
+                                    <AppProviders>
+                                        <App />
+                                    </AppProviders>
+                                </AppProvider>
                             </SubscriptionProvider>
                         </AuthProvider>
                     </BrowserRouter>
                 </ErrorBoundary>
             </StrictMode>
         );
-        
+
+
         logger.info('✅ App rendered with AuthProvider and SubscriptionProvider');
     } catch (error) {
         logger.error('❌ Failed to initialize app:', error);

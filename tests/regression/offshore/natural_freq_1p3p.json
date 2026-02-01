@@ -1,0 +1,28 @@
+{
+  "id": "offshore_natural_freq_check",
+  "name": "Natural Frequency 1P/3P Exclusion Check",
+  "module": "offshore",
+  "function": "checkNaturalFrequency",
+  "designCode": "IEC 61400-3-1",
+  "inputs": {
+    "turbine": {
+      "ratedRPM": 12.5,
+      "minRPM": 6.0,
+      "maxRPM": 14.5,
+      "blades": 3
+    },
+    "structure": {
+      "f1": 0.28
+    },
+    "margin": 0.10
+  },
+  "expected": {
+    "f1P": { "value": 0.208, "tolerance": 0.01, "unit": "Hz" },
+    "f3P": { "value": 0.625, "tolerance": 0.01, "unit": "Hz" },
+    "softStiff": "soft-stiff",
+    "status": "PASS"
+  },
+  "source": "IEC 61400-3-1:2019, DNV-GL ST-0126",
+  "createdBy": "BeamLab QA",
+  "createdAt": "2025-01-15"
+}

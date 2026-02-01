@@ -1151,11 +1151,11 @@ export function generateDiagram(diagramData: DiagramData): string {
   switch (type) {
     case DiagramType.CROSS_SECTION:
       return generateBeamCrossSection(data as BeamCrossSectionData, title);
-    case DiagramType.STRESS_BLOCK:
+    case DiagramType.STRESS_DIAGRAM:
       return generateStressBlockDiagram(data as StressBlockData, title);
-    case DiagramType.BENDING_MOMENT:
+    case DiagramType.MOMENT_DIAGRAM:
       return generateMomentDiagram(data as MomentDiagramData, title);
-    case DiagramType.INTERACTION:
+    case DiagramType.INTERACTION_DIAGRAM:
       return generateInteractionDiagram(data as InteractionDiagramData, title);
     case DiagramType.REINFORCEMENT_LAYOUT:
       return generateReinforcementDetail(data as ReinforcementLayoutData, title);

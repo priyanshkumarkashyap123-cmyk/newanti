@@ -33,10 +33,9 @@ import {
   StirrupType,
   MemberType,
   SeismicCategory,
+  BarCoating,
   ShearDesignInput,
   StirrupDesignResult,
-  createConcreteProperties,
-  createRebarProperties,
   getBarData,
   US_BAR_DATA,
   METRIC_BAR_DATA
@@ -51,7 +50,7 @@ export function StirrupDesignPanel() {
   const [designCode, setDesignCode] = useState<ConcreteDesignCode>(ConcreteDesignCode.ACI_318_19);
   const [memberType, setMemberType] = useState<MemberType>(MemberType.BEAM);
   const [seismicCategory, setSeismicCategory] = useState<SeismicCategory>(SeismicCategory.SDC_B);
-  const [stirrupType, setStirrupType] = useState<StirrupType>(StirrupType.TWO_LEG);
+  const [stirrupType, setStirrupType] = useState<StirrupType>(StirrupType.TWO_LEGGED);
   
   // Material inputs
   const [fc, setFc] = useState<number>(4000); // psi or MPa
@@ -77,41 +76,59 @@ export function StirrupDesignPanel() {
   
   // Determine if using metric
   const isMetric = designCode === ConcreteDesignCode.EUROCODE_2 || 
-                   designCode === ConcreteDesignCode.IS_456;
+                   designCode === ConcreteDesignCode.IS_456_2000;
   
   // Get bar data for selected size
   const barData = useMemo(() => {
     const data = isMetric ? METRIC_BAR_DATA : US_BAR_DATA;
-    return data[selectedBarSize as keyof typeof data];
+    return data.find(bar => bar.size === selectedBarSize);
   }, [selectedBarSize, isMetric]);
   
   // Calculate stirrup area
   const stirrupArea = useMemo(() => {
     if (!barData) return 0;
-    const numLegs = stirrupType === StirrupType.TWO_LEG ? 2 : 
-                    stirrupType === StirrupType.FOUR_LEG ? 4 : 6;
-    return barData.area * numLegs;
-  }, [barData, stirrupType]);
+    const numLegs = stirrupType === StirrupType.TWO_LEGGED ? 2 : 
+                    stirrupType === StirrupType.FOUR_LEGGED ? 4 : 6;
+    const area = isMetric ? barData.area_mm2 : barData.area_in2;
+    return area * numLegs;
+  }, [barData, stirrupType, isMetric]);
 
   // Handle calculation
   const handleCalculate = () => {
     if (!barData) return;
     
     const input: ShearDesignInput = {
+      factoredShear: Vu,
+      factoredAxial: Nu,
+      webWidth: width,
+      effectiveDepth: effectiveDepth,
+      totalDepth: depth,
+      concrete: {
+        compressiveStrength: fc,
+        grade: `C${fc}`,
+        elasticModulus: 4700 * Math.sqrt(fc),
+        tensileStrength: 0.62 * Math.sqrt(fc),
+        density: 2400,
+        aggregateType: isMetric ? 'NORMAL' : 'NORMAL',
+        maxAggregateSize: 20,
+        unitSystem: isMetric ? 'SI' : 'IMPERIAL'
+      },
+      stirrupBar: {
+        size: selectedBarSize,
+        diameter: isMetric ? barData.diameter_mm : barData.diameter_in,
+        area: isMetric ? barData.area_mm2 : barData.area_in2,
+        perimeter: barData.perimeter_mm,
+        unitWeight: isMetric ? barData.weight_kg_m : barData.weight_lb_ft,
+        grade: RebarGrade.GRADE_60,
+        yieldStrength: fyt,
+        ultimateStrength: fyt * 1.25,
+        elasticModulus: 200000,
+        coating: BarCoating.UNCOATED
+      },
       designCode,
       memberType,
       seismicCategory,
-      stirrupType,
-      width: isMetric ? width : width,
-      effectiveDepth: isMetric ? effectiveDepth : effectiveDepth,
-      clearCover: isMetric ? clearCover : clearCover,
-      Vu,
-      Mu,
-      Nu,
-      concrete: createConcreteProperties(fc, isMetric),
-      stirrupRebar: createRebarProperties(fyt, isMetric),
-      longitudinalRebar: createRebarProperties(fy, isMetric),
-      stirrupArea
+      cover: clearCover
     };
     
     const calcResult = stirrupCalculator.design(input);
@@ -476,8 +493,8 @@ export function StirrupDesignPanel() {
               <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                 <p className="text-sm text-blue-700 dark:text-blue-300">
                   <Info className="w-4 h-4 inline mr-1" />
-                  Selected: {selectedBarSize} - Diameter: {barData.diameter}{isMetric ? 'mm' : '"'}, 
-                  Area per leg: {barData.area.toFixed(isMetric ? 1 : 3)}{isMetric ? 'mm²' : 'in²'},
+                  Selected: {selectedBarSize} - Diameter: {isMetric ? barData.diameter_mm : barData.diameter_in}{isMetric ? 'mm' : '"'}, 
+                  Area per leg: {(isMetric ? barData.area_mm2 : barData.area_in2).toFixed(isMetric ? 1 : 3)}{isMetric ? 'mm²' : 'in²'},
                   Total Av: {stirrupArea.toFixed(isMetric ? 1 : 3)}{isMetric ? 'mm²' : 'in²'}
                 </p>
               </div>
@@ -515,7 +532,7 @@ export function StirrupDesignPanel() {
                     {result.isAdequate ? 'Design is Adequate' : 'Design is NOT Adequate'}
                   </h3>
                   <p className={`text-sm ${result.isAdequate ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                    Utilization: {(result.utilizationRatio * 100).toFixed(1)}%
+                    Utilization: {(result.utilization * 100).toFixed(1)}%
                   </p>
                 </div>
               </div>
@@ -528,19 +545,19 @@ export function StirrupDesignPanel() {
                     <div className="flex justify-between">
                       <span className="text-gray-600 dark:text-gray-400">Vc (Concrete)</span>
                       <span className="font-mono text-gray-900 dark:text-white">
-                        {result.Vc.toFixed(2)} {isMetric ? 'kN' : 'kips'}
+                        {result.concreteCapacity.toFixed(2)} {isMetric ? 'kN' : 'kips'}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600 dark:text-gray-400">Vs (Steel)</span>
                       <span className="font-mono text-gray-900 dark:text-white">
-                        {result.Vs.toFixed(2)} {isMetric ? 'kN' : 'kips'}
+                        {result.requiredSteelCapacity.toFixed(2)} {isMetric ? 'kN' : 'kips'}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600 dark:text-gray-400">φVn (Design)</span>
                       <span className="font-mono text-gray-900 dark:text-white font-semibold">
-                        {(result.phi * result.Vn).toFixed(2)} {isMetric ? 'kN' : 'kips'}
+                        {result.totalCapacity.toFixed(2)} {isMetric ? 'kN' : 'kips'}
                       </span>
                     </div>
                     <Separator.Root className="h-px bg-gray-300 dark:bg-gray-600 my-2" />
@@ -559,25 +576,25 @@ export function StirrupDesignPanel() {
                     <div className="flex justify-between">
                       <span className="text-gray-600 dark:text-gray-400">Bar Size</span>
                       <span className="font-mono text-gray-900 dark:text-white">
-                        {result.selectedBarSize}
+                        {result.stirrupConfig.barSize}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600 dark:text-gray-400">Number of Legs</span>
                       <span className="font-mono text-gray-900 dark:text-white">
-                        {result.numberOfLegs}
+                        {result.stirrupConfig.legs}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600 dark:text-gray-400">Av Provided</span>
                       <span className="font-mono text-gray-900 dark:text-white">
-                        {result.Av.toFixed(isMetric ? 1 : 3)} {isMetric ? 'mm²' : 'in²'}
+                        {result.providedAvs.toFixed(isMetric ? 1 : 3)} {isMetric ? 'mm²' : 'in²'}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600 dark:text-gray-400">Av Minimum</span>
                       <span className="font-mono text-gray-900 dark:text-white">
-                        {result.AvMin.toFixed(isMetric ? 1 : 3)} {isMetric ? 'mm²' : 'in²'}
+                        {result.requiredAvs.toFixed(isMetric ? 1 : 3)} {isMetric ? 'mm²' : 'in²'}
                       </span>
                     </div>
                   </div>
@@ -593,61 +610,44 @@ export function StirrupDesignPanel() {
                   <div>
                     <p className="text-sm text-blue-600 dark:text-blue-400">Required</p>
                     <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                      {result.requiredSpacing.toFixed(0)}
+                      {result.stirrupConfig.spacing.toFixed(0)}
                     </p>
                     <p className="text-xs text-blue-600 dark:text-blue-400">{isMetric ? 'mm' : 'in'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-blue-600 dark:text-blue-400">Maximum</p>
                     <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                      {result.maxSpacing.toFixed(0)}
+                      {result.stirrupConfig.maxSpacing.toFixed(0)}
                     </p>
                     <p className="text-xs text-blue-600 dark:text-blue-400">{isMetric ? 'mm' : 'in'}</p>
                   </div>
                   <div className="bg-blue-100 dark:bg-blue-800 rounded-lg p-2">
                     <p className="text-sm text-blue-700 dark:text-blue-300">Provided</p>
                     <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                      {result.providedSpacing}
+                      {result.stirrupConfig.spacing}
                     </p>
                     <p className="text-xs text-blue-700 dark:text-blue-300">{isMetric ? 'mm' : 'in'}</p>
                   </div>
                 </div>
               </div>
               
-              {/* Stirrup Schedule */}
-              {result.stirrupSchedule && (
+              {/* Stirrup Regions */}
+              {result.regions && result.regions.length > 0 && (
                 <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
-                    Stirrup Schedule
+                    Stirrup Regions
                   </h4>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-600 dark:text-gray-400">Mark:</span>
-                      <span className="ml-2 font-mono text-gray-900 dark:text-white">
-                        {result.stirrupSchedule.barMark}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600 dark:text-gray-400">Shape:</span>
-                      <span className="ml-2 font-mono text-gray-900 dark:text-white">
-                        {result.stirrupSchedule.shape}
-                      </span>
-                    </div>
-                    <div className="col-span-2">
-                      <span className="text-gray-600 dark:text-gray-400">Dimensions:</span>
-                      <span className="ml-2 font-mono text-gray-900 dark:text-white">
-                        A={result.stirrupSchedule.dimensions.A.toFixed(0)}, 
-                        B={result.stirrupSchedule.dimensions.B.toFixed(0)}
-                        {result.stirrupSchedule.dimensions.C && `, C=${result.stirrupSchedule.dimensions.C.toFixed(0)}`}
-                        {isMetric ? 'mm' : '"'}
-                      </span>
-                    </div>
-                    <div className="col-span-2">
-                      <span className="text-gray-600 dark:text-gray-400">Bending:</span>
-                      <span className="ml-2 text-gray-900 dark:text-white">
-                        {result.stirrupSchedule.bendingSchedule}
-                      </span>
-                    </div>
+                  <div className="space-y-2">
+                    {result.regions.map((region, idx) => (
+                      <div key={idx} className="flex items-center justify-between text-sm p-2 bg-white dark:bg-gray-700 rounded">
+                        <span className="text-gray-600 dark:text-gray-400">
+                          {region.type}: {region.startPosition.toFixed(0)} - {region.endPosition.toFixed(0)} {isMetric ? 'mm' : 'in'}
+                        </span>
+                        <span className="font-mono text-gray-900 dark:text-white">
+                          {region.count} @ {region.spacing.toFixed(0)} {isMetric ? 'mm' : 'in'}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

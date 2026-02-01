@@ -196,12 +196,27 @@ export interface ModalResult {
     totalMass: number;
 }
 
+// Civil Engineering Data (Results/State)
+export interface CivilResult {
+    id: string;
+    moduleId: 'geotech' | 'transport' | 'hydraulics' | 'enviro' | 'const' | 'survey';
+    type: string; // e.g. 'footing', 'curve'
+    timestamp: number;
+    input: any;
+    output: any;
+    linkedElementIds?: string[]; // IDs of 3D elements generated (e.g. Plate P1)
+}
+
 interface ModelState {
     // 2. State using Maps for O(1) lookup
     projectInfo: ProjectInfo; // NEW
     nodes: Map<string, Node>;
     members: Map<string, Member>;
     plates: Map<string, Plate>;  // NEW: Shell/slab elements
+
+    // Civil Data Store (Phase 2)
+    civilData: Map<string, CivilResult>; // ID -> Result
+
     loads: NodeLoad[];
     memberLoads: MemberLoad[];  // NEW: Member loads (UDL, UVL, point)
     selectedIds: Set<string>;
@@ -291,6 +306,7 @@ interface ModelState {
     // Model Management
     clearModel: () => void;  // Clears entire model for fresh start
     loadStructure: (nodes: Node[], members: Member[]) => void;  // Loads generated structure
+    loadProject: (data: SavedProjectData) => boolean;  // Load project from API/storage
     autoFixModel: () => { fixed: string[]; errors: string[] };  // Auto-fix common modeling errors
 
     // Geometry Operations
@@ -310,6 +326,10 @@ interface ModelState {
     addPlate: (plate: Plate) => void;
     removePlate: (id: string) => void;
     updatePlate: (id: string, updates: Partial<Plate>) => void;
+
+    // Civil Data Actions
+    addCivilResult: (result: CivilResult) => void;
+    removeCivilResult: (id: string) => void;
 }
 
 // Helper to convert Map to Record for DevTools display
@@ -333,6 +353,7 @@ export const useModelStore = create<ModelState>()(
                 nodes: new Map(),
                 members: new Map(),
                 plates: new Map(),  // NEW: Plate/shell elements
+                civilData: new Map(), // NEW: Phase 2 Civil Persistence
                 loads: [],
                 memberLoads: [],  // NEW: Member distributed/point loads
                 selectedIds: new Set(),
@@ -941,49 +962,49 @@ export const useModelStore = create<ModelState>()(
                 autoFixModel: () => {
                     const fixed: string[] = [];
                     const errors: string[] = [];
-                    
+
                     set((state) => {
                         const newNodes = new Map(state.nodes);
                         const newMembers = new Map(state.members);
-                        
+
                         // 1. Remove zero-length members
                         for (const [id, member] of newMembers) {
                             const startNode = newNodes.get(member.startNodeId);
                             const endNode = newNodes.get(member.endNodeId);
-                            
+
                             if (member.startNodeId === member.endNodeId) {
                                 newMembers.delete(id);
                                 fixed.push(`Removed zero-length member ${id} (same start/end node)`);
                                 continue;
                             }
-                            
+
                             if (startNode && endNode) {
                                 const dx = endNode.x - startNode.x;
                                 const dy = endNode.y - startNode.y;
                                 const dz = endNode.z - startNode.z;
-                                const length = Math.sqrt(dx*dx + dy*dy + dz*dz);
-                                
+                                const length = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
                                 if (length < 0.001) { // Less than 1mm
                                     newMembers.delete(id);
                                     fixed.push(`Removed zero-length member ${id} (length < 1mm)`);
                                 }
                             }
                         }
-                        
+
                         // 2. Remove disconnected nodes (not connected to any member)
                         const connectedNodeIds = new Set<string>();
                         for (const member of newMembers.values()) {
                             connectedNodeIds.add(member.startNodeId);
                             connectedNodeIds.add(member.endNodeId);
                         }
-                        
+
                         for (const [id] of newNodes) {
                             if (!connectedNodeIds.has(id) && newMembers.size > 0) {
                                 newNodes.delete(id);
                                 fixed.push(`Removed disconnected node ${id}`);
                             }
                         }
-                        
+
                         // 3. Remove members referencing non-existent nodes
                         for (const [id, member] of newMembers) {
                             if (!newNodes.has(member.startNodeId) || !newNodes.has(member.endNodeId)) {
@@ -991,7 +1012,7 @@ export const useModelStore = create<ModelState>()(
                                 fixed.push(`Removed member ${id} (references non-existent node)`);
                             }
                         }
-                        
+
                         // 4. Ensure at least one support exists
                         let hasSupport = false;
                         for (const node of newNodes.values()) {
@@ -1000,7 +1021,7 @@ export const useModelStore = create<ModelState>()(
                                 break;
                             }
                         }
-                        
+
                         if (!hasSupport && newNodes.size > 0) {
                             // Find the node with minimum Y (lowest point) - likely a base
                             let lowestNode: Node | null = null;
@@ -1011,7 +1032,7 @@ export const useModelStore = create<ModelState>()(
                                     lowestNode = node;
                                 }
                             }
-                            
+
                             if (lowestNode) {
                                 newNodes.set(lowestNode.id, {
                                     ...lowestNode,
@@ -1020,11 +1041,11 @@ export const useModelStore = create<ModelState>()(
                                 fixed.push(`Added fixed support to node ${lowestNode.id} (lowest point)`);
                             }
                         }
-                        
+
                         // 5. Check for duplicate nodes (same coordinates) and merge
                         const nodesByCoord = new Map<string, string>();
                         const nodesToMerge: [string, string][] = [];
-                        
+
                         for (const [id, node] of newNodes) {
                             const coordKey = `${node.x.toFixed(3)},${node.y.toFixed(3)},${node.z.toFixed(3)}`;
                             if (nodesByCoord.has(coordKey)) {
@@ -1033,13 +1054,13 @@ export const useModelStore = create<ModelState>()(
                                 nodesByCoord.set(coordKey, id);
                             }
                         }
-                        
+
                         for (const [duplicateId, keepId] of nodesToMerge) {
                             // Update all members referencing the duplicate node
                             for (const [memberId, member] of newMembers) {
                                 let updated = false;
                                 const updates: Partial<Member> = {};
-                                
+
                                 if (member.startNodeId === duplicateId) {
                                     updates.startNodeId = keepId;
                                     updated = true;
@@ -1048,26 +1069,26 @@ export const useModelStore = create<ModelState>()(
                                     updates.endNodeId = keepId;
                                     updated = true;
                                 }
-                                
+
                                 if (updated) {
                                     newMembers.set(memberId, { ...member, ...updates });
                                 }
                             }
-                            
+
                             // Preserve restraints from duplicate if keep node has none
                             const keepNode = newNodes.get(keepId)!;
                             const dupNode = newNodes.get(duplicateId)!;
                             if (!keepNode.restraints && dupNode.restraints) {
                                 newNodes.set(keepId, { ...keepNode, restraints: dupNode.restraints });
                             }
-                            
+
                             newNodes.delete(duplicateId);
                             fixed.push(`Merged duplicate node ${duplicateId} into ${keepId}`);
                         }
-                        
+
                         return { nodes: newNodes, members: newMembers };
                     });
-                    
+
                     return { fixed, errors };
                 },
 
@@ -1126,6 +1147,71 @@ export const useModelStore = create<ModelState>()(
                         isAnimating: false
                     };
                 }),
+
+                loadProject: (data: SavedProjectData) => {
+                    try {
+                        // Validate essential fields
+                        if (!data.projectInfo || !Array.isArray(data.nodes) || !Array.isArray(data.members)) {
+                            console.error('Invalid project data structure');
+                            return false;
+                        }
+
+                        // Restore nodes with error handling
+                        const nodesMap = new Map<string, Node>();
+                        data.nodes.forEach(([id, node]) => {
+                            if (id && node && typeof node.x === 'number' && typeof node.y === 'number' && typeof node.z === 'number') {
+                                nodesMap.set(id, node);
+                            }
+                        });
+
+                        // Restore members with error handling
+                        const membersMap = new Map<string, Member>();
+                        data.members.forEach(([id, member]) => {
+                            if (id && member && member.startNodeId && member.endNodeId) {
+                                membersMap.set(id, member);
+                            }
+                        });
+
+                        // Calculate next IDs
+                        let maxNodeNum = 0;
+                        let maxMemberNum = 0;
+
+                        nodesMap.forEach((_, id) => {
+                            const match = id?.match?.(/^N(\d+)$/);
+                            if (match && match[1]) {
+                                maxNodeNum = Math.max(maxNodeNum, parseInt(match[1], 10) || 0);
+                            }
+                        });
+
+                        membersMap.forEach((_, id) => {
+                            const match = id?.match?.(/^M(\d+)$/);
+                            if (match && match[1]) {
+                                maxMemberNum = Math.max(maxMemberNum, parseInt(match[1], 10) || 0);
+                            }
+                        });
+
+                        // Restore loads
+                        const loads = Array.isArray(data.loads) ? data.loads : [];
+                        const memberLoads = Array.isArray(data.memberLoads) ? data.memberLoads : [];
+
+                        set({
+                            nodes: nodesMap,
+                            members: membersMap,
+                            loads,
+                            memberLoads,
+                            projectInfo: data.projectInfo,
+                            selectedIds: new Set(),
+                            analysisResults: null,
+                            nextNodeNumber: maxNodeNum + 1,
+                            nextMemberNumber: maxMemberNum + 1
+                        });
+
+                        return true;
+                    } catch (error) {
+                        console.error('Error loading project:', error);
+                        return false;
+                    }
+                },
 
                 // Geometry Operations
                 removeMember: (id) =>
@@ -1345,6 +1431,21 @@ export const useModelStore = create<ModelState>()(
                             nextMemberNumber: counter,
                             analysisResults: null
                         };
+                    }),
+
+                // Civil Data Actions
+                addCivilResult: (result: CivilResult) =>
+                    set((state) => {
+                        const newCivilData = new Map(state.civilData);
+                        newCivilData.set(result.id, result);
+                        return { civilData: newCivilData };
+                    }),
+
+                removeCivilResult: (id: string) =>
+                    set((state) => {
+                        const newCivilData = new Map(state.civilData);
+                        newCivilData.delete(id);
+                        return { civilData: newCivilData };
                     })
 
             })),

@@ -495,3 +495,5 @@ export const TermsOfServicePage = () => {
         </div>
     );
 };
+
+export default TermsOfServicePage;

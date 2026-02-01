@@ -209,7 +209,7 @@ export function computeGeometricStiffness(
     w = w.map(val => val / magW);
 
     // y' = z' cross x'
-    let v = crossProduct(w, u);
+    const v = crossProduct(w, u);
     // Normalize v (should be unit)
 
     // Rotation Matrix t (3x3)

@@ -75,6 +75,7 @@ export class LoadCombinationCalculator {
         combination: combo,
         factored_loads: factoredLoads,
         total,
+        governs: false, // Will be set below
       };
     });
     
