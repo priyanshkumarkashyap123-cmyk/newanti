@@ -11,8 +11,8 @@ sympy==1.12
 PyNiteFEA==0.0.94
 matplotlib==3.8.3
 reportlab==4.0.9
-# PINN Solver dependencies
-jax==0.4.35
-jaxlib==0.4.35
-optax==0.2.4
+# PINN Solver dependencies (optional - commented out for Azure deployment due to size)
+# jax==0.4.35
+# jaxlib==0.4.35
+# optax==0.2.4
 pytest==8.0.2
