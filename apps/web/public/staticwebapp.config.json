@@ -32,18 +32,6 @@
       }
     },
     {
-      "route": "/assets/*.js",
-      "headers": {
-        "Content-Type": "application/javascript"
-      }
-    },
-    {
-      "route": "/assets/*.wasm",
-      "headers": {
-        "Content-Type": "application/wasm"
-      }
-    },
-    {
       "route": "/sign-in/*",
       "rewrite": "/index.html"
     },
