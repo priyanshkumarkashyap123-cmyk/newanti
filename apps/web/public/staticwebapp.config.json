@@ -3,10 +3,28 @@
         "rewrite": "/index.html",
         "exclude": [
             "/assets/*",
-            "*.{css,js,json,png,jpg,jpeg,gif,ico,svg,woff,woff2,ttf,eot}"
+            "*.{css,js,json,png,jpg,jpeg,gif,ico,svg,woff,woff2,ttf,eot,wasm}"
         ]
     },
+    "mimeTypes": {
+        ".js": "application/javascript",
+        ".mjs": "application/javascript",
+        ".json": "application/json",
+        ".wasm": "application/wasm"
+    },
     "routes": [
+        {
+            "route": "/assets/*.js",
+            "headers": {
+                "Content-Type": "application/javascript"
+            }
+        },
+        {
+            "route": "/assets/*.wasm",
+            "headers": {
+                "Content-Type": "application/wasm"
+            }
+        },
         {
             "route": "/sign-in/*",
             "rewrite": "/index.html"
@@ -37,6 +55,10 @@
         },
         {
             "route": "/workspace/*",
+            "rewrite": "/index.html"
+        },
+        {
+            "route": "/pricing",
             "rewrite": "/index.html"
         }
     ],
