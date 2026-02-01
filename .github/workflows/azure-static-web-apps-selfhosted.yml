@@ -4,13 +4,6 @@ name: Azure Static Web Apps CI/CD (Self-Hosted)
 # Setup instructions: See GITHUB_ACTIONS_ALTERNATE_ACCOUNT_SETUP.md
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    types: [opened, synchronize, reopened, closed]
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:

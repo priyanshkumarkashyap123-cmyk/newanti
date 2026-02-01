@@ -4,8 +4,6 @@ name: Deploy to Azure (Self-Hosted)
 # Setup instructions: See GITHUB_ACTIONS_ALTERNATE_ACCOUNT_SETUP.md
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 env:

@@ -1,11 +1,9 @@
 name: E2E Tests & Bundle Analysis
 
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * 0'  # Weekly on Sunday at 2 AM UTC
 
 env:
   CI: true

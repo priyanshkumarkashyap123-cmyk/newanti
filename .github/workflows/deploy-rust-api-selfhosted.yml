@@ -4,12 +4,7 @@ name: Deploy Rust API (Self-Hosted)
 # Setup instructions: See GITHUB_ACTIONS_ALTERNATE_ACCOUNT_SETUP.md
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'apps/rust-api/**'
-      - '.github/workflows/deploy-rust-api-selfhosted.yml'
+
   workflow_dispatch:
 
 jobs:

@@ -1,13 +1,10 @@
 name: Security Scanning
 
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
+  workflow_dispatch:
   schedule:
-    # Run every day at midnight UTC
-    - cron: '0 0 * * *'
+    # Run weekly on Monday at midnight UTC
+    - cron: '0 0 * * 1'
 
 permissions:
   contents: read
