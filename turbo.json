@@ -43,6 +43,15 @@
         "coverage"
       ]
     },
+    "test:run": {
+      "cache": false,
+      "outputs": [
+        "coverage"
+      ]
+    },
+    "test:regression": {
+      "cache": false
+    },
     "clean": {
       "cache": false
     }
