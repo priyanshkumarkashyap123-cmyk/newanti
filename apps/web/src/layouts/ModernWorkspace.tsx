@@ -170,8 +170,9 @@ const ContextSidebar: FC = () => {
                 <button
                     onClick={toggleSidebar}
                     className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg"
+                    aria-label="Expand sidebar"
                 >
-                    <ChevronRight className="w-4 h-4" />
+                    <ChevronRight className="w-4 h-4" aria-hidden="true" />
                 </button>
             </div>
         );
@@ -187,8 +188,9 @@ const ContextSidebar: FC = () => {
                 <button
                     onClick={toggleSidebar}
                     className="p-1 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded"
+                    aria-label="Collapse sidebar"
                 >
-                    <ChevronLeft className="w-4 h-4" />
+                    <ChevronLeft className="w-4 h-4" aria-hidden="true" />
                 </button>
             </div>
 
@@ -259,8 +261,9 @@ const InspectorPanel: FC<InspectorPanelProps> = ({ collapsed, onToggle }) => {
                 <button
                     onClick={onToggle}
                     className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg"
+                    aria-label="Expand inspector panel"
                 >
-                    <ChevronLeft className="w-4 h-4" />
+                    <ChevronLeft className="w-4 h-4" aria-hidden="true" />
                 </button>
             </div>
         );
@@ -276,8 +279,9 @@ const InspectorPanel: FC<InspectorPanelProps> = ({ collapsed, onToggle }) => {
                 <button
                     onClick={onToggle}
                     className="p-1 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded"
+                    aria-label="Collapse inspector panel"
                 >
-                    <ChevronRight className="w-4 h-4" />
+                    <ChevronRight className="w-4 h-4" aria-hidden="true" />
                 </button>
             </div>
 

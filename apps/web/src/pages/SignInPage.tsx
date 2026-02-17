@@ -79,15 +79,15 @@ export const SignInPage = () => {
                     <div className="grid grid-cols-3 gap-8 py-8 border-t border-slate-800/50">
                         <div>
                             <div className="text-3xl font-bold text-white">10K+</div>
-                            <div className="text-xs text-slate-500 uppercase tracking-wider mt-1">Users</div>
+                            <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">Users</div>
                         </div>
                         <div>
                             <div className="text-3xl font-bold text-white">99.9%</div>
-                            <div className="text-xs text-slate-500 uppercase tracking-wider mt-1">Uptime</div>
+                            <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">Uptime</div>
                         </div>
                         <div>
                             <div className="text-3xl font-bold text-white">24/7</div>
-                            <div className="text-xs text-slate-500 uppercase tracking-wider mt-1">Support</div>
+                            <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">Support</div>
                         </div>
                     </div>
                 </div>
@@ -113,10 +113,16 @@ export const SignInPage = () => {
                     </div>
 
                     {/* Clerk Sign In */}
-                    <div className="clerk-signin-container">
+                    <div className="clerk-signin-container" style={{ minHeight: '420px' }}>
                         <ClerkLoading>
-                            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 text-slate-300 text-sm" aria-live="polite">
-                                Loading secure sign-in…
+                            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 text-slate-300 text-sm space-y-4" aria-live="polite" style={{ minHeight: '400px' }}>
+                                <div className="h-10 w-full bg-slate-800 rounded-lg animate-pulse" />
+                                <div className="h-4 w-16 bg-slate-800 rounded animate-pulse" />
+                                <div className="h-10 w-full bg-slate-800 rounded-lg animate-pulse" />
+                                <div className="h-4 w-16 bg-slate-800 rounded animate-pulse" />
+                                <div className="h-10 w-full bg-slate-800 rounded-lg animate-pulse" />
+                                <div className="h-10 w-full bg-slate-800 rounded-lg animate-pulse mt-4" />
+                                <p className="text-center text-sm text-slate-500">Loading secure sign-in…</p>
                             </div>
                         </ClerkLoading>
                         <ClerkLoaded>
@@ -163,7 +169,7 @@ export const SignInPage = () => {
 
                     {/* Additional Links */}
                     <div className="text-center pt-6">
-                        <Link to="/" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-300 transition-colors group">
+                        <Link to="/" className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-slate-300 transition-colors group">
                             <span className="group-hover:-translate-x-1 transition-transform">←</span> Back to home
                         </Link>
                     </div>

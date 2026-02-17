@@ -27,6 +27,7 @@ import { Switch } from './ui/switch';
 import { Badge } from './ui/badge';
 import { Wind, MapPin, Mountain, AlertTriangle, Calculator, Info, Building2 } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
+import { API_CONFIG } from '../config/env';
 // import { useToast } from './ui/use-toast';
 
 // ===== CONSTANTS =====
@@ -146,7 +147,7 @@ const ASCE7WindLoadDialog: React.FC = () => {
         setLoading(true);
         try {
             // Call backend API
-            const response = await fetch('http://localhost:8081/load-generation/asce7-wind', {
+            const response = await fetch(`${API_CONFIG.pythonUrl}/load-generation/asce7-wind`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

@@ -231,8 +231,9 @@ export const ModelingToolbar: FC = () => {
                                 }
               `}
                             title={`${tool.tooltip}${tool.shortcut ? ` (${tool.shortcut})` : ''}`}
+                            aria-label={`${tool.tooltip}${tool.shortcut ? ` (${tool.shortcut})` : ''}`}
                         >
-                            <Icon className="w-4 h-4" />
+                            <Icon className="w-4 h-4" aria-hidden="true" />
                         </button>
                     );
                 })}
@@ -242,8 +243,9 @@ export const ModelingToolbar: FC = () => {
                     onClick={() => openModal('structureGallery')}
                     className="p-2 rounded-md transition-all bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white shadow-lg shadow-emerald-500/20"
                     title="Open Structure Gallery - Load iconic civil engineering structures"
+                    aria-label="Open Structure Gallery"
                 >
-                    <Sparkles className="w-4 h-4" />
+                    <Sparkles className="w-4 h-4" aria-hidden="true" />
                 </button>
 
                 {/* Demo Models Panel */}

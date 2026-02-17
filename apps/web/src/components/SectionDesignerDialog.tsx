@@ -9,6 +9,7 @@ import { Card } from './ui/card';
 import { ScrollArea } from './ui/scroll-area';
 import { Calculator, Shapes, Save, Download, Upload } from 'lucide-react';
 import axios from 'axios';
+import { API_CONFIG } from '../config/env';
 
 interface Point {
     x: number;
@@ -56,7 +57,6 @@ export function SectionDesignerDialog({ open, onClose, onSave }: SectionDesigner
     const [error, setError] = useState<string | null>(null);
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const PYTHON_API_URL = import.meta.env.VITE_PYTHON_API_URL || 'http://localhost:8081';
 
     // Available standard shapes
     const standardShapes = [
@@ -136,7 +136,7 @@ export function SectionDesignerDialog({ open, onClose, onSave }: SectionDesigner
         try {
             if (activeTab === 'standard') {
                 // Use standard shape endpoint
-                const response = await axios.post(`${PYTHON_API_URL}/sections/standard/create`, {
+                const response = await axios.post(`${API_CONFIG.pythonUrl}/sections/standard/create`, {
                     shape_type: shapeType,
                     dimensions: dimensions,
                     name: sectionName,
@@ -148,7 +148,7 @@ export function SectionDesignerDialog({ open, onClose, onSave }: SectionDesigner
                 }
             } else {
                 // Use custom section endpoint
-                const response = await axios.post(`${PYTHON_API_URL}/sections/custom/calculate`, {
+                const response = await axios.post(`${API_CONFIG.pythonUrl}/sections/custom/calculate`, {
                     points: points,
                     name: sectionName,
                     material_density: 7850,

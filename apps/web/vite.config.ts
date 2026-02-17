@@ -18,7 +18,7 @@ const securityHeaders = {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev https://clerk.beamlabultimate.tech",
     "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com data:",
     "img-src 'self' data: blob: https:",
-    "connect-src 'self' https://*.beamlabultimate.tech https://beamlab-backend-node.azurewebsites.net https://beamlab-rust-api.azurewebsites.net https://*.clerk.accounts.dev https://*.clerk.com https://*.clerk.dev wss://*.clerk.accounts.dev wss://clerk.beamlabultimate.tech https://api.anthropic.com https://generativelanguage.googleapis.com",
+    "connect-src 'self' https://*.beamlabultimate.tech https://beamlab-backend-node.azurewebsites.net https://beamlab-rust-api.azurewebsites.net https://*.clerk.accounts.dev https://*.clerk.com https://*.clerk.dev wss://*.clerk.accounts.dev wss://clerk.beamlabultimate.tech https://api.anthropic.com https://generativelanguage.googleapis.com https://raw.githack.com",
     "frame-src 'self' https://challenges.cloudflare.com https://*.clerk.accounts.dev https://*.clerk.com https://*.clerk.dev https://clerk.beamlabultimate.tech",
     "worker-src 'self' blob:",
     "object-src 'none'",
@@ -150,6 +150,10 @@ export default defineConfig({
     minify: 'esbuild',
     target: 'esnext',
     chunkSizeWarningLimit: 1200,
+    // Disable modulepreload polyfill to prevent eager loading of lazy chunks
+    modulePreload: {
+      polyfill: false,
+    },
     rollupOptions: {
       // Suppress warnings about unresolved dynamic imports for workers
       onwarn(warning, warn) {
@@ -167,6 +171,8 @@ export default defineConfig({
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
           'three-vendor': ['three', '@react-three/fiber', '@react-three/drei'],
+          'animation-vendor': ['framer-motion'],
+          'clerk-vendor': ['@clerk/clerk-react'],
         },
       },
     },

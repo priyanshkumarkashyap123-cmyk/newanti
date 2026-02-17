@@ -11,12 +11,13 @@ import { FC, useState, useCallback, useEffect, useRef } from 'react';
 import { Sparkles, Loader2, AlertCircle, CheckCircle, Zap, MessageCircle, Send, Bot, User, Wand2, Edit3, Settings2, Lightbulb } from 'lucide-react';
 import { useModelStore } from '../../store/model';
 import { aiLogger } from '../../utils/logger';
+import { API_CONFIG } from '../../config/env';
 
 // ============================================
 // CONFIGURATION
 // ============================================
 
-const PYTHON_API = import.meta.env['VITE_PYTHON_API_URL'] || "http://localhost:8081";
+const PYTHON_API = API_CONFIG.pythonUrl;
 
 // ============================================
 // TYPES
@@ -119,11 +120,11 @@ export const AIArchitectPanel: FC = () => {
     const [isChatting, setIsChatting] = useState(false);
     const [aiStatus, setAIStatus] = useState<AIStatus | null>(null);
     const chatEndRef = useRef<HTMLDivElement>(null);
-    
+
     // Modify state
     const [modifyCommand, setModifyCommand] = useState('');
     const [isModifying, setIsModifying] = useState(false);
-    const [modifyHistory, setModifyHistory] = useState<{command: string; result: string; success: boolean}[]>([]);
+    const [modifyHistory, setModifyHistory] = useState<{ command: string; result: string; success: boolean }[]>([]);
 
     // Store actions
     const clearModel = useModelStore((state) => state.clearModel);
@@ -160,14 +161,14 @@ export const AIArchitectPanel: FC = () => {
             z: n.z,
             restraints: n.restraints || {}
         }));
-        
+
         const membersArray = Array.from(members.values()).map(m => ({
             id: m.id,
             startNodeId: m.startNodeId,
             endNodeId: m.endNodeId,
             sectionId: m.sectionId
         }));
-        
+
         return { nodes: nodesArray, members: membersArray, loads: [] };
     }, [nodes, members]);
 
@@ -177,7 +178,7 @@ export const AIArchitectPanel: FC = () => {
     const applyModelChanges = useCallback((model: any) => {
         // Clear and rebuild model
         clearModel();
-        
+
         // Add nodes
         if (model.nodes) {
             for (const node of model.nodes) {
@@ -190,7 +191,7 @@ export const AIArchitectPanel: FC = () => {
                 });
             }
         }
-        
+
         // Add members
         if (model.members) {
             for (const member of model.members) {
@@ -226,7 +227,7 @@ export const AIArchitectPanel: FC = () => {
 
         try {
             const model = getModelForAPI();
-            
+
             const response = await fetch(`${PYTHON_API}/ai/smart-modify`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -242,7 +243,7 @@ export const AIArchitectPanel: FC = () => {
             if (data.success && data.model) {
                 // Apply the modified model to the store
                 applyModelChanges(data.model);
-                
+
                 setSuccess(data.message);
                 setModifyHistory(prev => [...prev, {
                     command: modifyCommand,
@@ -253,12 +254,12 @@ export const AIArchitectPanel: FC = () => {
             } else {
                 const errorMsg = data.message || 'Modification failed';
                 setError(errorMsg);
-                
+
                 // Show suggestions if available
                 if (data.suggestions && data.suggestions.length > 0) {
                     setError(`${errorMsg}\n\nTry: ${data.suggestions[0]}`);
                 }
-                
+
                 setModifyHistory(prev => [...prev, {
                     command: modifyCommand,
                     result: errorMsg,
@@ -457,8 +458,8 @@ export const AIArchitectPanel: FC = () => {
                     <button
                         onClick={() => setActiveTab('generate')}
                         className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-medium transition-all ${activeTab === 'generate'
-                                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm'
-                                : 'text-zinc-400 hover:text-white'
+                            ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm'
+                            : 'text-zinc-400 hover:text-white'
                             }`}
                     >
                         <Wand2 className="w-3.5 h-3.5" />
@@ -467,8 +468,8 @@ export const AIArchitectPanel: FC = () => {
                     <button
                         onClick={() => setActiveTab('modify')}
                         className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-medium transition-all ${activeTab === 'modify'
-                                ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-sm'
-                                : 'text-zinc-400 hover:text-white'
+                            ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-sm'
+                            : 'text-zinc-400 hover:text-white'
                             }`}
                     >
                         <Edit3 className="w-3.5 h-3.5" />
@@ -477,8 +478,8 @@ export const AIArchitectPanel: FC = () => {
                     <button
                         onClick={() => setActiveTab('chat')}
                         className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-medium transition-all ${activeTab === 'chat'
-                                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm'
-                                : 'text-zinc-400 hover:text-white'
+                            ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm'
+                            : 'text-zinc-400 hover:text-white'
                             }`}
                     >
                         <MessageCircle className="w-3.5 h-3.5" />
@@ -590,8 +591,8 @@ export const AIArchitectPanel: FC = () => {
                     <div className={`flex items-center gap-2 p-2 rounded-lg ${nodes.size > 0 ? 'bg-green-500/10 border border-green-500/30' : 'bg-yellow-500/10 border border-yellow-500/30'}`}>
                         <Settings2 className={`w-4 h-4 ${nodes.size > 0 ? 'text-green-400' : 'text-yellow-400'}`} />
                         <span className={`text-xs ${nodes.size > 0 ? 'text-green-400' : 'text-yellow-400'}`}>
-                            {nodes.size > 0 
-                                ? `Model: ${nodes.size} nodes, ${members.size} members` 
+                            {nodes.size > 0
+                                ? `Model: ${nodes.size} nodes, ${members.size} members`
                                 : 'No model loaded - Generate one first!'}
                         </span>
                     </div>
@@ -695,13 +696,12 @@ export const AIArchitectPanel: FC = () => {
                             <label className="block text-xs text-zinc-500 mb-1.5">Recent changes</label>
                             <div className="space-y-1 max-h-32 overflow-y-auto">
                                 {modifyHistory.slice(-5).reverse().map((item, i) => (
-                                    <div 
-                                        key={i} 
-                                        className={`text-[10px] p-1.5 rounded ${
-                                            item.success 
-                                                ? 'bg-green-500/10 text-green-400' 
-                                                : 'bg-red-500/10 text-red-400'
-                                        }`}
+                                    <div
+                                        key={i}
+                                        className={`text-[10px] p-1.5 rounded ${item.success
+                                            ? 'bg-green-500/10 text-green-400'
+                                            : 'bg-red-500/10 text-red-400'
+                                            }`}
                                     >
                                         <span className="font-medium">{item.command}</span>
                                         <span className="opacity-70"> → {item.result}</span>
@@ -749,8 +749,8 @@ export const AIArchitectPanel: FC = () => {
                                     )}
                                     <div
                                         className={`max-w-[80%] px-3 py-2 rounded-lg text-xs ${msg.role === 'user'
-                                                ? 'bg-purple-600 text-white'
-                                                : 'bg-zinc-800 text-zinc-200 border border-zinc-700'
+                                            ? 'bg-purple-600 text-white'
+                                            : 'bg-zinc-800 text-zinc-200 border border-zinc-700'
                                             }`}
                                     >
                                         {msg.content}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_CONFIG } from '../../config/env';
 import { Card } from '../ui/card'; // Assuming standardized Card exists, or I will use div/standard UI
 // I will using Tailwind classes and standard HTML elements to avoid dependency issues if internal UI lib is complex
 // But I should check if I can use existing UI components.
@@ -28,7 +29,7 @@ export const FoundationDesignPanel: React.FC = () => {
     const handleDesign = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:3001/design/foundation/check', {
+            const response = await fetch(`${API_CONFIG.baseUrl}/design/foundation/check`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

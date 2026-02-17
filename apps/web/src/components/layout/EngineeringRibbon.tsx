@@ -97,10 +97,10 @@ export const EngineeringRibbon: FC<RibbonProps> = ({ activeCategory }) => {
                 <ToolButton icon={FolderOpen} label="Open" onClick={() => document.dispatchEvent(new CustomEvent('trigger-cloud-open'))} shortcut="Cmd+O" />
                 <div className="flex flex-col gap-1">
                     <Tooltip content="Undo" shortcut="Cmd+Z">
-                        <button onClick={() => undo()} disabled={pastStates.length === 0} className="p-1 hover:bg-slate-800 rounded disabled:opacity-30 text-slate-400"><Undo className="w-3 h-3" /></button>
+                        <button onClick={() => undo()} disabled={pastStates.length === 0} className="p-1 hover:bg-slate-800 rounded disabled:opacity-30 text-slate-400" aria-label="Undo"><Undo className="w-3 h-3" aria-hidden="true" /></button>
                     </Tooltip>
                     <Tooltip content="Redo" shortcut="Cmd+Shift+Z">
-                        <button onClick={() => redo()} disabled={futureStates.length === 0} className="p-1 hover:bg-slate-800 rounded disabled:opacity-30 text-slate-400"><Redo className="w-3 h-3" /></button>
+                        <button onClick={() => redo()} disabled={futureStates.length === 0} className="p-1 hover:bg-slate-800 rounded disabled:opacity-30 text-slate-400" aria-label="Redo"><Redo className="w-3 h-3" aria-hidden="true" /></button>
                     </Tooltip>
                 </div>
                 <ToolButton

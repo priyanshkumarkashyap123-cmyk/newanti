@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import axios from 'axios';
+import { API_CONFIG } from '../config/env';
 
 interface MaterialSelectorProps {
     onMaterialSelect: (materialId: string) => void;
@@ -32,7 +33,6 @@ export function MaterialSelector({ onMaterialSelect, className }: MaterialSelect
         density: 2400.0
     });
 
-    const PYTHON_API_URL = import.meta.env.VITE_PYTHON_API_URL || 'http://localhost:8081';
 
     const handleCreateMaterial = async () => {
         try {
@@ -47,7 +47,7 @@ export function MaterialSelector({ onMaterialSelect, className }: MaterialSelect
             }
 
             console.log('Creating material:', payload);
-            const response = await axios.post(`${PYTHON_API_URL}/materials/create`, payload);
+            const response = await axios.post(`${API_CONFIG.pythonUrl}/materials/create`, payload);
 
             if (response.data.success) {
                 const newId = response.data.material_id;

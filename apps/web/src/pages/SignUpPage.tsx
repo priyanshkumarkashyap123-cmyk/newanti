@@ -109,10 +109,20 @@ export const SignUpPage = () => {
                     </div>
 
                     {/* Clerk Sign Up */}
-                    <div className="clerk-signup-container">
+                    <div className="clerk-signup-container" style={{ minHeight: '520px' }}>
                         <ClerkLoading>
-                            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 text-slate-300 text-sm" aria-live="polite">
-                                Loading secure sign-up…
+                            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 text-slate-300 text-sm space-y-4" aria-live="polite" style={{ minHeight: '500px' }}>
+                                <div className="h-10 w-full bg-slate-800 rounded-lg animate-pulse" />
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="h-10 bg-slate-800 rounded-lg animate-pulse" />
+                                    <div className="h-10 bg-slate-800 rounded-lg animate-pulse" />
+                                </div>
+                                <div className="h-4 w-16 bg-slate-800 rounded animate-pulse" />
+                                <div className="h-10 w-full bg-slate-800 rounded-lg animate-pulse" />
+                                <div className="h-4 w-16 bg-slate-800 rounded animate-pulse" />
+                                <div className="h-10 w-full bg-slate-800 rounded-lg animate-pulse" />
+                                <div className="h-10 w-full bg-slate-800 rounded-lg animate-pulse mt-4" />
+                                <p className="text-center text-sm text-slate-500">Loading secure sign-up…</p>
                             </div>
                         </ClerkLoading>
                         <ClerkLoaded>
@@ -158,7 +168,7 @@ export const SignUpPage = () => {
 
                     {/* Additional Links */}
                     <div className="text-center pt-6">
-                        <Link to="/" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-300 transition-colors group">
+                        <Link to="/" className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-slate-300 transition-colors group">
                             <span className="group-hover:-translate-x-1 transition-transform">←</span> Back to home
                         </Link>
                     </div>

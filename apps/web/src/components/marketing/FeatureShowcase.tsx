@@ -54,7 +54,7 @@ export const CompetitiveAdvantage: FC = () => {
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Built for the Modern Engineer
           </h2>
-          <p className="text-slate-400 max-w-2xl mx-auto">
+          <p className="text-slate-300 max-w-2xl mx-auto">
             We studied what's broken in existing tools and built something better.
           </p>
         </div>
@@ -144,7 +144,7 @@ export const PerformanceMetrics: FC = () => {
                 {metric.value}
               </div>
               <div className="text-white font-medium mb-1">{metric.label}</div>
-              <div className="text-xs text-slate-500">{metric.comparison}</div>
+              <div className="text-xs text-slate-400">{metric.comparison}</div>
             </motion.div>
           ))}
         </div>
@@ -328,7 +328,7 @@ export const Testimonials: FC = () => {
                 </div>
                 <div>
                   <p className="font-medium text-white">{t.author}</p>
-                  <p className="text-xs text-slate-500">{t.role}, {t.company}</p>
+                  <p className="text-xs text-slate-400">{t.role}, {t.company}</p>
                 </div>
               </div>
             </motion.div>
@@ -366,7 +366,7 @@ export const SecurityCompliance: FC = () => {
           <div className="flex flex-wrap gap-4">
             {badges.map((badge, i) => (
               <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-lg bg-slate-900 border border-slate-800">
-                <div className="text-slate-500">{badge.icon}</div>
+                <div className="text-slate-400">{badge.icon}</div>
                 <div>
                   <p className="text-sm font-medium text-white">{badge.label}</p>
                   <p className="text-xs text-slate-500">{badge.desc}</p>

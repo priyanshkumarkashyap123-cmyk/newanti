@@ -557,8 +557,9 @@ const EditToolsPanel: FC = () => {
                 {showSplitDialog && selectedMemberId && (
                     <div className="mt-2 p-3 bg-zinc-800/80 rounded-lg space-y-2">
                         <div>
-                            <label className="text-[10px] text-zinc-500">Split Position (0-1)</label>
+                            <label htmlFor="split-position-range" className="text-[10px] text-zinc-500">Split Position (0-1)</label>
                             <input
+                                id="split-position-range"
                                 type="range"
                                 min="0.1"
                                 max="0.9"
@@ -566,6 +567,7 @@ const EditToolsPanel: FC = () => {
                                 value={splitRatio}
                                 onChange={(e) => setSplitRatio(parseFloat(e.target.value))}
                                 className="w-full"
+                                aria-label="Split position ratio"
                             />
                             <div className="text-xs text-center text-zinc-400">{(splitRatio * 100).toFixed(0)}% from start</div>
                         </div>

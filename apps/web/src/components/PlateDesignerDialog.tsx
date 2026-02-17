@@ -5,6 +5,7 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { MaterialSelector } from './MaterialSelector';
 import axios from 'axios';
+import { API_CONFIG } from '../config/env';
 import { Grid3X3, Layers } from 'lucide-react';
 
 interface Node {
@@ -28,7 +29,6 @@ export function PlateDesignerDialog({ open, onClose, availableNodes, onPlateCrea
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const PYTHON_API_URL = import.meta.env.VITE_PYTHON_API_URL || 'http://localhost:8081';
 
     const handleCreatePlate = async () => {
         // Validate inputs
@@ -57,7 +57,7 @@ export function PlateDesignerDialog({ open, onClose, availableNodes, onPlateCrea
                 material_id: materialId
             };
 
-            const response = await axios.post(`${PYTHON_API_URL}/elements/plate/create`, payload);
+            const response = await axios.post(`${API_CONFIG.pythonUrl}/elements/plate/create`, payload);
 
             if (response.data.success) {
                 if (onPlateCreated) {

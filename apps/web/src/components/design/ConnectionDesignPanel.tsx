@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_CONFIG } from '../../config/env';
 // Using standard UI elements
 
 interface ConnectionResult {
@@ -27,7 +28,7 @@ export const ConnectionDesignPanel: React.FC = () => {
     const handleDesign = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:3001/design/connection/check', {
+            const response = await fetch(`${API_CONFIG.baseUrl}/design/connection/check`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

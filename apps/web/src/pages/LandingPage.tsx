@@ -108,7 +108,7 @@ export const LandingPage: FC = () => {
     return (
         <div className="min-h-screen bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30">
             {/* Skip to main content - Accessibility */}
-            <a href="#main-content" className="skip-to-content">
+            <a href="#main-content" className="skip-link">
                 Skip to main content
             </a>
             
@@ -272,7 +272,7 @@ export const LandingPage: FC = () => {
                         transition={{ delay: 0.8 }}
                         className="mt-16 flex flex-col items-center gap-4"
                     >
-                        <p className="text-sm text-slate-500 uppercase tracking-wider font-semibold">Trusted by engineers at</p>
+                        <p className="text-sm text-slate-400 uppercase tracking-wider font-semibold">Trusted by engineers at</p>
                         <div className="flex flex-wrap items-center justify-center gap-8 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
                             {TRUSTED_COMPANIES.map((company) => (
                                 <div key={company} className="px-4 py-2 text-lg font-bold text-slate-300">
@@ -479,28 +479,28 @@ export const LandingPage: FC = () => {
                         </div>
 
                         <div>
-                            <h4 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">Product</h4>
-                            <ul className="space-y-3 text-sm">
-                                <li><a href="#features" className="text-slate-400 hover:text-white transition-colors">Features</a></li>
-                                <li><a href="#pricing" className="text-slate-400 hover:text-white transition-colors">Pricing</a></li>
-                                <li><Link to="/help" className="text-slate-400 hover:text-white transition-colors">Documentation</Link></li>
-                                <li><Link to="/demo" className="text-slate-400 hover:text-white transition-colors">Live Demo</Link></li>
+                            <h3 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">Product</h3>
+                            <ul className="space-y-1 text-sm">
+                                <li><a href="#features" className="text-slate-400 hover:text-white transition-colors inline-block py-1.5">Features</a></li>
+                                <li><a href="#pricing" className="text-slate-400 hover:text-white transition-colors inline-block py-1.5">Pricing</a></li>
+                                <li><Link to="/help" className="text-slate-400 hover:text-white transition-colors inline-block py-1.5">Documentation</Link></li>
+                                <li><Link to="/demo" className="text-slate-400 hover:text-white transition-colors inline-block py-1.5">Live Demo</Link></li>
                             </ul>
                         </div>
 
                         <div>
-                            <h4 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">Legal</h4>
-                            <ul className="space-y-3 text-sm">
-                                <li><Link to="/privacy" className="text-slate-400 hover:text-white transition-colors">Privacy Policy</Link></li>
-                                <li><Link to="/terms" className="text-slate-400 hover:text-white transition-colors">Terms of Service</Link></li>
-                                <li><Link to="/contact" className="text-slate-400 hover:text-white transition-colors">Contact Us</Link></li>
+                            <h3 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">Legal</h3>
+                            <ul className="space-y-1 text-sm">
+                                <li><Link to="/privacy" className="text-slate-400 hover:text-white transition-colors inline-block py-1.5">Privacy Policy</Link></li>
+                                <li><Link to="/terms" className="text-slate-400 hover:text-white transition-colors inline-block py-1.5">Terms of Service</Link></li>
+                                <li><Link to="/contact" className="text-slate-400 hover:text-white transition-colors inline-block py-1.5">Contact Us</Link></li>
                             </ul>
                         </div>
                     </div>
 
                     <div className="pt-8 border-t border-slate-900 flex flex-col sm:flex-row justify-between items-center gap-4">
-                        <p className="text-slate-500 text-sm">© 2026 BeamLab Ultimate. All rights reserved.</p>
-                        <p className="text-slate-600 text-xs">Made with ❤️ for structural engineers worldwide</p>
+                        <p className="text-slate-400 text-sm">© 2026 BeamLab Ultimate. All rights reserved.</p>
+                        <p className="text-slate-500 text-xs">Made with ❤️ for structural engineers worldwide</p>
                     </div>
                 </div>
             </footer>
@@ -522,8 +522,8 @@ const FeatureCard = ({ icon, title, desc, bullets }: { icon: any, title: string,
         <p className="text-slate-400 leading-relaxed text-sm mb-6 flex-grow">{desc}</p>
         <ul className="space-y-2 mt-auto">
             {bullets.map((bullet, i) => (
-                <li key={i} className="flex items-center gap-2 text-xs text-slate-500">
-                    <CheckCircle className="w-3.5 h-3.5 text-blue-500/50 flex-shrink-0" />
+                <li key={i} className="flex items-center gap-2 text-xs text-slate-400">
+                    <CheckCircle className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
                     <span>{bullet}</span>
                 </li>
             ))}
