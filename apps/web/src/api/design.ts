@@ -11,6 +11,7 @@
  */
 
 import { api } from '@/utils/api';
+import { API_CONFIG } from '@/config/env';
 
 // ============================================
 // TYPES
@@ -317,12 +318,14 @@ export async function getDesignCodes(): Promise<{
     connections: Array<{ code: string; name: string; country: string }>;
     foundations: Array<{ code: string; name: string; country: string }>;
 }> {
-    const { data } = await api.get<{ codes: {
-        steel: Array<{ code: string; name: string; country: string }>;
-        concrete: Array<{ code: string; name: string; country: string }>;
-        connections: Array<{ code: string; name: string; country: string }>;
-        foundations: Array<{ code: string; name: string; country: string }>;
-    } }>('/api/design/codes');
+    const { data } = await api.get<{
+        codes: {
+            steel: Array<{ code: string; name: string; country: string }>;
+            concrete: Array<{ code: string; name: string; country: string }>;
+            connections: Array<{ code: string; name: string; country: string }>;
+            foundations: Array<{ code: string; name: string; country: string }>;
+        }
+    }>('/api/design/codes');
 
     return data.codes;
 }
@@ -427,7 +430,7 @@ export const BOLT_GRADES = [
 // PYTHON API DESIGN FUNCTIONS (IS 456:2000)
 // ============================================
 
-const PYTHON_API = import.meta.env.VITE_PYTHON_API_URL || 'http://localhost:8081';
+const PYTHON_API = API_CONFIG.pythonUrl;
 
 async function pythonApiCall<T>(endpoint: string, payload: unknown): Promise<T> {
     const { data } = await api.post<T>(endpoint, payload, { baseURL: PYTHON_API });
