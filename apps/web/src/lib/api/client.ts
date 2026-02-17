@@ -16,6 +16,8 @@
  * @version 1.0.0
  */
 
+import { API_CONFIG } from '../../config/env';
+
 // ============================================================================
 // TYPES
 // ============================================================================
@@ -486,7 +488,7 @@ export class ApiClient {
 // DEFAULT CLIENT INSTANCE
 // ============================================================================
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = API_CONFIG.baseUrl;
 
 export const apiClient = new ApiClient({
   baseUrl: API_BASE_URL,

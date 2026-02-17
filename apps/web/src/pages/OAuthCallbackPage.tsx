@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import { API_CONFIG } from '../config/env';
 
 const OAuthCallbackPage = () => {
     const { provider } = useParams<{ provider: string }>();
@@ -18,8 +19,7 @@ const OAuthCallbackPage = () => {
             }
 
             try {
-                // Determine backend URL based on env or default
-                const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+                const API_URL = API_CONFIG.baseUrl;
 
                 const response = await fetch(`${API_URL}/api/auth/${provider}`, {
                     method: 'POST',

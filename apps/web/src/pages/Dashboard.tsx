@@ -209,16 +209,16 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                     {/* Stats Row */}
                     <StaggerContainer className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                         <StaggerItem>
-                            <StatCard title="Total Projects" value="12" icon={<Folder className="w-4 h-4" />} color="blue" />
+                            <StatCard title="Total Projects" value="7" icon={<Folder className="w-4 h-4" />} color="blue" />
                         </StaggerItem>
                         <StaggerItem>
-                            <StatCard title="Active Analyses" value="3" icon={<Grid className="w-4 h-4" />} color="green" />
+                            <StatCard title="Active Analyses" value="2" icon={<Grid className="w-4 h-4" />} color="green" />
                         </StaggerItem>
                         <StaggerItem>
-                            <StatCard title="Shared With Me" value="5" icon={<Users className="w-4 h-4" />} color="purple" />
+                            <StatCard title="Shared With Me" value="1" icon={<Users className="w-4 h-4" />} color="purple" />
                         </StaggerItem>
                         <StaggerItem>
-                            <StatCard title="Storage Used" value="45%" icon={<FileText className="w-4 h-4" />} color="yellow" />
+                            <StatCard title="Storage Used" value="12%" icon={<FileText className="w-4 h-4" />} color="yellow" />
                         </StaggerItem>
                     </StaggerContainer>
 
@@ -318,20 +318,60 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                     </TabPanel>
 
                     <TabPanel isActive={activeTab === 'templates'}>
-                        <EmptyState
-                            title="Templates Gallery"
-                            description="Start with pre-built structural templates."
-                            icon={<Layout className="w-8 h-8" />}
-                            action={<Button variant="outline" className="mt-4">Browse Gallery</Button>}
-                        />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            {TEMPLATES.map((tpl) => (
+                                <button
+                                    key={tpl.id}
+                                    onClick={handleNewProject}
+                                    className="group bg-slate-900/60 border border-white/[0.06] rounded-xl overflow-hidden text-left hover:border-blue-500/30 hover:shadow-[0_12px_40px_rgba(59,130,246,0.08)] transition-all duration-300"
+                                >
+                                    <div className="aspect-[4/3] bg-slate-950 relative grid-pattern flex items-center justify-center">
+                                        <span className="material-symbols-outlined text-5xl text-slate-800 group-hover:text-blue-500/40 transition-colors">{tpl.icon}</span>
+                                        <div className="absolute top-3 right-3">
+                                            <Badge variant="outline">{tpl.category}</Badge>
+                                        </div>
+                                    </div>
+                                    <div className="p-4">
+                                        <h3 className="font-bold text-white truncate mb-1 group-hover:text-blue-400 transition-colors">{tpl.name}</h3>
+                                        <p className="text-xs text-slate-400 line-clamp-2">{tpl.description}</p>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
                     </TabPanel>
 
                     <TabPanel isActive={activeTab === 'shared'}>
-                        <EmptyState
-                            title="Shared Projects"
-                            description="Projects shared with you by your team will appear here."
-                            icon={<Users className="w-8 h-8" />}
-                        />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            {SHARED_PROJECTS.map((project) => (
+                                <motion.div
+                                    layout
+                                    key={project.id}
+                                    onClick={() => handleOpenProject(project.id)}
+                                    className="group bg-slate-900/60 border border-white/[0.06] rounded-xl overflow-hidden cursor-pointer hover:border-blue-500/30 hover:shadow-[0_12px_40px_rgba(59,130,246,0.08)] transition-all duration-300"
+                                >
+                                    <div className="aspect-[4/3] bg-slate-950 relative grid-pattern flex items-center justify-center">
+                                        <span className="material-symbols-outlined text-5xl text-slate-800 group-hover:text-blue-500/40 transition-colors">
+                                            {getTypeIcon(project.type)}
+                                        </span>
+                                        <div className="absolute top-3 left-3">
+                                            <Badge variant="info">{project.sharedBy}</Badge>
+                                        </div>
+                                    </div>
+                                    <div className="p-4">
+                                        <h3 className="font-bold text-white truncate mb-1 group-hover:text-blue-400 transition-colors">{project.name}</h3>
+                                        <div className="flex items-center gap-3 text-xs text-slate-400">
+                                            <span>{project.nodeCount} Nodes</span>
+                                            <span className="w-1 h-1 bg-slate-700 rounded-full" />
+                                            <span>{project.memberCount} Members</span>
+                                        </div>
+                                        <p className="text-xs text-slate-500 mt-3 flex items-center gap-1">
+                                            <span className="material-symbols-outlined text-[10px]">schedule</span>
+                                            {project.lastModified}
+                                        </p>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
                     </TabPanel>
                 </PageTransition>
             </main>
@@ -344,16 +384,37 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
 // ============================================
 
 const MODULE_LAUNCHERS = [
-    { id: 'structural-3d', title: 'Structural 3D', subtitle: 'Full 3D Frame Analysis', icon: 'deployed_code', bgColor: 'bg-blue-500/20 text-blue-400' },
-    { id: 'beam', title: 'Beam Tool', subtitle: 'Quick Beam Analysis', icon: 'straighten', bgColor: 'bg-orange-500/20 text-orange-400' },
-    { id: 'rc-design', title: 'RC Design', subtitle: 'Concrete Design', icon: 'apartment', bgColor: 'bg-green-500/20 text-green-400' },
-    { id: 'steel-design', title: 'Steel Design', subtitle: 'Steel Member Checks', icon: 'construction', bgColor: 'bg-purple-500/20 text-purple-400' },
+    { id: 'structural-3d', title: '3D Frame', subtitle: 'Multi-storey frames & portals', icon: 'deployed_code', bgColor: 'bg-blue-500/20 text-blue-400' },
+    { id: 'beam', title: 'Beam Tool', subtitle: 'Continuous & cantilever beams', icon: 'straighten', bgColor: 'bg-orange-500/20 text-orange-400' },
+    { id: 'rc-design', title: 'RC Design', subtitle: 'IS 456 / ACI 318 checks', icon: 'apartment', bgColor: 'bg-green-500/20 text-green-400' },
+    { id: 'steel-design', title: 'Steel Design', subtitle: 'IS 800 / AISC 360 checks', icon: 'construction', bgColor: 'bg-purple-500/20 text-purple-400' },
 ];
 
 const RECENT_PROJECTS: Project[] = [
-    { id: '1', name: 'Office Building Phase 1', type: 'Frame', lastModified: '2 hours ago', nodeCount: 48, memberCount: 82, status: 'Draft' },
-    { id: '2', name: 'Warehouse Roof Truss', type: 'Truss', lastModified: 'Yesterday', nodeCount: 24, memberCount: 45, status: 'Analyzed' },
-    { id: '3', name: 'Residential Foundation', type: 'Slab', lastModified: '3 days ago', nodeCount: 12, memberCount: 20, status: 'Final' },
+    { id: '1', name: 'G+4 Residential Block – Pune', type: 'Frame', lastModified: '35 min ago', nodeCount: 126, memberCount: 214, status: 'Draft' },
+    { id: '2', name: 'Warehouse Roof Truss – 24 m Span', type: 'Truss', lastModified: '3 hours ago', nodeCount: 18, memberCount: 33, status: 'Analyzed' },
+    { id: '3', name: 'Footbridge – Simply Supported', type: 'Beam', lastModified: 'Yesterday', nodeCount: 6, memberCount: 5, status: 'Analyzed' },
+    { id: '4', name: 'Industrial Portal Frame – 15 m', type: 'Frame', lastModified: '2 days ago', nodeCount: 8, memberCount: 9, status: 'Final' },
+    { id: '5', name: 'Cantilever Retaining Wall Check', type: 'Beam', lastModified: '4 days ago', nodeCount: 4, memberCount: 3, status: 'Analyzed' },
+    { id: '6', name: 'Roof Slab – Two-Way (6×5 m)', type: 'Slab', lastModified: '1 week ago', nodeCount: 25, memberCount: 40, status: 'Final' },
+    { id: '7', name: 'Staircase Waist Slab', type: 'Beam', lastModified: '2 weeks ago', nodeCount: 8, memberCount: 7, status: 'Draft' },
+];
+
+interface SharedProject extends Project {
+    sharedBy: string;
+}
+
+const SHARED_PROJECTS: SharedProject[] = [
+    { id: 's1', name: 'Community Hall Frame – Nagpur', type: 'Frame', lastModified: '5 hours ago', nodeCount: 42, memberCount: 68, status: 'Draft', sharedBy: 'Arjun M.' },
+];
+
+const TEMPLATES = [
+    { id: 't1', name: 'Simply Supported Beam', category: 'Beam', icon: 'straighten', description: 'Single span beam with point and UDL loads. Great for quick checks.' },
+    { id: 't2', name: '2-Bay 3-Storey Frame', category: 'Frame', icon: 'apartment', description: 'Typical reinforced concrete frame with gravity + lateral loads.' },
+    { id: 't3', name: 'Pratt Truss – 12 m', category: 'Truss', icon: 'grid_on', description: 'Standard Pratt truss with panel loads for roof or bridge.' },
+    { id: 't4', name: 'Propped Cantilever', category: 'Beam', icon: 'straighten', description: 'Cantilever beam with roller support at free end.' },
+    { id: 't5', name: 'Portal Frame – Pinned Base', category: 'Frame', icon: 'deployed_code', description: 'Single bay portal frame with pinned column bases.' },
+    { id: 't6', name: 'Continuous Beam – 3 Span', category: 'Beam', icon: 'straighten', description: 'Three-span continuous beam for moment distribution practice.' },
 ];
 
 export default Dashboard;

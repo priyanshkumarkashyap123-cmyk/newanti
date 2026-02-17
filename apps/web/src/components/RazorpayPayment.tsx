@@ -5,6 +5,7 @@
 
 import { FC, useState, useCallback, useEffect } from 'react';
 import { useAuth } from '../providers/AuthProvider';
+import { API_CONFIG } from '../config/env';
 
 // ============================================
 // TYPES
@@ -79,7 +80,7 @@ const loadRazorpayScript = (): Promise<boolean> => {
 // API HELPERS
 // ============================================
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
+const API_URL = API_CONFIG.baseUrl;
 
 async function createSubscription(userId: string, email: string, token: string, planType: 'monthly' | 'yearly') {
     const response = await fetch(`${API_URL}/api/billing/create-subscription`, {

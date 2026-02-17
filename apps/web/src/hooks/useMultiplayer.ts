@@ -10,6 +10,7 @@
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { API_CONFIG } from '../config/env';
 
 // ============================================
 // TYPES
@@ -96,7 +97,7 @@ export function useMultiplayer(config: MultiplayerConfig) {
         projectVersion: 0
     });
 
-    const serverUrl = config.serverUrl || 'http://localhost:3001';
+    const serverUrl = config.serverUrl || API_CONFIG.baseUrl;
 
     // ========================================
     // CONNECTION MANAGEMENT

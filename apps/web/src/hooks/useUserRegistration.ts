@@ -7,8 +7,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useAuth, useUser } from '../providers/AuthProvider';
+import { API_CONFIG } from '../config/env';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_URL = API_CONFIG.baseUrl;
 
 export function useUserRegistration() {
     const { isSignedIn, getToken } = useAuth();

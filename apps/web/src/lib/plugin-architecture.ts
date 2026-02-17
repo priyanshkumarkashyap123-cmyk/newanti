@@ -13,6 +13,7 @@
  */
 
 import { create } from 'zustand';
+import { API_CONFIG } from '../config/env';
 
 // ============================================================================
 // TYPES AND INTERFACES
@@ -40,7 +41,7 @@ export interface PluginManifest {
   activationEvents?: string[];
 }
 
-export type PluginCategory = 
+export type PluginCategory =
   | 'analysis'
   | 'design'
   | 'modeling'
@@ -174,7 +175,7 @@ export interface LanguageContribution {
 // PLUGIN LIFECYCLE
 // ============================================================================
 
-export type PluginState = 
+export type PluginState =
   | 'uninstalled'
   | 'installed'
   | 'activating'
@@ -259,17 +260,17 @@ export interface ModelAPI {
   addNode: (node: Omit<Node, 'id'>) => Promise<Node>;
   updateNode: (id: string, updates: Partial<Node>) => Promise<Node>;
   deleteNode: (id: string) => Promise<void>;
-  
+
   getElements: () => Promise<Element[]>;
   getElement: (id: string) => Promise<Element | null>;
   addElement: (element: Omit<Element, 'id'>) => Promise<Element>;
   updateElement: (id: string, updates: Partial<Element>) => Promise<Element>;
   deleteElement: (id: string) => Promise<void>;
-  
+
   getLoads: () => Promise<Load[]>;
   getMaterials: () => Promise<Material[]>;
   getSections: () => Promise<Section[]>;
-  
+
   onDidChange: (listener: (event: ModelChangeEvent) => void) => Disposable;
 }
 
@@ -803,7 +804,7 @@ export class PluginManager {
       },
       onDidChange: (listener) => {
         if (!canRead) throw new Error('model:read permission required');
-        return { dispose: () => {} };
+        return { dispose: () => { } };
       },
     };
   }
@@ -830,7 +831,7 @@ export class PluginManager {
       },
       onDidComplete: (listener) => {
         if (!canRead) throw new Error('analysis:results permission required');
-        return { dispose: () => {} };
+        return { dispose: () => { } };
       },
     };
   }
@@ -866,25 +867,25 @@ export class PluginManager {
           id,
           title,
           visible: false,
-          show: () => {},
-          hide: () => {},
-          dispose: () => {},
-          onDidReceiveMessage: () => ({ dispose: () => {} }),
-          postMessage: () => {},
-          setHtml: () => {},
+          show: () => { },
+          hide: () => { },
+          dispose: () => { },
+          onDidReceiveMessage: () => ({ dispose: () => { } }),
+          postMessage: () => { },
+          setHtml: () => { },
         };
       },
       createStatusBarItem: (alignment, priority) => {
         return {
           text: '',
-          show: () => {},
-          hide: () => {},
-          dispose: () => {},
+          show: () => { },
+          hide: () => { },
+          dispose: () => { },
         };
       },
       getSelection: async () => [],
-      setSelection: async (ids) => {},
-      onDidChangeSelection: (listener) => ({ dispose: () => {} }),
+      setSelection: async (ids) => { },
+      onDidChangeSelection: (listener) => ({ dispose: () => { } }),
     };
   }
 
@@ -1114,7 +1115,7 @@ export class PluginDevServer {
   private manager: PluginManager;
   private watchedPlugins: Set<string> = new Set();
 
-  constructor(manager: PluginManager, wsUrl: string = 'ws://localhost:3001') {
+  constructor(manager: PluginManager, wsUrl: string = API_CONFIG.baseUrl.replace(/^http/, 'ws')) {
     this.manager = manager;
     this.connect(wsUrl);
   }
