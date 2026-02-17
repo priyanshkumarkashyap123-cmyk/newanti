@@ -23,15 +23,31 @@ const checkWebglSupport = (): { supported: boolean; reason?: string } => {
 
     try {
         const testCanvas = document.createElement('canvas');
-        const gl = testCanvas.getContext('webgl2') || testCanvas.getContext('webgl');
+        // Try WebGL2 first, then WebGL1
+        // Use failIfMajorPerformanceCaveat: false to avoid rejecting software renderers
+        const gl = testCanvas.getContext('webgl2', { failIfMajorPerformanceCaveat: false }) 
+                || testCanvas.getContext('webgl', { failIfMajorPerformanceCaveat: false });
 
         if (!gl) {
-            throw new Error('WebGL is not available (blocked or disabled in this browser).');
+            return {
+                supported: false,
+                reason: 'WebGL context creation returned null. WebGL may be disabled in browser settings or blocked by a browser extension.'
+            };
         }
 
-        // Immediately release the context to avoid leaks
-        const loseContext = (gl as any).getExtension?.('WEBGL_lose_context');
-        loseContext?.loseContext?.();
+        // Verify the context is actually functional by checking a basic parameter
+        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        if (debugInfo) {
+            const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+            console.log('[WebGL] GPU Renderer:', renderer);
+        }
+
+        // Do NOT call loseContext() here — it can poison the WebGL state
+        // and cause subsequent context creation (by R3F Canvas) to fail.
+        // The test canvas will be garbage-collected naturally.
+        // Just null out the reference to help GC.
+        testCanvas.width = 0;
+        testCanvas.height = 0;
 
         return { supported: true };
     } catch (error) {
@@ -360,8 +376,25 @@ const ViewportContainer: FC<{ className?: string; layout: ViewportLayout; useWeb
                 eventSource={containerRef as MutableRefObject<HTMLElement>}
                 shadows
                 dpr={[1, 2]}
-                gl={{ preserveDrawingBuffer: true, antialias: true, alpha: false, powerPreference: 'high-performance' }}
+                gl={{ 
+                    preserveDrawingBuffer: true, 
+                    antialias: true, 
+                    alpha: false, 
+                    powerPreference: 'high-performance',
+                    failIfMajorPerformanceCaveat: false, // Don't fail on software renderers
+                }}
                 camera={{ position: [20, 20, 20], fov: 50 }}
+                onCreated={(state) => {
+                    // Listen for WebGL context loss to handle it gracefully
+                    const canvas = state.gl.domElement;
+                    canvas.addEventListener('webglcontextlost', (e) => {
+                        e.preventDefault(); // Prevent default behavior
+                        console.warn('[ViewportManager] WebGL context lost — will attempt restore');
+                    });
+                    canvas.addEventListener('webglcontextrestored', () => {
+                        console.log('[ViewportManager] WebGL context restored');
+                    });
+                }}
             >
                 {/* Perspective View */}
                 <View track={mainRef as MutableRefObject<HTMLElement>}>
@@ -426,16 +459,28 @@ export const ViewportManager: FC = () => {
     const setRenderMode3D = useUIStore(state => state.setRenderMode3D);
 
     useEffect(() => {
-        const result = checkWebglSupport();
-        queueMicrotask(() => {
+        // Check WebGL support with a small delay to avoid racing with other canvas initializations
+        const timer = setTimeout(() => {
+            const result = checkWebglSupport();
             if (result.supported) {
                 setWebglStatus('ok');
             } else {
-                setWebglStatus('unsupported');
-                setWebglError(result.reason || 'WebGL is unavailable on this device.');
-                setUseWebGpu(false);
+                // Retry once after a short delay — some browsers need a moment
+                // after a context was lost/restored from another tab
+                setTimeout(() => {
+                    const retry = checkWebglSupport();
+                    if (retry.supported) {
+                        setWebglStatus('ok');
+                    } else {
+                        setWebglStatus('unsupported');
+                        setWebglError(retry.reason || 'WebGL is unavailable on this device.');
+                        setUseWebGpu(false);
+                    }
+                }, 500);
             }
-        });
+        }, 50);
+
+        return () => clearTimeout(timer);
     }, [setUseWebGpu]);
 
     if (webglStatus === 'pending') {
@@ -602,7 +647,7 @@ export const ViewportManager: FC = () => {
                 onElevationChange={setWorkingElevation}
             />
 
-            <SafeCanvasWrapper fallback={<WebglFallback error={webglError ?? undefined} />}>
+            <SafeCanvasWrapper>
                 <ViewportContainer layout={layout} useWebGpu={useWebGpu} />
             </SafeCanvasWrapper>
         </div>

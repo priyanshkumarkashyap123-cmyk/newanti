@@ -110,24 +110,38 @@ export class CanvasErrorBoundary extends Component<SafeCanvasWrapperProps, Error
                 return fallback;
             }
 
-            const isMemoryError = error?.message?.includes('memory') || 
-                                  error?.message?.includes('WebGL') ||
-                                  error?.message?.includes('allocation');
+            const errorMsg = error?.message?.toLowerCase() || '';
+            const isMemoryError = errorMsg.includes('memory') || 
+                                  errorMsg.includes('allocation') ||
+                                  errorMsg.includes('out of');
+            const isContextError = errorMsg.includes('webgl') ||
+                                   errorMsg.includes('context') ||
+                                   errorMsg.includes('gpu');
+
+            const title = isMemoryError 
+                ? 'Model Too Large' 
+                : isContextError 
+                    ? '3D Rendering Interrupted' 
+                    : 'Rendering Error';
+
+            const description = isMemoryError
+                ? 'Your structure has too many elements for your device. Try reducing the model size or using a device with more memory.'
+                : isContextError
+                    ? 'The GPU context was lost or interrupted. This is usually a temporary issue — click Retry to resume.'
+                    : 'Something went wrong while rendering the 3D view. This is usually a temporary glitch — click Retry to resume.';
 
             return (
                 <div className="flex flex-col items-center justify-center h-full bg-gray-900 text-white p-8">
                     <div className="max-w-lg text-center">
                         <div className="text-6xl mb-4">🏗️</div>
                         <h2 className="text-2xl font-bold mb-4">
-                            {isMemoryError ? 'Model Too Large' : 'Rendering Error'}
+                            {title}
                         </h2>
                         <p className="text-gray-400 mb-6">
-                            {isMemoryError
-                                ? 'Your structure has too many elements for your device. Try reducing the model size or using a device with more memory.'
-                                : 'Something went wrong while rendering the 3D view. This might be due to a browser or GPU limitation.'}
+                            {description}
                         </p>
                         
-                        <div className="flex gap-4 justify-center">
+                        <div className="flex gap-4 justify-center flex-wrap">
                             {retryCount < maxRetries && (
                                 <button
                                     onClick={this.handleRetry}
@@ -137,8 +151,14 @@ export class CanvasErrorBoundary extends Component<SafeCanvasWrapperProps, Error
                                 </button>
                             )}
                             <button
+                                onClick={() => window.location.reload()}
+                                className="px-6 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+                            >
+                                Reload Page
+                            </button>
+                            <button
                                 onClick={this.handleClearModel}
-                                className="px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+                                className="px-6 py-2 bg-red-600/80 hover:bg-red-700 rounded-lg transition-colors"
                             >
                                 Clear Model
                             </button>
