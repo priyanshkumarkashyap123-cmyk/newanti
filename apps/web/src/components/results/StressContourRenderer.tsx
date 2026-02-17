@@ -448,12 +448,12 @@ export const StressTypeSelector: FC<StressTypeSelectorProps> = ({ selected, onCh
                                         {selected === type.id ? (
                                             <Eye size={14} className="text-cyan-400" />
                                         ) : (
-                                            <EyeOff size={14} className="text-slate-500" />
+                                            <EyeOff size={14} className="text-slate-400" />
                                         )}
                                     </div>
                                     <div>
                                         <div className="text-sm font-medium">{type.label}</div>
-                                        <div className="text-xs text-slate-500">{type.description}</div>
+                                        <div className="text-xs text-slate-400">{type.description}</div>
                                     </div>
                                 </button>
                             ))}
@@ -643,17 +643,17 @@ export const StressContourPanel: FC<StressContourPanelProps> = ({
                 {/* Summary */}
                 <div className="pt-3 border-t border-slate-800 grid grid-cols-2 gap-4">
                     <div>
-                        <div className="text-xs text-slate-500">Stress Range</div>
+                        <div className="text-xs text-slate-400">Stress Range</div>
                         <div className="text-sm font-mono">
                             <span className="text-blue-400">{minStress.toFixed(1)}</span>
-                            <span className="text-slate-500"> → </span>
+                            <span className="text-slate-400"> → </span>
                             <span className="text-red-400">{maxStress.toFixed(1)}</span>
-                            <span className="text-slate-500"> MPa</span>
+                            <span className="text-slate-400"> MPa</span>
                         </div>
                     </div>
                     
                     <div>
-                        <div className="text-xs text-slate-500">Critical Members</div>
+                        <div className="text-xs text-slate-400">Critical Members</div>
                         <div className={`text-sm font-bold ${criticalCount > 0 ? 'text-red-400' : 'text-green-400'}`}>
                             {criticalCount} / {totalMembers}
                         </div>

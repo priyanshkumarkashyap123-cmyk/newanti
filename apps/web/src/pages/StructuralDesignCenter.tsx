@@ -395,7 +395,7 @@ export default function StructuralDesignCenter() {
         {/* Footer */}
         {sidebarOpen && (
           <div className="p-3 border-t border-slate-700/50">
-            <div className="flex items-center justify-between text-xs text-slate-500">
+            <div className="flex items-center justify-between text-xs text-slate-400">
               <span>v4.0.0</span>
               <div className="flex items-center gap-2">
                 <button className="hover:text-slate-300"><HelpCircle className="w-4 h-4" /></button>
@@ -538,10 +538,10 @@ function DashboardContent({
                 <p className="text-white font-medium">{project.name}</p>
                 <p className="text-sm text-slate-400">{getModuleLabel(project.module)}</p>
               </div>
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-slate-400">
                 {formatTimeAgo(project.timestamp)}
               </span>
-              <ChevronRight className="w-4 h-4 text-slate-500" />
+              <ChevronRight className="w-4 h-4 text-slate-400" />
             </button>
           ))}
         </div>
@@ -573,7 +573,7 @@ function DashboardContent({
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-slate-500 line-clamp-2">{item.description}</p>
+                <p className="text-xs text-slate-400 line-clamp-2">{item.description}</p>
               </button>
             ))
           )}
@@ -613,7 +613,7 @@ function StatCard({
         <div>
           <p className="text-sm text-slate-400">{title}</p>
           <p className="text-3xl font-bold text-white mt-1">{value}</p>
-          <p className="text-xs text-slate-500 mt-1">{subtitle}</p>
+          <p className="text-xs text-slate-400 mt-1">{subtitle}</p>
         </div>
         <div className={cn("p-3 rounded-xl bg-gradient-to-br", colorClasses)}>
           <Icon className="w-6 h-6" />
@@ -653,7 +653,7 @@ function QuickAccessCard({
               <span className="text-sm text-slate-300 group-hover:text-white transition-colors">
                 {item.label}
               </span>
-              <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-white transition-colors" />
+              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-white transition-colors" />
             </button>
           ))}
         </div>

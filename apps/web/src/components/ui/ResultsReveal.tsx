@@ -121,7 +121,7 @@ const ResultCard: FC<{
                     <span className="text-3xl font-bold text-white tabular-nums">
                         {animatedValue.toFixed(result.value % 1 === 0 ? 0 : 2)}
                     </span>
-                    <span className="text-sm text-slate-500 mb-1">
+                    <span className="text-sm text-slate-400 mb-1">
                         {result.unit}
                     </span>
                     {result.trend && (

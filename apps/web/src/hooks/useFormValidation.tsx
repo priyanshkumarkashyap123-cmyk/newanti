@@ -468,7 +468,7 @@ export function FormField({
       {children(fieldProps)}
       
       {hint && !error && (
-        <p className="text-sm text-slate-500" id={`${name}-hint`}>
+        <p className="text-sm text-slate-400" id={`${name}-hint`}>
           {hint}
         </p>
       )}

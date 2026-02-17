@@ -475,9 +475,9 @@ export const BeamCalculator: FC = () => {
                             </div>
                             <span className="text-white font-bold">BeamLab</span>
                         </Link>
-                        <span className="text-slate-600">/</span>
+                        <span className="text-slate-500">/</span>
                         <Link to="/tools" className="text-slate-400 hover:text-white text-sm">Tools</Link>
-                        <span className="text-slate-600">/</span>
+                        <span className="text-slate-500">/</span>
                         <span className="text-white text-sm font-medium">Beam Calculator</span>
                     </div>
 
@@ -602,7 +602,7 @@ export const BeamCalculator: FC = () => {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="text-slate-500 text-center py-8">
+                                <div className="text-slate-400 text-center py-8">
                                     Click Calculate to see results
                                 </div>
                             )}

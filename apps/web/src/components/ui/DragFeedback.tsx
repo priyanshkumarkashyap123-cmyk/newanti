@@ -19,7 +19,7 @@ export const DragHandle: FC<DragHandleProps> = ({ className = '' }) => (
     <div
         className={`
             flex items-center justify-center w-6 h-6 rounded
-            text-slate-500 hover:text-slate-300 hover:bg-slate-700
+            text-slate-400 hover:text-slate-300 hover:bg-slate-700
             cursor-grab active:cursor-grabbing transition-colors
             ${className}
         `}

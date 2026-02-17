@@ -171,7 +171,7 @@ const StatusIndicator: FC<{
       default:
         return {
           icon: Circle,
-          color: 'text-zinc-500',
+          color: 'text-zinc-400',
           bgColor: 'bg-zinc-500/20',
           label: 'Ready',
           animate: false
@@ -218,7 +218,7 @@ const CoordinateDisplay: FC<{
     className="flex items-center gap-2 px-2 py-1 hover:bg-zinc-800 rounded transition-colors"
     title="Click to input coordinates"
   >
-    <Crosshair className="w-3.5 h-3.5 text-zinc-500" />
+    <Crosshair className="w-3.5 h-3.5 text-zinc-400" />
     <div className="flex items-center gap-1.5 text-xs font-mono">
       <span className="text-red-400">X:</span>
       <span className="text-zinc-300 w-16 text-right">{coordinates.x.toFixed(3)}</span>
@@ -226,7 +226,7 @@ const CoordinateDisplay: FC<{
       <span className="text-zinc-300 w-16 text-right">{coordinates.y.toFixed(3)}</span>
       <span className="text-blue-400">Z:</span>
       <span className="text-zinc-300 w-16 text-right">{coordinates.z.toFixed(3)}</span>
-      <span className="text-zinc-500 text-[10px]">{unit}</span>
+      <span className="text-zinc-400 text-[10px]">{unit}</span>
     </div>
   </button>
 ));
@@ -282,7 +282,7 @@ const QuickToggleButton: FC<{
       className={`flex items-center gap-1 px-1.5 py-1 rounded text-xs transition-all ${
         toggle.enabled
           ? 'bg-blue-500/30 text-blue-300'
-          : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800'
+          : 'text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800'
       }`}
       title={`${toggle.label}${toggle.shortcut ? ` (${toggle.shortcut})` : ''}`}
     >
@@ -350,7 +350,7 @@ const UnitSystemSelector: FC<{
                 }`}
               >
                 <span>{system.label}</span>
-                <span className="text-zinc-500">{system.length}, {system.force}</span>
+                <span className="text-zinc-400">{system.length}, {system.force}</span>
               </button>
             ))}
           </motion.div>
@@ -515,14 +515,14 @@ const NotificationBadge: FC<{
                   <Icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${getColor(notification.type)}`} />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-zinc-300">{notification.message}</p>
-                    <p className="text-[10px] text-zinc-500 mt-0.5">
+                    <p className="text-[10px] text-zinc-400 mt-0.5">
                       {notification.timestamp.toLocaleTimeString()}
                     </p>
                   </div>
                   {!notification.persistent && (
                     <button
                       onClick={() => onDismiss(notification.id)}
-                      className="text-zinc-500 hover:text-zinc-300"
+                      className="text-zinc-400 hover:text-zinc-300"
                     >
                       <XCircle className="w-3.5 h-3.5" />
                     </button>
@@ -582,7 +582,7 @@ const PerformanceIndicator: FC = memo(() => {
   }, []);
 
   return (
-    <div className="flex items-center gap-2 text-xs text-zinc-500">
+    <div className="flex items-center gap-2 text-xs text-zinc-400">
       <div className="flex items-center gap-1" title="FPS">
         <Activity className="w-3 h-3" />
         <span className={fps < 30 ? 'text-amber-400' : fps < 15 ? 'text-red-400' : ''}>
@@ -758,7 +758,7 @@ export const ExtendedStatusBar: FC<StatusBarProps & {
                   <span className="text-xs text-zinc-300 font-medium">
                     {analysisProgress.currentStep || 'Running analysis...'}
                   </span>
-                  <span className="text-xs text-zinc-500">
+                  <span className="text-xs text-zinc-400">
                     {analysisProgress.progress?.toFixed(1)}%
                   </span>
                 </div>
@@ -772,7 +772,7 @@ export const ExtendedStatusBar: FC<StatusBarProps & {
                 </div>
               </div>
               {analysisProgress.elapsedTime !== undefined && (
-                <div className="flex items-center gap-1 text-xs text-zinc-500">
+                <div className="flex items-center gap-1 text-xs text-zinc-400">
                   <Clock className="w-3.5 h-3.5" />
                   <span>{Math.floor(analysisProgress.elapsedTime)}s</span>
                 </div>

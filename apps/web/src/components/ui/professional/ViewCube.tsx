@@ -226,7 +226,7 @@ const CompassRing: FC<{
           <div
             key={dir.label}
             className={`absolute text-[10px] font-bold transform -translate-x-1/2 -translate-y-1/2 ${
-              dir.label === 'N' ? 'text-red-400' : 'text-zinc-500'
+              dir.label === 'N' ? 'text-red-400' : 'text-zinc-400'
             }`}
             style={{ left: x, top: y }}
           >
@@ -332,7 +332,7 @@ const ViewPresetsDropdown: FC<{
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-1 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700/50 rounded transition-colors"
+        className="p-1 text-zinc-400 hover:text-zinc-300 hover:bg-zinc-700/50 rounded transition-colors"
         title="View Presets"
       >
         <ChevronDown className="w-4 h-4" />
@@ -518,7 +518,7 @@ export const ViewCube: FC<ViewCubeProps> = ({
         {/* Home View */}
         <button
           onClick={onHomeView || (() => handleFaceClick('iso-front-right'))}
-          className="p-1.5 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700/50 rounded transition-colors"
+          className="p-1.5 text-zinc-400 hover:text-zinc-300 hover:bg-zinc-700/50 rounded transition-colors"
           title="Home View"
         >
           <Home className="w-4 h-4" />
@@ -527,7 +527,7 @@ export const ViewCube: FC<ViewCubeProps> = ({
         {/* Fit All */}
         <button
           onClick={onFitAll}
-          className="p-1.5 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700/50 rounded transition-colors"
+          className="p-1.5 text-zinc-400 hover:text-zinc-300 hover:bg-zinc-700/50 rounded transition-colors"
           title="Fit All"
         >
           <Maximize2 className="w-4 h-4" />

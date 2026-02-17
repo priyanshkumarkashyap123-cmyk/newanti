@@ -122,7 +122,7 @@ export const SignInPage = () => {
                                 <div className="h-4 w-16 bg-slate-800 rounded animate-pulse" />
                                 <div className="h-10 w-full bg-slate-800 rounded-lg animate-pulse" />
                                 <div className="h-10 w-full bg-slate-800 rounded-lg animate-pulse mt-4" />
-                                <p className="text-center text-sm text-slate-500">Loading secure sign-in…</p>
+                                <p className="text-center text-sm text-slate-400">Loading secure sign-in…</p>
                             </div>
                         </ClerkLoading>
                         <ClerkLoaded>
@@ -134,7 +134,7 @@ export const SignInPage = () => {
                                         headerTitle: 'hidden', // We have our own header
                                         headerSubtitle: 'hidden',
                                         formFieldLabel: 'text-slate-300 font-medium text-sm',
-                                        formFieldInput: 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all',
+                                        formFieldInput: 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all',
                                         formButtonPrimary: 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-2.5 rounded-lg shadow-lg shadow-blue-500/20 transition-all',
                                         footerActionLink: 'text-blue-400 hover:text-blue-300 font-medium',
                                         identityPreviewText: 'text-slate-300',
@@ -142,7 +142,7 @@ export const SignInPage = () => {
                                         socialButtonsBlockButton: 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:border-slate-600 rounded-lg transition-all',
                                         socialButtonsBlockButtonText: 'font-medium',
                                         dividerLine: 'bg-slate-800',
-                                        dividerText: 'text-slate-500 uppercase text-xs tracking-wider bg-slate-900 px-2',
+                                        dividerText: 'text-slate-400 uppercase text-xs tracking-wider bg-slate-900 px-2',
                                         formFieldInputShowPasswordButton: 'text-slate-400 hover:text-slate-300',
                                         otpCodeFieldInput: 'bg-slate-800 border-slate-700 text-white text-center font-mono font-bold text-lg focus:ring-blue-500',
                                         footer: 'bg-slate-900/50 p-6 border-t border-slate-800'

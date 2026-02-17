@@ -979,7 +979,7 @@ export const StructureWizard: FC<StructureWizardProps> = ({ isOpen, onClose, onG
                                     <div className="bg-zinc-800 rounded-lg p-4 text-center">
                                         <Home className="w-12 h-12 text-purple-500 mx-auto mb-3" />
                                         <p className="text-zinc-300">Standard 2-story residential frame</p>
-                                        <p className="text-sm text-zinc-500 mt-1">8m × 10m footprint, 3m story height</p>
+                                        <p className="text-sm text-zinc-400 mt-1">8m × 10m footprint, 3m story height</p>
                                     </div>
                                 )}
 

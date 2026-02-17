@@ -67,7 +67,7 @@ export const ForgotPasswordPage = () => {
                             <p className="text-zinc-400">
                                 We've sent a password reset link to <span className="text-white font-medium">{email}</span>
                             </p>
-                            <p className="text-zinc-500 text-sm">
+                            <p className="text-zinc-400 text-sm">
                                 Didn't receive the email? Check your spam folder or{' '}
                                 <button 
                                     onClick={() => setSuccess(false)} 
@@ -108,7 +108,7 @@ export const ForgotPasswordPage = () => {
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="you@example.com"
                                         required
                                     />
@@ -146,7 +146,7 @@ export const ForgotPasswordPage = () => {
                 </div>
 
                 {/* Footer */}
-                <p className="text-center text-zinc-500 text-sm mt-8">
+                <p className="text-center text-zinc-400 text-sm mt-8">
                     © 2024 BeamLab Ultimate. Professional Structural Analysis.
                 </p>
             </div>

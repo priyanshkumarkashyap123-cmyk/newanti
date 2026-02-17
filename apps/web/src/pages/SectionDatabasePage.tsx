@@ -233,13 +233,13 @@ export const SectionDatabasePage: React.FC = () => {
                         </div>
                         <div className="grid grid-cols-3 gap-4 mt-2 text-xs text-slate-400">
                           <div>
-                            <span className="text-slate-500">Depth:</span> {section.depth} mm
+                            <span className="text-slate-400">Depth:</span> {section.depth} mm
                           </div>
                           <div>
-                            <span className="text-slate-500">Width:</span> {section.width} mm
+                            <span className="text-slate-400">Width:</span> {section.width} mm
                           </div>
                           <div>
-                            <span className="text-slate-500">Mass:</span> {section.mass} kg/m
+                            <span className="text-slate-400">Mass:</span> {section.mass} kg/m
                           </div>
                         </div>
                       </div>
@@ -393,9 +393,9 @@ export const SectionDatabasePage: React.FC = () => {
             ) : (
               <div className="bg-slate-900 rounded-xl p-6 border border-slate-700 h-full">
                 <div className="flex flex-col items-center justify-center py-12 text-center h-full">
-                  <Ruler className="w-16 h-16 text-slate-600 mb-4" />
+                  <Ruler className="w-16 h-16 text-slate-500 mb-4" />
                   <h3 className="text-lg font-semibold text-slate-400 mb-2">No Section Selected</h3>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-400">
                     Click on a section from the list to view detailed properties
                   </p>
                 </div>

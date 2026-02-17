@@ -460,7 +460,7 @@ const IntroductionPage: React.FC = () => (
       </div>
       
       {/* Dedication */}
-      <div className="text-center italic text-slate-600 mb-8 py-4 
+      <div className="text-center italic text-slate-500 mb-8 py-4 
         border-l-4 border-amber-300 bg-amber-50/50 px-6">
         "{BOOK_DATA.dedication}"
       </div>
@@ -529,7 +529,7 @@ const ContentsPage: React.FC<ContentsPageProps> = ({ onNavigate }) => (
             <span className="text-amber-600 group-hover:text-amber-700">📜</span>
             <span className="font-serif text-slate-800">Preface & Introduction</span>
           </span>
-          <span className="text-slate-500 font-mono text-sm">i</span>
+          <span className="text-slate-400 font-mono text-sm">i</span>
         </button>
         
         {/* Chapters */}
@@ -548,10 +548,10 @@ const ContentsPage: React.FC<ContentsPageProps> = ({ onNavigate }) => (
                 <span className="font-serif text-slate-800 block">
                   Chapter {index + 1}: {chapter.title}
                 </span>
-                <span className="text-sm text-slate-500">{chapter.subtitle}</span>
+                <span className="text-sm text-slate-400">{chapter.subtitle}</span>
               </span>
             </span>
-            <span className="text-slate-500 font-mono text-sm">{(index + 1) * 10}</span>
+            <span className="text-slate-400 font-mono text-sm">{(index + 1) * 10}</span>
           </button>
         ))}
         
@@ -566,7 +566,7 @@ const ContentsPage: React.FC<ContentsPageProps> = ({ onNavigate }) => (
               <span className="text-amber-600 group-hover:text-amber-700">📎</span>
               <span className="font-serif text-slate-800">Appendix & Quick Reference</span>
             </span>
-            <span className="text-slate-500 font-mono text-sm">A</span>
+            <span className="text-slate-400 font-mono text-sm">A</span>
           </button>
         </div>
       </div>
@@ -600,7 +600,7 @@ const ChapterPage: React.FC<ChapterPageProps> = ({ chapter, chapterNumber }) => 
         <h2 className="text-3xl font-serif text-slate-800 mb-2">
           {chapter.title}
         </h2>
-        <p className="text-slate-500 italic">{chapter.subtitle}</p>
+        <p className="text-slate-400 italic">{chapter.subtitle}</p>
         <div className="flex items-center justify-center gap-2 mt-4">
           <span className="h-px w-12 bg-amber-300" />
           <span className="text-amber-500">◆</span>
@@ -645,7 +645,7 @@ const ChapterPage: React.FC<ChapterPageProps> = ({ chapter, chapterNumber }) => 
             
             {section.note && (
               <div className="my-4 p-4 bg-amber-50 border-l-4 border-amber-400 
-                rounded-r-lg text-sm text-slate-600 italic">
+                rounded-r-lg text-sm text-slate-500 italic">
                 <strong className="text-amber-700">Note: </strong>
                 {section.note}
               </div>
@@ -736,7 +736,7 @@ const AppendixPage: React.FC = () => (
       </div>
       
       {/* Footer */}
-      <div className="mt-8 pt-6 border-t border-amber-200 text-center text-slate-500 text-sm">
+      <div className="mt-8 pt-6 border-t border-amber-200 text-center text-slate-400 text-sm">
         <p>Civil Engineering Design & Analysis Platform</p>
         <p className="mt-1">Version 2.0 • {BOOK_DATA.year}</p>
       </div>

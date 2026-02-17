@@ -195,7 +195,7 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isOpen, onClos
                         {isAnalyzing ? 'Analyzing...' : 'Run Analysis'}
                     </button>
 
-                    <div className="ml-auto text-xs text-slate-500">
+                    <div className="ml-auto text-xs text-slate-400">
                         {nodes.size} nodes, {members.size} members
                     </div>
                 </div>
@@ -203,7 +203,7 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isOpen, onClos
                 {/* Results Table */}
                 <div className="p-4 overflow-y-auto max-h-[400px]">
                     {modes.length === 0 ? (
-                        <div className="text-center py-12 text-slate-500">
+                        <div className="text-center py-12 text-slate-400">
                             <Waves className="w-16 h-16 mx-auto mb-4 opacity-30" />
                             <p>Run modal analysis to see natural frequencies</p>
                             <p className="text-xs mt-2">Based on eigenvalue decomposition</p>

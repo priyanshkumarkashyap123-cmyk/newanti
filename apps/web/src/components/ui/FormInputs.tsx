@@ -95,7 +95,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             disabled={disabled}
             className={cn(
               'w-full rounded-lg border bg-slate-800 px-3 py-2.5',
-              'text-sm text-white placeholder:text-slate-500',
+              'text-sm text-white placeholder:text-slate-400',
               'focus:outline-none focus:ring-2 focus:ring-offset-0',
               'transition-colors duration-200',
               'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-900',
@@ -144,7 +144,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               id={`${id}-helper`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="mt-1.5 text-xs text-slate-500 flex items-center gap-1"
+              className="mt-1.5 text-xs text-slate-400 flex items-center gap-1"
             >
               <Info className="w-3 h-3" />
               {helperText}
@@ -192,7 +192,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           id={id}
           className={cn(
             'w-full rounded-lg border bg-slate-800 px-3 py-2.5',
-            'text-sm text-white placeholder:text-slate-500',
+            'text-sm text-white placeholder:text-slate-400',
             'focus:outline-none focus:ring-2 focus:ring-offset-0',
             'transition-colors duration-200 min-h-[100px]',
             resize === 'none' && 'resize-none',
@@ -367,12 +367,12 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             htmlFor={id}
             className={cn(
               'text-sm font-medium cursor-pointer',
-              disabled ? 'text-slate-500 cursor-not-allowed' : 'text-white'
+              disabled ? 'text-slate-400 cursor-not-allowed' : 'text-white'
             )}
           >
             {label}
           </label>
-          {description && <p className="text-xs text-slate-500 mt-0.5">{description}</p>}
+          {description && <p className="text-xs text-slate-400 mt-0.5">{description}</p>}
           {error && <p className="text-xs text-red-400 mt-0.5">{error}</p>}
         </div>
       </div>
@@ -449,13 +449,13 @@ export const Switch: React.FC<SwitchProps> = ({
               htmlFor={id}
               className={cn(
                 'text-sm font-medium cursor-pointer',
-                disabled ? 'text-slate-500 cursor-not-allowed' : 'text-white'
+                disabled ? 'text-slate-400 cursor-not-allowed' : 'text-white'
               )}
             >
               {label}
             </label>
           )}
-          {description && <p className="text-xs text-slate-500 mt-0.5">{description}</p>}
+          {description && <p className="text-xs text-slate-400 mt-0.5">{description}</p>}
         </div>
       )}
     </div>
@@ -660,7 +660,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
             <div className="ml-3">
               <span className="text-sm font-medium text-white">{option.label}</span>
               {option.description && (
-                <p className="text-xs text-slate-500 mt-0.5">{option.description}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{option.description}</p>
               )}
             </div>
           </label>

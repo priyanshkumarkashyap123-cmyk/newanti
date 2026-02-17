@@ -135,7 +135,7 @@ export const ResetPasswordPage = () => {
                         <h1 className="text-zinc-900 dark:text-white text-3xl sm:text-4xl font-black tracking-tight">
                             Reset Your Password
                         </h1>
-                        <p className="text-zinc-500 dark:text-zinc-400 text-base">
+                        <p className="text-zinc-400 dark:text-zinc-400 text-base">
                             Please enter your new password below. Ensure it meets security standards to keep your structural data safe.
                         </p>
                     </div>
@@ -168,7 +168,7 @@ export const ResetPasswordPage = () => {
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="flex items-center justify-center px-4 rounded-r-lg border border-l-0 border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
+                                        className="flex items-center justify-center px-4 rounded-r-lg border border-l-0 border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
                                     >
                                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                     </button>
@@ -211,7 +211,7 @@ export const ResetPasswordPage = () => {
                                                 }`}>
                                                 {req.met && <Check className="w-3 h-3 text-white" />}
                                             </div>
-                                            <span className={`text-sm ${req.met ? 'text-zinc-900 dark:text-white' : 'text-zinc-500 dark:text-zinc-400'
+                                            <span className={`text-sm ${req.met ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-400'
                                                 }`}>
                                                 {req.label}
                                             </span>
@@ -242,7 +242,7 @@ export const ResetPasswordPage = () => {
                                     <button
                                         type="button"
                                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                        className="flex items-center justify-center px-4 rounded-r-lg border border-l-0 border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
+                                        className="flex items-center justify-center px-4 rounded-r-lg border border-l-0 border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
                                     >
                                         {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                     </button>
@@ -265,7 +265,7 @@ export const ResetPasswordPage = () => {
                             <div className="flex justify-center pt-2">
                                 <Link
                                     to="/sign-in"
-                                    className="flex items-center gap-2 text-zinc-500 hover:text-blue-600 dark:text-zinc-400 dark:hover:text-white transition-colors text-sm font-semibold"
+                                    className="flex items-center gap-2 text-zinc-400 hover:text-blue-600 dark:text-zinc-400 dark:hover:text-white transition-colors text-sm font-semibold"
                                 >
                                     <ArrowLeft className="w-4 h-4" />
                                     Back to Login

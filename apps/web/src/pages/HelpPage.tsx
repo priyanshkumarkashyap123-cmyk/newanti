@@ -130,7 +130,7 @@ const VideoCard = ({ tutorial, index }: { tutorial: VideoTutorial; index: number
             <p className="text-sm text-slate-400 mb-4 line-clamp-2">
                 {tutorial.description}
             </p>
-            <div className="mt-auto flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+            <div className="mt-auto flex items-center gap-2 text-xs font-medium text-slate-400 uppercase tracking-wider">
                 <span className={`w-2 h-2 rounded-full ${tutorial.level === 'Beginner' ? 'bg-green-500' :
                     tutorial.level === 'Intermediate' ? 'bg-yellow-500' : 'bg-red-500'
                     }`} />
@@ -219,13 +219,13 @@ export const HelpPage = () => {
 
                         {/* Search Bar */}
                         <div className="relative w-full max-w-2xl mx-auto">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search for topics, commands, or errors..."
-                                className="w-full rounded-xl border border-slate-800 bg-slate-900 pl-12 pr-4 py-4 text-base text-white shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-slate-500 transition-all"
+                                className="w-full rounded-xl border border-slate-800 bg-slate-900 pl-12 pr-4 py-4 text-base text-white shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-slate-400 transition-all"
                             />
                             <kbd className="absolute right-4 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center rounded border border-slate-700 bg-slate-800 px-2 py-1 font-sans text-xs text-slate-400">
                                 ⌘K
@@ -315,7 +315,7 @@ export const HelpPage = () => {
 
             {/* Footer - Dark Theme */}
             <footer className="border-t border-slate-800 bg-slate-950 py-8">
-                <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
+                <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
                     <p>© 2026 BeamLab Ultimate. All rights reserved.</p>
                     <div className="flex gap-6">
                         <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>

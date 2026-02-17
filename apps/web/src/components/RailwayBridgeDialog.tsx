@@ -788,7 +788,7 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="flex justify-between text-xs text-zinc-500 mt-2">
+                                        <div className="flex justify-between text-xs text-zinc-400 mt-2">
                                             <span>0m</span>
                                             <span>{LOADING_STANDARDS[config.loadingStandard].totalLength.toFixed(1)}m</span>
                                         </div>
@@ -870,7 +870,7 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
 
                         {activeTab === 'results' && !designResults && (
                             <div className="text-center py-12">
-                                <Train className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
+                                <Train className="w-16 h-16 text-zinc-500 mx-auto mb-4" />
                                 <p className="text-zinc-400">Generate the bridge first to see results</p>
                             </div>
                         )}
@@ -878,7 +878,7 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
 
                     {/* Footer */}
                     <div className="flex items-center justify-between p-4 border-t border-zinc-800 bg-zinc-900/50">
-                        <div className="text-xs text-zinc-500">
+                        <div className="text-xs text-zinc-400">
                             35m Span • {config.numPanels} Panels • {config.loadingStandard} Loading
                         </div>
                         <div className="flex gap-3">

@@ -263,7 +263,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                         <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden">
                             {/* Search Input */}
                             <div className="flex items-center gap-3 px-4 py-4 border-b border-slate-800">
-                                <Search className="w-5 h-5 text-slate-500" />
+                                <Search className="w-5 h-5 text-slate-400" />
                                 <input
                                     ref={inputRef}
                                     type="text"
@@ -274,7 +274,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                                     }}
                                     onKeyDown={handleKeyDown}
                                     placeholder="Search commands..."
-                                    className="flex-1 bg-transparent text-white placeholder:text-slate-500 focus:outline-none text-lg"
+                                    className="flex-1 bg-transparent text-white placeholder:text-slate-400 focus:outline-none text-lg"
                                 />
                                 <kbd className="hidden sm:flex items-center gap-1 px-2 py-1 bg-slate-800 text-slate-400 text-xs rounded border border-slate-700">
                                     <Command className="w-3 h-3" />K
@@ -287,14 +287,14 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                                 className="max-h-[400px] overflow-y-auto p-2"
                             >
                                 {filteredCommands.length === 0 ? (
-                                    <div className="py-12 text-center text-slate-500">
+                                    <div className="py-12 text-center text-slate-400">
                                         <Zap className="w-8 h-8 mx-auto mb-2 opacity-50" />
                                         <p>No commands found</p>
                                     </div>
                                 ) : (
                                     Object.entries(groupedCommands).map(([category, commands]) => (
                                         <div key={category} className="mb-4 last:mb-0">
-                                            <div className="px-3 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                            <div className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
                                                 {category}
                                             </div>
                                             {commands.map((cmd) => {
@@ -327,7 +327,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                                                                 {cmd.label}
                                                             </div>
                                                             {cmd.description && (
-                                                                <div className={`text-sm truncate ${isSelected ? 'text-blue-200' : 'text-slate-500'
+                                                                <div className={`text-sm truncate ${isSelected ? 'text-blue-200' : 'text-slate-400'
                                                                     }`}>
                                                                     {cmd.description}
                                                                 </div>
@@ -353,7 +353,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                             </div>
 
                             {/* Footer */}
-                            <div className="px-4 py-3 bg-slate-800/50 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
+                            <div className="px-4 py-3 bg-slate-800/50 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
                                 <div className="flex items-center gap-4">
                                     <span className="flex items-center gap-1">
                                         <kbd className="px-1.5 py-0.5 bg-slate-700 rounded">↑</kbd>

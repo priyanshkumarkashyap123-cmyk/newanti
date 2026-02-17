@@ -160,7 +160,7 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
                                         ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400'
                                         : isComplete || isPast
                                             ? 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20'
-                                            : 'text-zinc-400 dark:text-zinc-600'
+                                            : 'text-zinc-400 dark:text-zinc-500'
                                     }
                                     ${isClickable ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}
                                 `}
@@ -171,7 +171,7 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
                                         ? 'bg-blue-600 text-white'
                                         : isComplete
                                             ? 'bg-green-600 text-white'
-                                            : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400'
+                                            : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-400 dark:text-zinc-400'
                                     }
                                 `}>
                                     {isComplete && !isActive ? (
@@ -181,10 +181,10 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
                                     )}
                                 </div>
                                 <div className="hidden md:block">
-                                    <div className={`text-sm font-medium ${isActive ? '' : 'text-zinc-600 dark:text-zinc-400'}`}>
+                                    <div className={`text-sm font-medium ${isActive ? '' : 'text-zinc-500 dark:text-zinc-400'}`}>
                                         {step.label}
                                     </div>
-                                    <div className="text-xs text-zinc-400 dark:text-zinc-500">
+                                    <div className="text-xs text-zinc-400 dark:text-zinc-400">
                                         {step.description}
                                     </div>
                                 </div>

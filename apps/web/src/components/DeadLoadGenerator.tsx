@@ -301,7 +301,7 @@ export const DeadLoadGenerator: FC<DeadLoadGeneratorProps> = ({ open, onClose })
                         disabled={isGenerating || (!includeSelfWeight && floorLoad === 0)}
                         className={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${!isGenerating && (includeSelfWeight || floorLoad > 0)
                                 ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-500/30'
-                                : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                                : 'bg-slate-700 text-slate-400 cursor-not-allowed'
                             }`}
                     >
                         {isGenerating && <Loader2 className="w-4 h-4 animate-spin" />}

@@ -175,7 +175,7 @@ const CATEGORY_CONFIG: Record<CommandCategory, { icon: React.ElementType; color:
   tools: { icon: Settings, color: 'text-teal-400', label: 'Tools' },
   settings: { icon: Settings, color: 'text-zinc-400', label: 'Settings' },
   help: { icon: Command, color: 'text-indigo-400', label: 'Help' },
-  recent: { icon: Clock, color: 'text-zinc-500', label: 'Recent' },
+  recent: { icon: Clock, color: 'text-zinc-400', label: 'Recent' },
 };
 
 // ============================================
@@ -239,7 +239,7 @@ const SearchInput: FC<{
         className="flex-1 bg-transparent text-sm text-zinc-200 placeholder-zinc-500 outline-none"
         autoFocus
       />
-      <div className="flex items-center gap-1 text-[10px] text-zinc-500">
+      <div className="flex items-center gap-1 text-[10px] text-zinc-400">
         <kbd className="px-1.5 py-0.5 bg-zinc-800 rounded">↑↓</kbd>
         <span>navigate</span>
         <kbd className="px-1.5 py-0.5 bg-zinc-800 rounded ml-2">Enter</kbd>
@@ -278,7 +278,7 @@ const CommandItem: FC<{
       <div className="flex-1 min-w-0">
         <div className="text-sm text-zinc-200 truncate">{command.label}</div>
         {command.description && (
-          <div className="text-xs text-zinc-500 truncate">{command.description}</div>
+          <div className="text-xs text-zinc-400 truncate">{command.description}</div>
         )}
       </div>
       <div className="flex items-center gap-2">
@@ -328,10 +328,10 @@ const FileItem: FC<{
       <Icon className="w-4 h-4 text-amber-400" />
       <div className="flex-1 min-w-0">
         <div className="text-sm text-zinc-200 truncate">{file.name}</div>
-        <div className="text-xs text-zinc-500 truncate">{file.path}</div>
+        <div className="text-xs text-zinc-400 truncate">{file.path}</div>
       </div>
       {file.modified && (
-        <span className="text-[10px] text-zinc-600">
+        <span className="text-[10px] text-zinc-500">
           {file.modified.toLocaleDateString()}
         </span>
       )}
@@ -387,7 +387,7 @@ const SymbolItem: FC<{
       <div className="flex-1 min-w-0">
         <div className="text-sm text-zinc-200 truncate">{symbol.name}</div>
         {symbol.location && (
-          <div className="text-xs text-zinc-500 truncate">{symbol.location}</div>
+          <div className="text-xs text-zinc-400 truncate">{symbol.location}</div>
         )}
       </div>
       <span className={`text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 ${typeColors[symbol.type] || 'text-zinc-400'}`}>
@@ -654,11 +654,11 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                   px-2 py-1 text-xs rounded transition-colors
                   ${mode === tab.mode 
                     ? 'bg-blue-500/20 text-blue-300' 
-                    : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800'
+                    : 'text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800'
                   }
                 `}
               >
-                {tab.prefix && <span className="text-zinc-600 mr-1">{tab.prefix}</span>}
+                {tab.prefix && <span className="text-zinc-500 mr-1">{tab.prefix}</span>}
                 {tab.label}
               </button>
             ))}
@@ -667,7 +667,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
           {/* Results List */}
           <div ref={listRef} className="overflow-y-auto max-h-[calc(60vh-120px)]">
             {mode === 'goto' ? (
-              <div className="px-4 py-8 text-center text-zinc-500">
+              <div className="px-4 py-8 text-center text-zinc-400">
                 <Hash className="w-8 h-8 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">Type a line number to navigate</p>
                 {query && !isNaN(parseInt(query)) && (
@@ -677,7 +677,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                 )}
               </div>
             ) : filteredResults.length === 0 ? (
-              <div className="px-4 py-8 text-center text-zinc-500">
+              <div className="px-4 py-8 text-center text-zinc-400">
                 <Search className="w-8 h-8 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">No results found</p>
               </div>
@@ -703,7 +703,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                     <div key={category}>
                       <div className="flex items-center gap-2 px-4 py-1.5 bg-zinc-800/50 sticky top-0">
                         <CategoryIcon className={`w-3.5 h-3.5 ${config.color}`} />
-                        <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
+                        <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">
                           {config.label}
                         </span>
                       </div>
@@ -747,7 +747,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="px-4 py-2 border-t border-zinc-800 bg-zinc-900/50 flex items-center justify-between text-[10px] text-zinc-600">
+          <div className="px-4 py-2 border-t border-zinc-800 bg-zinc-900/50 flex items-center justify-between text-[10px] text-zinc-500">
             <div className="flex items-center gap-4">
               <span>
                 <kbd className="px-1 py-0.5 bg-zinc-800 rounded">Ctrl</kbd>+

@@ -233,7 +233,7 @@ export const ProgressIndicator: FC<ProgressIndicatorProps> = ({ status, onCancel
                         className={`flex items-center gap-1 text-xs ${
                             idx < currentIndex ? 'text-cyan-400' :
                             idx === currentIndex ? 'text-white font-medium' :
-                            'text-slate-500'
+                            'text-slate-400'
                         }`}
                     >
                         <div className={`w-1.5 h-1.5 rounded-full ${
@@ -297,7 +297,7 @@ export const FindingCard: FC<FindingCardProps> = ({ finding, onHighlight }) => {
                         }`}>
                             {finding.title}
                         </span>
-                        <span className="flex items-center gap-1 text-xs text-slate-500 bg-slate-800 
+                        <span className="flex items-center gap-1 text-xs text-slate-400 bg-slate-800 
                                        px-1.5 py-0.5 rounded">
                             {getCategoryIcon(finding.category)}
                             {finding.category}
@@ -314,8 +314,8 @@ export const FindingCard: FC<FindingCardProps> = ({ finding, onHighlight }) => {
                             </span>
                             {finding.limit && (
                                 <>
-                                    <span className="text-slate-500">/</span>
-                                    <span className="text-xs text-slate-500">
+                                    <span className="text-slate-400">/</span>
+                                    <span className="text-xs text-slate-400">
                                         Limit: {finding.limit}
                                     </span>
                                 </>
@@ -394,7 +394,7 @@ export const FindingCard: FC<FindingCardProps> = ({ finding, onHighlight }) => {
 
                             {/* Member/Node reference */}
                             {(finding.memberId || finding.nodeId) && (
-                                <div className="text-xs text-slate-500">
+                                <div className="text-xs text-slate-400">
                                     Location: {finding.memberId && `Member ${finding.memberId}`}
                                     {finding.memberId && finding.nodeId && ' at '}
                                     {finding.nodeId && `Node ${finding.nodeId}`}
@@ -538,7 +538,7 @@ export const ResultsSummary: FC<ResultsSummaryProps> = ({ interpretation, onHigh
                         }`}>
                             {interpretation.score}
                         </div>
-                        <div className="text-xs text-slate-500">Score</div>
+                        <div className="text-xs text-slate-400">Score</div>
                     </div>
                 </div>
 
@@ -570,7 +570,7 @@ export const ResultsSummary: FC<ResultsSummaryProps> = ({ interpretation, onHigh
                 >
                     <span className="font-medium text-slate-200">Detailed Findings</span>
                     <div className="flex items-center gap-2">
-                        <span className="text-xs text-slate-500">
+                        <span className="text-xs text-slate-400">
                             {interpretation.findings.length} items
                         </span>
                         {showFindings ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -612,7 +612,7 @@ export const ResultsSummary: FC<ResultsSummaryProps> = ({ interpretation, onHigh
                                     />
                                 ))}
                                 {filteredFindings.length === 0 && (
-                                    <p className="text-sm text-slate-500 text-center py-4">
+                                    <p className="text-sm text-slate-400 text-center py-4">
                                         No findings of this type
                                     </p>
                                 )}

@@ -287,7 +287,7 @@ export const SearchNoResults: React.FC<SearchNoResultsProps> = ({
     >
       {suggestions && suggestions.length > 0 && (
         <div className="mt-4">
-          <p className="text-sm text-slate-500 mb-2">Try searching for:</p>
+          <p className="text-sm text-slate-400 mb-2">Try searching for:</p>
           <div className="flex flex-wrap gap-2 justify-center">
             {suggestions.map((suggestion, index) => (
               <button
@@ -593,7 +593,7 @@ export const UploadState: React.FC<UploadStateProps> = ({
       <p className="text-slate-400 mb-4">{description}</p>
 
       {(acceptedFormats || maxSize) && (
-        <div className="text-sm text-slate-500">
+        <div className="text-sm text-slate-400">
           {acceptedFormats && (
             <p>Accepted: {acceptedFormats.join(', ')}</p>
           )}

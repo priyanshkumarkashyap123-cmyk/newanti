@@ -215,7 +215,7 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
                                                 <p className="text-xs text-zinc-400 mt-0.5">{item.description}</p>
                                             </div>
                                             {item.action && (
-                                                <ChevronRight className="w-4 h-4 text-zinc-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                <ChevronRight className="w-4 h-4 text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                                             )}
                                         </button>
                                     ))}
@@ -225,11 +225,11 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
 
                         {!activeSection && (
                             <div className="flex flex-col items-center justify-center h-full text-center">
-                                <Sparkles className="w-16 h-16 text-zinc-600 mb-4" />
+                                <Sparkles className="w-16 h-16 text-zinc-500 mb-4" />
                                 <h3 className="text-lg font-semibold text-zinc-300 mb-2">
                                     Select a Category
                                 </h3>
-                                <p className="text-sm text-zinc-500 max-w-sm">
+                                <p className="text-sm text-zinc-400 max-w-sm">
                                     Choose a category from the left to explore available features
                                 </p>
                             </div>
@@ -239,7 +239,7 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
 
                 {/* Footer */}
                 <div className="px-6 py-3 border-t border-zinc-800 bg-zinc-800/50 flex items-center justify-between">
-                    <div className="flex items-center gap-4 text-xs text-zinc-500">
+                    <div className="flex items-center gap-4 text-xs text-zinc-400">
                         <span className="flex items-center gap-1">
                             <Crown className="w-3 h-3 text-amber-500" />
                             PRO features require upgrade

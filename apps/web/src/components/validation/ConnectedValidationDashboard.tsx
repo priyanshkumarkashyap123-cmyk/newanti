@@ -102,7 +102,7 @@ export const ConnectedValidationDashboard: FC = () => {
                     </div>
                     <div>
                         <h2 className="text-sm font-bold text-white">Live Validation</h2>
-                        <p className="text-xs text-zinc-500">
+                        <p className="text-xs text-zinc-400">
                             Connected to WASM Solver • {model.nodes.size} nodes
                         </p>
                     </div>
@@ -111,7 +111,7 @@ export const ConnectedValidationDashboard: FC = () => {
                     onClick={runValidation}
                     disabled={loading}
                     className={`px-4 py-2 rounded text-xs font-bold flex items-center gap-2 ${loading
-                            ? 'bg-zinc-800 text-zinc-500'
+                            ? 'bg-zinc-800 text-zinc-400'
                             : 'bg-emerald-600 hover:bg-emerald-500 text-white'
                         }`}
                 >
@@ -123,7 +123,7 @@ export const ConnectedValidationDashboard: FC = () => {
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-4">
                 {!report ? (
-                    <div className="flex flex-col items-center justify-center h-full text-zinc-500 gap-4">
+                    <div className="flex flex-col items-center justify-center h-full text-zinc-400 gap-4">
                         <BarChart2 className="w-12 h-12 opacity-30" />
                         <p className="text-sm">Run validation to compare AI vs analytical solutions</p>
                     </div>
@@ -133,19 +133,19 @@ export const ConnectedValidationDashboard: FC = () => {
                         <div className="grid grid-cols-4 gap-4">
                             <div className="p-4 bg-zinc-900 rounded-lg border border-zinc-800 text-center">
                                 <div className="text-2xl font-bold text-white">{report.totalTests}</div>
-                                <div className="text-xs text-zinc-500">Tests</div>
+                                <div className="text-xs text-zinc-400">Tests</div>
                             </div>
                             <div className="p-4 bg-zinc-900 rounded-lg border border-green-500/20 text-center">
                                 <div className="text-2xl font-bold text-green-400">{report.passed}</div>
-                                <div className="text-xs text-zinc-500">Passed</div>
+                                <div className="text-xs text-zinc-400">Passed</div>
                             </div>
                             <div className="p-4 bg-zinc-900 rounded-lg border border-red-500/20 text-center">
                                 <div className="text-2xl font-bold text-red-400">{report.failed}</div>
-                                <div className="text-xs text-zinc-500">Failed</div>
+                                <div className="text-xs text-zinc-400">Failed</div>
                             </div>
                             <div className="p-4 bg-zinc-900 rounded-lg border border-zinc-800 text-center">
                                 <div className="text-2xl font-bold text-emerald-400">{report.passRate.toFixed(0)}%</div>
-                                <div className="text-xs text-zinc-500">Accuracy</div>
+                                <div className="text-xs text-zinc-400">Accuracy</div>
                             </div>
                         </div>
 
@@ -158,19 +158,19 @@ export const ConnectedValidationDashboard: FC = () => {
                                         <div className="text-lg font-mono text-white">
                                             {(analysisResults.maxDisplacement * 1000).toFixed(2)} mm
                                         </div>
-                                        <div className="text-[10px] text-zinc-500">Max Deflection</div>
+                                        <div className="text-[10px] text-zinc-400">Max Deflection</div>
                                     </div>
                                     <div>
                                         <div className="text-lg font-mono text-white">
                                             {(analysisResults.maxStress / 1e6).toFixed(1)} MPa
                                         </div>
-                                        <div className="text-[10px] text-zinc-500">Max Stress</div>
+                                        <div className="text-[10px] text-zinc-400">Max Stress</div>
                                     </div>
                                     <div>
                                         <div className="text-lg font-mono text-white">
                                             {analysisResults.utilizationMax?.toFixed(2) || 'N/A'}
                                         </div>
-                                        <div className="text-[10px] text-zinc-500">Utilization</div>
+                                        <div className="text-[10px] text-zinc-400">Utilization</div>
                                     </div>
                                 </div>
                             </div>
@@ -188,7 +188,7 @@ export const ConnectedValidationDashboard: FC = () => {
                                         {getStatusIcon(result)}
                                         <div>
                                             <div className="text-xs font-medium text-white">{result.description}</div>
-                                            <div className="text-[10px] text-zinc-500">{result.testCase}</div>
+                                            <div className="text-[10px] text-zinc-400">{result.testCase}</div>
                                         </div>
                                     </div>
                                     <div className="text-right text-xs font-mono">

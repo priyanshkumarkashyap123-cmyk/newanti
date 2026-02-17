@@ -251,7 +251,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
               width={size}
               height={size / 3}
               fill="currentColor"
-              className="text-slate-600"
+              className="text-slate-500"
             />
             {[...Array(4)].map((_, i) => (
               <line
@@ -262,7 +262,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
                 y2={y + size / 3 + 8}
                 stroke="currentColor"
                 strokeWidth="2"
-                className="text-slate-600"
+                className="text-slate-500"
               />
             ))}
           </g>
@@ -276,7 +276,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
-              className="text-slate-600"
+              className="text-slate-500"
             />
             <line
               x1={x - size / 2 - 5}
@@ -285,7 +285,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
               y2={y + size + 3}
               stroke="currentColor"
               strokeWidth="2"
-              className="text-slate-600"
+              className="text-slate-500"
             />
           </g>
         );
@@ -298,21 +298,21 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
-              className="text-slate-600"
+              className="text-slate-500"
             />
             <circle
               cx={x - size / 4}
               cy={y + size * 0.85}
               r={4}
               fill="currentColor"
-              className="text-slate-600"
+              className="text-slate-500"
             />
             <circle
               cx={x + size / 4}
               cy={y + size * 0.85}
               r={4}
               fill="currentColor"
-              className="text-slate-600"
+              className="text-slate-500"
             />
             <line
               x1={x - size / 2 - 5}
@@ -321,7 +321,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
               y2={y + size + 3}
               stroke="currentColor"
               strokeWidth="2"
-              className="text-slate-600"
+              className="text-slate-500"
             />
           </g>
         );
@@ -710,21 +710,21 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
           {/* View controls */}
           <button
             onClick={() => handleZoom(0.25)}
-            className="p-2 rounded-lg hover:bg-slate-200 text-slate-600"
+            className="p-2 rounded-lg hover:bg-slate-200 text-slate-500"
             title="Zoom In"
           >
             <ZoomIn className="w-4 h-4" />
           </button>
           <button
             onClick={() => handleZoom(-0.25)}
-            className="p-2 rounded-lg hover:bg-slate-200 text-slate-600"
+            className="p-2 rounded-lg hover:bg-slate-200 text-slate-500"
             title="Zoom Out"
           >
             <ZoomOut className="w-4 h-4" />
           </button>
           <button
             onClick={resetView}
-            className="p-2 rounded-lg hover:bg-slate-200 text-slate-600"
+            className="p-2 rounded-lg hover:bg-slate-200 text-slate-500"
             title="Reset View"
           >
             <Maximize2 className="w-4 h-4" />
@@ -735,35 +735,35 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
           {/* View toggles */}
           <button
             onClick={() => setViewSettings(s => ({ ...s, showGrid: !s.showGrid }))}
-            className={`p-2 rounded-lg ${viewSettings.showGrid ? 'bg-blue-100 text-blue-600' : 'hover:bg-slate-200 text-slate-600'}`}
+            className={`p-2 rounded-lg ${viewSettings.showGrid ? 'bg-blue-100 text-blue-600' : 'hover:bg-slate-200 text-slate-500'}`}
             title="Toggle Grid"
           >
             <Grid className="w-4 h-4" />
           </button>
           <button
             onClick={() => setViewSettings(s => ({ ...s, showLoads: !s.showLoads }))}
-            className={`p-2 rounded-lg ${viewSettings.showLoads ? 'bg-blue-100 text-blue-600' : 'hover:bg-slate-200 text-slate-600'}`}
+            className={`p-2 rounded-lg ${viewSettings.showLoads ? 'bg-blue-100 text-blue-600' : 'hover:bg-slate-200 text-slate-500'}`}
             title="Toggle Loads"
           >
             <ArrowDown className="w-4 h-4" />
           </button>
           <button
             onClick={() => setViewSettings(s => ({ ...s, showBMD: !s.showBMD }))}
-            className={`p-2 rounded-lg ${viewSettings.showBMD ? 'bg-red-100 text-red-600' : 'hover:bg-slate-200 text-slate-600'}`}
+            className={`p-2 rounded-lg ${viewSettings.showBMD ? 'bg-red-100 text-red-600' : 'hover:bg-slate-200 text-slate-500'}`}
             title="Bending Moment Diagram"
           >
             <TrendingUp className="w-4 h-4" />
           </button>
           <button
             onClick={() => setViewSettings(s => ({ ...s, showSFD: !s.showSFD }))}
-            className={`p-2 rounded-lg ${viewSettings.showSFD ? 'bg-blue-100 text-blue-600' : 'hover:bg-slate-200 text-slate-600'}`}
+            className={`p-2 rounded-lg ${viewSettings.showSFD ? 'bg-blue-100 text-blue-600' : 'hover:bg-slate-200 text-slate-500'}`}
             title="Shear Force Diagram"
           >
             <BarChart2 className="w-4 h-4" />
           </button>
           <button
             onClick={() => setViewSettings(s => ({ ...s, showDeflectedShape: !s.showDeflectedShape }))}
-            className={`p-2 rounded-lg ${viewSettings.showDeflectedShape ? 'bg-green-100 text-green-600' : 'hover:bg-slate-200 text-slate-600'}`}
+            className={`p-2 rounded-lg ${viewSettings.showDeflectedShape ? 'bg-green-100 text-green-600' : 'hover:bg-slate-200 text-slate-500'}`}
             title="Deflected Shape"
           >
             <Activity className="w-4 h-4" />
@@ -773,7 +773,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
           
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className={`p-2 rounded-lg ${showSettings ? 'bg-slate-200' : 'hover:bg-slate-200'} text-slate-600`}
+            className={`p-2 rounded-lg ${showSettings ? 'bg-slate-200' : 'hover:bg-slate-200'} text-slate-500`}
             title="Settings"
           >
             <Settings className="w-4 h-4" />
@@ -913,7 +913,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
           </svg>
           
           {/* Zoom indicator */}
-          <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-sm text-slate-600 shadow">
+          <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-sm text-slate-500 shadow">
             Zoom: {(zoom * 100).toFixed(0)}%
           </div>
         </div>
@@ -945,7 +945,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
                           onChange={e => setViewSettings(s => ({ ...s, [key]: e.target.checked }))}
                           className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                         />
-                        <span className="text-sm text-slate-600">{label}</span>
+                        <span className="text-sm text-slate-500">{label}</span>
                       </label>
                     ))}
                   </div>
@@ -977,7 +977,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
                   <h3 className="font-semibold text-slate-700 mb-3">Scale</h3>
                   <div className="space-y-4">
                     <div>
-                      <label className="text-xs text-slate-500">Deflection Scale: {viewSettings.deflectionScale}x</label>
+                      <label className="text-xs text-slate-400">Deflection Scale: {viewSettings.deflectionScale}x</label>
                       <input
                         type="range"
                         min="10"
@@ -988,7 +988,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-slate-500">Diagram Scale: {viewSettings.diagramScale}%</label>
+                      <label className="text-xs text-slate-400">Diagram Scale: {viewSettings.diagramScale}%</label>
                       <input
                         type="range"
                         min="10"
@@ -1008,14 +1008,14 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
                       Selected {selectedElement.type === 'node' ? 'Node' : 'Member'}
                     </h3>
                     <div className="bg-white p-3 rounded-lg border text-sm">
-                      <p className="text-slate-600">ID: {selectedElement.id}</p>
+                      <p className="text-slate-500">ID: {selectedElement.id}</p>
                       {selectedElement.type === 'node' && (() => {
                         const node = nodes.find(n => n.id === selectedElement.id);
                         return node && (
                           <>
-                            <p className="text-slate-600">X: {node.x.toFixed(2)} mm</p>
-                            <p className="text-slate-600">Y: {node.y.toFixed(2)} mm</p>
-                            {node.support && <p className="text-slate-600">Support: {node.support}</p>}
+                            <p className="text-slate-500">X: {node.x.toFixed(2)} mm</p>
+                            <p className="text-slate-500">Y: {node.y.toFixed(2)} mm</p>
+                            {node.support && <p className="text-slate-500">Support: {node.support}</p>}
                           </>
                         );
                       })()}
@@ -1023,8 +1023,8 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
                         const member = members.find(m => m.id === selectedElement.id);
                         return member && (
                           <>
-                            <p className="text-slate-600">Start: Node {member.startNode}</p>
-                            <p className="text-slate-600">End: Node {member.endNode}</p>
+                            <p className="text-slate-500">Start: Node {member.startNode}</p>
+                            <p className="text-slate-500">End: Node {member.endNode}</p>
                             {member.forces && (
                               <>
                                 <div className="mt-2 pt-2 border-t">

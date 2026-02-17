@@ -217,7 +217,7 @@ export default function ReportBuilderPage() {
                 <div className="space-y-2 max-h-64 overflow-auto">
                   {sections.map(section => (
                     <div key={section.id} className="flex items-start gap-2 p-3 bg-slate-800/50 rounded-lg">
-                      <GripVertical className="w-4 h-4 text-slate-500 mt-1 cursor-move" />
+                      <GripVertical className="w-4 h-4 text-slate-400 mt-1 cursor-move" />
                       <div className="flex-1 space-y-1">
                         <input 
                           value={section.title}

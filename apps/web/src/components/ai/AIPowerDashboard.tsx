@@ -86,7 +86,7 @@ const MetricCardDisplay: FC<{ metric: MetricCard }> = ({ metric }) => {
         <div className="text-2xl font-bold text-white">{metric.value}</div>
         <div className="text-xs text-slate-400 mt-0.5">{metric.label}</div>
         {metric.changeLabel && (
-          <div className="text-[10px] text-slate-500 mt-1">{metric.changeLabel}</div>
+          <div className="text-[10px] text-slate-400 mt-1">{metric.changeLabel}</div>
         )}
       </div>
     </motion.div>
@@ -308,7 +308,7 @@ export const AIPowerDashboard: FC = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-slate-400">{ref.count} references</span>
-                    <ChevronRight className="w-3 h-3 text-slate-500" />
+                    <ChevronRight className="w-3 h-3 text-slate-400" />
                   </div>
                 </div>
               ))}
@@ -358,7 +358,7 @@ export const AIPowerDashboard: FC = () => {
               {[1, 2, 3, 4, 5].map(star => (
                 <Star
                   key={star}
-                  className={`w-4 h-4 ${star <= 4 ? 'text-amber-400 fill-amber-400' : 'text-slate-600'}`}
+                  className={`w-4 h-4 ${star <= 4 ? 'text-amber-400 fill-amber-400' : 'text-slate-500'}`}
                 />
               ))}
               <span className="text-sm text-amber-400 ml-1">(4.2/5)</span>
@@ -367,7 +367,7 @@ export const AIPowerDashboard: FC = () => {
         </div>
 
         {/* Quick Stats Footer */}
-        <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-700/50">
+        <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-slate-700/50">
           <div className="flex items-center gap-4">
             <span>🟢 AI System Healthy</span>
             <span>•</span>

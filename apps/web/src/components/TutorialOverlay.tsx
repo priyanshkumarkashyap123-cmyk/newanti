@@ -202,7 +202,7 @@ export const TutorialOverlay: FC<TutorialOverlayProps> = ({ isOpen, onClose, onC
                     {/* Close Button */}
                     <button
                         onClick={handleSkip}
-                        className="absolute top-4 right-4 text-zinc-500 hover:text-white p-2 rounded-lg hover:bg-zinc-800 transition-colors z-10"
+                        className="absolute top-4 right-4 text-zinc-400 hover:text-white p-2 rounded-lg hover:bg-zinc-800 transition-colors z-10"
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -231,7 +231,7 @@ export const TutorialOverlay: FC<TutorialOverlayProps> = ({ isOpen, onClose, onC
                     <div className="px-8 py-5 bg-zinc-800/50 border-t border-zinc-800 flex items-center justify-between">
                         <button
                             onClick={handleSkip}
-                            className="text-zinc-500 hover:text-white text-sm font-medium transition-colors"
+                            className="text-zinc-400 hover:text-white text-sm font-medium transition-colors"
                         >
                             Skip Tutorial
                         </button>

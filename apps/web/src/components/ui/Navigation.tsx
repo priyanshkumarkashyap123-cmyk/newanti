@@ -172,7 +172,7 @@ export const Breadcrumbs: FC<BreadcrumbsProps> = ({
                         </span>
                     )}
                     {!isLast && (
-                        <span className="text-slate-600">{separator}</span>
+                        <span className="text-slate-500">{separator}</span>
                     )}
                 </div>
             );
@@ -244,7 +244,7 @@ export const Pagination: FC<PaginationProps> = ({
             {/* Page Numbers */}
             {showPageNumbers && pages.map((page, index) => (
                 page === 'ellipsis' ? (
-                    <span key={`ellipsis-${index}`} className="px-3 text-slate-500">
+                    <span key={`ellipsis-${index}`} className="px-3 text-slate-400">
                         <MoreHorizontal className="w-4 h-4" />
                     </span>
                 ) : (
@@ -346,7 +346,7 @@ export const Stepper: FC<StepperProps> = ({
                                     {step.label}
                                 </p>
                                 {step.description && (
-                                    <p className="text-sm text-slate-500 mt-0.5">{step.description}</p>
+                                    <p className="text-sm text-slate-400 mt-0.5">{step.description}</p>
                                 )}
                             </div>
                         </div>

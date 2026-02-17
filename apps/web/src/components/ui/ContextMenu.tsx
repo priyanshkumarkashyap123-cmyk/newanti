@@ -121,12 +121,12 @@ const MenuItemComponent: FC<{
                 )}
                 <span className="flex-1">{item.label}</span>
                 {item.shortcut && (
-                    <span className="text-xs text-slate-500 font-mono">
+                    <span className="text-xs text-slate-400 font-mono">
                         {item.shortcut}
                     </span>
                 )}
                 {item.submenu && (
-                    <ChevronRight className="w-4 h-4 text-slate-500" />
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
                 )}
             </button>
 

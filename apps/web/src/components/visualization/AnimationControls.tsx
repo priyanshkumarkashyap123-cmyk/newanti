@@ -240,11 +240,11 @@ const PlaybackControlBar: React.FC<PlaybackControlBarProps> = ({
                     <span className="text-white font-mono">
                         {formatTime(currentFrame)}
                     </span>
-                    <span className="text-slate-500">/</span>
+                    <span className="text-slate-400">/</span>
                     <span className="text-slate-400 font-mono">
                         {formatTime(totalFrames)}
                     </span>
-                    <span className="text-slate-500 text-xs ml-2">
+                    <span className="text-slate-400 text-xs ml-2">
                         Frame {currentFrame} / {totalFrames}
                     </span>
                 </div>
@@ -353,7 +353,7 @@ const ModeShapeSelector: React.FC<ModeShapeSelectorProps> = ({
                             }`}>
                                 {(mode.participationMass * 100).toFixed(1)}%
                             </div>
-                            <div className="text-[10px] text-slate-500">Mass Part.</div>
+                            <div className="text-[10px] text-slate-400">Mass Part.</div>
                         </div>
                     </button>
                 ))}
@@ -401,7 +401,7 @@ const AnimationSettingsPanel: React.FC<AnimationSettingsPanelProps> = ({
                         onChange={(e) => updateConfig('scaleFactor', parseFloat(e.target.value))}
                         className="w-full"
                     />
-                    <div className="flex justify-between text-[10px] text-slate-500">
+                    <div className="flex justify-between text-[10px] text-slate-400">
                         <span>1x</span>
                         <span>50x</span>
                         <span>100x</span>

@@ -8,7 +8,6 @@ import { AppProvider } from './AppInitializer';
 import { AppProviders } from './components/providers/AppProviders';
 import { safeguards } from './utils/productionSafeguards';
 import { logger } from './utils/logger';
-import * as Sentry from "@sentry/react";
 import env from './config/env';
 import './index.css';
 
@@ -37,10 +36,11 @@ const initializeApp = async () => {
         console.log('🚀 App initialization starting...');
         showRootError('Loading BeamLab...', 'Initializing application...');
 
-        // Initialize Sentry for error tracking (wrapped in try-catch)
+        // Initialize Sentry for error tracking (lazy-loaded, wrapped in try-catch)
         try {
             if (env.monitoring.isSentryEnabled) {
-                console.log('📊 Initializing Sentry...');
+                console.log('📊 Loading Sentry...');
+                const Sentry = await import("@sentry/react");
                 Sentry.init({
                     dsn: env.monitoring.sentryDsn,
                     integrations: [

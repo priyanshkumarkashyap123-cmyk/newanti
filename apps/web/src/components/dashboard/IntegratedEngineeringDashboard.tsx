@@ -299,7 +299,7 @@ export function IntegratedEngineeringDashboard({
               <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent">
                 Engineering Design Center
               </h1>
-              <p className="text-sm text-zinc-500 mt-0.5">
+              <p className="text-sm text-zinc-400 mt-0.5">
                 {projectName} • {designCode}
               </p>
             </div>
@@ -342,7 +342,7 @@ export function IntegratedEngineeringDashboard({
               className="p-4 rounded-xl bg-zinc-900/50 border border-zinc-800 backdrop-blur-sm"
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-zinc-500 text-sm">Overall Progress</span>
+                <span className="text-zinc-400 text-sm">Overall Progress</span>
                 <Target className="w-4 h-4 text-blue-400" />
               </div>
               <div className="flex items-end gap-2">
@@ -365,14 +365,14 @@ export function IntegratedEngineeringDashboard({
               className="p-4 rounded-xl bg-zinc-900/50 border border-zinc-800 backdrop-blur-sm"
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-zinc-500 text-sm">Design Checks</span>
+                <span className="text-zinc-400 text-sm">Design Checks</span>
                 <Shield className="w-4 h-4 text-emerald-400" />
               </div>
               <div className="flex items-end gap-2">
                 <span className="text-3xl font-bold text-emerald-400">{SAMPLE_METRICS.passedChecks}</span>
                 <span className="text-lg text-red-400 mb-0.5">/{SAMPLE_METRICS.failedChecks}</span>
               </div>
-              <p className="text-xs text-zinc-500 mt-1">
+              <p className="text-xs text-zinc-400 mt-1">
                 {((SAMPLE_METRICS.passedChecks / (SAMPLE_METRICS.passedChecks + SAMPLE_METRICS.failedChecks)) * 100).toFixed(1)}% pass rate
               </p>
             </motion.div>
@@ -384,7 +384,7 @@ export function IntegratedEngineeringDashboard({
               className="p-4 rounded-xl bg-zinc-900/50 border border-zinc-800 backdrop-blur-sm"
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-zinc-500 text-sm">Max Utilization</span>
+                <span className="text-zinc-400 text-sm">Max Utilization</span>
                 <TrendingUp className="w-4 h-4 text-amber-400" />
               </div>
               <div className="flex items-end gap-2">
@@ -392,7 +392,7 @@ export function IntegratedEngineeringDashboard({
                   {(SAMPLE_METRICS.utilizationMax * 100).toFixed(0)}%
                 </span>
               </div>
-              <p className="text-xs text-zinc-500 mt-1">
+              <p className="text-xs text-zinc-400 mt-1">
                 Avg: {(SAMPLE_METRICS.utilizationAvg * 100).toFixed(0)}%
               </p>
             </motion.div>
@@ -404,14 +404,14 @@ export function IntegratedEngineeringDashboard({
               className="p-4 rounded-xl bg-zinc-900/50 border border-zinc-800 backdrop-blur-sm"
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-zinc-500 text-sm">Members</span>
+                <span className="text-zinc-400 text-sm">Members</span>
                 <Grid3X3 className="w-4 h-4 text-purple-400" />
               </div>
               <div className="flex items-end gap-2">
                 <span className="text-3xl font-bold text-white">{SAMPLE_METRICS.designedMembers}</span>
-                <span className="text-lg text-zinc-500 mb-0.5">/{SAMPLE_METRICS.totalMembers}</span>
+                <span className="text-lg text-zinc-400 mb-0.5">/{SAMPLE_METRICS.totalMembers}</span>
               </div>
-              <p className="text-xs text-zinc-500 mt-1">Designed members</p>
+              <p className="text-xs text-zinc-400 mt-1">Designed members</p>
             </motion.div>
           </div>
 
@@ -472,12 +472,12 @@ export function IntegratedEngineeringDashboard({
                   <h3 className="text-lg font-semibold text-white mb-1 group-hover:text-blue-400 transition-colors">
                     {module.name}
                   </h3>
-                  <p className="text-sm text-zinc-500 mb-4">{module.description}</p>
+                  <p className="text-sm text-zinc-400 mb-4">{module.description}</p>
                   
                   {/* Progress bar */}
                   <div className="mb-3">
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-zinc-500">Progress</span>
+                      <span className="text-zinc-400">Progress</span>
                       <span className="text-zinc-400">{module.progress}%</span>
                     </div>
                     <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
@@ -518,8 +518,8 @@ export function IntegratedEngineeringDashboard({
                   
                   {/* Action */}
                   <div className="mt-4 pt-4 border-t border-zinc-800 flex items-center justify-between">
-                    <span className="text-xs text-zinc-500">Click to open</span>
-                    <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
+                    <span className="text-xs text-zinc-400">Click to open</span>
+                    <ChevronRight className="w-4 h-4 text-zinc-500 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
                   </div>
                 </motion.div>
               ))}
@@ -594,7 +594,7 @@ export function IntegratedEngineeringDashboard({
                     {renderCheckStatus(check.status)}
                     <div>
                       <p className="text-sm font-medium text-white">{check.component}</p>
-                      <p className="text-xs text-zinc-500">{check.check}</p>
+                      <p className="text-xs text-zinc-400">{check.check}</p>
                     </div>
                   </div>
                   <div className="text-right">
@@ -605,7 +605,7 @@ export function IntegratedEngineeringDashboard({
                     }`}>
                       {(check.utilization * 100).toFixed(0)}%
                     </p>
-                    <p className="text-xs text-zinc-500">{check.message}</p>
+                    <p className="text-xs text-zinc-400">{check.message}</p>
                   </div>
                 </div>
               ))}

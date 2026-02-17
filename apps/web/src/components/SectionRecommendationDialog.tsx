@@ -151,24 +151,24 @@ export const SectionRecommendationDialog: React.FC<Props> = ({
           <div className="grid grid-cols-4 gap-4">
             {demands.Mx !== undefined && demands.Mx > 0 && (
               <div>
-                <span className="text-xs text-zinc-500">Mx (kN·m)</span>
+                <span className="text-xs text-zinc-400">Mx (kN·m)</span>
                 <p className="text-sm font-medium text-white">{demands.Mx.toFixed(1)}</p>
               </div>
             )}
             {demands.My !== undefined && demands.My > 0 && (
               <div>
-                <span className="text-xs text-zinc-500">My (kN·m)</span>
+                <span className="text-xs text-zinc-400">My (kN·m)</span>
                 <p className="text-sm font-medium text-white">{demands.My.toFixed(1)}</p>
               </div>
             )}
             {demands.P !== undefined && demands.P > 0 && (
               <div>
-                <span className="text-xs text-zinc-500">Axial (kN)</span>
+                <span className="text-xs text-zinc-400">Axial (kN)</span>
                 <p className="text-sm font-medium text-white">{demands.P.toFixed(1)}</p>
               </div>
             )}
             <div>
-              <span className="text-xs text-zinc-500">Length (m)</span>
+              <span className="text-xs text-zinc-400">Length (m)</span>
               <p className="text-sm font-medium text-white">{(demands.length / 1000).toFixed(1)}</p>
             </div>
           </div>
@@ -206,7 +206,7 @@ export const SectionRecommendationDialog: React.FC<Props> = ({
             <div className="text-center py-12">
               <AlertTriangle className="w-12 h-12 text-yellow-500 mx-auto mb-3" />
               <p className="text-zinc-400">No suitable sections found for the given demands.</p>
-              <p className="text-sm text-zinc-500 mt-1">Try reducing the safety factor or changing section type.</p>
+              <p className="text-sm text-zinc-400 mt-1">Try reducing the safety factor or changing section type.</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -241,13 +241,13 @@ export const SectionRecommendationDialog: React.FC<Props> = ({
                         {memberType === 'beam' ? (
                           <>
                             <div>
-                              <span className="text-xs text-zinc-500">Mx Capacity</span>
+                              <span className="text-xs text-zinc-400">Mx Capacity</span>
                               <p className="text-sm font-medium text-white">
                                 {rec.capacity.Mx_elastic_kNm.toFixed(1)} kN·m
                               </p>
                             </div>
                             <div>
-                              <span className="text-xs text-zinc-500">My Capacity</span>
+                              <span className="text-xs text-zinc-400">My Capacity</span>
                               <p className="text-sm font-medium text-white">
                                 {rec.capacity.My_elastic_kNm.toFixed(1)} kN·m
                               </p>
@@ -255,20 +255,20 @@ export const SectionRecommendationDialog: React.FC<Props> = ({
                           </>
                         ) : (
                           <div>
-                            <span className="text-xs text-zinc-500">Axial Capacity</span>
+                            <span className="text-xs text-zinc-400">Axial Capacity</span>
                             <p className="text-sm font-medium text-white">
                               {rec.capacity.P_capacity_kN.toFixed(0)} kN
                             </p>
                           </div>
                         )}
                         <div>
-                          <span className="text-xs text-zinc-500">Weight</span>
+                          <span className="text-xs text-zinc-400">Weight</span>
                           <p className="text-sm font-medium text-white">
                             {rec.properties.weight_per_meter.toFixed(1)} kg/m
                           </p>
                         </div>
                         <div>
-                          <span className="text-xs text-zinc-500">Section</span>
+                          <span className="text-xs text-zinc-400">Section</span>
                           <p className="text-sm font-medium text-white">
                             {rec.properties.depth.toFixed(0)} × {rec.properties.width.toFixed(0)} mm
                           </p>
@@ -277,7 +277,7 @@ export const SectionRecommendationDialog: React.FC<Props> = ({
 
                       {/* Efficiency Bar */}
                       <div className="mt-2">
-                        <div className="flex items-center justify-between text-xs text-zinc-500 mb-1">
+                        <div className="flex items-center justify-between text-xs text-zinc-400 mb-1">
                           <span>Utilization Ratio</span>
                           <span>
                             {memberType === 'beam' 
@@ -328,7 +328,7 @@ export const SectionRecommendationDialog: React.FC<Props> = ({
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 selectedSection
                   ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                  : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                  : 'bg-zinc-800 text-zinc-400 cursor-not-allowed'
               }`}
             >
               Apply Section

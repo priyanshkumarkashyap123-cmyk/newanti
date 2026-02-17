@@ -367,7 +367,7 @@ const Visualization3DEngine: React.FC = () => {
                   key={key}
                   onClick={() => toggleLayer(key as keyof LayerVisibility)}
                   className={`w-full flex items-center gap-3 p-2 rounded-lg transition-colors ${
-                    visible ? 'bg-slate-700 text-white' : 'text-slate-500 hover:bg-slate-700/50'
+                    visible ? 'bg-slate-700 text-white' : 'text-slate-400 hover:bg-slate-700/50'
                   }`}
                 >
                   {visible ? <Eye className="w-4 h-4 text-blue-400" /> : <EyeOff className="w-4 h-4" />}
@@ -445,9 +445,9 @@ const Visualization3DEngine: React.FC = () => {
           {/* Placeholder for WebGL Canvas */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <Box className="w-24 h-24 text-slate-600 mx-auto mb-4" />
-              <p className="text-slate-500 text-lg">3D WebGL Viewport</p>
-              <p className="text-slate-600 text-sm mt-2">
+              <Box className="w-24 h-24 text-slate-500 mx-auto mb-4" />
+              <p className="text-slate-400 text-lg">3D WebGL Viewport</p>
+              <p className="text-slate-500 text-sm mt-2">
                 View: {settings.viewMode} | Mode: {settings.renderMode} | Display: {settings.displayMode}
               </p>
             </div>

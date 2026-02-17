@@ -121,15 +121,15 @@ export const FoundationDesignPanel: React.FC = () => {
 
                             <div className="grid grid-cols-3 gap-2">
                                 <div className="p-3 bg-zinc-900 rounded border border-zinc-700 text-center">
-                                    <div className="text-xs text-zinc-500">Length</div>
+                                    <div className="text-xs text-zinc-400">Length</div>
                                     <div className="text-xl font-mono">{result.dimensions.length}m</div>
                                 </div>
                                 <div className="p-3 bg-zinc-900 rounded border border-zinc-700 text-center">
-                                    <div className="text-xs text-zinc-500">Width</div>
+                                    <div className="text-xs text-zinc-400">Width</div>
                                     <div className="text-xl font-mono">{result.dimensions.width}m</div>
                                 </div>
                                 <div className="p-3 bg-zinc-900 rounded border border-zinc-700 text-center">
-                                    <div className="text-xs text-zinc-500">Depth</div>
+                                    <div className="text-xs text-zinc-400">Depth</div>
                                     <div className="text-xl font-mono">{result.dimensions.depth}m</div>
                                 </div>
                             </div>
@@ -155,7 +155,7 @@ export const FoundationDesignPanel: React.FC = () => {
                             </div>
                         </div>
                     ) : (
-                        <div className="h-full flex items-center justify-center text-zinc-500">
+                        <div className="h-full flex items-center justify-center text-zinc-400">
                             Run design to see results
                         </div>
                     )}

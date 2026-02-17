@@ -225,7 +225,7 @@ export const MeshingPanel: FC<MeshingPanelProps> = ({ isOpen, onClose }) => {
                                 <span className="text-white font-medium">
                                     {Array.from(selectedIds).filter((id: string) => nodes.has(id)).length}
                                 </span>
-                                <span className="text-zinc-500 ml-2">
+                                <span className="text-zinc-400 ml-2">
                                     {meshType === 'plate' ? '(Need 4 for corners)' : '(Min 3 for boundary)'}
                                 </span>
                             </div>
@@ -276,7 +276,7 @@ export const MeshingPanel: FC<MeshingPanelProps> = ({ isOpen, onClose }) => {
                             <div className="p-4 bg-zinc-800/50 rounded-lg text-center">
                                 <Triangle className="w-10 h-10 text-violet-400 mx-auto mb-3" />
                                 <p className="text-zinc-300">Select boundary nodes in order (CCW)</p>
-                                <p className="text-sm text-zinc-500 mt-1">
+                                <p className="text-sm text-zinc-400 mt-1">
                                     Constrained Delaunay Triangulation
                                 </p>
                             </div>

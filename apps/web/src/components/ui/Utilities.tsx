@@ -390,7 +390,7 @@ export const Divider: FC<DividerProps> = ({
         return (
             <div className={`flex items-center gap-4 ${className}`}>
                 <div className="flex-1 h-px bg-slate-700" />
-                <span className="text-sm text-slate-500 font-medium">{label}</span>
+                <span className="text-sm text-slate-400 font-medium">{label}</span>
                 <div className="flex-1 h-px bg-slate-700" />
             </div>
         );
@@ -420,7 +420,7 @@ export const EmptyState: FC<EmptyStateProps> = ({
 }) => (
     <div className={`flex flex-col items-center justify-center py-12 px-6 text-center ${className}`}>
         {icon && (
-            <div className="w-16 h-16 mb-4 rounded-full bg-slate-800 flex items-center justify-center text-slate-500">
+            <div className="w-16 h-16 mb-4 rounded-full bg-slate-800 flex items-center justify-center text-slate-400">
                 {icon}
             </div>
         )}

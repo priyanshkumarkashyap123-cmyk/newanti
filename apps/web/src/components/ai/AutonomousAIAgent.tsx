@@ -769,7 +769,7 @@ ${apiStatus}
                       {processingState.message}
                     </span>
                     {processingState.details && processingState.details.length > 0 && (
-                      <span className="text-[10px] text-slate-500">
+                      <span className="text-[10px] text-slate-400">
                         {processingState.details.join(' → ')}
                       </span>
                     )}
@@ -826,17 +826,17 @@ ${apiStatus}
                     value={apiKey}
                     onChange={e => setApiKey(e.target.value)}
                     placeholder={hasApiKey ? '••••••••••••••••' : 'Enter your API key'}
-                    className="flex-1 px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-purple-500"
+                    className="flex-1 px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm placeholder:text-slate-400 focus:outline-none focus:border-purple-500"
                   />
                   <button
                     onClick={handleSaveApiKey}
                     disabled={!apiKey.trim()}
-                    className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-lg text-sm font-medium transition-colors"
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-700 disabled:text-slate-400 text-white rounded-lg text-sm font-medium transition-colors"
                   >
                     Save
                   </button>
                 </div>
-                <p className="mt-2 text-xs text-slate-500">
+                <p className="mt-2 text-xs text-slate-400">
                   Get your API key from{' '}
                   <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:underline">
                     Google AI Studio
@@ -1003,7 +1003,7 @@ ${apiStatus}
                       className="h-full bg-gradient-to-r from-purple-500 to-violet-500"
                     />
                   </div>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-slate-400 mt-1">
                     Step {processingState.currentStep} of {processingState.totalSteps}
                   </p>
                 </div>
@@ -1018,7 +1018,7 @@ ${apiStatus}
       {/* Quick Actions & Smart Suggestions */}
       {messages.length <= 3 && (
         <div className="px-4 pb-3">
-          <p className="text-xs text-slate-500 mb-2 flex items-center gap-1">
+          <p className="text-xs text-slate-400 mb-2 flex items-center gap-1">
             <Sparkles className="w-3 h-3 text-purple-400" />
             {nodes.size === 0 ? 'Get started:' : 'Suggested actions:'}
           </p>
@@ -1043,7 +1043,7 @@ ${apiStatus}
       {/* Conversation Starters - For new conversations */}
       {messages.length <= 1 && (
         <div className="px-4 pb-3">
-          <p className="text-xs text-slate-500 mb-2">Or start a conversation:</p>
+          <p className="text-xs text-slate-400 mb-2">Or start a conversation:</p>
           <div className="flex flex-wrap gap-2">
             {conversationStarters.map((starter, i) => (
               <button
@@ -1072,7 +1072,7 @@ ${apiStatus}
               onKeyDown={handleKeyDown}
               placeholder="Describe what you want to build or analyze..."
               rows={1}
-              className="w-full px-4 py-3 bg-slate-800/80 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 resize-none focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+              className="w-full px-4 py-3 bg-slate-800/80 border border-slate-700 rounded-xl text-white placeholder:text-slate-400 resize-none focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
               style={{ minHeight: '48px', maxHeight: '120px' }}
             />
           </div>
@@ -1103,7 +1103,7 @@ ${apiStatus}
           </button>
         </div>
         
-        <div className="flex items-center justify-between mt-2 text-xs text-slate-500">
+        <div className="flex items-center justify-between mt-2 text-xs text-slate-400">
           <span>Press Enter to send • Shift+Enter for new line</span>
           {hasApiKey && (
             <span className="flex items-center gap-1">

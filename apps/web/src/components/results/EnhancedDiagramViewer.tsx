@@ -642,7 +642,7 @@ const Legend: FC<LegendProps> = ({ type, units }) => {
                 />
                 <span className="text-zinc-400">{labels.negative}</span>
             </div>
-            <div className="text-zinc-500 border-l border-zinc-700 pl-4">
+            <div className="text-zinc-400 border-l border-zinc-700 pl-4">
                 Units: <span className="text-zinc-300">{getUnit()}</span>
             </div>
         </div>
@@ -687,8 +687,8 @@ const SectionValuesPanel: FC<SectionValuesPanelProps> = ({
     if (x === null || value === null) {
         return (
             <div className="flex items-center gap-2 px-4 py-3 bg-zinc-800/50 rounded-lg border border-zinc-700">
-                <Crosshair className="w-4 h-4 text-zinc-500" />
-                <span className="text-zinc-500 text-sm">Hover over diagram to see section values</span>
+                <Crosshair className="w-4 h-4 text-zinc-400" />
+                <span className="text-zinc-400 text-sm">Hover over diagram to see section values</span>
             </div>
         );
     }
@@ -705,7 +705,7 @@ const SectionValuesPanel: FC<SectionValuesPanelProps> = ({
                 <Target className="w-4 h-4" style={{ color: colors.stroke }} />
                 <span className="text-zinc-400 text-sm">Section at</span>
                 <span className="font-mono font-bold text-white">x = {formatValue(x, 2)} m</span>
-                <span className="text-zinc-500 text-sm">({(ratio * 100).toFixed(1)}%)</span>
+                <span className="text-zinc-400 text-sm">({(ratio * 100).toFixed(1)}%)</span>
             </div>
             
             <div className="h-6 w-px bg-zinc-700" />
@@ -789,7 +789,7 @@ export const EnhancedDiagramViewer: FC<EnhancedDiagramViewerProps> = ({
                         <BarChart2 className="w-5 h-5" style={{ color: colors.stroke }} />
                         Force Diagram Analysis
                     </h3>
-                    <span className="text-zinc-500 text-sm">Member: {memberId}</span>
+                    <span className="text-zinc-400 text-sm">Member: {memberId}</span>
                 </div>
                 
                 <div className="flex items-center gap-2">
@@ -828,25 +828,25 @@ export const EnhancedDiagramViewer: FC<EnhancedDiagramViewerProps> = ({
             {stats && (
                 <div className="flex items-center gap-6 px-4 py-2 bg-zinc-800/30 border-b border-zinc-800 text-sm">
                     <div className="flex items-center gap-2">
-                        <span className="text-zinc-500">Max:</span>
+                        <span className="text-zinc-400">Max:</span>
                         <span className="font-mono font-bold" style={{ color: colors.positive }}>
                             {formatValue(stats.max, 2)}
                         </span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-zinc-500">Min:</span>
+                        <span className="text-zinc-400">Min:</span>
                         <span className="font-mono font-bold" style={{ color: colors.negative }}>
                             {formatValue(stats.min, 2)}
                         </span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-zinc-500">|Max|:</span>
+                        <span className="text-zinc-400">|Max|:</span>
                         <span className="font-mono font-bold text-white">
                             {formatValue(stats.maxAbs, 2)}
                         </span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-zinc-500">Length:</span>
+                        <span className="text-zinc-400">Length:</span>
                         <span className="font-mono text-white">
                             {formatValue(memberLength, 2)} {units.length}
                         </span>

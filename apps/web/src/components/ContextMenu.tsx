@@ -120,7 +120,7 @@ function ContextMenu({ items, position, onClose }: ContextMenuProps) {
                         w-full flex items-center gap-3 px-3 py-2 text-left text-sm
                         transition-colors duration-75 rounded
                         ${item.disabled
-                            ? 'text-zinc-500 cursor-not-allowed'
+                            ? 'text-zinc-400 cursor-not-allowed'
                             : item.danger
                                 ? 'text-red-400 hover:bg-red-500/20'
                                 : 'text-zinc-200 hover:bg-zinc-700'
@@ -132,12 +132,12 @@ function ContextMenu({ items, position, onClose }: ContextMenuProps) {
                     </span>
                     <span className="flex-1">{item.label}</span>
                     {item.shortcut && (
-                        <span className="text-[11px] text-zinc-500 ml-4">
+                        <span className="text-[11px] text-zinc-400 ml-4">
                             {item.shortcut}
                         </span>
                     )}
                     {item.submenu && (
-                        <ChevronRight className="w-3 h-3 text-zinc-500" />
+                        <ChevronRight className="w-3 h-3 text-zinc-400" />
                     )}
                 </button>
 

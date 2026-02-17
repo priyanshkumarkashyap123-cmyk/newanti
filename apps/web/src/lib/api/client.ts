@@ -309,7 +309,7 @@ export class ApiClient {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         const response = await this.fetchWithTimeout<T>(url, config, timeout);
-        
+
         // Apply response interceptors
         let finalResponse = response;
         for (const interceptor of this.responseInterceptors) {
@@ -422,7 +422,7 @@ export class ApiClient {
 
   private buildUrl(endpoint: string, params?: Record<string, string | number | boolean | undefined>): string {
     const base = endpoint.startsWith('http') ? endpoint : `${this.config.baseUrl}${endpoint}`;
-    
+
     if (!params) return base;
 
     const searchParams = new URLSearchParams();
@@ -461,11 +461,11 @@ export class ApiClient {
 
   private mergeAbortSignals(signal1: AbortSignal, signal2: AbortSignal): AbortSignal {
     const controller = new AbortController();
-    
+
     const abort = () => controller.abort();
     signal1.addEventListener('abort', abort);
     signal2.addEventListener('abort', abort);
-    
+
     return controller.signal;
   }
 
@@ -486,7 +486,7 @@ export class ApiClient {
 // DEFAULT CLIENT INSTANCE
 // ============================================================================
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export const apiClient = new ApiClient({
   baseUrl: API_BASE_URL,
@@ -500,7 +500,7 @@ export const apiClient = new ApiClient({
 // Add auth token interceptor
 apiClient.onRequest((config) => {
   if (config.skipAuth) return config;
-  
+
   const token = localStorage.getItem('beamlab-auth');
   if (token) {
     try {

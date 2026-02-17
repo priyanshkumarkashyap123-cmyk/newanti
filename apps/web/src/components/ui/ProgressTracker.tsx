@@ -142,7 +142,7 @@ export function StepIndicator({
                   {step.label}
                 </p>
                 {step.message && (
-                  <p className="text-sm text-slate-500 mt-0.5">{step.message}</p>
+                  <p className="text-sm text-slate-400 mt-0.5">{step.message}</p>
                 )}
                 {step.status === 'in-progress' && step.progress !== undefined && (
                   <div className="mt-2 h-1 bg-slate-700 rounded-full overflow-hidden">
@@ -261,7 +261,7 @@ export function ProgressCard({
           />
         </div>
         {showETA && state.estimatedTimeRemaining && state.status === 'running' && (
-          <p className="text-sm text-slate-500 mt-2">
+          <p className="text-sm text-slate-400 mt-2">
             Estimated time remaining: {formatTimeRemaining(state.estimatedTimeRemaining)}
           </p>
         )}
@@ -453,7 +453,7 @@ export function ProgressModal({
             />
           </div>
           {state.estimatedTimeRemaining && state.status === 'running' && (
-            <p className="text-sm text-slate-500 mt-2 text-center">
+            <p className="text-sm text-slate-400 mt-2 text-center">
               About {formatTimeRemaining(state.estimatedTimeRemaining)} remaining
             </p>
           )}

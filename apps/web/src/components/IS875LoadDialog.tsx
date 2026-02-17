@@ -382,7 +382,7 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                                 onChange={(e) => setWindPressure(parseFloat(e.target.value) || 1.5)}
                                                 className="w-full px-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white"
                                             />
-                                            <p className="text-xs text-zinc-500 mt-1">Use IS 875 Part 3 calculator to determine Pz</p>
+                                            <p className="text-xs text-zinc-400 mt-1">Use IS 875 Part 3 calculator to determine Pz</p>
                                         </div>
                                         <div>
                                             <label className="text-zinc-400 text-sm mb-2 block">Surface Width (m)</label>
@@ -412,7 +412,7 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                                     </option>
                                                 ))}
                                             </select>
-                                            <p className="text-xs text-zinc-500 mt-1">{selectedSnowZone.description}</p>
+                                            <p className="text-xs text-zinc-400 mt-1">{selectedSnowZone.description}</p>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
@@ -478,7 +478,7 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                     <div className="text-zinc-400">
                                         kN/m {loadType === 'point' ? '(point)' : '(distributed)'}
                                     </div>
-                                    <div className="text-xs text-zinc-500 mt-2 flex items-center justify-center gap-1">
+                                    <div className="text-xs text-zinc-400 mt-2 flex items-center justify-center gap-1">
                                         <ArrowDown className="w-3 h-3" />
                                         Downward direction (gravity)
                                     </div>
@@ -486,7 +486,7 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
 
                                 {/* Target Info */}
                                 <div className="bg-zinc-800 rounded-lg p-3">
-                                    <div className="text-xs text-zinc-500">Applying to</div>
+                                    <div className="text-xs text-zinc-400">Applying to</div>
                                     <div className="text-white font-medium">
                                         {targetMemberId
                                             ? `Member ${targetMemberId}`

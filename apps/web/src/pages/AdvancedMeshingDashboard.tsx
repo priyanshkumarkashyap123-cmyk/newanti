@@ -228,7 +228,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                 style={{ width: `${meshProgress}%` }}
               />
             </div>
-            <div className="flex justify-between text-xs text-slate-500 mt-2">
+            <div className="flex justify-between text-xs text-slate-400 mt-2">
               <span>Domain decomposition</span>
               <span>Node placement</span>
               <span>Element creation</span>
@@ -290,7 +290,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                     onChange={(e) => setSettings({ ...settings, globalSize: parseInt(e.target.value) })}
                     className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
                   />
-                  <div className="flex justify-between text-xs text-slate-500 mt-1">
+                  <div className="flex justify-between text-xs text-slate-400 mt-1">
                     <span>Fine (10mm)</span>
                     <span>Coarse (500mm)</span>
                   </div>
@@ -454,9 +454,9 @@ const AdvancedMeshingDashboard: React.FC = () => {
             {/* Mesh Visualization Placeholder */}
             <div className="bg-slate-800/50 rounded-xl border border-slate-700/50 aspect-video flex items-center justify-center">
               <div className="text-center">
-                <Grid className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+                <Grid className="w-16 h-16 text-slate-500 mx-auto mb-4" />
                 <p className="text-slate-400">3D Mesh Visualization</p>
-                <p className="text-slate-500 text-sm">WebGL mesh preview will appear here</p>
+                <p className="text-slate-400 text-sm">WebGL mesh preview will appear here</p>
               </div>
             </div>
 
@@ -531,7 +531,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                     <p className={`text-xl font-bold ${metrics.avgAspectRatio < 2 ? 'text-green-400' : 'text-yellow-400'}`}>
                       {metrics.avgAspectRatio.toFixed(2)}
                     </p>
-                    <p className="text-slate-500 text-xs">Target: &lt; 2.0</p>
+                    <p className="text-slate-400 text-xs">Target: &lt; 2.0</p>
                   </div>
 
                   <div className="p-4 bg-slate-700/30 rounded-lg">
@@ -539,7 +539,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                     <p className={`text-xl font-bold ${metrics.maxAspectRatio < 5 ? 'text-green-400' : 'text-yellow-400'}`}>
                       {metrics.maxAspectRatio.toFixed(2)}
                     </p>
-                    <p className="text-slate-500 text-xs">Limit: &lt; 5.0</p>
+                    <p className="text-slate-400 text-xs">Limit: &lt; 5.0</p>
                   </div>
 
                   <div className="p-4 bg-slate-700/30 rounded-lg">
@@ -547,7 +547,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                     <p className={`text-xl font-bold ${metrics.avgSkewness < 0.25 ? 'text-green-400' : 'text-yellow-400'}`}>
                       {metrics.avgSkewness.toFixed(3)}
                     </p>
-                    <p className="text-slate-500 text-xs">Target: &lt; 0.25</p>
+                    <p className="text-slate-400 text-xs">Target: &lt; 0.25</p>
                   </div>
 
                   <div className="p-4 bg-slate-700/30 rounded-lg">
@@ -555,7 +555,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                     <p className={`text-xl font-bold ${metrics.maxSkewness < 0.75 ? 'text-green-400' : 'text-yellow-400'}`}>
                       {metrics.maxSkewness.toFixed(3)}
                     </p>
-                    <p className="text-slate-500 text-xs">Limit: &lt; 0.75</p>
+                    <p className="text-slate-400 text-xs">Limit: &lt; 0.75</p>
                   </div>
 
                   <div className="p-4 bg-slate-700/30 rounded-lg">
@@ -563,7 +563,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                     <p className={`text-xl font-bold ${metrics.minJacobian > 0.5 ? 'text-green-400' : 'text-red-400'}`}>
                       {metrics.minJacobian.toFixed(3)}
                     </p>
-                    <p className="text-slate-500 text-xs">Min: &gt; 0.5</p>
+                    <p className="text-slate-400 text-xs">Min: &gt; 0.5</p>
                   </div>
 
                   <div className="p-4 bg-slate-700/30 rounded-lg">
@@ -571,7 +571,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                     <p className={`text-xl font-bold ${metrics.avgJacobian > 0.8 ? 'text-green-400' : 'text-yellow-400'}`}>
                       {metrics.avgJacobian.toFixed(3)}
                     </p>
-                    <p className="text-slate-500 text-xs">Target: &gt; 0.8</p>
+                    <p className="text-slate-400 text-xs">Target: &gt; 0.8</p>
                   </div>
 
                   <div className="p-4 bg-slate-700/30 rounded-lg">
@@ -579,7 +579,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                     <p className={`text-xl font-bold ${metrics.warping < 0.15 ? 'text-green-400' : 'text-yellow-400'}`}>
                       {metrics.warping.toFixed(3)}
                     </p>
-                    <p className="text-slate-500 text-xs">Limit: &lt; 0.15</p>
+                    <p className="text-slate-400 text-xs">Limit: &lt; 0.15</p>
                   </div>
 
                   <div className="p-4 bg-slate-700/30 rounded-lg">
@@ -587,7 +587,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                     <p className={`text-xl font-bold ${metrics.parallelism > 0.9 ? 'text-green-400' : 'text-yellow-400'}`}>
                       {metrics.parallelism.toFixed(3)}
                     </p>
-                    <p className="text-slate-500 text-xs">Target: &gt; 0.9</p>
+                    <p className="text-slate-400 text-xs">Target: &gt; 0.9</p>
                   </div>
                 </div>
               )}

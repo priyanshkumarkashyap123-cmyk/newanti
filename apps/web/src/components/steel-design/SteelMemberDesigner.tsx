@@ -606,7 +606,7 @@ function InputField({
           onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
           className={`w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white pr-12 focus:outline-none focus:ring-2 ${ringColor}`}
         />
-        {unit && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500">{unit}</span>}
+        {unit && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">{unit}</span>}
       </div>
     </div>
   );
@@ -617,7 +617,7 @@ function PropertyCard({ label, value, unit }: { label: string; value: number | s
     <div className="text-center">
       <p className="text-xs text-slate-400">{label}</p>
       <p className="text-lg font-bold text-blue-400">{value}</p>
-      <p className="text-xs text-slate-500">{unit}</p>
+      <p className="text-xs text-slate-400">{unit}</p>
     </div>
   );
 }
@@ -873,11 +873,11 @@ function CapacityCard({
       <h4 className="text-sm text-slate-400 mb-3">{title}</h4>
       <div className="flex items-end justify-between mb-2">
         <div>
-          <p className="text-xs text-slate-500">Applied</p>
+          <p className="text-xs text-slate-400">Applied</p>
           <p className="text-xl font-bold text-white">{applied} {unit}</p>
         </div>
         <div className="text-right">
-          <p className="text-xs text-slate-500">Design</p>
+          <p className="text-xs text-slate-400">Design</p>
           <p className="text-xl font-bold text-blue-400">{design} {unit}</p>
         </div>
       </div>
@@ -1000,7 +1000,7 @@ function PropertyTableCell({ label, value, unit }: { label: string; value: numbe
     <div className="text-center p-3 bg-slate-700/30 rounded-lg">
       <p className="text-xs text-slate-400">{label}</p>
       <p className="text-lg font-bold text-white">{value}</p>
-      <p className="text-xs text-slate-500">{unit}</p>
+      <p className="text-xs text-slate-400">{unit}</p>
     </div>
   );
 }

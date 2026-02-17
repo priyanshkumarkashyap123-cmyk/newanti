@@ -38,9 +38,9 @@ export class AppError extends Error {
     this.context = context;
 
     // Capture stack trace if available (non-standard but supported in most environments)
-    const ErrorWithCapture = Error as unknown as { captureStackTrace?: (target: object, constructor: Function) => void };
+    const ErrorWithCapture = Error as unknown as { captureStackTrace?: (target: object, constructor: (...args: unknown[]) => unknown) => void };
     if (ErrorWithCapture.captureStackTrace) {
-      ErrorWithCapture.captureStackTrace(this, this.constructor as Function);
+      ErrorWithCapture.captureStackTrace(this, this.constructor as (...args: unknown[]) => unknown);
     }
   }
 }

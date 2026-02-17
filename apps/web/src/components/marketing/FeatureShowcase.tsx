@@ -369,7 +369,7 @@ export const SecurityCompliance: FC = () => {
                 <div className="text-slate-400">{badge.icon}</div>
                 <div>
                   <p className="text-sm font-medium text-white">{badge.label}</p>
-                  <p className="text-xs text-slate-500">{badge.desc}</p>
+                  <p className="text-xs text-slate-400">{badge.desc}</p>
                 </div>
               </div>
             ))}
@@ -414,7 +414,7 @@ export const CTABanner: FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =>
           </button>
         </div>
 
-        <p className="text-slate-500 text-sm mt-6">
+        <p className="text-slate-400 text-sm mt-6">
           14-day Pro trial included • No credit card • Cancel anytime
         </p>
       </motion.div>

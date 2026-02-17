@@ -395,7 +395,7 @@ export const PrestressedDesigner: React.FC = () => {
                       onChange={(e) => updateField('span', Number(e.target.value))}
                       className="w-full p-3 rounded-xl bg-slate-700/50 text-white border border-white/10 focus:border-amber-500"
                     />
-                    <div className="text-xs text-slate-500 mt-1">{(form.span / 1000).toFixed(1)} m</div>
+                    <div className="text-xs text-slate-400 mt-1">{(form.span / 1000).toFixed(1)} m</div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-2">Dead Load (kN/m)</label>
@@ -450,7 +450,7 @@ export const PrestressedDesigner: React.FC = () => {
                       onChange={(e) => updateField('numStrands', Number(e.target.value))}
                       className="w-full p-3 rounded-xl bg-slate-700/50 text-white border border-white/10 focus:border-pink-500"
                     />
-                    <div className="text-xs text-slate-500 mt-1">
+                    <div className="text-xs text-slate-400 mt-1">
                       Total Aps = {(form.numStrands * selectedStrand.area).toFixed(0)} mm²
                     </div>
                   </div>
@@ -489,7 +489,7 @@ export const PrestressedDesigner: React.FC = () => {
                       max={80}
                       className="w-full p-3 rounded-xl bg-slate-700/50 text-white border border-white/10 focus:border-pink-500"
                     />
-                    <div className="text-xs text-slate-500 mt-1">
+                    <div className="text-xs text-slate-400 mt-1">
                       fpi = {(form.initialStress * selectedStrand.fpu).toFixed(0)} MPa
                     </div>
                   </div>
@@ -569,7 +569,7 @@ export const PrestressedDesigner: React.FC = () => {
                       onChange={(e) => updateField('fci', Number(e.target.value))}
                       className="w-full p-3 rounded-xl bg-slate-700/50 text-white border border-white/10 focus:border-green-500"
                     />
-                    <div className="text-xs text-slate-500 mt-1">
+                    <div className="text-xs text-slate-400 mt-1">
                       Eci = {(5000 * Math.sqrt(form.fci)).toFixed(0)} MPa
                     </div>
                   </div>
@@ -581,7 +581,7 @@ export const PrestressedDesigner: React.FC = () => {
                       onChange={(e) => updateField('fc28', Number(e.target.value))}
                       className="w-full p-3 rounded-xl bg-slate-700/50 text-white border border-white/10 focus:border-green-500"
                     />
-                    <div className="text-xs text-slate-500 mt-1">
+                    <div className="text-xs text-slate-400 mt-1">
                       Ec = {(5000 * Math.sqrt(form.fc28)).toFixed(0)} MPa
                     </div>
                   </div>
@@ -1377,7 +1377,7 @@ const StatCard: React.FC<{
     <div className={`p-4 rounded-xl bg-gradient-to-br ${color ? colorClasses[color] : 'from-slate-700/30 to-slate-800/30'} border ${color ? '' : 'border-white/5'}`}>
       <div className="text-xs text-slate-400 mb-1">{label}</div>
       <div className="text-xl font-bold text-white">{value}</div>
-      <div className="text-xs text-slate-500">{unit}</div>
+      <div className="text-xs text-slate-400">{unit}</div>
     </div>
   );
 };

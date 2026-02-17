@@ -146,7 +146,7 @@ export const KeyboardShortcuts: FC<KeyboardShortcutsProps> = ({ isOpen, onClose 
                                     </div>
                                     <div>
                                         <h2 className="text-lg font-bold text-white">Keyboard Shortcuts</h2>
-                                        <p className="text-sm text-slate-500">Press ⌘/ to toggle this panel</p>
+                                        <p className="text-sm text-slate-400">Press ⌘/ to toggle this panel</p>
                                     </div>
                                 </div>
                                 <button
@@ -183,7 +183,7 @@ export const KeyboardShortcuts: FC<KeyboardShortcutsProps> = ({ isOpen, onClose 
                                                                 <span key={i} className="flex items-center gap-1">
                                                                     <KeyBadge keyName={key} />
                                                                     {i < shortcut.keys.length - 1 && (
-                                                                        <span className="text-slate-600 text-xs">+</span>
+                                                                        <span className="text-slate-500 text-xs">+</span>
                                                                     )}
                                                                 </span>
                                                             ))}
@@ -198,7 +198,7 @@ export const KeyboardShortcuts: FC<KeyboardShortcutsProps> = ({ isOpen, onClose 
 
                             {/* Footer */}
                             <div className="px-6 py-4 bg-slate-800/50 border-t border-slate-800 text-center">
-                                <p className="text-sm text-slate-500">
+                                <p className="text-sm text-slate-400">
                                     Pro tip: Use <KeyBadge keyName="⌘K" /> to quickly search and execute any command
                                 </p>
                             </div>

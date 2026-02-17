@@ -109,7 +109,7 @@ export const Phase52Benchmark: React.FC = () => {
 
                 <div className="bg-black/50 rounded-lg p-4 font-mono text-xs text-green-400 h-[300px] overflow-y-auto border border-slate-700">
                     {log.length === 0 ? (
-                        <span className="text-slate-500 opacity-50">Log output will appear here...</span>
+                        <span className="text-slate-400 opacity-50">Log output will appear here...</span>
                     ) : (
                         log.map((line, i) => <div key={i}>{line}</div>)
                     )}

@@ -368,7 +368,7 @@ const MessageBubble: React.FC<{
                 <div className="flex items-center gap-2 mb-2">
                   <BookOpen className="w-4 h-4 text-blue-400" />
                   <span className="text-sm font-medium text-blue-400">{ref.code}</span>
-                  <span className="text-xs text-zinc-500">{ref.clause}</span>
+                  <span className="text-xs text-zinc-400">{ref.clause}</span>
                 </div>
                 <h5 className="text-sm font-medium text-white mb-1">{ref.title}</h5>
                 <p className="text-xs text-zinc-400">{ref.content}</p>
@@ -410,7 +410,7 @@ const MessageBubble: React.FC<{
                 <div className="grid grid-cols-3 gap-2 text-xs mb-3">
                   {calc.inputs.map((input, j) => (
                     <div key={j} className="bg-zinc-800/50 rounded-lg p-2">
-                      <span className="text-zinc-500">{input.name} = </span>
+                      <span className="text-zinc-400">{input.name} = </span>
                       <span className="text-white font-mono">{input.value} {input.unit}</span>
                     </div>
                   ))}
@@ -432,29 +432,29 @@ const MessageBubble: React.FC<{
           <div className="flex items-center gap-2 mt-2">
             <button
               onClick={onCopy}
-              className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-500 hover:text-zinc-300 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-zinc-300 transition-colors"
               title="Copy"
             >
               <Copy className="w-4 h-4" />
             </button>
             <button
               onClick={onRegenerate}
-              className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-500 hover:text-zinc-300 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-zinc-300 transition-colors"
               title="Regenerate"
             >
               <RotateCw className="w-4 h-4" />
             </button>
-            <button className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-500 hover:text-emerald-400 transition-colors" title="Good response">
+            <button className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-emerald-400 transition-colors" title="Good response">
               <ThumbsUp className="w-4 h-4" />
             </button>
-            <button className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-500 hover:text-red-400 transition-colors" title="Poor response">
+            <button className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-red-400 transition-colors" title="Poor response">
               <ThumbsDown className="w-4 h-4" />
             </button>
           </div>
         )}
         
         {/* Timestamp */}
-        <p className="text-xs text-zinc-600 mt-1">
+        <p className="text-xs text-zinc-500 mt-1">
           {message.timestamp.toLocaleTimeString()}
         </p>
       </div>
@@ -585,7 +585,7 @@ How can I help you with your structural design today?`,
                 AI Design Assistant
                 <Sparkles className="w-4 h-4 text-amber-400" />
               </h2>
-              <p className="text-xs text-zinc-500">Powered by advanced structural AI</p>
+              <p className="text-xs text-zinc-400">Powered by advanced structural AI</p>
             </div>
           </div>
           
@@ -648,7 +648,7 @@ How can I help you with your structural design today?`,
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Ask about your design..."
-              className="w-full px-4 py-3 pr-12 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+              className="w-full px-4 py-3 pr-12 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
             />
             <button
               onClick={toggleRecording}
@@ -671,7 +671,7 @@ How can I help you with your structural design today?`,
           </button>
         </div>
         
-        <p className="text-xs text-zinc-600 mt-2 text-center">
+        <p className="text-xs text-zinc-500 mt-2 text-center">
           AI can make mistakes. Always verify critical calculations.
         </p>
       </div>
@@ -702,10 +702,10 @@ How can I help you with your structural design today?`,
                   key={i}
                   className="w-full flex items-center gap-3 p-3 rounded-xl bg-zinc-800/50 hover:bg-zinc-800 text-left transition-colors"
                 >
-                  <MessageSquare className="w-4 h-4 text-zinc-500" />
+                  <MessageSquare className="w-4 h-4 text-zinc-400" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-white truncate">{title}</p>
-                    <p className="text-xs text-zinc-500">{i + 1} hour ago</p>
+                    <p className="text-xs text-zinc-400">{i + 1} hour ago</p>
                   </div>
                 </button>
               ))}

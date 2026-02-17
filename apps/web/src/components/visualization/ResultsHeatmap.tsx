@@ -994,7 +994,7 @@ export const UtilizationHeatmap: React.FC<UtilizationHeatmapProps> = ({
                                 style={{ background: item.color }}
                             />
                             <span className="text-slate-400">{item.label}</span>
-                            <span className="text-slate-500">({item.range})</span>
+                            <span className="text-slate-400">({item.range})</span>
                         </div>
                     ))}
                 </div>

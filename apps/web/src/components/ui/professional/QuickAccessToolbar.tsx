@@ -185,7 +185,7 @@ const SearchBar: FC<{
         : 'bg-zinc-800/50 w-48 hover:bg-zinc-800'
       }
     `}>
-      <Search className="w-3.5 h-3.5 text-zinc-500 flex-shrink-0" />
+      <Search className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" />
       <input
         ref={inputRef}
         type="text"
@@ -197,7 +197,7 @@ const SearchBar: FC<{
         placeholder="Search or type a command..."
         className="flex-1 bg-transparent text-xs text-zinc-300 placeholder-zinc-500 outline-none"
       />
-      <kbd className="hidden sm:flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] text-zinc-500 bg-zinc-700 rounded">
+      <kbd className="hidden sm:flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] text-zinc-400 bg-zinc-700 rounded">
         <Command className="w-2.5 h-2.5" />K
       </kbd>
     </div>
@@ -253,7 +253,7 @@ const RecentFilesDropdown: FC<{
             {/* Pinned Files */}
             {pinnedFiles.length > 0 && (
               <>
-                <div className="px-3 py-1.5 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider bg-zinc-800/50">
+                <div className="px-3 py-1.5 text-[10px] font-semibold text-zinc-400 uppercase tracking-wider bg-zinc-800/50">
                   <Pin className="w-3 h-3 inline mr-1" />
                   Pinned
                 </div>
@@ -272,7 +272,7 @@ const RecentFilesDropdown: FC<{
             )}
 
             {/* Recent Files */}
-            <div className="px-3 py-1.5 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider bg-zinc-800/50">
+            <div className="px-3 py-1.5 text-[10px] font-semibold text-zinc-400 uppercase tracking-wider bg-zinc-800/50">
               <Clock className="w-3 h-3 inline mr-1" />
               Recent
             </div>
@@ -289,7 +289,7 @@ const RecentFilesDropdown: FC<{
                 />
               ))
             ) : (
-              <div className="px-3 py-4 text-xs text-zinc-500 text-center">
+              <div className="px-3 py-4 text-xs text-zinc-400 text-center">
                 No recent files
               </div>
             )}
@@ -299,7 +299,7 @@ const RecentFilesDropdown: FC<{
               <button className="text-xs text-blue-400 hover:text-blue-300">
                 Open File...
               </button>
-              <button className="text-xs text-zinc-500 hover:text-zinc-400">
+              <button className="text-xs text-zinc-400 hover:text-zinc-400">
                 Clear Recent
               </button>
             </div>
@@ -334,19 +334,19 @@ const FileListItem: FC<{
 
   return (
     <div className="flex items-center gap-2 px-3 py-2 hover:bg-zinc-800/50 cursor-pointer group">
-      <FileText className="w-4 h-4 text-zinc-500 flex-shrink-0" />
+      <FileText className="w-4 h-4 text-zinc-400 flex-shrink-0" />
       <div className="flex-1 min-w-0" onClick={onClick}>
         <div className="text-xs text-zinc-300 truncate">{file.name}</div>
-        <div className="text-[10px] text-zinc-500 truncate">{file.path}</div>
+        <div className="text-[10px] text-zinc-400 truncate">{file.path}</div>
       </div>
-      <span className="text-[10px] text-zinc-600">{formatTime(file.timestamp)}</span>
+      <span className="text-[10px] text-zinc-500">{formatTime(file.timestamp)}</span>
       <button
         onClick={(e) => {
           e.stopPropagation();
           onTogglePinned();
         }}
         className={`p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity ${
-          file.pinned ? 'text-amber-400' : 'text-zinc-500 hover:text-zinc-300'
+          file.pinned ? 'text-amber-400' : 'text-zinc-400 hover:text-zinc-300'
         }`}
       >
         {file.pinned ? <Star className="w-3 h-3 fill-current" /> : <StarOff className="w-3 h-3" />}
@@ -376,13 +376,13 @@ const Breadcrumbs: FC<{
             className={`flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors ${
               isLast 
                 ? 'text-zinc-200' 
-                : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700/50'
+                : 'text-zinc-400 hover:text-zinc-300 hover:bg-zinc-700/50'
             }`}
           >
             {Icon && <Icon className="w-3 h-3" />}
             <span>{item.label}</span>
           </button>
-          {!isLast && <ChevronRight className="w-3 h-3 text-zinc-600" />}
+          {!isLast && <ChevronRight className="w-3 h-3 text-zinc-500" />}
         </div>
       );
     })}
@@ -444,19 +444,19 @@ const UserMenu: FC<{
           >
             <div className="px-4 py-3 border-b border-zinc-800">
               <div className="text-sm font-medium text-zinc-200">{userName || 'Guest'}</div>
-              <div className="text-xs text-zinc-500">Free Plan</div>
+              <div className="text-xs text-zinc-400">Free Plan</div>
             </div>
             <div className="py-1">
               <button className="w-full flex items-center gap-2 px-4 py-2 text-xs text-zinc-300 hover:bg-zinc-800">
-                <User className="w-4 h-4 text-zinc-500" />
+                <User className="w-4 h-4 text-zinc-400" />
                 Account Settings
               </button>
               <button className="w-full flex items-center gap-2 px-4 py-2 text-xs text-zinc-300 hover:bg-zinc-800">
-                <Keyboard className="w-4 h-4 text-zinc-500" />
+                <Keyboard className="w-4 h-4 text-zinc-400" />
                 Keyboard Shortcuts
               </button>
               <button className="w-full flex items-center gap-2 px-4 py-2 text-xs text-zinc-300 hover:bg-zinc-800">
-                <HelpCircle className="w-4 h-4 text-zinc-500" />
+                <HelpCircle className="w-4 h-4 text-zinc-400" />
                 Help & Support
               </button>
             </div>
@@ -586,7 +586,7 @@ export const QuickAccessToolbar: FC<QuickAccessToolbarProps> = ({
       <div className="flex items-center gap-2">
         {projectName && (
           <div className="flex items-center gap-2">
-            <FileText className="w-4 h-4 text-zinc-500" />
+            <FileText className="w-4 h-4 text-zinc-400" />
             <span className="text-xs text-zinc-300 font-medium">
               {projectName}
               {hasUnsavedChanges && <span className="text-amber-400 ml-1">•</span>}
@@ -619,7 +619,7 @@ export const QuickAccessToolbar: FC<QuickAccessToolbarProps> = ({
             className={`p-1.5 rounded transition-colors ${
               notificationsEnabled 
                 ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700/50' 
-                : 'text-zinc-600'
+                : 'text-zinc-500'
             }`}
             title={notificationsEnabled ? 'Disable Notifications' : 'Enable Notifications'}
           >
@@ -627,7 +627,7 @@ export const QuickAccessToolbar: FC<QuickAccessToolbarProps> = ({
           </button>
 
           {/* Online Status */}
-          <div className={`p-1.5 ${isOnline ? 'text-emerald-400' : 'text-zinc-600'}`} title={isOnline ? 'Online' : 'Offline'}>
+          <div className={`p-1.5 ${isOnline ? 'text-emerald-400' : 'text-zinc-500'}`} title={isOnline ? 'Online' : 'Offline'}>
             {isOnline ? <Cloud className="w-4 h-4" /> : <CloudOff className="w-4 h-4" />}
           </div>
         </div>

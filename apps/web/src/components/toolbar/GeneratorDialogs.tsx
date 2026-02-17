@@ -206,7 +206,7 @@ export const TrussGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                     {/* Dimensions */}
                     <div className="grid grid-cols-3 gap-3">
                         <div>
-                            <label className="block text-xs text-zinc-500 mb-1">Span (m)</label>
+                            <label className="block text-xs text-zinc-400 mb-1">Span (m)</label>
                             <input
                                 type="number"
                                 value={span}
@@ -215,7 +215,7 @@ export const TrussGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                             />
                         </div>
                         <div>
-                            <label className="block text-xs text-zinc-500 mb-1">Height (m)</label>
+                            <label className="block text-xs text-zinc-400 mb-1">Height (m)</label>
                             <input
                                 type="number"
                                 value={height}
@@ -224,7 +224,7 @@ export const TrussGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                             />
                         </div>
                         <div>
-                            <label className="block text-xs text-zinc-500 mb-1">Panels</label>
+                            <label className="block text-xs text-zinc-400 mb-1">Panels</label>
                             <input
                                 type="number"
                                 value={panels}
@@ -386,7 +386,7 @@ export const ArchGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
 
                     <div className="grid grid-cols-3 gap-3">
                         <div>
-                            <label className="block text-xs text-zinc-500 mb-1">Span (m)</label>
+                            <label className="block text-xs text-zinc-400 mb-1">Span (m)</label>
                             <input
                                 type="number"
                                 value={span}
@@ -395,7 +395,7 @@ export const ArchGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                             />
                         </div>
                         <div>
-                            <label className="block text-xs text-zinc-500 mb-1">Rise (m)</label>
+                            <label className="block text-xs text-zinc-400 mb-1">Rise (m)</label>
                             <input
                                 type="number"
                                 value={rise}
@@ -404,7 +404,7 @@ export const ArchGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                             />
                         </div>
                         <div>
-                            <label className="block text-xs text-zinc-500 mb-1">Segments</label>
+                            <label className="block text-xs text-zinc-400 mb-1">Segments</label>
                             <input
                                 type="number"
                                 value={segments}
@@ -547,7 +547,7 @@ export const FrameGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-xs text-zinc-500 mb-1">Bay Width (m)</label>
+                            <label className="block text-xs text-zinc-400 mb-1">Bay Width (m)</label>
                             <input
                                 type="number"
                                 value={bayWidth}
@@ -556,7 +556,7 @@ export const FrameGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                             />
                         </div>
                         <div>
-                            <label className="block text-xs text-zinc-500 mb-1">Story Height (m)</label>
+                            <label className="block text-xs text-zinc-400 mb-1">Story Height (m)</label>
                             <input
                                 type="number"
                                 value={storyHeight}
@@ -568,7 +568,7 @@ export const FrameGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-xs text-zinc-500 mb-1">Number of Bays</label>
+                            <label className="block text-xs text-zinc-400 mb-1">Number of Bays</label>
                             <input
                                 type="number"
                                 value={bays}
@@ -578,7 +578,7 @@ export const FrameGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                         </div>
                         {frameType === 'multi-story' && (
                             <div>
-                                <label className="block text-xs text-zinc-500 mb-1">Number of Stories</label>
+                                <label className="block text-xs text-zinc-400 mb-1">Number of Stories</label>
                                 <input
                                     type="number"
                                     value={stories}
@@ -748,7 +748,7 @@ export const CablePatternDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-xs text-zinc-500 mb-1">Tower Height (m)</label>
+                            <label className="block text-xs text-zinc-400 mb-1">Tower Height (m)</label>
                             <input
                                 type="number"
                                 value={towerHeight}
@@ -757,7 +757,7 @@ export const CablePatternDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                             />
                         </div>
                         <div>
-                            <label className="block text-xs text-zinc-500 mb-1">Deck Length (m)</label>
+                            <label className="block text-xs text-zinc-400 mb-1">Deck Length (m)</label>
                             <input
                                 type="number"
                                 value={deckLength}
@@ -768,7 +768,7 @@ export const CablePatternDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                     </div>
 
                     <div>
-                        <label className="block text-xs text-zinc-500 mb-1">Cable Spacing (m)</label>
+                        <label className="block text-xs text-zinc-400 mb-1">Cable Spacing (m)</label>
                         <input
                             type="number"
                             value={cableSpacing}

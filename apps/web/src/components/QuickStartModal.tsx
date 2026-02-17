@@ -116,7 +116,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                 <div className="relative px-8 pt-8 pb-4">
                     <button
                         onClick={onClose}
-                        className="absolute top-4 right-4 p-2 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                        className="absolute top-4 right-4 p-2 rounded-lg text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -127,7 +127,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                         <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
                             Welcome to BeamLab
                         </h2>
-                        <p className="text-zinc-500 dark:text-zinc-400 mt-2">
+                        <p className="text-zinc-400 dark:text-zinc-400 mt-2">
                             Get started with structural analysis
                         </p>
                     </div>
@@ -142,7 +142,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                             className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group"
                         >
                             <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
-                                <Plus className="w-5 h-5 text-zinc-500 group-hover:text-blue-600" />
+                                <Plus className="w-5 h-5 text-zinc-400 group-hover:text-blue-600" />
                             </div>
                             <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">New Project</span>
                         </button>
@@ -164,7 +164,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                                 className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 hover:border-green-500 dark:hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all group"
                             >
                                 <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:bg-green-100 dark:group-hover:bg-green-900/50 transition-colors">
-                                    <FileText className="w-5 h-5 text-zinc-500 group-hover:text-green-600" />
+                                    <FileText className="w-5 h-5 text-zinc-400 group-hover:text-green-600" />
                                 </div>
                                 <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Open File</span>
                             </button>
@@ -174,7 +174,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                             className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 hover:border-purple-500 dark:hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all group"
                         >
                             <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:bg-purple-100 dark:group-hover:bg-purple-900/50 transition-colors">
-                                <Play className="w-5 h-5 text-zinc-500 group-hover:text-purple-600" />
+                                <Play className="w-5 h-5 text-zinc-400 group-hover:text-purple-600" />
                             </div>
                             <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Tutorial</span>
                         </button>
@@ -187,7 +187,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                             className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 hover:border-orange-500 dark:hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all group"
                         >
                             <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:bg-orange-100 dark:group-hover:bg-orange-900/50 transition-colors">
-                                <Building2 className="w-5 h-5 text-zinc-500 group-hover:text-orange-600" />
+                                <Building2 className="w-5 h-5 text-zinc-400 group-hover:text-orange-600" />
                             </div>
                             <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Structure Wizard</span>
                         </button>
@@ -200,7 +200,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                             className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 hover:border-amber-500 dark:hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all group"
                         >
                             <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:bg-amber-100 dark:group-hover:bg-amber-900/50 transition-colors">
-                                <Layers className="w-5 h-5 text-zinc-500 group-hover:text-amber-600" />
+                                <Layers className="w-5 h-5 text-zinc-400 group-hover:text-amber-600" />
                             </div>
                             <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Foundation Design</span>
                         </button>
@@ -213,7 +213,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                             className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 hover:border-cyan-500 dark:hover:border-cyan-500 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-all group"
                         >
                             <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:bg-cyan-100 dark:group-hover:bg-cyan-900/50 transition-colors">
-                                <Weight className="w-5 h-5 text-zinc-500 group-hover:text-cyan-600" />
+                                <Weight className="w-5 h-5 text-zinc-400 group-hover:text-cyan-600" />
                             </div>
                             <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">IS 875 Loads</span>
                         </button>
@@ -254,7 +254,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                                     <h4 className="font-medium text-zinc-900 dark:text-white">
                                         {sample.name}
                                     </h4>
-                                    <p className="text-sm text-zinc-500 dark:text-zinc-400 truncate">
+                                    <p className="text-sm text-zinc-400 dark:text-zinc-400 truncate">
                                         {sample.description}
                                     </p>
                                 </div>
@@ -262,7 +262,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                                     w-4 h-4 flex-shrink-0
                                     ${selectedSample?.id === sample.id
                                         ? 'text-blue-500'
-                                        : 'text-zinc-300 dark:text-zinc-600'
+                                        : 'text-zinc-300 dark:text-zinc-500'
                                     }
                                 `} />
                             </button>
@@ -274,7 +274,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                 {selectedSample && (
                     <div className="px-8 py-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-200 dark:border-zinc-700">
                         <div className="flex items-center justify-between">
-                            <div className="text-sm text-zinc-500 dark:text-zinc-400">
+                            <div className="text-sm text-zinc-400 dark:text-zinc-400">
                                 <span className="font-medium text-zinc-700 dark:text-zinc-300">{selectedSample.name}</span>
                                 {' · '}
                                 {selectedSample.nodes.length} nodes, {selectedSample.members.length} members

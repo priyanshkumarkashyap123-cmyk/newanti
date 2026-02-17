@@ -56,7 +56,7 @@ export const LearningAssistant: FC = () => {
                 {/* Skill Progress */}
                 {skills.length > 0 && (
                     <div>
-                        <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 flex items-center gap-1">
+                        <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2 flex items-center gap-1">
                             <TrendingUp className="w-3 h-3" /> Recent Progress
                         </h4>
                         <div className="space-y-2">
@@ -80,11 +80,11 @@ export const LearningAssistant: FC = () => {
 
                 {/* Recommendations */}
                 <div>
-                    <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 flex items-center gap-1">
+                    <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2 flex items-center gap-1">
                         <BookOpen className="w-3 h-3" /> Recommended for You
                     </h4>
                     {recommendations.length === 0 ? (
-                        <div className="text-xs text-zinc-500 italic p-2 bg-zinc-800/50 rounded">
+                        <div className="text-xs text-zinc-400 italic p-2 bg-zinc-800/50 rounded">
                             Interact with tools to get personalized suggestions...
                         </div>
                     ) : (

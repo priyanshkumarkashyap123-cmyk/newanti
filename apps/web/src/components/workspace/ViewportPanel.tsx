@@ -98,9 +98,9 @@ export const ViewportPanel: FC<ViewportPanelProps> = ({
             {!children && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
                     <div className="flex flex-col items-center gap-4">
-                        <span className="material-symbols-outlined text-[64px] text-zinc-600">deployed_code</span>
-                        <h2 className="text-xl font-bold tracking-tight text-zinc-500">3D Viewport</h2>
-                        <p className="text-sm text-zinc-600">Model Space ready for input</p>
+                        <span className="material-symbols-outlined text-[64px] text-zinc-500">deployed_code</span>
+                        <h2 className="text-xl font-bold tracking-tight text-zinc-400">3D Viewport</h2>
+                        <p className="text-sm text-zinc-500">Model Space ready for input</p>
                     </div>
                 </div>
             )}

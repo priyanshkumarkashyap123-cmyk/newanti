@@ -205,7 +205,7 @@ export const StatCard: FC<StatCardProps> = ({
             <div className="flex items-end gap-2 mb-1">
                 <span className="text-3xl font-bold text-white">{value}</span>
                 {subtitle && (
-                    <span className="text-sm text-slate-500 mb-1">{subtitle}</span>
+                    <span className="text-sm text-slate-400 mb-1">{subtitle}</span>
                 )}
             </div>
 
@@ -221,7 +221,7 @@ export const StatCard: FC<StatCardProps> = ({
                     )}
                     <span>{Math.abs(trend.value)}%</span>
                     {trend.label && (
-                        <span className="text-slate-500">{trend.label}</span>
+                        <span className="text-slate-400">{trend.label}</span>
                     )}
                 </div>
             )}
@@ -365,7 +365,7 @@ export const BarChart: FC<BarChartProps> = ({
             {showLabels && (
                 <div className="flex gap-2 mt-2">
                     {data.map((item) => (
-                        <span key={item.label} className="flex-1 text-xs text-slate-500 text-center truncate">
+                        <span key={item.label} className="flex-1 text-xs text-slate-400 text-center truncate">
                             {item.label}
                         </span>
                     ))}
@@ -446,7 +446,7 @@ export const Gauge: FC<GaugeProps> = ({
                     {value.toFixed(0)}
                     {unit && <span className="text-sm text-slate-400 ml-1">{unit}</span>}
                 </div>
-                {label && <div className="text-xs text-slate-500">{label}</div>}
+                {label && <div className="text-xs text-slate-400">{label}</div>}
             </div>
         </div>
     );

@@ -564,7 +564,7 @@ export const DeflectionControls: FC<DeflectionControlsProps> = ({
 
             {/* Max displacement info */}
             <div className="pt-2 border-t border-slate-700">
-                <div className="text-xs text-slate-500">
+                <div className="text-xs text-slate-400">
                     Max Displacement: <span className="text-cyan-400 font-mono">{(maxDisplacement * 1000).toFixed(4)} mm</span>
                 </div>
             </div>

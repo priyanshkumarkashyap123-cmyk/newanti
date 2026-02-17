@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { API_CONFIG } from '../../config/env';
 
 // Types
 export interface CursorPosition {
@@ -22,8 +23,8 @@ class RealtimeService {
     private listeners: EventCallback[] = [];
     private remoteUsers: Map<string, RemoteUser> = new Map();
 
-    // Config
-    private WS_URL = import.meta.env['VITE_WS_URL'] || 'ws://localhost:8000/ws';
+    // Config - derive WS URL from Python API URL (http→ws, https→wss)
+    private WS_URL = import.meta.env['VITE_WS_URL'] || API_CONFIG.pythonUrl.replace(/^http/, 'ws') + '/ws';
 
     constructor() {
         this.userId = uuidv4().substring(0, 8); // Random ID for this session

@@ -435,7 +435,7 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
               disabled={generating || !customization.project_name}
               className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
                 generating || !customization.project_name
-                  ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                  ? 'bg-zinc-800 text-zinc-400 cursor-not-allowed'
                   : 'bg-blue-600 hover:bg-blue-700 text-white'
               }`}
             >

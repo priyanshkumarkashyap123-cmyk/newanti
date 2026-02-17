@@ -241,14 +241,14 @@ const SummaryCard: FC<SummaryCardProps> = ({ label, value, unit, status, icon })
     return (
         <div className={`p-3 rounded-lg border ${status ? statusColors[status] : 'border-slate-700 bg-slate-800/50'}`}>
             <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-slate-500">{label}</span>
+                <span className="text-xs text-slate-400">{label}</span>
                 {status ? statusIcons[status] : icon}
             </div>
             <div className="flex items-baseline gap-1">
                 <span className="text-lg font-bold text-slate-200 font-mono">
                     {typeof value === 'number' ? value.toFixed(3) : value}
                 </span>
-                {unit && <span className="text-xs text-slate-500">{unit}</span>}
+                {unit && <span className="text-xs text-slate-400">{unit}</span>}
             </div>
         </div>
     );
@@ -401,7 +401,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = ({
                         ✓ Analyzed
                     </span>
                 ) : (
-                    <span className="ml-auto px-2 py-0.5 text-xs bg-slate-700 text-slate-500 rounded-full">
+                    <span className="ml-auto px-2 py-0.5 text-xs bg-slate-700 text-slate-400 rounded-full">
                         No Results
                     </span>
                 )}
@@ -546,7 +546,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = ({
                                 />
                                 <div>
                                     <div className="text-sm text-slate-200">{mode.label}</div>
-                                    <div className="text-xs text-slate-500">{mode.desc}</div>
+                                    <div className="text-xs text-slate-400">{mode.desc}</div>
                                 </div>
                             </label>
                         ))}
@@ -582,7 +582,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = ({
                             />
                         )}
 
-                        <div className="flex items-center gap-2 text-sm text-slate-500">
+                        <div className="flex items-center gap-2 text-sm text-slate-400">
                             <Info size={14} />
                             <span>Animation shows oscillating deflected shape</span>
                         </div>
@@ -603,7 +603,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = ({
                         </label>
                         
                         <div className="pt-2 border-t border-slate-700">
-                            <div className="text-xs text-slate-500 mb-2">Quick Views</div>
+                            <div className="text-xs text-slate-400 mb-2">Quick Views</div>
                             <div className="flex flex-wrap gap-2">
                                 <button className="px-2 py-1 text-xs bg-slate-700 text-slate-300 rounded hover:bg-slate-600">
                                     <Grid3X3 size={12} className="inline mr-1" />

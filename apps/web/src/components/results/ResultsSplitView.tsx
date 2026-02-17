@@ -169,11 +169,11 @@ export const ResultsSplitView: FC<ResultsSplitViewProps> = ({
                     {/* Main Viewport Area */}
                     <div className="flex-1 bg-slate-950 relative overflow-hidden">
                         {/* This is where the 3D viewport would render */}
-                        <div className="absolute inset-0 flex items-center justify-center text-slate-500">
+                        <div className="absolute inset-0 flex items-center justify-center text-slate-400">
                             <div className="text-center">
                                 <Settings size={48} className="mx-auto mb-4 opacity-30" />
                                 <p className="text-sm">3D Viewport with Analysis Overlays</p>
-                                <p className="text-xs mt-2 text-slate-600">
+                                <p className="text-xs mt-2 text-slate-500">
                                     Use the control panel to toggle diagrams
                                 </p>
                             </div>

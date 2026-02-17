@@ -251,7 +251,7 @@ const NumberInput: FC<InputProps> = ({ label, value, onChange, unit, min = 0, ma
                 className="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white h-11 px-4 pr-12 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm"
             />
             {unit && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 text-sm">
                     {unit}
                 </span>
             )}
@@ -292,27 +292,27 @@ const ResultCard: FC<{ result: FoundationResult }> = ({ result }) => {
 
             <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
-                    <span className="text-zinc-500">Size</span>
+                    <span className="text-zinc-400">Size</span>
                     <p className="text-white font-medium">{result.requiredWidth}m × {result.requiredLength}m</p>
                 </div>
                 <div>
-                    <span className="text-zinc-500">Depth</span>
+                    <span className="text-zinc-400">Depth</span>
                     <p className="text-white font-medium">{result.requiredDepth}m</p>
                 </div>
                 <div>
-                    <span className="text-zinc-500">Bearing Pressure</span>
+                    <span className="text-zinc-400">Bearing Pressure</span>
                     <p className="text-white font-medium">{result.bearingPressure.toFixed(1)} kN/m²</p>
                 </div>
                 <div>
-                    <span className="text-zinc-500">Safety Factor</span>
+                    <span className="text-zinc-400">Safety Factor</span>
                     <p className="text-white font-medium">{result.safetyFactor.toFixed(2)}</p>
                 </div>
                 <div className="col-span-2">
-                    <span className="text-zinc-500">Main Reinforcement</span>
+                    <span className="text-zinc-400">Main Reinforcement</span>
                     <p className="text-white font-medium">{result.rebarMain}</p>
                 </div>
                 <div className="col-span-2">
-                    <span className="text-zinc-500">Concrete Volume</span>
+                    <span className="text-zinc-400">Concrete Volume</span>
                     <p className="text-white font-medium">{result.concreteVolume.toFixed(2)} m³</p>
                 </div>
             </div>
@@ -435,7 +435,7 @@ export const FoundationDesignDialog: FC<FoundationDesignDialogProps> = ({ isOpen
                                     >
                                         <div className={`w-4 h-4 rounded ${soil.color} mb-2`} />
                                         <p className="text-white text-sm font-medium">{soil.name}</p>
-                                        <p className="text-zinc-500 text-xs">{soil.bearingCapacity} kN/m²</p>
+                                        <p className="text-zinc-400 text-xs">{soil.bearingCapacity} kN/m²</p>
                                     </button>
                                 ))}
                             </div>

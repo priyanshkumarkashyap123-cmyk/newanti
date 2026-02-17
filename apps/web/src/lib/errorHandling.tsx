@@ -233,7 +233,7 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
           <div className="text-left">
             <button
               onClick={() => setShowDetails(!showDetails)}
-              className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-400 transition-colors mx-auto"
+              className="flex items-center gap-2 text-sm text-slate-400 hover:text-slate-400 transition-colors mx-auto"
             >
               <Bug className="w-4 h-4" />
               Technical Details

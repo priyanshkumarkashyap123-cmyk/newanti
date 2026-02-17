@@ -140,21 +140,21 @@ export const Ribbon: FC<RibbonProps> = ({ activeWorkflow, activeTool, onToolSele
             <div className="flex items-center gap-1 pr-4 border-r border-zinc-200 dark:border-zinc-700">
                 <button
                     onClick={() => onToolSelect('save')}
-                    className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 transition-colors"
+                    className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition-colors"
                     title="Save (Ctrl+S)"
                 >
                     <Save className="w-4 h-4" />
                 </button>
                 <button
                     onClick={() => onToolSelect('undo')}
-                    className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 transition-colors"
+                    className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition-colors"
                     title="Undo (Ctrl+Z)"
                 >
                     <Undo className="w-4 h-4" />
                 </button>
                 <button
                     onClick={() => onToolSelect('redo')}
-                    className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 transition-colors"
+                    className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition-colors"
                     title="Redo (Ctrl+Y)"
                 >
                     <Redo className="w-4 h-4" />
@@ -177,7 +177,7 @@ export const Ribbon: FC<RibbonProps> = ({ activeWorkflow, activeTool, onToolSele
                                         onClick={() => onToolSelect(tool.id)}
                                         className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded transition-colors ${isActive
                                                 ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400'
-                                                : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                                                : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                                             }`}
                                         title={tool.shortcut ? `${tool.label} (${tool.shortcut})` : tool.label}
                                     >
@@ -188,7 +188,7 @@ export const Ribbon: FC<RibbonProps> = ({ activeWorkflow, activeTool, onToolSele
                             })}
                         </div>
                         {/* Group Label */}
-                        <span className="text-[9px] text-zinc-400 dark:text-zinc-600 mt-0.5">
+                        <span className="text-[9px] text-zinc-400 dark:text-zinc-500 mt-0.5">
                             {group.label}
                         </span>
                     </div>
@@ -202,21 +202,21 @@ export const Ribbon: FC<RibbonProps> = ({ activeWorkflow, activeTool, onToolSele
             <div className="flex items-center gap-1 pl-4 border-l border-zinc-200 dark:border-zinc-700">
                 <button
                     onClick={() => onToolSelect('zoom-in')}
-                    className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
+                    className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
                     title="Zoom In"
                 >
                     <ZoomIn className="w-4 h-4" />
                 </button>
                 <button
                     onClick={() => onToolSelect('zoom-out')}
-                    className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
+                    className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
                     title="Zoom Out"
                 >
                     <ZoomOut className="w-4 h-4" />
                 </button>
                 <button
                     onClick={() => onToolSelect('fit-view')}
-                    className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
+                    className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
                     title="Fit View"
                 >
                     <Maximize className="w-4 h-4" />

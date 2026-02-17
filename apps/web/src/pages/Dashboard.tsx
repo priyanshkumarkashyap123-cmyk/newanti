@@ -144,7 +144,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                         <Avatar name={userName} size="md" status="online" className="bg-blue-600" />
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-white truncate">{userName}</p>
-                            <p className="text-xs text-slate-500 truncate">{userEmail}</p>
+                            <p className="text-xs text-slate-400 truncate">{userEmail}</p>
                         </div>
                         {isSignedIn && !isClerkEnabled && (
                             <button
@@ -168,7 +168,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                 <header className="h-16 bg-slate-900/50 backdrop-blur-sm border-b border-slate-800 flex items-center justify-between px-6 sticky top-0 z-10">
                     <div className="flex items-center gap-4 flex-1">
                         <div className="relative max-w-md flex-1">
-                            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                             <input
                                 type="text"
                                 placeholder="Search projects..."
@@ -238,7 +238,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                                     <h3 className="font-bold text-white mb-1 group-hover:text-blue-400 transition-colors">
                                         {module.title}
                                     </h3>
-                                    <p className="text-sm text-slate-500">{module.subtitle}</p>
+                                    <p className="text-sm text-slate-400">{module.subtitle}</p>
                                 </button>
                             ))}
                         </div>
@@ -279,12 +279,12 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                                         </div>
                                         <div className="p-4">
                                             <h3 className="font-bold text-white truncate mb-1 group-hover:text-blue-400 transition-colors">{project.name}</h3>
-                                            <div className="flex items-center gap-3 text-xs text-slate-500">
+                                            <div className="flex items-center gap-3 text-xs text-slate-400">
                                                 <span>{project.nodeCount} Nodes</span>
                                                 <span className="w-1 h-1 bg-slate-700 rounded-full" />
                                                 <span>{project.memberCount} Members</span>
                                             </div>
-                                            <p className="text-xs text-slate-600 mt-3 flex items-center gap-1">
+                                            <p className="text-xs text-slate-500 mt-3 flex items-center gap-1">
                                                 <span className="material-symbols-outlined text-[10px]">schedule</span>
                                                 {project.lastModified}
                                             </p>
@@ -297,10 +297,10 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                                     onClick={handleNewProject}
                                     className="border-2 border-dashed border-slate-800 rounded-xl flex flex-col items-center justify-center gap-3 p-8 hover:border-blue-500 hover:bg-blue-500/5 transition-all min-h-[240px]"
                                 >
-                                    <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-slate-500 group-hover:text-blue-500 group-hover:bg-blue-500/20 transition-colors">
+                                    <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-blue-500 group-hover:bg-blue-500/20 transition-colors">
                                         <Plus className="w-6 h-6" />
                                     </div>
-                                    <span className="text-sm font-medium text-slate-500 group-hover:text-blue-500">Create New Project</span>
+                                    <span className="text-sm font-medium text-slate-400 group-hover:text-blue-500">Create New Project</span>
                                 </button>
                             </div>
                         ) : (

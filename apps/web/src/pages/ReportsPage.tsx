@@ -109,16 +109,16 @@ export const ReportsPage = () => {
                 </div>
                 <div className="hidden md:flex flex-1 justify-center">
                     <nav className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 px-2 py-1 rounded-full border border-slate-200 dark:border-slate-800">
-                        <Link to="/stream" className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white text-sm font-medium transition-colors px-4 py-1.5 rounded-full hover:bg-white dark:hover:bg-slate-800">
+                        <Link to="/stream" className="text-slate-400 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white text-sm font-medium transition-colors px-4 py-1.5 rounded-full hover:bg-white dark:hover:bg-slate-800">
                             Projects
                         </Link>
-                        <Link to="/app" className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white text-sm font-medium transition-colors px-4 py-1.5 rounded-full hover:bg-white dark:hover:bg-slate-800">
+                        <Link to="/app" className="text-slate-400 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white text-sm font-medium transition-colors px-4 py-1.5 rounded-full hover:bg-white dark:hover:bg-slate-800">
                             Design
                         </Link>
                         <span className="text-blue-600 dark:text-white text-sm font-bold bg-white dark:bg-slate-800 shadow-sm px-4 py-1.5 rounded-full border border-slate-200 dark:border-slate-700">
                             Reports
                         </span>
-                        <Link to="/settings" className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white text-sm font-medium transition-colors px-4 py-1.5 rounded-full hover:bg-white dark:hover:bg-slate-800">
+                        <Link to="/settings" className="text-slate-400 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white text-sm font-medium transition-colors px-4 py-1.5 rounded-full hover:bg-white dark:hover:bg-slate-800">
                             Settings
                         </Link>
                     </nav>
@@ -134,9 +134,9 @@ export const ReportsPage = () => {
             <main className="flex-1 w-full flex flex-col items-center py-8 px-4 overflow-y-auto print:p-0 print:overflow-visible">
                 {/* Breadcrumbs - Hidden in Print */}
                 <div className="w-full max-w-[210mm] mb-6 flex items-center gap-2 text-sm print:hidden">
-                    <Link to="/stream" className="text-slate-500 hover:text-blue-600 transition-colors">Projects</Link>
+                    <Link to="/stream" className="text-slate-400 hover:text-blue-600 transition-colors">Projects</Link>
                     <ChevronLeft className="w-4 h-4 text-slate-400 rotate-180" />
-                    <span className="text-slate-500">Current Project</span>
+                    <span className="text-slate-400">Current Project</span>
                     <ChevronLeft className="w-4 h-4 text-slate-400 rotate-180" />
                     <span className="text-slate-900 dark:text-white font-semibold">Report View</span>
                 </div>
@@ -158,7 +158,7 @@ export const ReportsPage = () => {
                             </div>
                             <div className="mt-2">
                                 <h2 className="text-xl font-bold text-slate-800">Structural Analysis Report</h2>
-                                <p className="text-sm text-slate-500 font-medium mt-1">Ref: BL-{Math.floor(Math.random() * 10000)}</p>
+                                <p className="text-sm text-slate-400 font-medium mt-1">Ref: BL-{Math.floor(Math.random() * 10000)}</p>
                             </div>
                         </div>
                         <div className="text-right">
@@ -175,15 +175,15 @@ export const ReportsPage = () => {
                         <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-200 pb-2">Project Summary</h3>
                         <div className="grid grid-cols-3 gap-8">
                             <div>
-                                <p className="text-xs text-slate-500 font-medium mb-1">Total Nodes</p>
+                                <p className="text-xs text-slate-400 font-medium mb-1">Total Nodes</p>
                                 <p className="text-xl font-bold text-slate-900">{nodes.size}</p>
                             </div>
                             <div>
-                                <p className="text-xs text-slate-500 font-medium mb-1">Total Members</p>
+                                <p className="text-xs text-slate-400 font-medium mb-1">Total Members</p>
                                 <p className="text-xl font-bold text-slate-900">{members.size}</p>
                             </div>
                             <div>
-                                <p className="text-xs text-slate-500 font-medium mb-1">Analysis Status</p>
+                                <p className="text-xs text-slate-400 font-medium mb-1">Analysis Status</p>
                                 <div className="flex items-center gap-2">
                                     <div className={`w-2 h-2 rounded-full ${analysisResults ? 'bg-green-500' : 'bg-amber-500'}`} />
                                     <p className="font-bold text-slate-900">{analysisResults ? 'Completed' : 'Pending'}</p>
@@ -218,11 +218,11 @@ export const ReportsPage = () => {
                                         {Array.from(analysisResults.memberForces.entries()).slice(0, 15).map(([id, forces]) => (
                                             <tr key={id} className="hover:bg-slate-50/50">
                                                 <td className="px-4 py-2 font-medium text-slate-900">{id}</td>
-                                                <td className="px-4 py-2 text-slate-600 text-right font-mono">{(forces.axial || 0).toFixed(2)}</td>
-                                                <td className="px-4 py-2 text-slate-600 text-right font-mono">{(forces.shearY || 0).toFixed(2)}</td>
-                                                <td className="px-4 py-2 text-slate-600 text-right font-mono">{(forces.shearZ || 0).toFixed(2)}</td>
-                                                <td className="px-4 py-2 text-slate-600 text-right font-mono">{(forces.momentZ || 0).toFixed(2)}</td>
-                                                <td className="px-4 py-2 text-slate-600 text-right font-mono">{(forces.momentY || 0).toFixed(2)}</td>
+                                                <td className="px-4 py-2 text-slate-500 text-right font-mono">{(forces.axial || 0).toFixed(2)}</td>
+                                                <td className="px-4 py-2 text-slate-500 text-right font-mono">{(forces.shearY || 0).toFixed(2)}</td>
+                                                <td className="px-4 py-2 text-slate-500 text-right font-mono">{(forces.shearZ || 0).toFixed(2)}</td>
+                                                <td className="px-4 py-2 text-slate-500 text-right font-mono">{(forces.momentZ || 0).toFixed(2)}</td>
+                                                <td className="px-4 py-2 text-slate-500 text-right font-mono">{(forces.momentY || 0).toFixed(2)}</td>
                                             </tr>
                                         ))}
                                         {analysisResults.memberForces.size > 15 && (
@@ -266,12 +266,12 @@ export const ReportsPage = () => {
                                     {Array.from(nodes.values()).slice(0, 10).map((node) => (
                                         <tr key={node.id} className="hover:bg-slate-50/50">
                                             <td className="px-6 py-2 font-medium text-slate-900">{node.id}</td>
-                                            <td className="px-6 py-2 text-slate-600 text-right font-mono">{node.x.toFixed(3)}</td>
-                                            <td className="px-6 py-2 text-slate-600 text-right font-mono">{node.y.toFixed(3)}</td>
-                                            <td className="px-6 py-2 text-slate-600 text-right font-mono">{node.z.toFixed(3)}</td>
-                                            <td className="px-6 py-2 text-slate-600 text-center text-xs">
+                                            <td className="px-6 py-2 text-slate-500 text-right font-mono">{node.x.toFixed(3)}</td>
+                                            <td className="px-6 py-2 text-slate-500 text-right font-mono">{node.y.toFixed(3)}</td>
+                                            <td className="px-6 py-2 text-slate-500 text-right font-mono">{node.z.toFixed(3)}</td>
+                                            <td className="px-6 py-2 text-slate-500 text-center text-xs">
                                                 {Object.values(node.restraints || {}).some(Boolean) ? (
-                                                    <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">
+                                                    <span className="bg-slate-100 text-slate-500 px-2 py-0.5 rounded border border-slate-200">
                                                         Fixed
                                                     </span>
                                                 ) : '-'}
@@ -303,12 +303,12 @@ export const ReportsPage = () => {
                     <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1" />
                     <button
                         onClick={handlePrint}
-                        className="flex items-center gap-2 px-6 py-3 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium text-sm transition-colors"
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium text-sm transition-colors"
                     >
                         <Printer className="w-5 h-5" />
                         Print
                     </button>
-                    <button className="flex items-center gap-2 px-6 py-3 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium text-sm transition-colors">
+                    <button className="flex items-center gap-2 px-6 py-3 rounded-lg text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium text-sm transition-colors">
                         <Share2 className="w-5 h-5" />
                         Share
                     </button>
@@ -319,7 +319,7 @@ export const ReportsPage = () => {
             <div className="fixed bottom-6 right-6 z-40 print:hidden flex flex-col gap-3">
                 <button
                     onClick={handleExportDXF}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-600 dark:text-gray-300 font-medium text-sm"
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-gray-300 font-medium text-sm"
                     title="Export DXF (AutoCAD)"
                 >
                     <Layout className="w-5 h-5 text-fuchsia-600" />
@@ -327,7 +327,7 @@ export const ReportsPage = () => {
                 </button>
                 <button
                     onClick={handleExportIFC}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-600 dark:text-gray-300 font-medium text-sm"
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-gray-300 font-medium text-sm"
                     title="Export IFC (BIM)"
                 >
                     <FileCode className="w-5 h-5 text-amber-600" />
@@ -335,7 +335,7 @@ export const ReportsPage = () => {
                 </button>
                 <button
                     onClick={handleExportExcel}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-zinc-800 border-2 border-green-600 dark:border-green-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-600 dark:text-gray-300 font-medium text-sm"
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-zinc-800 border-2 border-green-600 dark:border-green-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-gray-300 font-medium text-sm"
                     title="Export Results to Excel (CSV)"
                 >
                     <TableProperties className="w-5 h-5 text-green-600" />

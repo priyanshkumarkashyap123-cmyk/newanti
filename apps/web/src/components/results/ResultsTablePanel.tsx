@@ -138,7 +138,7 @@ function TableHeader<T>({ columns, sortColumn, sortDirection, onSort }: TableHea
                     <div className="flex items-center justify-end gap-1">
                         <span>
                             {col.label}
-                            {col.unit && <span className="text-slate-500 ml-1">({col.unit})</span>}
+                            {col.unit && <span className="text-slate-400 ml-1">({col.unit})</span>}
                         </span>
                         {sortColumn === col.key ? (
                             sortDirection === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />
@@ -291,7 +291,7 @@ const NodeResultsTable: FC<NodeResultsTableProps> = ({ searchQuery }) => {
                 </tbody>
             </table>
             {sortedData.length === 0 && (
-                <div className="text-center py-8 text-slate-500">
+                <div className="text-center py-8 text-slate-400">
                     {analysisResults ? 'No node results available' : 'Run analysis to see results'}
                 </div>
             )}
@@ -438,8 +438,8 @@ const MemberResultsTable: FC<MemberResultsTableProps> = ({ searchQuery }) => {
                                 } ${isOverUtilized ? 'bg-red-900/30' : isWarning ? 'bg-amber-900/20' : ''}`}
                             >
                                 <td className="px-3 py-1.5 text-left font-mono text-slate-400">{row.memberId}</td>
-                                <td className="px-3 py-1.5 text-left font-mono text-slate-500">{row.startNode}</td>
-                                <td className="px-3 py-1.5 text-left font-mono text-slate-500">{row.endNode}</td>
+                                <td className="px-3 py-1.5 text-left font-mono text-slate-400">{row.startNode}</td>
+                                <td className="px-3 py-1.5 text-left font-mono text-slate-400">{row.endNode}</td>
                                 <td className="px-3 py-1.5 text-right font-mono">{formatNumber(row.length)}</td>
                                 <td className={`px-3 py-1.5 text-right font-mono ${row.axialStart < 0 ? 'text-blue-400' : 'text-red-400'}`}>
                                     {formatNumber(row.axialStart)}
@@ -464,7 +464,7 @@ const MemberResultsTable: FC<MemberResultsTableProps> = ({ searchQuery }) => {
                 </tbody>
             </table>
             {sortedData.length === 0 && (
-                <div className="text-center py-8 text-slate-500">
+                <div className="text-center py-8 text-slate-400">
                     {analysisResults ? 'No member results available' : 'Run analysis to see results'}
                 </div>
             )}
@@ -593,13 +593,13 @@ const ReactionsTable: FC<ReactionsTableProps> = ({ searchQuery }) => {
                             <td className="px-3 py-1.5 text-right font-mono">{formatNumber(row.x)}</td>
                             <td className="px-3 py-1.5 text-right font-mono">{formatNumber(row.y)}</td>
                             <td className="px-3 py-1.5 text-right font-mono">{formatNumber(row.z)}</td>
-                            <td className={`px-3 py-1.5 text-right font-mono ${Math.abs(row.Fx) > 0.01 ? 'text-red-400' : 'text-slate-500'}`}>
+                            <td className={`px-3 py-1.5 text-right font-mono ${Math.abs(row.Fx) > 0.01 ? 'text-red-400' : 'text-slate-400'}`}>
                                 {formatNumber(row.Fx)}
                             </td>
-                            <td className={`px-3 py-1.5 text-right font-mono ${Math.abs(row.Fy) > 0.01 ? 'text-green-400' : 'text-slate-500'}`}>
+                            <td className={`px-3 py-1.5 text-right font-mono ${Math.abs(row.Fy) > 0.01 ? 'text-green-400' : 'text-slate-400'}`}>
                                 {formatNumber(row.Fy)}
                             </td>
-                            <td className={`px-3 py-1.5 text-right font-mono ${Math.abs(row.Fz) > 0.01 ? 'text-blue-400' : 'text-slate-500'}`}>
+                            <td className={`px-3 py-1.5 text-right font-mono ${Math.abs(row.Fz) > 0.01 ? 'text-blue-400' : 'text-slate-400'}`}>
                                 {formatNumber(row.Fz)}
                             </td>
                             <td className="px-3 py-1.5 text-right font-mono text-amber-400">{formatNumber(row.Mx)}</td>
@@ -613,7 +613,7 @@ const ReactionsTable: FC<ReactionsTableProps> = ({ searchQuery }) => {
                 </tbody>
             </table>
             {sortedData.length === 0 && (
-                <div className="text-center py-8 text-slate-500">
+                <div className="text-center py-8 text-slate-400">
                     {analysisResults ? 'No reactions available' : 'Run analysis to see results'}
                 </div>
             )}
@@ -669,7 +669,7 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = ({
                 <div className="flex items-center gap-2">
                     {/* Search */}
                     <div className="relative">
-                        <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
+                        <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
                         <input
                             type="text"
                             value={searchQuery}
@@ -724,7 +724,7 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = ({
 
             {/* Footer with summary */}
             {analysisResults && (
-                <div className="px-4 py-2 border-t border-slate-700 bg-slate-800/30 text-xs text-slate-500">
+                <div className="px-4 py-2 border-t border-slate-700 bg-slate-800/30 text-xs text-slate-400">
                     <div className="flex justify-between">
                         <span>
                             {activeTab === 'nodes' && `${analysisResults.displacements.size} nodes analyzed`}

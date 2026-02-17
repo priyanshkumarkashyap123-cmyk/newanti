@@ -179,7 +179,7 @@ const SummaryCard: FC<SummaryCardProps> = ({
     >
         <div className="flex items-start justify-between">
             <div>
-                <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide mb-1">
+                <p className="text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1">
                     {title}
                 </p>
                 <div className="flex items-baseline gap-1">
@@ -191,7 +191,7 @@ const SummaryCard: FC<SummaryCardProps> = ({
                     )}
                 </div>
                 {subtitle && (
-                    <p className="text-xs text-zinc-500 mt-1">{subtitle}</p>
+                    <p className="text-xs text-zinc-400 mt-1">{subtitle}</p>
                 )}
             </div>
             <div className={`p-2 rounded-lg ${color}`}>
@@ -331,7 +331,7 @@ const MemberDiagramMini: FC<MemberDiagramMiniProps> = ({
                 className="w-full h-10 rounded bg-zinc-900"
             />
             
-            <div className="flex justify-between mt-2 text-xs text-zinc-500">
+            <div className="flex justify-between mt-2 text-xs text-zinc-400">
                 <span>Max: {formatNumber(type === 'SFD' ? member.maxShear : 
                                         type === 'BMD' ? member.maxMoment : 
                                         type === 'AFD' ? member.maxAxial :
@@ -371,7 +371,7 @@ const ReactionDisplay: FC<ReactionDisplayProps> = ({ nodes }) => {
                 >
                     <div className="flex items-center justify-between mb-3">
                         <span className="font-medium text-white">Node {node.id}</span>
-                        <span className="text-xs text-zinc-500">
+                        <span className="text-xs text-zinc-400">
                             ({formatNumber(node.x)}, {formatNumber(node.y)}, {formatNumber(node.z)})
                         </span>
                     </div>
@@ -380,31 +380,31 @@ const ReactionDisplay: FC<ReactionDisplayProps> = ({ nodes }) => {
                         {node.reaction && (
                             <>
                                 <div className="text-center p-2 bg-zinc-900 rounded">
-                                    <div className="text-xs text-zinc-500 mb-1">Fx</div>
+                                    <div className="text-xs text-zinc-400 mb-1">Fx</div>
                                     <div className={`font-mono font-bold ${
                                         node.reaction.fx >= 0 ? 'text-blue-400' : 'text-red-400'
                                     }`}>
                                         {formatNumber(node.reaction.fx)}
                                     </div>
-                                    <div className="text-xs text-zinc-600">kN</div>
+                                    <div className="text-xs text-zinc-500">kN</div>
                                 </div>
                                 <div className="text-center p-2 bg-zinc-900 rounded">
-                                    <div className="text-xs text-zinc-500 mb-1">Fy</div>
+                                    <div className="text-xs text-zinc-400 mb-1">Fy</div>
                                     <div className={`font-mono font-bold ${
                                         node.reaction.fy >= 0 ? 'text-green-400' : 'text-red-400'
                                     }`}>
                                         {formatNumber(node.reaction.fy)}
                                     </div>
-                                    <div className="text-xs text-zinc-600">kN</div>
+                                    <div className="text-xs text-zinc-500">kN</div>
                                 </div>
                                 <div className="text-center p-2 bg-zinc-900 rounded">
-                                    <div className="text-xs text-zinc-500 mb-1">Mz</div>
+                                    <div className="text-xs text-zinc-400 mb-1">Mz</div>
                                     <div className={`font-mono font-bold ${
                                         (node.reaction.mz ?? 0) >= 0 ? 'text-purple-400' : 'text-orange-400'
                                     }`}>
                                         {formatNumber(node.reaction.mz ?? 0)}
                                     </div>
-                                    <div className="text-xs text-zinc-600">kNm</div>
+                                    <div className="text-xs text-zinc-500">kNm</div>
                                 </div>
                             </>
                         )}
@@ -478,7 +478,7 @@ const DetailedMemberTable: FC<DetailedMemberTableProps> = ({ members, onSelect }
                             >
                                 <div className="flex items-center gap-1">
                                     {col.label}
-                                    {col.unit && <span className="text-zinc-600">({col.unit})</span>}
+                                    {col.unit && <span className="text-zinc-500">({col.unit})</span>}
                                     {sortField === col.key && (
                                         <ChevronRight className={`w-3 h-3 transform ${
                                             sortDir === 'asc' ? '-rotate-90' : 'rotate-90'
@@ -723,7 +723,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                                     ))}
                                 </div>
                                 {members.length > 12 && (
-                                    <p className="text-xs text-zinc-500 mt-2 text-center">
+                                    <p className="text-xs text-zinc-400 mt-2 text-center">
                                         + {members.length - 12} more members. Click "Detailed" tab to see all.
                                     </p>
                                 )}
@@ -835,7 +835,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
             </div>
             
             {/* Footer */}
-            <div className="flex items-center justify-between px-6 py-3 bg-zinc-800/30 border-t border-zinc-800 text-xs text-zinc-500">
+            <div className="flex items-center justify-between px-6 py-3 bg-zinc-800/30 border-t border-zinc-800 text-xs text-zinc-400">
                 <span>Analysis completed successfully</span>
                 <div className="flex items-center gap-4">
                     <button 

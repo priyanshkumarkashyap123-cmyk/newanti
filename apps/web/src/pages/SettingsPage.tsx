@@ -134,7 +134,7 @@ const Input: FC<InputProps> = ({ label, value, onChange, type = 'text', placehol
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
             readOnly={readOnly}
-            className={`w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white h-12 px-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm placeholder:text-zinc-500 ${readOnly ? 'text-zinc-400 cursor-default' : ''}`}
+            className={`w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white h-12 px-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm placeholder:text-zinc-400 ${readOnly ? 'text-zinc-400 cursor-default' : ''}`}
         />
     </div>
 );
@@ -175,7 +175,7 @@ const Slider: FC<SliderProps> = ({ label, value, onChange, min, max, labels, val
                     }}
                 />
             </div>
-            <div className="flex justify-between text-xs text-zinc-500 font-mono uppercase">
+            <div className="flex justify-between text-xs text-zinc-400 font-mono uppercase">
                 {labels.map((l, i) => (
                     <span key={i}>{l}</span>
                 ))}
@@ -225,14 +225,14 @@ export const SettingsPage: FC = () => {
                         <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-lg">B</div>
                         <div>
                             <h1 className="text-white text-lg font-bold leading-none tracking-tight">BeamLab</h1>
-                            <p className="text-zinc-500 text-xs font-normal mt-1">Ultimate Edition v4.2.0</p>
+                            <p className="text-zinc-400 text-xs font-normal mt-1">Ultimate Edition v4.2.0</p>
                         </div>
                     </Link>
                 </div>
 
                 {/* Navigation */}
                 <nav className="flex-1 overflow-y-auto py-6 px-3 flex flex-col gap-1">
-                    <div className="px-3 mb-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Settings</div>
+                    <div className="px-3 mb-2 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Settings</div>
                     {NAV_ITEMS.map((item) => {
                         const Icon = item.icon;
                         const isActive = activeTab === item.id;

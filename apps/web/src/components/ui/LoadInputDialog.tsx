@@ -133,7 +133,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                 <div className="px-6 py-4">
                     {/* Target Info */}
                     <div className="mb-4 p-3 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
-                        <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                        <span className="text-sm text-zinc-500 dark:text-zinc-400">
                             Applying to: {' '}
                             <span className="font-medium text-zinc-900 dark:text-white">
                                 {targetNodeId ? `Node ${targetNodeId}` : targetMemberId ? `Member ${targetMemberId}` : 'Select target'}
@@ -167,7 +167,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                     `}
                                 >
                                     <span className="text-xl">{type.icon}</span>
-                                    <span className="text-xs text-zinc-600 dark:text-zinc-400">{type.label}</span>
+                                    <span className="text-xs text-zinc-500 dark:text-zinc-400">{type.label}</span>
                                 </button>
                             ))}
                         </div>
@@ -244,7 +244,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                 onChange={(e) => setMagnitude(e.target.value)}
                                 className="flex-1 px-4 py-3 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white text-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                             />
-                            <span className="text-zinc-500 dark:text-zinc-400 font-medium">
+                            <span className="text-zinc-400 dark:text-zinc-400 font-medium">
                                 {loadType === 'moment' ? 'kN·m' : loadType === 'udl' ? 'kN/m' : 'kN'}
                             </span>
                         </div>
@@ -276,7 +276,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                 <div className="text-2xl font-bold text-zinc-900 dark:text-white">
                                     {magnitude} {loadType === 'moment' ? 'kN·m' : loadType === 'udl' ? 'kN/m' : 'kN'}
                                 </div>
-                                <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                                <div className="text-xs text-zinc-400 dark:text-zinc-400">
                                     {dirConfig.label}
                                 </div>
                             </div>
@@ -288,7 +288,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                 <div className="px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-200 dark:border-zinc-700 flex justify-end gap-3">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
+                        className="px-4 py-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
                     >
                         Cancel
                     </button>

@@ -215,7 +215,7 @@ export const InHouseSignUp: React.FC = () => {
                                     First name
                                 </label>
                                 <div className="relative">
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
                                     <input
                                         id="firstName"
                                         type="text"
@@ -236,7 +236,7 @@ export const InHouseSignUp: React.FC = () => {
                                     Last name
                                 </label>
                                 <div className="relative">
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
                                     <input
                                         id="lastName"
                                         type="text"
@@ -260,7 +260,7 @@ export const InHouseSignUp: React.FC = () => {
                                 Email address
                             </label>
                             <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
                                 <input
                                     id="email"
                                     type="email"
@@ -281,10 +281,10 @@ export const InHouseSignUp: React.FC = () => {
                         {/* Company Field (Optional) */}
                         <div>
                             <label htmlFor="company" className="block text-sm font-medium text-zinc-300 mb-2">
-                                Company <span className="text-zinc-500">(optional)</span>
+                                Company <span className="text-zinc-400">(optional)</span>
                             </label>
                             <div className="relative">
-                                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+                                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
                                 <input
                                     id="company"
                                     type="text"
@@ -303,7 +303,7 @@ export const InHouseSignUp: React.FC = () => {
                                 Password
                             </label>
                             <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
                                 <input
                                     id="password"
                                     type={showPassword ? 'text' : 'password'}
@@ -318,7 +318,7 @@ export const InHouseSignUp: React.FC = () => {
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-300 transition-colors"
                                 >
                                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                 </button>
@@ -345,9 +345,9 @@ export const InHouseSignUp: React.FC = () => {
                                                 {check.passed ? (
                                                     <CheckCircle2 className="w-3 h-3 text-green-400" />
                                                 ) : (
-                                                    <XCircle className="w-3 h-3 text-zinc-500" />
+                                                    <XCircle className="w-3 h-3 text-zinc-400" />
                                                 )}
-                                                <span className={check.passed ? 'text-green-400' : 'text-zinc-500'}>
+                                                <span className={check.passed ? 'text-green-400' : 'text-zinc-400'}>
                                                     {check.label}
                                                 </span>
                                             </div>
@@ -367,7 +367,7 @@ export const InHouseSignUp: React.FC = () => {
                                 Confirm password
                             </label>
                             <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
                                 <input
                                     id="confirmPassword"
                                     type={showConfirmPassword ? 'text' : 'password'}
@@ -382,7 +382,7 @@ export const InHouseSignUp: React.FC = () => {
                                 <button
                                     type="button"
                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-300 transition-colors"
                                 >
                                     {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                 </button>

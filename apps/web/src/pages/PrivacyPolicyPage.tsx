@@ -58,16 +58,16 @@ export const PrivacyPolicyPage = () => {
                                 <Shield className="w-5 h-5 text-white" />
                             </div>
                             <span className="text-xl font-bold text-zinc-900 dark:text-white">
-                                BeamLab <span className="text-zinc-500 font-normal">Ultimate</span>
+                                BeamLab <span className="text-zinc-400 font-normal">Ultimate</span>
                             </span>
                         </Link>
 
                         {/* Desktop Nav */}
                         <div className="hidden md:flex items-center gap-8">
                             <nav className="flex gap-6">
-                                <Link to="/" className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors">Features</Link>
-                                <Link to="/pricing" className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors">Pricing</Link>
-                                <Link to="/help" className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors">Resources</Link>
+                                <Link to="/" className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors">Features</Link>
+                                <Link to="/pricing" className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors">Pricing</Link>
+                                <Link to="/help" className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors">Resources</Link>
                             </nav>
                             <div className="flex items-center gap-4 border-l border-zinc-200 dark:border-zinc-700 pl-8">
                                 <Link to="/sign-in" className="text-sm font-medium text-zinc-900 dark:text-white">Log in</Link>
@@ -79,7 +79,7 @@ export const PrivacyPolicyPage = () => {
 
                         {/* Mobile Menu Button */}
                         <button
-                            className="md:hidden p-2 text-zinc-600 dark:text-zinc-300"
+                            className="md:hidden p-2 text-zinc-500 dark:text-zinc-300"
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                         >
                             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -100,7 +100,7 @@ export const PrivacyPolicyPage = () => {
                                     onClick={() => scrollToSection(section.id)}
                                     className={`block w-full text-left pl-4 py-2 text-sm transition-colors ${activeSection === section.id
                                             ? 'border-l-2 border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 rounded-r-md font-medium'
-                                            : 'border-l-2 border-transparent text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-300 dark:hover:border-zinc-600'
+                                            : 'border-l-2 border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-300 dark:hover:border-zinc-600'
                                         }`}
                                 >
                                     {section.number ? `${section.number}. ${section.title}` : section.title}
@@ -118,12 +118,12 @@ export const PrivacyPolicyPage = () => {
                             <span className="inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2.5 py-0.5 text-xs font-medium text-emerald-800 dark:text-emerald-400">
                                 Legal
                             </span>
-                            <span className="text-sm text-zinc-500 dark:text-zinc-400">Last updated: December 28, 2024</span>
+                            <span className="text-sm text-zinc-400 dark:text-zinc-400">Last updated: December 28, 2024</span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-zinc-900 dark:text-white mb-6">
                             Privacy Policy
                         </h1>
-                        <p className="text-lg text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                        <p className="text-lg text-zinc-500 dark:text-zinc-300 leading-relaxed">
                             At BeamLab Ultimate, we take your privacy seriously. This policy outlines how we collect, use, and protect your personal and structural project data when you use our software and services. We are committed to transparency and ensuring your information remains secure.
                         </p>
                     </div>
@@ -136,7 +136,7 @@ export const PrivacyPolicyPage = () => {
                                 <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-400 text-sm font-bold">1</span>
                                 Information We Collect
                             </h2>
-                            <div className="prose dark:prose-invert max-w-none text-zinc-600 dark:text-zinc-300 space-y-4">
+                            <div className="prose dark:prose-invert max-w-none text-zinc-500 dark:text-zinc-300 space-y-4">
                                 <p>
                                     We collect information you provide directly to us, such as when you create an account, update your profile, request customer support, or otherwise communicate with us. This may include:
                                 </p>
@@ -154,7 +154,7 @@ export const PrivacyPolicyPage = () => {
                                 <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-400 text-sm font-bold">2</span>
                                 How We Use Your Information
                             </h2>
-                            <div className="prose dark:prose-invert max-w-none text-zinc-600 dark:text-zinc-300 space-y-4">
+                            <div className="prose dark:prose-invert max-w-none text-zinc-500 dark:text-zinc-300 space-y-4">
                                 <p>We use the information we collect to operate, maintain, and improve our services. Specifically, we use your data to:</p>
                                 <ul className="list-disc pl-6 space-y-2">
                                     <li>Process structural calculations and render 3D models efficiently.</li>
@@ -171,7 +171,7 @@ export const PrivacyPolicyPage = () => {
                                 <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-400 text-sm font-bold">3</span>
                                 How We Share Your Information
                             </h2>
-                            <div className="prose dark:prose-invert max-w-none text-zinc-600 dark:text-zinc-300 space-y-4">
+                            <div className="prose dark:prose-invert max-w-none text-zinc-500 dark:text-zinc-300 space-y-4">
                                 <p>We do not sell your personal data. We may share your information in the following circumstances:</p>
                                 <div className="bg-white dark:bg-zinc-800 p-6 rounded-xl border border-zinc-100 dark:border-zinc-700 shadow-sm">
                                     <div className="grid gap-4 sm:grid-cols-2">
@@ -200,7 +200,7 @@ export const PrivacyPolicyPage = () => {
                                 <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-400 text-sm font-bold">4</span>
                                 Your Choices
                             </h2>
-                            <p className="text-zinc-600 dark:text-zinc-300">
+                            <p className="text-zinc-500 dark:text-zinc-300">
                                 You may update, correct, or delete your account information at any time by logging into your online account. You may also opt out of receiving promotional communications from us by following the instructions in those communications. If you opt out, we may still send you non-promotional communications, such as those about your account or our ongoing business relations.
                             </p>
                         </section>
@@ -211,7 +211,7 @@ export const PrivacyPolicyPage = () => {
                                 <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-400 text-sm font-bold">5</span>
                                 Data Security
                             </h2>
-                            <p className="text-zinc-600 dark:text-zinc-300">
+                            <p className="text-zinc-500 dark:text-zinc-300">
                                 We take reasonable measures to help protect information about you from loss, theft, misuse and unauthorized access, disclosure, alteration and destruction. Your project data is encrypted both in transit and at rest using industry-standard AES-256 encryption protocols.
                             </p>
                         </section>
@@ -222,7 +222,7 @@ export const PrivacyPolicyPage = () => {
                                 <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-400 text-sm font-bold">6</span>
                                 Children's Privacy
                             </h2>
-                            <p className="text-zinc-600 dark:text-zinc-300">
+                            <p className="text-zinc-500 dark:text-zinc-300">
                                 Our services are not directed to individuals under 13. We do not knowingly collect personal information from children under 13. If we become aware that a child under 13 has provided us with personal information, we will take steps to delete such information.
                             </p>
                         </section>
@@ -233,7 +233,7 @@ export const PrivacyPolicyPage = () => {
                                 <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-400 text-sm font-bold">7</span>
                                 Changes to This Policy
                             </h2>
-                            <p className="text-zinc-600 dark:text-zinc-300">
+                            <p className="text-zinc-500 dark:text-zinc-300">
                                 We may change this Privacy Policy from time to time. If we make changes, we will notify you by revising the date at the top of the policy and, in some cases, we may provide you with additional notice (such as adding a statement to our homepage or sending you a notification).
                             </p>
                         </section>
@@ -242,7 +242,7 @@ export const PrivacyPolicyPage = () => {
                         <section className="scroll-mt-28 mb-16" id="contact">
                             <div className="bg-zinc-100 dark:bg-zinc-800/50 rounded-xl p-8 border border-zinc-200 dark:border-zinc-700">
                                 <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">8. Contact Us</h2>
-                                <p className="text-zinc-600 dark:text-zinc-300 mb-6">
+                                <p className="text-zinc-500 dark:text-zinc-300 mb-6">
                                     If you have any questions about this Privacy Policy, please contact us at:
                                 </p>
                                 <div className="flex flex-col sm:flex-row gap-6">
@@ -251,7 +251,7 @@ export const PrivacyPolicyPage = () => {
                                             <Mail className="w-5 h-5 text-emerald-500" />
                                         </div>
                                         <div>
-                                            <p className="text-xs text-zinc-500 uppercase font-semibold">Email</p>
+                                            <p className="text-xs text-zinc-400 uppercase font-semibold">Email</p>
                                             <a href="mailto:privacy@beamlab.com" className="font-medium text-zinc-900 dark:text-white hover:text-emerald-500 transition-colors">
                                                 privacy@beamlab.com
                                             </a>
@@ -262,7 +262,7 @@ export const PrivacyPolicyPage = () => {
                                             <MapPin className="w-5 h-5 text-emerald-500" />
                                         </div>
                                         <div>
-                                            <p className="text-xs text-zinc-500 uppercase font-semibold">Address</p>
+                                            <p className="text-xs text-zinc-400 uppercase font-semibold">Address</p>
                                             <span className="font-medium text-zinc-900 dark:text-white">88 Structural Way, San Francisco, CA</span>
                                         </div>
                                     </div>
@@ -277,11 +277,11 @@ export const PrivacyPolicyPage = () => {
             <footer className="border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-12 mt-auto">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">© 2024 BeamLab Ultimate. All rights reserved.</p>
+                        <p className="text-sm text-zinc-400 dark:text-zinc-400">© 2024 BeamLab Ultimate. All rights reserved.</p>
                         <div className="flex gap-6">
-                            <Link to="/privacy" className="text-xs text-zinc-500 hover:text-emerald-500 transition-colors">Privacy Policy</Link>
-                            <Link to="/terms" className="text-xs text-zinc-500 hover:text-emerald-500 transition-colors">Terms of Service</Link>
-                            <Link to="/help" className="text-xs text-zinc-500 hover:text-emerald-500 transition-colors">Help</Link>
+                            <Link to="/privacy" className="text-xs text-zinc-400 hover:text-emerald-500 transition-colors">Privacy Policy</Link>
+                            <Link to="/terms" className="text-xs text-zinc-400 hover:text-emerald-500 transition-colors">Terms of Service</Link>
+                            <Link to="/help" className="text-xs text-zinc-400 hover:text-emerald-500 transition-colors">Help</Link>
                         </div>
                     </div>
                 </div>

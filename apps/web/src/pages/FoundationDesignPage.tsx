@@ -354,7 +354,7 @@ export const FoundationDesignPage: React.FC = () => {
               <h3 className="text-sm font-semibold text-blue-400 mb-4">Geometry</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="col-span-2 md:col-span-3 mb-2">
-                  <p className="text-xs text-slate-500 italic">Column Dimensions</p>
+                  <p className="text-xs text-slate-400 italic">Column Dimensions</p>
                 </div>
                 <div>
                   <label className="text-xs text-slate-400">Column Width (mm)</label>
@@ -376,7 +376,7 @@ export const FoundationDesignPage: React.FC = () => {
                 </div>
                 
                 <div className="col-span-2 md:col-span-3 mt-4 mb-2">
-                  <p className="text-xs text-slate-500 italic">Footing Dimensions</p>
+                  <p className="text-xs text-slate-400 italic">Footing Dimensions</p>
                 </div>
                 <div>
                   <label className="text-xs text-slate-400">Footing Length L (mm)</label>
@@ -591,9 +591,9 @@ export const FoundationDesignPage: React.FC = () => {
             ) : (
               <div className="bg-slate-900 rounded-xl p-6 border border-slate-700 h-full">
                 <div className="flex flex-col items-center justify-center py-12 text-center h-full">
-                  <Layers className="w-16 h-16 text-slate-600 mb-4" />
+                  <Layers className="w-16 h-16 text-slate-500 mb-4" />
                   <h3 className="text-lg font-semibold text-slate-400 mb-2">No Results Yet</h3>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-400">
                     Configure the foundation parameters and run analysis to see design results
                   </p>
                 </div>

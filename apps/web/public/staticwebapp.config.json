@@ -66,12 +66,170 @@
     {
       "route": "/pricing",
       "rewrite": "/index.html"
+    },
+    {
+      "route": "/pricing-old",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/about",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/contact",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/help",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/terms",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/terms-of-service",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/privacy",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/privacy-policy",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/forgot-password",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/reset-password",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/dashboard-enhanced",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/reports/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/analysis/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/design/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/design-center",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/civil/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/civil-engineering/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/tools/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/bim/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/cad/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/cloud/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/collaboration",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/compliance/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/connections/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/materials/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/meshing/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/optimization",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/performance/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/visualization/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/results/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/stream",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/ai-dashboard",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/ai-power",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/api/dashboard",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/quantity",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/print-export",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/settings-enhanced",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/ui-showcase",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/rust-wasm-demo",
+      "rewrite": "/index.html"
     }
   ],
   "globalHeaders": {
     "Cache-Control": "no-cache, no-store, must-revalidate",
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "strict-origin-when-cross-origin",
-    "Permissions-Policy": "geolocation=(), microphone=(), camera=()"
+    "Permissions-Policy": "geolocation=(), microphone=(), camera=()",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
+    "X-Frame-Options": "DENY"
   }
 }

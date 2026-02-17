@@ -226,7 +226,7 @@ const ChartHeader: React.FC<ChartHeaderProps> = ({
                 <button
                     onClick={() => onSettingsChange({ ...settings, showGrid: !settings.showGrid })}
                     className={`p-1.5 rounded transition-colors ${
-                        settings.showGrid ? 'text-cyan-400' : 'text-slate-500'
+                        settings.showGrid ? 'text-cyan-400' : 'text-slate-400'
                     } hover:bg-slate-700`}
                     title="Toggle Grid"
                 >
@@ -235,7 +235,7 @@ const ChartHeader: React.FC<ChartHeaderProps> = ({
                 <button
                     onClick={() => onSettingsChange({ ...settings, showLegend: !settings.showLegend })}
                     className={`p-1.5 rounded transition-colors ${
-                        settings.showLegend ? 'text-cyan-400' : 'text-slate-500'
+                        settings.showLegend ? 'text-cyan-400' : 'text-slate-400'
                     } hover:bg-slate-700`}
                     title="Toggle Legend"
                 >
@@ -244,7 +244,7 @@ const ChartHeader: React.FC<ChartHeaderProps> = ({
                 <button
                     onClick={() => onSettingsChange({ ...settings, fillArea: !settings.fillArea })}
                     className={`p-1.5 rounded transition-colors ${
-                        settings.fillArea ? 'text-cyan-400' : 'text-slate-500'
+                        settings.fillArea ? 'text-cyan-400' : 'text-slate-400'
                     } hover:bg-slate-700`}
                     title="Toggle Fill"
                 >
@@ -462,7 +462,7 @@ export const ForceDiagramChart: React.FC<ForceDiagramChartProps> = ({
                         Min: <span className="text-white font-medium">{minValue.toFixed(2)} {units[diagramType]}</span>
                     </span>
                 </div>
-                <span className="text-slate-500">
+                <span className="text-slate-400">
                     Member: {data.memberLabel || data.memberId} | Length: {data.length.toFixed(2)} m
                 </span>
             </div>
@@ -949,7 +949,7 @@ export const PMInteractionChart: React.FC<PMInteractionChartProps> = ({
                             <span className="text-slate-400">Exceeded: {demandStatus.filter(d => d.status === 'exceeded').length}</span>
                         </span>
                     </div>
-                    <span className="text-slate-500">
+                    <span className="text-slate-400">
                         Total Load Cases: {demandStatus.length}
                     </span>
                 </div>

@@ -116,7 +116,7 @@ const TreeSearchBar: FC<{
   placeholder?: string;
 }> = memo(({ value, onChange, placeholder = 'Search tree...' }) => (
   <div className="relative px-2 py-1.5">
-    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
+    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
     <input
       type="text"
       value={value}
@@ -127,7 +127,7 @@ const TreeSearchBar: FC<{
     {value && (
       <button
         onClick={() => onChange('')}
-        className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+        className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-300"
       >
         ×
       </button>
@@ -150,14 +150,14 @@ const TreeToolbar: FC<{
   <div className="flex items-center gap-1 px-2 py-1 border-b border-zinc-800">
     <button
       onClick={onExpandAll}
-      className="p-1 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 rounded"
+      className="p-1 text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800 rounded"
       title="Expand All"
     >
       <ChevronDown className="w-3.5 h-3.5" />
     </button>
     <button
       onClick={onCollapseAll}
-      className="p-1 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 rounded"
+      className="p-1 text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800 rounded"
       title="Collapse All"
     >
       <ChevronRight className="w-3.5 h-3.5" />
@@ -165,7 +165,7 @@ const TreeToolbar: FC<{
     {onFilter && (
       <button
         onClick={onFilter}
-        className="p-1 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 rounded"
+        className="p-1 text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800 rounded"
         title="Filter"
       >
         <Filter className="w-3.5 h-3.5" />
@@ -174,7 +174,7 @@ const TreeToolbar: FC<{
     {onRefresh && (
       <button
         onClick={onRefresh}
-        className="p-1 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 rounded ml-auto"
+        className="p-1 text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800 rounded ml-auto"
         title="Refresh"
       >
         <RefreshCw className="w-3.5 h-3.5" />
@@ -266,7 +266,7 @@ const TreeNodeItem: FC<TreeNodeItemProps> = memo(({
           onToggleExpand();
         }}
         className={`w-4 h-4 flex items-center justify-center flex-shrink-0 ${
-          hasChildren ? 'text-zinc-500 hover:text-zinc-300' : 'invisible'
+          hasChildren ? 'text-zinc-400 hover:text-zinc-300' : 'invisible'
         }`}
       >
         {hasChildren && (
@@ -302,7 +302,7 @@ const TreeNodeItem: FC<TreeNodeItemProps> = memo(({
             onToggleVisibility();
           }}
           className={`p-0.5 rounded hover:bg-zinc-700 ${
-            node.visible === false ? 'text-zinc-600' : 'text-zinc-400'
+            node.visible === false ? 'text-zinc-500' : 'text-zinc-400'
           }`}
         >
           {node.visible === false ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
@@ -581,7 +581,7 @@ export const ModelTreeView: FC<ModelTreeViewProps> = ({
 
       {/* Selection Info */}
       {selectedIds.size > 0 && (
-        <div className="px-3 py-1.5 border-t border-zinc-800 text-xs text-zinc-500">
+        <div className="px-3 py-1.5 border-t border-zinc-800 text-xs text-zinc-400">
           {selectedIds.size} item{selectedIds.size > 1 ? 's' : ''} selected
         </div>
       )}

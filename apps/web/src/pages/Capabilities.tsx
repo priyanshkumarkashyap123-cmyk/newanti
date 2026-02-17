@@ -325,7 +325,7 @@ const FeatureCard: FC<FeatureCardProps> = ({ feature, index }) => {
                             Available
                         </span>
                     ) : (
-                        <span className="px-2 py-1 rounded-full bg-zinc-800 text-zinc-500 text-xs font-medium">
+                        <span className="px-2 py-1 rounded-full bg-zinc-800 text-zinc-400 text-xs font-medium">
                             Coming Soon
                         </span>
                     )}
@@ -430,7 +430,7 @@ export const Capabilities: FC = () => {
                     >
                         <Link
                             to="/"
-                            className="inline-flex items-center gap-2 text-zinc-500 hover:text-white text-sm mb-6 transition-colors"
+                            className="inline-flex items-center gap-2 text-zinc-400 hover:text-white text-sm mb-6 transition-colors"
                         >
                             <ArrowLeft className="w-4 h-4" />
                             Back to Home
@@ -498,7 +498,7 @@ export const Capabilities: FC = () => {
                         transition={{ delay: 0.5 }}
                         className="text-center mt-16"
                     >
-                        <p className="text-zinc-500 mb-4">Ready to supercharge your workflow?</p>
+                        <p className="text-zinc-400 mb-4">Ready to supercharge your workflow?</p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                             <button
                                 onClick={() => navigate('/app')}

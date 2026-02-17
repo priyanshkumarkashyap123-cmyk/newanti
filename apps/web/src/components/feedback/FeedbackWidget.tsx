@@ -206,7 +206,7 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
                         feedbackType === 'question' ? 'Type your question here...' :
                         'Share your thoughts...'
                       }
-                      className="w-full h-28 px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 resize-none"
+                      className="w-full h-28 px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-500 resize-none"
                     />
                   </div>
 
@@ -227,7 +227,7 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
                               className={`w-6 h-6 ${
                                 rating && star <= rating 
                                   ? 'text-amber-400 fill-amber-400' 
-                                  : 'text-slate-600'
+                                  : 'text-slate-500'
                               }`}
                             />
                           </button>
@@ -246,7 +246,7 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
-                      className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-500"
                     />
                   </div>
 

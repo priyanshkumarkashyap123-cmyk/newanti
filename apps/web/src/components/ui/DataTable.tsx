@@ -96,7 +96,7 @@ const SortIcon: React.FC<{ direction: SortDirection; active: boolean }> = ({
   active,
 }) => {
   if (!active || !direction) {
-    return <ChevronsUpDown className="w-4 h-4 text-slate-500" />;
+    return <ChevronsUpDown className="w-4 h-4 text-slate-400" />;
   }
   return direction === 'asc' ? (
     <ChevronUp className="w-4 h-4 text-blue-400" />
@@ -285,7 +285,7 @@ export function DataTable<T extends Record<string, unknown>>({
               placeholder={searchPlaceholder}
               className={cn(
                 'w-full pl-9 pr-9 py-2 bg-slate-800 border border-slate-600 rounded-lg',
-                'text-sm text-white placeholder:text-slate-500',
+                'text-sm text-white placeholder:text-slate-400',
                 'focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500'
               )}
             />

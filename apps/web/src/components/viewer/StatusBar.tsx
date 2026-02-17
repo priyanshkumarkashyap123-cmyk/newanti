@@ -53,7 +53,7 @@ export const CanvasStatusBar: FC<StatusBarProps> = ({
                         </span>
                     </div>
                 ) : (
-                    <span className="text-zinc-500">Move cursor to see coordinates</span>
+                    <span className="text-zinc-400">Move cursor to see coordinates</span>
                 )}
             </div>
 
@@ -68,7 +68,7 @@ export const CanvasStatusBar: FC<StatusBarProps> = ({
 
             {/* Right: Settings */}
             <div className="flex items-center gap-4">
-                <span className={gridSnap ? 'text-green-400' : 'text-zinc-600'}>
+                <span className={gridSnap ? 'text-green-400' : 'text-zinc-500'}>
                     Snap: {gridSnap ? 'ON' : 'OFF'}
                 </span>
                 <span>Units: m</span>

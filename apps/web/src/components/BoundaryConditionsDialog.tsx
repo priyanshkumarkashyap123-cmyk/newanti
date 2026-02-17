@@ -164,9 +164,9 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
                     {!hasSelection ? (
                         <div className="text-center py-12">
-                            <CircleDot className="w-16 h-16 mx-auto text-slate-600 mb-4" />
+                            <CircleDot className="w-16 h-16 mx-auto text-slate-500 mb-4" />
                             <p className="text-slate-400 text-lg">No nodes selected</p>
-                            <p className="text-slate-500 text-sm mt-2">
+                            <p className="text-slate-400 text-sm mt-2">
                                 Please select one or more nodes to assign boundary conditions
                             </p>
                         </div>
@@ -193,7 +193,7 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
                                                         {preset.label}
                                                     </div>
                                                     {preset.restraints && (
-                                                        <div className="text-xs text-slate-500 mt-1 font-mono">
+                                                        <div className="text-xs text-slate-400 mt-1 font-mono">
                                                             {Object.entries(preset.restraints)
                                                                 .filter(([_, val]) => val)
                                                                 .map(([key]) => key.toUpperCase())
@@ -226,7 +226,7 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
                                                         />
                                                         <span className="text-slate-300 group-hover:text-white font-mono text-sm">
                                                             {dof.toUpperCase()}
-                                                            <span className="text-slate-500 ml-2">
+                                                            <span className="text-slate-400 ml-2">
                                                                 ({dof === 'fx' ? 'X-axis' : dof === 'fy' ? 'Y-axis' : 'Z-axis'})
                                                             </span>
                                                         </span>
@@ -247,7 +247,7 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
                                                         />
                                                         <span className="text-slate-300 group-hover:text-white font-mono text-sm">
                                                             {dof.toUpperCase()}
-                                                            <span className="text-slate-500 ml-2">
+                                                            <span className="text-slate-400 ml-2">
                                                                 ({dof === 'mx' ? 'About X' : dof === 'my' ? 'About Y' : 'About Z'})
                                                             </span>
                                                         </span>
@@ -297,7 +297,7 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
                         disabled={!hasSelection}
                         className={`px-6 py-2 rounded-lg font-medium transition-all ${hasSelection
                             ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30'
-                            : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                            : 'bg-slate-700 text-slate-400 cursor-not-allowed'
                             }`}
                     >
                         Apply to {selectedNodes.length} Node{selectedNodes.length !== 1 ? 's' : ''}

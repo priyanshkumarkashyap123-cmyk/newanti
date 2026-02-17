@@ -785,7 +785,7 @@ export const ConcreteDesignPage: React.FC = () => {
                       <AlertCircle className="w-4 h-4 text-red-400" />
                     )}
                     <span className="text-slate-300">{check.description}</span>
-                    <span className="text-slate-500 text-xs ml-auto">{check.clause}</span>
+                    <span className="text-slate-400 text-xs ml-auto">{check.clause}</span>
                   </div>
                 ))}
               </div>
@@ -932,9 +932,9 @@ export const ConcreteDesignPage: React.FC = () => {
             ) : (
               <div className="bg-slate-900 rounded-xl p-6 border border-slate-700">
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <Calculator className="w-16 h-16 text-slate-600 mb-4" />
+                  <Calculator className="w-16 h-16 text-slate-500 mb-4" />
                   <h3 className="text-lg font-semibold text-slate-400 mb-2">No Results Yet</h3>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-400">
                     Configure the member properties and run analysis to see results
                   </p>
                 </div>

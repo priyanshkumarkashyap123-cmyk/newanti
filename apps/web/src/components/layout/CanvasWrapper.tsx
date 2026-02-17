@@ -17,7 +17,7 @@ export const CanvasWrapper: FC<CanvasWrapperProps> = ({ children }) => {
             {children}
 
             {/* Optional: Corner Info */}
-            <div className="absolute bottom-2 left-2 text-xs text-zinc-600 font-mono select-none pointer-events-none">
+            <div className="absolute bottom-2 left-2 text-xs text-zinc-500 font-mono select-none pointer-events-none">
                 3D View
             </div>
         </div>

@@ -149,7 +149,7 @@ export const RCDesignPanel: React.FC = () => {
                                 <div className="p-3 bg-zinc-900 rounded border border-zinc-700 font-mono text-sm grid grid-cols-2 gap-2">
                                     {Object.entries(result.details).map(([key, value]) => (
                                         <div key={key}>
-                                            <span className="text-zinc-500 block text-xs">{key}</span>
+                                            <span className="text-zinc-400 block text-xs">{key}</span>
                                             <span>{String(value)}</span>
                                         </div>
                                     ))}
@@ -174,7 +174,7 @@ export const RCDesignPanel: React.FC = () => {
                             </div>
                         </div>
                     ) : (
-                        <div className="h-full flex items-center justify-center text-zinc-500">
+                        <div className="h-full flex items-center justify-center text-zinc-400">
                             Run check to see results
                         </div>
                     )}

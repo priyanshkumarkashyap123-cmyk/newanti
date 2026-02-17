@@ -105,7 +105,7 @@ export const MiniMap: FC<MiniMapProps> = ({
                 <span className="text-xs font-medium text-slate-400">MINIMAP</span>
                 <button
                     onClick={() => setIsExpanded(false)}
-                    className="text-slate-500 hover:text-white transition-colors"
+                    className="text-slate-400 hover:text-white transition-colors"
                 >
                     <Minimize2 className="w-3 h-3" />
                 </button>
@@ -181,12 +181,12 @@ export const MiniMap: FC<MiniMapProps> = ({
 
                 {/* Center indicator */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-                    <Target className="w-4 h-4 text-slate-600" />
+                    <Target className="w-4 h-4 text-slate-500" />
                 </div>
             </div>
 
             {/* Footer - Zoom info */}
-            <div className="px-3 py-1.5 border-t border-slate-700 text-xs text-slate-500 text-center font-mono">
+            <div className="px-3 py-1.5 border-t border-slate-700 text-xs text-slate-400 text-center font-mono">
                 Click to navigate
             </div>
         </motion.div>
@@ -222,7 +222,7 @@ export const ViewportStatusBar: FC<ViewportStatusBarProps> = ({
     `}>
         {/* Mode */}
         <div className="flex items-center gap-2">
-            <span className="text-slate-500">Mode:</span>
+            <span className="text-slate-400">Mode:</span>
             <span className="text-white font-medium">{mode}</span>
         </div>
 
@@ -230,7 +230,7 @@ export const ViewportStatusBar: FC<ViewportStatusBarProps> = ({
 
         {/* Selection */}
         <div className="flex items-center gap-2">
-            <span className="text-slate-500">Selected:</span>
+            <span className="text-slate-400">Selected:</span>
             <span className={selectedCount > 0 ? 'text-blue-400' : 'text-slate-400'}>
                 {selectedCount}
             </span>
@@ -241,11 +241,11 @@ export const ViewportStatusBar: FC<ViewportStatusBarProps> = ({
         {/* Model Stats */}
         <div className="flex items-center gap-4">
             <span>
-                <span className="text-slate-500">Nodes: </span>
+                <span className="text-slate-400">Nodes: </span>
                 <span className="text-green-400">{nodeCount}</span>
             </span>
             <span>
-                <span className="text-slate-500">Members: </span>
+                <span className="text-slate-400">Members: </span>
                 <span className="text-purple-400">{memberCount}</span>
             </span>
         </div>

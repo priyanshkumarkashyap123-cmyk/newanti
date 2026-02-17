@@ -284,7 +284,7 @@ const ProjectCard: FC<{ project: Project; onClick: () => void }> = ({ project, o
                     {project.name}
                 </h3>
             </div>
-            <div className="flex items-center gap-3 text-xs text-slate-500">
+            <div className="flex items-center gap-3 text-xs text-slate-400">
                 <span className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     {formatDate(project.lastModified)}
@@ -336,7 +336,7 @@ const ActivityItem: FC<{ activity: Activity }> = ({ activity }) => (
                 {activity.type === 'edit' && 'Edited '}
                 <span className="text-blue-400">{activity.project}</span>
             </div>
-            <div className="text-xs text-slate-500">{activity.timestamp}</div>
+            <div className="text-xs text-slate-400">{activity.timestamp}</div>
         </div>
     </div>
 );
@@ -516,7 +516,7 @@ export const UnifiedDashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                             <h2 className="text-lg font-semibold text-white">Recent Projects</h2>
                             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                                 <div className="relative">
-                                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                                     <input
                                         type="text"
                                         placeholder="Search projects..."
@@ -613,7 +613,7 @@ export const UnifiedDashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                                     >
                                         <div className="text-slate-400 mb-2">{template.icon}</div>
                                         <div className="text-sm font-medium text-slate-200">{template.name}</div>
-                                        <div className="text-xs text-slate-500">{template.type}</div>
+                                        <div className="text-xs text-slate-400">{template.type}</div>
                                     </button>
                                 ))}
                             </div>
@@ -641,7 +641,7 @@ export const UnifiedDashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
 
             {/* Footer */}
             <footer className="border-t border-slate-800 mt-16 py-8">
-                <div className="max-w-7xl mx-auto px-6 text-center text-sm text-slate-500">
+                <div className="max-w-7xl mx-auto px-6 text-center text-sm text-slate-400">
                     <p>© {new Date().getFullYear()} BeamLab Ultimate. Professional Structural Analysis Software.</p>
                     <div className="flex items-center justify-center gap-4 mt-4">
                         <Link to="/privacy" className="hover:text-slate-300 transition-colors">Privacy</Link>

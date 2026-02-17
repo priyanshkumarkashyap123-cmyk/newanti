@@ -252,7 +252,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ summary, onClick, isSelected 
                         <p className="text-xs text-slate-400">{summary.description}</p>
                     </div>
                 </div>
-                <ChevronRight className={`w-5 h-5 ${isSelected ? 'text-cyan-400' : 'text-slate-500'}`} />
+                <ChevronRight className={`w-5 h-5 ${isSelected ? 'text-cyan-400' : 'text-slate-400'}`} />
             </div>
             
             {/* Stats Bar */}
@@ -735,7 +735,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
                                                 }
                                             </div>
                                             {metric.location && (
-                                                <div className="text-xs text-slate-500 mt-1">{metric.location}</div>
+                                                <div className="text-xs text-slate-400 mt-1">{metric.location}</div>
                                             )}
                                         </div>
                                     ))}

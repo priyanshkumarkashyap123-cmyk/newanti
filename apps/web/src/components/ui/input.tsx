@@ -49,7 +49,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                             // Font
                             'font-mono text-zinc-900 dark:text-zinc-100',
                             // Placeholder
-                            'placeholder:text-zinc-400 dark:placeholder:text-zinc-600',
+                            'placeholder:text-zinc-400 dark:placeholder:text-zinc-500',
                             // Focus - enhanced visibility
                             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
                             // Border

@@ -593,7 +593,7 @@ const NodalLoadPanel: React.FC<NodalLoadPanelProps> = ({
                                         Node: {load.nodeId.slice(0, 8)}
                                     </span>
                                     {node && (
-                                        <span className="text-xs text-slate-500">
+                                        <span className="text-xs text-slate-400">
                                             ({node.x.toFixed(1)}, {node.y.toFixed(1)}, {node.z.toFixed(1)})
                                         </span>
                                     )}
@@ -609,7 +609,7 @@ const NodalLoadPanel: React.FC<NodalLoadPanelProps> = ({
                             <div className="grid grid-cols-6 gap-2">
                                 {(['fx', 'fy', 'fz', 'mx', 'my', 'mz'] as const).map(key => (
                                     <div key={key}>
-                                        <label className="text-xs text-slate-500 uppercase">{key}</label>
+                                        <label className="text-xs text-slate-400 uppercase">{key}</label>
                                         <input
                                             type="number"
                                             value={load[key]}
@@ -619,7 +619,7 @@ const NodalLoadPanel: React.FC<NodalLoadPanelProps> = ({
                                     </div>
                                 ))}
                             </div>
-                            <div className="mt-2 text-xs text-slate-500">
+                            <div className="mt-2 text-xs text-slate-400">
                                 Units: Forces (kN), Moments (kN·m) • Negative = downward/clockwise
                             </div>
                         </div>
@@ -627,7 +627,7 @@ const NodalLoadPanel: React.FC<NodalLoadPanelProps> = ({
                 })}
 
                 {loads.length === 0 && (
-                    <div className="text-center py-8 text-slate-500">
+                    <div className="text-center py-8 text-slate-400">
                         No nodal loads defined. Select nodes and click "Add Nodal Load".
                     </div>
                 )}
@@ -704,7 +704,7 @@ const MemberLoadPanel: React.FC<MemberLoadPanelProps> = ({
                 ))}
 
                 {loads.length === 0 && (
-                    <div className="text-center py-8 text-slate-500">
+                    <div className="text-center py-8 text-slate-400">
                         No member loads defined. Select members and choose a load type.
                     </div>
                 )}
@@ -746,7 +746,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                 <div className="flex items-center gap-2">
                     {typeIcons[load.type]}
                     <span className="text-sm font-medium text-white">{typeLabels[load.type]}</span>
-                    <span className="text-xs text-slate-500">on {load.memberId.slice(0, 8)}</span>
+                    <span className="text-xs text-slate-400">on {load.memberId.slice(0, 8)}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <button
@@ -764,7 +764,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                     {load.type === 'uniform' && (
                         <div className="grid grid-cols-4 gap-3">
                             <div>
-                                <label className="text-xs text-slate-500">Intensity (kN/m)</label>
+                                <label className="text-xs text-slate-400">Intensity (kN/m)</label>
                                 <input
                                     type="number"
                                     value={(load as UniformLoad).w}
@@ -773,7 +773,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-500">Start Pos (0-1)</label>
+                                <label className="text-xs text-slate-400">Start Pos (0-1)</label>
                                 <input
                                     type="number"
                                     step="0.1"
@@ -784,7 +784,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-500">End Pos (0-1)</label>
+                                <label className="text-xs text-slate-400">End Pos (0-1)</label>
                                 <input
                                     type="number"
                                     step="0.1"
@@ -795,7 +795,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-500">Direction</label>
+                                <label className="text-xs text-slate-400">Direction</label>
                                 <select
                                     value={(load as UniformLoad).direction}
                                     onChange={(e) => onUpdate({ direction: e.target.value as LoadDirection })}
@@ -812,7 +812,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                     {load.type === 'trapezoidal' && (
                         <div className="grid grid-cols-4 gap-3">
                             <div>
-                                <label className="text-xs text-slate-500">W1 Start (kN/m)</label>
+                                <label className="text-xs text-slate-400">W1 Start (kN/m)</label>
                                 <input
                                     type="number"
                                     value={(load as TrapezoidalLoad).w1}
@@ -821,7 +821,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-500">W2 End (kN/m)</label>
+                                <label className="text-xs text-slate-400">W2 End (kN/m)</label>
                                 <input
                                     type="number"
                                     value={(load as TrapezoidalLoad).w2}
@@ -830,7 +830,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-500">Start Pos</label>
+                                <label className="text-xs text-slate-400">Start Pos</label>
                                 <input
                                     type="number"
                                     step="0.1"
@@ -840,7 +840,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-500">End Pos</label>
+                                <label className="text-xs text-slate-400">End Pos</label>
                                 <input
                                     type="number"
                                     step="0.1"
@@ -855,7 +855,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                     {load.type === 'point' && (
                         <div className="grid grid-cols-3 gap-3">
                             <div>
-                                <label className="text-xs text-slate-500">Load P (kN)</label>
+                                <label className="text-xs text-slate-400">Load P (kN)</label>
                                 <input
                                     type="number"
                                     value={(load as PointLoadOnMember).P}
@@ -864,7 +864,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-500">Position (0-1)</label>
+                                <label className="text-xs text-slate-400">Position (0-1)</label>
                                 <input
                                     type="number"
                                     step="0.1"
@@ -875,7 +875,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-500">Direction</label>
+                                <label className="text-xs text-slate-400">Direction</label>
                                 <select
                                     value={(load as PointLoadOnMember).direction}
                                     onChange={(e) => onUpdate({ direction: e.target.value as LoadDirection })}
@@ -892,7 +892,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                     {load.type === 'moment' && (
                         <div className="grid grid-cols-3 gap-3">
                             <div>
-                                <label className="text-xs text-slate-500">Moment M (kN·m)</label>
+                                <label className="text-xs text-slate-400">Moment M (kN·m)</label>
                                 <input
                                     type="number"
                                     value={(load as MomentOnMember).M}
@@ -901,7 +901,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-500">Position (0-1)</label>
+                                <label className="text-xs text-slate-400">Position (0-1)</label>
                                 <input
                                     type="number"
                                     step="0.1"
@@ -912,7 +912,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-500">About Axis</label>
+                                <label className="text-xs text-slate-400">About Axis</label>
                                 <select
                                     value={(load as MomentOnMember).aboutAxis}
                                     onChange={(e) => onUpdate({ aboutAxis: e.target.value as 'y' | 'z' })}
@@ -950,7 +950,7 @@ const FloorLoadPanel: React.FC<FloorLoadPanelProps> = ({ loads, onAdd, onRemove,
                     <Grid3X3 size={18} className="text-purple-400" />
                     <div>
                         <span className="text-sm text-white">Floor/Area Loads</span>
-                        <p className="text-xs text-slate-500">Auto-distributes to beams using yield line method</p>
+                        <p className="text-xs text-slate-400">Auto-distributes to beams using yield line method</p>
                     </div>
                 </div>
                 <button
@@ -983,7 +983,7 @@ const FloorLoadPanel: React.FC<FloorLoadPanelProps> = ({ loads, onAdd, onRemove,
 
                         <div className="grid grid-cols-3 gap-3 mb-3">
                             <div>
-                                <label className="text-xs text-slate-500">Pressure (kN/m²)</label>
+                                <label className="text-xs text-slate-400">Pressure (kN/m²)</label>
                                 <input
                                     type="number"
                                     value={load.pressure}
@@ -992,7 +992,7 @@ const FloorLoadPanel: React.FC<FloorLoadPanelProps> = ({ loads, onAdd, onRemove,
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-500">Y Level (m)</label>
+                                <label className="text-xs text-slate-400">Y Level (m)</label>
                                 <input
                                     type="number"
                                     value={load.yLevel}
@@ -1001,7 +1001,7 @@ const FloorLoadPanel: React.FC<FloorLoadPanelProps> = ({ loads, onAdd, onRemove,
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-500">Distribution</label>
+                                <label className="text-xs text-slate-400">Distribution</label>
                                 <select
                                     value={load.distributionOverride || 'auto'}
                                     onChange={(e) => onUpdate(load.id, {
@@ -1017,7 +1017,7 @@ const FloorLoadPanel: React.FC<FloorLoadPanelProps> = ({ loads, onAdd, onRemove,
                             </div>
                         </div>
 
-                        <div className="text-xs text-slate-500">
+                        <div className="text-xs text-slate-400">
                             Bounds: X [{load.xMin === -Infinity ? '-∞' : load.xMin} to {load.xMax === Infinity ? '∞' : load.xMax}],
                             Z [{load.zMin === -Infinity ? '-∞' : load.zMin} to {load.zMax === Infinity ? '∞' : load.zMax}]
                         </div>
@@ -1025,7 +1025,7 @@ const FloorLoadPanel: React.FC<FloorLoadPanelProps> = ({ loads, onAdd, onRemove,
                 ))}
 
                 {loads.length === 0 && (
-                    <div className="text-center py-8 text-slate-500">
+                    <div className="text-center py-8 text-slate-400">
                         No floor loads defined. Click "Add Floor Load" to create one.
                     </div>
                 )}
@@ -1056,7 +1056,7 @@ const TemperatureLoadPanel: React.FC<TemperatureLoadPanelProps> = ({
                     <Thermometer size={18} className="text-orange-400" />
                     <div>
                         <span className="text-sm text-white">Temperature Loads</span>
-                        <p className="text-xs text-slate-500">ΔT causes axial strain: ε = α × ΔT</p>
+                        <p className="text-xs text-slate-400">ΔT causes axial strain: ε = α × ΔT</p>
                     </div>
                 </div>
                 {selectedMemberIds.length > 0 && (
@@ -1083,7 +1083,7 @@ const TemperatureLoadPanel: React.FC<TemperatureLoadPanelProps> = ({
 
                         <div className="grid grid-cols-3 gap-3">
                             <div>
-                                <label className="text-xs text-slate-500">ΔT (°C)</label>
+                                <label className="text-xs text-slate-400">ΔT (°C)</label>
                                 <input
                                     type="number"
                                     defaultValue={load.deltaT}
@@ -1091,7 +1091,7 @@ const TemperatureLoadPanel: React.FC<TemperatureLoadPanelProps> = ({
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-500">α (×10⁻⁶/°C)</label>
+                                <label className="text-xs text-slate-400">α (×10⁻⁶/°C)</label>
                                 <input
                                     type="number"
                                     defaultValue={load.alpha * 1e6}
@@ -1099,7 +1099,7 @@ const TemperatureLoadPanel: React.FC<TemperatureLoadPanelProps> = ({
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-500">Gradient ΔT (°C)</label>
+                                <label className="text-xs text-slate-400">Gradient ΔT (°C)</label>
                                 <input
                                     type="number"
                                     defaultValue={load.gradientT || 0}
@@ -1112,7 +1112,7 @@ const TemperatureLoadPanel: React.FC<TemperatureLoadPanelProps> = ({
                 ))}
 
                 {loads.length === 0 && (
-                    <div className="text-center py-8 text-slate-500">
+                    <div className="text-center py-8 text-slate-400">
                         Select members to add temperature loads.
                     </div>
                 )}
@@ -1143,7 +1143,7 @@ const PrestressLoadPanel: React.FC<PrestressLoadPanelProps> = ({
                     <Cable size={18} className="text-cyan-400" />
                     <div>
                         <span className="text-sm text-white">Prestress Loads</span>
-                        <p className="text-xs text-slate-500">Parabolic cable profile with equivalent loads</p>
+                        <p className="text-xs text-slate-400">Parabolic cable profile with equivalent loads</p>
                     </div>
                 </div>
                 {selectedMemberIds.length > 0 && (
@@ -1170,7 +1170,7 @@ const PrestressLoadPanel: React.FC<PrestressLoadPanelProps> = ({
 
                         <div className="grid grid-cols-4 gap-3">
                             <div>
-                                <label className="text-xs text-slate-500">Force P (kN)</label>
+                                <label className="text-xs text-slate-400">Force P (kN)</label>
                                 <input
                                     type="number"
                                     defaultValue={load.P}
@@ -1178,7 +1178,7 @@ const PrestressLoadPanel: React.FC<PrestressLoadPanelProps> = ({
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-500">e_start (m)</label>
+                                <label className="text-xs text-slate-400">e_start (m)</label>
                                 <input
                                     type="number"
                                     step="0.01"
@@ -1187,7 +1187,7 @@ const PrestressLoadPanel: React.FC<PrestressLoadPanelProps> = ({
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-500">e_mid (m)</label>
+                                <label className="text-xs text-slate-400">e_mid (m)</label>
                                 <input
                                     type="number"
                                     step="0.01"
@@ -1196,7 +1196,7 @@ const PrestressLoadPanel: React.FC<PrestressLoadPanelProps> = ({
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-500">e_end (m)</label>
+                                <label className="text-xs text-slate-400">e_end (m)</label>
                                 <input
                                     type="number"
                                     step="0.01"
@@ -1206,14 +1206,14 @@ const PrestressLoadPanel: React.FC<PrestressLoadPanelProps> = ({
                             </div>
                         </div>
 
-                        <div className="mt-2 text-xs text-slate-500">
+                        <div className="mt-2 text-xs text-slate-400">
                             Eccentricity: +ve below centroid, Equivalent UDL = 8Pe/L²
                         </div>
                     </div>
                 ))}
 
                 {loads.length === 0 && (
-                    <div className="text-center py-8 text-slate-500">
+                    <div className="text-center py-8 text-slate-400">
                         Select members to add prestress loads.
                     </div>
                 )}
@@ -1252,7 +1252,7 @@ const CombinationsPanel: React.FC<CombinationsPanelProps> = ({
                     <Layers size={18} className="text-yellow-400" />
                     <div>
                         <span className="text-sm text-white">Load Combinations</span>
-                        <p className="text-xs text-slate-500">IS 456 / IS 1893 factored combinations</p>
+                        <p className="text-xs text-slate-400">IS 456 / IS 1893 factored combinations</p>
                     </div>
                 </div>
                 <button
@@ -1272,7 +1272,7 @@ const CombinationsPanel: React.FC<CombinationsPanelProps> = ({
                     >
                         <div className="flex items-center justify-between mb-2">
                             <span className="text-sm font-medium text-white">{combo.name}</span>
-                            <span className="text-xs text-slate-500">{combo.description}</span>
+                            <span className="text-xs text-slate-400">{combo.description}</span>
                         </div>
 
                         <div className="flex flex-wrap gap-1">

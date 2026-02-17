@@ -52,14 +52,14 @@ export const TermsOfServicePage = () => {
                                 <Shield className="w-5 h-5 text-white" />
                             </div>
                             <span className="text-xl font-bold text-zinc-900 dark:text-white">
-                                BeamLab <span className="text-zinc-500 font-normal">Ultimate</span>
+                                BeamLab <span className="text-zinc-400 font-normal">Ultimate</span>
                             </span>
                         </Link>
 
                         <div className="hidden md:flex items-center gap-8">
                             <nav className="flex gap-6">
-                                <Link to="/" className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors">Features</Link>
-                                <Link to="/pricing" className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors">Pricing</Link>
+                                <Link to="/" className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors">Features</Link>
+                                <Link to="/pricing" className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors">Pricing</Link>
                             </nav>
                             <div className="flex items-center gap-4 border-l border-zinc-200 dark:border-zinc-700 pl-8">
                                 <Link to="/sign-in" className="text-sm font-medium text-zinc-900 dark:text-white">Log in</Link>
@@ -70,7 +70,7 @@ export const TermsOfServicePage = () => {
                         </div>
 
                         <button
-                            className="md:hidden p-2 text-zinc-600 dark:text-zinc-300"
+                            className="md:hidden p-2 text-zinc-500 dark:text-zinc-300"
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                         >
                             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -91,7 +91,7 @@ export const TermsOfServicePage = () => {
                                     onClick={() => scrollToSection(section.id)}
                                     className={`w-full text-left px-4 py-2 text-sm transition-colors ${activeSection === section.id
                                         ? 'text-emerald-600 dark:text-emerald-400 font-semibold border-l-2 border-emerald-500 -ml-px'
-                                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                                        : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                                         }`}
                                 >
                                     {section.number && `${section.number}. `}{section.title}
@@ -100,7 +100,7 @@ export const TermsOfServicePage = () => {
                         </nav>
                         
                         <div className="mt-8 p-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
-                            <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                            <p className="text-xs text-zinc-500 dark:text-zinc-400">
                                 Also see our{' '}
                                 <Link to="/privacy-policy" className="text-emerald-600 dark:text-emerald-400 hover:underline">
                                     Privacy Policy
@@ -115,7 +115,7 @@ export const TermsOfServicePage = () => {
                     <div className="space-y-12">
                         {/* Header */}
                         <div>
-                            <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 mb-4">
+                            <div className="flex items-center gap-2 text-sm text-zinc-400 dark:text-zinc-400 mb-4">
                                 <Link to="/" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Home</Link>
                                 <ChevronRight className="w-4 h-4" />
                                 <span className="text-zinc-900 dark:text-white font-medium">Terms of Service</span>
@@ -127,7 +127,7 @@ export const TermsOfServicePage = () => {
                                 </div>
                                 <div>
                                     <h1 className="text-4xl font-bold text-zinc-900 dark:text-white">Terms of Service</h1>
-                                    <p className="text-zinc-600 dark:text-zinc-400 mt-1">Last updated: January 7, 2026</p>
+                                    <p className="text-zinc-500 dark:text-zinc-400 mt-1">Last updated: January 7, 2026</p>
                                 </div>
                             </div>
 
@@ -475,17 +475,17 @@ export const TermsOfServicePage = () => {
             <footer className="border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 mt-16">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
                             © 2026 BeamLab Ultimate. All rights reserved.
                         </p>
                         <div className="flex gap-6">
-                            <Link to="/privacy-policy" className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
+                            <Link to="/privacy-policy" className="text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
                                 Privacy Policy
                             </Link>
-                            <Link to="/terms-of-service" className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
+                            <Link to="/terms-of-service" className="text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
                                 Terms of Service
                             </Link>
-                            <a href="mailto:legal@beamlabultimate.tech" className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
+                            <a href="mailto:legal@beamlabultimate.tech" className="text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
                                 Contact
                             </a>
                         </div>

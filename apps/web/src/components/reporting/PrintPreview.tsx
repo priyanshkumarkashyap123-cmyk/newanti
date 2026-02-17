@@ -422,7 +422,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                             <div className="grid grid-cols-2 gap-2">
                                 {(['top', 'right', 'bottom', 'left'] as const).map(side => (
                                     <div key={side}>
-                                        <label className="block text-[10px] text-slate-500 mb-0.5 capitalize">{side}</label>
+                                        <label className="block text-[10px] text-slate-400 mb-0.5 capitalize">{side}</label>
                                         <input
                                             type="number"
                                             value={settings.margins[side]}
@@ -579,7 +579,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         {/* Variables Help */}
                         <div className="p-3 bg-slate-800/50 rounded-lg">
                             <div className="text-xs font-medium text-slate-400 mb-2">Available Variables:</div>
-                            <div className="text-xs text-slate-500 space-y-1">
+                            <div className="text-xs text-slate-400 space-y-1">
                                 <div><code className="text-cyan-400">{'{page}'}</code> - Current page</div>
                                 <div><code className="text-cyan-400">{'{pages}'}</code> - Total pages</div>
                                 <div><code className="text-cyan-400">{'{date}'}</code> - Current date</div>

@@ -538,7 +538,7 @@ export const ModalAnalysisPage: React.FC = () => {
                 </h3>
                 <ModeShapeVisualization mode={results.modes[selectedMode - 1]} />
                 <div className="mt-2 text-center">
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs text-slate-400">
                     T = {results.modes[selectedMode - 1]?.period.toFixed(3)}s, 
                     f = {results.modes[selectedMode - 1]?.frequency.toFixed(2)} Hz
                   </span>

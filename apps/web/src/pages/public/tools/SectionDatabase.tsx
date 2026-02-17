@@ -260,7 +260,7 @@ const PropertyRow: FC<PropertyRowProps> = ({ label, value, unit, highlighted, on
         <td className={`py-2 px-3 text-right font-mono ${highlighted ? 'text-yellow-400 font-bold' : 'text-white'}`}>
             {typeof value === 'number' ? value.toLocaleString() : value}
         </td>
-        <td className="py-2 px-3 text-slate-500 text-sm">{unit}</td>
+        <td className="py-2 px-3 text-slate-400 text-sm">{unit}</td>
     </tr>
 );
 
@@ -296,9 +296,9 @@ export const SectionDatabase: FC = () => {
                             </div>
                             <span className="text-white font-bold">BeamLab</span>
                         </Link>
-                        <span className="text-slate-600">/</span>
+                        <span className="text-slate-500">/</span>
                         <Link to="/tools" className="text-slate-400 hover:text-white text-sm">Tools</Link>
-                        <span className="text-slate-600">/</span>
+                        <span className="text-slate-500">/</span>
                         <span className="text-white text-sm font-medium">Section Library</span>
                     </div>
                 </div>
@@ -494,7 +494,7 @@ export const SectionDatabase: FC = () => {
                             </div>
                         </div>
                     ) : (
-                        <div className="lg:col-span-2 flex items-center justify-center text-slate-500">
+                        <div className="lg:col-span-2 flex items-center justify-center text-slate-400">
                             Select a section to view details
                         </div>
                     )}

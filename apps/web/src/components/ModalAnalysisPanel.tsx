@@ -368,7 +368,7 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isPro = false 
             {/* Content */}
             <div className="flex-1 overflow-auto p-3">
                 {modes.length === 0 ? (
-                    <div className="text-center text-zinc-500 py-8">
+                    <div className="text-center text-zinc-400 py-8">
                         <Zap className="w-8 h-8 mx-auto mb-2 opacity-50" />
                         <p className="text-sm">Run modal analysis to see natural frequencies.</p>
                     </div>
@@ -378,15 +378,15 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isPro = false 
                         <div className="grid grid-cols-3 gap-2 mb-4 text-center text-xs">
                             <div className="p-2 bg-zinc-800 rounded border border-zinc-700">
                                 <div className="text-lg font-bold text-blue-400">{modes[0]?.frequency.toFixed(2)}</div>
-                                <div className="text-zinc-500">1st Freq (Hz)</div>
+                                <div className="text-zinc-400">1st Freq (Hz)</div>
                             </div>
                             <div className="p-2 bg-zinc-800 rounded border border-zinc-700">
                                 <div className="text-lg font-bold text-green-400">{modes[0]?.period.toFixed(3)}</div>
-                                <div className="text-zinc-500">1st Period (s)</div>
+                                <div className="text-zinc-400">1st Period (s)</div>
                             </div>
                             <div className="p-2 bg-zinc-800 rounded border border-zinc-700">
                                 <div className="text-lg font-bold text-zinc-200">{modes.length}</div>
-                                <div className="text-zinc-500">Modes</div>
+                                <div className="text-zinc-400">Modes</div>
                             </div>
                         </div>
 
@@ -450,7 +450,7 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isPro = false 
             {/* Footer */}
             {modes.length > 0 && (
                 <div className="p-3 border-t border-zinc-800 bg-zinc-900 flex justify-between items-center text-xs">
-                    <div className="text-zinc-500">
+                    <div className="text-zinc-400">
                         {isAnimating ? `Animating Mode ${activeModeIndex + 1}...` : 'Select a mode to view shape'}
                     </div>
                     <div className="text-zinc-400">

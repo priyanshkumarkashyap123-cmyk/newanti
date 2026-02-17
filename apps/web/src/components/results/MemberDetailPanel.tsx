@@ -291,11 +291,11 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                         { label: 'Torsion', value: memberForces.torsion, unit: 'kN·m', color: 'text-orange-400' },
                     ].map(item => (
                         <div key={item.label} className="bg-zinc-800 rounded-lg p-3 text-center">
-                            <div className="text-xs text-zinc-500 mb-1">{item.label}</div>
+                            <div className="text-xs text-zinc-400 mb-1">{item.label}</div>
                             <div className={`text-lg font-bold font-mono ${item.color}`}>
                                 {item.value.toFixed(2)}
                             </div>
-                            <div className="text-xs text-zinc-600">{item.unit}</div>
+                            <div className="text-xs text-zinc-500">{item.unit}</div>
                         </div>
                     ))}
                 </div>
@@ -327,7 +327,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                             </h3>
                             <button
                                 onClick={() => setShowSectionCut(false)}
-                                className="text-xs text-zinc-500 hover:text-zinc-300"
+                                className="text-xs text-zinc-400 hover:text-zinc-300"
                             >
                                 Hide
                             </button>
@@ -350,7 +350,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                                 onChange={(e) => setSectionCutPosition(parseFloat(e.target.value))}
                                 className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
                             />
-                            <div className="flex justify-between text-xs text-zinc-600 mt-1">
+                            <div className="flex justify-between text-xs text-zinc-500 mt-1">
                                 <span>Start (0)</span>
                                 <span>Mid (L/2)</span>
                                 <span>End (L)</span>
@@ -370,11 +370,11 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                                 { label: 'Deflection Z', value: sectionCutForces.deflectionZ, unit: 'mm', color: 'text-cyan-400' },
                             ].map(item => (
                                 <div key={item.label} className="bg-zinc-900/50 rounded-lg p-3 text-center">
-                                    <div className="text-xs text-zinc-500 mb-1">{item.label}</div>
+                                    <div className="text-xs text-zinc-400 mb-1">{item.label}</div>
                                     <div className={`text-base font-bold font-mono ${item.color}`}>
                                         {item.value.toFixed(3)}
                                     </div>
-                                    <div className="text-xs text-zinc-600">{item.unit}</div>
+                                    <div className="text-xs text-zinc-500">{item.unit}</div>
                                 </div>
                             ))}
                         </div>
@@ -388,7 +388,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                             <h3 className="text-sm font-medium text-zinc-400">Design Checks ({designCode})</h3>
                             <button
                                 onClick={() => setShowDesign(false)}
-                                className="text-xs text-zinc-500 hover:text-zinc-300"
+                                className="text-xs text-zinc-400 hover:text-zinc-300"
                             >
                                 Hide
                             </button>
@@ -409,9 +409,9 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                                                 {check.status}
                                             </span>
                                         </div>
-                                        <div className="text-xs text-zinc-500 mt-1">{check.description}</div>
+                                        <div className="text-xs text-zinc-400 mt-1">{check.description}</div>
                                         {check.formula && (
-                                            <div className="text-xs text-zinc-600 mt-1 font-mono">{check.formula}</div>
+                                            <div className="text-xs text-zinc-500 mt-1 font-mono">{check.formula}</div>
                                         )}
                                     </div>
                                     <div className="flex items-center gap-3 ml-4">
@@ -445,20 +445,20 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                         <h3 className="text-sm font-medium text-zinc-400 mb-3">Reinforcement Design</h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="bg-zinc-900 rounded-lg p-3">
-                                <div className="text-xs text-zinc-500 mb-2">Main Reinforcement</div>
+                                <div className="text-xs text-zinc-400 mb-2">Main Reinforcement</div>
                                 <div className="text-lg font-bold text-blue-400">
                                     {designResult.reinforcement.mainBars.count} × Ø{designResult.reinforcement.mainBars.diameter}
                                 </div>
-                                <div className="text-xs text-zinc-500 mt-1">
+                                <div className="text-xs text-zinc-400 mt-1">
                                     Area: {designResult.reinforcement.mainBars.area.toFixed(0)} mm² ({designResult.reinforcement.mainBars.ratio.toFixed(2)}%)
                                 </div>
                             </div>
                             <div className="bg-zinc-900 rounded-lg p-3">
-                                <div className="text-xs text-zinc-500 mb-2">Stirrups/Ties</div>
+                                <div className="text-xs text-zinc-400 mb-2">Stirrups/Ties</div>
                                 <div className="text-lg font-bold text-purple-400">
                                     Ø{designResult.reinforcement.stirrups.diameter} @ {designResult.reinforcement.stirrups.spacing}mm
                                 </div>
-                                <div className="text-xs text-zinc-500 mt-1">
+                                <div className="text-xs text-zinc-400 mt-1">
                                     {designResult.reinforcement.stirrups.legs}-legged stirrups
                                 </div>
                             </div>

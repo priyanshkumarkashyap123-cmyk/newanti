@@ -140,7 +140,7 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
       {/* Skip Button */}
       <button
         onClick={handleSkip}
-        className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors flex items-center gap-2 text-sm"
+        className="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors flex items-center gap-2 text-sm"
       >
         Skip for now <X className="w-4 h-4" />
       </button>
@@ -203,7 +203,7 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
             disabled={currentStep === 0}
             className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all ${
               currentStep === 0
-                ? 'text-slate-600 cursor-not-allowed'
+                ? 'text-slate-500 cursor-not-allowed'
                 : 'text-slate-300 hover:text-white hover:bg-slate-800'
             }`}
           >
@@ -339,7 +339,7 @@ const ExperienceStep: FC<{
             )}
           </div>
           <p className="text-sm text-slate-400 mb-2">{level.desc}</p>
-          <p className="text-xs text-slate-500">{level.features}</p>
+          <p className="text-xs text-slate-400">{level.features}</p>
         </motion.button>
       ))}
     </div>
@@ -427,7 +427,7 @@ const DesignCodesStep: FC<{
               <CheckCircle2 className="w-4 h-4 text-blue-500" />
             )}
           </div>
-          <p className="text-xs text-slate-500 mt-1">{code.codes}</p>
+          <p className="text-xs text-slate-400 mt-1">{code.codes}</p>
         </motion.button>
       ))}
     </div>
@@ -447,7 +447,7 @@ const ReadyStep: FC = () => (
     
     <div className="space-y-2">
       <p className="text-slate-300">Your workspace is configured and ready.</p>
-      <p className="text-slate-500 text-sm">You can always change these settings later.</p>
+      <p className="text-slate-400 text-sm">You can always change these settings later.</p>
     </div>
 
     <div className="flex flex-wrap justify-center gap-3 pt-4">

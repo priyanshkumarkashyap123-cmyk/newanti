@@ -117,7 +117,7 @@ const MenuItemComponent: FC<MenuItemComponentProps> = memo(({
   // Header
   if (item.type === 'header') {
     return (
-      <div className="px-3 py-1.5 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
+      <div className="px-3 py-1.5 text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">
         {item.label}
       </div>
     );
@@ -194,14 +194,14 @@ const MenuItemComponent: FC<MenuItemComponentProps> = memo(({
 
       {/* Shortcut */}
       {item.shortcut && (
-        <span className="text-[10px] text-zinc-500 ml-4">
+        <span className="text-[10px] text-zinc-400 ml-4">
           {item.shortcut}
         </span>
       )}
 
       {/* Submenu Arrow */}
       {hasSubmenu && (
-        <ChevronRight className="w-3 h-3 text-zinc-500" />
+        <ChevronRight className="w-3 h-3 text-zinc-400" />
       )}
     </div>
   );

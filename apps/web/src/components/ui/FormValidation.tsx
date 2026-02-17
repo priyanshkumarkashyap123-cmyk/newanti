@@ -119,7 +119,7 @@ export const ValidatedInput: FC<ValidatedInputProps> = ({
                     {required && <span className="sr-only">(required)</span>}
                 </label>
                 {hint && (
-                    <span className="text-xs text-slate-500 flex items-center gap-1">
+                    <span className="text-xs text-slate-400 flex items-center gap-1">
                         <Info className="w-3 h-3" aria-hidden="true" />
                         {hint}
                     </span>
@@ -142,7 +142,7 @@ export const ValidatedInput: FC<ValidatedInputProps> = ({
                     className={`
                         w-full px-4 py-3 pr-12
                         bg-slate-800 rounded-lg
-                        text-white placeholder:text-slate-500
+                        text-white placeholder:text-slate-400
                         border-2 transition-colors duration-200
                         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-950 focus:ring-blue-500
                         disabled:opacity-50 disabled:cursor-not-allowed
@@ -156,7 +156,7 @@ export const ValidatedInput: FC<ValidatedInputProps> = ({
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="text-slate-500 hover:text-slate-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+                            className="text-slate-400 hover:text-slate-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
                             aria-label={showPassword ? 'Hide password' : 'Show password'}
                             aria-pressed={showPassword}
                         >

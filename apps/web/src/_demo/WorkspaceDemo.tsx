@@ -76,15 +76,15 @@ export const WorkspaceDemo: FC = () => {
                                         <div className="text-xs text-zinc-400 mb-2">Properties</div>
                                         <div className="space-y-1 text-xs font-mono">
                                             <div className="flex justify-between">
-                                                <span className="text-zinc-500">A:</span>
+                                                <span className="text-zinc-400">A:</span>
                                                 <span className="text-white">7.65 in²</span>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span className="text-zinc-500">I<sub>x</sub>:</span>
+                                                <span className="text-zinc-400">I<sub>x</sub>:</span>
                                                 <span className="text-white">204 in⁴</span>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span className="text-zinc-500">S<sub>x</sub>:</span>
+                                                <span className="text-zinc-400">S<sub>x</sub>:</span>
                                                 <span className="text-white">33.4 in³</span>
                                             </div>
                                         </div>
@@ -109,7 +109,7 @@ export const WorkspaceDemo: FC = () => {
                                     </div>
                                     <div className="flex items-center justify-between text-xs">
                                         <span className="text-zinc-300">EQ (Earthquake)</span>
-                                        <span className="text-zinc-500">Inactive</span>
+                                        <span className="text-zinc-400">Inactive</span>
                                     </div>
                                 </div>
                             ),
@@ -155,7 +155,7 @@ export const WorkspaceDemo: FC = () => {
                                                 accessor: 'fx',
                                                 header: 'FX (kN)',
                                                 cell: ({ row }: any) => (
-                                                    <span className={row.original.fx === 0 ? 'text-zinc-600' : 'text-white'}>
+                                                    <span className={row.original.fx === 0 ? 'text-zinc-500' : 'text-white'}>
                                                         {row.original.fx.toFixed(1)}
                                                     </span>
                                                 ),
@@ -171,7 +171,7 @@ export const WorkspaceDemo: FC = () => {
                                                 accessor: 'fz',
                                                 header: 'FZ (kN)',
                                                 cell: ({ row }: any) => (
-                                                    <span className={row.original.fz === 0 ? 'text-zinc-600' : 'text-white'}>
+                                                    <span className={row.original.fz === 0 ? 'text-zinc-500' : 'text-white'}>
                                                         {row.original.fz.toFixed(1)}
                                                     </span>
                                                 ),
@@ -234,7 +234,7 @@ export const WorkspaceDemo: FC = () => {
                             id: 'report',
                             label: 'Report',
                             content: (
-                                <div className="p-4 text-center text-zinc-500">
+                                <div className="p-4 text-center text-zinc-400">
                                     <div className="flex flex-col items-center gap-3">
                                         <span className="material-symbols-outlined text-5xl text-zinc-700">description</span>
                                         <p className="text-sm">Report generation coming soon</p>
@@ -266,7 +266,7 @@ export const WorkspaceDemo: FC = () => {
                         <h2 className="text-2xl font-bold tracking-tight text-zinc-400 mb-2">
                             3D Viewport Ready
                         </h2>
-                        <p className="text-sm text-zinc-600 max-w-md">
+                        <p className="text-sm text-zinc-500 max-w-md">
                             The workspace layout is complete. Integrate your Three.js canvas here to display the structural model.
                         </p>
                         <Link
@@ -278,7 +278,7 @@ export const WorkspaceDemo: FC = () => {
                     </div>
                     <button
                         onClick={() => setShowTutorial(true)}
-                        className="text-xs text-zinc-500 hover:text-zinc-300 underline"
+                        className="text-xs text-zinc-400 hover:text-zinc-300 underline"
                     >
                         Show Tutorial Modal
                     </button>

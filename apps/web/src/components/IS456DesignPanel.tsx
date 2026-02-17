@@ -201,19 +201,19 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({ isPro = false }) =
             <div className="grid grid-cols-4 gap-4 p-4 border-b border-zinc-800">
                 <div className="text-center">
                     <div className="text-2xl font-bold text-white">{summary.total}</div>
-                    <div className="text-xs text-zinc-500">Total</div>
+                    <div className="text-xs text-zinc-400">Total</div>
                 </div>
                 <div className="text-center">
                     <div className="text-2xl font-bold text-green-400">{summary.passing}</div>
-                    <div className="text-xs text-zinc-500">Passing</div>
+                    <div className="text-xs text-zinc-400">Passing</div>
                 </div>
                 <div className="text-center">
                     <div className="text-2xl font-bold text-yellow-400">{summary.warnings}</div>
-                    <div className="text-xs text-zinc-500">Warnings</div>
+                    <div className="text-xs text-zinc-400">Warnings</div>
                 </div>
                 <div className="text-center">
                     <div className="text-2xl font-bold text-red-400">{summary.failing}</div>
-                    <div className="text-xs text-zinc-500">Failing</div>
+                    <div className="text-xs text-zinc-400">Failing</div>
                 </div>
             </div>
 
@@ -238,7 +238,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({ isPro = false }) =
                                     }`}>
                                     {(result.overallRatio * 100).toFixed(0)}%
                                 </span>
-                                <ChevronDown className="w-4 h-4 text-zinc-500 group-open:rotate-180 transition-transform" />
+                                <ChevronDown className="w-4 h-4 text-zinc-400 group-open:rotate-180 transition-transform" />
                             </div>
                         </summary>
                         <div className="px-4 pb-4 space-y-2">
@@ -246,7 +246,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({ isPro = false }) =
                             <div className="grid grid-cols-2 gap-4 mb-4 p-2 bg-zinc-800/50 rounded text-xs border border-zinc-700">
                                 {Object.entries(result.details || {}).map(([key, value]) => (
                                     <div key={key}>
-                                        <div className="text-zinc-500 capitalize">{key.replace('_', ' ')}</div>
+                                        <div className="text-zinc-400 capitalize">{key.replace('_', ' ')}</div>
                                         <div className="text-white font-mono">{String(value)}</div>
                                     </div>
                                 ))}
@@ -256,7 +256,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({ isPro = false }) =
                                 <div key={i} className="flex items-center justify-between text-sm py-2 border-t border-zinc-800/50">
                                     <span className="text-zinc-400">{check.name}</span>
                                     <div className="flex items-center gap-4">
-                                        <span className="text-zinc-500">
+                                        <span className="text-zinc-400">
                                             {check.demand.toFixed(1)} / {check.capacity.toFixed(1)} {check.unit}
                                         </span>
                                         <span className={`w-16 text-right font-medium ${check.status === 'pass' ? 'text-green-400' :
@@ -271,7 +271,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({ isPro = false }) =
                     </details>
                 ))}
                 {designResults.length === 0 && !isLoading && (
-                    <div className="p-8 text-center text-zinc-500 text-sm">
+                    <div className="p-8 text-center text-zinc-400 text-sm">
                         Click "Run Check" to verify member capacities
                     </div>
                 )}

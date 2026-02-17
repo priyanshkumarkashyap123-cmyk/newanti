@@ -88,4 +88,4 @@ export {
 // UI COMPONENTS
 // =============================================================================
 
-// BridgeDesigner export temporarily disabled
+export { BridgeDesigner } from './BridgeDesigner';

@@ -170,7 +170,7 @@ const StepIndicator: React.FC<{
               className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold transition-all ${
                 step.isComplete ? 'bg-emerald-500 text-white' :
                 step.isActive ? 'bg-blue-600 text-white ring-4 ring-blue-500/30' :
-                'bg-zinc-800 text-zinc-500 group-hover:bg-zinc-700'
+                'bg-zinc-800 text-zinc-400 group-hover:bg-zinc-700'
               }`}
               animate={step.isActive ? { scale: [1, 1.1, 1] } : {}}
               transition={{ duration: 0.5, repeat: step.isActive ? Infinity : 0, repeatDelay: 2 }}
@@ -181,7 +181,7 @@ const StepIndicator: React.FC<{
               <p className={`text-sm font-medium ${step.isActive ? 'text-white' : 'text-zinc-400'}`}>
                 {step.title}
               </p>
-              <p className="text-xs text-zinc-600 hidden md:block">{step.description}</p>
+              <p className="text-xs text-zinc-500 hidden md:block">{step.description}</p>
             </div>
           </button>
           
@@ -228,7 +228,7 @@ const DesignCheckItem: React.FC<{
           <span className={`text-${config.color}-400`}>{config.icon}</span>
           <div>
             <h4 className="font-medium text-white">{check.name}</h4>
-            <p className="text-xs text-zinc-500">{check.description}</p>
+            <p className="text-xs text-zinc-400">{check.description}</p>
           </div>
         </div>
         <span className={`px-2 py-1 text-xs font-bold rounded-lg bg-${config.color}-500/20 text-${config.color}-400`}>
@@ -238,15 +238,15 @@ const DesignCheckItem: React.FC<{
       
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
-          <span className="text-zinc-500">Required</span>
+          <span className="text-zinc-400">Required</span>
           <span className="text-white font-mono">{check.required.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-zinc-500">Provided</span>
+          <span className="text-zinc-400">Provided</span>
           <span className="text-white font-mono">{check.provided.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-sm items-center">
-          <span className="text-zinc-500">Utilization</span>
+          <span className="text-zinc-400">Utilization</span>
           <div className="flex items-center gap-2">
             <div className="w-24 h-2 bg-zinc-800 rounded-full overflow-hidden">
               <motion.div
@@ -261,7 +261,7 @@ const DesignCheckItem: React.FC<{
             </span>
           </div>
         </div>
-        <p className="text-xs text-zinc-600 pt-1 border-t border-zinc-800">
+        <p className="text-xs text-zinc-500 pt-1 border-t border-zinc-800">
           Reference: {check.code}
         </p>
       </div>
@@ -739,7 +739,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
                       <p className={`font-medium ${selectedCode === code.code ? 'text-white' : 'text-zinc-300'}`}>
                         {code.name}
                       </p>
-                      <p className="text-xs text-zinc-500">{code.country}</p>
+                      <p className="text-xs text-zinc-400">{code.country}</p>
                     </div>
                   </button>
                 ))}
@@ -813,7 +813,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
                     <p className={`font-bold ${material.grade === grade ? 'text-blue-400' : 'text-white'}`}>
                       {grade}
                     </p>
-                    <p className="text-xs text-zinc-500">fck = {fck} MPa</p>
+                    <p className="text-xs text-zinc-400">fck = {fck} MPa</p>
                   </button>
                 ))}
               </div>
@@ -835,7 +835,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
                     <p className={`font-bold ${material.fy === fy ? 'text-purple-400' : 'text-white'}`}>
                       {grade}
                     </p>
-                    <p className="text-xs text-zinc-500">fy = {fy} MPa</p>
+                    <p className="text-xs text-zinc-400">fy = {fy} MPa</p>
                   </button>
                 ))}
               </div>
@@ -845,15 +845,15 @@ export const AdvancedMemberDesignWizard: React.FC<{
               <h4 className="font-medium text-white mb-3">Material Summary</h4>
               <div className="grid grid-cols-3 gap-4 text-sm">
                 <div>
-                  <span className="text-zinc-500">Concrete:</span>
+                  <span className="text-zinc-400">Concrete:</span>
                   <p className="text-white font-mono">{material.grade} (fck = {material.fck} MPa)</p>
                 </div>
                 <div>
-                  <span className="text-zinc-500">Steel:</span>
+                  <span className="text-zinc-400">Steel:</span>
                   <p className="text-white font-mono">fy = {material.fy} MPa</p>
                 </div>
                 <div>
-                  <span className="text-zinc-500">Elastic Modulus:</span>
+                  <span className="text-zinc-400">Elastic Modulus:</span>
                   <p className="text-white font-mono">E = {5000 * Math.sqrt(material.fck || 30)} MPa</p>
                 </div>
               </div>
@@ -963,7 +963,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
               <div className="flex flex-col items-center justify-center py-12">
                 <RefreshCw className="w-12 h-12 text-blue-400 animate-spin mb-4" />
                 <p className="text-lg font-medium text-white">Running Design Calculations...</p>
-                <p className="text-sm text-zinc-500">Checking per {selectedCode}</p>
+                <p className="text-sm text-zinc-400">Checking per {selectedCode}</p>
               </div>
             ) : designChecks.length > 0 ? (
               <div className="grid grid-cols-2 gap-4">
@@ -973,9 +973,9 @@ export const AdvancedMemberDesignWizard: React.FC<{
               </div>
             ) : (
               <div className="text-center py-12">
-                <Target className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
+                <Target className="w-12 h-12 text-zinc-500 mx-auto mb-4" />
                 <p className="text-lg font-medium text-white mb-2">Ready to Design</p>
-                <p className="text-sm text-zinc-500 mb-6">Click the button below to run design checks</p>
+                <p className="text-sm text-zinc-400 mb-6">Click the button below to run design checks</p>
                 <button
                   onClick={runDesign}
                   className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl transition-colors"
@@ -1071,7 +1071,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
           </div>
           Advanced Member Design Wizard
         </h2>
-        <p className="text-zinc-500 mt-1">Intelligent step-by-step structural member design</p>
+        <p className="text-zinc-400 mt-1">Intelligent step-by-step structural member design</p>
       </div>
       
       {/* Step Indicator */}

@@ -80,7 +80,7 @@ export const PINNPanel: FC = () => {
                 </div>
                 <div>
                     <h2 className="text-sm font-bold text-white">AI Physics Engine</h2>
-                    <p className="text-xs text-zinc-500">Train Neural Networks to solve beams</p>
+                    <p className="text-xs text-zinc-400">Train Neural Networks to solve beams</p>
                 </div>
             </div>
 
@@ -90,7 +90,7 @@ export const PINNPanel: FC = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                        <label className="text-[10px] text-zinc-500">Length (m)</label>
+                        <label className="text-[10px] text-zinc-400">Length (m)</label>
                         <input
                             type="number"
                             className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-xs text-white"
@@ -99,7 +99,7 @@ export const PINNPanel: FC = () => {
                         />
                     </div>
                     <div className="space-y-1">
-                        <label className="text-[10px] text-zinc-500">Load (N/m)</label>
+                        <label className="text-[10px] text-zinc-400">Load (N/m)</label>
                         <input
                             type="number"
                             className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-xs text-white"
@@ -110,7 +110,7 @@ export const PINNPanel: FC = () => {
                 </div>
 
                 <div className="space-y-1">
-                    <label className="text-[10px] text-zinc-500">Training Epochs (Complexity)</label>
+                    <label className="text-[10px] text-zinc-400">Training Epochs (Complexity)</label>
                     <input
                         type="range"
                         min="500" max="5000" step="500"
@@ -118,7 +118,7 @@ export const PINNPanel: FC = () => {
                         value={epochs}
                         onChange={(e) => setEpochs(Number(e.target.value))}
                     />
-                    <div className="flex justify-between text-[10px] text-zinc-600">
+                    <div className="flex justify-between text-[10px] text-zinc-500">
                         <span>Fast (500)</span>
                         <span className="text-purple-400">{epochs}</span>
                         <span>Accurate (5000)</span>
@@ -129,7 +129,7 @@ export const PINNPanel: FC = () => {
                     onClick={startTraining}
                     disabled={training}
                     className={`w-full py-2 rounded text-xs font-bold flex items-center justify-center gap-2 transition-all ${training
-                            ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                            ? 'bg-zinc-800 text-zinc-400 cursor-not-allowed'
                             : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-900/20'
                         }`}
                 >
@@ -154,7 +154,7 @@ export const PINNPanel: FC = () => {
                         <CheckCircle className="w-4 h-4 text-green-400" />
                         <div>
                             <div className="text-xs font-bold text-green-400">Model Trained Successfully</div>
-                            <div className="text-[10px] text-zinc-500">ID: {modelId}</div>
+                            <div className="text-[10px] text-zinc-400">ID: {modelId}</div>
                         </div>
                     </div>
 
@@ -166,19 +166,19 @@ export const PINNPanel: FC = () => {
                             </h3>
                             <div className="grid grid-cols-2 gap-2 text-xs">
                                 <div className="p-2 bg-zinc-900 rounded border border-zinc-800 text-center">
-                                    <div className="text-zinc-500 text-[10px]">Max Deflection</div>
+                                    <div className="text-zinc-400 text-[10px]">Max Deflection</div>
                                     <div className="font-mono text-purple-400 text-sm">
                                         {(prediction.max_deflection * 1000).toFixed(2)} mm
                                     </div>
                                 </div>
                                 <div className="p-2 bg-zinc-900 rounded border border-zinc-800 text-center">
-                                    <div className="text-zinc-500 text-[10px]">Inference Time</div>
+                                    <div className="text-zinc-400 text-[10px]">Inference Time</div>
                                     <div className="font-mono text-blue-400 text-sm">
                                         {prediction.inference_time_ms.toFixed(3)} ms
                                     </div>
                                 </div>
                             </div>
-                            <p className="text-[10px] text-zinc-500 italic mt-2">
+                            <p className="text-[10px] text-zinc-400 italic mt-2">
                                 * This result was predicted by a 3-layer neural network, not FEM.
                             </p>
                         </div>

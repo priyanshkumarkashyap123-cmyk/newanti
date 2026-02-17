@@ -287,7 +287,7 @@ const ProgressRing: React.FC<{
       {showValue && (
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-lg font-bold text-white">{Math.round(percentage)}%</span>
-          {label && <span className="text-xs text-zinc-500">{label}</span>}
+          {label && <span className="text-xs text-zinc-400">{label}</span>}
         </div>
       )}
     </div>
@@ -403,7 +403,7 @@ const SummaryCard: React.FC<{
       </div>
       
       <div className="space-y-1">
-        <p className="text-xs text-zinc-500 uppercase tracking-wider">{title}</p>
+        <p className="text-xs text-zinc-400 uppercase tracking-wider">{title}</p>
         <p className="text-2xl font-bold text-white">{value}</p>
         {subtitle && <p className="text-xs text-zinc-400">{subtitle}</p>}
       </div>
@@ -475,13 +475,13 @@ const MemberUtilizationTable: React.FC<{
           Member Utilization
         </h3>
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
           <input
             type="text"
             placeholder="Search members..."
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="pl-9 pr-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"
+            className="pl-9 pr-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"
           />
         </div>
       </div>
@@ -588,14 +588,14 @@ const ModalAnalysisChart: React.FC<{
           <Waves className="w-4 h-4 text-purple-400" />
           Modal Analysis Results
         </h3>
-        <div className="text-xs text-zinc-500">
+        <div className="text-xs text-zinc-400">
           {modes.length} modes extracted
         </div>
       </div>
       
       {/* Frequency Chart */}
       <div className="mb-6">
-        <p className="text-xs text-zinc-500 mb-2">Natural Frequencies (Hz)</p>
+        <p className="text-xs text-zinc-400 mb-2">Natural Frequencies (Hz)</p>
         <div className="flex items-end gap-2 h-32">
           {modes.slice(0, 8).map((mode, i) => (
             <motion.div
@@ -612,7 +612,7 @@ const ModalAnalysisChart: React.FC<{
                 animate={{ height: `${(mode.frequency / Math.max(...modes.map(m => m.frequency))) * 100}px` }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
               />
-              <span className="text-xs text-zinc-500">M{mode.mode}</span>
+              <span className="text-xs text-zinc-400">M{mode.mode}</span>
             </motion.div>
           ))}
         </div>
@@ -620,7 +620,7 @@ const ModalAnalysisChart: React.FC<{
       
       {/* Mass Participation */}
       <div>
-        <p className="text-xs text-zinc-500 mb-3">Cumulative Mass Participation</p>
+        <p className="text-xs text-zinc-400 mb-3">Cumulative Mass Participation</p>
         <div className="space-y-3">
           {['X', 'Y', 'Z'].map((dir, i) => {
             const key = `cumulative${dir}` as keyof ModalResult;
@@ -665,15 +665,15 @@ const ModalAnalysisChart: React.FC<{
             <p className="text-sm font-medium text-purple-400 mb-2">Mode {selectedMode}</p>
             <div className="grid grid-cols-3 gap-4 text-xs">
               <div>
-                <span className="text-zinc-500">Frequency</span>
+                <span className="text-zinc-400">Frequency</span>
                 <p className="text-white font-mono">{modes[selectedMode - 1]?.frequency.toFixed(2)} Hz</p>
               </div>
               <div>
-                <span className="text-zinc-500">Period</span>
+                <span className="text-zinc-400">Period</span>
                 <p className="text-white font-mono">{modes[selectedMode - 1]?.period.toFixed(3)} s</p>
               </div>
               <div>
-                <span className="text-zinc-500">Max Participation</span>
+                <span className="text-zinc-400">Max Participation</span>
                 <p className="text-white font-mono">
                   {(Math.max(
                     modes[selectedMode - 1]?.massParticipationX || 0,
@@ -741,15 +741,15 @@ const LoadCombinationSummary: React.FC<{
             
             <div className="grid grid-cols-3 gap-4 text-xs">
               <div>
-                <span className="text-zinc-500">Max Disp.</span>
+                <span className="text-zinc-400">Max Disp.</span>
                 <p className="text-white font-mono">{combo.maxDisplacement.toFixed(2)} mm</p>
               </div>
               <div>
-                <span className="text-zinc-500">Max Stress</span>
+                <span className="text-zinc-400">Max Stress</span>
                 <p className="text-white font-mono">{combo.maxStress.toFixed(1)} MPa</p>
               </div>
               <div>
-                <span className="text-zinc-500">Utilization</span>
+                <span className="text-zinc-400">Utilization</span>
                 <p className={`font-mono ${
                   combo.maxUtilization >= 0.9 ? 'text-red-400' :
                   combo.maxUtilization >= 0.7 ? 'text-amber-400' : 'text-emerald-400'
@@ -914,7 +914,7 @@ export const InteractiveResultsDashboard: React.FC<{
             <BarChart3 className="w-7 h-7 text-blue-400" />
             Analysis Results Dashboard
           </h2>
-          <p className="text-zinc-500 mt-1">
+          <p className="text-zinc-400 mt-1">
             Comprehensive structural analysis results • Last updated: {new Date().toLocaleString()}
           </p>
         </div>
@@ -1037,7 +1037,7 @@ export const InteractiveResultsDashboard: React.FC<{
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <p className="text-xs text-zinc-500 mb-2">Shear Force Diagram</p>
+            <p className="text-xs text-zinc-400 mb-2">Shear Force Diagram</p>
             <ForceDiagram
               data={[
                 { position: 0, value: 60 },
@@ -1054,7 +1054,7 @@ export const InteractiveResultsDashboard: React.FC<{
             />
           </div>
           <div>
-            <p className="text-xs text-zinc-500 mb-2">Bending Moment Diagram</p>
+            <p className="text-xs text-zinc-400 mb-2">Bending Moment Diagram</p>
             <ForceDiagram
               data={[
                 { position: 0, value: 0 },
@@ -1071,7 +1071,7 @@ export const InteractiveResultsDashboard: React.FC<{
             />
           </div>
           <div>
-            <p className="text-xs text-zinc-500 mb-2">Axial Force Diagram</p>
+            <p className="text-xs text-zinc-400 mb-2">Axial Force Diagram</p>
             <ForceDiagram
               data={[
                 { position: 0, value: 15 },

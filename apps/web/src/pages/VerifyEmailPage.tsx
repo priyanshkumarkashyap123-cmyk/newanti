@@ -173,7 +173,7 @@ export const VerifyEmailPage: React.FC = () => {
 
                 {/* Support Link */}
                 <div className="mt-6 pt-6 border-t border-white/10 text-center">
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-400">
                         Need help?{' '}
                         <a href="/help" className="text-purple-400 hover:text-purple-300">
                             Contact Support

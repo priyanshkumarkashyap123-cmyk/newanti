@@ -556,7 +556,7 @@ const QuickAccessToolbar: FC<{
           className={`
             p-1.5 rounded transition-all
             ${tool.disabled 
-              ? 'opacity-30 cursor-not-allowed text-zinc-500' 
+              ? 'opacity-30 cursor-not-allowed text-zinc-400' 
               : 'hover:bg-zinc-700 text-zinc-400 hover:text-white'}
             ${tool.highlight ? 'text-blue-400 animate-pulse' : ''}
           `}
@@ -673,7 +673,7 @@ const ToolButton: FC<ToolButtonProps> = ({
               flex items-center justify-center w-full h-3 rounded-b
               ${isActive 
                 ? 'bg-blue-600/20 text-blue-400' 
-                : 'hover:bg-zinc-700/50 text-zinc-500 hover:text-zinc-300'}
+                : 'hover:bg-zinc-700/50 text-zinc-400 hover:text-zinc-300'}
               transition-colors
             `}
           >
@@ -718,15 +718,15 @@ const ToolButton: FC<ToolButtonProps> = ({
                   className={`
                     w-full flex items-center gap-3 px-3 py-2 text-sm
                     ${item.disabled 
-                      ? 'opacity-40 cursor-not-allowed text-zinc-500' 
+                      ? 'opacity-40 cursor-not-allowed text-zinc-400' 
                       : 'hover:bg-zinc-700 text-zinc-300 hover:text-white'}
                     transition-colors
                   `}
                 >
-                  <item.icon className="w-4 h-4 text-zinc-500" />
+                  <item.icon className="w-4 h-4 text-zinc-400" />
                   <span className="flex-1 text-left">{item.label}</span>
                   {item.shortcut && (
-                    <span className="text-[10px] text-zinc-500">{item.shortcut}</span>
+                    <span className="text-[10px] text-zinc-400">{item.shortcut}</span>
                   )}
                 </button>
               </div>
@@ -766,7 +766,7 @@ const ToolGroupComponent: FC<ToolGroupComponentProps> = ({ group, activeTool, on
       </div>
       
       {/* Group Label */}
-      <div className="text-[9px] text-zinc-500 text-center uppercase tracking-wider mt-auto pt-1 select-none">
+      <div className="text-[9px] text-zinc-400 text-center uppercase tracking-wider mt-auto pt-1 select-none">
         {group.label}
       </div>
     </div>
@@ -859,9 +859,9 @@ export const ProfessionalRibbon: FC<ProfessionalRibbonProps> = ({
           >
             <Search className="w-3 h-3" />
             <span>Search</span>
-            <span className="text-zinc-600">Ctrl+K</span>
+            <span className="text-zinc-500">Ctrl+K</span>
           </button>
-          <button className="p-1.5 rounded hover:bg-zinc-800 text-zinc-500 transition-colors">
+          <button className="p-1.5 rounded hover:bg-zinc-800 text-zinc-400 transition-colors">
             <HelpCircle className="w-4 h-4" />
           </button>
         </div>
@@ -896,7 +896,7 @@ export const ProfessionalRibbon: FC<ProfessionalRibbonProps> = ({
         <div className="ml-auto flex items-center">
           <button
             onClick={() => handleCollapsedChange(!collapsed)}
-            className="p-1 rounded hover:bg-zinc-700 text-zinc-500 hover:text-zinc-300 transition-colors"
+            className="p-1 rounded hover:bg-zinc-700 text-zinc-400 hover:text-zinc-300 transition-colors"
             title={collapsed ? 'Expand Ribbon' : 'Collapse Ribbon'}
           >
             <ChevronDown className={`w-4 h-4 transition-transform ${collapsed ? 'rotate-180' : ''}`} />

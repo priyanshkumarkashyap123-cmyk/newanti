@@ -263,7 +263,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ selected, onSelect 
                     </div>
                     <h4 className="font-medium text-white text-sm mb-1">{template.name}</h4>
                     <p className="text-xs text-slate-400 line-clamp-2">{template.description}</p>
-                    <div className="mt-2 text-xs text-slate-500">
+                    <div className="mt-2 text-xs text-slate-400">
                         ~{template.estimatedPages} pages
                     </div>
                 </button>
@@ -329,7 +329,7 @@ const SectionConfigurator: React.FC<SectionConfiguratorProps> = ({
                     >
                         Select All
                     </button>
-                    <span className="text-slate-600">|</span>
+                    <span className="text-slate-500">|</span>
                     <button
                         onClick={selectNone}
                         className="text-xs text-slate-400 hover:text-slate-300"
@@ -358,7 +358,7 @@ const SectionConfigurator: React.FC<SectionConfiguratorProps> = ({
                                     w-5 h-5 rounded flex items-center justify-center mr-3 transition-colors
                                     ${section.included 
                                         ? 'bg-cyan-500 text-white' 
-                                        : 'bg-slate-700 text-slate-500'
+                                        : 'bg-slate-700 text-slate-400'
                                     }
                                 `}
                             >

@@ -209,7 +209,7 @@ export const AboutPage: FC = () => {
                             >
                                 <div className="aspect-square bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl mb-4 overflow-hidden relative border border-slate-800 group-hover:border-blue-500/30 transition-colors">
                                     <div className="absolute inset-0 flex items-center justify-center">
-                                        <Users className="w-16 h-16 text-slate-700 group-hover:text-slate-600 transition-colors" />
+                                        <Users className="w-16 h-16 text-slate-700 group-hover:text-slate-500 transition-colors" />
                                     </div>
                                 </div>
                                 <h3 className="text-lg font-bold text-white">Rakshit Tiwari</h3>
@@ -250,7 +250,7 @@ export const AboutPage: FC = () => {
             </main>
 
             {/* Footer */}
-            <footer className="border-t border-slate-800 bg-slate-950 py-8 text-center text-sm text-slate-500">
+            <footer className="border-t border-slate-800 bg-slate-950 py-8 text-center text-sm text-slate-400">
                 <p>© 2026 BeamLab Ultimate. All rights reserved.</p>
             </footer>
         </div>

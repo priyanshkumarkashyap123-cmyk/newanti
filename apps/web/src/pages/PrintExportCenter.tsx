@@ -358,7 +358,7 @@ const PrintExportCenter: React.FC = () => {
                           {(allSelected || someSelected) && <Check className="w-3 h-3 text-white" />}
                         </div>
                         <span className="text-white font-medium">{category}</span>
-                        <span className="text-slate-500 text-sm ml-auto">
+                        <span className="text-slate-400 text-sm ml-auto">
                           {items.filter(i => i.selected).length}/{items.length}
                         </span>
                       </button>
@@ -383,7 +383,7 @@ const PrintExportCenter: React.FC = () => {
                               <span className={`flex-1 text-left text-sm ${item.selected ? 'text-white' : 'text-slate-400'}`}>
                                 {item.name}
                               </span>
-                              <span className="text-slate-500 text-xs">{item.pages}p</span>
+                              <span className="text-slate-400 text-xs">{item.pages}p</span>
                               {item.status === 'complete' && (
                                 <CheckCircle className="w-4 h-4 text-green-400" />
                               )}
@@ -572,7 +572,7 @@ const PrintExportCenter: React.FC = () => {
                     >
                       <format.icon className={`w-8 h-8 ${format.color} mx-auto mb-2`} />
                       <p className="text-white text-sm font-medium">{format.name}</p>
-                      <p className="text-slate-500 text-xs">{format.ext}</p>
+                      <p className="text-slate-400 text-xs">{format.ext}</p>
                     </button>
                   ))}
                 </div>
@@ -671,7 +671,7 @@ const PrintExportCenter: React.FC = () => {
                       </div>
                       <p className="text-slate-400 text-sm mb-3">{template.description}</p>
                       <div className="flex items-center justify-between">
-                        <span className="text-slate-500 text-sm">{template.items.length} items</span>
+                        <span className="text-slate-400 text-sm">{template.items.length} items</span>
                         <button
                           onClick={() => applyTemplate(template)}
                           className="px-3 py-1 bg-orange-600 hover:bg-orange-500 text-white text-sm rounded transition-colors"

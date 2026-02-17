@@ -247,7 +247,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <div className="flex justify-between text-xs text-slate-500 mt-2">
+            <div className="flex justify-between text-xs text-slate-400 mt-2">
               <span>Sensitivity analysis</span>
               <span>Gradient calculation</span>
               <span>Optimization step</span>
@@ -309,7 +309,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                             <span className="text-slate-400 text-sm">#{index + 1}</span>
                             <div>
                               <p className="text-white font-medium">{result.variableName}</p>
-                              <p className="text-slate-500 text-sm">{variable.members.join(', ')}</p>
+                              <p className="text-slate-400 text-sm">{variable.members.join(', ')}</p>
                             </div>
                           </div>
                           <span className={`px-3 py-1 rounded-full text-sm ${getImpactColor(result.impact)}`}>
@@ -319,19 +319,19 @@ const SensitivityOptimizationDashboard: React.FC = () => {
 
                         <div className="grid grid-cols-4 gap-4">
                           <div>
-                            <p className="text-slate-500 text-xs mb-1">Current</p>
+                            <p className="text-slate-400 text-xs mb-1">Current</p>
                             <p className="text-white font-medium">{variable.currentValue} {variable.unit}</p>
                           </div>
                           <div>
-                            <p className="text-slate-500 text-xs mb-1">Range</p>
+                            <p className="text-slate-400 text-xs mb-1">Range</p>
                             <p className="text-white font-medium">{variable.lowerBound} - {variable.upperBound}</p>
                           </div>
                           <div>
-                            <p className="text-slate-500 text-xs mb-1">Sensitivity</p>
+                            <p className="text-slate-400 text-xs mb-1">Sensitivity</p>
                             <p className="text-green-400 font-medium">{result.sensitivity.toFixed(2)}</p>
                           </div>
                           <div>
-                            <p className="text-slate-500 text-xs mb-1">Gradient</p>
+                            <p className="text-slate-400 text-xs mb-1">Gradient</p>
                             <p className={`font-medium ${result.gradient < 0 ? 'text-green-400' : 'text-red-400'}`}>
                               {result.gradient.toFixed(3)}
                             </p>
@@ -540,7 +540,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                     />
                   ))}
                 </div>
-                <div className="flex justify-between text-xs text-slate-500 mt-2">
+                <div className="flex justify-between text-xs text-slate-400 mt-2">
                   <span>Iteration 1</span>
                   <span>Iteration 25</span>
                 </div>
@@ -604,7 +604,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                       <p className="text-slate-400 text-sm mb-1">{variable.name}</p>
                       <div className="flex items-baseline gap-2">
                         <span className="text-xl font-bold text-white">{variable.currentValue}</span>
-                        <span className="text-slate-500 text-sm">{variable.unit}</span>
+                        <span className="text-slate-400 text-sm">{variable.unit}</span>
                       </div>
                       <p className="text-green-400 text-xs mt-1">
                         ↓ {Math.round((1 - variable.currentValue / variable.upperBound) * 100)}% from max
@@ -636,7 +636,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                         className="w-4 h-4 rounded border-slate-500 bg-slate-700 text-green-500"
                       />
                       <span className="text-white">{variable.name}</span>
-                      <span className="text-slate-500 text-sm ml-auto">
+                      <span className="text-slate-400 text-sm ml-auto">
                         {variable.lowerBound} - {variable.upperBound} {variable.unit}
                       </span>
                     </label>

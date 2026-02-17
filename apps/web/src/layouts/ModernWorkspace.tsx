@@ -187,7 +187,7 @@ const ContextSidebar: FC = () => {
                 </h3>
                 <button
                     onClick={toggleSidebar}
-                    className="p-1 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded"
+                    className="p-1 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded"
                     aria-label="Collapse sidebar"
                 >
                     <ChevronLeft className="w-4 h-4" aria-hidden="true" />
@@ -214,7 +214,7 @@ const ContextSidebar: FC = () => {
                                 }
                             `}
                         >
-                            <span className={isActive ? 'text-blue-400' : 'text-zinc-500'}>
+                            <span className={isActive ? 'text-blue-400' : 'text-zinc-400'}>
                                 {item.icon}
                             </span>
                             {item.label}
@@ -278,7 +278,7 @@ const InspectorPanel: FC<InspectorPanelProps> = ({ collapsed, onToggle }) => {
                 </h3>
                 <button
                     onClick={onToggle}
-                    className="p-1 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded"
+                    className="p-1 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded"
                     aria-label="Collapse inspector panel"
                 >
                     <ChevronRight className="w-4 h-4" aria-hidden="true" />
@@ -287,7 +287,7 @@ const InspectorPanel: FC<InspectorPanelProps> = ({ collapsed, onToggle }) => {
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-3">
-                <div className="text-sm text-zinc-500 text-center py-8">
+                <div className="text-sm text-zinc-400 text-center py-8">
                     Select an element to view properties
                 </div>
             </div>
@@ -303,7 +303,7 @@ const StatusBar: FC = () => {
     const { showGrid, snapToGrid, gridSize } = useUIStore();
 
     return (
-        <div className="h-7 bg-zinc-950 border-t border-zinc-800 flex items-center justify-between px-4 text-xs text-zinc-500">
+        <div className="h-7 bg-zinc-950 border-t border-zinc-800 flex items-center justify-between px-4 text-xs text-zinc-400">
             <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1.5">
                     <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />

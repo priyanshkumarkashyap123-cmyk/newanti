@@ -273,7 +273,7 @@ const ColorLegend: FC<ColorLegendProps> = ({ minVal, maxVal, unit, colorScale, l
             />
             
             {/* Tick labels */}
-            <div className="flex justify-between text-xs text-zinc-500" style={{ width: '200px' }}>
+            <div className="flex justify-between text-xs text-zinc-400" style={{ width: '200px' }}>
                 {ticks.map((tick, i) => (
                     <span key={i} className="font-mono">
                         {formatValue(tick.value, unit === '%' ? '%' : '')}
@@ -346,7 +346,7 @@ const MemberCard: FC<MemberCardProps> = ({
                     <div className="text-sm font-medium text-white">
                         Member {member.id}
                     </div>
-                    <div className="text-xs text-zinc-500">
+                    <div className="text-xs text-zinc-400">
                         {formatValue(value, config.unit)} {config.unit}
                     </div>
                 </div>
@@ -409,21 +409,21 @@ const SummaryStats: FC<SummaryStatsProps> = ({ members, type, config }) => {
     return (
         <div className="grid grid-cols-4 gap-4">
             <div className="bg-zinc-800/50 rounded-lg p-3 border border-zinc-700">
-                <div className="text-xs text-zinc-500 uppercase tracking-wide mb-1">Maximum</div>
+                <div className="text-xs text-zinc-400 uppercase tracking-wide mb-1">Maximum</div>
                 <div className="text-lg font-bold text-red-400 font-mono">
                     {formatValue(stats.max, config.unit)} <span className="text-xs font-normal">{config.unit}</span>
                 </div>
             </div>
             
             <div className="bg-zinc-800/50 rounded-lg p-3 border border-zinc-700">
-                <div className="text-xs text-zinc-500 uppercase tracking-wide mb-1">Minimum</div>
+                <div className="text-xs text-zinc-400 uppercase tracking-wide mb-1">Minimum</div>
                 <div className="text-lg font-bold text-blue-400 font-mono">
                     {formatValue(stats.min, config.unit)} <span className="text-xs font-normal">{config.unit}</span>
                 </div>
             </div>
             
             <div className="bg-zinc-800/50 rounded-lg p-3 border border-zinc-700">
-                <div className="text-xs text-zinc-500 uppercase tracking-wide mb-1">Average</div>
+                <div className="text-xs text-zinc-400 uppercase tracking-wide mb-1">Average</div>
                 <div className="text-lg font-bold text-green-400 font-mono">
                     {formatValue(stats.avg, config.unit)} <span className="text-xs font-normal">{config.unit}</span>
                 </div>
@@ -435,7 +435,7 @@ const SummaryStats: FC<SummaryStatsProps> = ({ members, type, config }) => {
                         ? 'bg-red-500/10 border-red-500/50' 
                         : 'bg-green-500/10 border-green-500/50'
                 }`}>
-                    <div className="text-xs text-zinc-500 uppercase tracking-wide mb-1">Status</div>
+                    <div className="text-xs text-zinc-400 uppercase tracking-wide mb-1">Status</div>
                     <div className={`text-lg font-bold ${
                         stats.critical > 0 ? 'text-red-400' : 'text-green-400'
                     }`}>
@@ -454,7 +454,7 @@ const SummaryStats: FC<SummaryStatsProps> = ({ members, type, config }) => {
                 </div>
             ) : (
                 <div className="bg-zinc-800/50 rounded-lg p-3 border border-zinc-700">
-                    <div className="text-xs text-zinc-500 uppercase tracking-wide mb-1">Members</div>
+                    <div className="text-xs text-zinc-400 uppercase tracking-wide mb-1">Members</div>
                     <div className="text-lg font-bold text-white font-mono">
                         {stats.total}
                     </div>
@@ -584,7 +584,7 @@ export const EnhancedHeatMap: FC<EnhancedHeatMapProps> = ({
             
             {/* Description */}
             <div className="flex items-center gap-2 px-4 py-2 bg-zinc-800/30 border-b border-zinc-800 text-sm">
-                <Info className="w-4 h-4 text-zinc-500" />
+                <Info className="w-4 h-4 text-zinc-400" />
                 <span className="text-zinc-400">{config.description}</span>
             </div>
             
@@ -603,7 +603,7 @@ export const EnhancedHeatMap: FC<EnhancedHeatMapProps> = ({
                     label={config.label}
                 />
                 
-                <div className="text-xs text-zinc-500">
+                <div className="text-xs text-zinc-400">
                     {members.length} members analyzed
                 </div>
             </div>

@@ -180,7 +180,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({ open, onClose }) =
                                 disabled={!nodeIdInput.trim()}
                                 className={`w-full py-2 rounded-lg font-medium transition-all ${nodeIdInput.trim()
                                         ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                                        : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                                        : 'bg-slate-700 text-slate-400 cursor-not-allowed'
                                     }`}
                             >
                                 Select Nodes by IDs

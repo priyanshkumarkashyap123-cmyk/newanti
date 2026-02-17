@@ -83,7 +83,7 @@ export const EngineeringRibbon: FC<RibbonProps> = ({ activeCategory }) => {
             <div className="flex-1 flex items-center gap-1">
                 {children}
             </div>
-            <div className="text-[9px] text-slate-500 text-center uppercase tracking-wider mt-1 select-none">
+            <div className="text-[9px] text-slate-400 text-center uppercase tracking-wider mt-1 select-none">
                 {label}
             </div>
         </div>
@@ -205,7 +205,7 @@ export const EngineeringRibbon: FC<RibbonProps> = ({ activeCategory }) => {
                             key={tab}
                             className={`px-3 py-1 rounded text-[10px] font-bold tracking-wider cursor-default ${activeCategory === tab
                                 ? 'bg-slate-800 text-blue-400 border border-slate-700'
-                                : 'text-slate-600'
+                                : 'text-slate-500'
                                 }`}
                         >
                             {tab}
@@ -214,7 +214,7 @@ export const EngineeringRibbon: FC<RibbonProps> = ({ activeCategory }) => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div className="text-[10px] text-slate-500 font-medium">Auto-Saved</div>
+                    <div className="text-[10px] text-slate-400 font-medium">Auto-Saved</div>
                 </div>
             </div>
 
@@ -233,7 +233,7 @@ export const EngineeringRibbon: FC<RibbonProps> = ({ activeCategory }) => {
 
                 {/* Fallback for other tabs */}
                 {['DESIGN'].includes(activeCategory) && (
-                    <div className="flex items-center justify-center h-full w-full text-slate-600 text-xs italic">
+                    <div className="flex items-center justify-center h-full w-full text-slate-500 text-xs italic">
                         Tools for {activeCategory} mode coming soon
                     </div>
                 )}

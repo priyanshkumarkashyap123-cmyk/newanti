@@ -518,7 +518,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                     {Object.entries(groupedCommands).map(([category, cmds]) => (
                         <div key={category}>
                             {/* Category Header */}
-                            <div className="sticky top-0 px-4 py-2 text-xs font-semibold text-zinc-500 bg-zinc-900/95 backdrop-blur uppercase tracking-wider">
+                            <div className="sticky top-0 px-4 py-2 text-xs font-semibold text-zinc-400 bg-zinc-900/95 backdrop-blur uppercase tracking-wider">
                                 {categoryLabels[category] || category}
                             </div>
 
@@ -559,7 +559,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                                                 {cmd.shortcut}
                                             </kbd>
                                         )}
-                                        <ChevronRight className="w-4 h-4 text-zinc-600" />
+                                        <ChevronRight className="w-4 h-4 text-zinc-500" />
                                     </button>
                                 );
                             })}
@@ -568,16 +568,16 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
 
                     {filteredCommands.length === 0 && (
                         <div className="px-4 py-12 text-center">
-                            <Search className="w-12 h-12 mx-auto text-zinc-600 mb-4" />
+                            <Search className="w-12 h-12 mx-auto text-zinc-500 mb-4" />
                             <p className="text-zinc-400">No commands found for "{query}"</p>
-                            <p className="text-sm text-zinc-500 mt-1">Try different keywords</p>
+                            <p className="text-sm text-zinc-400 mt-1">Try different keywords</p>
                         </div>
                     )}
                 </div>
 
                 {/* Footer */}
                 <div className="flex items-center justify-between px-4 py-2 border-t border-zinc-800 bg-zinc-900/80">
-                    <div className="flex items-center gap-4 text-xs text-zinc-500">
+                    <div className="flex items-center gap-4 text-xs text-zinc-400">
                         <span className="flex items-center gap-1">
                             <kbd className="px-1.5 py-0.5 bg-zinc-800 rounded">↑↓</kbd>
                             Navigate
@@ -591,7 +591,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                             Close
                         </span>
                     </div>
-                    <span className="text-xs text-zinc-500">{filteredCommands.length} commands</span>
+                    <span className="text-xs text-zinc-400">{filteredCommands.length} commands</span>
                 </div>
             </div>
         </div>,

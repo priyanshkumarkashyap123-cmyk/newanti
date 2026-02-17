@@ -367,7 +367,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
       <div className="bg-slate-800/50 rounded-lg p-4">
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm font-medium text-slate-300">{label}</span>
-          <span className="text-xs text-slate-500">Peak: {maxVal.toFixed(4)}</span>
+          <span className="text-xs text-slate-400">Peak: {maxVal.toFixed(4)}</span>
         </div>
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-32">
           {/* Grid lines */}
@@ -383,7 +383,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
             strokeWidth="2"
           />
         </svg>
-        <div className="flex justify-between text-xs text-slate-500 mt-1">
+        <div className="flex justify-between text-xs text-slate-400 mt-1">
           <span>0s</span>
           <span>{time[time.length - 1]?.toFixed(1)}s</span>
         </div>
@@ -501,7 +501,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                           onChange={(e) => updateInput('gamma', parseFloat(e.target.value))}
                           className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
                         />
-                        <span className="text-xs text-slate-500">≥ 0.5 for stability</span>
+                        <span className="text-xs text-slate-400">≥ 0.5 for stability</span>
                       </div>
                       <div>
                         <label className="text-xs text-slate-400 block mb-1">Beta (β)</label>
@@ -512,7 +512,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                           onChange={(e) => updateInput('beta', parseFloat(e.target.value))}
                           className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
                         />
-                        <span className="text-xs text-slate-500">0.25 = avg accel</span>
+                        <span className="text-xs text-slate-400">0.25 = avg accel</span>
                       </div>
                     </>
                   )}
@@ -528,7 +528,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                         onChange={(e) => updateInput('alphaHHT', parseFloat(e.target.value))}
                         className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
                       />
-                      <span className="text-xs text-slate-500">-1/3 to 0</span>
+                      <span className="text-xs text-slate-400">-1/3 to 0</span>
                     </div>
                   )}
                   {input.method === 'wilson-theta' && (
@@ -542,7 +542,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                         onChange={(e) => updateInput('theta', parseFloat(e.target.value))}
                         className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
                       />
-                      <span className="text-xs text-slate-500">≥ 1.37 recommended</span>
+                      <span className="text-xs text-slate-400">≥ 1.37 recommended</span>
                     </div>
                   )}
                   <div>
@@ -604,7 +604,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                       onChange={(e) => updateInput('dampingRatio', parseFloat(e.target.value))}
                       className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
                     />
-                    <span className="text-xs text-slate-500">5% typical for RC</span>
+                    <span className="text-xs text-slate-400">5% typical for RC</span>
                   </div>
                   {input.dampingType === 'rayleigh' && (
                     <>
@@ -744,9 +744,9 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                     <div className="font-medium text-white mb-1">{motion.name}</div>
                     <div className="text-sm text-slate-400">{motion.event} ({motion.year})</div>
                     <div className="mt-2 flex justify-between text-xs">
-                      <span className="text-slate-500">M{motion.magnitude || 'N/A'}</span>
+                      <span className="text-slate-400">M{motion.magnitude || 'N/A'}</span>
                       <span className="text-emerald-400 font-medium">{motion.pga}g</span>
-                      <span className="text-slate-500">{motion.duration}s</span>
+                      <span className="text-slate-400">{motion.duration}s</span>
                     </div>
                   </button>
                 ))}
@@ -766,7 +766,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                     onChange={(e) => updateInput('scaleFactor', parseFloat(e.target.value))}
                     className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white"
                   />
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-slate-400 mt-1">
                     Scaled PGA: {(selectedMotion.pga * input.scaleFactor).toFixed(3)}g
                   </p>
                 </div>
@@ -794,7 +794,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                     onChange={(e) => updateInput('outputInterval', parseInt(e.target.value))}
                     className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white"
                   />
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-slate-400 mt-1">
                     Save every {input.outputInterval} step(s)
                   </p>
                 </div>
@@ -804,10 +804,10 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
             {/* Upload Custom Record */}
             <div className="bg-slate-900 rounded-xl p-6 border border-slate-700 border-dashed">
               <div className="flex items-center gap-4">
-                <Upload className="w-8 h-8 text-slate-500" />
+                <Upload className="w-8 h-8 text-slate-400" />
                 <div>
                   <h3 className="text-sm font-medium text-slate-300">Upload Custom Record</h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-400">
                     Import ground motion from PEER NGA, COSMOS, or custom time-acceleration file
                   </p>
                 </div>
@@ -824,7 +824,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
           <div className="space-y-6">
             {!results ? (
               <div className="text-center py-16 bg-slate-900/50 rounded-xl border border-slate-800">
-                <LineChart className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+                <LineChart className="w-16 h-16 text-slate-500 mx-auto mb-4" />
                 <p className="text-slate-400">Run analysis to see results</p>
                 <button
                   onClick={() => setActiveTab('input')}

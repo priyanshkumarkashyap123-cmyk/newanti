@@ -181,7 +181,7 @@ export const UserDashboard: FC = () => {
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                         <div className={`p-2 rounded-lg ${isPro ? 'bg-purple-500/20' : 'bg-zinc-800'}`}>
-                            <Crown className={`w-6 h-6 ${isPro ? 'text-purple-400' : 'text-zinc-500'}`} />
+                            <Crown className={`w-6 h-6 ${isPro ? 'text-purple-400' : 'text-zinc-400'}`} />
                         </div>
                         <div>
                             <h2 className="text-lg font-bold text-white">
@@ -208,16 +208,16 @@ export const UserDashboard: FC = () => {
                 {!isPro && (
                     <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-zinc-800">
                         <div>
-                            <div className="text-xs text-zinc-500 mb-1">Daily Analyses</div>
+                            <div className="text-xs text-zinc-400 mb-1">Daily Analyses</div>
                             <div className="flex items-baseline gap-1">
                                 <span className="text-xl font-bold text-white">
                                     {data.stats.dailyAnalysisRemaining}
                                 </span>
-                                <span className="text-zinc-500">/ {data.limits.maxAnalysisPerDay}</span>
+                                <span className="text-zinc-400">/ {data.limits.maxAnalysisPerDay}</span>
                             </div>
                         </div>
                         <div>
-                            <div className="text-xs text-zinc-500 mb-1">Max Nodes</div>
+                            <div className="text-xs text-zinc-400 mb-1">Max Nodes</div>
                             <div className="flex items-baseline gap-1">
                                 <span className="text-xl font-bold text-white">
                                     {data.limits.maxNodes}
@@ -225,12 +225,12 @@ export const UserDashboard: FC = () => {
                             </div>
                         </div>
                         <div>
-                            <div className="text-xs text-zinc-500 mb-1">Projects</div>
+                            <div className="text-xs text-zinc-400 mb-1">Projects</div>
                             <div className="flex items-baseline gap-1">
                                 <span className="text-xl font-bold text-white">
                                     {data.stats.projectCount}
                                 </span>
-                                <span className="text-zinc-500">/ {data.limits.maxProjects}</span>
+                                <span className="text-zinc-400">/ {data.limits.maxProjects}</span>
                             </div>
                         </div>
                     </div>
@@ -242,7 +242,7 @@ export const UserDashboard: FC = () => {
                 <div className="p-4 bg-zinc-900 rounded-xl border border-zinc-800">
                     <div className="flex items-center gap-2 mb-2">
                         <BarChart3 className="w-4 h-4 text-green-400" />
-                        <span className="text-xs text-zinc-500">Total Analyses</span>
+                        <span className="text-xs text-zinc-400">Total Analyses</span>
                     </div>
                     <div className="text-2xl font-bold text-white">
                         {data.stats.totalAnalysisRuns}
@@ -252,7 +252,7 @@ export const UserDashboard: FC = () => {
                 <div className="p-4 bg-zinc-900 rounded-xl border border-zinc-800">
                     <div className="flex items-center gap-2 mb-2">
                         <Download className="w-4 h-4 text-purple-400" />
-                        <span className="text-xs text-zinc-500">PDF Exports</span>
+                        <span className="text-xs text-zinc-400">PDF Exports</span>
                     </div>
                     <div className="text-2xl font-bold text-white">
                         {data.stats.totalExports}
@@ -262,7 +262,7 @@ export const UserDashboard: FC = () => {
                 <div className="p-4 bg-zinc-900 rounded-xl border border-zinc-800">
                     <div className="flex items-center gap-2 mb-2">
                         <Clock className="w-4 h-4 text-blue-400" />
-                        <span className="text-xs text-zinc-500">Last Login</span>
+                        <span className="text-xs text-zinc-400">Last Login</span>
                     </div>
                     <div className="text-sm font-medium text-white">
                         {formatDate(data.stats.lastLogin)}
@@ -275,7 +275,7 @@ export const UserDashboard: FC = () => {
                 <h3 className="text-sm font-bold text-zinc-400 uppercase mb-4">Recent Activity</h3>
 
                 {data.recentActivity.length === 0 ? (
-                    <p className="text-zinc-500 text-sm">No activity yet</p>
+                    <p className="text-zinc-400 text-sm">No activity yet</p>
                 ) : (
                     <div className="space-y-3">
                         {data.recentActivity.slice(0, 5).map((activity, index) => (
@@ -286,7 +286,7 @@ export const UserDashboard: FC = () => {
                                         {getActionLabel(activity.action)}
                                     </span>
                                 </div>
-                                <span className="text-xs text-zinc-500">
+                                <span className="text-xs text-zinc-400">
                                     {formatDate(activity.timestamp)}
                                 </span>
                             </div>

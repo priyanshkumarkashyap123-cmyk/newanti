@@ -696,7 +696,7 @@ export default function ConnectionDesignDatabase() {
                               <span>{conn.columnSection}</span>
                             </>
                           )}
-                          <span className="text-slate-500">|</span>
+                          <span className="text-slate-400">|</span>
                           <span>{conn.designCode}</span>
                         </div>
                         
@@ -746,11 +746,11 @@ export default function ConnectionDesignDatabase() {
               
               {displayConnections.length === 0 && (
                 <div className="bg-slate-900 rounded-xl p-8 border border-slate-700 text-center">
-                  <AlertTriangle className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                  <AlertTriangle className="w-12 h-12 text-slate-500 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-slate-400 mb-2">
                     {showDesignMode ? 'No suitable connections found' : 'No connections found'}
                   </h3>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-400">
                     {showDesignMode 
                       ? 'Try reducing the demand values or change the connection type'
                       : 'Try adjusting your search or filter criteria'
@@ -803,8 +803,8 @@ export default function ConnectionDesignDatabase() {
                 <div className="p-6 border-b border-slate-700">
                   <div className="aspect-square bg-slate-800 rounded-lg flex items-center justify-center">
                     <div className="text-center">
-                      <Box className="w-16 h-16 text-slate-600 mx-auto mb-2" />
-                      <span className="text-sm text-slate-500">Connection Detail</span>
+                      <Box className="w-16 h-16 text-slate-500 mx-auto mb-2" />
+                      <span className="text-sm text-slate-400">Connection Detail</span>
                     </div>
                   </div>
                 </div>
@@ -879,9 +879,9 @@ export default function ConnectionDesignDatabase() {
               </div>
             ) : (
               <div className="bg-slate-900 rounded-xl p-8 border border-slate-700 text-center sticky top-4">
-                <Eye className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                <Eye className="w-12 h-12 text-slate-500 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-slate-400 mb-2">Select a Connection</h3>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-400">
                   Click on a connection to view details and specifications
                 </p>
               </div>

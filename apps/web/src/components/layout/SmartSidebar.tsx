@@ -240,7 +240,7 @@ const TemplateBankPanel: FC = () => {
             <div className="h-px bg-zinc-800" />
 
             {/* Simple Templates Header */}
-            <div className="text-[11px] text-zinc-500 font-medium uppercase tracking-wide">
+            <div className="text-[11px] text-zinc-400 font-medium uppercase tracking-wide">
                 Quick Examples
             </div>
 
@@ -286,14 +286,14 @@ const TemplateBankPanel: FC = () => {
                         {loading === key ? (
                             <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
                         ) : (
-                            <ArrowRight className="w-4 h-4 text-zinc-500 flex-shrink-0" />
+                            <ArrowRight className="w-4 h-4 text-zinc-400 flex-shrink-0" />
                         )}
                     </button>
                 ))}
             </div>
 
             {/* Template count */}
-            <p className="text-[10px] text-zinc-500 text-center">
+            <p className="text-[10px] text-zinc-400 text-center">
                 {filteredTemplates.length} quick templates • Click "Iconic Structures" for detailed models
             </p>
         </div>
@@ -362,7 +362,7 @@ const EditToolsPanel: FC = () => {
     return (
         <div className="space-y-3">
             <div>
-                <div className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+                <div className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">
                     Selection
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
@@ -381,7 +381,7 @@ const EditToolsPanel: FC = () => {
                             disabled={!hasSelection}
                             className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${hasSelection
                                 ? 'text-red-400 bg-red-500/10 hover:bg-red-500/20'
-                                : 'text-slate-500 bg-slate-800/30 cursor-not-allowed'
+                                : 'text-slate-400 bg-slate-800/30 cursor-not-allowed'
                                 }`}
                         >
                             <Trash2 className="w-4 h-4" />
@@ -393,7 +393,7 @@ const EditToolsPanel: FC = () => {
 
             {/* Boundary Conditions - NEW */}
             <div>
-                <div className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+                <div className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">
                     Supports
                 </div>
                 <Tooltip content="Assign boundary conditions (supports/restraints) to selected nodes">
@@ -402,7 +402,7 @@ const EditToolsPanel: FC = () => {
                         disabled={!hasSelection}
                         className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${hasSelection
                             ? 'text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30'
-                            : 'text-slate-500 bg-slate-800/30 cursor-not-allowed border border-transparent'
+                            : 'text-slate-400 bg-slate-800/30 cursor-not-allowed border border-transparent'
                             }`}
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -415,7 +415,7 @@ const EditToolsPanel: FC = () => {
 
             {/* Advanced Selection - NEW */}
             <div>
-                <div className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+                <div className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">
                     Advanced Select
                 </div>
                 <Tooltip content="Select by IDs, level, axis, or section">
@@ -431,7 +431,7 @@ const EditToolsPanel: FC = () => {
 
             {/* Clipboard Tools */}
             <div>
-                <div className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+                <div className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">
                     Clipboard
                 </div>
                 <div className="grid grid-cols-3 gap-1.5">
@@ -440,7 +440,7 @@ const EditToolsPanel: FC = () => {
                         disabled={!hasSelection}
                         className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${hasSelection
                             ? 'text-blue-400 bg-blue-500/10 hover:bg-blue-500/20'
-                            : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
+                            : 'text-zinc-400 bg-zinc-800/30 cursor-not-allowed'
                             }`}
                     >
                         <Copy className="w-4 h-4" />
@@ -451,7 +451,7 @@ const EditToolsPanel: FC = () => {
                         disabled={!clipboard}
                         className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${clipboard
                             ? 'text-green-400 bg-green-500/10 hover:bg-green-500/20'
-                            : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
+                            : 'text-zinc-400 bg-zinc-800/30 cursor-not-allowed'
                             }`}
                     >
                         <Clipboard className="w-4 h-4" />
@@ -462,7 +462,7 @@ const EditToolsPanel: FC = () => {
                         disabled={!hasSelection}
                         className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${hasSelection
                             ? 'text-purple-400 bg-purple-500/10 hover:bg-purple-500/20'
-                            : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
+                            : 'text-zinc-400 bg-zinc-800/30 cursor-not-allowed'
                             }`}
                     >
                         <Plus className="w-4 h-4" />
@@ -473,7 +473,7 @@ const EditToolsPanel: FC = () => {
 
             {/* Transform Tools */}
             <div>
-                <div className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+                <div className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">
                     Transform
                 </div>
                 <Tooltip content="Move selection by offset" shortcut="M">
@@ -482,7 +482,7 @@ const EditToolsPanel: FC = () => {
                         disabled={!hasSelection}
                         className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${hasSelection
                             ? 'text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20'
-                            : 'text-slate-500 bg-slate-800/30 cursor-not-allowed'
+                            : 'text-slate-400 bg-slate-800/30 cursor-not-allowed'
                             }`}
                     >
                         <Move className="w-4 h-4" />
@@ -494,7 +494,7 @@ const EditToolsPanel: FC = () => {
                     <div className="mt-2 p-3 bg-zinc-800/80 rounded-lg space-y-2">
                         <div className="grid grid-cols-3 gap-2">
                             <div>
-                                <label className="text-[10px] text-zinc-500">X (m)</label>
+                                <label className="text-[10px] text-zinc-400">X (m)</label>
                                 <input
                                     type="number"
                                     step="0.5"
@@ -504,7 +504,7 @@ const EditToolsPanel: FC = () => {
                                 />
                             </div>
                             <div>
-                                <label className="text-[10px] text-zinc-500">Y (m)</label>
+                                <label className="text-[10px] text-zinc-400">Y (m)</label>
                                 <input
                                     type="number"
                                     step="0.5"
@@ -514,7 +514,7 @@ const EditToolsPanel: FC = () => {
                                 />
                             </div>
                             <div>
-                                <label className="text-[10px] text-zinc-500">Z (m)</label>
+                                <label className="text-[10px] text-zinc-400">Z (m)</label>
                                 <input
                                     type="number"
                                     step="0.5"
@@ -539,7 +539,7 @@ const EditToolsPanel: FC = () => {
 
             {/* Split Member Tool */}
             <div>
-                <div className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+                <div className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">
                     Member Operations
                 </div>
                 <button
@@ -547,7 +547,7 @@ const EditToolsPanel: FC = () => {
                     disabled={!selectedMemberId}
                     className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${selectedMemberId
                         ? 'text-orange-400 bg-orange-500/10 hover:bg-orange-500/20'
-                        : 'text-zinc-500 bg-zinc-800/30 cursor-not-allowed'
+                        : 'text-zinc-400 bg-zinc-800/30 cursor-not-allowed'
                         }`}
                 >
                     <Scissors className="w-4 h-4" />
@@ -557,7 +557,7 @@ const EditToolsPanel: FC = () => {
                 {showSplitDialog && selectedMemberId && (
                     <div className="mt-2 p-3 bg-zinc-800/80 rounded-lg space-y-2">
                         <div>
-                            <label htmlFor="split-position-range" className="text-[10px] text-zinc-500">Split Position (0-1)</label>
+                            <label htmlFor="split-position-range" className="text-[10px] text-zinc-400">Split Position (0-1)</label>
                             <input
                                 id="split-position-range"
                                 type="range"
@@ -585,7 +585,7 @@ const EditToolsPanel: FC = () => {
             </div>
 
             {/* Status */}
-            <div className="text-[10px] text-zinc-500 text-center pt-2 border-t border-zinc-800">
+            <div className="text-[10px] text-zinc-400 text-center pt-2 border-t border-zinc-800">
                 {selectedIds.size} items selected
                 {clipboard && ` • ${clipboard.nodes.length + clipboard.members.length} in clipboard`}
             </div>
@@ -764,7 +764,7 @@ const SectionPickerPanel: FC = () => {
         <div className="space-y-3">
             {/* Code Selector */}
             <div>
-                <label className="block text-xs text-zinc-500 mb-1">Design Code</label>
+                <label className="block text-xs text-zinc-400 mb-1">Design Code</label>
                 <div className="space-y-1">
                     {codes.map((code) => {
                         const isLocked = code.isPro && !isPro;
@@ -777,7 +777,7 @@ const SectionPickerPanel: FC = () => {
                                     ${selectedCode === code.id && !isLocked
                                         ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
                                         : isLocked
-                                            ? 'bg-zinc-800/30 text-zinc-500 cursor-not-allowed'
+                                            ? 'bg-zinc-800/30 text-zinc-400 cursor-not-allowed'
                                             : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
                                     }
                                 `}
@@ -818,7 +818,7 @@ const SectionPickerPanel: FC = () => {
 
             {/* Section List */}
             <div>
-                <label className="block text-xs text-zinc-500 mb-1">Section Profile</label>
+                <label className="block text-xs text-zinc-400 mb-1">Section Profile</label>
                 <div className="max-h-40 overflow-y-auto space-y-1 bg-zinc-800/50 rounded-lg p-2">
                     {sections[selectedCode]?.map((section) => (
                         <button
@@ -865,7 +865,7 @@ const LoadGeneratorsPanel: FC = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                     <div>
-                        <label className="block text-xs text-zinc-500">Wind Speed (m/s)</label>
+                        <label className="block text-xs text-zinc-400">Wind Speed (m/s)</label>
                         <input
                             type="number"
                             value={windSpeed}
@@ -874,7 +874,7 @@ const LoadGeneratorsPanel: FC = () => {
                         />
                     </div>
                     <div>
-                        <label className="block text-xs text-zinc-500">Terrain</label>
+                        <label className="block text-xs text-zinc-400">Terrain</label>
                         <select
                             value={terrainCategory}
                             onChange={(e) => setTerrainCategory(e.target.value)}
@@ -952,10 +952,10 @@ const ManualLoadsPanel: FC = () => {
             </div>
 
             {/* Manual Node Loads */}
-            <div className="text-xs text-zinc-500 uppercase tracking-wide pt-2">Node Loads</div>
+            <div className="text-xs text-zinc-400 uppercase tracking-wide pt-2">Node Loads</div>
             <div className="grid grid-cols-3 gap-2">
                 <div>
-                    <label className="block text-xs text-zinc-500">Fx (kN)</label>
+                    <label className="block text-xs text-zinc-400">Fx (kN)</label>
                     <input
                         type="number"
                         value={fx}
@@ -964,7 +964,7 @@ const ManualLoadsPanel: FC = () => {
                     />
                 </div>
                 <div>
-                    <label className="block text-xs text-zinc-500">Fy (kN)</label>
+                    <label className="block text-xs text-zinc-400">Fy (kN)</label>
                     <input
                         type="number"
                         value={fy}
@@ -973,7 +973,7 @@ const ManualLoadsPanel: FC = () => {
                     />
                 </div>
                 <div>
-                    <label className="block text-xs text-zinc-500">Fz (kN)</label>
+                    <label className="block text-xs text-zinc-400">Fz (kN)</label>
                     <input
                         type="number"
                         value={fz}
@@ -983,7 +983,7 @@ const ManualLoadsPanel: FC = () => {
                 </div>
             </div>
             <div>
-                <label className="block text-xs text-zinc-500">Moment (kN·m)</label>
+                <label className="block text-xs text-zinc-400">Moment (kN·m)</label>
                 <input
                     type="number"
                     value={moment}
@@ -1061,38 +1061,38 @@ const SolverControlsPanel: FC = () => {
 
             <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="bg-zinc-800/50 rounded p-2">
-                    <span className="text-zinc-500">Solver:</span>
+                    <span className="text-zinc-400">Solver:</span>
                     <span className="text-zinc-300 ml-1">Linear Static</span>
                 </div>
                 <div className="bg-zinc-800/50 rounded p-2">
-                    <span className="text-zinc-500">DOF:</span>
+                    <span className="text-zinc-400">DOF:</span>
                     <span className="text-zinc-300 ml-1">6 per node</span>
                 </div>
             </div>
 
             {/* Advanced Analysis Options */}
             <div className="space-y-2 pt-2 border-t border-zinc-700">
-                <p className="text-xs text-zinc-500 font-medium uppercase">Advanced Solvers</p>
+                <p className="text-xs text-zinc-400 font-medium uppercase">Advanced Solvers</p>
                 <button
                     onClick={() => openModal('pDeltaAnalysis')}
                     className="w-full flex items-center justify-between px-3 py-2 bg-zinc-800/50 rounded-lg text-zinc-300 hover:bg-zinc-700/50 transition-colors text-sm"
                 >
                     <span>P-Delta (Geometric)</span>
-                    <ArrowRight className="w-3 h-3 text-zinc-500" />
+                    <ArrowRight className="w-3 h-3 text-zinc-400" />
                 </button>
                 <button
                     onClick={() => openModal('modalAnalysis')}
                     className="w-full flex items-center justify-between px-3 py-2 bg-zinc-800/50 rounded-lg text-zinc-300 hover:bg-zinc-700/50 transition-colors text-sm"
                 >
                     <span>Modal / Eigenvalue</span>
-                    <ArrowRight className="w-3 h-3 text-zinc-500" />
+                    <ArrowRight className="w-3 h-3 text-zinc-400" />
                 </button>
                 <button
                     onClick={() => openModal('bucklingAnalysis')}
                     className="w-full flex items-center justify-between px-3 py-2 bg-zinc-800/50 rounded-lg text-zinc-300 hover:bg-zinc-700/50 transition-colors text-sm"
                 >
                     <span>Buckling Analysis</span>
-                    <ArrowRight className="w-3 h-3 text-zinc-500" />
+                    <ArrowRight className="w-3 h-3 text-zinc-400" />
                 </button>
             </div>
         </div>
@@ -1167,7 +1167,7 @@ const DesignChecksPanel: FC = () => {
                         <Settings className="w-4 h-4 text-blue-400" />
                         Steel Code Check (IS 800)
                     </span>
-                    <ArrowRight className="w-4 h-4 text-zinc-500" />
+                    <ArrowRight className="w-4 h-4 text-zinc-400" />
                 </button>
                 <button
                     onClick={() => openModal('concreteDesign')}
@@ -1177,7 +1177,7 @@ const DesignChecksPanel: FC = () => {
                         <Settings className="w-4 h-4 text-orange-400" />
                         Concrete Design (IS 456)
                     </span>
-                    <ArrowRight className="w-4 h-4 text-zinc-500" />
+                    <ArrowRight className="w-4 h-4 text-zinc-400" />
                 </button>
                 <button
                     onClick={() => openModal('connectionDesign')}
@@ -1187,7 +1187,7 @@ const DesignChecksPanel: FC = () => {
                         <Settings className="w-4 h-4 text-purple-400" />
                         Connection Design
                     </span>
-                    <ArrowRight className="w-4 h-4 text-zinc-500" />
+                    <ArrowRight className="w-4 h-4 text-zinc-400" />
                 </button>
                 <button
                     onClick={() => openModal('foundationDesign')}
@@ -1197,7 +1197,7 @@ const DesignChecksPanel: FC = () => {
                         <Settings className="w-4 h-4 text-green-400" />
                         Foundation Design
                     </span>
-                    <ArrowRight className="w-4 h-4 text-zinc-500" />
+                    <ArrowRight className="w-4 h-4 text-zinc-400" />
                 </button>
             </div>
 
@@ -1243,7 +1243,7 @@ export const SmartSidebar: FC = () => {
                     <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                         {activeCategory} TOOLS
                     </h2>
-                    <span className="text-[10px] text-slate-500 font-medium">
+                    <span className="text-[10px] text-slate-400 font-medium">
                         {toolCounts[activeCategory] || 0} panels
                     </span>
                 </div>

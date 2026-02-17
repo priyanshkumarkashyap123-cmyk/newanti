@@ -163,7 +163,7 @@ export const StructureGallery: FC<StructureGalleryProps> = ({ isOpen, onClose })
                                                 }}
                                             />
                                             <div className="hidden absolute inset-0 bg-emerald-500/5 group-hover:bg-emerald-500/10 transition-colors flex items-center justify-center">
-                                                <Icon className="w-20 h-20 text-slate-600 group-hover:text-emerald-400 transition-colors" />
+                                                <Icon className="w-20 h-20 text-slate-500 group-hover:text-emerald-400 transition-colors" />
                                             </div>
 
                                             {/* Category Badge */}

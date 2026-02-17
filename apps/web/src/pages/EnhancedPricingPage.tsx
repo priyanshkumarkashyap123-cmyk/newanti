@@ -362,7 +362,7 @@ export const EnhancedPricingPage: FC = () => {
               <div className="mb-6">
                 <span className="text-4xl font-bold text-white">{formatPrice(plan)}</span>
                 {plan.monthlyPrice !== null && plan.monthlyPrice > 0 && (
-                  <span className="text-slate-500 ml-2">
+                  <span className="text-slate-400 ml-2">
                     /month {billingPeriod === 'yearly' && '(billed yearly)'}
                   </span>
                 )}
@@ -385,7 +385,7 @@ export const EnhancedPricingPage: FC = () => {
                 {plan.features.map((feature, j) => (
                   <li key={j} className="flex items-start gap-3 text-sm">
                     <Check className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                      plan.highlighted ? 'text-blue-400' : 'text-slate-600'
+                      plan.highlighted ? 'text-blue-400' : 'text-slate-400'
                     }`} />
                     <span className="text-slate-300">{feature}</span>
                   </li>
@@ -524,11 +524,11 @@ export const EnhancedPricingPage: FC = () => {
       {/* Footer */}
       <footer className="border-t border-slate-800 py-8 px-4">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-slate-500 text-sm">© 2026 BeamLab Ultimate. All rights reserved.</p>
+          <p className="text-slate-400 text-sm">© 2026 BeamLab Ultimate. All rights reserved.</p>
           <div className="flex gap-6">
-            <Link to="/privacy" className="text-slate-500 text-sm hover:text-white">Privacy</Link>
-            <Link to="/terms" className="text-slate-500 text-sm hover:text-white">Terms</Link>
-            <Link to="/contact" className="text-slate-500 text-sm hover:text-white">Contact</Link>
+            <Link to="/privacy" className="text-slate-400 text-sm hover:text-white">Privacy</Link>
+            <Link to="/terms" className="text-slate-400 text-sm hover:text-white">Terms</Link>
+            <Link to="/contact" className="text-slate-400 text-sm hover:text-white">Contact</Link>
           </div>
         </div>
       </footer>

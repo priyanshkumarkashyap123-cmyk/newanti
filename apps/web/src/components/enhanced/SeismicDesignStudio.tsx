@@ -270,7 +270,7 @@ const StoryDriftVisualization: React.FC<{
                 marginLeft: `${(story.displacement / maxDrift) * 20}px`,
               }}
             >
-              <span className="absolute -left-8 top-1/2 -translate-y-1/2 text-xs text-zinc-500">
+              <span className="absolute -left-8 top-1/2 -translate-y-1/2 text-xs text-zinc-400">
                 L{story.level}
               </span>
             </motion.div>
@@ -318,7 +318,7 @@ const StoryDriftVisualization: React.FC<{
       
       {/* Legend */}
       <div className="flex items-center justify-between mt-4 pt-3 border-t border-zinc-800 text-xs">
-        <span className="text-zinc-500">
+        <span className="text-zinc-400">
           Allowable: {(allowableDrift * 100).toFixed(2)}%
         </span>
         <div className="flex items-center gap-3">
@@ -434,18 +434,18 @@ const ModeShapeVisualization: React.FC<{
           <div className="flex-1 space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-zinc-800/50 rounded-lg p-3">
-                <p className="text-xs text-zinc-500 mb-1">Period</p>
+                <p className="text-xs text-zinc-400 mb-1">Period</p>
                 <p className="text-lg font-bold text-white font-mono">{currentMode.period.toFixed(3)} s</p>
               </div>
               <div className="bg-zinc-800/50 rounded-lg p-3">
-                <p className="text-xs text-zinc-500 mb-1">Frequency</p>
+                <p className="text-xs text-zinc-400 mb-1">Frequency</p>
                 <p className="text-lg font-bold text-white font-mono">{currentMode.frequency.toFixed(2)} Hz</p>
               </div>
             </div>
             
             <div className="bg-zinc-800/50 rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs text-zinc-500">Mass Participation ({currentMode.direction})</p>
+                <p className="text-xs text-zinc-400">Mass Participation ({currentMode.direction})</p>
                 <p className="text-sm font-bold text-purple-400">{(currentMode.massParticipation * 100).toFixed(1)}%</p>
               </div>
               <div className="h-2 bg-zinc-700 rounded-full overflow-hidden">
@@ -529,7 +529,7 @@ const SeismicHazardMap: React.FC<{
           >
             <div className="w-4 h-4 rounded-full mx-auto mb-1" style={{ backgroundColor: zone.color }} />
             <p className="text-xs font-bold text-white">{zone.id}</p>
-            <p className="text-xs text-zinc-500">PGA {zone.pga}g</p>
+            <p className="text-xs text-zinc-400">PGA {zone.pga}g</p>
           </button>
         ))}
       </div>
@@ -627,7 +627,7 @@ export const SeismicDesignStudio: React.FC<{
                 Seismic Design Studio
                 <Sparkles className="w-4 h-4 text-amber-400" />
               </h2>
-              <p className="text-zinc-500 text-sm">Multi-code earthquake engineering analysis</p>
+              <p className="text-zinc-400 text-sm">Multi-code earthquake engineering analysis</p>
             </div>
           </div>
           
@@ -720,7 +720,7 @@ export const SeismicDesignStudio: React.FC<{
                     <p className={`font-medium ${parameters.soilType === soil.type ? 'text-blue-400' : 'text-white'}`}>
                       Type {soil.type} - {soil.name}
                     </p>
-                    <p className="text-xs text-zinc-500">{soil.description}</p>
+                    <p className="text-xs text-zinc-400">{soil.description}</p>
                   </div>
                   <span className="text-xs text-zinc-400">×{soil.factor}</span>
                 </button>
@@ -736,7 +736,7 @@ export const SeismicDesignStudio: React.FC<{
             </h4>
             
             <div>
-              <label className="block text-xs text-zinc-500 mb-1">Importance Factor (I)</label>
+              <label className="block text-xs text-zinc-400 mb-1">Importance Factor (I)</label>
               <input
                 type="number"
                 value={parameters.importance}
@@ -747,7 +747,7 @@ export const SeismicDesignStudio: React.FC<{
             </div>
             
             <div>
-              <label className="block text-xs text-zinc-500 mb-1">Response Reduction Factor (R)</label>
+              <label className="block text-xs text-zinc-400 mb-1">Response Reduction Factor (R)</label>
               <input
                 type="number"
                 value={parameters.responseReduction}
@@ -758,7 +758,7 @@ export const SeismicDesignStudio: React.FC<{
             </div>
             
             <div>
-              <label className="block text-xs text-zinc-500 mb-1">Damping Ratio (ξ)</label>
+              <label className="block text-xs text-zinc-400 mb-1">Damping Ratio (ξ)</label>
               <input
                 type="number"
                 value={parameters.dampingRatio}
@@ -769,7 +769,7 @@ export const SeismicDesignStudio: React.FC<{
             </div>
             
             <div>
-              <label className="block text-xs text-zinc-500 mb-1">Fundamental Period T (s)</label>
+              <label className="block text-xs text-zinc-400 mb-1">Fundamental Period T (s)</label>
               <input
                 type="number"
                 value={parameters.fundamentalPeriod}
@@ -790,7 +790,7 @@ export const SeismicDesignStudio: React.FC<{
                 <LineChart className="w-4 h-4 text-blue-400" />
                 <span className="text-sm font-medium text-white">Design Response Spectrum</span>
               </div>
-              <span className="text-xs text-zinc-500">{selectedCode}</span>
+              <span className="text-xs text-zinc-400">{selectedCode}</span>
             </div>
             <ResponseSpectrumChart
               spectrum={responseSpectrum}
@@ -824,22 +824,22 @@ export const SeismicDesignStudio: React.FC<{
             
             <div className="grid grid-cols-4 gap-4">
               <div className="text-center">
-                <p className="text-xs text-zinc-500 mb-1">Base Shear</p>
+                <p className="text-xs text-zinc-400 mb-1">Base Shear</p>
                 <p className="text-2xl font-bold text-white">750</p>
-                <p className="text-xs text-zinc-500">kN</p>
+                <p className="text-xs text-zinc-400">kN</p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-zinc-500 mb-1">Max Drift</p>
+                <p className="text-xs text-zinc-400 mb-1">Max Drift</p>
                 <p className="text-2xl font-bold text-amber-400">1.8%</p>
-                <p className="text-xs text-zinc-500">&lt;2% ✓</p>
+                <p className="text-xs text-zinc-400">&lt;2% ✓</p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-zinc-500 mb-1">Modes &gt;90%</p>
+                <p className="text-xs text-zinc-400 mb-1">Modes &gt;90%</p>
                 <p className="text-2xl font-bold text-blue-400">5</p>
-                <p className="text-xs text-zinc-500">modes required</p>
+                <p className="text-xs text-zinc-400">modes required</p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-zinc-500 mb-1">Status</p>
+                <p className="text-xs text-zinc-400 mb-1">Status</p>
                 <div className="flex items-center justify-center gap-1">
                   <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                   <span className="text-lg font-bold text-emerald-400">PASS</span>

@@ -328,7 +328,7 @@ export default function PerformanceMonitorDashboard() {
                     style={{ width: `${metrics.cpuUsage}%` }}
                   />
                 </div>
-                <div className="mt-2 text-xs text-slate-500">
+                <div className="mt-2 text-xs text-slate-400">
                   {metrics.threadCount} threads active
                 </div>
               </div>
@@ -350,7 +350,7 @@ export default function PerformanceMonitorDashboard() {
                     style={{ width: `${metrics.memoryUsage}%` }}
                   />
                 </div>
-                <div className="mt-2 text-xs text-slate-500">
+                <div className="mt-2 text-xs text-slate-400">
                   {formatMemory(metrics.memoryUsed)} / {formatMemory(metrics.memoryTotal)}
                 </div>
               </div>
@@ -372,7 +372,7 @@ export default function PerformanceMonitorDashboard() {
                     style={{ width: `${metrics.gpuUsage}%` }}
                   />
                 </div>
-                <div className="mt-2 text-xs text-slate-500">
+                <div className="mt-2 text-xs text-slate-400">
                   VRAM: {metrics.gpuMemory.toFixed(0)}%
                 </div>
               </div>
@@ -394,7 +394,7 @@ export default function PerformanceMonitorDashboard() {
                     style={{ width: `${(metrics.fps / 60) * 100}%` }}
                   />
                 </div>
-                <div className="mt-2 text-xs text-slate-500">
+                <div className="mt-2 text-xs text-slate-400">
                   Target: 60 FPS
                 </div>
               </div>
@@ -528,7 +528,7 @@ export default function PerformanceMonitorDashboard() {
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-right text-slate-500 text-sm">{analysis.date}</td>
+                      <td className="px-4 py-3 text-right text-slate-400 text-sm">{analysis.date}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -578,7 +578,7 @@ export default function PerformanceMonitorDashboard() {
                           {result.gpuAccelerated ? (
                             <CheckCircle className="w-4 h-4 text-green-400 mx-auto" />
                           ) : (
-                            <span className="text-slate-500">-</span>
+                            <span className="text-slate-400">-</span>
                           )}
                         </td>
                         <td className="px-4 py-3 text-right text-purple-400 font-medium">

@@ -270,7 +270,7 @@ const TemplateStep: FC<TemplateStepProps> = ({ selected, onSelect }) => {
                             {template.icon}
                         </div>
                         <h4 className="font-medium text-slate-200">{template.name}</h4>
-                        <p className="text-xs text-slate-500 mt-1">{template.description}</p>
+                        <p className="text-xs text-slate-400 mt-1">{template.description}</p>
                         <div className="flex gap-2 mt-2">
                             <span className="text-xs px-2 py-0.5 bg-slate-700 rounded text-slate-400">
                                 {template.nodes.length} nodes
@@ -329,7 +329,7 @@ const GeometryStep: FC<GeometryStepProps> = ({ template, geometry, onChange }) =
                             className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg
                                      text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                         />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500">m</span>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">m</span>
                     </div>
                 </div>
 
@@ -343,7 +343,7 @@ const GeometryStep: FC<GeometryStepProps> = ({ template, geometry, onChange }) =
                             className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg
                                      text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                         />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500">m</span>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">m</span>
                     </div>
                 </div>
 
@@ -382,9 +382,9 @@ const GeometryStep: FC<GeometryStepProps> = ({ template, geometry, onChange }) =
             <div className="aspect-video bg-slate-800 rounded-lg border border-slate-700 
                           flex items-center justify-center">
                 <div className="text-center">
-                    <Box size={48} className="mx-auto text-slate-600 mb-2" />
-                    <p className="text-sm text-slate-500">3D Preview</p>
-                    <p className="text-xs text-slate-600">(Connects to main viewer)</p>
+                    <Box size={48} className="mx-auto text-slate-500 mb-2" />
+                    <p className="text-sm text-slate-400">3D Preview</p>
+                    <p className="text-xs text-slate-500">(Connects to main viewer)</p>
                 </div>
             </div>
         </div>
@@ -436,7 +436,7 @@ const MaterialStep: FC<MaterialStepProps> = ({
                                       }`}
                         >
                             <div className="font-medium text-slate-200">{mat.name}</div>
-                            <div className="text-xs text-slate-500 mt-1">
+                            <div className="text-xs text-slate-400 mt-1">
                                 E = {mat.E} GPa, fy = {mat.fy} MPa
                             </div>
                         </button>
@@ -461,7 +461,7 @@ const MaterialStep: FC<MaterialStepProps> = ({
                         >
                             <div>
                                 <div className="font-medium text-slate-200">{sec.name}</div>
-                                <div className="text-xs text-slate-500 mt-1">
+                                <div className="text-xs text-slate-400 mt-1">
                                     A = {sec.A} mm², Iy = {sec.Iy} × 10⁶ mm⁴
                                 </div>
                             </div>
@@ -528,7 +528,7 @@ const LoadStep: FC<LoadStepProps> = ({ template, loads, onChange }) => {
                         </div>
                         <div className="grid grid-cols-3 gap-2">
                             <div>
-                                <label className="text-xs text-slate-500">Fx (kN)</label>
+                                <label className="text-xs text-slate-400">Fx (kN)</label>
                                 <input
                                     type="number"
                                     value={load.fx}
@@ -538,7 +538,7 @@ const LoadStep: FC<LoadStepProps> = ({ template, loads, onChange }) => {
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-500">Fy (kN)</label>
+                                <label className="text-xs text-slate-400">Fy (kN)</label>
                                 <input
                                     type="number"
                                     value={load.fy}
@@ -548,7 +548,7 @@ const LoadStep: FC<LoadStepProps> = ({ template, loads, onChange }) => {
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-500">Fz (kN)</label>
+                                <label className="text-xs text-slate-400">Fz (kN)</label>
                                 <input
                                     type="number"
                                     value={load.fz}
@@ -570,25 +570,25 @@ const LoadStep: FC<LoadStepProps> = ({ template, loads, onChange }) => {
 
             {/* Load summary */}
             <div className="bg-slate-800/50 rounded-lg p-3">
-                <div className="text-xs text-slate-500 mb-2">Load Summary</div>
+                <div className="text-xs text-slate-400 mb-2">Load Summary</div>
                 <div className="grid grid-cols-3 gap-4 text-center">
                     <div>
                         <div className="text-lg font-semibold text-slate-200">
                             {loads.reduce((sum, l) => sum + Math.abs(l.fx), 0).toFixed(1)}
                         </div>
-                        <div className="text-xs text-slate-500">ΣFx (kN)</div>
+                        <div className="text-xs text-slate-400">ΣFx (kN)</div>
                     </div>
                     <div>
                         <div className="text-lg font-semibold text-slate-200">
                             {loads.reduce((sum, l) => sum + Math.abs(l.fy), 0).toFixed(1)}
                         </div>
-                        <div className="text-xs text-slate-500">ΣFy (kN)</div>
+                        <div className="text-xs text-slate-400">ΣFy (kN)</div>
                     </div>
                     <div>
                         <div className="text-lg font-semibold text-slate-200">
                             {loads.reduce((sum, l) => sum + Math.abs(l.fz), 0).toFixed(1)}
                         </div>
-                        <div className="text-xs text-slate-500">ΣFz (kN)</div>
+                        <div className="text-xs text-slate-400">ΣFz (kN)</div>
                     </div>
                 </div>
             </div>
@@ -614,7 +614,7 @@ const ReviewStep: FC<ReviewStepProps> = ({ state, onRun }) => {
                     <div className="font-medium text-slate-200">
                         {state.template?.name || 'Custom Structure'}
                     </div>
-                    <div className="text-xs text-slate-500 mt-1">
+                    <div className="text-xs text-slate-400 mt-1">
                         {state.template?.nodes.length || 0} nodes, {state.template?.members.length || 0} members
                     </div>
                 </div>
@@ -627,7 +627,7 @@ const ReviewStep: FC<ReviewStepProps> = ({ state, onRun }) => {
                     <div className="font-medium text-slate-200">
                         {state.geometry.width}m × {state.geometry.height}m
                     </div>
-                    <div className="text-xs text-slate-500 mt-1">
+                    <div className="text-xs text-slate-400 mt-1">
                         {state.geometry.bays} bay(s), {state.geometry.stories} story
                     </div>
                 </div>
@@ -640,7 +640,7 @@ const ReviewStep: FC<ReviewStepProps> = ({ state, onRun }) => {
                     <div className="font-medium text-slate-200 capitalize">
                         {state.material.replace(/([A-Z])/g, ' $1')}
                     </div>
-                    <div className="text-xs text-slate-500 mt-1 uppercase">
+                    <div className="text-xs text-slate-400 mt-1 uppercase">
                         {state.section}
                     </div>
                 </div>
@@ -653,7 +653,7 @@ const ReviewStep: FC<ReviewStepProps> = ({ state, onRun }) => {
                     <div className="font-medium text-slate-200">
                         {state.loads.length} point load(s)
                     </div>
-                    <div className="text-xs text-slate-500 mt-1">
+                    <div className="text-xs text-slate-400 mt-1">
                         Total: {state.loads.reduce((s, l) => s + Math.sqrt(l.fx**2 + l.fy**2 + l.fz**2), 0).toFixed(1)} kN
                     </div>
                 </div>
@@ -834,7 +834,7 @@ export const AnalysisWizard: FC<AnalysisWizardProps> = ({ onComplete, onCancel }
                                         ? 'text-cyan-400 cursor-pointer' 
                                         : idx === state.currentStep 
                                             ? 'text-white' 
-                                            : 'text-slate-500 cursor-default'
+                                            : 'text-slate-400 cursor-default'
                                 }`}
                             >
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2
@@ -929,14 +929,14 @@ export const AnalysisWizard: FC<AnalysisWizardProps> = ({ onComplete, onCancel }
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors
                               ${canGoPrev 
                                   ? 'text-slate-200 hover:bg-slate-800' 
-                                  : 'text-slate-600 cursor-not-allowed'
+                                  : 'text-slate-500 cursor-not-allowed'
                               }`}
                 >
                     <ArrowLeft size={16} />
                     Back
                 </button>
 
-                <div className="text-sm text-slate-500">
+                <div className="text-sm text-slate-400">
                     {currentStep.description}
                 </div>
 
@@ -947,7 +947,7 @@ export const AnalysisWizard: FC<AnalysisWizardProps> = ({ onComplete, onCancel }
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors
                                   ${canGoNext 
                                       ? 'bg-cyan-600 hover:bg-cyan-500 text-white' 
-                                      : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                                      : 'bg-slate-700 text-slate-400 cursor-not-allowed'
                                   }`}
                     >
                         Next

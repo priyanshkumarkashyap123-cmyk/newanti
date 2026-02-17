@@ -21,19 +21,12 @@
 
 'use client';
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   BridgeDeckDesignEngine,
-  designHighwayBridge,
-  VEHICLE_LOADS,
   type BridgeType,
-  type BridgeGeometry,
-  type BridgeMaterials,
-  type DeckSlabInput,
   type DeckSlabResult,
-  type CompositeGirderInput,
   type CompositeGirderResult,
-  type LoadingCode as EngineLoadingCode,
 } from './BridgeDeckDesignEngine';
 import {
   BridgeSubstructureDesignEngine,
@@ -44,6 +37,7 @@ import {
   type ElastomericBearingResult,
   type SpreadFootingResult,
   type SeismicZone,
+  type SeismicDesignResult,
 } from './BridgeSubstructureEngine';
 
 // =============================================================================
@@ -56,9 +50,6 @@ const SELECT_CLASS = 'w-full px-4 py-2 rounded-lg border border-gray-300 dark:bo
 const BUTTON_PRIMARY = 'px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
 const BUTTON_SECONDARY = 'px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-medium rounded-lg transition-all';
 const LABEL_CLASS = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1';
-const TAB_CLASS = 'px-4 py-2 font-medium rounded-t-lg transition-all';
-const TAB_ACTIVE = 'bg-blue-600 text-white';
-const TAB_INACTIVE = 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600';
 
 // =============================================================================
 // COMPONENT TYPES
@@ -126,7 +117,7 @@ interface DesignResults {
   abutment?: AbutmentDesignResult;
   bearing?: ElastomericBearingResult;
   footing?: SpreadFootingResult;
-  seismic?: any;
+  seismic?: SeismicDesignResult;
 }
 
 // =============================================================================
@@ -248,7 +239,6 @@ const ProgressStep: React.FC<{
 
 const BridgeVisualization: React.FC<{ state: BridgeDesignState }> = ({ state }) => {
   const totalLength = state.spanLengths.reduce((a, b) => a + b, 0);
-  const scale = 600 / Math.max(totalLength, 50);  // Scale to fit 600px width
 
   return (
     <div className={CARD_CLASS}>
@@ -754,7 +744,7 @@ const SuperstructurePhase: React.FC<{
           <SelectField
             label="Girder Type"
             value={state.girderType}
-            onChange={(v) => updateState({ girderType: v as any })}
+            onChange={(v) => updateState({ girderType: v as BridgeDesignState['girderType'] })}
             options={[
               { value: 'I-girder', label: 'I-Girder' },
               { value: 'box-girder', label: 'Box Girder' },
@@ -897,7 +887,7 @@ const SubstructurePhase: React.FC<{
           <SelectField
             label="Pier Type"
             value={state.pierType}
-            onChange={(v) => updateState({ pierType: v as any })}
+            onChange={(v) => updateState({ pierType: v as BridgeDesignState['pierType'] })}
             options={[
               { value: 'single-column', label: 'Single Column' },
               { value: 'multi-column', label: 'Multi-Column Bent' },
@@ -986,7 +976,7 @@ const SubstructurePhase: React.FC<{
           <SelectField
             label="Abutment Type"
             value={state.abutmentType}
-            onChange={(v) => updateState({ abutmentType: v as any })}
+            onChange={(v) => updateState({ abutmentType: v as BridgeDesignState['abutmentType'] })}
             options={[
               { value: 'cantilever', label: 'Cantilever' },
               { value: 'gravity', label: 'Gravity' },
@@ -1143,7 +1133,7 @@ const FoundationPhase: React.FC<{
           <SelectField
             label="Foundation Type"
             value={state.foundationType}
-            onChange={(v) => updateState({ foundationType: v as any })}
+            onChange={(v) => updateState({ foundationType: v as BridgeDesignState['foundationType'] })}
             options={[
               { value: 'spread-footing', label: 'Spread Footing' },
               { value: 'pile-foundation', label: 'Pile Foundation' },

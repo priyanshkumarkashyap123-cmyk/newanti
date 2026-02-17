@@ -171,7 +171,7 @@ export const RustWasmDemo: FC = () => {
                                 {useWebGpu ? (
                                     <WgpuCanvas />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-slate-500">
+                                    <div className="w-full h-full flex items-center justify-center text-slate-400">
                                         <div className="text-center">
                                             <Cpu className="w-16 h-16 mx-auto mb-4 opacity-50" />
                                             <p>WebGL rendering (Three.js) would appear here</p>

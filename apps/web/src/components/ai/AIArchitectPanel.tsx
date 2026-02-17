@@ -440,7 +440,7 @@ export const AIArchitectPanel: FC = () => {
                         </div>
                         <div>
                             <h3 className="text-sm font-semibold text-white">AI Architect</h3>
-                            <p className="text-[10px] text-zinc-500 flex items-center gap-1">
+                            <p className="text-[10px] text-zinc-400 flex items-center gap-1">
                                 Powered by
                                 <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent font-medium">
                                     Google Gemini
@@ -493,7 +493,7 @@ export const AIArchitectPanel: FC = () => {
                 <div className="flex-1 p-3 space-y-3 overflow-y-auto">
                     {/* Prompt Input */}
                     <div>
-                        <label className="block text-xs text-zinc-500 mb-1">
+                        <label className="block text-xs text-zinc-400 mb-1">
                             Describe your structure
                         </label>
                         <textarea
@@ -514,7 +514,7 @@ export const AIArchitectPanel: FC = () => {
 
                     {/* Example Prompts */}
                     <div>
-                        <label className="block text-xs text-zinc-500 mb-1.5">
+                        <label className="block text-xs text-zinc-400 mb-1.5">
                             Try an example
                         </label>
                         <div className="flex flex-wrap gap-1.5">
@@ -599,7 +599,7 @@ export const AIArchitectPanel: FC = () => {
 
                     {/* Command Input */}
                     <div>
-                        <label className="block text-xs text-zinc-500 mb-1">
+                        <label className="block text-xs text-zinc-400 mb-1">
                             Tell me what to change
                         </label>
                         <textarea
@@ -621,7 +621,7 @@ export const AIArchitectPanel: FC = () => {
 
                     {/* Quick Modify Examples */}
                     <div>
-                        <label className="block text-xs text-zinc-500 mb-1.5 flex items-center gap-1">
+                        <label className="block text-xs text-zinc-400 mb-1.5 flex items-center gap-1">
                             <Lightbulb className="w-3 h-3" />
                             Quick commands
                         </label>
@@ -693,7 +693,7 @@ export const AIArchitectPanel: FC = () => {
                     {/* Modification History */}
                     {modifyHistory.length > 0 && (
                         <div className="mt-2">
-                            <label className="block text-xs text-zinc-500 mb-1.5">Recent changes</label>
+                            <label className="block text-xs text-zinc-400 mb-1.5">Recent changes</label>
                             <div className="space-y-1 max-h-32 overflow-y-auto">
                                 {modifyHistory.slice(-5).reverse().map((item, i) => (
                                     <div
@@ -720,7 +720,7 @@ export const AIArchitectPanel: FC = () => {
                     <div className="flex-1 overflow-y-auto p-3 space-y-3">
                         {chatMessages.length === 0 ? (
                             <div className="text-center py-8">
-                                <Bot className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
+                                <Bot className="w-10 h-10 text-zinc-500 mx-auto mb-3" />
                                 <p className="text-sm text-zinc-400 mb-4">
                                     Ask me anything about structural engineering!
                                 </p>
@@ -802,7 +802,7 @@ export const AIArchitectPanel: FC = () => {
 
             {/* Footer */}
             <div className="px-3 py-2 border-t border-zinc-800">
-                <p className="text-[10px] text-zinc-600 text-center flex items-center justify-center gap-1">
+                <p className="text-[10px] text-zinc-500 text-center flex items-center justify-center gap-1">
                     {aiStatus?.gemini_configured ? (
                         <>
                             <span className="w-1.5 h-1.5 bg-green-400 rounded-full" />

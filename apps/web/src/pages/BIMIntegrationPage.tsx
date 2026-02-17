@@ -106,7 +106,7 @@ export default function BIMIntegrationPage() {
 
         {viewMode === 'upload' && (
           <section className="rounded-xl border border-dashed border-slate-700 bg-slate-900/60 p-8 text-center">
-            <Upload className="w-12 h-12 mx-auto text-slate-500 mb-4" />
+            <Upload className="w-12 h-12 mx-auto text-slate-400 mb-4" />
             <h2 className="text-lg font-semibold mb-2">Upload IFC File</h2>
             <p className="text-sm text-slate-400 mb-4">Supports IFC 2x3, IFC 4, and IFC 4x3 formats</p>
             <label className="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg cursor-pointer transition-colors">
@@ -175,7 +175,7 @@ export default function BIMIntegrationPage() {
 
         {viewMode === 'export' && (
           <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-center">
-            <FileDown className="w-12 h-12 mx-auto text-slate-500 mb-4" />
+            <FileDown className="w-12 h-12 mx-auto text-slate-400 mb-4" />
             <h2 className="text-lg font-semibold mb-2">Export Structural Model</h2>
             <p className="text-sm text-slate-400 mb-4">Export the analyzed structural model to IFC 4 format</p>
             <button onClick={exportIFC} disabled={isProcessing || parsedMembers.length === 0} className="px-6 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 rounded-lg transition-colors">

@@ -329,13 +329,13 @@ const ResultAnimationViewer: React.FC = () => {
               {/* Placeholder for 3D animation */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
-                  <Box className="w-20 h-20 text-slate-600 mx-auto mb-4" 
+                  <Box className="w-20 h-20 text-slate-500 mx-auto mb-4" 
                     style={{ 
                       transform: `scale(${1 + getAnimationPhase() * 0.1}) rotate(${getAnimationPhase() * 5}deg)`,
                       transition: 'transform 0.1s'
                     }} 
                   />
-                  <p className="text-slate-500">
+                  <p className="text-slate-400">
                     {settings.type === 'modal' && `Mode ${selectedMode} Animation`}
                     {settings.type === 'deformation' && 'Deformed Shape Animation'}
                     {settings.type === 'time-history' && 'Time History Response'}
@@ -494,7 +494,7 @@ const ResultAnimationViewer: React.FC = () => {
                     onChange={(e) => setSettings(prev => ({ ...prev, scale: parseInt(e.target.value) }))}
                     className="w-full h-2 bg-slate-700 rounded-lg appearance-none"
                   />
-                  <div className="flex justify-between text-xs text-slate-500 mt-1">
+                  <div className="flex justify-between text-xs text-slate-400 mt-1">
                     <span>1x</span>
                     <span>500x</span>
                   </div>

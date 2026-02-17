@@ -186,11 +186,11 @@ export const ConnectionDesignPanel: React.FC = () => {
 
                             <div className="grid grid-cols-2 gap-2">
                                 <div className="p-3 bg-zinc-900 rounded border border-zinc-700 text-center">
-                                    <div className="text-xs text-zinc-500">Capacity</div>
+                                    <div className="text-xs text-zinc-400">Capacity</div>
                                     <div className="text-xl font-mono">{result.capacity.toFixed(1)} kN/kNm</div>
                                 </div>
                                 <div className="p-3 bg-zinc-900 rounded border border-zinc-700 text-center">
-                                    <div className="text-xs text-zinc-500">Ratio</div>
+                                    <div className="text-xs text-zinc-400">Ratio</div>
                                     <div className="text-xl font-mono">{result.ratio.toFixed(2)}</div>
                                 </div>
                             </div>
@@ -205,7 +205,7 @@ export const ConnectionDesignPanel: React.FC = () => {
                             </div>
                         </div>
                     ) : (
-                        <div className="h-full flex items-center justify-center text-zinc-500">
+                        <div className="h-full flex items-center justify-center text-zinc-400">
                             Run check to see results
                         </div>
                     )}

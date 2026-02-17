@@ -139,14 +139,14 @@ export const ProjectDetailsDialog: FC<ProjectDetailsDialogProps> = ({
                             <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
                                 {isNewProject ? 'New Project' : 'Project Details'}
                             </h2>
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                            <p className="text-sm text-zinc-400 dark:text-zinc-400">
                                 {isNewProject ? 'Enter project information' : 'Edit project information'}
                             </p>
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                        className="p-2 rounded-lg text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                     >
                         <X className="w-5 h-5" />
                     </button>

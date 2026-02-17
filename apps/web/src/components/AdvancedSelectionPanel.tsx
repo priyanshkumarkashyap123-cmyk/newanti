@@ -66,7 +66,7 @@ export const AdvancedSelectionPanel: FC = () => {
                 </div>
                 <button
                     onClick={() => setActiveTool(null)}
-                    className="text-zinc-500 hover:text-white transition-colors"
+                    className="text-zinc-400 hover:text-white transition-colors"
                 >
                     <X className="w-4 h-4" />
                 </button>
@@ -117,7 +117,7 @@ export const AdvancedSelectionPanel: FC = () => {
                                             flex-1 py-1.5 text-xs font-medium rounded-md uppercase transition-all
                                             ${axis === a
                                                 ? 'bg-blue-600 text-white shadow-lg'
-                                                : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800'
+                                                : 'text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800'
                                             }
                                         `}
                                     >
@@ -129,7 +129,7 @@ export const AdvancedSelectionPanel: FC = () => {
 
                         <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">Min (m)</label>
+                                <label className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider">Min (m)</label>
                                 <input
                                     type="number"
                                     step="0.1"
@@ -139,7 +139,7 @@ export const AdvancedSelectionPanel: FC = () => {
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">Max (m)</label>
+                                <label className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider">Max (m)</label>
                                 <input
                                     type="number"
                                     step="0.1"
@@ -172,7 +172,7 @@ export const AdvancedSelectionPanel: FC = () => {
                                     className="flex items-center justify-between px-4 py-3 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg group transition-all"
                                 >
                                     <span className="text-sm font-medium text-zinc-200">Parallel to {a.toUpperCase()}</span>
-                                    <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-blue-400 transition-colors" />
+                                    <ArrowRight className="w-4 h-4 text-zinc-400 group-hover:text-blue-400 transition-colors" />
                                 </button>
                             ))}
                         </div>
@@ -185,7 +185,7 @@ export const AdvancedSelectionPanel: FC = () => {
                         <div className="space-y-2">
                             <label className="text-xs font-medium text-zinc-400">Section Property</label>
                             {uniqueSections.length === 0 ? (
-                                <div className="p-3 text-xs text-zinc-500 bg-zinc-800/50 rounded-lg border border-zinc-800">
+                                <div className="p-3 text-xs text-zinc-400 bg-zinc-800/50 rounded-lg border border-zinc-800">
                                     No sections defined.
                                 </div>
                             ) : (

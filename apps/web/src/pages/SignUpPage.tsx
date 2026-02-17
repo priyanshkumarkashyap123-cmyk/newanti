@@ -81,7 +81,7 @@ export const SignUpPage = () => {
                     </div>
 
                     {/* Footer */}
-                    <div className="flex items-center gap-6 text-sm text-slate-500 border-t border-slate-800/50 pt-8">
+                    <div className="flex items-center gap-6 text-sm text-slate-400 border-t border-slate-800/50 pt-8">
                         <span>© {new Date().getFullYear()} BeamLab Ultimate</span>
                         <Link to="/privacy" className="hover:text-slate-300 transition-colors">Privacy</Link>
                         <Link to="/terms" className="hover:text-slate-300 transition-colors">Terms</Link>
@@ -122,7 +122,7 @@ export const SignUpPage = () => {
                                 <div className="h-4 w-16 bg-slate-800 rounded animate-pulse" />
                                 <div className="h-10 w-full bg-slate-800 rounded-lg animate-pulse" />
                                 <div className="h-10 w-full bg-slate-800 rounded-lg animate-pulse mt-4" />
-                                <p className="text-center text-sm text-slate-500">Loading secure sign-up…</p>
+                                <p className="text-center text-sm text-slate-400">Loading secure sign-up…</p>
                             </div>
                         </ClerkLoading>
                         <ClerkLoaded>
@@ -134,7 +134,7 @@ export const SignUpPage = () => {
                                         headerTitle: 'hidden',
                                         headerSubtitle: 'hidden',
                                         formFieldLabel: 'text-slate-300 font-medium text-sm',
-                                        formFieldInput: 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all',
+                                        formFieldInput: 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all',
                                         formButtonPrimary: 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-2.5 rounded-lg shadow-lg shadow-blue-500/20 transition-all',
                                         footerActionLink: 'text-blue-400 hover:text-blue-300 font-medium',
                                         identityPreviewText: 'text-slate-300',
@@ -142,7 +142,7 @@ export const SignUpPage = () => {
                                         socialButtonsBlockButton: 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:border-slate-600 rounded-lg transition-all',
                                         socialButtonsBlockButtonText: 'font-medium',
                                         dividerLine: 'bg-slate-800',
-                                        dividerText: 'text-slate-500 uppercase text-xs tracking-wider bg-slate-900 px-2',
+                                        dividerText: 'text-slate-400 uppercase text-xs tracking-wider bg-slate-900 px-2',
                                         formFieldInputShowPasswordButton: 'text-slate-400 hover:text-slate-300',
                                         footer: 'bg-slate-900/50 p-6 border-t border-slate-800'
                                     },

@@ -213,7 +213,7 @@ const WindCalculator: FC = () => {
                             </option>
                         ))}
                     </select>
-                    <p className="text-slate-500 text-xs mt-1">
+                    <p className="text-slate-400 text-xs mt-1">
                         {TERRAIN_CATEGORIES.find(c => c.id === terrainCategory)?.description}
                     </p>
                 </div>
@@ -354,7 +354,7 @@ const SeismicCalculator: FC = () => {
                             </option>
                         ))}
                     </select>
-                    <p className="text-slate-500 text-xs mt-1">{zone.description}</p>
+                    <p className="text-slate-400 text-xs mt-1">{zone.description}</p>
                 </div>
 
                 {/* Soil Type */}
@@ -479,9 +479,9 @@ export const LoadGenerators: FC = () => {
                             </div>
                             <span className="text-white font-bold">BeamLab</span>
                         </Link>
-                        <span className="text-slate-600">/</span>
+                        <span className="text-slate-500">/</span>
                         <Link to="/tools" className="text-slate-400 hover:text-white text-sm">Tools</Link>
-                        <span className="text-slate-600">/</span>
+                        <span className="text-slate-500">/</span>
                         <span className="text-white text-sm font-medium">Load Generators</span>
                     </div>
                 </div>

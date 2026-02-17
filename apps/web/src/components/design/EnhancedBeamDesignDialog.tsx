@@ -238,7 +238,7 @@ const InputField: React.FC<InputFieldProps> = ({
         }`}
       />
       {unit && (
-        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500">
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">
           {unit}
         </span>
       )}
@@ -268,7 +268,7 @@ const CheckItem: React.FC<CheckItemProps> = ({ check }) => (
       <span className="text-sm font-medium text-slate-700">{check.name}</span>
     </div>
     <div className="text-right">
-      <div className="text-sm text-slate-600">
+      <div className="text-sm text-slate-500">
         {check.value.toFixed(2)} / {check.limit.toFixed(2)}
       </div>
       <div className={`text-xs ${
@@ -295,7 +295,7 @@ const UtilizationBar: React.FC<UtilizationBarProps> = ({ value, max, label }) =>
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-sm">
-        <span className="text-slate-600">{label}</span>
+        <span className="text-slate-500">{label}</span>
         <span className={`font-medium ${
           ratio <= 0.7 ? 'text-green-600' : ratio <= 1.0 ? 'text-amber-600' : 'text-red-600'
         }`}>
@@ -604,7 +604,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
               className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-colors ${
                 activeTab === tab.id
                   ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50'
-                  : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
+                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
               }`}
             >
               <tab.icon className="w-4 h-4" />
@@ -778,7 +778,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
               <div>
                 <button
                   onClick={() => setShowAdvanced(!showAdvanced)}
-                  className="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-800"
+                  className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800"
                 >
                   {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   Advanced Options
@@ -854,7 +854,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
               {/* Status Header */}
               <div className="flex items-center justify-between bg-slate-50 rounded-xl p-4">
                 <div>
-                  <p className="text-sm text-slate-600">Design Status</p>
+                  <p className="text-sm text-slate-500">Design Status</p>
                   <div className="flex items-center gap-3 mt-1">
                     <StatusBadge status={result.status} />
                     <span className="text-slate-700 font-medium">
@@ -863,7 +863,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-slate-600">xu/d ratio</p>
+                  <p className="text-sm text-slate-500">xu/d ratio</p>
                   <p className="text-lg font-bold text-slate-800">
                     {(result.section.xu / result.section.effectiveDepth).toFixed(3)}
                   </p>
@@ -880,15 +880,15 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                   </h4>
                   <div className="space-y-3">
                     <div className="flex justify-between">
-                      <span className="text-slate-600">Required</span>
+                      <span className="text-slate-500">Required</span>
                       <span className="font-medium">{result.tension.required} mm²</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-600">Provided</span>
+                      <span className="text-slate-500">Provided</span>
                       <span className="font-bold text-blue-700">{result.tension.provided} mm²</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-600">Bars</span>
+                      <span className="text-slate-500">Bars</span>
                       <span className="font-bold text-lg">{result.tension.bars}</span>
                     </div>
                     <div className="pt-2 border-t border-blue-200">
@@ -913,15 +913,15 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                     </h4>
                     <div className="space-y-3">
                       <div className="flex justify-between">
-                        <span className="text-slate-600">Required</span>
+                        <span className="text-slate-500">Required</span>
                         <span className="font-medium">{result.compression.required} mm²</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-600">Provided</span>
+                        <span className="text-slate-500">Provided</span>
                         <span className="font-bold text-purple-700">{result.compression.provided} mm²</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-600">Bars</span>
+                        <span className="text-slate-500">Bars</span>
                         <span className="font-bold text-lg">{result.compression.bars}</span>
                       </div>
                       <p className="text-xs text-purple-600">
@@ -937,19 +937,19 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                     </h4>
                     <div className="space-y-3">
                       <div className="flex justify-between">
-                        <span className="text-slate-600">Shear Stress</span>
+                        <span className="text-slate-500">Shear Stress</span>
                         <span className="font-medium">{result.shear.stress.toFixed(2)} N/mm²</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-600">Capacity</span>
+                        <span className="text-slate-500">Capacity</span>
                         <span className="font-medium">{result.shear.capacity.toFixed(2)} N/mm²</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-600">Stirrups</span>
+                        <span className="text-slate-500">Stirrups</span>
                         <span className="font-bold">{result.shear.stirrups}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-600">Spacing</span>
+                        <span className="text-slate-500">Spacing</span>
                         <span className="font-bold text-lg">{result.shear.spacing} mm c/c</span>
                       </div>
                       <div className="pt-2 border-t border-green-200">
@@ -994,14 +994,14 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                   </h4>
                   <div className="space-y-3">
                     <div className="flex justify-between py-2 border-b border-slate-200">
-                      <span className="text-slate-600">Minimum Clear Spacing</span>
+                      <span className="text-slate-500">Minimum Clear Spacing</span>
                       <span className="font-medium">{result.detailing.minSpacing} mm</span>
                     </div>
                     <div className="flex justify-between py-2 border-b border-slate-200">
-                      <span className="text-slate-600">Maximum Spacing</span>
+                      <span className="text-slate-500">Maximum Spacing</span>
                       <span className="font-medium">{result.detailing.maxSpacing} mm</span>
                     </div>
-                    <p className="text-xs text-slate-500 mt-2">
+                    <p className="text-xs text-slate-400 mt-2">
                       As per {code === 'IS456' ? 'IS 456 Cl. 26.3' : code === 'ACI318' ? 'ACI 318 Cl. 7.6' : 'EC2 Cl. 8.2'}
                     </p>
                   </div>
@@ -1015,14 +1015,14 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                   </h4>
                   <div className="space-y-3">
                     <div className="flex justify-between py-2 border-b border-slate-200">
-                      <span className="text-slate-600">Development Length (Ld)</span>
+                      <span className="text-slate-500">Development Length (Ld)</span>
                       <span className="font-medium">{result.detailing.anchorageLength} mm</span>
                     </div>
                     <div className="flex justify-between py-2 border-b border-slate-200">
-                      <span className="text-slate-600">Lap Length</span>
+                      <span className="text-slate-500">Lap Length</span>
                       <span className="font-medium">{result.detailing.lapLength} mm</span>
                     </div>
-                    <p className="text-xs text-slate-500 mt-2">
+                    <p className="text-xs text-slate-400 mt-2">
                       For {input.steelGrade} steel in {input.concreteGrade} concrete
                     </p>
                   </div>
@@ -1152,7 +1152,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
               className="text-center py-12"
             >
               <Calculator className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-500">
+              <p className="text-slate-400">
                 Run the design calculation first to see results
               </p>
               <button

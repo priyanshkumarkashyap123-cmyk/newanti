@@ -335,7 +335,7 @@ const TitlePageContent: React.FC = () => (
       {BOOK_METADATA.title}
     </h1>
     
-    <p className="text-slate-600 font-serif italic mb-8">
+    <p className="text-slate-500 font-serif italic mb-8">
       {BOOK_METADATA.subtitle}
     </p>
     
@@ -346,7 +346,7 @@ const TitlePageContent: React.FC = () => (
     </p>
     
     <div className="mt-auto pt-12">
-      <p className="text-slate-500 text-sm">{BOOK_METADATA.edition}</p>
+      <p className="text-slate-400 text-sm">{BOOK_METADATA.edition}</p>
       <p className="text-slate-400 text-xs mt-1">ISBN: {BOOK_METADATA.isbn}</p>
     </div>
   </div>
@@ -416,7 +416,7 @@ const TableOfContentsContent: React.FC<{ onNavigate: (page: number) => void }> =
               <span className="font-serif text-slate-800 block">
                 {ch.num}. {ch.title}
               </span>
-              <span className="text-sm text-slate-500">{ch.subtitle}</span>
+              <span className="text-sm text-slate-400">{ch.subtitle}</span>
             </span>
             <span className="text-slate-400 font-mono text-sm">{ch.page}</span>
           </button>
@@ -515,7 +515,7 @@ const ChapterStartContent: React.FC<ChapterPageProps> = ({ number, title, subtit
       Chapter {number}
     </p>
     <h1 className="text-3xl font-serif text-slate-800 mb-3">{title}</h1>
-    <p className="text-slate-500 italic">{subtitle}</p>
+    <p className="text-slate-400 italic">{subtitle}</p>
     <div className="flex items-center gap-3 mt-6">
       <span className="h-px w-12 bg-amber-300" />
       <span className="text-amber-500 ornament">❧</span>
@@ -545,7 +545,7 @@ const ChapterContentPage: React.FC<ChapterPageProps> = ({ sections }) => (
           {section.points && (
             <ul className="space-y-1 mt-2">
               {section.points.map((point, j) => (
-                <li key={j} className="flex items-start gap-2 text-slate-600">
+                <li key={j} className="flex items-start gap-2 text-slate-500">
                   <span className="text-amber-500 mt-0.5">▸</span>
                   <span>{point}</span>
                 </li>

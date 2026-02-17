@@ -495,7 +495,7 @@ export const NonlinearAnalysisPage: React.FC = () => {
                               hinge.state === 'Elastic' ? 'text-green-400' :
                               hinge.state === 'Yielded' ? 'text-amber-400' : 'text-red-400'
                             }`}>{hinge.state}</span>
-                            <span className="text-slate-500">{hinge.rotation.toFixed(4)} rad</span>
+                            <span className="text-slate-400">{hinge.rotation.toFixed(4)} rad</span>
                           </div>
                         </div>
                       ))}

@@ -46,7 +46,7 @@ export const DataTablesPanel: FC<DataTablesPanelProps> = ({
             <div className="h-8 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between px-4">
                 <div className="flex items-center gap-4">
                     {tabs.map(tab => (
-                        <span key={tab.id} className="text-xs text-zinc-500">
+                        <span key={tab.id} className="text-xs text-zinc-400">
                             {tab.label}: <span className="font-medium text-zinc-700 dark:text-zinc-300">{tab.count}</span>
                         </span>
                     ))}
@@ -55,7 +55,7 @@ export const DataTablesPanel: FC<DataTablesPanelProps> = ({
                     onClick={onToggleCollapse}
                     className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded"
                 >
-                    <ChevronUp className="w-4 h-4 text-zinc-500" />
+                    <ChevronUp className="w-4 h-4 text-zinc-400" />
                 </button>
             </div>
         );
@@ -76,7 +76,7 @@ export const DataTablesPanel: FC<DataTablesPanelProps> = ({
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex items-center gap-2 px-4 py-2 text-xs font-medium border-b-2 transition-colors ${isActive
                                         ? 'border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
-                                        : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+                                        : 'border-transparent text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
                                     }`}
                             >
                                 <Icon className="w-3.5 h-3.5" />
@@ -93,7 +93,7 @@ export const DataTablesPanel: FC<DataTablesPanelProps> = ({
                     onClick={onToggleCollapse}
                     className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                 >
-                    <ChevronDown className="w-4 h-4 text-zinc-500" />
+                    <ChevronDown className="w-4 h-4 text-zinc-400" />
                 </button>
             </div>
 
@@ -103,26 +103,26 @@ export const DataTablesPanel: FC<DataTablesPanelProps> = ({
                     <thead className="bg-zinc-50 dark:bg-zinc-800/50 sticky top-0">
                         {activeTab === 'nodes' && (
                             <tr>
-                                <th className="px-4 py-2 text-left font-medium text-zinc-500">ID</th>
-                                <th className="px-4 py-2 text-right font-medium text-zinc-500">X (m)</th>
-                                <th className="px-4 py-2 text-right font-medium text-zinc-500">Y (m)</th>
-                                <th className="px-4 py-2 text-right font-medium text-zinc-500">Z (m)</th>
+                                <th className="px-4 py-2 text-left font-medium text-zinc-400">ID</th>
+                                <th className="px-4 py-2 text-right font-medium text-zinc-400">X (m)</th>
+                                <th className="px-4 py-2 text-right font-medium text-zinc-400">Y (m)</th>
+                                <th className="px-4 py-2 text-right font-medium text-zinc-400">Z (m)</th>
                             </tr>
                         )}
                         {activeTab === 'members' && (
                             <tr>
-                                <th className="px-4 py-2 text-left font-medium text-zinc-500">ID</th>
-                                <th className="px-4 py-2 text-left font-medium text-zinc-500">Start</th>
-                                <th className="px-4 py-2 text-left font-medium text-zinc-500">End</th>
-                                <th className="px-4 py-2 text-right font-medium text-zinc-500">Length</th>
+                                <th className="px-4 py-2 text-left font-medium text-zinc-400">ID</th>
+                                <th className="px-4 py-2 text-left font-medium text-zinc-400">Start</th>
+                                <th className="px-4 py-2 text-left font-medium text-zinc-400">End</th>
+                                <th className="px-4 py-2 text-right font-medium text-zinc-400">Length</th>
                             </tr>
                         )}
                         {activeTab === 'loads' && (
                             <tr>
-                                <th className="px-4 py-2 text-left font-medium text-zinc-500">ID</th>
-                                <th className="px-4 py-2 text-left font-medium text-zinc-500">Node</th>
-                                <th className="px-4 py-2 text-right font-medium text-zinc-500">Fx (kN)</th>
-                                <th className="px-4 py-2 text-right font-medium text-zinc-500">Fy (kN)</th>
+                                <th className="px-4 py-2 text-left font-medium text-zinc-400">ID</th>
+                                <th className="px-4 py-2 text-left font-medium text-zinc-400">Node</th>
+                                <th className="px-4 py-2 text-right font-medium text-zinc-400">Fx (kN)</th>
+                                <th className="px-4 py-2 text-right font-medium text-zinc-400">Fy (kN)</th>
                             </tr>
                         )}
                     </thead>
@@ -130,17 +130,17 @@ export const DataTablesPanel: FC<DataTablesPanelProps> = ({
                         {activeTab === 'nodes' && nodes.map((node, idx) => (
                             <tr key={node.id} className={idx % 2 === 0 ? 'bg-white dark:bg-zinc-900' : 'bg-zinc-50 dark:bg-zinc-800/30'}>
                                 <td className="px-4 py-1.5 font-mono text-zinc-700 dark:text-zinc-300">{node.id}</td>
-                                <td className="px-4 py-1.5 text-right font-mono text-zinc-600 dark:text-zinc-400">{node.x.toFixed(3)}</td>
-                                <td className="px-4 py-1.5 text-right font-mono text-zinc-600 dark:text-zinc-400">{node.y.toFixed(3)}</td>
-                                <td className="px-4 py-1.5 text-right font-mono text-zinc-600 dark:text-zinc-400">{node.z.toFixed(3)}</td>
+                                <td className="px-4 py-1.5 text-right font-mono text-zinc-500 dark:text-zinc-400">{node.x.toFixed(3)}</td>
+                                <td className="px-4 py-1.5 text-right font-mono text-zinc-500 dark:text-zinc-400">{node.y.toFixed(3)}</td>
+                                <td className="px-4 py-1.5 text-right font-mono text-zinc-500 dark:text-zinc-400">{node.z.toFixed(3)}</td>
                             </tr>
                         ))}
                         {activeTab === 'members' && members.map((member, idx) => (
                             <tr key={member.id} className={idx % 2 === 0 ? 'bg-white dark:bg-zinc-900' : 'bg-zinc-50 dark:bg-zinc-800/30'}>
                                 <td className="px-4 py-1.5 font-mono text-zinc-700 dark:text-zinc-300">{member.id}</td>
-                                <td className="px-4 py-1.5 text-zinc-600 dark:text-zinc-400">{member.startNode}</td>
-                                <td className="px-4 py-1.5 text-zinc-600 dark:text-zinc-400">{member.endNode}</td>
-                                <td className="px-4 py-1.5 text-right font-mono text-zinc-600 dark:text-zinc-400">-</td>
+                                <td className="px-4 py-1.5 text-zinc-500 dark:text-zinc-400">{member.startNode}</td>
+                                <td className="px-4 py-1.5 text-zinc-500 dark:text-zinc-400">{member.endNode}</td>
+                                <td className="px-4 py-1.5 text-right font-mono text-zinc-500 dark:text-zinc-400">-</td>
                             </tr>
                         ))}
                         {(activeTab === 'nodes' && nodes.length === 0) && (

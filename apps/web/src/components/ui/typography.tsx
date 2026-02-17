@@ -23,12 +23,12 @@ export const typographyVariants = cva('', {
             h5: 'text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-50',
             h6: 'text-xs font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 uppercase',
             body: 'text-sm text-zinc-700 dark:text-zinc-300',
-            bodySmall: 'text-xs text-zinc-600 dark:text-zinc-400',
-            caption: 'text-[11px] text-zinc-500 dark:text-zinc-500',
+            bodySmall: 'text-xs text-zinc-500 dark:text-zinc-400',
+            caption: 'text-[11px] text-zinc-400 dark:text-zinc-400',
             code: 'text-xs font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded',
-            label: 'text-xs font-medium text-zinc-500 dark:text-zinc-400',
+            label: 'text-xs font-medium text-zinc-400 dark:text-zinc-400',
             value: 'text-sm font-medium text-zinc-900 dark:text-zinc-100 font-mono',
-            unit: 'text-[10px] text-zinc-400 dark:text-zinc-500 ml-0.5'
+            unit: 'text-[10px] text-zinc-400 dark:text-zinc-400 ml-0.5'
         }
     },
     defaultVariants: {

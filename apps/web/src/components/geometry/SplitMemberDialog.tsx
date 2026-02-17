@@ -141,7 +141,7 @@ export function SplitMemberDialog({ isOpen, onClose, memberId }: SplitMemberDial
                                     step={method === 'distance' ? "0.1" : "0.05"}
                                 />
                                 {method === 'distance' && (
-                                    <p className="text-[10px] text-zinc-500">Max: {length.toFixed(3)}m</p>
+                                    <p className="text-[10px] text-zinc-400">Max: {length.toFixed(3)}m</p>
                                 )}
                             </div>
                             <div className="space-y-2">

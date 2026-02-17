@@ -320,7 +320,7 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                                     <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
                                 </div>
                             ) : projects.length === 0 ? (
-                                <p className="text-center text-zinc-500 py-8">
+                                <p className="text-center text-zinc-400 py-8">
                                     No saved projects yet
                                 </p>
                             ) : (
@@ -331,7 +331,7 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                                     >
                                         <div>
                                             <div className="font-medium text-white">{proj.name}</div>
-                                            <div className="text-xs text-zinc-500">
+                                            <div className="text-xs text-zinc-400">
                                                 {proj.nodeCount} nodes • {proj.memberCount} members
                                             </div>
                                         </div>

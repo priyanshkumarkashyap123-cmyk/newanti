@@ -184,7 +184,7 @@ export const PlateCreationDialog: FC<PlateCreationDialogProps> = ({ isOpen, onCl
                                         onChange={(e) => setCustomE(parseFloat(e.target.value) * 1e6 || 200e6)}
                                         className="flex-1 px-3 py-1.5 bg-zinc-700 border border-zinc-600 rounded text-white text-sm"
                                     />
-                                    <span className="text-xs text-zinc-500">GPa</span>
+                                    <span className="text-xs text-zinc-400">GPa</span>
                                 </div>
                             </div>
                             <div>
@@ -204,7 +204,7 @@ export const PlateCreationDialog: FC<PlateCreationDialogProps> = ({ isOpen, onCl
 
                     {/* Material Info */}
                     {materialType !== 'custom' && (
-                        <div className="text-xs text-zinc-500">
+                        <div className="text-xs text-zinc-400">
                             E = {(material.E / 1e6).toFixed(0)} GPa, ν = {material.nu}
                         </div>
                     )}
@@ -237,7 +237,7 @@ export const PlateCreationDialog: FC<PlateCreationDialogProps> = ({ isOpen, onCl
 
                 {/* Footer */}
                 <div className="flex items-center justify-between px-6 py-4 bg-zinc-800/50 border-t border-zinc-700">
-                    <div className="text-xs text-zinc-500">
+                    <div className="text-xs text-zinc-400">
                         Plate elements use MITC4 formulation
                     </div>
                     <div className="flex gap-2">
@@ -252,7 +252,7 @@ export const PlateCreationDialog: FC<PlateCreationDialogProps> = ({ isOpen, onCl
                             disabled={!isValidSelection}
                             className={`flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-all ${isValidSelection
                                     ? 'bg-purple-600 hover:bg-purple-500 text-white'
-                                    : 'bg-zinc-700 text-zinc-500 cursor-not-allowed'
+                                    : 'bg-zinc-700 text-zinc-400 cursor-not-allowed'
                                 }`}
                         >
                             <Plus className="w-4 h-4" />

@@ -148,7 +148,7 @@ export const ContactPage: FC = () => {
                                             type="text"
                                             id="name"
                                             required
-                                            className="px-4 py-3 rounded-lg border border-slate-700 bg-slate-800 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-500"
+                                            className="px-4 py-3 rounded-lg border border-slate-700 bg-slate-800 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400"
                                             placeholder="Your name"
                                             value={formState.name}
                                             onChange={e => setFormState({ ...formState, name: e.target.value })}
@@ -160,7 +160,7 @@ export const ContactPage: FC = () => {
                                             type="email"
                                             id="email"
                                             required
-                                            className="px-4 py-3 rounded-lg border border-slate-700 bg-slate-800 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-500"
+                                            className="px-4 py-3 rounded-lg border border-slate-700 bg-slate-800 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400"
                                             placeholder="you@company.com"
                                             value={formState.email}
                                             onChange={e => setFormState({ ...formState, email: e.target.value })}
@@ -190,7 +190,7 @@ export const ContactPage: FC = () => {
                                         id="message"
                                         required
                                         rows={4}
-                                        className="px-4 py-3 rounded-lg border border-slate-700 bg-slate-800 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none placeholder:text-slate-500"
+                                        className="px-4 py-3 rounded-lg border border-slate-700 bg-slate-800 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none placeholder:text-slate-400"
                                         placeholder="How can we help you?"
                                         value={formState.message}
                                         onChange={e => setFormState({ ...formState, message: e.target.value })}
@@ -218,7 +218,7 @@ export const ContactPage: FC = () => {
             </main>
 
             {/* Footer */}
-            <footer className="border-t border-slate-800 bg-slate-950 py-8 text-center text-sm text-slate-500">
+            <footer className="border-t border-slate-800 bg-slate-950 py-8 text-center text-sm text-slate-400">
                 <p>© 2026 BeamLab Ultimate. All rights reserved.</p>
             </footer>
         </div>

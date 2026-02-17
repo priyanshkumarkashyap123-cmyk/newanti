@@ -235,7 +235,7 @@ export const ProductTour: FC<ProductTourProps> = ({ isOpen, onClose, onComplete 
           <div className="flex items-center justify-between gap-4">
             <button
               onClick={handleSkip}
-              className="text-sm text-slate-500 hover:text-slate-300 transition-colors"
+              className="text-sm text-slate-400 hover:text-slate-300 transition-colors"
             >
               Skip tour
             </button>
@@ -262,7 +262,7 @@ export const ProductTour: FC<ProductTourProps> = ({ isOpen, onClose, onComplete 
           {/* Close button */}
           <button
             onClick={handleSkip}
-            className="absolute top-4 right-4 p-2 text-slate-500 hover:text-white transition-colors"
+            className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

@@ -1132,7 +1132,7 @@ export default function AdvancedSettingsPage() {
                 className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
                   hasChanges
                     ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                    : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                    : 'bg-slate-700 text-slate-400 cursor-not-allowed'
                 }`}
               >
                 <Save className="w-4 h-4" />

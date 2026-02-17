@@ -201,7 +201,7 @@ const CircularProgress: React.FC<{
           >
             {Math.round(percentage)}%
           </motion.span>
-          <span className="text-xs text-zinc-500">Complete</span>
+          <span className="text-xs text-zinc-400">Complete</span>
         </div>
       )}
     </div>
@@ -259,7 +259,7 @@ const AnalysisStepItem: React.FC<{
   isActive: boolean;
 }> = ({ step, isActive }) => {
   const statusIcons = {
-    pending: <Clock className="w-4 h-4 text-zinc-500" />,
+    pending: <Clock className="w-4 h-4 text-zinc-400" />,
     running: <RefreshCw className="w-4 h-4 text-blue-400 animate-spin" />,
     complete: <CheckCircle2 className="w-4 h-4 text-emerald-400" />,
     failed: <AlertCircle className="w-4 h-4 text-red-400" />,
@@ -281,13 +281,13 @@ const AnalysisStepItem: React.FC<{
             {step.name}
           </span>
           {step.duration !== undefined && (
-            <span className="text-xs text-zinc-500">{step.duration.toFixed(2)}s</span>
+            <span className="text-xs text-zinc-400">{step.duration.toFixed(2)}s</span>
           )}
         </div>
         
         {step.status === 'running' && (
           <div className="mt-1.5">
-            <div className="flex items-center justify-between text-xs text-zinc-500 mb-1">
+            <div className="flex items-center justify-between text-xs text-zinc-400 mb-1">
               <span>{step.message || 'Processing...'}</span>
               <span>{step.progress}%</span>
             </div>
@@ -422,7 +422,7 @@ const ConvergenceChart: React.FC<{
       </svg>
       
       <div className="flex items-center justify-between mt-2 text-xs">
-        <span className="text-zinc-500">Iterations: {data.length}</span>
+        <span className="text-zinc-400">Iterations: {data.length}</span>
         <span className={data.length > 0 && data[data.length - 1].residual <= tolerance ? 'text-emerald-400' : 'text-amber-400'}>
           Residual: {data.length > 0 ? data[data.length - 1].residual.toExponential(2) : '-'}
         </span>
@@ -457,7 +457,7 @@ const LiveLogDisplay: React.FC<{
     <div className="bg-zinc-900/50 rounded-xl border border-zinc-800 overflow-hidden">
       <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-800">
         <span className="text-xs font-medium text-zinc-400">Analysis Log</span>
-        <span className="text-xs text-zinc-600">{logs.length} entries</span>
+        <span className="text-xs text-zinc-500">{logs.length} entries</span>
       </div>
       <div
         ref={containerRef}
@@ -470,7 +470,7 @@ const LiveLogDisplay: React.FC<{
             animate={{ opacity: 1, x: 0 }}
             className="flex gap-2"
           >
-            <span className="text-zinc-600">[{log.time}]</span>
+            <span className="text-zinc-500">[{log.time}]</span>
             <span className={typeColors[log.type]}>{log.message}</span>
           </motion.div>
         ))}
@@ -652,7 +652,7 @@ export const RealTimeAnalysisPanel: React.FC<{
             </div>
             <div>
               <h2 className="font-semibold text-white">Real-Time Analysis Engine</h2>
-              <p className="text-xs text-zinc-500">High-performance structural computation</p>
+              <p className="text-xs text-zinc-400">High-performance structural computation</p>
             </div>
           </div>
           
@@ -687,7 +687,7 @@ export const RealTimeAnalysisPanel: React.FC<{
       <div className="p-4 space-y-4">
         {/* Analysis Type Selection */}
         <div>
-          <label className="block text-xs text-zinc-500 mb-2">Analysis Type</label>
+          <label className="block text-xs text-zinc-400 mb-2">Analysis Type</label>
           <div className="grid grid-cols-4 gap-2">
             {ANALYSIS_TYPES.slice(0, 4).map(({ type, name, icon, color }) => (
               <button
@@ -715,7 +715,7 @@ export const RealTimeAnalysisPanel: React.FC<{
         
         {/* Solver Selection */}
         <div>
-          <label className="block text-xs text-zinc-500 mb-2">Solver</label>
+          <label className="block text-xs text-zinc-400 mb-2">Solver</label>
           <div className="grid grid-cols-2 gap-2">
             {SOLVER_TYPES.map(({ type, name, description }) => (
               <button
@@ -728,14 +728,14 @@ export const RealTimeAnalysisPanel: React.FC<{
                     : 'bg-zinc-800/50 border-zinc-700/50 hover:border-zinc-600'
                 } ${status !== 'idle' ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                <div className={`p-2 rounded-lg ${config.solver === type ? 'bg-blue-500/20 text-blue-400' : 'bg-zinc-700 text-zinc-500'}`}>
+                <div className={`p-2 rounded-lg ${config.solver === type ? 'bg-blue-500/20 text-blue-400' : 'bg-zinc-700 text-zinc-400'}`}>
                   {type === 'gpu' ? <Zap className="w-4 h-4" /> : <Cpu className="w-4 h-4" />}
                 </div>
                 <div>
                   <p className={`text-sm font-medium ${config.solver === type ? 'text-white' : 'text-zinc-300'}`}>
                     {name}
                   </p>
-                  <p className="text-xs text-zinc-500 mt-0.5">{description}</p>
+                  <p className="text-xs text-zinc-400 mt-0.5">{description}</p>
                 </div>
               </button>
             ))}
@@ -752,7 +752,7 @@ export const RealTimeAnalysisPanel: React.FC<{
               <Settings className="w-4 h-4" />
               Advanced Settings
             </span>
-            {showAdvanced ? <ChevronUp className="w-4 h-4 text-zinc-500" /> : <ChevronDown className="w-4 h-4 text-zinc-500" />}
+            {showAdvanced ? <ChevronUp className="w-4 h-4 text-zinc-400" /> : <ChevronDown className="w-4 h-4 text-zinc-400" />}
           </button>
           
           <AnimatePresence>
@@ -765,7 +765,7 @@ export const RealTimeAnalysisPanel: React.FC<{
               >
                 <div className="p-4 pt-0 grid grid-cols-2 gap-4 border-t border-zinc-800">
                   <div>
-                    <label className="block text-xs text-zinc-500 mb-1">Tolerance</label>
+                    <label className="block text-xs text-zinc-400 mb-1">Tolerance</label>
                     <input
                       type="text"
                       value={config.tolerance.toExponential()}
@@ -775,7 +775,7 @@ export const RealTimeAnalysisPanel: React.FC<{
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-zinc-500 mb-1">Max Iterations</label>
+                    <label className="block text-xs text-zinc-400 mb-1">Max Iterations</label>
                     <input
                       type="number"
                       value={config.maxIterations}
@@ -785,7 +785,7 @@ export const RealTimeAnalysisPanel: React.FC<{
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-zinc-500 mb-1">Load Increments</label>
+                    <label className="block text-xs text-zinc-400 mb-1">Load Increments</label>
                     <input
                       type="number"
                       value={config.loadIncrements}
@@ -795,7 +795,7 @@ export const RealTimeAnalysisPanel: React.FC<{
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-zinc-500 mb-1">Damping Ratio</label>
+                    <label className="block text-xs text-zinc-400 mb-1">Damping Ratio</label>
                     <input
                       type="number"
                       step="0.01"

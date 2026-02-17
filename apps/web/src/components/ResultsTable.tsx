@@ -226,7 +226,7 @@ export const ResultsTable: FC = () => {
 
     if (!analysisResults) {
         return (
-            <div className="absolute top-16 right-4 w-80 p-6 bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl shadow-2xl flex items-center justify-center text-slate-500 z-50">
+            <div className="absolute top-16 right-4 w-80 p-6 bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl shadow-2xl flex items-center justify-center text-slate-400 z-50">
                 Run analysis to see results
             </div>
         );
@@ -343,13 +343,13 @@ export const ResultsTable: FC = () => {
             </div>
 
             {/* Footer Summary */}
-            <div className="px-4 py-2 bg-slate-950 border-t border-slate-800 text-xs text-slate-500 flex justify-between items-center">
+            <div className="px-4 py-2 bg-slate-950 border-t border-slate-800 text-xs text-slate-400 flex justify-between items-center">
                 <span>
                     {activeTab === 'displacements' && `Showing ${displacementData.length} Nodes`}
                     {activeTab === 'reactions' && `Showing ${reactionData.length} Supports`}
                     {activeTab === 'forces' && `Showing ${forceData.length} Members`}
                 </span>
-                <span className="text-slate-600 font-mono">
+                <span className="text-slate-500 font-mono">
                     {analysisResults.stats?.solveTimeMs ? `Solved in ${analysisResults.stats.solveTimeMs.toFixed(1)}ms` : ''}
                 </span>
             </div>

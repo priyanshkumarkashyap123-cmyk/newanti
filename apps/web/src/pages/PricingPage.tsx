@@ -275,7 +275,7 @@ export const PricingPage: FC = () => {
                                 onClick={() => setBillingPeriod('monthly')}
                                 className={`flex-1 h-full rounded-lg px-4 text-sm font-bold transition-all ${billingPeriod === 'monthly'
                                     ? 'bg-slate-800 shadow-sm text-white'
-                                    : 'text-slate-500 hover:text-slate-300'
+                                    : 'text-slate-400 hover:text-slate-300'
                                     }`}
                             >
                                 Monthly
@@ -284,7 +284,7 @@ export const PricingPage: FC = () => {
                                 onClick={() => setBillingPeriod('yearly')}
                                 className={`flex-1 h-full rounded-lg px-4 text-sm font-bold transition-all flex items-center justify-center gap-2 ${billingPeriod === 'yearly'
                                     ? 'bg-slate-800 shadow-sm text-white'
-                                    : 'text-slate-500 hover:text-slate-300'
+                                    : 'text-slate-400 hover:text-slate-300'
                                     }`}
                             >
                                 Yearly
@@ -335,7 +335,7 @@ export const PricingPage: FC = () => {
                                 </div>
                                 <div className="mb-6 sm:mb-8">
                                     <span className="text-3xl sm:text-4xl font-bold text-white">{getPrice(tier)}</span>
-                                    {tier.period && <span className="text-slate-500 ml-1">{tier.period}</span>}
+                                    {tier.period && <span className="text-slate-400 ml-1">{tier.period}</span>}
                                 </div>
 
                                 {/* CTA Button */}
@@ -357,12 +357,12 @@ export const PricingPage: FC = () => {
                                 <ul className="space-y-3 sm:space-y-4 flex-1">
                                     {tier.features.map((feature) => (
                                         <li key={feature} className="flex items-start gap-3 text-sm text-slate-300">
-                                            <CheckCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${tier.popular ? 'text-blue-400' : 'text-slate-600'}`} />
+                                            <CheckCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${tier.popular ? 'text-blue-400' : 'text-slate-400'}`} />
                                             <span>{feature}</span>
                                         </li>
                                     ))}
                                     {tier.notIncluded?.map((feature) => (
-                                        <li key={feature} className="flex items-start gap-3 text-sm text-slate-600 line-through">
+                                        <li key={feature} className="flex items-start gap-3 text-sm text-slate-400 line-through">
                                             <X className="w-5 h-5 flex-shrink-0 mt-0.5 text-slate-700" />
                                             <span>{feature}</span>
                                         </li>
@@ -422,12 +422,12 @@ export const PricingPage: FC = () => {
                         </div>
                         <span className="text-xl font-bold text-white">BeamLab Ultimate</span>
                     </div>
-                    <div className="flex gap-6 text-sm text-slate-500">
+                    <div className="flex gap-6 text-sm text-slate-400">
                         <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
                         <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
                         <a href="mailto:support@beamlabultimate.tech" className="hover:text-white transition-colors">Support</a>
                     </div>
-                    <p className="text-sm text-slate-600">© 2026 BeamLab Ultimate. All rights reserved.</p>
+                    <p className="text-sm text-slate-400">© 2026 BeamLab Ultimate. All rights reserved.</p>
                 </div>
             </footer>
         </div>

@@ -442,7 +442,7 @@ const PanelHeader: FC<PanelHeaderProps> = ({
       onMouseDown={onDragStart}
     >
       {/* Drag Handle */}
-      <GripVertical className="w-3 h-3 text-zinc-500" />
+      <GripVertical className="w-3 h-3 text-zinc-400" />
 
       {/* Icon & Title */}
       {Icon && <Icon className="w-3.5 h-3.5 text-zinc-400" />}
@@ -711,7 +711,7 @@ export const DockContainer: FC<DockContainerProps> = ({ position, children }) =>
         `}
         onClick={() => collapseDock(position, !collapsed)}
       >
-        <CollapseIcon className="w-4 h-4 text-zinc-500" />
+        <CollapseIcon className="w-4 h-4 text-zinc-400" />
       </div>
 
       {/* Content */}

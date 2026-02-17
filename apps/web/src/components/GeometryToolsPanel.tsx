@@ -410,7 +410,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                             </button>
                                         ))}
                                     </div>
-                                    <p className="text-xs text-zinc-500 mt-2">
+                                    <p className="text-xs text-zinc-400 mt-2">
                                         {mirrorPlane === 'XY' && 'Mirror across XY plane (flip Z)'}
                                         {mirrorPlane === 'YZ' && 'Mirror across YZ plane (flip X)'}
                                         {mirrorPlane === 'XZ' && 'Mirror across XZ plane (flip Y)'}
@@ -432,7 +432,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                         onChange={(e) => setSplitRatio(parseFloat(e.target.value))}
                                         className="w-full"
                                     />
-                                    <div className="flex justify-between text-xs text-zinc-500 mt-1">
+                                    <div className="flex justify-between text-xs text-zinc-400 mt-1">
                                         <span>Start</span>
                                         <span>Mid</span>
                                         <span>End</span>

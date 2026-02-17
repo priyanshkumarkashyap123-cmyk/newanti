@@ -469,7 +469,7 @@ export const AdvancedAIBrain: FC = () => {
           </div>
           <div>
             <h3 className="text-sm font-semibold text-white">AI Assistant</h3>
-            <p className="text-xs text-slate-500">Structural Engineering Expert</p>
+            <p className="text-xs text-slate-400">Structural Engineering Expert</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -491,7 +491,7 @@ export const AdvancedAIBrain: FC = () => {
       {/* Context Bar */}
       {context.length > 0 && (
         <div className="px-4 py-2 border-b border-slate-800 flex items-center gap-2 overflow-x-auto">
-          <span className="text-xs text-slate-500">Context:</span>
+          <span className="text-xs text-slate-400">Context:</span>
           {context.map((item, i) => (
             <span key={i} className="px-2 py-0.5 text-xs bg-slate-800 text-slate-300 rounded-full">
               {item.label}: {item.value}
@@ -513,7 +513,7 @@ export const AdvancedAIBrain: FC = () => {
               {message.role === 'assistant' && (
                 <div className="flex items-center gap-2 mb-1">
                   <Sparkles className="w-3 h-3 text-blue-400" />
-                  <span className="text-xs text-slate-500">AI</span>
+                  <span className="text-xs text-slate-400">AI</span>
                 </div>
               )}
               <div className={`p-3 rounded-2xl ${
@@ -529,7 +529,7 @@ export const AdvancedAIBrain: FC = () => {
                 <div className="flex items-center gap-2 mt-1">
                   <button
                     onClick={() => copyToClipboard(message.content, message.id)}
-                    className="p-1 text-slate-500 hover:text-white transition-colors"
+                    className="p-1 text-slate-400 hover:text-white transition-colors"
                   >
                     {copiedId === message.id ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                   </button>
@@ -552,7 +552,7 @@ export const AdvancedAIBrain: FC = () => {
       {/* Quick Prompts */}
       {showSuggestions && messages.length <= 2 && (
         <div className="px-4 pb-2">
-          <p className="text-xs text-slate-500 mb-2">Quick actions:</p>
+          <p className="text-xs text-slate-400 mb-2">Quick actions:</p>
           <div className="flex flex-wrap gap-2">
             {QUICK_PROMPTS.map((prompt, i) => (
               <button
@@ -605,7 +605,7 @@ export const AdvancedAIBrain: FC = () => {
             </div>
           </div>
         </div>
-        <p className="text-[10px] text-slate-600 mt-2 text-center">
+        <p className="text-[10px] text-slate-500 mt-2 text-center">
           Press Enter to send • Shift+Enter for new line
         </p>
       </div>

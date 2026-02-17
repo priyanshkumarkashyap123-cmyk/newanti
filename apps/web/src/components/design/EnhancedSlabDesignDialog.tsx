@@ -587,7 +587,7 @@ export function EnhancedSlabDesignDialog({
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-white">RCC Slab Design</h2>
-                <p className="text-sm text-zinc-500">{CODE_INFO[designCode].name}</p>
+                <p className="text-sm text-zinc-400">{CODE_INFO[designCode].name}</p>
               </div>
             </div>
             
@@ -624,7 +624,7 @@ export function EnhancedSlabDesignDialog({
                 className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-colors ${
                   activeTab === tab.id
                     ? 'text-blue-400 border-b-2 border-blue-400 bg-blue-500/5'
-                    : 'text-zinc-500 hover:text-white hover:bg-zinc-800/50'
+                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
                 }`}
               >
                 {tab.icon}
@@ -646,7 +646,7 @@ export function EnhancedSlabDesignDialog({
                   
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-xs text-zinc-500 mb-1">Slab Type</label>
+                      <label className="block text-xs text-zinc-400 mb-1">Slab Type</label>
                       <select
                         value={input.slabType}
                         onChange={e => updateInput('slabType', e.target.value)}
@@ -660,7 +660,7 @@ export function EnhancedSlabDesignDialog({
                     
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs text-zinc-500 mb-1">Span Lx (mm)</label>
+                        <label className="block text-xs text-zinc-400 mb-1">Span Lx (mm)</label>
                         <input
                           type="number"
                           value={input.spanX}
@@ -669,7 +669,7 @@ export function EnhancedSlabDesignDialog({
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-zinc-500 mb-1">Span Ly (mm)</label>
+                        <label className="block text-xs text-zinc-400 mb-1">Span Ly (mm)</label>
                         <input
                           type="number"
                           value={input.spanY}
@@ -680,7 +680,7 @@ export function EnhancedSlabDesignDialog({
                     </div>
                     
                     <div>
-                      <label className="block text-xs text-zinc-500 mb-1">Slab Thickness (mm)</label>
+                      <label className="block text-xs text-zinc-400 mb-1">Slab Thickness (mm)</label>
                       <input
                         type="number"
                         value={input.thickness}
@@ -690,7 +690,7 @@ export function EnhancedSlabDesignDialog({
                     </div>
                     
                     <div>
-                      <label className="block text-xs text-zinc-500 mb-1">Clear Cover (mm)</label>
+                      <label className="block text-xs text-zinc-400 mb-1">Clear Cover (mm)</label>
                       <input
                         type="number"
                         value={input.clearCover}
@@ -700,7 +700,7 @@ export function EnhancedSlabDesignDialog({
                     </div>
                     
                     <div>
-                      <label className="block text-xs text-zinc-500 mb-1">Support Condition</label>
+                      <label className="block text-xs text-zinc-400 mb-1">Support Condition</label>
                       <select
                         value={input.supportCondition}
                         onChange={e => updateInput('supportCondition', e.target.value)}
@@ -725,7 +725,7 @@ export function EnhancedSlabDesignDialog({
                   
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-xs text-zinc-500 mb-1">Concrete Grade (MPa)</label>
+                      <label className="block text-xs text-zinc-400 mb-1">Concrete Grade (MPa)</label>
                       <select
                         value={input.concreteGrade}
                         onChange={e => updateInput('concreteGrade', Number(e.target.value))}
@@ -738,7 +738,7 @@ export function EnhancedSlabDesignDialog({
                     </div>
                     
                     <div>
-                      <label className="block text-xs text-zinc-500 mb-1">Steel Grade (MPa)</label>
+                      <label className="block text-xs text-zinc-400 mb-1">Steel Grade (MPa)</label>
                       <select
                         value={input.steelGrade}
                         onChange={e => updateInput('steelGrade', Number(e.target.value))}
@@ -751,7 +751,7 @@ export function EnhancedSlabDesignDialog({
                     </div>
                     
                     <div className="pt-2 border-t border-zinc-800">
-                      <label className="block text-xs text-zinc-500 mb-1">Dead Load (kN/m²)</label>
+                      <label className="block text-xs text-zinc-400 mb-1">Dead Load (kN/m²)</label>
                       <input
                         type="number"
                         step="0.1"
@@ -759,11 +759,11 @@ export function EnhancedSlabDesignDialog({
                         onChange={e => updateInput('deadLoad', Number(e.target.value))}
                         className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
-                      <p className="text-xs text-zinc-600 mt-0.5">Excluding self-weight</p>
+                      <p className="text-xs text-zinc-500 mt-0.5">Excluding self-weight</p>
                     </div>
                     
                     <div>
-                      <label className="block text-xs text-zinc-500 mb-1">Live Load (kN/m²)</label>
+                      <label className="block text-xs text-zinc-400 mb-1">Live Load (kN/m²)</label>
                       <input
                         type="number"
                         step="0.1"
@@ -774,7 +774,7 @@ export function EnhancedSlabDesignDialog({
                     </div>
                     
                     <div>
-                      <label className="block text-xs text-zinc-500 mb-1">Floor Finish (kN/m²)</label>
+                      <label className="block text-xs text-zinc-400 mb-1">Floor Finish (kN/m²)</label>
                       <input
                         type="number"
                         step="0.1"
@@ -799,23 +799,23 @@ export function EnhancedSlabDesignDialog({
                   
                   <div className="p-4 rounded-xl bg-zinc-800/50 border border-zinc-700 space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-zinc-500">Aspect Ratio (Ly/Lx):</span>
+                      <span className="text-zinc-400">Aspect Ratio (Ly/Lx):</span>
                       <span className={`font-medium ${aspectRatio > 2 ? 'text-amber-400' : 'text-emerald-400'}`}>
                         {aspectRatio.toFixed(2)}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-zinc-500">Slab Behavior:</span>
+                      <span className="text-zinc-400">Slab Behavior:</span>
                       <span className={`font-medium ${slabBehavior === 'one-way' ? 'text-blue-400' : 'text-emerald-400'}`}>
                         {slabBehavior === 'one-way' ? 'One-Way' : 'Two-Way'}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-zinc-500">Self-weight:</span>
+                      <span className="text-zinc-400">Self-weight:</span>
                       <span className="text-zinc-400">{(input.thickness / 1000 * 25).toFixed(2)} kN/m²</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-zinc-500">Total Load:</span>
+                      <span className="text-zinc-400">Total Load:</span>
                       <span className="text-white font-medium">
                         {(input.thickness / 1000 * 25 + input.deadLoad + input.liveLoad + input.floorFinish).toFixed(2)} kN/m²
                       </span>
@@ -862,28 +862,28 @@ export function EnhancedSlabDesignDialog({
                     <h4 className="text-sm font-semibold text-white mb-3">Design Moments</h4>
                     <div className="space-y-3">
                       <div>
-                        <p className="text-xs text-zinc-500 mb-1">Positive Moments</p>
+                        <p className="text-xs text-zinc-400 mb-1">Positive Moments</p>
                         <div className="grid grid-cols-2 gap-2">
                           <div className="p-2 rounded bg-zinc-900">
-                            <p className="text-xs text-zinc-500">Mx+</p>
+                            <p className="text-xs text-zinc-400">Mx+</p>
                             <p className="text-lg font-semibold text-white">{result.moments.positive.x.toFixed(2)} kN·m/m</p>
                           </div>
                           <div className="p-2 rounded bg-zinc-900">
-                            <p className="text-xs text-zinc-500">My+</p>
+                            <p className="text-xs text-zinc-400">My+</p>
                             <p className="text-lg font-semibold text-white">{result.moments.positive.y.toFixed(2)} kN·m/m</p>
                           </div>
                         </div>
                       </div>
                       {result.moments.negative && (
                         <div>
-                          <p className="text-xs text-zinc-500 mb-1">Negative Moments (Support)</p>
+                          <p className="text-xs text-zinc-400 mb-1">Negative Moments (Support)</p>
                           <div className="grid grid-cols-2 gap-2">
                             <div className="p-2 rounded bg-zinc-900">
-                              <p className="text-xs text-zinc-500">Mx-</p>
+                              <p className="text-xs text-zinc-400">Mx-</p>
                               <p className="text-lg font-semibold text-white">{result.moments.negative.x.toFixed(2)} kN·m/m</p>
                             </div>
                             <div className="p-2 rounded bg-zinc-900">
-                              <p className="text-xs text-zinc-500">My-</p>
+                              <p className="text-xs text-zinc-400">My-</p>
                               <p className="text-lg font-semibold text-white">{result.moments.negative.y.toFixed(2)} kN·m/m</p>
                             </div>
                           </div>
@@ -896,12 +896,12 @@ export function EnhancedSlabDesignDialog({
                     <div className={`p-4 rounded-xl border ${result.deflectionCheck.isAdequate ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
                       <h4 className="text-sm font-medium text-white mb-2">Deflection Check</h4>
                       <p className="text-2xl font-bold text-white">{result.deflectionCheck.spanDepthRatio.toFixed(1)}</p>
-                      <p className="text-xs text-zinc-500">L/d (limit: {result.deflectionCheck.allowableRatio.toFixed(1)})</p>
+                      <p className="text-xs text-zinc-400">L/d (limit: {result.deflectionCheck.allowableRatio.toFixed(1)})</p>
                     </div>
                     <div className={`p-4 rounded-xl border ${result.shearCheck.isAdequate ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
                       <h4 className="text-sm font-medium text-white mb-2">Shear Check</h4>
                       <p className="text-2xl font-bold text-white">{result.shearCheck.appliedShear.toFixed(1)} kN/m</p>
-                      <p className="text-xs text-zinc-500">Capacity: {result.shearCheck.shearCapacity.toFixed(1)} kN/m</p>
+                      <p className="text-xs text-zinc-400">Capacity: {result.shearCheck.shearCapacity.toFixed(1)} kN/m</p>
                     </div>
                   </div>
                 </div>
@@ -919,7 +919,7 @@ export function EnhancedSlabDesignDialog({
                         <p className="text-lg font-semibold text-white">
                           {result.reinforcement.bottomX.barDiameter}mm @ {result.reinforcement.bottomX.spacing}mm c/c
                         </p>
-                        <p className="text-xs text-zinc-500">
+                        <p className="text-xs text-zinc-400">
                           Ast = {result.reinforcement.bottomX.providedAst.toFixed(0)} mm²/m
                         </p>
                       </div>
@@ -931,7 +931,7 @@ export function EnhancedSlabDesignDialog({
                         <p className="text-lg font-semibold text-white">
                           {result.reinforcement.bottomY.barDiameter}mm @ {result.reinforcement.bottomY.spacing}mm c/c
                         </p>
-                        <p className="text-xs text-zinc-500">
+                        <p className="text-xs text-zinc-400">
                           Ast = {result.reinforcement.bottomY.providedAst.toFixed(0)} mm²/m
                         </p>
                       </div>
@@ -951,7 +951,7 @@ export function EnhancedSlabDesignDialog({
                             <p className="text-lg font-semibold text-white">
                               {result.reinforcement.topX.barDiameter}mm @ {result.reinforcement.topX.spacing}mm c/c
                             </p>
-                            <p className="text-xs text-zinc-500">
+                            <p className="text-xs text-zinc-400">
                               Ast = {result.reinforcement.topX.providedAst.toFixed(0)} mm²/m
                             </p>
                           </div>
@@ -965,7 +965,7 @@ export function EnhancedSlabDesignDialog({
                             <p className="text-lg font-semibold text-white">
                               {result.reinforcement.topY.barDiameter}mm @ {result.reinforcement.topY.spacing}mm c/c
                             </p>
-                            <p className="text-xs text-zinc-500">
+                            <p className="text-xs text-zinc-400">
                               Ast = {result.reinforcement.topY.providedAst.toFixed(0)} mm²/m
                             </p>
                           </div>
@@ -1013,15 +1013,15 @@ export function EnhancedSlabDesignDialog({
                 
                 <div className="grid grid-cols-3 gap-4 w-full max-w-2xl">
                   <div className="p-4 rounded-xl bg-zinc-800/50 border border-zinc-700 text-center">
-                    <p className="text-xs text-zinc-500 mb-1">Slab Thickness</p>
+                    <p className="text-xs text-zinc-400 mb-1">Slab Thickness</p>
                     <p className="text-lg font-semibold text-white">{input.thickness} mm</p>
                   </div>
                   <div className="p-4 rounded-xl bg-zinc-800/50 border border-zinc-700 text-center">
-                    <p className="text-xs text-zinc-500 mb-1">Clear Cover</p>
+                    <p className="text-xs text-zinc-400 mb-1">Clear Cover</p>
                     <p className="text-lg font-semibold text-white">{input.clearCover} mm</p>
                   </div>
                   <div className="p-4 rounded-xl bg-zinc-800/50 border border-zinc-700 text-center">
-                    <p className="text-xs text-zinc-500 mb-1">Effective Depth</p>
+                    <p className="text-xs text-zinc-400 mb-1">Effective Depth</p>
                     <p className="text-lg font-semibold text-white">{result.effectiveDepth} mm</p>
                   </div>
                 </div>

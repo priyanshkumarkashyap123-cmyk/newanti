@@ -142,7 +142,7 @@ const ErrorFallback = ({ error, errorInfo, onRetry }: ErrorFallbackProps) => {
                     {/* Show Details Toggle */}
                     <button
                         onClick={() => setShowDetails(!showDetails)}
-                        className="w-full flex items-center justify-center gap-2 text-sm text-slate-500 hover:text-slate-400 transition-colors"
+                        className="w-full flex items-center justify-center gap-2 text-sm text-slate-400 hover:text-slate-400 transition-colors"
                     >
                         <Bug className="w-4 h-4" />
                         {showDetails ? 'Hide' : 'Show'} technical details
@@ -156,7 +156,7 @@ const ErrorFallback = ({ error, errorInfo, onRetry }: ErrorFallbackProps) => {
                             className="space-y-3"
                         >
                             <div className="flex items-center justify-between">
-                                <span className="text-xs text-slate-500 uppercase tracking-wider">
+                                <span className="text-xs text-slate-400 uppercase tracking-wider">
                                     Stack Trace
                                 </span>
                                 <button
@@ -176,7 +176,7 @@ const ErrorFallback = ({ error, errorInfo, onRetry }: ErrorFallbackProps) => {
                                     )}
                                 </button>
                             </div>
-                            <pre className="p-3 bg-slate-950 rounded-lg text-xs text-slate-500 font-mono overflow-x-auto max-h-40 overflow-y-auto">
+                            <pre className="p-3 bg-slate-950 rounded-lg text-xs text-slate-400 font-mono overflow-x-auto max-h-40 overflow-y-auto">
                                 {error?.stack}
                             </pre>
                         </motion.div>

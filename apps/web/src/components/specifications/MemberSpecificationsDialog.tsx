@@ -192,7 +192,7 @@ export const MemberSpecificationsDialog: FC<MemberSpecificationsDialogProps> = (
                                         </div>
                                     </div>
                                 </div>
-                                <p className="text-xs text-zinc-500 italic">
+                                <p className="text-xs text-zinc-400 italic">
                                     Checked = Released (Free to move/rotate). Unchecked = Fixed.
                                 </p>
                             </div>
@@ -206,7 +206,7 @@ export const MemberSpecificationsDialog: FC<MemberSpecificationsDialogProps> = (
                                     <div className="grid grid-cols-3 gap-3">
                                         {['x', 'y', 'z'].map((axis) => (
                                             <div key={`start-${axis}`}>
-                                                <label className="text-xs text-zinc-500 uppercase block mb-1">{axis} (m)</label>
+                                                <label className="text-xs text-zinc-400 uppercase block mb-1">{axis} (m)</label>
                                                 <input
                                                     type="number"
                                                     value={(offsets.start as any)[axis]}
@@ -227,7 +227,7 @@ export const MemberSpecificationsDialog: FC<MemberSpecificationsDialogProps> = (
                                     <div className="grid grid-cols-3 gap-3">
                                         {['x', 'y', 'z'].map((axis) => (
                                             <div key={`end-${axis}`}>
-                                                <label className="text-xs text-zinc-500 uppercase block mb-1">{axis} (m)</label>
+                                                <label className="text-xs text-zinc-400 uppercase block mb-1">{axis} (m)</label>
                                                 <input
                                                     type="number"
                                                     value={(offsets.end as any)[axis]}
@@ -267,7 +267,7 @@ export const MemberSpecificationsDialog: FC<MemberSpecificationsDialogProps> = (
                                             ))}
                                         </div>
                                     </div>
-                                    <p className="text-xs text-zinc-500 mt-2">
+                                    <p className="text-xs text-zinc-400 mt-2">
                                         Rotation about the local x-axis. Positive is clockwise when looking from start to end.
                                     </p>
                                 </div>

@@ -229,7 +229,7 @@ const ProjectCard: FC<{ project: Project; onClick: () => void }> = ({ project, o
             <div className="flex items-start justify-between">
                 <h3 className="font-semibold text-slate-100 truncate flex-1 group-hover:text-blue-400 transition-colors">{project.name}</h3>
             </div>
-            <div className="flex items-center gap-3 text-xs text-slate-500">
+            <div className="flex items-center gap-3 text-xs text-slate-400">
                 <span className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     {formatDate(project.lastModified)}
@@ -281,7 +281,7 @@ const StatCard: FC<{ label: string; value: string | number; icon: React.ReactNod
     <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition-colors">
         <div className="flex items-center justify-between mb-3">
             <span className="text-slate-400 text-sm font-medium">{label}</span>
-            <span className="text-slate-600 bg-slate-800 p-1.5 rounded-md">{icon}</span>
+            <span className="text-slate-500 bg-slate-800 p-1.5 rounded-md">{icon}</span>
         </div>
         <div className="flex items-end gap-2">
             <span className="text-3xl font-bold text-white tracking-tight">{value}</span>
@@ -375,7 +375,7 @@ export const StreamDashboard: FC = () => {
                         <div className="flex items-center gap-3">
                             <div className="text-right hidden sm:block">
                                 <div className="text-sm font-medium text-white">{userName}</div>
-                                <div className="text-[10px] text-slate-500 font-medium">Free Plan</div>
+                                <div className="text-[10px] text-slate-400 font-medium">Free Plan</div>
                             </div>
                             <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-inner ring-2 ring-slate-900">
                                 {userName.charAt(0).toUpperCase()}
@@ -438,13 +438,13 @@ export const StreamDashboard: FC = () => {
                         <div className="flex items-center gap-2 w-full sm:w-auto">
                             {/* Search */}
                             <div className="relative flex-1 sm:flex-none">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                                 <input
                                     type="text"
                                     placeholder="Search projects..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full sm:w-64 pl-9 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+                                    className="w-full sm:w-64 pl-9 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
                                 />
                             </div>
                             {/* Filter */}
@@ -465,7 +465,7 @@ export const StreamDashboard: FC = () => {
                                     onClick={() => setShowStarred(!showStarred)}
                                     className={`p-2 rounded-lg border transition-colors ${showStarred
                                             ? 'bg-amber-500/10 border-amber-500/50 text-amber-400'
-                                            : 'bg-slate-900 border-slate-800 text-slate-500 hover:text-amber-400 hover:border-slate-700'
+                                            : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-amber-400 hover:border-slate-700'
                                         }`}
                                 >
                                     <Star className="w-4 h-4" />
@@ -499,9 +499,9 @@ export const StreamDashboard: FC = () => {
                             </div>
 
                             <div className="w-14 h-14 rounded-full bg-slate-800 group-hover:bg-blue-500/20 flex items-center justify-center mb-4 transition-colors z-10 border border-slate-700 group-hover:border-blue-500/50">
-                                <Plus className="w-6 h-6 text-slate-500 group-hover:text-blue-400" />
+                                <Plus className="w-6 h-6 text-slate-400 group-hover:text-blue-400" />
                             </div>
-                            <span className="text-sm font-semibold text-slate-500 group-hover:text-blue-400 transition-colors z-10">
+                            <span className="text-sm font-semibold text-slate-400 group-hover:text-blue-400 transition-colors z-10">
                                 Create New Project
                             </span>
                         </motion.button>
@@ -510,7 +510,7 @@ export const StreamDashboard: FC = () => {
                     {filteredProjects.length === 0 && searchQuery && (
                         <div className="text-center py-16 bg-slate-900/50 rounded-xl border border-slate-800 border-dashed">
                             <Search className="w-12 h-12 text-slate-700 mx-auto mb-4" />
-                            <p className="text-slate-500 text-lg">No projects found matching "{searchQuery}"</p>
+                            <p className="text-slate-400 text-lg">No projects found matching "{searchQuery}"</p>
                             <button onClick={() => setSearchQuery('')} className="mt-4 text-blue-400 hover:text-blue-300 text-sm font-medium">
                                 Clear Search
                             </button>
@@ -546,7 +546,7 @@ export const StreamDashboard: FC = () => {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <h3 className="font-semibold text-slate-200 text-sm truncate">{template.name}</h3>
-                                    <p className="text-xs text-slate-500 truncate">{template.description}</p>
+                                    <p className="text-xs text-slate-400 truncate">{template.description}</p>
                                 </div>
                             </motion.button>
                         ))}
@@ -558,7 +558,7 @@ export const StreamDashboard: FC = () => {
                 FOOTER
                 ================================================ */}
             <footer className="border-t border-slate-800 mt-16 bg-slate-900/30">
-                <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between text-sm text-slate-500">
+                <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between text-sm text-slate-400">
                     <span className="mb-4 md:mb-0">© 2025 BeamLab Ultimate. All rights reserved.</span>
                     <div className="flex items-center gap-6">
                         <Link to="/help" className="hover:text-white transition-colors">Help Center</Link>

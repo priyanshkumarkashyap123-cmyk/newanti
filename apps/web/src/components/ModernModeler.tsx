@@ -208,7 +208,7 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = ({ coll
                 </h3>
                 <button
                     onClick={onToggle}
-                    className="p-1 text-slate-500 hover:text-white hover:bg-slate-800 rounded"
+                    className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded"
                     title="Hide Properties"
                 >
                     <ChevronRight className="w-4 h-4" />
@@ -218,7 +218,7 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = ({ coll
                 <PropertiesPanel />
             </div>
             <div className="p-3 border-t border-slate-800">
-                <p className="text-[10px] text-slate-500 text-center">
+                <p className="text-[10px] text-slate-400 text-center">
                     {selectedIds.size === 0
                         ? 'Select an element to view properties'
                         : `${selectedIds.size} item(s) selected`
@@ -240,7 +240,7 @@ const StatusBar: FC<{ isAnalyzing: boolean }> = ({ isAnalyzing }) => {
     const { activeCategory, activeTool } = useUIStore();
 
     return (
-        <div className="h-7 bg-slate-950 border-t border-slate-800 flex items-center justify-between px-4 text-xs text-slate-500 flex-shrink-0">
+        <div className="h-7 bg-slate-950 border-t border-slate-800 flex items-center justify-between px-4 text-xs text-slate-400 flex-shrink-0">
             <div className="flex items-center gap-6">
                 <span className="flex items-center gap-1.5">
                     <span className={`w-2 h-2 rounded-full ${isAnalyzing ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`} />
@@ -1409,14 +1409,14 @@ export const ModernModeler: FC = () => {
 
                         <div className="flex items-center gap-2">
                             <span className="text-xl text-blue-500">⬡</span>
-                            <span className="font-bold text-sm tracking-tight">BeamLab <span className="text-xs font-normal text-zinc-500">ULTIMATE</span></span>
+                            <span className="font-bold text-sm tracking-tight">BeamLab <span className="text-xs font-normal text-zinc-400">ULTIMATE</span></span>
                         </div>
                     </div>
 
                     {/* Window Controls / User */}
                     <div className="flex items-center gap-3">
 
-                        <span className="text-xs text-zinc-600">v24.01.00</span>
+                        <span className="text-xs text-zinc-500">v24.01.00</span>
                     </div>
                 </header>
 

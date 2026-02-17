@@ -127,7 +127,7 @@ function QuickCommandsToolbar({ commands, onClose, position }: QuickCommandsTool
                     onClick={onClose}
                     className="p-1 hover:bg-zinc-700 rounded transition-colors"
                 >
-                    <X className="w-3 h-3 text-zinc-500" />
+                    <X className="w-3 h-3 text-zinc-400" />
                 </button>
             </div>
 
@@ -153,7 +153,7 @@ function QuickCommandsToolbar({ commands, onClose, position }: QuickCommandsTool
                         <div className="w-5 h-5">{cmd.icon}</div>
                         <span className="text-[10px] font-medium whitespace-nowrap">{cmd.label}</span>
                         {cmd.shortcut && (
-                            <span className="text-[9px] text-zinc-500 opacity-70">{cmd.shortcut}</span>
+                            <span className="text-[9px] text-zinc-400 opacity-70">{cmd.shortcut}</span>
                         )}
                     </button>
                 ))}
@@ -161,7 +161,7 @@ function QuickCommandsToolbar({ commands, onClose, position }: QuickCommandsTool
 
             {/* Footer hint */}
             <div className="mt-2 pt-2 border-t border-zinc-700 text-center">
-                <span className="text-[10px] text-zinc-500">
+                <span className="text-[10px] text-zinc-400">
                     Arrow keys to navigate • Enter to select • Esc to close
                 </span>
             </div>

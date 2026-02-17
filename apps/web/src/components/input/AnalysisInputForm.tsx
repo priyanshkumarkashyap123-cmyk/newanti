@@ -288,7 +288,7 @@ export const NumberInput: FC<NumberInputProps> = ({
                 {label}
                 {hint && (
                     <span className="group relative">
-                        <HelpCircle size={12} className="text-slate-500" />
+                        <HelpCircle size={12} className="text-slate-400" />
                         <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 
                                        bg-slate-700 text-white text-xs rounded whitespace-nowrap
                                        opacity-0 group-hover:opacity-100 transition-opacity z-10">
@@ -318,7 +318,7 @@ export const NumberInput: FC<NumberInputProps> = ({
                               ${unit ? 'pr-12' : ''}`}
                 />
                 {unit && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500">
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
                         {unit}
                     </span>
                 )}
@@ -395,7 +395,7 @@ export const NodeInputPanel: FC<NodeInputPanelProps> = ({
                         <CheckCircle size={14} className="text-green-400" />
                     )}
                     <span className="text-sm font-medium text-slate-200">Node {node.id}</span>
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-slate-400">
                         ({node.x.toFixed(2)}, {node.y.toFixed(2)}, {node.z.toFixed(2)})
                     </span>
                 </div>
@@ -489,7 +489,7 @@ export const NodeInputPanel: FC<NodeInputPanelProps> = ({
                                                 className="w-4 h-4 rounded bg-slate-700 border-slate-600 
                                                          text-cyan-500 focus:ring-cyan-500 focus:ring-offset-0"
                                             />
-                                            <span className="text-xs text-slate-500">{key}</span>
+                                            <span className="text-xs text-slate-400">{key}</span>
                                         </label>
                                     ))}
                                 </div>
@@ -712,7 +712,7 @@ export const AnalysisProgress: FC<AnalysisProgressProps> = ({
                     <div 
                         key={s.id}
                         className={`flex flex-col items-center ${
-                            idx <= currentIndex ? 'text-cyan-400' : 'text-slate-500'
+                            idx <= currentIndex ? 'text-cyan-400' : 'text-slate-400'
                         }`}
                     >
                         <div className={`w-2 h-2 rounded-full ${
@@ -792,7 +792,7 @@ export const MaterialSelector: FC<MaterialSelectorProps> = ({
                                               transition-colors ${value === mat.id ? 'bg-cyan-600/20' : ''}`}
                                 >
                                     <div className="text-sm text-slate-200">{mat.name}</div>
-                                    <div className="text-xs text-slate-500">
+                                    <div className="text-xs text-slate-400">
                                         E={mat.E} GPa, fy={mat.fy} MPa
                                     </div>
                                 </button>

@@ -84,7 +84,7 @@ export const ExportDialog: FC<{
                 <div className="py-6">
                     {!analysisResults ? (
                         <div className="text-center p-8 bg-zinc-900/50 rounded-lg border border-zinc-800 border-dashed">
-                            <span className="text-zinc-500">
+                            <span className="text-zinc-400">
                                 No analysis results available. Run visualization first.
                             </span>
                         </div>
@@ -121,7 +121,7 @@ export const ExportDialog: FC<{
                                         </div>
                                         <div className="text-center">
                                             <div className="font-medium text-sm text-zinc-200">Calculation Book</div>
-                                            <div className="text-xs text-zinc-500">PDF Report</div>
+                                            <div className="text-xs text-zinc-400">PDF Report</div>
                                         </div>
                                     </button>
 
@@ -154,7 +154,7 @@ export const ExportDialog: FC<{
                                         </div>
                                         <div className="text-center">
                                             <div className="font-medium text-sm text-zinc-200">Bill of Materials</div>
-                                            <div className="text-xs text-zinc-500">CSV Export</div>
+                                            <div className="text-xs text-zinc-400">CSV Export</div>
                                         </div>
                                     </button>
                                 </div>

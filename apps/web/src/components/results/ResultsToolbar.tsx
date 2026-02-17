@@ -710,7 +710,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
 
                 {/* Diagram Toggles */}
                 <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
-                    <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
+                    <h4 className="text-xs font-medium text-zinc-400 dark:text-zinc-400 mb-2 uppercase tracking-wider">
                         Diagrams
                     </h4>
                     <div className="grid grid-cols-6 gap-1">
@@ -743,7 +743,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                     {/* Heat Map Type Selector - Show when heatmap is active */}
                     {activeDiagram === 'heatmap' && (
                         <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700">
-                            <h5 className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase">
+                            <h5 className="text-[10px] font-medium text-zinc-400 dark:text-zinc-400 mb-2 uppercase">
                                 Heat Map Type
                             </h5>
                             <div className="flex gap-1">
@@ -759,7 +759,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                                         flex-1 px-2 py-1.5 text-[10px] font-medium rounded transition-all
                                         ${heatmapType === type.id
                                                 ? 'bg-gradient-to-r ' + type.gradient + ' text-white shadow-md'
-                                                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                                                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                                             }
                                     `}
                                     >
@@ -769,12 +769,12 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                             </div>
                             {/* Color Scale Legend */}
                             <div className="mt-2 flex items-center gap-2">
-                                <span className="text-[9px] text-zinc-500">Low</span>
+                                <span className="text-[9px] text-zinc-400">Low</span>
                                 <div className={`flex-1 h-2 rounded bg-gradient-to-r ${heatmapType === 'displacement' ? 'from-blue-500 to-red-500' :
                                     heatmapType === 'stress' ? 'from-green-500 to-red-500' :
                                         'from-green-500 via-yellow-500 to-red-500'
                                     }`} />
-                                <span className="text-[9px] text-zinc-500">High</span>
+                                <span className="text-[9px] text-zinc-400">High</span>
                             </div>
                         </div>
                     )}
@@ -783,10 +783,10 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                 {/* Scale Slider */}
                 <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
                     <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                        <h4 className="text-xs font-medium text-zinc-400 dark:text-zinc-400 uppercase tracking-wider">
                             Scale
                         </h4>
-                        <span className="text-xs font-mono text-zinc-600 dark:text-zinc-400">
+                        <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400">
                             {scale}x
                         </span>
                     </div>
@@ -807,7 +807,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
 
                 {/* Animation Controls */}
                 <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
-                    <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
+                    <h4 className="text-xs font-medium text-zinc-400 dark:text-zinc-400 mb-2 uppercase tracking-wider">
                         Animation
                     </h4>
                     <div className="flex items-center gap-2">
@@ -835,7 +835,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                         </button>
                         <button
                             onClick={resetView}
-                            className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                            className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
                             title="Reset View"
                         >
                             <RotateCcw className="w-4 h-4" />
@@ -845,7 +845,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
 
                 {/* Quick Stats */}
                 <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
-                    <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
+                    <h4 className="text-xs font-medium text-zinc-400 dark:text-zinc-400 mb-2 uppercase tracking-wider">
                         Max Values
                     </h4>
                     <div className="grid grid-cols-2 gap-2">
@@ -866,7 +866,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
 
                 {/* Advanced Tools - Quick Access */}
                 <div className="px-4 py-3 border-t border-zinc-200 dark:border-zinc-800">
-                    <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
+                    <h4 className="text-xs font-medium text-zinc-400 dark:text-zinc-400 mb-2 uppercase tracking-wider">
                         Export Results
                     </h4>
                     <div className="flex flex-col gap-2">
@@ -891,7 +891,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
 
                 {/* Advanced Tools - Quick Access */}
                 <div className="px-4 py-3">
-                    <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
+                    <h4 className="text-xs font-medium text-zinc-400 dark:text-zinc-400 mb-2 uppercase tracking-wider">
                         Next Steps
                     </h4>
                     <div className="flex flex-col gap-2">

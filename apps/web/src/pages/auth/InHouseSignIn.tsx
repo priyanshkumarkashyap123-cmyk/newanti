@@ -167,7 +167,7 @@ export const InHouseSignIn: React.FC = () => {
                                 Email address
                             </label>
                             <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
                                 <input
                                     id="email"
                                     type="email"
@@ -196,7 +196,7 @@ export const InHouseSignIn: React.FC = () => {
                                 </Link>
                             </div>
                             <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
                                 <input
                                     id="password"
                                     type={showPassword ? 'text' : 'password'}
@@ -211,7 +211,7 @@ export const InHouseSignIn: React.FC = () => {
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-300 transition-colors"
                                 >
                                     {showPassword ? (
                                         <EyeOff className="w-5 h-5" />
@@ -260,7 +260,7 @@ export const InHouseSignIn: React.FC = () => {
                             <div className="w-full border-t border-zinc-700"></div>
                         </div>
                         <div className="relative flex justify-center text-sm">
-                            <span className="px-4 bg-zinc-900 text-zinc-500">Or continue with</span>
+                            <span className="px-4 bg-zinc-900 text-zinc-400">Or continue with</span>
                         </div>
                     </div>
 
@@ -304,7 +304,7 @@ export const InHouseSignIn: React.FC = () => {
                     </div>
 
                     {/* Footer */}
-                    <p className="mt-8 text-center text-xs text-zinc-500">
+                    <p className="mt-8 text-center text-xs text-zinc-400">
                         By signing in, you agree to our{' '}
                         <Link to="/terms" className="text-blue-400 hover:text-blue-300">
                             Terms of Service

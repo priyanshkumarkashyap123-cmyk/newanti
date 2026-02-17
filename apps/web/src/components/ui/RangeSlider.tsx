@@ -57,7 +57,7 @@ export const RangeSlider: FC<RangeSliderProps> = ({
                         }}
                     />
                 </div>
-                <div className="flex justify-between text-xs text-zinc-500 font-mono uppercase">
+                <div className="flex justify-between text-xs text-zinc-400 font-mono uppercase">
                     {labels.map((l, i) => (
                         <span key={i}>{l}</span>
                     ))}

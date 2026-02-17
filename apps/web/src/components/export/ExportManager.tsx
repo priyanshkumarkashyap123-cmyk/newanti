@@ -178,7 +178,7 @@ const FormatCard: React.FC<FormatCardProps> = ({ format, selected, onSelect }) =
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                     <span className="font-medium text-white">{format.name}</span>
-                    <span className="text-xs text-slate-500">{format.extension}</span>
+                    <span className="text-xs text-slate-400">{format.extension}</span>
                     {format.beta && (
                         <span className="px-1.5 py-0.5 text-[10px] font-medium bg-amber-500/20 text-amber-400 rounded">
                             BETA
@@ -394,7 +394,7 @@ const ExportJobCard: React.FC<ExportJobCardProps> = ({ job, onDownload, onCancel
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                         <span className="font-medium text-white truncate">{job.name}</span>
-                        <span className="text-xs text-slate-500">{job.format.extension}</span>
+                        <span className="text-xs text-slate-400">{job.format.extension}</span>
                     </div>
                     
                     {job.status === 'processing' && (
@@ -574,7 +574,7 @@ export const ExportManager: React.FC<ExportManagerProps> = ({
                     {/* Recent Exports */}
                     {jobs.length > 0 && (
                         <div className="mt-6 pt-6 border-t border-slate-800">
-                            <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                                 Recent Exports
                             </h4>
                             <div className="space-y-2">

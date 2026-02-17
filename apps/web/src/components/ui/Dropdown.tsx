@@ -373,7 +373,7 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
                             className={cn(
                               'w-full pl-8 pr-3 py-1.5 text-sm rounded-md',
                               'bg-slate-900 border border-slate-700 text-white',
-                              'placeholder:text-slate-500',
+                              'placeholder:text-slate-400',
                               'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                             )}
                           />
@@ -498,11 +498,11 @@ const DropdownMenuItem: React.FC<DropdownMenuItemProps> = ({
           <div className="flex items-center justify-between">
             <span className="truncate">{item.label}</span>
             {item.shortcut && (
-              <span className="ml-2 text-xs text-slate-500">{item.shortcut}</span>
+              <span className="ml-2 text-xs text-slate-400">{item.shortcut}</span>
             )}
           </div>
           {item.description && (
-            <p className="text-xs text-slate-500 mt-0.5 truncate">
+            <p className="text-xs text-slate-400 mt-0.5 truncate">
               {item.description}
             </p>
           )}
@@ -599,7 +599,7 @@ export const DropdownLabel: React.FC<DropdownLabelProps> = ({
 }) => (
   <div
     className={cn(
-      'px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500',
+      'px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-slate-400',
       className
     )}
   >

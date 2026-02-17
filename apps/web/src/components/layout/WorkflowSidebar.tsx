@@ -67,7 +67,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                 <h2 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
                     Workflow
                 </h2>
-                <div className="text-[10px] text-zinc-600 mt-1 font-mono">
+                <div className="text-[10px] text-zinc-500 mt-1 font-mono">
                     ANALYTICAL MODELING
                 </div>
             </div>
@@ -110,7 +110,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                                     <span className="text-sm font-medium leading-none">
                                         {item.label}
                                     </span>
-                                    <span className={`text-[10px] mt-1 leading-none ${isActive ? 'text-blue-200' : 'text-zinc-600'}`}>
+                                    <span className={`text-[10px] mt-1 leading-none ${isActive ? 'text-blue-200' : 'text-zinc-500'}`}>
                                         {item.subtext}
                                     </span>
                                 </div>
@@ -128,7 +128,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
             {/* Bottom Section */}
             <div className="p-4 bg-zinc-950 border-t border-zinc-800">
                 <div className="flex flex-col gap-2">
-                    <button className="text-xs text-zinc-500 hover:text-white text-left">
+                    <button className="text-xs text-zinc-400 hover:text-white text-left">
                         Connection Client
                     </button>
                     <div className="w-full h-px bg-zinc-800" aria-hidden="true" />

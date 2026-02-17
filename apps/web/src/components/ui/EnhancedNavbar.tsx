@@ -214,7 +214,7 @@ export const EnhancedNavbar: FC = () => {
                     <div className="grid grid-cols-3 gap-6">
                       {MEGA_MENU_ITEMS.products.sections.map((section, i) => (
                         <div key={i}>
-                          <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                          <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                             {section.title}
                           </h4>
                           <div className="space-y-1">
@@ -237,7 +237,7 @@ export const EnhancedNavbar: FC = () => {
                                       </span>
                                     )}
                                   </div>
-                                  <p className="text-xs text-slate-500">{item.desc}</p>
+                                  <p className="text-xs text-slate-400">{item.desc}</p>
                                 </div>
                               </Link>
                             ))}
@@ -296,7 +296,7 @@ export const EnhancedNavbar: FC = () => {
                     <div className="grid grid-cols-2 gap-6">
                       {MEGA_MENU_ITEMS.resources.sections.map((section, i) => (
                         <div key={i}>
-                          <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                          <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                             {section.title}
                           </h4>
                           <div className="space-y-1">
@@ -312,7 +312,7 @@ export const EnhancedNavbar: FC = () => {
                                 </div>
                                 <div>
                                   <span className="text-sm font-medium text-white">{item.label}</span>
-                                  <p className="text-xs text-slate-500">{item.desc}</p>
+                                  <p className="text-xs text-slate-400">{item.desc}</p>
                                 </div>
                               </Link>
                             ))}
@@ -345,7 +345,7 @@ export const EnhancedNavbar: FC = () => {
             {/* Search Button */}
             <button
               onClick={() => setSearchOpen(true)}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-500 bg-slate-800/50 rounded-lg border border-slate-700/50 hover:border-slate-600 transition-all"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-400 bg-slate-800/50 rounded-lg border border-slate-700/50 hover:border-slate-600 transition-all"
             >
               <Search className="w-4 h-4" />
               <span className="hidden sm:inline">Search</span>
@@ -420,7 +420,7 @@ export const EnhancedNavbar: FC = () => {
             >
               <div className="bg-slate-900 rounded-2xl border border-slate-700/50 shadow-2xl overflow-hidden">
                 <div className="flex items-center gap-3 p-4 border-b border-slate-800">
-                  <Search className="w-5 h-5 text-slate-500" />
+                  <Search className="w-5 h-5 text-slate-400" />
                   <input
                     ref={searchRef}
                     type="text"
@@ -430,7 +430,7 @@ export const EnhancedNavbar: FC = () => {
                     className="flex-1 bg-transparent text-white placeholder-slate-500 outline-none"
                     autoFocus
                   />
-                  <button onClick={() => setSearchOpen(false)} className="p-1 text-slate-500 hover:text-white">
+                  <button onClick={() => setSearchOpen(false)} className="p-1 text-slate-400 hover:text-white">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
@@ -452,7 +452,7 @@ export const EnhancedNavbar: FC = () => {
                             <span className="text-sm text-white">{item.label}</span>
                           </div>
                           {item.shortcut && (
-                            <kbd className="px-2 py-1 text-xs text-slate-500 bg-slate-800 rounded">
+                            <kbd className="px-2 py-1 text-xs text-slate-400 bg-slate-800 rounded">
                               {item.shortcut}
                             </kbd>
                           )}
@@ -460,13 +460,13 @@ export const EnhancedNavbar: FC = () => {
                       ))}
                     </div>
                   ) : (
-                    <div className="p-8 text-center text-slate-500">
+                    <div className="p-8 text-center text-slate-400">
                       No results found
                     </div>
                   )}
                 </div>
                 
-                <div className="p-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
+                <div className="p-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
                   <span>Press <kbd className="px-1.5 py-0.5 bg-slate-800 rounded">↵</kbd> to select</span>
                   <span>Press <kbd className="px-1.5 py-0.5 bg-slate-800 rounded">ESC</kbd> to close</span>
                 </div>

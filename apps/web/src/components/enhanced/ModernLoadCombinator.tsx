@@ -264,7 +264,7 @@ const LoadCaseCard: React.FC<{
     >
       <div className="flex items-center gap-3">
         {/* Drag Handle */}
-        <div className="cursor-grab text-zinc-600 hover:text-zinc-400">
+        <div className="cursor-grab text-zinc-500 hover:text-zinc-400">
           <GripVertical className="w-4 h-4" />
         </div>
         
@@ -285,10 +285,10 @@ const LoadCaseCard: React.FC<{
         <div className="flex items-center gap-2 flex-1">
           <span style={{ color: loadCase.color }}>{config.icon}</span>
           <div>
-            <p className={`font-bold ${loadCase.isEnabled ? 'text-white' : 'text-zinc-500'}`}>
+            <p className={`font-bold ${loadCase.isEnabled ? 'text-white' : 'text-zinc-400'}`}>
               {loadCase.name}
             </p>
-            <p className="text-xs text-zinc-500">{loadCase.description}</p>
+            <p className="text-xs text-zinc-400">{loadCase.description}</p>
           </div>
         </div>
         
@@ -368,7 +368,7 @@ const CombinationRow: React.FC<{
               </span>
             )}
           </div>
-          <p className="text-xs text-zinc-500 capitalize">{combination.type} combination</p>
+          <p className="text-xs text-zinc-400 capitalize">{combination.type} combination</p>
         </div>
         
         {/* Utilization */}
@@ -409,7 +409,7 @@ const CombinationRow: React.FC<{
             <div className="px-4 pb-4 pt-2 border-t border-zinc-700/50">
               {/* Factors */}
               <div className="mb-4">
-                <p className="text-xs text-zinc-500 mb-2">Load Factors:</p>
+                <p className="text-xs text-zinc-400 mb-2">Load Factors:</p>
                 <div className="flex flex-wrap gap-2">
                   {combination.factors.map((f, i) => {
                     const lc = loadCases.find(l => l.id === f.loadId);
@@ -429,23 +429,23 @@ const CombinationRow: React.FC<{
               
               {/* Resultant */}
               <div>
-                <p className="text-xs text-zinc-500 mb-2">Resultant Forces:</p>
+                <p className="text-xs text-zinc-400 mb-2">Resultant Forces:</p>
                 <div className="grid grid-cols-3 gap-2 text-sm">
                   {combination.resultant.momentY && (
                     <div className="bg-zinc-900/50 rounded-lg p-2">
-                      <span className="text-zinc-500">My = </span>
+                      <span className="text-zinc-400">My = </span>
                       <span className="text-white font-mono">{combination.resultant.momentY.toFixed(1)} kN·m</span>
                     </div>
                   )}
                   {combination.resultant.shearY && (
                     <div className="bg-zinc-900/50 rounded-lg p-2">
-                      <span className="text-zinc-500">Vy = </span>
+                      <span className="text-zinc-400">Vy = </span>
                       <span className="text-white font-mono">{combination.resultant.shearY.toFixed(1)} kN</span>
                     </div>
                   )}
                   {combination.resultant.axial && (
                     <div className="bg-zinc-900/50 rounded-lg p-2">
-                      <span className="text-zinc-500">P = </span>
+                      <span className="text-zinc-400">P = </span>
                       <span className="text-white font-mono">{combination.resultant.axial.toFixed(1)} kN</span>
                     </div>
                   )}
@@ -479,7 +479,7 @@ const EnvelopeChart: React.FC<{
       <div className="space-y-4">
         {/* Moment Envelope */}
         <div>
-          <div className="flex justify-between text-xs text-zinc-500 mb-2">
+          <div className="flex justify-between text-xs text-zinc-400 mb-2">
             <span>Moment (kN·m)</span>
             <span>Max: {maxMoment.toFixed(1)}</span>
           </div>
@@ -498,7 +498,7 @@ const EnvelopeChart: React.FC<{
         
         {/* Shear Envelope */}
         <div>
-          <div className="flex justify-between text-xs text-zinc-500 mb-2">
+          <div className="flex justify-between text-xs text-zinc-400 mb-2">
             <span>Shear (kN)</span>
             <span>Max: {maxShear.toFixed(1)}</span>
           </div>
@@ -639,7 +639,7 @@ export const ModernLoadCombinator: React.FC<{
                 Load Combinator
                 <Sparkles className="w-4 h-4 text-amber-400" />
               </h2>
-              <p className="text-zinc-500 text-sm">Multi-code load combination generator</p>
+              <p className="text-zinc-400 text-sm">Multi-code load combination generator</p>
             </div>
           </div>
           
@@ -729,7 +729,7 @@ export const ModernLoadCombinator: React.FC<{
           <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
             <div>
               <span className="font-medium text-white">Load Combinations</span>
-              <span className="text-zinc-500 text-sm ml-2">
+              <span className="text-zinc-400 text-sm ml-2">
                 ({combinations.length} generated)
               </span>
             </div>
@@ -752,7 +752,7 @@ export const ModernLoadCombinator: React.FC<{
               <div className="flex flex-col items-center justify-center h-full text-center">
                 <Layers className="w-12 h-12 text-zinc-700 mb-4" />
                 <p className="text-lg font-medium text-zinc-400 mb-2">No Combinations Generated</p>
-                <p className="text-sm text-zinc-600 mb-4">
+                <p className="text-sm text-zinc-500 mb-4">
                   Select a design code and click Generate to create load combinations
                 </p>
                 <button
@@ -792,17 +792,17 @@ export const ModernLoadCombinator: React.FC<{
                   </h4>
                   <div className="grid grid-cols-3 gap-4 text-sm">
                     <div>
-                      <span className="text-zinc-500">Total Combinations:</span>
+                      <span className="text-zinc-400">Total Combinations:</span>
                       <p className="text-white font-bold">{combinations.length}</p>
                     </div>
                     <div>
-                      <span className="text-zinc-500">Governing Case:</span>
+                      <span className="text-zinc-400">Governing Case:</span>
                       <p className="text-amber-400 font-bold">
                         {combinations.find(c => c.isGoverning)?.name || 'N/A'}
                       </p>
                     </div>
                     <div>
-                      <span className="text-zinc-500">Max Utilization:</span>
+                      <span className="text-zinc-400">Max Utilization:</span>
                       <p className="text-emerald-400 font-bold">
                         {(Math.max(...combinations.map(c => c.utilizationRatio)) * 100).toFixed(1)}%
                       </p>

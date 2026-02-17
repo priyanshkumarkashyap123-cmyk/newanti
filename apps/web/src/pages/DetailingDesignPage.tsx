@@ -16,7 +16,7 @@ export const DetailingDesignPage: React.FC = () => {
                     onClick={() => setActiveTab('rc')}
                     className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${activeTab === 'rc'
                             ? 'bg-zinc-800 text-emerald-400 border-t border-x border-zinc-700'
-                            : 'text-zinc-500 hover:text-zinc-300'
+                            : 'text-zinc-400 hover:text-zinc-300'
                         }`}
                 >
                     RC Members (IS 456)
@@ -25,7 +25,7 @@ export const DetailingDesignPage: React.FC = () => {
                     onClick={() => setActiveTab('foundation')}
                     className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${activeTab === 'foundation'
                             ? 'bg-zinc-800 text-blue-400 border-t border-x border-zinc-700'
-                            : 'text-zinc-500 hover:text-zinc-300'
+                            : 'text-zinc-400 hover:text-zinc-300'
                         }`}
                 >
                     Foundation Design

@@ -99,7 +99,7 @@ export const ViewCube: FC<{
     currentView?: string;
 }> = ({ onSetView, currentView = 'iso' }) => (
     <div className="flex flex-col gap-1 p-2 bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-700 shadow-lg">
-        <div className="text-xs text-slate-500 font-medium text-center mb-1">VIEW</div>
+        <div className="text-xs text-slate-400 font-medium text-center mb-1">VIEW</div>
         <div className="grid grid-cols-3 gap-1">
             <div />
             <ControlButton
@@ -252,7 +252,7 @@ export const ViewportControls: FC<ViewportControlsProps> = ({
             {/* Expand/Collapse */}
             <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="p-2 text-slate-500 hover:text-white text-xs flex items-center justify-center gap-1 bg-slate-900/90 backdrop-blur-sm rounded-lg border border-slate-700"
+                className="p-2 text-slate-400 hover:text-white text-xs flex items-center justify-center gap-1 bg-slate-900/90 backdrop-blur-sm rounded-lg border border-slate-700"
             >
                 {isExpanded ? 'Less' : 'More'}
                 <motion.span
@@ -290,7 +290,7 @@ export const CoordinateDisplay: FC<CoordinateDisplayProps> = ({
         font-mono text-xs
         ${className}
     `}>
-        {label && <span className="text-slate-500">{label}</span>}
+        {label && <span className="text-slate-400">{label}</span>}
         <span className="text-red-400">X: {x.toFixed(2)}</span>
         <span className="text-green-400">Y: {y.toFixed(2)}</span>
         {z !== undefined && (
@@ -308,7 +308,7 @@ export const ViewportCrosshair: FC<{ visible?: boolean }> = ({ visible = true })
 
     return (
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-            <Crosshair className="w-6 h-6 text-slate-600" />
+            <Crosshair className="w-6 h-6 text-slate-500" />
         </div>
     );
 };

@@ -55,7 +55,7 @@ export const EngineeringWorkspace: FC<EngineeringWorkspaceProps> = ({
                     </nav>
                 </div>
                 <div className="flex items-center gap-3">
-                    <span className="text-[10px] text-zinc-500">v4.2.0-pro</span>
+                    <span className="text-[10px] text-zinc-400">v4.2.0-pro</span>
                 </div>
             </header>
 
@@ -147,7 +147,7 @@ export const EngineeringWorkspace: FC<EngineeringWorkspaceProps> = ({
                                 Start creating your first structural model now.
                             </p>
                             <div className="w-full flex items-center justify-between mt-4">
-                                <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Getting Started</span>
+                                <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Getting Started</span>
                                 <button
                                     onClick={onTutorialClose}
                                     className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg shadow-blue-500/30 transition-all transform hover:scale-105 active:scale-95 text-sm flex items-center gap-2"

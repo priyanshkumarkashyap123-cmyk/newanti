@@ -13,7 +13,6 @@ import { SignUpPage } from './pages/SignUpPage';
 import { RequireAuth } from './components/layout/RequireAuth';
 import { LegalConsentModal, useCheckLegalConsent } from './components/LegalConsentModal';
 import './App.css';
-import './utils/generateTestGrid';
 
 // Lazy loaded components (Code Splitting)
 const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));

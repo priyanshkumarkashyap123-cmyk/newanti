@@ -416,7 +416,7 @@ const ViewerToolbar: React.FC<{
         <button
           onClick={() => onSettingsChange({ showGrid: !settings.showGrid })}
           className={`p-2 rounded-lg transition-all ${
-            settings.showGrid ? 'text-blue-400' : 'text-zinc-500'
+            settings.showGrid ? 'text-blue-400' : 'text-zinc-400'
           } hover:bg-white/10`}
           title="Toggle Grid"
         >
@@ -425,7 +425,7 @@ const ViewerToolbar: React.FC<{
         <button
           onClick={() => onSettingsChange({ showAxes: !settings.showAxes })}
           className={`p-2 rounded-lg transition-all ${
-            settings.showAxes ? 'text-blue-400' : 'text-zinc-500'
+            settings.showAxes ? 'text-blue-400' : 'text-zinc-400'
           } hover:bg-white/10`}
           title="Toggle Axes"
         >
@@ -434,7 +434,7 @@ const ViewerToolbar: React.FC<{
         <button
           onClick={() => onSettingsChange({ showNodes: !settings.showNodes })}
           className={`p-2 rounded-lg transition-all ${
-            settings.showNodes ? 'text-blue-400' : 'text-zinc-500'
+            settings.showNodes ? 'text-blue-400' : 'text-zinc-400'
           } hover:bg-white/10`}
           title="Toggle Nodes"
         >
@@ -443,7 +443,7 @@ const ViewerToolbar: React.FC<{
         <button
           onClick={() => onSettingsChange({ showLoads: !settings.showLoads })}
           className={`p-2 rounded-lg transition-all ${
-            settings.showLoads ? 'text-blue-400' : 'text-zinc-500'
+            settings.showLoads ? 'text-blue-400' : 'text-zinc-400'
           } hover:bg-white/10`}
           title="Toggle Loads"
         >
@@ -597,19 +597,19 @@ const ElementTooltip: React.FC<{
       {member.results && (
         <div className="space-y-1.5 text-xs">
           <div className="flex justify-between gap-8">
-            <span className="text-zinc-500">Axial Force:</span>
+            <span className="text-zinc-400">Axial Force:</span>
             <span className="text-white font-mono">{member.results.axialForce.toFixed(1)} kN</span>
           </div>
           <div className="flex justify-between gap-8">
-            <span className="text-zinc-500">Moment (Y):</span>
+            <span className="text-zinc-400">Moment (Y):</span>
             <span className="text-white font-mono">{member.results.momentY.toFixed(1)} kN·m</span>
           </div>
           <div className="flex justify-between gap-8">
-            <span className="text-zinc-500">Max Stress:</span>
+            <span className="text-zinc-400">Max Stress:</span>
             <span className="text-white font-mono">{member.results.stress.toFixed(1)} MPa</span>
           </div>
           <div className="flex justify-between gap-8">
-            <span className="text-zinc-500">Utilization:</span>
+            <span className="text-zinc-400">Utilization:</span>
             <span className={`font-mono font-semibold ${
               member.results.utilization > 0.9 ? 'text-red-400' :
               member.results.utilization > 0.7 ? 'text-amber-400' : 'text-emerald-400'
@@ -1092,11 +1092,11 @@ export const Advanced3DStructuralViewer: React.FC<{
           <span className="text-sm font-medium text-white">Portal Frame</span>
         </div>
         <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-          <span className="text-zinc-500">Nodes:</span>
+          <span className="text-zinc-400">Nodes:</span>
           <span className="text-white font-mono">{nodes.length}</span>
-          <span className="text-zinc-500">Members:</span>
+          <span className="text-zinc-400">Members:</span>
           <span className="text-white font-mono">{members.length}</span>
-          <span className="text-zinc-500">Loads:</span>
+          <span className="text-zinc-400">Loads:</span>
           <span className="text-white font-mono">{loads.length}</span>
         </div>
       </motion.div>

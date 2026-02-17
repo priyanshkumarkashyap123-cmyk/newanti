@@ -268,7 +268,7 @@ const QuickActionsGrid: FC<{
           >
             <span className="text-2xl mb-1">{action.icon}</span>
             <span className="text-xs font-medium text-slate-200">{action.label}</span>
-            <span className="text-[10px] text-slate-500 mt-0.5">{action.description}</span>
+            <span className="text-[10px] text-slate-400 mt-0.5">{action.description}</span>
           </motion.button>
         ))}
       </div>
@@ -407,7 +407,7 @@ const MessageBubble: FC<{
                       
                       {message.reasoning.codeReferences.length > 0 && (
                         <div className="mt-2 pt-2 border-t border-slate-700/50">
-                          <span className="text-xs text-slate-500">📚 Code References:</span>
+                          <span className="text-xs text-slate-400">📚 Code References:</span>
                           <div className="flex flex-wrap gap-1 mt-1">
                             {message.reasoning.codeReferences.map((ref, idx) => (
                               <span key={idx} className="px-2 py-0.5 bg-slate-700/50 rounded text-xs text-cyan-400">
@@ -426,7 +426,7 @@ const MessageBubble: FC<{
             {/* Feedback Buttons */}
             {message.wasHelpful === undefined && (
               <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-500">Was this helpful?</span>
+                <span className="text-xs text-slate-400">Was this helpful?</span>
                 <button
                   onClick={() => onFeedback(message.id, true)}
                   className="p-1 rounded hover:bg-green-500/20 text-slate-400 hover:text-green-400"
@@ -445,7 +445,7 @@ const MessageBubble: FC<{
         )}
 
         {/* Timestamp */}
-        <div className={`text-[10px] text-slate-500 mt-1 ${isUser ? 'text-right' : 'text-left'}`}>
+        <div className={`text-[10px] text-slate-400 mt-1 ${isUser ? 'text-right' : 'text-left'}`}>
           {message.timestamp.toLocaleTimeString()}
         </div>
       </div>
@@ -770,7 +770,7 @@ Welcome to the **most powerful AI** in structural engineering!
             </div>
             <button
               onClick={() => setShowQuickActions(false)}
-              className="text-slate-500 hover:text-slate-300"
+              className="text-slate-400 hover:text-slate-300"
             >
               <X className="w-4 h-4" />
             </button>
@@ -818,7 +818,7 @@ Welcome to the **most powerful AI** in structural engineering!
         </div>
 
         {/* Performance indicator */}
-        <div className="flex items-center justify-between mt-2 text-[10px] text-slate-500">
+        <div className="flex items-center justify-between mt-2 text-[10px] text-slate-400">
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />

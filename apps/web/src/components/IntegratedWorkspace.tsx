@@ -246,20 +246,20 @@ export const IntegratedWorkspace: FC = () => {
                                 <div className="text-lg font-mono text-blue-400">
                                     {(analysisResult.maxDisplacement * 1000).toFixed(1)}mm
                                 </div>
-                                <div className="text-[10px] text-zinc-500">Max Deflection</div>
+                                <div className="text-[10px] text-zinc-400">Max Deflection</div>
                             </div>
                             <div>
                                 <div className={`text-lg font-mono ${analysisResult.utilizationMax > 0.9 ? 'text-red-400' : 'text-green-400'
                                     }`}>
                                     {(analysisResult.utilizationMax * 100).toFixed(0)}%
                                 </div>
-                                <div className="text-[10px] text-zinc-500">Max Utilization</div>
+                                <div className="text-[10px] text-zinc-400">Max Utilization</div>
                             </div>
                             <div>
                                 <div className="text-lg font-mono text-green-400">
                                     ✓ OK
                                 </div>
-                                <div className="text-[10px] text-zinc-500">Status</div>
+                                <div className="text-[10px] text-zinc-400">Status</div>
                             </div>
                         </div>
                     </div>

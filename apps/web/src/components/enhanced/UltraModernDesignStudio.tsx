@@ -360,7 +360,7 @@ const AIAssistantPanel: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ 
           
           {/* Suggestions */}
           <div className="px-4 py-2 border-t border-white/5">
-            <p className="text-xs text-zinc-500 mb-2">Quick actions</p>
+            <p className="text-xs text-zinc-400 mb-2">Quick actions</p>
             <div className="flex flex-wrap gap-2">
               {suggestions.map((s, i) => (
                 <button
@@ -381,7 +381,7 @@ const AIAssistantPanel: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ 
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Ask anything about structural design..."
-                className="flex-1 px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                className="flex-1 px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
               />
               <button className="p-3 bg-gradient-to-r from-violet-500 to-purple-600 rounded-xl hover:opacity-90 transition-opacity">
                 <Sparkles className="w-5 h-5 text-white" />
@@ -591,7 +591,7 @@ const PropertyPanel: React.FC<{
 }> = ({ element, onUpdate }) => {
   if (!element) {
     return (
-      <div className="h-full flex items-center justify-center text-zinc-500">
+      <div className="h-full flex items-center justify-center text-zinc-400">
         <div className="text-center">
           <MousePointer2 className="w-8 h-8 mx-auto mb-2 opacity-50" />
           <p className="text-sm">Select an element to view properties</p>
@@ -616,13 +616,13 @@ const PropertyPanel: React.FC<{
         </div>
         <div>
           <h4 className="text-sm font-semibold text-white capitalize">{element.type}</h4>
-          <p className="text-xs text-zinc-500">ID: {element.id}</p>
+          <p className="text-xs text-zinc-400">ID: {element.id}</p>
         </div>
       </div>
       
       {/* Section */}
       <div>
-        <label className="block text-xs text-zinc-500 mb-1.5">Section Profile</label>
+        <label className="block text-xs text-zinc-400 mb-1.5">Section Profile</label>
         <select className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
           {sections.map(s => (
             <option key={s} value={s}>{s}</option>
@@ -632,7 +632,7 @@ const PropertyPanel: React.FC<{
       
       {/* Material */}
       <div>
-        <label className="block text-xs text-zinc-500 mb-1.5">Material</label>
+        <label className="block text-xs text-zinc-400 mb-1.5">Material</label>
         <select className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
           {MATERIAL_PRESETS.map(m => (
             <option key={m.id} value={m.id}>{m.name}</option>
@@ -642,7 +642,7 @@ const PropertyPanel: React.FC<{
       
       {/* Length */}
       <div>
-        <label className="block text-xs text-zinc-500 mb-1.5">Length (mm)</label>
+        <label className="block text-xs text-zinc-400 mb-1.5">Length (mm)</label>
         <input
           type="number"
           defaultValue={3500}
@@ -655,13 +655,13 @@ const PropertyPanel: React.FC<{
         <div className="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700/50 space-y-2">
           <h5 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Analysis Results</h5>
           <div className="flex justify-between text-sm">
-            <span className="text-zinc-500">Max Stress:</span>
+            <span className="text-zinc-400">Max Stress:</span>
             <span className={element.results.utilization > 0.9 ? 'text-red-400' : 'text-emerald-400'}>
               {element.results.stress.toFixed(1)} MPa
             </span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-zinc-500">Utilization:</span>
+            <span className="text-zinc-400">Utilization:</span>
             <span className={element.results.utilization > 0.9 ? 'text-red-400' : 'text-emerald-400'}>
               {(element.results.utilization * 100).toFixed(1)}%
             </span>
@@ -741,7 +741,7 @@ const AnalysisControlPanel: React.FC<{
               transition={{ duration: 0.5 }}
             />
           </div>
-          <p className="text-xs text-zinc-500 mt-2">
+          <p className="text-xs text-zinc-400 mt-2">
             {analysis.progress}% complete • Estimated time: {Math.ceil((100 - analysis.progress) / 10)}s
           </p>
         </motion.div>
@@ -761,16 +761,16 @@ const AnalysisControlPanel: React.FC<{
           
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-zinc-500">Max Displacement:</span>
+              <span className="text-zinc-400">Max Displacement:</span>
               <span className="text-white">{analysis.maxDisplacement?.toFixed(2)} mm</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-zinc-500">Max Stress:</span>
+              <span className="text-zinc-400">Max Stress:</span>
               <span className="text-white">{analysis.maxStress?.toFixed(1)} MPa</span>
             </div>
             {analysis.naturalFrequencies && (
               <div className="flex justify-between text-sm">
-                <span className="text-zinc-500">1st Mode:</span>
+                <span className="text-zinc-400">1st Mode:</span>
                 <span className="text-white">{analysis.naturalFrequencies[0]?.toFixed(2)} Hz</span>
               </div>
             )}
@@ -871,9 +871,9 @@ export const UltraModernDesignStudio: React.FC = () => {
           <div className="h-6 w-px bg-white/10" />
           
           <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-800/50 rounded-lg">
-            <FileText className="w-4 h-4 text-zinc-500" />
+            <FileText className="w-4 h-4 text-zinc-400" />
             <span className="text-sm text-zinc-300">Untitled Project</span>
-            <ChevronDown className="w-4 h-4 text-zinc-500" />
+            <ChevronDown className="w-4 h-4 text-zinc-400" />
           </div>
         </div>
         
@@ -961,7 +961,7 @@ export const UltraModernDesignStudio: React.FC = () => {
               className={`p-2.5 rounded-xl transition-all ${
                 toolMode === tool
                   ? 'bg-blue-600 text-white'
-                  : 'text-zinc-500 hover:text-white hover:bg-zinc-800'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
               }`}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -974,10 +974,10 @@ export const UltraModernDesignStudio: React.FC = () => {
           
           <div className="h-px w-8 bg-white/10" />
           
-          <button className="p-2.5 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-xl transition-colors" title="Undo (Ctrl+Z)">
+          <button className="p-2.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-xl transition-colors" title="Undo (Ctrl+Z)">
             <Undo2 className="w-5 h-5" />
           </button>
-          <button className="p-2.5 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-xl transition-colors" title="Redo (Ctrl+Y)">
+          <button className="p-2.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-xl transition-colors" title="Redo (Ctrl+Y)">
             <Redo2 className="w-5 h-5" />
           </button>
         </motion.aside>
@@ -1064,7 +1064,7 @@ export const UltraModernDesignStudio: React.FC = () => {
         >
           {/* Design Code Selector */}
           <div className="p-4 border-b border-white/5">
-            <label className="block text-xs text-zinc-500 mb-2">Design Code</label>
+            <label className="block text-xs text-zinc-400 mb-2">Design Code</label>
             <div className="relative">
               <select 
                 value={selectedCode.code}
@@ -1075,7 +1075,7 @@ export const UltraModernDesignStudio: React.FC = () => {
                   <option key={c.code} value={c.code}>{c.country} {c.name}</option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 pointer-events-none" />
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 pointer-events-none" />
             </div>
           </div>
           
@@ -1085,7 +1085,7 @@ export const UltraModernDesignStudio: React.FC = () => {
               <button
                 key={tab}
                 className={`flex-1 py-3 text-sm font-medium transition-colors ${
-                  i === 0 ? 'text-blue-400 border-b-2 border-blue-400' : 'text-zinc-500 hover:text-white'
+                  i === 0 ? 'text-blue-400 border-b-2 border-blue-400' : 'text-zinc-400 hover:text-white'
                 }`}
               >
                 {tab}
@@ -1112,19 +1112,19 @@ export const UltraModernDesignStudio: React.FC = () => {
           {/* Quick Stats */}
           <div className="p-4 border-t border-white/5 grid grid-cols-2 gap-3">
             <div className="p-3 bg-zinc-800/50 rounded-xl">
-              <p className="text-xs text-zinc-500">Members</p>
+              <p className="text-xs text-zinc-400">Members</p>
               <p className="text-xl font-bold text-white">24</p>
             </div>
             <div className="p-3 bg-zinc-800/50 rounded-xl">
-              <p className="text-xs text-zinc-500">Nodes</p>
+              <p className="text-xs text-zinc-400">Nodes</p>
               <p className="text-xl font-bold text-white">18</p>
             </div>
             <div className="p-3 bg-zinc-800/50 rounded-xl">
-              <p className="text-xs text-zinc-500">Weight</p>
+              <p className="text-xs text-zinc-400">Weight</p>
               <p className="text-xl font-bold text-white">4.2t</p>
             </div>
             <div className="p-3 bg-zinc-800/50 rounded-xl">
-              <p className="text-xs text-zinc-500">Status</p>
+              <p className="text-xs text-zinc-400">Status</p>
               <div className="flex items-center gap-1">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 <span className="text-emerald-400 font-bold">OK</span>
@@ -1144,7 +1144,7 @@ export const UltraModernDesignStudio: React.FC = () => {
         className="h-8 bg-zinc-900/80 border-t border-white/5 flex items-center justify-between px-4 text-xs"
       >
         <div className="flex items-center gap-4">
-          <span className="text-zinc-500">Model: Building_A_v3.sai</span>
+          <span className="text-zinc-400">Model: Building_A_v3.sai</span>
           <span className="text-zinc-700">|</span>
           <span className="text-emerald-400 flex items-center gap-1">
             <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
@@ -1152,11 +1152,11 @@ export const UltraModernDesignStudio: React.FC = () => {
           </span>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-zinc-500">Cursor: (124.5, 0.0, 87.2)</span>
+          <span className="text-zinc-400">Cursor: (124.5, 0.0, 87.2)</span>
           <span className="text-zinc-700">|</span>
-          <span className="text-zinc-500">Grid: 1000mm</span>
+          <span className="text-zinc-400">Grid: 1000mm</span>
           <span className="text-zinc-700">|</span>
-          <span className="text-zinc-500">Snap: ON</span>
+          <span className="text-zinc-400">Snap: ON</span>
         </div>
       </motion.footer>
     </div>

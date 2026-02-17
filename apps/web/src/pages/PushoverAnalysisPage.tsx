@@ -419,9 +419,9 @@ export const PushoverAnalysisPage: React.FC = () => {
             ) : (
               <div className="bg-slate-900 rounded-xl p-6 border border-slate-700 h-full">
                 <div className="flex flex-col items-center justify-center py-12 text-center h-full">
-                  <Activity className="w-16 h-16 text-slate-600 mb-4" />
+                  <Activity className="w-16 h-16 text-slate-500 mb-4" />
                   <h3 className="text-lg font-semibold text-slate-400 mb-2">No Results Yet</h3>
-                  <p className="text-sm text-slate-500 mb-4">
+                  <p className="text-sm text-slate-400 mb-4">
                     Configure analysis parameters and run pushover to see results
                   </p>
                   <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 text-left">

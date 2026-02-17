@@ -177,7 +177,7 @@ export const DesignCodeResultsPanel: FC = () => {
             {/* Results */}
             <div className="flex-1 overflow-y-auto p-4">
                 {results.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-zinc-500">
+                    <div className="flex flex-col items-center justify-center h-full text-zinc-400">
                         <FileText className="w-12 h-12 opacity-30 mb-4" />
                         <p className="text-sm">Run design checks to see results</p>
                         <p className="text-xs mt-1">{model.members.size} members in model</p>
@@ -190,19 +190,19 @@ export const DesignCodeResultsPanel: FC = () => {
                                 <div className="text-xl font-bold text-green-400">
                                     {results.filter(r => r.overallStatus === 'PASS').length}
                                 </div>
-                                <div className="text-[10px] text-zinc-500">PASS</div>
+                                <div className="text-[10px] text-zinc-400">PASS</div>
                             </div>
                             <div className="p-3 bg-yellow-500/10 rounded border border-yellow-500/20 text-center">
                                 <div className="text-xl font-bold text-yellow-400">
                                     {results.filter(r => r.overallStatus === 'WARNING').length}
                                 </div>
-                                <div className="text-[10px] text-zinc-500">WARNING</div>
+                                <div className="text-[10px] text-zinc-400">WARNING</div>
                             </div>
                             <div className="p-3 bg-red-500/10 rounded border border-red-500/20 text-center">
                                 <div className="text-xl font-bold text-red-400">
                                     {results.filter(r => r.overallStatus === 'FAIL').length}
                                 </div>
-                                <div className="text-[10px] text-zinc-500">FAIL</div>
+                                <div className="text-[10px] text-zinc-400">FAIL</div>
                             </div>
                         </div>
 
@@ -240,7 +240,7 @@ export const DesignCodeResultsPanel: FC = () => {
                                                 <div className="flex items-center gap-2">
                                                     {getStatusIcon(check.status)}
                                                     <span className="text-zinc-300">{check.title}</span>
-                                                    <span className="text-zinc-600">({check.clause})</span>
+                                                    <span className="text-zinc-500">({check.clause})</span>
                                                 </div>
                                                 <span className={getUtilColor(check.ratio)}>
                                                     {(check.ratio * 100).toFixed(1)}%

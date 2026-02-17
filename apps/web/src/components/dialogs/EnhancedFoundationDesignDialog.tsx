@@ -291,7 +291,7 @@ const EnhancedNumberInput: FC<{
       <label className="text-zinc-400 text-sm font-medium flex items-center justify-between">
         <span>{label}</span>
         {info && (
-          <span className="text-zinc-500 text-xs flex items-center gap-1">
+          <span className="text-zinc-400 text-xs flex items-center gap-1">
             <Info className="w-3 h-3" />
             {info}
           </span>
@@ -315,7 +315,7 @@ const EnhancedNumberInput: FC<{
             }`}
         />
         {unit && (
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 text-sm font-medium">
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 text-sm font-medium">
             {unit}
           </span>
         )}
@@ -348,7 +348,7 @@ const EnhancedSelect: FC<{
     <label className="text-zinc-400 text-sm font-medium">{label}</label>
     <div className="relative">
       {icon && (
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">
           {icon}
         </span>
       )}
@@ -376,7 +376,7 @@ const SectionHeader: FC<{ number: number; title: string; subtitle?: string; colo
     </div>
     <div>
       <h3 className="text-white font-semibold text-base">{title}</h3>
-      {subtitle && <p className="text-zinc-500 text-sm">{subtitle}</p>}
+      {subtitle && <p className="text-zinc-400 text-sm">{subtitle}</p>}
     </div>
   </div>
 );
@@ -404,13 +404,13 @@ const DesignCheckCard: FC<{ check: DesignCheck; expanded?: boolean; onToggle?: (
             <h4 className="text-white font-medium text-sm">{check.name}</h4>
             <StatusBadge status={check.status} size="sm" />
           </div>
-          <p className="text-zinc-500 text-xs">{check.clause}</p>
+          <p className="text-zinc-400 text-xs">{check.clause}</p>
         </div>
         <div className="text-right">
           <p className="text-white font-mono text-sm">
             {check.demand.toFixed(1)} / {check.capacity.toFixed(1)}
           </p>
-          <p className="text-zinc-500 text-xs">{check.demandUnit}</p>
+          <p className="text-zinc-400 text-xs">{check.demandUnit}</p>
         </div>
       </div>
 
@@ -429,7 +429,7 @@ const DesignCheckCard: FC<{ check: DesignCheck; expanded?: boolean; onToggle?: (
             {check.calculationSteps.map((step, idx) => (
               <div key={idx} className="text-xs">
                 <p className="text-zinc-400">{step.description}</p>
-                <p className="text-zinc-500 font-mono">{step.formula}</p>
+                <p className="text-zinc-400 font-mono">{step.formula}</p>
               </div>
             ))}
           </motion.div>
@@ -455,7 +455,7 @@ const ResultsSummaryCard: FC<{ result: FootingDesignResult }> = ({ result }) => 
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-zinc-800/50 rounded-xl p-4">
-          <p className="text-zinc-500 text-xs uppercase tracking-wider mb-1">Dimensions</p>
+          <p className="text-zinc-400 text-xs uppercase tracking-wider mb-1">Dimensions</p>
           <p className="text-white font-semibold text-lg">
             {geometry.length.toFixed(2)}m × {geometry.width.toFixed(2)}m
           </p>
@@ -463,7 +463,7 @@ const ResultsSummaryCard: FC<{ result: FootingDesignResult }> = ({ result }) => 
         </div>
 
         <div className="bg-zinc-800/50 rounded-xl p-4">
-          <p className="text-zinc-500 text-xs uppercase tracking-wider mb-1">Soil Pressure</p>
+          <p className="text-zinc-400 text-xs uppercase tracking-wider mb-1">Soil Pressure</p>
           <p className="text-white font-semibold text-lg">
             {soilPressure.maximum.toFixed(0)} kPa
           </p>
@@ -471,7 +471,7 @@ const ResultsSummaryCard: FC<{ result: FootingDesignResult }> = ({ result }) => 
         </div>
 
         <div className="bg-zinc-800/50 rounded-xl p-4">
-          <p className="text-zinc-500 text-xs uppercase tracking-wider mb-1">Reinforcement</p>
+          <p className="text-zinc-400 text-xs uppercase tracking-wider mb-1">Reinforcement</p>
           <p className="text-white font-semibold text-lg">
             T{reinforcement.bottomX.diameter}@{reinforcement.bottomX.spacing}
           </p>
@@ -479,14 +479,14 @@ const ResultsSummaryCard: FC<{ result: FootingDesignResult }> = ({ result }) => 
         </div>
 
         <div className="bg-zinc-800/50 rounded-xl p-4">
-          <p className="text-zinc-500 text-xs uppercase tracking-wider mb-1">Checks</p>
+          <p className="text-zinc-400 text-xs uppercase tracking-wider mb-1">Checks</p>
           <div className="flex items-center gap-2">
             <span className="text-emerald-400 font-semibold">{checksSummary.passed}</span>
-            <span className="text-zinc-600">/</span>
+            <span className="text-zinc-500">/</span>
             <span className={checksSummary.failed > 0 ? 'text-red-400' : 'text-zinc-400'}>
               {checksSummary.failed}
             </span>
-            <span className="text-zinc-600">/</span>
+            <span className="text-zinc-500">/</span>
             <span className={checksSummary.warnings > 0 ? 'text-amber-400' : 'text-zinc-400'}>
               {checksSummary.warnings}
             </span>
@@ -502,7 +502,7 @@ const ResultsSummaryCard: FC<{ result: FootingDesignResult }> = ({ result }) => 
             <Layers className="w-5 h-5 text-blue-400" />
           </div>
           <div>
-            <p className="text-zinc-500 text-xs">Concrete Volume</p>
+            <p className="text-zinc-400 text-xs">Concrete Volume</p>
             <p className="text-white font-semibold">{result.materialQuantities.concrete.volume.toFixed(2)} m³</p>
           </div>
         </div>
@@ -512,7 +512,7 @@ const ResultsSummaryCard: FC<{ result: FootingDesignResult }> = ({ result }) => 
             <Wrench className="w-5 h-5 text-purple-400" />
           </div>
           <div>
-            <p className="text-zinc-500 text-xs">Reinforcement Weight</p>
+            <p className="text-zinc-400 text-xs">Reinforcement Weight</p>
             <p className="text-white font-semibold">{result.materialQuantities.reinforcement.weight.toFixed(0)} kg</p>
           </div>
         </div>
@@ -852,7 +852,7 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                           {/* Tooltip on hover */}
                           <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-zinc-800 rounded-lg border border-zinc-700 text-xs opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
                             <p className="text-zinc-300">{soil.description}</p>
-                            <div className="mt-2 grid grid-cols-2 gap-1 text-zinc-500">
+                            <div className="mt-2 grid grid-cols-2 gap-1 text-zinc-400">
                               <span>φ: {soil.frictionAngle}°</span>
                               <span>c: {soil.cohesion} kPa</span>
                               <span>γ: {soil.unitWeight} kN/m³</span>
@@ -1146,24 +1146,24 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
 
                     <div className="grid grid-cols-4 gap-6">
                       <div>
-                        <p className="text-zinc-500 text-xs uppercase tracking-wider mb-1">Length (L)</p>
+                        <p className="text-zinc-400 text-xs uppercase tracking-wider mb-1">Length (L)</p>
                         <p className="text-white font-mono text-2xl">{designResult.geometry.length.toFixed(2)}</p>
-                        <p className="text-zinc-500 text-sm">meters</p>
+                        <p className="text-zinc-400 text-sm">meters</p>
                       </div>
                       <div>
-                        <p className="text-zinc-500 text-xs uppercase tracking-wider mb-1">Width (B)</p>
+                        <p className="text-zinc-400 text-xs uppercase tracking-wider mb-1">Width (B)</p>
                         <p className="text-white font-mono text-2xl">{designResult.geometry.width.toFixed(2)}</p>
-                        <p className="text-zinc-500 text-sm">meters</p>
+                        <p className="text-zinc-400 text-sm">meters</p>
                       </div>
                       <div>
-                        <p className="text-zinc-500 text-xs uppercase tracking-wider mb-1">Thickness (D)</p>
+                        <p className="text-zinc-400 text-xs uppercase tracking-wider mb-1">Thickness (D)</p>
                         <p className="text-white font-mono text-2xl">{(designResult.geometry.thickness * 1000).toFixed(0)}</p>
-                        <p className="text-zinc-500 text-sm">mm</p>
+                        <p className="text-zinc-400 text-sm">mm</p>
                       </div>
                       <div>
-                        <p className="text-zinc-500 text-xs uppercase tracking-wider mb-1">Effective Depth (d)</p>
+                        <p className="text-zinc-400 text-xs uppercase tracking-wider mb-1">Effective Depth (d)</p>
                         <p className="text-white font-mono text-2xl">{(designResult.geometry.effectiveDepth * 1000).toFixed(0)}</p>
-                        <p className="text-zinc-500 text-sm">mm</p>
+                        <p className="text-zinc-400 text-sm">mm</p>
                       </div>
                     </div>
                   </div>
@@ -1181,7 +1181,7 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                         <p className="text-white text-xl font-mono">
                           T{designResult.reinforcement.bottomX.diameter} @ {designResult.reinforcement.bottomX.spacing}mm c/c
                         </p>
-                        <p className="text-zinc-500 text-sm mt-1">
+                        <p className="text-zinc-400 text-sm mt-1">
                           Area: {designResult.reinforcement.bottomX.areaProvided.toFixed(0)} mm²/m
                         </p>
                       </div>
@@ -1190,7 +1190,7 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                         <p className="text-white text-xl font-mono">
                           T{designResult.reinforcement.bottomY.diameter} @ {designResult.reinforcement.bottomY.spacing}mm c/c
                         </p>
-                        <p className="text-zinc-500 text-sm mt-1">
+                        <p className="text-zinc-400 text-sm mt-1">
                           Area: {designResult.reinforcement.bottomY.areaProvided.toFixed(0)} mm²/m
                         </p>
                       </div>

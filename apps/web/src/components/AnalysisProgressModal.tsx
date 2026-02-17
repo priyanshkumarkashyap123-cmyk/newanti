@@ -102,7 +102,7 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
                     {/* Progress Bar */}
                     <div className="mb-6">
                         <div className="flex justify-between text-sm mb-2">
-                            <span className="text-zinc-600 dark:text-zinc-400">Progress</span>
+                            <span className="text-zinc-500 dark:text-zinc-400">Progress</span>
                             <span className="font-medium text-zinc-900 dark:text-white">{Math.round(progress)}%</span>
                         </div>
                         <div className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
@@ -167,7 +167,7 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
                                                 ? isError
                                                     ? 'text-red-700 dark:text-red-400 font-medium'
                                                     : 'text-blue-700 dark:text-blue-400 font-medium'
-                                                : 'text-zinc-400 dark:text-zinc-500'
+                                                : 'text-zinc-400 dark:text-zinc-400'
                                         }
                                     `}>
                                         {stageItem.label}
@@ -188,19 +188,19 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
                     {isComplete && stats && (
                         <div className="mt-4 grid grid-cols-2 gap-3">
                             <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
-                                <div className="text-xs text-zinc-500 dark:text-zinc-400">Nodes</div>
+                                <div className="text-xs text-zinc-400 dark:text-zinc-400">Nodes</div>
                                 <div className="text-lg font-bold text-zinc-900 dark:text-white">{stats.nodes}</div>
                             </div>
                             <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
-                                <div className="text-xs text-zinc-500 dark:text-zinc-400">Members</div>
+                                <div className="text-xs text-zinc-400 dark:text-zinc-400">Members</div>
                                 <div className="text-lg font-bold text-zinc-900 dark:text-white">{stats.members}</div>
                             </div>
                             <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
-                                <div className="text-xs text-zinc-500 dark:text-zinc-400">DOF</div>
+                                <div className="text-xs text-zinc-400 dark:text-zinc-400">DOF</div>
                                 <div className="text-lg font-bold text-zinc-900 dark:text-white">{stats.dof}</div>
                             </div>
                             <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
-                                <div className="text-xs text-zinc-500 dark:text-zinc-400">Time</div>
+                                <div className="text-xs text-zinc-400 dark:text-zinc-400">Time</div>
                                 <div className="text-lg font-bold text-zinc-900 dark:text-white">{stats.timeMs}ms</div>
                             </div>
                         </div>

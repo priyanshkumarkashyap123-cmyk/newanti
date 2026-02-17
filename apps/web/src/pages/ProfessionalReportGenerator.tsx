@@ -863,7 +863,7 @@ export default function ProfessionalReportGenerator() {
                     }`}
                   >
                     <div className="flex items-center gap-3 p-3">
-                      <GripVertical className="w-4 h-4 text-slate-500 cursor-move" />
+                      <GripVertical className="w-4 h-4 text-slate-400 cursor-move" />
                       
                       <button
                         onClick={() => toggleSection(section.id)}
@@ -902,7 +902,7 @@ export default function ProfessionalReportGenerator() {
                     
                     {section.expanded && (
                       <div className="px-3 pb-3 pt-1 border-t border-slate-700">
-                        <p className="text-xs text-slate-500 mb-2">
+                        <p className="text-xs text-slate-400 mb-2">
                           {SECTION_DEFINITIONS[section.type].description}
                         </p>
                         
@@ -961,7 +961,7 @@ export default function ProfessionalReportGenerator() {
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => window.print()}
-                      className="p-1 text-slate-500 hover:text-slate-700"
+                      className="p-1 text-slate-400 hover:text-slate-700"
                     >
                       <Printer className="w-4 h-4" />
                     </button>
@@ -975,9 +975,9 @@ export default function ProfessionalReportGenerator() {
               </div>
             ) : (
               <div className="bg-slate-900 rounded-xl p-8 border border-slate-700 text-center">
-                <Eye className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                <Eye className="w-12 h-12 text-slate-500 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-slate-400 mb-2">Preview Hidden</h3>
-                <p className="text-sm text-slate-500">Click "Preview" to see the report</p>
+                <p className="text-sm text-slate-400">Click "Preview" to see the report</p>
               </div>
             )}
           </div>

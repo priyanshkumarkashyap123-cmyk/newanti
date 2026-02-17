@@ -237,10 +237,10 @@ const SectionCard: React.FC<{
         
         {/* Icon & Title */}
         <div className="flex items-center gap-2 flex-1">
-          <span className={section.isEnabled ? 'text-blue-400' : 'text-zinc-600'}>
+          <span className={section.isEnabled ? 'text-blue-400' : 'text-zinc-500'}>
             {sectionIcons[section.type]}
           </span>
-          <span className={`font-medium ${section.isEnabled ? 'text-white' : 'text-zinc-500'}`}>
+          <span className={`font-medium ${section.isEnabled ? 'text-white' : 'text-zinc-400'}`}>
             {section.title}
           </span>
         </div>
@@ -310,7 +310,7 @@ const SectionPreview: React.FC<{ type: SectionType }> = ({ type }) => {
       return (
         <div className="flex gap-4">
           <div className="w-32 h-32 bg-zinc-800 rounded-lg flex items-center justify-center">
-            <Layout className="w-8 h-8 text-zinc-600" />
+            <Layout className="w-8 h-8 text-zinc-500" />
           </div>
           <div className="flex-1 space-y-2">
             <div className="h-4 bg-zinc-800 rounded w-3/4" />
@@ -323,7 +323,7 @@ const SectionPreview: React.FC<{ type: SectionType }> = ({ type }) => {
       return (
         <div className="space-y-3">
           <div className="h-4 bg-blue-500/20 rounded w-full" />
-          <div className="font-mono text-xs text-zinc-500 p-2 bg-zinc-800 rounded">
+          <div className="font-mono text-xs text-zinc-400 p-2 bg-zinc-800 rounded">
             Mu = 0.138 × fck × b × d² = 251.5 kN·m
           </div>
           <div className="h-4 bg-emerald-500/20 rounded w-3/4" />
@@ -333,15 +333,15 @@ const SectionPreview: React.FC<{ type: SectionType }> = ({ type }) => {
       return (
         <div className="grid grid-cols-3 gap-2 text-xs">
           <div className="bg-zinc-800 p-2 rounded text-center">
-            <div className="text-zinc-500">Main Steel</div>
+            <div className="text-zinc-400">Main Steel</div>
             <div className="text-white font-mono">4T20</div>
           </div>
           <div className="bg-zinc-800 p-2 rounded text-center">
-            <div className="text-zinc-500">Stirrups</div>
+            <div className="text-zinc-400">Stirrups</div>
             <div className="text-white font-mono">T8@150</div>
           </div>
           <div className="bg-zinc-800 p-2 rounded text-center">
-            <div className="text-zinc-500">Cover</div>
+            <div className="text-zinc-400">Cover</div>
             <div className="text-white font-mono">40mm</div>
           </div>
         </div>
@@ -500,7 +500,7 @@ export const AdvancedReportGenerator: React.FC<{
                 Report Generator
                 <Sparkles className="w-4 h-4 text-amber-400" />
               </h2>
-              <p className="text-zinc-500 text-sm">Create professional engineering reports</p>
+              <p className="text-zinc-400 text-sm">Create professional engineering reports</p>
             </div>
           </div>
           
@@ -589,7 +589,7 @@ export const AdvancedReportGenerator: React.FC<{
                           }`}>
                             {template.name}
                           </p>
-                          <p className="text-xs text-zinc-500 mt-1">{template.description}</p>
+                          <p className="text-xs text-zinc-400 mt-1">{template.description}</p>
                         </button>
                       ))}
                     </div>
@@ -599,7 +599,7 @@ export const AdvancedReportGenerator: React.FC<{
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <label className="text-sm font-medium text-zinc-400">Report Sections</label>
-                      <span className="text-xs text-zinc-600">
+                      <span className="text-xs text-zinc-500">
                         {sections.filter(s => s.isEnabled).length} of {sections.length} enabled
                       </span>
                     </div>
@@ -634,7 +634,7 @@ export const AdvancedReportGenerator: React.FC<{
                     <label className="block text-sm font-medium text-zinc-400 mb-3">Color Scheme</label>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs text-zinc-500 mb-1 block">Primary Color</label>
+                        <label className="text-xs text-zinc-400 mb-1 block">Primary Color</label>
                         <div className="flex items-center gap-2">
                           <input
                             type="color"
@@ -651,7 +651,7 @@ export const AdvancedReportGenerator: React.FC<{
                         </div>
                       </div>
                       <div>
-                        <label className="text-xs text-zinc-500 mb-1 block">Accent Color</label>
+                        <label className="text-xs text-zinc-400 mb-1 block">Accent Color</label>
                         <div className="flex items-center gap-2">
                           <input
                             type="color"
@@ -788,7 +788,7 @@ export const AdvancedReportGenerator: React.FC<{
                       </div>
                       <div className="flex-1">
                         <span className="text-sm text-zinc-300">Include detailed calculations</span>
-                        <p className="text-xs text-zinc-500">Step-by-step design calculations</p>
+                        <p className="text-xs text-zinc-400">Step-by-step design calculations</p>
                       </div>
                     </label>
                     <label
@@ -802,7 +802,7 @@ export const AdvancedReportGenerator: React.FC<{
                       </div>
                       <div className="flex-1">
                         <span className="text-sm text-zinc-300">Include drawings</span>
-                        <p className="text-xs text-zinc-500">Section details and reinforcement layout</p>
+                        <p className="text-xs text-zinc-400">Section details and reinforcement layout</p>
                       </div>
                     </label>
                     <label
@@ -816,7 +816,7 @@ export const AdvancedReportGenerator: React.FC<{
                       </div>
                       <div className="flex-1">
                         <span className="text-sm text-zinc-300">Add digital signature</span>
-                        <p className="text-xs text-zinc-500">Sign with your credentials</p>
+                        <p className="text-xs text-zinc-400">Sign with your credentials</p>
                       </div>
                     </label>
                   </div>

@@ -60,7 +60,7 @@ const ToolButton: FC<ToolButtonProps> = ({ tool, isActive, onClick, showLabel = 
             <Icon className="w-4 h-4" aria-hidden="true" />
             {showLabel && <span>{tool.label}</span>}
             {tool.shortcut && (
-                <span className="text-[10px] text-zinc-500 ml-auto" aria-hidden="true">{tool.shortcut}</span>
+                <span className="text-[10px] text-zinc-400 ml-auto" aria-hidden="true">{tool.shortcut}</span>
             )}
         </button>
     );
@@ -213,7 +213,7 @@ export const ModelingToolbar: FC = () => {
         <div className="flex flex-col gap-2 p-2 bg-zinc-900 border-b border-zinc-800">
             {/* Quick Access Bar */}
             <div className="flex items-center gap-1">
-                <span className="text-[10px] uppercase text-zinc-500 px-2">Quick:</span>
+                <span className="text-[10px] uppercase text-zinc-400 px-2">Quick:</span>
                 {QUICK_TOOLS.map(toolId => {
                     const tool = TOOL_DEFINITIONS[toolId];
                     if (!tool) return null;
@@ -271,11 +271,11 @@ export const ModelingToolbar: FC = () => {
             {/* Active Tool Indicator */}
             {activeTool && TOOL_DEFINITIONS[activeTool] && (
                 <div className="flex items-center gap-2 px-2 py-1 bg-zinc-800/50 rounded text-xs">
-                    <span className="text-zinc-500">Active:</span>
+                    <span className="text-zinc-400">Active:</span>
                     <span className="text-blue-400 font-medium">
                         {TOOL_DEFINITIONS[activeTool].label}
                     </span>
-                    <span className="text-zinc-600">—</span>
+                    <span className="text-zinc-500">—</span>
                     <span className="text-zinc-400">
                         {TOOL_DEFINITIONS[activeTool].tooltip}
                     </span>

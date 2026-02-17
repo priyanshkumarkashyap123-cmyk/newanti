@@ -327,7 +327,7 @@ export const ToolboxPage: FC = () => {
                     </div>
                 ) : (
                     <div className="text-center py-16">
-                        <Search className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                        <Search className="w-12 h-12 text-slate-500 mx-auto mb-4" />
                         <p className="text-slate-400">No tools found matching "{searchQuery}"</p>
                         <button
                             onClick={() => setSearchQuery('')}
