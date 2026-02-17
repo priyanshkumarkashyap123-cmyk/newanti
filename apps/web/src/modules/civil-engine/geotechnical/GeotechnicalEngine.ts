@@ -366,7 +366,8 @@ export class BearingCapacity {
     const q = gamma * Df;
     
     // Shape factors
-    let sc = 1, sq = 1, sgamma = 1;
+    let sc = 1, sgamma = 1;
+    const sq = 1;
     if (foundation.type === 'square') {
       sc = 1.3;
       sgamma = 0.8;

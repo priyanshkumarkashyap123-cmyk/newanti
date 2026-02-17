@@ -155,8 +155,8 @@ export class IS800_SteelDesignEngine {
             }
         }
 
-        // Clause 8: Flexure
-        if (hasMoment || true) {
+        // Clause 8: Flexure (always check for combined interaction)
+        {
             checks.flexure = this.checkFlexure(forces.Mx, forces.My, section, material, props);
             const flexureMax = Math.max(checks.flexure.ratio_x, checks.flexure.ratio_y);
             if (hasMoment && flexureMax > maxRatio) {

@@ -424,10 +424,14 @@ export function usePerformanceMetrics(): PerformanceMetrics | null {
     
     useEffect(() => {
         const telemetry = getTelemetry();
-        setMetrics(telemetry.getMetrics());
+        queueMicrotask(() => {
+            setMetrics(telemetry.getMetrics());
+        });
         
         const unsubscribe = telemetry.subscribe((newMetrics) => {
-            setMetrics({ ...newMetrics });
+            queueMicrotask(() => {
+                setMetrics({ ...newMetrics });
+            });
         });
         
         return unsubscribe;

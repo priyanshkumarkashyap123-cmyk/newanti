@@ -94,7 +94,6 @@ export function useAIWorkflow() {
     const updateNode = useModelStore((state) => state.updateNode);
     const addLoad = useModelStore((state) => state.addLoad);
     const setShowResults = useModelStore((state) => state.setShowResults);
-    const nodes = useModelStore((state) => state.nodes);
 
     // Helper to update step status
     const updateStep = useCallback((stepId: string, update: Partial<WorkflowStep>) => {
@@ -370,7 +369,7 @@ export function useAIWorkflow() {
             });
             return true;
 
-        } catch (error) {
+        } catch {
             // For demo purposes, mark as success even if API not available
             updateStep('solve', {
                 status: 'success',

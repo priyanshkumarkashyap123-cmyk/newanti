@@ -181,13 +181,10 @@ export const ModelingToolbar: FC = () => {
         setModelTool(modelTool as any);
     }, [setActiveTool, setModelTool]);
 
-    // Only show modeling tools when in MODELING category
-    if (activeCategory !== 'MODELING') {
-        return null;
-    }
-
     // Handle keyboard shortcuts
     useEffect(() => {
+        if (activeCategory !== 'MODELING') return;
+
         const handleKeyDown = (e: KeyboardEvent) => {
             // Skip if typing in input
             if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
@@ -205,7 +202,12 @@ export const ModelingToolbar: FC = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [handleToolSelect]);
+    }, [handleToolSelect, activeCategory]);
+
+    // Only show modeling tools when in MODELING category
+    if (activeCategory !== 'MODELING') {
+        return null;
+    }
 
     return (
         <div className="flex flex-col gap-2 p-2 bg-zinc-900 border-b border-zinc-800">

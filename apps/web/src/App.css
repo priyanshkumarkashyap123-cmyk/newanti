@@ -3,7 +3,9 @@
 /* Container */
 .app-container {
     width: 100vw;
-    height: 100vh;
+    height: 100vh; /* Fallback for older browsers */
+    height: 100dvh; /* Dynamic viewport height - accounts for mobile address bar */
+    min-height: -webkit-fill-available; /* iOS Safari fallback */
     display: flex;
     flex-direction: column;
     background-color: #0D0D12;
@@ -390,7 +392,8 @@
 /* ============================================
    RESPONSIVE ADJUSTMENTS
    ============================================ */
-@media (max-width: 1200px) {
+/* Match Tailwind lg breakpoint (1024px) */
+@media (max-width: 1024px) {
     .left-sidebar {
         width: 180px;
     }
@@ -400,7 +403,8 @@
     }
 }
 
-@media (max-width: 900px) {
+/* Match Tailwind md breakpoint (768px) */
+@media (max-width: 768px) {
 
     .left-sidebar,
     .right-sidebar {
@@ -486,6 +490,7 @@
 /* Glassmorphism effects for sidebars */
 .left-sidebar,
 .right-sidebar {
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
 }
 

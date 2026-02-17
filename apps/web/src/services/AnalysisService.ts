@@ -9,6 +9,7 @@
  */
 
 import { analysisLogger } from '../utils/logger';
+import { API_CONFIG } from '../config/env';
 
 // ============================================
 // TYPES
@@ -99,9 +100,9 @@ const CONFIG = {
     LOCAL_THRESHOLD: 3000,    // Use local WASM solver for models up to 3000 nodes
     LARGE_MODEL_THRESHOLD: 5000, // Use Python sparse solver for 5k+ nodes
     // Python backend for high-performance large model analysis
-    PYTHON_API_URL: import.meta.env.VITE_PYTHON_API_URL || 'https://beamlab-backend-python.azurewebsites.net',
+    PYTHON_API_URL: API_CONFIG.pythonUrl,
     // Node.js API for auth/payments
-    API_BASE_URL: import.meta.env.VITE_API_URL || 'https://beamlab-backend-node.azurewebsites.net',
+    API_BASE_URL: API_CONFIG.baseUrl,
     POLL_INTERVAL: 1000,    // Poll interval for async jobs (ms)
     MAX_POLL_TIME: 300000   // Maximum poll time (5 minutes)
 };
@@ -648,7 +649,7 @@ class AnalysisService {
             }
 
             // Route to Rust backend P-Delta solver (20x faster than Python)
-            const API_URL = import.meta.env.VITE_API_URL || 'https://beamlab-backend-node.azurewebsites.net';
+            const API_URL = API_CONFIG.baseUrl;
             const response = await fetch(`${API_URL}/api/advanced/pdelta`, {
                 method: 'POST',
                 headers,

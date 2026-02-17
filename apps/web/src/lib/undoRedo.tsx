@@ -10,7 +10,7 @@
  * - React integration
  */
 
-import { useCallback, useRef, useState, useMemo } from 'react';
+import { useCallback, useRef, useState, useMemo, useEffect } from 'react';
 
 // ============================================================================
 // Types
@@ -59,7 +59,7 @@ export class HistoryManager<TState> {
   constructor(options: UndoRedoOptions = {}) {
     this.maxSize = options.maxHistorySize ?? 100;
     this.persistKey = options.persistKey;
-    
+
     if (this.persistKey) {
       this.loadFromStorage();
     }
@@ -246,7 +246,7 @@ export class HistoryManager<TState> {
 
   private persistToStorage(): void {
     if (!this.persistKey) return;
-    
+
     try {
       const data = {
         currentIndex: this.currentIndex,
@@ -265,7 +265,7 @@ export class HistoryManager<TState> {
 
   private loadFromStorage(): void {
     if (!this.persistKey) return;
-    
+
     try {
       const data = localStorage.getItem(this.persistKey);
       if (data) {
@@ -288,7 +288,8 @@ export function useUndoRedo<TState>(
 ) {
   const [state, setState] = useState(initialState);
   const historyRef = useRef(new HistoryManager<TState>(options));
-  const [, forceUpdate] = useState({});
+  const [version, setVersion] = useState(0);
+  const forceUpdate = useCallback(() => setVersion(v => v + 1), []);
 
   const generateId = useCallback(() => {
     return `cmd_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -303,7 +304,7 @@ export function useUndoRedo<TState>(
     backward: (current: TState) => TState
   ) => {
     const prevState = state;
-    
+
     const command: Command<TState> = {
       id: generateId(),
       description,
@@ -314,7 +315,7 @@ export function useUndoRedo<TState>(
 
     const newState = historyRef.current.execute(command);
     setState(newState);
-    forceUpdate({});
+    forceUpdate();
   }, [state, generateId]);
 
   /**
@@ -328,12 +329,12 @@ export function useUndoRedo<TState>(
     }>
   ) => {
     let currentState = state;
-    
+
     const commands: Command<TState>[] = operations.map((op, index) => {
       const prevState = currentState;
       const nextState = op.forward(prevState);
       currentState = nextState;
-      
+
       return {
         id: generateId(),
         description: `${description} (${index + 1})`,
@@ -352,7 +353,7 @@ export function useUndoRedo<TState>(
 
     const newState = historyRef.current.executeBatch(batch);
     setState(newState);
-    forceUpdate({});
+    forceUpdate();
   }, [state, generateId]);
 
   /**
@@ -362,7 +363,7 @@ export function useUndoRedo<TState>(
     const newState = historyRef.current.undo();
     if (newState !== undefined) {
       setState(newState);
-      forceUpdate({});
+      forceUpdate();
     }
   }, []);
 
@@ -373,7 +374,7 @@ export function useUndoRedo<TState>(
     const newState = historyRef.current.redo();
     if (newState !== undefined) {
       setState(newState);
-      forceUpdate({});
+      forceUpdate();
     }
   }, []);
 
@@ -384,7 +385,7 @@ export function useUndoRedo<TState>(
     const newState = historyRef.current.jumpTo(index);
     if (newState !== undefined) {
       setState(newState);
-      forceUpdate({});
+      forceUpdate();
     }
   }, []);
 
@@ -393,7 +394,7 @@ export function useUndoRedo<TState>(
    */
   const clear = useCallback(() => {
     historyRef.current.clear();
-    forceUpdate({});
+    forceUpdate();
   }, []);
 
   /**
@@ -402,15 +403,30 @@ export function useUndoRedo<TState>(
   const reset = useCallback(() => {
     historyRef.current.clear();
     setState(initialState);
-    forceUpdate({});
+    forceUpdate();
   }, [initialState]);
 
-  const canUndo = historyRef.current.canUndo();
-  const canRedo = historyRef.current.canRedo();
-  const undoDescription = historyRef.current.getUndoDescription();
-  const redoDescription = historyRef.current.getRedoDescription();
-  const history = historyRef.current.getHistory();
-  const currentIndex = historyRef.current.getCurrentIndex();
+  // Use state to track history values, updated by forceUpdate trigger
+  const [historyState, setHistoryState] = useState(() => ({
+    canUndo: false,
+    canRedo: false,
+    undoDescription: undefined as string | undefined,
+    redoDescription: undefined as string | undefined,
+    history: [] as { id: string; description: string; timestamp: number }[],
+    currentIndex: -1,
+  }));
+
+  // Update history state when version changes (triggered by forceUpdate)
+  useEffect(() => {
+    setHistoryState({
+      canUndo: historyRef.current.canUndo(),
+      canRedo: historyRef.current.canRedo(),
+      undoDescription: historyRef.current.getUndoDescription(),
+      redoDescription: historyRef.current.getRedoDescription(),
+      history: historyRef.current.getHistory(),
+      currentIndex: historyRef.current.getCurrentIndex(),
+    });
+  }, [version]);
 
   return {
     state,
@@ -421,12 +437,12 @@ export function useUndoRedo<TState>(
     jumpTo,
     clear,
     reset,
-    canUndo,
-    canRedo,
-    undoDescription,
-    redoDescription,
-    history,
-    currentIndex,
+    canUndo: historyState.canUndo,
+    canRedo: historyState.canRedo,
+    undoDescription: historyState.undoDescription,
+    redoDescription: historyState.redoDescription,
+    history: historyState.history,
+    currentIndex: historyState.currentIndex,
   };
 }
 
@@ -570,7 +586,7 @@ export function HistoryPanel<TState>({
       <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
         History
       </h3>
-      
+
       {history.length === 0 ? (
         <p className="text-sm text-gray-500 dark:text-gray-400">No history yet</p>
       ) : (
@@ -579,13 +595,12 @@ export function HistoryPanel<TState>({
             <li key={entry.id}>
               <button
                 onClick={() => onJumpTo(index)}
-                className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${
-                  index === currentIndex
+                className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${index === currentIndex
                     ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
                     : index > currentIndex
-                    ? 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
+                      ? 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
               >
                 <span className="font-medium">{entry.description}</span>
                 <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
@@ -629,11 +644,10 @@ export function UndoRedoToolbar({
         onClick={onUndo}
         disabled={!canUndo}
         title={undoDescription ? `Undo: ${undoDescription}` : 'Undo'}
-        className={`p-2 rounded transition-colors ${
-          canUndo
+        className={`p-2 rounded transition-colors ${canUndo
             ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
             : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
-        }`}
+          }`}
         aria-label="Undo"
       >
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -645,16 +659,15 @@ export function UndoRedoToolbar({
           />
         </svg>
       </button>
-      
+
       <button
         onClick={onRedo}
         disabled={!canRedo}
         title={redoDescription ? `Redo: ${redoDescription}` : 'Redo'}
-        className={`p-2 rounded transition-colors ${
-          canRedo
+        className={`p-2 rounded transition-colors ${canRedo
             ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
             : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
-        }`}
+          }`}
         aria-label="Redo"
       >
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

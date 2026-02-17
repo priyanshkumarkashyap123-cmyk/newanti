@@ -179,13 +179,11 @@ function getTransformationMatrix(
     const cz = dz / L;
 
     // Build rotation matrix R (3x3)
-    let r11, r12, r13;
+    const r11 = cx;
+    const r12 = cy;
+    const r13 = cz;
     let r21, r22, r23;
     let r31, r32, r33;
-
-    r11 = cx;
-    r12 = cy;
-    r13 = cz;
 
     if (Math.abs(cx) < 1e-5 && Math.abs(cz) < 1e-5) {
         // Vertical member (along global Y)

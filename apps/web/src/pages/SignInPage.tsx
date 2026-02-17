@@ -4,11 +4,14 @@
  * Uses Clerk for authentication with Premium Navy Theme
  */
 
+import { useEffect } from 'react';
 import { ClerkLoaded, ClerkLoading, SignIn } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import { Cpu, CheckCircle } from 'lucide-react';
 
 export const SignInPage = () => {
+    useEffect(() => { document.title = 'Sign In | BeamLab Ultimate'; }, []);
+
     return (
         <div className="min-h-screen bg-slate-950 flex font-sans selection:bg-blue-500/30">
             {/* Left Side - Branding */}
@@ -91,7 +94,7 @@ export const SignInPage = () => {
             </div>
 
             {/* Right Side - Sign In Form */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-slate-950">
+            <main className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-slate-950 overflow-y-auto">
                 <div className="w-full max-w-md space-y-8">
                     {/* Mobile Logo */}
                     <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
@@ -112,7 +115,7 @@ export const SignInPage = () => {
                     {/* Clerk Sign In */}
                     <div className="clerk-signin-container">
                         <ClerkLoading>
-                            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 text-slate-300 text-sm">
+                            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 text-slate-300 text-sm" aria-live="polite">
                                 Loading secure sign-in…
                             </div>
                         </ClerkLoading>
@@ -165,7 +168,7 @@ export const SignInPage = () => {
                         </Link>
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     );
 };

@@ -206,11 +206,14 @@ export default function StructuralDesignCenter() {
   const [searchQuery, setSearchQuery] = useState('');
   
   // Recent projects (mock data)
-  const [recentProjects] = useState<RecentProject[]>([
-    { id: '1', name: 'Office Building Beam B1', module: 'rc-beam', timestamp: new Date(), status: 'safe' },
-    { id: '2', name: 'Basement Column C12', module: 'rc-column', timestamp: new Date(Date.now() - 3600000), status: 'warning' },
-    { id: '3', name: 'Terrace Slab S3', module: 'rc-slab', timestamp: new Date(Date.now() - 86400000), status: 'safe' },
-  ]);
+  const [recentProjects] = useState<RecentProject[]>(() => {
+    const now = Date.now();
+    return [
+      { id: '1', name: 'Office Building Beam B1', module: 'rc-beam', timestamp: new Date(), status: 'safe' },
+      { id: '2', name: 'Basement Column C12', module: 'rc-column', timestamp: new Date(now - 3600000), status: 'warning' },
+      { id: '3', name: 'Terrace Slab S3', module: 'rc-slab', timestamp: new Date(now - 86400000), status: 'safe' },
+    ];
+  });
   
   // Toggle category expansion
   const toggleCategory = useCallback((categoryId: string) => {

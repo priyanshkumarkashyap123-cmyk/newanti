@@ -1399,10 +1399,12 @@ export const ModernModeler: FC = () => {
                     <div className="flex items-center gap-3">
                         {/* Mobile Menu Button */}
                         <button
-                            className="md:hidden text-zinc-400 hover:text-white"
+                            className="md:hidden text-zinc-400 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded p-1 transition-colors"
                             onClick={() => document.dispatchEvent(new CustomEvent('toggle-sidebar'))}
+                            aria-label="Toggle sidebar navigation"
+                            aria-expanded={isSidebarOpen}
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                         </button>
 
                         <div className="flex items-center gap-2">
@@ -1419,15 +1421,19 @@ export const ModernModeler: FC = () => {
                 </header>
 
                 {/* Main Application Layout (Flex Row) */}
-                <div className="flex-1 flex overflow-hidden relative">
+                <div className="flex-1 flex overflow-hidden relative min-h-0">
 
                     {/* 1. Workflow Sidebar (Left) */}
-                    <div className={`
-                    w-48 flex-shrink-0 h-full z-30 shadow-xl bg-zinc-900 
-                    transition-transform duration-300 
-                    absolute md:relative 
-                    ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-                `}>
+                    <aside 
+                        className={`
+                        w-48 flex-shrink-0 h-full z-30 shadow-xl bg-zinc-900 
+                        transition-transform duration-300 
+                        absolute md:relative 
+                        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+                    `}
+                        role="navigation"
+                        aria-label="Workflow sidebar"
+                    >
                         <WorkflowSidebar
                             activeCategory={activeCategory}
                             onCategoryChange={(cat) => {
@@ -1435,7 +1441,7 @@ export const ModernModeler: FC = () => {
                                 setIsSidebarOpen(false); // Close on selection on mobile
                             }}
                         />
-                    </div>
+                    </aside>
 
                     {/* 2. Main Workspace (Ribbon + Canvas) */}
                     <div className="flex-1 flex flex-col min-w-0">
@@ -1447,7 +1453,7 @@ export const ModernModeler: FC = () => {
 
                         {/* 3D Canvas Area */}
                         <div
-                            className="flex-1 bg-zinc-900 relative"
+                            className="flex-1 bg-zinc-900 relative min-h-0"
                             onContextMenu={(e) => {
                                 // Determine what was clicked and show appropriate context menu
                                 const selectedId = selectedIds.size === 1 ? Array.from(selectedIds)[0] : undefined;

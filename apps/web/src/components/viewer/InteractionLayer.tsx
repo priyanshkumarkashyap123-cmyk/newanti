@@ -219,14 +219,16 @@ export const InteractionLayer: FC<InteractionLayerProps> = ({
 
     // ---- Activate drawing when tool changes ----
     useEffect(() => {
-        if (isPenToolActive) {
-            setDrawingState('PLACING_START');
-        } else {
-            setDrawingState('IDLE');
-            setStartPoint(null);
-            setCursorPoint(null);
-            setHoveredNodeId(null);
-        }
+        queueMicrotask(() => {
+            if (isPenToolActive) {
+                setDrawingState('PLACING_START');
+            } else {
+                setDrawingState('IDLE');
+                setStartPoint(null);
+                setCursorPoint(null);
+                setHoveredNodeId(null);
+            }
+        });
     }, [isPenToolActive]);
 
     // ---- Calculate cursor position with snapping ----

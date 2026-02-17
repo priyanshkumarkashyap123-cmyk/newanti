@@ -16,18 +16,20 @@ export const SelfImprovementDashboard: React.FC = () => {
     const [knowledgeStats, setKnowledgeStats] = useState<any>(null);
     const [selectedFeature, setSelectedFeature] = useState<string | null>(null);
 
+    const loadData = async () => {
+        const report = await selfImprovement.generateReport(7);
+        queueMicrotask(() => {
+            setMetrics(report.metrics);
+            setActions(selfImprovement.getActionHistory(20));
+            setKnowledgeStats(knowledgeGraph.getStats());
+        });
+    };
+
     useEffect(() => {
         loadData();
         const interval = setInterval(loadData, 30000);
         return () => clearInterval(interval);
     }, []);
-
-    const loadData = async () => {
-        const report = await selfImprovement.generateReport(7);
-        setMetrics(report.metrics);
-        setActions(selfImprovement.getActionHistory(20));
-        setKnowledgeStats(knowledgeGraph.getStats());
-    };
 
     const toggleMonitoring = () => {
         if (isMonitoring) {

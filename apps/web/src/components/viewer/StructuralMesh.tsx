@@ -351,11 +351,38 @@ export const StructuralMember: FC<StructuralMemberProps> = ({
     const groupRef = useRef<THREE.Group>(null);
 
     // Calculate member position, orientation, and length
-    const { position, matrix, length } = useMemo(() => {
+    const { position, matrix, length, isValid } = useMemo(() => {
+        // Validate member node positions
+        if (!member.startNode?.position || !member.endNode?.position) {
+            console.warn(`[StructuralMember] Invalid member positions for ${member.id}`);
+            return { position: new THREE.Vector3(), matrix: new THREE.Matrix4(), length: 0, isValid: false };
+        }
+        
+        // Validate position arrays have 3 elements
+        if (member.startNode.position.length < 3 || member.endNode.position.length < 3) {
+            console.warn(`[StructuralMember] Incomplete position data for ${member.id}`);
+            return { position: new THREE.Vector3(), matrix: new THREE.Matrix4(), length: 0, isValid: false };
+        }
+        
+        // Check for NaN values
+        const startPos = member.startNode.position;
+        const endPos = member.endNode.position;
+        if (startPos.some(isNaN) || endPos.some(isNaN)) {
+            console.warn(`[StructuralMember] NaN values in positions for ${member.id}`);
+            return { position: new THREE.Vector3(), matrix: new THREE.Matrix4(), length: 0, isValid: false };
+        }
+        
         const start = new THREE.Vector3(...member.startNode.position);
         const end = new THREE.Vector3(...member.endNode.position);
 
         const memberLength = start.distanceTo(end);
+        
+        // Check for zero-length members
+        if (memberLength < 0.001) {
+            console.warn(`[StructuralMember] Zero-length member: ${member.id}`);
+            return { position: new THREE.Vector3(), matrix: new THREE.Matrix4(), length: 0, isValid: false };
+        }
+        
         const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
 
         // Member direction vector
@@ -429,21 +456,16 @@ export const StructuralMember: FC<StructuralMemberProps> = ({
         return {
             position: midpoint,
             matrix: mat,
-            length: memberLength
+            length: memberLength,
+            isValid: true
         };
-    }, [member.startNode.position, member.endNode.position]);
+    }, [member.startNode.position, member.endNode.position, member.betaAngle, member.id]);
 
-    // Generate section geometry (memoized)
+    // Generate section geometry (memoized) - must be before any conditional returns
     const geometry = useMemo(() => {
+        if (!isValid || length <= 0) return null;
         return getSectionGeometry(member.sectionType, member.dimensions, length);
-    }, [member.sectionType, member.dimensions, length]);
-
-    const handleClick = (e: any) => {
-        e.stopPropagation();
-        if (onSelect) {
-            onSelect(member.id);
-        }
-    };
+    }, [member.sectionType, member.dimensions, length, isValid]);
 
     // Determine material color based on section type (concrete vs steel vs cable)
     const materialColor = useMemo(() => {
@@ -465,6 +487,23 @@ export const StructuralMember: FC<StructuralMemberProps> = ({
             return { roughness: 0.4, metalness: 0.6 };
         }
     }, [member.sectionType]);
+
+    // Don't render invalid members
+    if (!isValid) {
+        return null;
+    }
+
+    // Don't render if geometry failed
+    if (!geometry) {
+        return null;
+    }
+
+    const handleClick = (e: any) => {
+        e.stopPropagation();
+        if (onSelect) {
+            onSelect(member.id);
+        }
+    };
 
     return (
         <group

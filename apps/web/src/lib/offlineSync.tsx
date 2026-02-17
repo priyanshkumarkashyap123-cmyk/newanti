@@ -431,6 +431,15 @@ export function useSync(options: UseSyncOptions = {}): UseSyncReturn {
   const [failedCount, setFailedCount] = useState(0);
   const [lastSyncResult, setLastSyncResult] = useState<SyncResult | null>(null);
 
+  const updateStats = useCallback(async () => {
+    if (!syncManagerRef.current) return;
+    const stats = await syncManagerRef.current.getQueueStats();
+    queueMicrotask(() => {
+      setPendingCount(stats.pending);
+      setFailedCount(stats.failed);
+    });
+  }, []);
+
   // Initialize sync manager
   useEffect(() => {
     syncManagerRef.current = new SyncManager({
@@ -452,7 +461,15 @@ export function useSync(options: UseSyncOptions = {}): UseSyncReturn {
     });
 
     updateStats();
-  }, []);
+  }, [updateStats]);
+
+  const sync = useCallback(async () => {
+    if (!syncManagerRef.current || !isOnline) {
+      return { synced: 0, failed: 0, conflicts: 0, duration: 0 };
+    }
+    const result = await syncManagerRef.current.sync();
+    return result;
+  }, [isOnline]);
 
   // Online/offline detection
   useEffect(() => {
@@ -474,7 +491,7 @@ export function useSync(options: UseSyncOptions = {}): UseSyncReturn {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [autoSync]);
+  }, [autoSync, sync]);
 
   // Auto-sync interval
   useEffect(() => {
@@ -485,22 +502,7 @@ export function useSync(options: UseSyncOptions = {}): UseSyncReturn {
     }, syncInterval);
 
     return () => clearInterval(intervalId);
-  }, [autoSync, isOnline, syncInterval]);
-
-  const updateStats = useCallback(async () => {
-    if (!syncManagerRef.current) return;
-    const stats = await syncManagerRef.current.getQueueStats();
-    setPendingCount(stats.pending);
-    setFailedCount(stats.failed);
-  }, []);
-
-  const sync = useCallback(async () => {
-    if (!syncManagerRef.current || !isOnline) {
-      return { synced: 0, failed: 0, conflicts: 0, duration: 0 };
-    }
-    const result = await syncManagerRef.current.sync();
-    return result;
-  }, [isOnline]);
+  }, [autoSync, isOnline, syncInterval, sync]);
 
   const queue = useCallback(async <T,>(
     type: SyncItem['type'],

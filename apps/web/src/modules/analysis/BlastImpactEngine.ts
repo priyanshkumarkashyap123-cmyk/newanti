@@ -351,7 +351,6 @@ export class SDOFBlastResponse {
     }
 
     let maxDeflection: number;
-    let ductilityDemand: number;
 
     if (responseRegime === 'impulsive') {
       // Impulsive loading - response governed by impulse
@@ -379,7 +378,7 @@ export class SDOFBlastResponse {
       maxDeflection = (peakLoad * DLF) / ke;
     }
 
-    ductilityDemand = maxDeflection / yeq;
+    const ductilityDemand = maxDeflection / yeq;
 
     return {
       maxDeflection,

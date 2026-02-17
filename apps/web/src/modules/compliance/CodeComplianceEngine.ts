@@ -490,7 +490,6 @@ export class SteelComplianceChecker {
     const flangeRatio = (bf / 2) / tf;
     let flangeLimit: number;
     let clause: string;
-    let sectionClass: string;
 
     switch (code) {
       case 'IS800':
@@ -507,7 +506,7 @@ export class SteelComplianceChecker {
         break;
     }
 
-    sectionClass = flangeRatio <= flangeLimit ? 'Compact/Class1' : 'Non-compact';
+    const sectionClass = flangeRatio <= flangeLimit ? 'Compact/Class1' : 'Non-compact';
 
     checks.push({
       code,

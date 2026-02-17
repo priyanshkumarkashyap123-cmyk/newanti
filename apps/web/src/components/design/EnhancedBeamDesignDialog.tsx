@@ -15,7 +15,7 @@
 
 'use client';
 
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Calculator,
@@ -130,6 +130,189 @@ const CODE_OPTIONS: Array<{ value: DesignCode; label: string }> = [
   { value: 'ACI318', label: 'ACI 318-19 (USA)' },
   { value: 'EN1992', label: 'EC2 / EN 1992-1-1' },
 ];
+
+// ============================================================================
+// EXTRACTED COMPONENTS
+// ============================================================================
+
+interface SelectFieldProps {
+  label: string;
+  name: keyof BeamInput;
+  value: string;
+  options: string[];
+  onChange: (name: keyof BeamInput, value: string) => void;
+}
+
+const SelectField: React.FC<SelectFieldProps> = ({
+  label,
+  name,
+  value,
+  options,
+  onChange
+}) => (
+  <div className="space-y-1">
+    <label className="text-sm font-medium text-slate-700">{label}</label>
+    <select
+      value={value}
+      onChange={e => onChange(name, e.target.value)}
+      className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+    >
+      {options.map(opt => (
+        <option key={opt} value={opt}>{opt}</option>
+      ))}
+    </select>
+  </div>
+);
+
+interface StatusBadgeProps {
+  status: 'PASS' | 'FAIL' | 'REVIEW';
+}
+
+const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
+  const colors = {
+    PASS: 'bg-green-100 text-green-700 border-green-300',
+    FAIL: 'bg-red-100 text-red-700 border-red-300',
+    REVIEW: 'bg-amber-100 text-amber-700 border-amber-300'
+  };
+  const icons = {
+    PASS: <Check className="w-4 h-4" />,
+    FAIL: <X className="w-4 h-4" />,
+    REVIEW: <AlertTriangle className="w-4 h-4" />
+  };
+  
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border ${colors[status]}`}>
+      {icons[status]}
+      {status}
+    </span>
+  );
+};
+
+interface InputFieldProps {
+  label: string;
+  name: keyof BeamInput;
+  value: number | string;
+  unit?: string;
+  min?: number;
+  max?: number;
+  step?: number;
+  tooltip?: string;
+  errors: Record<string, string>;
+  onChange: (name: keyof BeamInput, value: string) => void;
+}
+
+const InputField: React.FC<InputFieldProps> = ({
+  label,
+  name,
+  value,
+  unit,
+  min,
+  max,
+  step = 1,
+  tooltip,
+  errors,
+  onChange
+}) => (
+  <div className="space-y-1">
+    <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+      {label}
+      {tooltip && (
+        <div className="group relative">
+          <Info className="w-3.5 h-3.5 text-slate-400" />
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 p-2 bg-slate-800 text-white text-xs rounded-lg z-50">
+            {tooltip}
+          </div>
+        </div>
+      )}
+    </label>
+    <div className="relative">
+      <input
+        type="number"
+        value={value}
+        onChange={e => onChange(name, e.target.value)}
+        min={min}
+        max={max}
+        step={step}
+        className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+          errors[name] ? 'border-red-500 bg-red-50' : 'border-slate-300'
+        }`}
+      />
+      {unit && (
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500">
+          {unit}
+        </span>
+      )}
+    </div>
+    {errors[name] && (
+      <p className="text-xs text-red-600 flex items-center gap-1">
+        <AlertTriangle className="w-3 h-3" />
+        {errors[name]}
+      </p>
+    )}
+  </div>
+);
+
+interface CheckItemProps {
+  check: DesignResult['checks'][0];
+}
+
+const CheckItem: React.FC<CheckItemProps> = ({ check }) => (
+  <div className={`flex items-center justify-between p-3 rounded-lg ${
+    check.status === 'pass' ? 'bg-green-50' : 
+    check.status === 'fail' ? 'bg-red-50' : 'bg-amber-50'
+  }`}>
+    <div className="flex items-center gap-3">
+      {check.status === 'pass' && <Check className="w-5 h-5 text-green-600" />}
+      {check.status === 'fail' && <X className="w-5 h-5 text-red-600" />}
+      {check.status === 'warning' && <AlertTriangle className="w-5 h-5 text-amber-600" />}
+      <span className="text-sm font-medium text-slate-700">{check.name}</span>
+    </div>
+    <div className="text-right">
+      <div className="text-sm text-slate-600">
+        {check.value.toFixed(2)} / {check.limit.toFixed(2)}
+      </div>
+      <div className={`text-xs ${
+        check.status === 'pass' ? 'text-green-600' :
+        check.status === 'fail' ? 'text-red-600' : 'text-amber-600'
+      }`}>
+        Ratio: {check.ratio.toFixed(2)}
+      </div>
+    </div>
+  </div>
+);
+
+interface UtilizationBarProps {
+  value: number;
+  max: number;
+  label: string;
+}
+
+const UtilizationBar: React.FC<UtilizationBarProps> = ({ value, max, label }) => {
+  const ratio = Math.min(value / max, 1.5);
+  const percentage = Math.min(ratio * 100, 100);
+  const color = ratio <= 0.7 ? 'bg-green-500' : ratio <= 1.0 ? 'bg-amber-500' : 'bg-red-500';
+  
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-sm">
+        <span className="text-slate-600">{label}</span>
+        <span className={`font-medium ${
+          ratio <= 0.7 ? 'text-green-600' : ratio <= 1.0 ? 'text-amber-600' : 'text-red-600'
+        }`}>
+          {(ratio * 100).toFixed(0)}%
+        </span>
+      </div>
+      <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+        <motion.div
+          className={`h-full ${color} rounded-full`}
+          initial={{ width: 0 }}
+          animate={{ width: `${percentage}%` }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+        />
+      </div>
+    </div>
+  );
+};
 
 // ============================================================================
 // COMPONENT
@@ -379,166 +562,6 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
     }));
   };
 
-  // Input field component
-  const InputField = ({ 
-    label, 
-    name, 
-    value, 
-    unit,
-    min,
-    max,
-    step = 1,
-    tooltip 
-  }: { 
-    label: string; 
-    name: keyof BeamInput; 
-    value: number | string; 
-    unit?: string;
-    min?: number;
-    max?: number;
-    step?: number;
-    tooltip?: string;
-  }) => (
-    <div className="space-y-1">
-      <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
-        {label}
-        {tooltip && (
-          <div className="group relative">
-            <Info className="w-3.5 h-3.5 text-slate-400" />
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 p-2 bg-slate-800 text-white text-xs rounded-lg z-50">
-              {tooltip}
-            </div>
-          </div>
-        )}
-      </label>
-      <div className="relative">
-        <input
-          type="number"
-          value={value}
-          onChange={e => handleInputChange(name, e.target.value)}
-          min={min}
-          max={max}
-          step={step}
-          className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-            errors[name] ? 'border-red-500 bg-red-50' : 'border-slate-300'
-          }`}
-        />
-        {unit && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500">
-            {unit}
-          </span>
-        )}
-      </div>
-      {errors[name] && (
-        <p className="text-xs text-red-600 flex items-center gap-1">
-          <AlertTriangle className="w-3 h-3" />
-          {errors[name]}
-        </p>
-      )}
-    </div>
-  );
-
-  // Select field component
-  const SelectField = ({
-    label,
-    name,
-    value,
-    options
-  }: {
-    label: string;
-    name: keyof BeamInput;
-    value: string;
-    options: string[];
-  }) => (
-    <div className="space-y-1">
-      <label className="text-sm font-medium text-slate-700">{label}</label>
-      <select
-        value={value}
-        onChange={e => handleInputChange(name, e.target.value)}
-        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-      >
-        {options.map(opt => (
-          <option key={opt} value={opt}>{opt}</option>
-        ))}
-      </select>
-    </div>
-  );
-
-  // Status badge
-  const StatusBadge = ({ status }: { status: 'PASS' | 'FAIL' | 'REVIEW' }) => {
-    const colors = {
-      PASS: 'bg-green-100 text-green-700 border-green-300',
-      FAIL: 'bg-red-100 text-red-700 border-red-300',
-      REVIEW: 'bg-amber-100 text-amber-700 border-amber-300'
-    };
-    const icons = {
-      PASS: <Check className="w-4 h-4" />,
-      FAIL: <X className="w-4 h-4" />,
-      REVIEW: <AlertTriangle className="w-4 h-4" />
-    };
-    
-    return (
-      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border ${colors[status]}`}>
-        {icons[status]}
-        {status}
-      </span>
-    );
-  };
-
-  // Check item component
-  const CheckItem = ({ check }: { check: DesignResult['checks'][0] }) => (
-    <div className={`flex items-center justify-between p-3 rounded-lg ${
-      check.status === 'pass' ? 'bg-green-50' : 
-      check.status === 'fail' ? 'bg-red-50' : 'bg-amber-50'
-    }`}>
-      <div className="flex items-center gap-3">
-        {check.status === 'pass' && <Check className="w-5 h-5 text-green-600" />}
-        {check.status === 'fail' && <X className="w-5 h-5 text-red-600" />}
-        {check.status === 'warning' && <AlertTriangle className="w-5 h-5 text-amber-600" />}
-        <span className="text-sm font-medium text-slate-700">{check.name}</span>
-      </div>
-      <div className="text-right">
-        <div className="text-sm text-slate-600">
-          {check.value.toFixed(2)} / {check.limit.toFixed(2)}
-        </div>
-        <div className={`text-xs ${
-          check.status === 'pass' ? 'text-green-600' :
-          check.status === 'fail' ? 'text-red-600' : 'text-amber-600'
-        }`}>
-          Ratio: {check.ratio.toFixed(2)}
-        </div>
-      </div>
-    </div>
-  );
-
-  // Utilization bar
-  const UtilizationBar = ({ value, max, label }: { value: number; max: number; label: string }) => {
-    const ratio = Math.min(value / max, 1.5);
-    const percentage = Math.min(ratio * 100, 100);
-    const color = ratio <= 0.7 ? 'bg-green-500' : ratio <= 1.0 ? 'bg-amber-500' : 'bg-red-500';
-    
-    return (
-      <div className="space-y-1">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-slate-600">{label}</span>
-          <span className={`font-medium ${
-            ratio <= 0.7 ? 'text-green-600' : ratio <= 1.0 ? 'text-amber-600' : 'text-red-600'
-          }`}>
-            {(ratio * 100).toFixed(0)}%
-          </span>
-        </div>
-        <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-          <motion.div
-            className={`h-full ${color} rounded-full`}
-            initial={{ width: 0 }}
-            animate={{ width: `${percentage}%` }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
-          />
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="w-full max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
       {/* Header */}
@@ -618,6 +641,8 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                       unit="mm"
                       min={200}
                       max={600}
+                      errors={errors}
+                      onChange={handleInputChange}
                     />
                     <InputField
                       label="Depth (D)"
@@ -626,6 +651,8 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                       unit="mm"
                       min={300}
                       max={1500}
+                      errors={errors}
+                      onChange={handleInputChange}
                     />
                     <InputField
                       label="Cover"
@@ -634,6 +661,8 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                       unit="mm"
                       min={25}
                       max={75}
+                      errors={errors}
+                      onChange={handleInputChange}
                     />
                     <InputField
                       label="Span"
@@ -641,6 +670,8 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                       value={input.span}
                       unit="mm"
                       min={1000}
+                      errors={errors}
+                      onChange={handleInputChange}
                     />
                   </div>
                   
@@ -694,12 +725,14 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                       name="concreteGrade"
                       value={input.concreteGrade}
                       options={CONCRETE_GRADES}
+                      onChange={handleInputChange}
                     />
                     <SelectField
                       label="Steel Grade"
                       name="steelGrade"
                       value={input.steelGrade}
                       options={STEEL_GRADES}
+                      onChange={handleInputChange}
                     />
                   </div>
                   
@@ -714,6 +747,8 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                       value={input.ultimateMoment}
                       unit="kNm"
                       tooltip="Factored bending moment from analysis"
+                      errors={errors}
+                      onChange={handleInputChange}
                     />
                     <InputField
                       label="Ultimate Shear"
@@ -721,6 +756,8 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                       value={input.ultimateShear}
                       unit="kN"
                       tooltip="Factored shear force from analysis"
+                      errors={errors}
+                      onChange={handleInputChange}
                     />
                   </div>
                   
@@ -760,18 +797,22 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                         name="beamType"
                         value={input.beamType}
                         options={['simply_supported', 'continuous', 'cantilever']}
+                        onChange={handleInputChange}
                       />
                       <SelectField
                         label="Exposure"
                         name="exposureCondition"
                         value={input.exposureCondition}
                         options={['mild', 'moderate', 'severe']}
+                        onChange={handleInputChange}
                       />
                       <InputField
                         label="Service Moment"
                         name="serviceMoment"
                         value={input.serviceMoment || 0}
                         unit="kNm"
+                        errors={errors}
+                        onChange={handleInputChange}
                       />
                     </motion.div>
                   )}

@@ -307,16 +307,14 @@ const FileItem: FC<{
   onClick: () => void;
   onMouseEnter: () => void;
 }> = memo(({ file, isSelected, onClick, onMouseEnter }) => {
-  const getIcon = () => {
+  const Icon = useMemo(() => {
     switch (file.type) {
       case 'project': return FileText;
       case 'section': return Layers;
       case 'template': return Grid;
       default: return File;
     }
-  };
-  
-  const Icon = getIcon();
+  }, [file.type]);
 
   return (
     <div
@@ -353,7 +351,7 @@ const SymbolItem: FC<{
   onClick: () => void;
   onMouseEnter: () => void;
 }> = memo(({ symbol, isSelected, onClick, onMouseEnter }) => {
-  const getIcon = () => {
+  const Icon = useMemo(() => {
     switch (symbol.type) {
       case 'node': return Circle;
       case 'member': return Layers;
@@ -364,9 +362,7 @@ const SymbolItem: FC<{
       case 'material': return Settings;
       default: return Code;
     }
-  };
-  
-  const Icon = getIcon();
+  }, [symbol.type]);
 
   const typeColors: Record<string, string> = {
     node: 'text-emerald-400',
@@ -454,9 +450,11 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
   // Reset state when opening
   useEffect(() => {
     if (isOpen) {
-      setQuery('');
-      setSelectedIndex(0);
-      setMode('command');
+      queueMicrotask(() => {
+        setQuery('');
+        setSelectedIndex(0);
+        setMode('command');
+      });
     }
   }, [isOpen]);
 
@@ -531,6 +529,22 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
     }
   }, [mode, query, commands, files, symbols, recentCommands]);
 
+  const handleSelect = useCallback((item: any) => {
+    switch (mode) {
+      case 'command':
+        (item as PaletteCommand).action?.();
+        onCommandExecute?.(item.id);
+        break;
+      case 'file':
+        onFileOpen?.(item as PaletteFile);
+        break;
+      case 'symbol':
+        onSymbolSelect?.(item as PaletteSymbol);
+        break;
+    }
+    onClose();
+  }, [mode, onCommandExecute, onFileOpen, onSymbolSelect, onClose]);
+
   // Keyboard navigation
   useEffect(() => {
     if (!isOpen) return;
@@ -568,7 +582,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, selectedIndex, filteredResults, mode, query, onClose, onGotoLine]);
+  }, [isOpen, selectedIndex, filteredResults, mode, query, onClose, onGotoLine, handleSelect]);
 
   // Scroll selected item into view
   useEffect(() => {
@@ -580,24 +594,8 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
 
   // Reset selection when query changes
   useEffect(() => {
-    setSelectedIndex(0);
+    queueMicrotask(() => setSelectedIndex(0));
   }, [query]);
-
-  const handleSelect = useCallback((item: any) => {
-    switch (mode) {
-      case 'command':
-        (item as PaletteCommand).action?.();
-        onCommandExecute?.(item.id);
-        break;
-      case 'file':
-        onFileOpen?.(item as PaletteFile);
-        break;
-      case 'symbol':
-        onSymbolSelect?.(item as PaletteSymbol);
-        break;
-    }
-    onClose();
-  }, [mode, onCommandExecute, onFileOpen, onSymbolSelect, onClose]);
 
   // Group commands by category (only for command mode)
   const groupedCommands = useMemo(() => {

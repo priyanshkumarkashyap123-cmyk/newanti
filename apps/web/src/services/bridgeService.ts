@@ -8,11 +8,12 @@
 // CONFIGURATION
 // ============================================
 
+import { API_CONFIG } from '../config/env';
+
 // Use Rust API for templates (100x faster than Python)
-// Use Rust API for templates (100x faster than Python)
-const RUST_API = import.meta.env['VITE_API_URL'] || "https://beamlab-backend-node.azurewebsites.net";
+const RUST_API = API_CONFIG.baseUrl;
 // Fallback to Python for AI features (Gemini)
-const PYTHON_API = import.meta.env['VITE_PYTHON_API_URL'] || "https://beamlab-backend-python.azurewebsites.net";
+const PYTHON_API = API_CONFIG.pythonUrl;
 
 // ============================================
 // TYPES

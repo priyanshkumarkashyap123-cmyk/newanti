@@ -489,7 +489,7 @@ class AIPowerEngine {
     if (/(step|first|then|next|finally|therefore)/i.test(response)) score += 10;
 
     // Check for numerical calculations
-    if (/\d+\s*[×*/+\-]\s*\d+\s*=\s*\d+/.test(response)) score += 15;
+    if (/\d+\s*[×*/+-]\s*\d+\s*=\s*\d+/.test(response)) score += 15;
 
     return Math.min(score, 100);
   }

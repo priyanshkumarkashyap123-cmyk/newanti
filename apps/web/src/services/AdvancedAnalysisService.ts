@@ -1,4 +1,5 @@
 import { postJson } from '../utils/fetchUtils';
+import { API_CONFIG } from '../config/env';
 
 export interface ModalAnalysisRequest {
   stiffness_matrix: number[];
@@ -95,9 +96,7 @@ export class AdvancedAnalysisService {
   private baseUrl: string;
 
   constructor() {
-    const rustApi = (import.meta as any).env?.VITE_RUST_API_URL;
-    const apiUrl = (import.meta as any).env?.VITE_API_URL;
-    const base = rustApi || apiUrl || 'https://beamlab-backend-node.azurewebsites.net';
+    const base = API_CONFIG.rustUrl || API_CONFIG.baseUrl;
     this.baseUrl = `${base}/api/analysis`;
   }
 

@@ -488,13 +488,9 @@ export function designBearingStiffener(input: StiffenerDesignInput): StiffenerDe
   // Calculate thickness based on width and local buckling
   const ts_min = min_width / max_bt_ratio;
   
-  // Proposed stiffener dimensions
-  let width = Math.max(min_width, 50);
-  let thickness = Math.max(ts_min, 8);
-  
-  // Round up to practical values
-  width = Math.ceil(width / 5) * 5;      // Round to nearest 5mm
-  thickness = Math.ceil(thickness / 2) * 2;  // Round to nearest 2mm
+  // Proposed stiffener dimensions (rounded to practical values)
+  const width = Math.ceil(Math.max(min_width, 50) / 5) * 5;      // Round to nearest 5mm
+  const thickness = Math.ceil(Math.max(ts_min, 8) / 2) * 2;  // Round to nearest 2mm
   
   // Check local buckling of stiffener
   const bt_ratio = width / thickness;
@@ -610,10 +606,6 @@ export function checkWebStrength(input: WebCheckInput): WebCheckResult {
   }
   
   // Determine governing check
-  let governing_check: string;
-  let governing_capacity: number;
-  let governing_utilization: number;
-  
   const checks = [
     { name: 'Web Local Yielding', capacity: local_yielding.phi_Rn, utilization: local_yielding.utilization },
     { name: 'Web Crippling', capacity: crippling.phi_Rn, utilization: crippling.utilization },
@@ -631,9 +623,9 @@ export function checkWebStrength(input: WebCheckInput): WebCheckResult {
     curr.utilization > prev.utilization ? curr : prev
   );
   
-  governing_check = governing.name;
-  governing_capacity = governing.capacity;
-  governing_utilization = governing.utilization;
+  const governing_check = governing.name;
+  const governing_capacity = governing.capacity;
+  const governing_utilization = governing.utilization;
   
   // Determine if stiffeners are required
   const stiffener_required = governing_utilization > 1.0;

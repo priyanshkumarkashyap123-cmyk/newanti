@@ -232,7 +232,6 @@ class TransportationServiceClass {
         const S = type === 'crest' ? this.calculateSSD(designSpeed) : this.calculateSSD(designSpeed);
 
         let L: number;
-        let K: number;
 
         if (type === 'crest') {
             // For SSD
@@ -259,7 +258,7 @@ class TransportationServiceClass {
             }
         }
 
-        K = L / A;
+        const K = L / A;
 
         return {
             type,

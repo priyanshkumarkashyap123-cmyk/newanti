@@ -269,13 +269,13 @@ const PagePreview: React.FC<PagePreviewProps> = ({
                             <div className="text-gray-600 leading-relaxed">
                                 {/* Simplified content representation */}
                                 <div className="space-y-1">
-                                    {Array.from({ length: 8 }).map((_, i) => (
+                                    {[75, 62, 80, 55, 70, 48, 78, 65].map((width, i) => (
                                         <div 
                                             key={i}
                                             className="bg-gray-100 rounded"
                                             style={{ 
                                                 height: 6 * scale,
-                                                width: `${80 - Math.random() * 30}%`
+                                                width: `${width}%`
                                             }}
                                         />
                                     ))}

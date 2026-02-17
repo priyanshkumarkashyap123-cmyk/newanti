@@ -104,8 +104,8 @@ declare module 'axe-core' {
 
   export interface Check {
     id: string;
-    evaluate?: string | Function;
-    after?: string | Function;
+    evaluate?: string | ((...args: unknown[]) => unknown);
+    after?: string | ((...args: unknown[]) => unknown);
     options?: unknown;
     matches?: string;
     enabled?: boolean;

@@ -446,7 +446,7 @@ export function EnhancedSlabDesignDialog({
     setActiveTab('results');
     setCalculating(false);
     onDesignComplete?.(designResult);
-  }, [input, slabBehavior, designCode, onDesignComplete]);
+  }, [input, slabBehavior, designCode, onDesignComplete, aspectRatio]);
 
   // Render slab plan preview
   const renderSlabPlan = () => {

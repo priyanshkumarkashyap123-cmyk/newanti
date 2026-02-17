@@ -163,7 +163,9 @@ export function useTouchDevice(): TouchState {
       hasMounted.current = true;
       return;
     }
-    setState(detectTouchCapabilities());
+    queueMicrotask(() => {
+      setState(detectTouchCapabilities());
+    });
   });
 
   return state;
@@ -354,7 +356,7 @@ export function useMobileMenu(initialOpen = false): MobileMenuState {
   // Close menu when switching to desktop
   useEffect(() => {
     if (!isMobile && isOpen) {
-      setIsOpen(false);
+      queueMicrotask(() => setIsOpen(false));
     }
   }, [isMobile, isOpen]);
 

@@ -612,11 +612,10 @@ export class VibrationServiceabilityChecker {
     }
 
     // Acceptance criteria (AISC DG11 / ISO 10137)
-    let limit: number;
     let status: 'ACCEPTABLE' | 'PERCEPTIBLE' | 'UNACCEPTABLE';
 
     // Office/residential limit
-    limit = 0.005 * 9.81; // 0.5% g ≈ 0.05 m/s²
+    const limit = 0.005 * 9.81; // 0.5% g ≈ 0.05 m/s²
 
     if (ap < limit) {
       status = 'ACCEPTABLE';

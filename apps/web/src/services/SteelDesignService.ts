@@ -10,6 +10,7 @@
  */
 
 import { SectionProperties, Material } from '../data/SectionDatabase';
+import { API_CONFIG } from '../config/env';
 
 // ============================================
 // TYPES
@@ -530,7 +531,7 @@ export async function designSteelMembers(members: SteelDesignResults[], code: 'A
     try {
         // Use Rust API for steel design (10x faster than Python)
         // Use Rust API for steel design (10x faster than Python)
-        const RUST_API = import.meta.env.VITE_API_URL || 'https://beamlab-backend-node.azurewebsites.net';
+        const RUST_API = API_CONFIG.baseUrl;
 
         const payload = {
             members: members.map(m => ({

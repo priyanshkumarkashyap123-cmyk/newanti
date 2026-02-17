@@ -214,7 +214,9 @@ export function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay);
+    const timer = setTimeout(() => {
+      queueMicrotask(() => setDebouncedValue(value));
+    }, delay);
     return () => clearTimeout(timer);
   }, [value, delay]);
 
@@ -333,7 +335,9 @@ export function useMediaQuery(query: string): boolean {
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(query);
-    setMatches(mediaQuery.matches);
+    queueMicrotask(() => {
+      setMatches(mediaQuery.matches);
+    });
 
     const handler = (e: MediaQueryListEvent) => setMatches(e.matches);
     mediaQuery.addEventListener('change', handler);
@@ -461,13 +465,15 @@ export function useClickOutside<T extends HTMLElement>(
 // ============================================================================
 
 export function usePrevious<T>(value: T): T | undefined {
-  const ref = useRef<T>();
+  const ref = useRef<T | undefined>(undefined);
+  const [previous, setPrevious] = useState<T | undefined>(undefined);
   
   useEffect(() => {
+    setPrevious(ref.current);
     ref.current = value;
   }, [value]);
   
-  return ref.current;
+  return previous;
 }
 
 // ============================================================================

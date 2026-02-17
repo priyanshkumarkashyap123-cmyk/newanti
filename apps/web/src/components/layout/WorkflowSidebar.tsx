@@ -94,7 +94,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                                 aria-label={item.label}
                                 aria-current={isActive ? 'step' : undefined}
                                 className={`
-                                    group flex items-center gap-3 px-3 py-3 rounded-md text-left transition-all
+                                    relative group flex items-center gap-3 px-3 py-3 rounded-md text-left transition-all
                                     ${isActive
                                         ? 'bg-blue-600 text-white shadow-md'
                                         : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'}

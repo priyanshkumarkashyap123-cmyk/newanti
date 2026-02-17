@@ -43,7 +43,8 @@ const DEFAULT_RECTANGLE: RenderableSectionData = {
  * Maps sectionId (e.g., 'ISMB400') to 3D dimensions
  */
 export function getSectionDataForRendering(sectionId: string): RenderableSectionData {
-    if (!sectionId || sectionId === 'default' || sectionId === '') {
+    // Case-insensitive check for 'default' and empty values
+    if (!sectionId || sectionId.toLowerCase() === 'default' || sectionId === '') {
         return DEFAULT_I_BEAM;
     }
 

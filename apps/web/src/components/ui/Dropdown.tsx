@@ -125,6 +125,7 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
     const [focusedIndex, setFocusedIndex] = useState(-1);
     const [position, setPosition] = useState({ top: 0, left: 0 });
     const [internalSelectedIds, setInternalSelectedIds] = useState<string[]>(selectedIds);
+    const [triggerWidth, setTriggerWidth] = useState<number>(0);
 
     const triggerRef = useRef<HTMLDivElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
@@ -148,6 +149,11 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
       const rect = triggerRef.current.getBoundingClientRect();
       const menuHeight = 300; // Approximate max height
       const menuWidth = width === 'trigger' ? rect.width : (width === 'auto' ? 200 : width);
+      
+      // Store trigger width in state for render-time access
+      if (width === 'trigger') {
+        setTriggerWidth(rect.width);
+      }
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
 
@@ -277,8 +283,10 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
           searchInputRef.current.focus();
         }
       } else {
-        setSearch('');
-        setFocusedIndex(-1);
+        queueMicrotask(() => {
+          setSearch('');
+          setFocusedIndex(-1);
+        });
       }
     }, [isOpen, calculatePosition, searchable]);
 
@@ -338,7 +346,7 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
                       position: 'fixed',
                       top: position.top,
                       left: position.left,
-                      width: width === 'trigger' ? triggerRef.current?.offsetWidth : width === 'auto' ? 'auto' : width,
+                      width: width === 'trigger' ? triggerWidth : width === 'auto' ? 'auto' : width,
                       minWidth: 180,
                       zIndex: 9999,
                     }}

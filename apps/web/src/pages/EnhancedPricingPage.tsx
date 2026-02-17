@@ -8,7 +8,7 @@
  * - Clear CTAs
  */
 
-import { FC, useState } from 'react';
+import React, { FC, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -425,8 +425,8 @@ export const EnhancedPricingPage: FC = () => {
               </thead>
               <tbody>
                 {FEATURE_MATRIX.map((category) => (
-                  <>
-                    <tr key={category.category} className="bg-slate-900/50">
+                  <React.Fragment key={category.category}>
+                    <tr className="bg-slate-900/50">
                       <td colSpan={5} className="py-3 px-4 text-sm font-semibold text-slate-300">
                         {category.category}
                       </td>
@@ -448,7 +448,7 @@ export const EnhancedPricingPage: FC = () => {
                         </td>
                       </tr>
                     ))}
-                  </>
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>
@@ -475,6 +475,8 @@ export const EnhancedPricingPage: FC = () => {
               >
                 <button
                   onClick={() => setExpandedFaq(expandedFaq === i ? null : i)}
+                  aria-expanded={expandedFaq === i}
+                  aria-controls={`faq-answer-${i}`}
                   className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-800/50 transition-colors"
                 >
                   <span className="font-medium text-white">{faq.q}</span>
@@ -485,7 +487,7 @@ export const EnhancedPricingPage: FC = () => {
                   )}
                 </button>
                 {expandedFaq === i && (
-                  <div className="px-5 pb-5 text-slate-400 text-sm leading-relaxed">
+                  <div id={`faq-answer-${i}`} role="region" className="px-5 pb-5 text-slate-400 text-sm leading-relaxed">
                     {faq.a}
                   </div>
                 )}

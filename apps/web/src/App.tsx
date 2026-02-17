@@ -124,10 +124,6 @@ const PageLoader = () => (
 
 
 
-// Performance Testing Utility - Load grid generator globally
-import './utils/generateTestGrid';
-
-
 // ============================================
 // ERROR BOUNDARY
 // ============================================
@@ -398,13 +394,13 @@ function App() {
                         <Route path="/worker-test" element={<WorkerValidation />} />
 
                         {/* Advanced Analysis Panels (Rust-powered, 20-100x faster) */}
-                        <Route path="/analysis/modal" element={<ModalAnalysisPanel isOpen={true} onClose={() => { }} />} />
-                        <Route path="/analysis/time-history" element={<TimeHistoryPanel />} />
-                        <Route path="/analysis/seismic" element={<SeismicAnalysisPanel />} />
-                        <Route path="/analysis/buckling" element={<BucklingAnalysisPanel />} />
-                        <Route path="/analysis/cable" element={<CableAnalysisPanel />} />
-                        <Route path="/analysis/pdelta" element={<PDeltaAnalysisPanel />} />
-                        <Route path="/analysis/nonlinear" element={<PDeltaAnalysisPanel />} /> {/* Alias for P-Delta */}
+                        <Route path="/analysis/modal" element={<RequireAuth><ModalAnalysisPanel isOpen={true} onClose={() => { }} /></RequireAuth>} />
+                        <Route path="/analysis/time-history" element={<RequireAuth><TimeHistoryPanel /></RequireAuth>} />
+                        <Route path="/analysis/seismic" element={<RequireAuth><SeismicAnalysisPanel /></RequireAuth>} />
+                        <Route path="/analysis/buckling" element={<RequireAuth><BucklingAnalysisPanel /></RequireAuth>} />
+                        <Route path="/analysis/cable" element={<RequireAuth><CableAnalysisPanel /></RequireAuth>} />
+                        <Route path="/analysis/pdelta" element={<RequireAuth><PDeltaAnalysisPanel /></RequireAuth>} />
+                        <Route path="/analysis/nonlinear" element={<RequireAuth><PDeltaAnalysisPanel /></RequireAuth>} />
                         
                         {/* Enhanced Analysis Pages (CEO Industry Gap Closure - Phase 14) */}
                         <Route path="/analysis/modal-page" element={

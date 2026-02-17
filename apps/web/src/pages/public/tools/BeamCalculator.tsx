@@ -457,7 +457,9 @@ export const BeamCalculator: FC = () => {
     // Auto-analyze on model change
     useEffect(() => {
         if (model.supports.length >= 1 && model.pointLoads.length >= 1) {
-            runAnalysis();
+            queueMicrotask(() => {
+                runAnalysis();
+            });
         }
     }, [model, runAnalysis]);
 

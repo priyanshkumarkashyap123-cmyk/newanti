@@ -5,6 +5,7 @@
  */
 
 import { postJson, fetchJson } from '../utils/fetchUtils';
+import { API_CONFIG } from '../config/env';
 
 export interface Point {
     x: number;
@@ -35,7 +36,7 @@ export interface SectionRecommendationRequest {
 }
 
 // API URL (default to Node proxy or direct Python)
-const API_URL = import.meta.env.VITE_API_URL || 'https://beamlab-backend-node.azurewebsites.net';
+const API_URL = API_CONFIG.baseUrl;
 
 class SectionService {
 

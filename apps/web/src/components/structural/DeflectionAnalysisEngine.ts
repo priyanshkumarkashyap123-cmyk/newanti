@@ -423,7 +423,7 @@ export function analyzeDeflection(input: DeflectionAnalysisInput): DeflectionAna
   
   // Step 3: Calculate Service Moments
   const L_m = span / 1000; // Convert to meters
-  let M_dead: number, M_live: number, M_total: number;
+  let M_dead: number, M_live: number;
   
   if (supportType === 'simply_supported') {
     M_dead = deadLoad * L_m * L_m / 8;
@@ -439,7 +439,7 @@ export function analyzeDeflection(input: DeflectionAnalysisInput): DeflectionAna
     M_live = liveLoad * L_m * L_m / 8;
   }
   
-  M_total = M_dead + M_live;
+  const M_total = M_dead + M_live;
   
   steps.push({
     title: 'Service Moments',

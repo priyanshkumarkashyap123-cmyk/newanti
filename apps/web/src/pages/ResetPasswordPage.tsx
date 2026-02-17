@@ -143,6 +143,12 @@ export const ResetPasswordPage = () => {
                     {/* Form Card */}
                     <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-700 p-6 sm:p-8">
                         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                            {/* Error Message */}
+                            {error && (
+                                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+                                    {error}
+                                </div>
+                            )}
                             {/* New Password Field */}
                             <div className="flex flex-col gap-2">
                                 <label className="text-zinc-900 dark:text-white text-base font-medium">

@@ -297,7 +297,8 @@ export class BearingCapacityCalculator {
     const Ngamma = 2 * (Nq - 1) * Math.tan(phi);
 
     // Shape factors
-    let sc = 1, sq = 1, sgamma = 1;
+    let sc = 1, sgamma = 1;
+    const sq = 1;
     if (foundation.type === 'square' || foundation.type === 'circular') {
       sc = 1.3;
       sgamma = 0.8;

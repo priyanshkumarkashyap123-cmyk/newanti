@@ -372,6 +372,31 @@ export function useToast(): ToastContextValue {
 }
 
 // ============================================================================
+// POSITION UTILITIES
+// ============================================================================
+
+function getPositionClasses(position: ToastPosition): string {
+  const baseClasses = 'flex flex-col p-4 max-w-sm w-full sm:max-w-md';
+  
+  switch (position) {
+    case 'top-left':
+      return `${baseClasses} top-0 left-0 items-start`;
+    case 'top-center':
+      return `${baseClasses} top-0 left-1/2 -translate-x-1/2 items-center`;
+    case 'top-right':
+      return `${baseClasses} top-0 right-0 items-end`;
+    case 'bottom-left':
+      return `${baseClasses} bottom-0 left-0 items-start`;
+    case 'bottom-center':
+      return `${baseClasses} bottom-0 left-1/2 -translate-x-1/2 items-center`;
+    case 'bottom-right':
+      return `${baseClasses} bottom-0 right-0 items-end`;
+    default:
+      return `${baseClasses} bottom-0 right-0 items-end`;
+  }
+}
+
+// ============================================================================
 // TOAST CONTAINER
 // ============================================================================
 
@@ -410,27 +435,6 @@ const ToastContainer: FC<ToastContainerProps> = ({ toasts, onDismiss }) => {
   );
 };
 
-function getPositionClasses(position: ToastPosition): string {
-  const baseClasses = 'flex flex-col p-4 max-w-sm w-full sm:max-w-md';
-  
-  switch (position) {
-    case 'top-left':
-      return `${baseClasses} top-0 left-0 items-start`;
-    case 'top-center':
-      return `${baseClasses} top-0 left-1/2 -translate-x-1/2 items-center`;
-    case 'top-right':
-      return `${baseClasses} top-0 right-0 items-end`;
-    case 'bottom-left':
-      return `${baseClasses} bottom-0 left-0 items-start`;
-    case 'bottom-center':
-      return `${baseClasses} bottom-0 left-1/2 -translate-x-1/2 items-center`;
-    case 'bottom-right':
-      return `${baseClasses} bottom-0 right-0 items-end`;
-    default:
-      return `${baseClasses} bottom-0 right-0 items-end`;
-  }
-}
-
 // ============================================================================
 // TOAST ITEM
 // ============================================================================
@@ -443,28 +447,20 @@ interface ToastItemProps {
 const ToastItem: FC<ToastItemProps> = ({ toast, onDismiss }) => {
   const [isPaused, setIsPaused] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
+  const [progress, setProgress] = useState(100);
   const progressRef = useRef<number>(100);
-  const startTimeRef = useRef<number>(Date.now());
+  const startTimeRef = useRef<number | null>(null);
   const remainingTimeRef = useRef<number>(toast.duration || DEFAULT_DURATION);
-  const reducedMotion = prefersReducedMotion();
+  const [reducedMotion, setReducedMotion] = useState(false);
 
-  // Handle progress bar animation
-  useEffect(() => {
-    if (!toast.duration || toast.type === 'loading' || isPaused) return;
-
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - startTimeRef.current;
-      const progress = Math.max(0, 100 - (elapsed / remainingTimeRef.current) * 100);
-      progressRef.current = progress;
-
-      if (progress <= 0) {
-        clearInterval(interval);
-        handleDismiss();
-      }
-    }, 50);
-
-    return () => clearInterval(interval);
-  }, [toast.duration, toast.type, isPaused]);
+  const handleDismiss = () => {
+    if (!toast.dismissible && toast.type !== 'loading') return;
+    
+    setIsExiting(true);
+    setTimeout(() => {
+      onDismiss();
+    }, reducedMotion ? 0 : 200);
+  };
 
   const handleMouseEnter = () => {
     if (toast.pauseOnHover) {
@@ -480,14 +476,31 @@ const ToastItem: FC<ToastItemProps> = ({ toast, onDismiss }) => {
     }
   };
 
-  const handleDismiss = () => {
-    if (!toast.dismissible && toast.type !== 'loading') return;
-    
-    setIsExiting(true);
-    setTimeout(() => {
-      onDismiss();
-    }, reducedMotion ? 0 : 200);
-  };
+  // Initialize refs and check reduced motion preference in useEffect
+  useEffect(() => {
+    startTimeRef.current = Date.now();
+    queueMicrotask(() => setReducedMotion(prefersReducedMotion()));
+  }, []);
+
+  // Handle progress bar animation
+  useEffect(() => {
+    if (!toast.duration || toast.type === 'loading' || isPaused || startTimeRef.current === null) return;
+
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - (startTimeRef.current ?? Date.now());
+      const newProgress = Math.max(0, 100 - (elapsed / remainingTimeRef.current) * 100);
+      progressRef.current = newProgress;
+      // Use queueMicrotask to avoid synchronous setState in effect
+      queueMicrotask(() => setProgress(newProgress));
+
+      if (newProgress <= 0) {
+        clearInterval(interval);
+        handleDismiss();
+      }
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, [toast.duration, toast.type, isPaused, handleDismiss]);
 
   const typeStyles = getTypeStyles(toast.type);
 
@@ -565,7 +578,7 @@ const ToastItem: FC<ToastItemProps> = ({ toast, onDismiss }) => {
         <div className="h-1 bg-slate-700/50 rounded-b-xl overflow-hidden">
           <div
             className={`h-full ${typeStyles.progressBg} transition-all duration-100`}
-            style={{ width: `${progressRef.current}%` }}
+            style={{ width: `${progress}%` }}
           />
         </div>
       )}

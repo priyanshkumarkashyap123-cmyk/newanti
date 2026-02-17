@@ -5,7 +5,7 @@
  * Guided tour + preference collection
  */
 
-import { FC, useState, useEffect } from 'react';
+import { FC, useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -61,7 +61,8 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
     designCodes: []
   });
 
-  const steps: OnboardingStep[] = [
+  // Memoize steps to avoid creating components during every render
+  const steps: OnboardingStep[] = useMemo(() => [
     {
       id: 'welcome',
       title: 'Welcome to BeamLab Ultimate',
@@ -98,7 +99,7 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
       subtitle: 'Let\'s start analyzing structures',
       content: <ReadyStep />
     }
-  ];
+  ], [preferences]);
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
@@ -475,13 +476,15 @@ export const useOnboarding = () => {
     const completed = localStorage.getItem('beamlab_onboarding_complete');
     const savedPrefs = localStorage.getItem('beamlab_user_preferences');
     
-    if (!completed) {
-      setShowOnboarding(true);
-    }
-    
-    if (savedPrefs) {
-      setPreferences(JSON.parse(savedPrefs));
-    }
+    queueMicrotask(() => {
+      if (!completed) {
+        setShowOnboarding(true);
+      }
+      
+      if (savedPrefs) {
+        setPreferences(JSON.parse(savedPrefs));
+      }
+    });
   }, []);
 
   const completeOnboarding = (prefs: UserPreferences) => {

@@ -267,10 +267,8 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
     // REMOVE & UPDATE HANDLERS
     // ============================================
 
-    // Helper for functional removing
-    const createRemoveHandler = (
-        field: 'nodalLoads' | 'memberLoads' | 'floorLoads' | 'temperatureLoads' | 'prestressLoads'
-    ) => useCallback((id: string) => {
+    // Generic remove handler using useCallback at component level
+    const handleRemoveLoad = useCallback((field: 'nodalLoads' | 'memberLoads' | 'floorLoads' | 'temperatureLoads' | 'prestressLoads', id: string) => {
         setLoadCases(prev => {
             const currentCase = prev.get(selectedLoadCase);
             if (!currentCase) return prev;
@@ -283,16 +281,15 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
         });
     }, [selectedLoadCase]);
 
-    const removeNodalLoad = createRemoveHandler('nodalLoads');
-    const removeMemberLoad = createRemoveHandler('memberLoads');
-    const removeFloorLoad = createRemoveHandler('floorLoads');
-    const removeTemperatureLoad = createRemoveHandler('temperatureLoads'); // Note: Added missing handler
-    const removePrestressLoad = createRemoveHandler('prestressLoads'); // Note: Added missing handler
+    // Create specific handlers by currying the field parameter
+    const removeNodalLoad = useCallback((id: string) => handleRemoveLoad('nodalLoads', id), [handleRemoveLoad]);
+    const removeMemberLoad = useCallback((id: string) => handleRemoveLoad('memberLoads', id), [handleRemoveLoad]);
+    const removeFloorLoad = useCallback((id: string) => handleRemoveLoad('floorLoads', id), [handleRemoveLoad]);
+    const removeTemperatureLoad = useCallback((id: string) => handleRemoveLoad('temperatureLoads', id), [handleRemoveLoad]);
+    const removePrestressLoad = useCallback((id: string) => handleRemoveLoad('prestressLoads', id), [handleRemoveLoad]);
 
-    // Helper for functional updating
-    const createUpdateHandler = <T extends { id: string }>(
-        field: 'nodalLoads' | 'memberLoads' | 'floorLoads' | 'temperatureLoads' | 'prestressLoads'
-    ) => useCallback((id: string, updates: Partial<T>) => {
+    // Generic update handler using useCallback at component level
+    const handleUpdateLoad = useCallback(<T extends { id: string }>(field: 'nodalLoads' | 'memberLoads' | 'floorLoads' | 'temperatureLoads' | 'prestressLoads', id: string, updates: Partial<T>) => {
         setLoadCases(prev => {
             const currentCase = prev.get(selectedLoadCase);
             if (!currentCase) return prev;
@@ -305,11 +302,12 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
         });
     }, [selectedLoadCase]);
 
-    const updateNodalLoad = createUpdateHandler<NodalLoad>('nodalLoads');
-    const updateMemberLoad = createUpdateHandler<MemberLoad>('memberLoads');
-    const updateFloorLoad = createUpdateHandler<FloorLoad>('floorLoads');
-    const updateTemperatureLoad = createUpdateHandler<TemperatureLoad>('temperatureLoads'); // Added
-    const updatePrestressLoad = createUpdateHandler<PrestressLoad>('prestressLoads'); // Added
+    // Create specific update handlers
+    const updateNodalLoad = useCallback((id: string, updates: Partial<NodalLoad>) => handleUpdateLoad<NodalLoad>('nodalLoads', id, updates), [handleUpdateLoad]);
+    const updateMemberLoad = useCallback((id: string, updates: Partial<MemberLoad>) => handleUpdateLoad<MemberLoad>('memberLoads', id, updates), [handleUpdateLoad]);
+    const updateFloorLoad = useCallback((id: string, updates: Partial<FloorLoad>) => handleUpdateLoad<FloorLoad>('floorLoads', id, updates), [handleUpdateLoad]);
+    const updateTemperatureLoad = useCallback((id: string, updates: Partial<TemperatureLoad>) => handleUpdateLoad<TemperatureLoad>('temperatureLoads', id, updates), [handleUpdateLoad]);
+    const updatePrestressLoad = useCallback((id: string, updates: Partial<PrestressLoad>) => handleUpdateLoad<PrestressLoad>('prestressLoads', id, updates), [handleUpdateLoad]);
 
     // ============================================
     // APPLICATION LOGIC

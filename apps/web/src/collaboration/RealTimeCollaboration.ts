@@ -343,13 +343,12 @@ class OTEngine {
   
   private moveAtPath(obj: any, fromPath: string[], toPath: string[]): void {
     // Get value at fromPath
-    let value: any;
-    let current = obj;
+    let current: any = obj;
     for (let i = 0; i < fromPath.length - 1; i++) {
       if (!current[fromPath[i]]) return;
       current = current[fromPath[i]];
     }
-    value = current[fromPath[fromPath.length - 1]];
+    const value = current[fromPath[fromPath.length - 1]];
     
     // Delete from original location
     this.deleteAtPath(obj, fromPath);

@@ -256,7 +256,7 @@ const Submenu: FC<SubmenuProps> = ({
         y = viewportHeight - menuRect.height - 8;
       }
 
-      setPosition({ x, y });
+      queueMicrotask(() => setPosition({ x, y }));
     }
   }, [parentRect]);
 
@@ -366,7 +366,7 @@ export const ContextMenu: FC<ContextMenuProps> = ({
         y = viewportHeight - menuRect.height - 8;
       }
 
-      setAdjustedPosition({ x: Math.max(8, x), y: Math.max(8, y) });
+      queueMicrotask(() => setAdjustedPosition({ x: Math.max(8, x), y: Math.max(8, y) }));
     }
   }, [position]);
 

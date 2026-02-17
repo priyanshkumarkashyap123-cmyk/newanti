@@ -120,6 +120,7 @@ jobs:
         working-directory: apps/web
         env:
           NODE_OPTIONS: "--max-old-space-size=8192"
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
         run: pnpm run build
           
       - name: Deploy to Azure Static Web Apps

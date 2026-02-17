@@ -171,7 +171,8 @@ export class AnalysisDebugger {
     this.log(phase, `ERROR: ${message}`, error);
     
     if (this.config.breakOnError) {
-      debugger;
+       
+      console.error('[AnalysisDebugger] Break on error triggered:', message, error);
     }
   }
   

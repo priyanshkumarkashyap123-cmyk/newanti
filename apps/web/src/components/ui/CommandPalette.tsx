@@ -201,8 +201,10 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
     // Reset on open
     useEffect(() => {
         if (isOpen) {
-            setQuery('');
-            setSelectedIndex(0);
+            queueMicrotask(() => {
+                setQuery('');
+                setSelectedIndex(0);
+            });
             setTimeout(() => inputRef.current?.focus(), 50);
         }
     }, [isOpen]);

@@ -9,40 +9,62 @@
  * - Dark theme with Tailwind CSS
  */
 
-import { FC, ReactNode } from 'react';
+import { FC, ReactNode, lazy, Suspense } from 'react';
 import {
     Panel,
     Group as PanelGroup,
     Separator as PanelResizeHandle
 } from 'react-resizable-panels';
 import {
-import {
-        Box,
-        Layers,
-        Download,
-        BarChart3,
-        Ruler,
-        PenTool,
-        Wind,
-        Zap,
-        Target,
-        Settings,
-        FileText,
-        Calculator,
-        ChevronLeft,
-        ChevronRight,
-        Grid3X3,
-        FileInput,
-        ScanLine,
-        MousePointer2,
-        HardHat,    // For Civil/Construction
-        Waves,      // For Hydraulics
-        TreePine,   // For Environmental
-        Mountain,   // For Geotech
-        Car         // For Transportation
-    } from 'lucide-react';
+    Box,
+    Layers,
+    Download,
+    BarChart3,
+    Ruler,
+    PenTool,
+    Wind,
+    Zap,
+    Target,
+    Settings,
+    FileText,
+    Calculator,
+    ChevronLeft,
+    ChevronRight,
+    Grid3X3,
+    FileInput,
+    ScanLine,
+    MousePointer2,
+    HardHat,
+    Waves,
+    TreePine,
+    Mountain,
+    Car
+} from 'lucide-react';
+import { useUIStore, Category } from '../store/uiStore';
+import beamLabLogo from '../assets/beamlab_logo.png';
 
-// ... (existing code)
+// Lazy load heavy components
+const CivilPanel = lazy(() => import('../components/civil/CivilPanel'));
+const LearningAssistant = lazy(() => import('../components/learning/LearningAssistant'));
+
+// Types
+interface TabConfig {
+    id: Category;
+    label: string;
+    icon: React.ReactNode;
+    color: string;
+}
+
+interface SidebarItem {
+    id: string;
+    label: string;
+    icon: React.ReactNode;
+    action?: () => void;
+}
+
+interface ModernWorkspaceProps {
+    children: ReactNode;
+}
 
 const UMBRELLA_TABS: TabConfig[] = [
     { id: 'MODELING', label: 'Modeling', icon: <Box className="w-4 h-4" />, color: 'blue' },
@@ -326,11 +348,10 @@ const ResizeHandle: FC<{ direction: 'horizontal' | 'vertical' }> = ({ direction 
 // ============================================
 
 export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
-    const { propertiesPanelOpen, togglePropertiesPanel } = useUIStore();
+    const { propertiesPanelOpen, togglePropertiesPanel, activeCategory } = useUIStore();
 
     return (
         <div className="h-screen w-screen flex flex-col bg-zinc-950 text-white overflow-hidden">
-            {/* Top Bar - Umbrella Switcher */}
             {/* Top Bar - Umbrella Switcher */}
             <header className="h-12 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between px-4 flex-shrink-0">
                 {/* Logo */}
@@ -379,10 +400,6 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
 
                     <ResizeHandle direction="horizontal" />
 
-                    import CivilPanel from '../components/civil/CivilPanel';
-
-                    // ... (existing code)
-
                     {/* Right Panel - Inspector */}
                     <Panel
                         defaultSize={20}
@@ -391,9 +408,11 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
                         collapsible
                     >
                         {activeCategory === 'CIVIL' ? (
-                            <div className="h-full bg-zinc-900 border-l border-zinc-800">
-                                <CivilPanel />
-                            </div>
+                            <Suspense fallback={<div className="h-full bg-zinc-900 flex items-center justify-center">Loading...</div>}>
+                                <div className="h-full bg-zinc-900 border-l border-zinc-800">
+                                    <CivilPanel />
+                                </div>
+                            </Suspense>
                         ) : (
                             <InspectorPanel
                                 collapsed={!propertiesPanelOpen}
@@ -404,15 +423,13 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
                 </PanelGroup>
             </div>
 
-            import LearningAssistant from '../components/learning/LearningAssistant';
-
-            // ... (existing code)
-
             {/* Bottom Bar - Status */}
             <StatusBar />
 
             {/* AI Learning Assistant Overlay */}
-            <LearningAssistant />
+            <Suspense fallback={null}>
+                <LearningAssistant />
+            </Suspense>
         </div>
     );
 };

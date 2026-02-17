@@ -23,6 +23,12 @@ export const NodesRenderer: FC = () => {
         const roller: Node[] = [];
 
         nodes.forEach(node => {
+            // Skip nodes with invalid positions
+            if (isNaN(node.x) || isNaN(node.y) || isNaN(node.z)) {
+                console.warn(`[NodesRenderer] Node ${node.id} has invalid position (NaN)`);
+                return;
+            }
+            
             const r = node.restraints;
             if (!r) {
                 free.push(node);

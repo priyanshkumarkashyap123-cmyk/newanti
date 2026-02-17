@@ -6,8 +6,8 @@
  * - Cost Estimation
  */
 
-import React, { useState, useEffect, useRef } from 'react';
-import { construction, Activity, EstimateItem, CostEstimate, ScheduleResult } from '../services/civil/ConstructionManagementService';
+import React, { useState, useEffect, useCallback } from 'react';
+import { construction, Activity, CostEstimate, ScheduleResult } from '../services/civil/ConstructionManagementService';
 
 export function ConstructionManager() {
     const [activeTab, setActiveTab] = useState<'schedule' | 'cost'>('schedule');
@@ -24,8 +24,8 @@ export function ConstructionManager() {
                     <button
                         onClick={() => setActiveTab('schedule')}
                         className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'schedule'
-                                ? 'border-indigo-500 text-indigo-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                            ? 'border-indigo-500 text-indigo-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700'
                             }`}
                     >
                         Schedule (CPM/PERT)
@@ -33,8 +33,8 @@ export function ConstructionManager() {
                     <button
                         onClick={() => setActiveTab('cost')}
                         className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'cost'
-                                ? 'border-indigo-500 text-indigo-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                            ? 'border-indigo-500 text-indigo-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700'
                             }`}
                     >
                         Cost Estimation
@@ -69,31 +69,36 @@ function SchedulePanel() {
 
     const [schedule, setSchedule] = useState<ScheduleResult | null>(null);
 
+    const calculate = useCallback(() => {
+        try {
+            const res = construction.calculateCPM(activities);
+            queueMicrotask(() => setSchedule(res));
+        } catch (e) {
+            const error = e instanceof Error ? e.message : 'Unknown error';
+            alert('Error calculating schedule: ' + error);
+        }
+    }, [activities]);
+
     useEffect(() => {
         // Initial calculation
         calculate();
-    }, []);
-
-    const calculate = () => {
-        try {
-            const res = construction.calculateCPM(activities);
-            setSchedule(res);
-        } catch (e) {
-            alert('Error calculating schedule: ' + (e as any).message);
-        }
-    };
+    }, [calculate]);
 
     const addActivity = () => {
         const id = String.fromCharCode(65 + activities.length); // Next letter
         setActivities([...activities, { id, name: 'New Task', duration: 1, predecessors: [] }]);
     };
 
-    const updateActivity = (index: number, field: string, value: any) => {
+    const updateActivity = (index: number, field: keyof Activity, value: string | number | string[]) => {
         const newActs = [...activities];
         if (field === 'predecessors') {
-            value = typeof value === 'string' ? value.split(',').map(s => s.trim()).filter(Boolean) : value;
+            const predecessorsValue = typeof value === 'string' ? value.split(',').map(s => s.trim()).filter(Boolean) : value as string[];
+            newActs[index] = { ...newActs[index], predecessors: predecessorsValue };
+        } else if (field === 'duration') {
+            newActs[index] = { ...newActs[index], duration: value as number };
+        } else {
+            newActs[index] = { ...newActs[index], [field]: value as string };
         }
-        newActs[index] = { ...newActs[index], [field]: value };
         setActivities(newActs);
     };
 
@@ -300,7 +305,7 @@ function CostPanel() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Building Type</label>
                         <select
                             value={params.type}
-                            onChange={e => setParams({ ...params, type: e.target.value as any })}
+                            onChange={e => setParams({ ...params, type: e.target.value as 'residential' | 'commercial' | 'industrial' })}
                             className="w-full px-3 py-2 border rounded-lg"
                         >
                             <option value="residential">Residential</option>

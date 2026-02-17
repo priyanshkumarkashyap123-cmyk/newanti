@@ -13,6 +13,7 @@ import AnimatedDeflection from './results/AnimatedDeflection';
 import { RemoteCursors } from './collaborators/RemoteCursors';
 import { RemoteUser } from '../hooks/useMultiplayer';
 import { useModelStore } from '../store/model';
+import { Html } from '@react-three/drei';
 
 export const SharedScene: FC<{ remoteUsers?: RemoteUser[] }> = ({ remoteUsers = [] }) => {
     const showSFD = useModelStore((state) => state.showSFD);
@@ -26,11 +27,17 @@ export const SharedScene: FC<{ remoteUsers?: RemoteUser[] }> = ({ remoteUsers = 
     const nodes = useModelStore((state) => state.nodes);
     const members = useModelStore((state) => state.members);
 
+    // Check if model is empty
+    const isModelEmpty = nodes.size === 0 && members.size === 0;
+
     // Use diagram scale from store, with fallback to displacement-based scale
     // Multiply by a factor to ensure diagrams are visible
     const legacyDiagramScale = diagramScale > 0 ? diagramScale : displacementScale * 0.01;
 
-    console.log('[SharedScene] Render'); // Debug
+    // Debug logging for model state
+    if (import.meta.env.DEV) {
+        console.log('[SharedScene] Render - Nodes:', nodes.size, 'Members:', members.size);
+    }
 
     return (
         <>
@@ -86,6 +93,28 @@ export const SharedScene: FC<{ remoteUsers?: RemoteUser[] }> = ({ remoteUsers = 
                     hideNegativeAxes={false}
                 />
             </GizmoHelper>
+
+            {/* Empty Model Indicator */}
+            {isModelEmpty && (
+                <Html center position={[0, 2, 0]}>
+                    <div style={{
+                        background: 'rgba(0, 0, 0, 0.7)',
+                        color: '#888',
+                        padding: '16px 24px',
+                        borderRadius: '12px',
+                        textAlign: 'center',
+                        fontFamily: 'system-ui, sans-serif',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        backdropFilter: 'blur(8px)',
+                        minWidth: '200px'
+                    }}>
+                        <div style={{ fontSize: '14px', marginBottom: '4px' }}>No Model Loaded</div>
+                        <div style={{ fontSize: '11px', color: '#666' }}>
+                            Create nodes and members, or load a demo model
+                        </div>
+                    </div>
+                </Html>
+            )}
 
             {/* Structural Model */}
             <ModelRenderer />

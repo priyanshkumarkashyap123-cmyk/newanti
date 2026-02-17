@@ -204,7 +204,12 @@ export class EnhancedAnalysisEngine {
         // Workers would be created here in production
         // this.workers.push(new Worker('/workers/analysis.worker.js'));
       }
-      console.log(`[AnalysisEngine] Initialized with ${this.workers.length} workers`);
+      // Log only in development, not during module load
+      if (typeof window !== 'undefined' && import.meta.env?.DEV) {
+        queueMicrotask(() => {
+          console.log(`[AnalysisEngine] Initialized with ${this.workers.length} workers`);
+        });
+      }
     } catch (error) {
       console.warn('[AnalysisEngine] Web Workers not available, using main thread');
     }

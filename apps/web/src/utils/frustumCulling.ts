@@ -248,16 +248,18 @@ export class CombinedCuller {
 // REACT HOOK FOR CULLING
 // ============================================
 
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 
 export function useCulling(maxDistance = 1000) {
     const cullerRef = useRef<CombinedCuller | null>(null);
     
-    // Lazy initialization
-    if (!cullerRef.current) {
-        cullerRef.current = new CombinedCuller(maxDistance);
-    }
+    // Initialize on first render via effect
+    useEffect(() => {
+        if (!cullerRef.current) {
+            cullerRef.current = new CombinedCuller(maxDistance);
+        }
+    }, [maxDistance]);
     
     // Update culler every frame
     useFrame(({ camera }) => {

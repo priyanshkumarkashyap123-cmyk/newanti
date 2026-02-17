@@ -111,7 +111,22 @@ export const MembersRenderer: FC<MembersRendererProps> = ({
         for (const member of members.values()) {
             const startNode = nodes.get(member.startNodeId);
             const endNode = nodes.get(member.endNodeId);
-            if (!startNode || !endNode) continue;
+            
+            // Warn about missing node references for debugging
+            if (!startNode || !endNode) {
+                console.warn(`[MembersRenderer] Member ${member.id} references missing node(s): start=${member.startNodeId} (${startNode ? 'found' : 'MISSING'}), end=${member.endNodeId} (${endNode ? 'found' : 'MISSING'})`);
+                continue;
+            }
+            
+            // Check for zero-length members
+            const dx = endNode.x - startNode.x;
+            const dy = endNode.y - startNode.y;
+            const dz = endNode.z - startNode.z;
+            const memberLength = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            if (memberLength < 0.001) {
+                console.warn(`[MembersRenderer] Zero-length member ${member.id} at (${startNode.x}, ${startNode.y}, ${startNode.z})`);
+                continue;
+            }
 
             // Get section dimensions from lookup
             const sectionData = getSectionDataForRendering(member.sectionId || 'Default');
@@ -167,10 +182,23 @@ export const MembersRenderer: FC<MembersRendererProps> = ({
         for (const member of members.values()) {
             const startNode = nodes.get(member.startNodeId);
             const endNode = nodes.get(member.endNodeId);
-            if (!startNode || !endNode) continue;
+            
+            // Skip members with missing node references
+            if (!startNode || !endNode) {
+                console.warn(`[MembersRenderer] Line member ${member.id} has missing nodes`);
+                continue;
+            }
+            
+            // Skip zero-length members
+            const dx = endNode.x - startNode.x;
+            const dy = endNode.y - startNode.y;
+            const dz = endNode.z - startNode.z;
+            if (dx * dx + dy * dy + dz * dz < 0.000001) {
+                continue;
+            }
 
             const shouldRenderAsLine = effectiveDisplayMode === 'LINE' ||
-                (effectiveDisplayMode === 'AUTO' && (!member.sectionId || member.sectionId === '' || member.sectionId === 'default'));
+                (effectiveDisplayMode === 'AUTO' && (!member.sectionId || member.sectionId === '' || member.sectionId.toLowerCase() === 'default'));
 
             if (shouldRenderAsLine) {
                 let color = '#00aaff';

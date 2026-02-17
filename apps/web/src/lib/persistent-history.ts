@@ -116,6 +116,28 @@ export function usePersistentHistory<TState extends object>(
   const isRestoringRef = useRef(false);
   
   // ============================================================================
+  // HELPER FUNCTIONS (defined before useEffects that use them)
+  // ============================================================================
+  
+  const refreshState = useCallback(async () => {
+    const [undoable, redoable, history, metadata] = await Promise.all([
+      historyDB.canUndo(projectId),
+      historyDB.canRedo(projectId),
+      historyDB.getHistory(projectId),
+      historyDB.getMetadata(projectId),
+    ]);
+    
+    setCanUndo(undoable);
+    setCanRedo(redoable);
+    setHistoryList(history);
+    
+    if (metadata) {
+      setBranches(metadata.branches);
+      setCurrentBranchId(metadata.currentBranchId);
+    }
+  }, [projectId]);
+  
+  // ============================================================================
   // INITIALIZATION
   // ============================================================================
   
@@ -161,7 +183,7 @@ export function usePersistentHistory<TState extends object>(
     return () => {
       isMounted = false;
     };
-  }, [projectId]);
+  }, [projectId, refreshState, useStore]);
   
   // ============================================================================
   // CROSS-TAB SYNC
@@ -207,7 +229,7 @@ export function usePersistentHistory<TState extends object>(
     return () => {
       channel.removeEventListener('message', handleMessage);
     };
-  }, [projectId, enableCrossTabSync]);
+  }, [projectId, enableCrossTabSync, refreshState, useStore]);
   
   // ============================================================================
   // AUTO-PERSIST ON CHANGES
@@ -252,29 +274,7 @@ export function usePersistentHistory<TState extends object>(
         clearTimeout(persistTimeoutRef.current);
       }
     };
-  }, [isReady, projectId, persistInterval, getSnapshotDescription]);
-  
-  // ============================================================================
-  // HELPER FUNCTIONS
-  // ============================================================================
-  
-  const refreshState = useCallback(async () => {
-    const [undoable, redoable, history, metadata] = await Promise.all([
-      historyDB.canUndo(projectId),
-      historyDB.canRedo(projectId),
-      historyDB.getHistory(projectId),
-      historyDB.getMetadata(projectId),
-    ]);
-    
-    setCanUndo(undoable);
-    setCanRedo(redoable);
-    setHistoryList(history);
-    
-    if (metadata) {
-      setBranches(metadata.branches);
-      setCurrentBranchId(metadata.currentBranchId);
-    }
-  }, [projectId]);
+  }, [isReady, projectId, persistInterval, getSnapshotDescription, refreshState, useStore]);
   
   // ============================================================================
   // PUBLIC API
@@ -298,7 +298,7 @@ export function usePersistentHistory<TState extends object>(
     
     await refreshState();
     return true;
-  }, [projectId, refreshState]);
+  }, [projectId, refreshState, useStore]);
   
   const redo = useCallback(async (): Promise<boolean> => {
     const snapshot = await historyDB.redo<TState>(projectId);
@@ -318,7 +318,7 @@ export function usePersistentHistory<TState extends object>(
     
     await refreshState();
     return true;
-  }, [projectId, refreshState]);
+  }, [projectId, refreshState, useStore]);
   
   const jumpToSnapshot = useCallback(async (snapshotId: string): Promise<boolean> => {
     const snapshot = await historyDB.jumpToSnapshot<TState>(projectId, snapshotId);
@@ -338,7 +338,7 @@ export function usePersistentHistory<TState extends object>(
     
     await refreshState();
     return true;
-  }, [projectId, refreshState]);
+  }, [projectId, refreshState, useStore]);
   
   const createBranch = useCallback(async (name: string): Promise<HistoryBranch | null> => {
     try {
@@ -368,7 +368,7 @@ export function usePersistentHistory<TState extends object>(
     
     await refreshState();
     return true;
-  }, [projectId, refreshState]);
+  }, [projectId, refreshState, useStore]);
   
   const deleteBranch = useCallback(async (branchId: string): Promise<boolean> => {
     try {
@@ -394,7 +394,7 @@ export function usePersistentHistory<TState extends object>(
     });
     
     await refreshState();
-  }, [projectId, refreshState]);
+  }, [projectId, refreshState, useStore]);
   
   const getStorageInfo = useCallback(async () => {
     return historyDB.getStorageUsage();

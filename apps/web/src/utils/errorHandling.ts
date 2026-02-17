@@ -38,9 +38,9 @@ export class AppError extends Error {
     this.context = context;
 
     // Capture stack trace if available (non-standard but supported in most environments)
-    const ErrorWithCapture = Error as { captureStackTrace?: (target: object, constructor: Function) => void };
+    const ErrorWithCapture = Error as unknown as { captureStackTrace?: (target: object, constructor: Function) => void };
     if (ErrorWithCapture.captureStackTrace) {
-      ErrorWithCapture.captureStackTrace(this, this.constructor);
+      ErrorWithCapture.captureStackTrace(this, this.constructor as Function);
     }
   }
 }
@@ -166,7 +166,7 @@ export function asyncErrorHandler<T>(
 /**
  * Try-catch wrapper that returns Result type
  */
-export type Result<T, E = AppError> = 
+export type Result<T, E = AppError> =
   | { success: true; data: T }
   | { success: false; error: E };
 

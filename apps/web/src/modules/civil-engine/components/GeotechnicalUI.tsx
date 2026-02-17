@@ -554,7 +554,7 @@ export function SettlementCalculator() {
       total: (immediate + consolidation + secondary) * 1000, // mm
       timeFor90: t90,
     });
-  }, [foundation, soilLayers, waterTableDepth]);
+  }, [foundation, soilLayers]);
 
   const addLayer = useCallback(() => {
     const maxId = Math.max(...soilLayers.map(l => l.id), 0);
@@ -855,7 +855,7 @@ function SoilProfileVisualization({
   layers,
   waterTableDepth,
   foundationDepth,
-  foundationWidth,
+  foundationWidth: _foundationWidth,
 }: {
   layers: SoilLayer[];
   waterTableDepth: number;
@@ -865,17 +865,18 @@ function SoilProfileVisualization({
   const totalDepth = layers.reduce((sum, l) => sum + l.thickness, 0);
   const scale = 150 / totalDepth;
 
-  let cumDepth = 0;
+  // Pre-calculate cumulative depths for each layer
+  const layerPositions = layers.reduce<{ layer: SoilLayer; y: number; h: number }[]>((acc, layer, idx) => {
+    const cumDepth = idx === 0 ? 0 : acc[idx - 1].y + acc[idx - 1].h;
+    acc.push({ layer, y: cumDepth, h: layer.thickness * scale });
+    return acc;
+  }, []);
   const layerColors = ['#d4a574', '#b8956f', '#a3684a', '#8b5a3c', '#734d32'];
 
   return (
     <svg width="100%" viewBox="0 0 400 150" className="bg-transparent">
       {/* Layers */}
-      {layers.map((layer, idx) => {
-        const y = cumDepth * scale;
-        const h = layer.thickness * scale;
-        cumDepth += layer.thickness;
-        
+      {layerPositions.map(({ layer, y, h }, idx) => {
         return (
           <g key={layer.id}>
             <rect
@@ -1002,9 +1003,11 @@ export function SlopeStabilityAnalyzer() {
       FOS = Hc / H;
     } else {
       // Fellenius or Bishop (simplified circular slip - using approximate method for demo)
-      const R = H * 1.5; // Approximate slip circle radius
-      const theta = Math.PI / 4; // Arc angle
-      const W = 0.5 * gamma * H * H / Math.tan(betaRad); // Total weight (approximate)
+      // Note: R, theta, W are calculated for reference but not used in this simplified demo
+      const _R = H * 1.5; // Approximate slip circle radius
+      const _theta = Math.PI / 4; // Arc angle
+      const _W = 0.5 * gamma * H * H / Math.tan(betaRad); // Total weight (approximate)
+      void _R; void _theta; void _W; // Suppress unused warnings
       
       if (method === 'fellenius') {
         // Ordinary Method of Slices
@@ -1053,7 +1056,7 @@ export function SlopeStabilityAnalyzer() {
       criticalRadius: slopeGeometry.height * 1.5,
       criticalCenter: { x: slopeGeometry.height * 0.3, y: -slopeGeometry.height * 0.5 },
     });
-  }, [slopeGeometry, soilParams, waterTable, method]);
+  }, [slopeGeometry, soilParams, method]);
 
   // Draw slope diagram
   useEffect(() => {

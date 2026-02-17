@@ -55,27 +55,29 @@ export const MemberSpecificationsDialog: FC<MemberSpecificationsDialogProps> = (
         }
 
         if (targetMember) {
-            setReleases({
-                fxStart: targetMember.releases?.fxStart ?? false,
-                fyStart: targetMember.releases?.fyStart ?? false,
-                fzStart: targetMember.releases?.fzStart ?? false,
-                mxStart: targetMember.releases?.mxStart ?? targetMember.releases?.startMoment ?? false,
-                myStart: targetMember.releases?.myStart ?? false,
-                mzStart: targetMember.releases?.mzStart ?? false,
-                fxEnd: targetMember.releases?.fxEnd ?? false,
-                fyEnd: targetMember.releases?.fyEnd ?? false,
-                fzEnd: targetMember.releases?.fzEnd ?? false,
-                mxEnd: targetMember.releases?.mxEnd ?? targetMember.releases?.endMoment ?? false,
-                myEnd: targetMember.releases?.myEnd ?? false,
-                mzEnd: targetMember.releases?.mzEnd ?? false,
-            });
+            queueMicrotask(() => {
+                setReleases({
+                    fxStart: targetMember!.releases?.fxStart ?? false,
+                    fyStart: targetMember!.releases?.fyStart ?? false,
+                    fzStart: targetMember!.releases?.fzStart ?? false,
+                    mxStart: targetMember!.releases?.mxStart ?? targetMember!.releases?.startMoment ?? false,
+                    myStart: targetMember!.releases?.myStart ?? false,
+                    mzStart: targetMember!.releases?.mzStart ?? false,
+                    fxEnd: targetMember!.releases?.fxEnd ?? false,
+                    fyEnd: targetMember!.releases?.fyEnd ?? false,
+                    fzEnd: targetMember!.releases?.fzEnd ?? false,
+                    mxEnd: targetMember!.releases?.mxEnd ?? targetMember!.releases?.endMoment ?? false,
+                    myEnd: targetMember!.releases?.myEnd ?? false,
+                    mzEnd: targetMember!.releases?.mzEnd ?? false,
+                });
 
-            setOffsets({
-                start: targetMember.startOffset ?? { x: 0, y: 0, z: 0 },
-                end: targetMember.endOffset ?? { x: 0, y: 0, z: 0 }
-            });
+                setOffsets({
+                    start: targetMember!.startOffset ?? { x: 0, y: 0, z: 0 },
+                    end: targetMember!.endOffset ?? { x: 0, y: 0, z: 0 }
+                });
 
-            setBetaAngle(targetMember.betaAngle ?? 0);
+                setBetaAngle(targetMember!.betaAngle ?? 0);
+            });
         }
     }, [isOpen, memberId, selectedIds, members]);
 

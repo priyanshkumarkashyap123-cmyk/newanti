@@ -65,6 +65,13 @@ export const API_CONFIG = {
             : 'http://localhost:8081'
     ),
 
+    // Rust API (High-performance analysis)
+    rustUrl: getEnv('VITE_RUST_API_URL',
+        import.meta.env.PROD
+            ? 'https://beamlab-rust-api.azurewebsites.net'
+            : 'http://localhost:3002'
+    ),
+
     timeout: getNumEnv('VITE_API_TIMEOUT', 30000),
 } as const;
 

@@ -1,5 +1,5 @@
 
-import { FC, useState, useEffect } from 'react';
+import { FC, useState, useEffect, useCallback } from 'react';
 import { X, FolderOpen, Trash2, Calendar, FileText, Loader2, Cloud } from 'lucide-react';
 import { useAuth } from '../providers/AuthProvider';
 import { ProjectService, Project } from '../services/ProjectService';
@@ -18,27 +18,27 @@ export const CloudProjectManager: FC<CloudProjectManagerProps> = ({ isOpen, onCl
     const [isLoading, setIsLoading] = useState(false);
     const [deleteId, setDeleteId] = useState<string | null>(null);
 
-    // Load projects when dialog opens
-    useEffect(() => {
-        if (isOpen && user) {
-            loadProjects();
-        }
-    }, [isOpen, user]);
-
-    const loadProjects = async () => {
+    const loadProjects = useCallback(async () => {
         setIsLoading(true);
         try {
             const token = await getToken();
             if (!token) throw new Error('Not authenticated');
             const list = await ProjectService.listProjects(token);
-            setProjects(list);
-        } catch (error) {
-            console.error(error);
+            queueMicrotask(() => setProjects(list));
+        } catch (err) {
+            console.error(err);
             showNotification('error', 'Failed to load projects');
         } finally {
-            setIsLoading(false);
+            queueMicrotask(() => setIsLoading(false));
         }
-    };
+    }, [getToken, showNotification]);
+
+    // Load projects when dialog opens
+    useEffect(() => {
+        if (isOpen && user) {
+            loadProjects();
+        }
+    }, [isOpen, user, loadProjects]);
 
     const handleDelete = async (id: string) => {
         try {
@@ -48,7 +48,7 @@ export const CloudProjectManager: FC<CloudProjectManagerProps> = ({ isOpen, onCl
             setProjects(prev => prev.filter(p => p._id !== id));
             showNotification('success', 'Project deleted');
             setDeleteId(null);
-        } catch (error) {
+        } catch {
             showNotification('error', 'Failed to delete project');
         }
     };

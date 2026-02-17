@@ -149,6 +149,7 @@ export default defineConfig({
     sourcemap: true,
     minify: 'esbuild',
     target: 'esnext',
+    chunkSizeWarningLimit: 1200,
     rollupOptions: {
       // Suppress warnings about unresolved dynamic imports for workers
       onwarn(warning, warn) {

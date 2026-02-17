@@ -180,7 +180,19 @@ const MATERIAL_PRESETS = [
 // ANIMATED BACKGROUND
 // =============================================================================
 
+// Pre-compute random values for particles outside component to avoid impure function during render
+const STATIC_PARTICLE_CONFIGS = Array.from({ length: 20 }).map((_, index) => ({
+  x: ((index * 37) % 100),
+  y: ((index * 53) % 100),
+  scale: 0.5 + ((index % 5) * 0.1),
+  duration: 10 + ((index % 10) * 1),
+  delay: (index % 5),
+}));
+
 const AnimatedGrid: React.FC<{ className?: string }> = ({ className }) => {
+  // Use static particle configs to avoid impure function during render
+  const particleConfigs = STATIC_PARTICLE_CONFIGS;
+
   return (
     <div className={`absolute inset-0 overflow-hidden ${className}`}>
       <svg className="w-full h-full opacity-10">
@@ -199,23 +211,23 @@ const AnimatedGrid: React.FC<{ className?: string }> = ({ className }) => {
       </svg>
       
       {/* Floating particles */}
-      {Array.from({ length: 20 }).map((_, i) => (
+      {particleConfigs.map((config, i) => (
         <motion.div
           key={i}
           className="absolute w-1 h-1 bg-blue-500/30 rounded-full"
           initial={{
-            x: Math.random() * 100 + '%',
-            y: Math.random() * 100 + '%',
-            scale: Math.random() * 0.5 + 0.5,
+            x: config.x + '%',
+            y: config.y + '%',
+            scale: config.scale,
           }}
           animate={{
             y: [null, '-100%'],
             opacity: [0, 1, 0],
           }}
           transition={{
-            duration: Math.random() * 10 + 10,
+            duration: config.duration,
             repeat: Infinity,
-            delay: Math.random() * 5,
+            delay: config.delay,
           }}
         />
       ))}

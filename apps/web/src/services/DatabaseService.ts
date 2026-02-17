@@ -8,7 +8,9 @@
  * - Learning data export
  */
 
-const API_BASE = import.meta.env['VITE_PYTHON_API_URL'] || 'http://localhost:8000';
+import { API_CONFIG } from '../config/env';
+
+const API_BASE = API_CONFIG.pythonUrl;
 
 // ============================================
 // TYPES

@@ -491,9 +491,11 @@ export const LoadPlacementLayer: FC<LoadPlacementLayerProps> = ({
     // ---- Reset on tool change ----
     useEffect(() => {
         if (!isLoadToolActive) {
-            setHoveredMemberId(null);
-            setIsDragging(false);
-            setShowPreview(false);
+            queueMicrotask(() => {
+                setHoveredMemberId(null);
+                setIsDragging(false);
+                setShowPreview(false);
+            });
         }
     }, [isLoadToolActive]);
 

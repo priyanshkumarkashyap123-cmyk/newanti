@@ -109,7 +109,7 @@ const ClerkAuthBridge: React.FC<{ children: ReactNode }> = ({ children }) => {
             emailVerified: clerkUser.primaryEmailAddress?.verification.status === 'verified',
             createdAt: clerkUser.createdAt ? new Date(clerkUser.createdAt) : null
         };
-    }, [clerkUser?.id, clerkUser?.primaryEmailAddress?.emailAddress, clerkUser?.firstName, clerkUser?.lastName, clerkUser?.fullName, clerkUser?.imageUrl, clerkUser?.createdAt]);
+    }, [clerkUser]);
 
     // Sign in is handled by Clerk components
     const signIn = useCallback(async (_email: string, _password: string) => {
@@ -180,21 +180,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (!CLERK_KEY) {
         // Render a friendly error instead of crashing the ClerkProvider
         return <MissingClerkKey />;
-    }
-    if (!CLERK_KEY) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white p-8">
-                <div className="max-w-md text-center">
-                    <h1 className="text-2xl font-bold text-red-400 mb-4">Configuration Error</h1>
-                    <p className="text-slate-300 mb-4">
-                        Missing VITE_CLERK_PUBLISHABLE_KEY environment variable.
-                    </p>
-                    <p className="text-sm text-slate-500">
-                        Please add your Clerk publishable key to your environment configuration.
-                    </p>
-                </div>
-            </div>
-        );
     }
 
     return (

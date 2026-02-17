@@ -586,7 +586,7 @@ class GeminiAIService {
     if (/(step|first|then|therefore|because)/i.test(response)) engineeringLogic += 15;
 
     // Calculation Accuracy - Check for numerical work
-    if (/\d+\s*[×*/+\-]\s*\d+/.test(response)) calculationAccuracy += 15;
+    if (/\d+\s*[×*/+-]\s*\d+/.test(response)) calculationAccuracy += 15;
     if (/=\s*\d+/.test(response)) calculationAccuracy += 10;
     if (/(ratio|limit|check)/i.test(response)) calculationAccuracy += 10;
     if (/(OK|PASS|SAFE|adequate)/i.test(response)) calculationAccuracy += 15;
@@ -915,8 +915,11 @@ Provide detailed reasoning with formulas shown.`;
       throw new Error('Gemini API key not configured. Please set your API key.');
     }
 
-    console.log('[GeminiAI] Calling Gemini API with prompt:', prompt.substring(0, 100) + '...');
+    if (import.meta.env.DEV) {
+      console.log('[GeminiAI] Calling Gemini API with prompt:', prompt.substring(0, 100) + '...');
+    }
 
+    // TODO: Proxy through backend to avoid exposing API key in client requests
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`;
 
     const requestBody = {

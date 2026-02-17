@@ -11,10 +11,12 @@
  * Now using high-performance Rust API (50-100x faster)
  */
 
+import { API_CONFIG } from '../config/env';
+
 // Use Rust API for advanced analysis (much faster than Node.js)
-const RUST_API = import.meta.env.VITE_RUST_API_URL || 'http://localhost:3002';
+const RUST_API = API_CONFIG.rustUrl;
 // Fallback to Node.js API
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE = API_CONFIG.baseUrl;
 
 // ============================================
 // COMMON TYPES

@@ -19,14 +19,24 @@ export const ModelRenderer: FC = () => {
 
     const activeModeData = useMemo<ModeShapeData | null>(() => {
         if (!activeMode) return null;
+        // Validate that shape is a proper Map before iterating
+        if (!activeMode.shape || !(activeMode.shape instanceof Map)) {
+            console.warn('[ModelRenderer] Invalid mode shape data - not a Map');
+            return null;
+        }
         const displacements = [];
         // Map<string, number[]> where [dx, dy, dz, rx, ry, rz]
         for (const [nodeId, disp] of activeMode.shape.entries()) {
+            // Validate displacement array
+            if (!Array.isArray(disp) || disp.length < 3) {
+                console.warn(`[ModelRenderer] Invalid displacement for node ${nodeId}`);
+                continue;
+            }
             displacements.push({
                 nodeId,
-                dx: disp[0],
-                dy: disp[1],
-                dz: disp[2]
+                dx: disp[0] ?? 0,
+                dy: disp[1] ?? 0,
+                dz: disp[2] ?? 0
             });
         }
         return {

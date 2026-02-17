@@ -181,8 +181,6 @@ const ColorScaleLegend: React.FC<ColorScaleLegendProps> = ({
     minValue,
     maxValue
 }) => {
-    if (!legendConfig.visible) return null;
-    
     const scale = COLOR_SCALES[config.colorScale];
     const steps = config.steps;
     const isVertical = legendConfig.position === 'left' || legendConfig.position === 'right';
@@ -196,6 +194,8 @@ const ColorScaleLegend: React.FC<ColorScaleLegendProps> = ({
         }
         return result;
     }, [minValue, maxValue, steps]);
+    
+    if (!legendConfig.visible) return null;
     
     return (
         <div className={`

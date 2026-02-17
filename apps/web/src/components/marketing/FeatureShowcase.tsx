@@ -395,7 +395,7 @@ export const CTABanner: FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =>
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
       >
-        <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+        <h2 id="cta-heading" className="text-4xl md:text-5xl font-bold text-white mb-6">
           Ready to modernize your<br />structural workflow?
         </h2>
         <p className="text-xl text-slate-300 mb-10 max-w-2xl mx-auto">
@@ -405,11 +405,11 @@ export const CTABanner: FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <button
             onClick={onGetStarted}
-            className="w-full sm:w-auto px-10 py-4 rounded-full bg-white text-slate-950 font-bold text-lg hover:bg-slate-100 transition-all shadow-2xl shadow-white/10 flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-10 py-4 rounded-full bg-white text-slate-950 font-bold text-lg hover:bg-slate-100 transition-all shadow-2xl shadow-white/10 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-95"
           >
             Start Free Trial <ChevronRight className="w-5 h-5" />
           </button>
-          <button className="w-full sm:w-auto px-10 py-4 rounded-full border-2 border-slate-600 text-white font-medium hover:bg-slate-800 transition-all">
+          <button className="w-full sm:w-auto px-10 py-4 rounded-full border-2 border-slate-600 text-white font-medium hover:bg-slate-800 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-95">
             Schedule Demo
           </button>
         </div>

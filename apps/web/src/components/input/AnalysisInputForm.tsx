@@ -259,7 +259,7 @@ export const NumberInput: FC<NumberInputProps> = ({
 
     useEffect(() => {
         if (!isFocused) {
-            setLocalValue(value.toString());
+            queueMicrotask(() => setLocalValue(value.toString()));
         }
     }, [value, isFocused]);
 

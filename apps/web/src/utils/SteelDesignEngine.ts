@@ -164,8 +164,8 @@ export class SteelDesignEngine {
             }
         }
 
-        // Chapter F: Flexure
-        if (hasMoment || true) {  // Always check for combined
+        // Chapter F: Flexure (always check for combined interaction)
+        {
             checks.flexure = this.checkFlexure(forces.Mux, forces.Muy, section, material, props);
             const flexureMax = Math.max(checks.flexure.ratio_x, checks.flexure.ratio_y);
             if (!hasMoment && flexureMax > maxRatio) {

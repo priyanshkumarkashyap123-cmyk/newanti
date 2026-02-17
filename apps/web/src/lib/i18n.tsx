@@ -459,7 +459,9 @@ export function I18nProvider({
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    setIsLoading(true);
+    queueMicrotask(() => {
+      setIsLoading(true);
+    });
     loadMessages(locale)
       .then((msgs) => {
         setMessages(msgs);

@@ -118,7 +118,8 @@ export async function runLocalAnalysis(): Promise<{ success: boolean; message: s
                 const startIdx = nodeMapping.get(node.id);
                 if (startIdx !== undefined) {
                     // Calculate reaction forces from member contributions
-                    let rx = 0, ry = 0, rz = 0, rmx = 0, rmy = 0, rmz = 0;
+                    let rx = 0, ry = 0, rz = 0;
+                    const rmx = 0, rmy = 0, rmz = 0;
                     
                     // Sum contributions from connected members
                     state.members.forEach(member => {

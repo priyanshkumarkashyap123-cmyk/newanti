@@ -358,6 +358,9 @@ function formatRelativeTime(date: Date, now: number): string {
 // RECENT CALCULATIONS LIST
 // ============================================================================
 
+// Static timestamp for relative time formatting (captured at module load)
+const STATIC_REFERENCE_TIME = Date.now();
+
 function RecentCalculationsList({
   calculations,
   onSelect,
@@ -365,16 +368,10 @@ function RecentCalculationsList({
   calculations: RecentCalculation[];
   onSelect: (calc: RecentCalculation) => void;
 }) {
-  // Capture current time once with useRef to avoid calling Date.now() during render
-  const currentTimeRef = React.useRef<number | null>(null);
-  if (currentTimeRef.current === null) {
-    currentTimeRef.current = Date.now();
-  }
-  const currentTime = currentTimeRef.current;
-  
+  // Use static reference time to avoid impure function during render
   const formatTime = React.useCallback((date: Date) => {
-    return formatRelativeTime(date, currentTime);
-  }, [currentTime]);
+    return formatRelativeTime(date, STATIC_REFERENCE_TIME);
+  }, []);
   
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">

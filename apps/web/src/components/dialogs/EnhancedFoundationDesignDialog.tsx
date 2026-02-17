@@ -14,7 +14,7 @@
  * @version 3.0.0
  */
 
-import { FC, useState, useEffect, useMemo, useCallback } from 'react';
+import React, { FC, useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Layers, Calculator, Check, AlertTriangle, Info, Download,
@@ -34,6 +34,9 @@ import {
   DesignCheck,
   BearingCapacityMethod
 } from '../../modules/foundation/AdvancedFoundationDesignEngine';
+
+// Counter for generating unique foundation IDs without using Date.now()
+let foundationIdCounter = 0;
 
 // ============================================================================
 // TYPES
@@ -304,9 +307,9 @@ const EnhancedNumberInput: FC<{
           step={step}
           className={`w-full rounded-lg border bg-zinc-800/50 text-white h-11 px-4 pr-14 
             focus:outline-none focus:ring-2 transition-all text-sm font-medium
-            ${hasError 
-              ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500/20' 
-              : hasWarning 
+            ${hasError
+              ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500/20'
+              : hasWarning
                 ? 'border-amber-500/50 focus:border-amber-500 focus:ring-amber-500/20'
                 : 'border-zinc-700 focus:border-blue-500 focus:ring-blue-500/20'
             }`}
@@ -392,7 +395,7 @@ const DesignCheckCard: FC<{ check: DesignCheck; expanded?: boolean; onToggle?: (
       layout
       className={`rounded-xl border ${statusColors[check.status]} p-4 transition-all`}
     >
-      <div 
+      <div
         className="flex items-start justify-between cursor-pointer"
         onClick={onToggle}
       >
@@ -410,7 +413,7 @@ const DesignCheckCard: FC<{ check: DesignCheck; expanded?: boolean; onToggle?: (
           <p className="text-zinc-500 text-xs">{check.demandUnit}</p>
         </div>
       </div>
-      
+
       <div className="mt-3">
         <UtilizationBar value={check.utilizationPercent} />
       </div>
@@ -522,10 +525,10 @@ const ResultsSummaryCard: FC<{ result: FootingDesignResult }> = ({ result }) => 
 // MAIN COMPONENT
 // ============================================================================
 
-export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogProps> = ({ 
-  isOpen, 
+export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogProps> = ({
+  isOpen,
   onClose,
-  initialColumnId 
+  initialColumnId
 }) => {
   // Store
   const analysisResults = useModelStore((s) => s.analysisResults);
@@ -619,11 +622,14 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
     isUltimate: true,
   }], [axialLoad, momentX, momentY, shearX, shearY]);
 
+  // Generate stable ID for foundation using useRef with counter
+  const footingIdRef = React.useRef<string>(`footing-${++foundationIdCounter}`);
+
   // Calculate design result
   const designResult = useMemo(() => {
     try {
       const engine = createAdvancedFoundationEngine({
-        id: `footing-${Date.now()}`,
+        id: footingIdRef.current,
         name: 'Foundation Design',
         type: foundationType,
         code: designCode,
@@ -757,8 +763,8 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
               {designResult && (
                 <StatusBadge status={designResult.status} size="lg" />
               )}
-              <button 
-                onClick={onClose} 
+              <button
+                onClick={onClose}
                 className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-all"
               >
                 <X className="w-5 h-5" />
@@ -776,11 +782,10 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all ${
-                  activeTab === tab.id
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all ${activeTab === tab.id
                     ? 'border-blue-500 text-blue-400'
                     : 'border-transparent text-zinc-400 hover:text-white'
-                }`}
+                  }`}
               >
                 <tab.icon className="w-4 h-4" />
                 {tab.label}
@@ -823,7 +828,7 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                   {/* Soil Properties */}
                   <section>
                     <SectionHeader number={2} title="Soil Properties" subtitle="Select soil type or enter custom values" color="from-amber-500 to-orange-500" />
-                    
+
                     {/* Soil Type Grid */}
                     <div className="grid grid-cols-4 gap-3 mb-4">
                       {SOIL_TYPES.map((soil) => (
@@ -833,18 +838,17 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                             setSelectedSoilId(soil.id);
                             setUseCustomSoil(false);
                           }}
-                          className={`relative p-4 rounded-xl border text-left transition-all group ${
-                            selectedSoilId === soil.id && !useCustomSoil
+                          className={`relative p-4 rounded-xl border text-left transition-all group ${selectedSoilId === soil.id && !useCustomSoil
                               ? 'border-blue-500 bg-blue-500/10 ring-2 ring-blue-500/20'
                               : 'border-zinc-700/50 hover:border-zinc-600 bg-zinc-800/30'
-                          }`}
+                            }`}
                         >
                           <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${soil.color} flex items-center justify-center text-lg mb-2`}>
                             {soil.icon}
                           </div>
                           <p className="text-white text-sm font-medium mb-0.5">{soil.name}</p>
                           <p className="text-blue-400 text-xs font-medium">{soil.bearingCapacity} kPa</p>
-                          
+
                           {/* Tooltip on hover */}
                           <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-zinc-800 rounded-lg border border-zinc-700 text-xs opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
                             <p className="text-zinc-300">{soil.description}</p>
@@ -952,13 +956,13 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
 
                   {/* Loading */}
                   <section>
-                    <SectionHeader 
-                      number={3} 
-                      title="Column Loading" 
+                    <SectionHeader
+                      number={3}
+                      title="Column Loading"
                       subtitle={analysisResults ? 'Auto-populated from analysis' : 'Enter load values manually'}
-                      color="from-purple-500 to-purple-600" 
+                      color="from-purple-500 to-purple-600"
                     />
-                    
+
                     {analysisResults && (
                       <div className="mb-4 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2">
                         <CheckCircle2 className="w-4 h-4 text-emerald-400" />
@@ -1014,7 +1018,7 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                   {/* Column & Materials */}
                   <section>
                     <SectionHeader number={4} title="Column & Material Properties" color="from-emerald-500 to-emerald-600" />
-                    
+
                     <div className="grid grid-cols-5 gap-4">
                       <EnhancedNumberInput
                         label="Column Width"
@@ -1062,20 +1066,19 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                   {/* Options */}
                   <section>
                     <SectionHeader number={5} title="Design Options" color="from-rose-500 to-rose-600" />
-                    
+
                     <div className="flex flex-wrap gap-3">
                       {[
                         { id: 'settlement', label: 'Check Settlement', checked: checkSettlement, onChange: setCheckSettlement },
                         { id: 'sliding', label: 'Check Sliding', checked: checkSliding, onChange: setCheckSliding },
                         { id: 'overturning', label: 'Check Overturning', checked: checkOverturning, onChange: setCheckOverturning },
                       ].map(option => (
-                        <label 
+                        <label
                           key={option.id}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${
-                            option.checked
+                          className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${option.checked
                               ? 'border-blue-500/50 bg-blue-500/10 text-blue-400'
                               : 'border-zinc-700 bg-zinc-800/30 text-zinc-400 hover:border-zinc-600'
-                          }`}
+                            }`}
                         >
                           <input
                             type="checkbox"
@@ -1140,7 +1143,7 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                       <Ruler className="w-5 h-5 text-blue-400" />
                       Detailed Dimensions
                     </h3>
-                    
+
                     <div className="grid grid-cols-4 gap-6">
                       <div>
                         <p className="text-zinc-500 text-xs uppercase tracking-wider mb-1">Length (L)</p>
@@ -1171,7 +1174,7 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                       <Wrench className="w-5 h-5 text-purple-400" />
                       Reinforcement Schedule
                     </h3>
-                    
+
                     <div className="grid grid-cols-2 gap-6">
                       <div className="p-4 bg-zinc-800/50 rounded-lg">
                         <p className="text-zinc-400 text-sm mb-2">Bottom X-Direction</p>

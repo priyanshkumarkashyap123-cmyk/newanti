@@ -633,17 +633,6 @@ export function useHistoryDB<T>(options: UseHistoryDBOptions) {
   
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Initialize
-  useEffect(() => {
-    const init = async () => {
-      await historyDB.init();
-      await historyDB.initProject(projectId);
-      await refreshState();
-      setIsReady(true);
-    };
-    init();
-  }, [projectId]);
-
   const refreshState = useCallback(async () => {
     const [undoable, redoable, historyList, metadata] = await Promise.all([
       historyDB.canUndo(projectId),
@@ -652,17 +641,30 @@ export function useHistoryDB<T>(options: UseHistoryDBOptions) {
       historyDB.getMetadata(projectId),
     ]);
     
-    setCanUndo(undoable);
-    setCanRedo(redoable);
-    setHistory(historyList);
-    
-    if (metadata) {
-      setBranches(metadata.branches);
-      setCurrentBranchId(metadata.currentBranchId);
-      const branch = metadata.branches.find(b => b.id === metadata.currentBranchId);
-      setCurrentIndex(branch?.currentIndex ?? -1);
-    }
+    queueMicrotask(() => {
+      setCanUndo(undoable);
+      setCanRedo(redoable);
+      setHistory(historyList);
+      
+      if (metadata) {
+        setBranches(metadata.branches);
+        setCurrentBranchId(metadata.currentBranchId);
+        const branch = metadata.branches.find(b => b.id === metadata.currentBranchId);
+        setCurrentIndex(branch?.currentIndex ?? -1);
+      }
+    });
   }, [projectId]);
+
+  // Initialize
+  useEffect(() => {
+    const init = async () => {
+      await historyDB.init();
+      await historyDB.initProject(projectId);
+      await refreshState();
+      queueMicrotask(() => setIsReady(true));
+    };
+    init();
+  }, [projectId, refreshState]);
 
   const saveSnapshot = useCallback(async (description: string, state: T) => {
     if (debounceRef.current) {

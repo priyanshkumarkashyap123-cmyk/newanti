@@ -221,7 +221,9 @@ export const VisualScriptingEditor: FC<VisualScriptingEditorProps> = ({ onModelG
     useEffect(() => {
         if (isAutoExecute) {
             const model = executeGraph(nodes, edges);
-            setGeneratedModel(model);
+            queueMicrotask(() => {
+                setGeneratedModel(model);
+            });
             onModelGenerated?.(model);
         }
     }, [nodes, edges, isAutoExecute, onModelGenerated]);
@@ -245,7 +247,7 @@ export const VisualScriptingEditor: FC<VisualScriptingEditorProps> = ({ onModelG
                         data: {
                             ...node.data,
                             ...newData,
-                            onChange: (value: any) => handleNodeDataChange(nodeId, typeof value === 'object' ? value : { value })
+                            // Note: onChange callback will be properly bound when component updates
                         }
                     };
                 }
@@ -254,37 +256,45 @@ export const VisualScriptingEditor: FC<VisualScriptingEditorProps> = ({ onModelG
         );
     }, [setNodes]);
 
+    // Create onChange handler for a node
+    const createOnChangeHandler = useCallback((nodeId: string) => {
+        return (value: any) => handleNodeDataChange(nodeId, typeof value === 'object' ? value : { value });
+    }, [handleNodeDataChange]);
+
     // Initialize onChange handlers
     useEffect(() => {
-        setNodes((nds) =>
-            nds.map((node) => ({
-                ...node,
-                data: {
-                    ...node.data,
-                    onChange: (value: any) => handleNodeDataChange(node.id, typeof value === 'object' ? value : { value })
-                }
-            }))
-        );
-    }, []);
+        queueMicrotask(() => {
+            setNodes((nds) =>
+                nds.map((node) => ({
+                    ...node,
+                    data: {
+                        ...node.data,
+                        onChange: createOnChangeHandler(node.id)
+                    }
+                }))
+            );
+        });
+    }, [createOnChangeHandler, setNodes]);
 
     // Add new node
     const handleAddNode = useCallback((type: string) => {
         const definition = NODE_DEFINITIONS[type];
         if (!definition) return;
 
+        const nodeId = `${type}_${Date.now()}`;
         const newNode: Node = {
-            id: `${type}_${Date.now()}`,
+            id: nodeId,
             type,
             position: { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 },
             data: {
                 label: definition.label,
                 ...definition.defaultData,
-                onChange: (value: any) => handleNodeDataChange(`${type}_${Date.now()}`, value)
+                onChange: createOnChangeHandler(nodeId)
             }
         };
 
         setNodes((nds) => [...nds, newNode]);
-    }, [setNodes, handleNodeDataChange]);
+    }, [setNodes, createOnChangeHandler]);
 
     // Manual execute
     const handleExecute = useCallback(() => {

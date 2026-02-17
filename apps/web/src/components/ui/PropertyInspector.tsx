@@ -316,7 +316,9 @@ export const PropertyInspector: FC<PropertyInspectorProps> = ({ selectedMemberId
             // Try to find the section in databases
             // For now, set defaults
             if (selectedMember.sectionId) {
-                setSelectedSection(selectedMember.sectionId);
+                queueMicrotask(() => {
+                    setSelectedSection(selectedMember.sectionId!);
+                });
             }
         }
     }, [selectedMember]);

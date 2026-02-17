@@ -68,6 +68,9 @@ export interface SelectionInfo {
   commonProperties?: PropertyGroup[];
 }
 
+// Derive SelectionType from SelectionInfo
+export type SelectionType = SelectionInfo['type'];
+
 interface PropertyInspectorProps {
   selection: SelectionInfo;
   propertyGroups?: PropertyGroup[];
@@ -83,43 +86,42 @@ interface PropertyInspectorProps {
 // SELECTION HEADER
 // ============================================
 
+// Static icon mapping to avoid creating components during render
+const SELECTION_ICON_MAP: Record<SelectionType, React.FC<{ className?: string }>> = {
+  node: Circle,
+  member: Layers,
+  plate: Box,
+  load: ArrowDown,
+  support: Anchor,
+  mixed: Grid3X3,
+  none: Info,
+};
+
+const SELECTION_COLOR_MAP: Record<SelectionType, string> = {
+  node: 'text-emerald-400',
+  member: 'text-blue-400',
+  plate: 'text-purple-400',
+  load: 'text-red-400',
+  support: 'text-orange-400',
+  mixed: 'text-amber-400',
+  none: 'text-zinc-400',
+};
+
 const SelectionHeader: FC<{
   selection: SelectionInfo;
   onCopy?: () => void;
   onPaste?: () => void;
   onReset?: () => void;
 }> = memo(({ selection, onCopy, onPaste, onReset }) => {
-  const getIcon = () => {
-    switch (selection.type) {
-      case 'node': return Circle;
-      case 'member': return Layers;
-      case 'plate': return Box;
-      case 'load': return ArrowDown;
-      case 'support': return Anchor;
-      case 'mixed': return Grid3X3;
-      default: return Info;
-    }
-  };
-
-  const getColor = () => {
-    switch (selection.type) {
-      case 'node': return 'text-emerald-400';
-      case 'member': return 'text-blue-400';
-      case 'plate': return 'text-purple-400';
-      case 'load': return 'text-red-400';
-      case 'support': return 'text-orange-400';
-      case 'mixed': return 'text-amber-400';
-      default: return 'text-zinc-400';
-    }
-  };
-
-  const Icon = getIcon();
+  // Use static mappings to avoid creating components during render
+  const IconComponent = SELECTION_ICON_MAP[selection.type] || Info;
+  const iconColor = SELECTION_COLOR_MAP[selection.type] || 'text-zinc-400';
 
   return (
     <div className="px-4 py-3 border-b border-zinc-800 bg-zinc-900/50">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Icon className={`w-4 h-4 ${getColor()}`} />
+          <IconComponent className={`w-4 h-4 ${iconColor}`} />
           <span className="text-sm font-medium text-zinc-200">
             {selection.type === 'none' 
               ? 'No Selection'
@@ -212,7 +214,7 @@ const NumberInput: FC<{
 
   useEffect(() => {
     if (!isFocused) {
-      setLocalValue(value.toFixed(precision));
+      queueMicrotask(() => setLocalValue(value.toFixed(precision)));
     }
   }, [value, precision, isFocused]);
 

@@ -231,6 +231,7 @@ function DragPreview({ position, item }: DragPreviewProps): JSX.Element {
 // Draggable Component
 // ============================================================================
 
+/* eslint-disable react-hooks/refs */
 export function Draggable({
   id,
   type,
@@ -277,19 +278,23 @@ export function Draggable({
     };
   }, [isDragging, updatePosition, endDrag, onDragEnd, state.dropTargetId]);
 
-  const dragHandleProps = {
+  const dragHandleProps = useMemo(() => ({
     onMouseDown: handleMouseDown,
     role: 'button',
     tabIndex: disabled ? -1 : 0,
     'aria-disabled': disabled,
     'aria-grabbed': isDragging,
     style: { cursor: disabled ? 'not-allowed' : 'grab' },
-  };
+  }), [handleMouseDown, disabled, isDragging]);
 
-  const draggableProps = {
-    ref: (el: HTMLElement | null) => { elementRef.current = el; },
+  const setElementRef = useCallback((el: HTMLElement | null) => { 
+    elementRef.current = el; 
+  }, []);
+
+  const draggableProps = useMemo(() => ({
+    ref: setElementRef,
     'data-draggable-id': id,
-  };
+  }), [setElementRef, id]);
 
   return <>{children({ isDragging, dragHandleProps, draggableProps })}</>;
 }

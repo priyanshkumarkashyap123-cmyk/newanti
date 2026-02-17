@@ -4,11 +4,14 @@
  * Uses Clerk for authentication with Premium Navy Theme
  */
 
+import { useEffect } from 'react';
 import { ClerkLoaded, ClerkLoading, SignUp } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import { Cpu, Rocket, Shield, Zap } from 'lucide-react';
 
 export const SignUpPage = () => {
+    useEffect(() => { document.title = 'Sign Up | BeamLab Ultimate'; }, []);
+
     return (
         <div className="min-h-screen bg-slate-950 flex font-sans selection:bg-blue-500/30">
             {/* Left Side - Branding */}
@@ -79,7 +82,7 @@ export const SignUpPage = () => {
 
                     {/* Footer */}
                     <div className="flex items-center gap-6 text-sm text-slate-500 border-t border-slate-800/50 pt-8">
-                        <span>© 2024 BeamLab Ultimate</span>
+                        <span>© {new Date().getFullYear()} BeamLab Ultimate</span>
                         <Link to="/privacy" className="hover:text-slate-300 transition-colors">Privacy</Link>
                         <Link to="/terms" className="hover:text-slate-300 transition-colors">Terms</Link>
                     </div>
@@ -108,7 +111,7 @@ export const SignUpPage = () => {
                     {/* Clerk Sign Up */}
                     <div className="clerk-signup-container">
                         <ClerkLoading>
-                            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 text-slate-300 text-sm">
+                            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 text-slate-300 text-sm" aria-live="polite">
                                 Loading secure sign-up…
                             </div>
                         </ClerkLoading>

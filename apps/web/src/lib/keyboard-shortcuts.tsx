@@ -124,7 +124,11 @@ export function useKeyboardShortcut(
   deps: unknown[] = []
 ): void {
   const actionRef = useRef(action);
-  actionRef.current = action;
+  
+  // Update ref in effect rather than during render
+  useEffect(() => {
+    actionRef.current = action;
+  }, [action]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

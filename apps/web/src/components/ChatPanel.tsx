@@ -5,7 +5,7 @@
  * to get fix suggestions for failed structural members.
  */
 
-import { FC, useState, useRef, useEffect } from 'react';
+import { FC, useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     MessageSquare,
@@ -76,18 +76,10 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-    // Auto-analyze failed member when provided
-    useEffect(() => {
-        if (failedMember && isOpen) {
-            // Defer to avoid synchronous setState at effect start
-            queueMicrotask(() => analyzeFailedMember(failedMember));
-        }
-    }, [failedMember, isOpen]);
-
     /**
      * Analyze a failed member and get AI suggestions
      */
-    const analyzeFailedMember = async (member: FailedMember) => {
+    const analyzeFailedMember = useCallback(async (member: FailedMember) => {
         const userMessage: ChatMessage = {
             id: generateId(),
             role: 'user',
@@ -108,7 +100,15 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
         const aiResponse = generateMockResponse(member);
         setMessages(prev => [...prev, aiResponse]);
         setIsLoading(false);
-    };
+    }, []);
+
+    // Auto-analyze failed member when provided
+    useEffect(() => {
+        if (failedMember && isOpen) {
+            // Defer to avoid synchronous setState at effect start
+            queueMicrotask(() => analyzeFailedMember(failedMember));
+        }
+    }, [failedMember, isOpen, analyzeFailedMember]);
 
     /**
      * Send a custom message

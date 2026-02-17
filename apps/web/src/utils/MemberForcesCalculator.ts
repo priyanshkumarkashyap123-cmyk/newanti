@@ -101,8 +101,6 @@ export class MemberForcesCalculator {
             let Mz: number;
             let Fz: number;
             let My: number;
-            let Fx: number;
-            let Tx: number;
 
             if (distributedLoad) {
                 // With distributed load
@@ -135,10 +133,10 @@ export class MemberForcesCalculator {
             }
 
             // Axial force (constant along length for no intermediate axial loads)
-            Fx = -endForces.N1;
+            const Fx = -endForces.N1;
 
             // Torsion (constant along length)
-            Tx = -endForces.Tx1;
+            const Tx = -endForces.Tx1;
 
             points.push({
                 x,

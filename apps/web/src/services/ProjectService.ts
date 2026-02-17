@@ -4,6 +4,7 @@
  */
 
 import { fetchJson, postJson } from '../utils/fetchUtils';
+import { API_CONFIG } from '../config/env';
 
 export interface Project {
     _id: string;
@@ -17,7 +18,7 @@ export interface Project {
     isPublic: boolean;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://beamlab-backend-node.azurewebsites.net';
+const API_BASE_URL = API_CONFIG.baseUrl;
 
 export const ProjectService = {
     /**

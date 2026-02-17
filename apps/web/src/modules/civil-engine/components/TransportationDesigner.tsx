@@ -74,7 +74,9 @@ function HighwayDesignPanel() {
     // Auto-update design speed when class/terrain changes
     useEffect(() => {
         const speed = transportation.getDesignSpeed(params.roadClass, params.terrain);
-        setParams(p => ({ ...p, speed }));
+        queueMicrotask(() => {
+            setParams(p => ({ ...p, speed }));
+        });
     }, [params.roadClass, params.terrain]);
 
     const calculate = () => {

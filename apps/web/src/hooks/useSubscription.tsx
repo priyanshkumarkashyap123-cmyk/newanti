@@ -170,7 +170,9 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
     };
 
     useEffect(() => {
-        fetchSubscription();
+        queueMicrotask(() => {
+            fetchSubscription();
+        });
     }, [isSignedIn, userId]);
 
     const canAccess = (feature: keyof SubscriptionStatus['features']): boolean => {

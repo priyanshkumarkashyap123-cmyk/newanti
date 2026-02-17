@@ -12,7 +12,9 @@ export function useRealtimeCollaboration() {
     useEffect(() => {
         // Connect on mount
         realtime.connect();
-        setIsConnected(true);
+        queueMicrotask(() => {
+            setIsConnected(true);
+        });
 
         // Listen for updates
         const unsubscribe = realtime.on((type, data) => {

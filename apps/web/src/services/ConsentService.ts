@@ -3,6 +3,8 @@
  * Tracks when users accept legal agreements at different points in the app flow
  */
 
+import { API_CONFIG } from '../config/env';
+
 export interface UserConsent {
     userId: string;
     consentType: ConsentType;
@@ -173,7 +175,7 @@ export class ConsentService {
      */
     private async storeConsentInBackend(consent: UserConsent): Promise<void> {
         try {
-            const response = await fetch('https://beamlab-backend-node.azurewebsites.net/api/consent/record', {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/consent/record`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

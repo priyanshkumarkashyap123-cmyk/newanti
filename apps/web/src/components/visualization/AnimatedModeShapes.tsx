@@ -100,7 +100,7 @@ export const AnimatedModeShapes: React.FC<{
     /**
      * Get color based on displacement magnitude
      */
-    const getDisplacementColor = (displacement: { x: number; y: number; z: number }): string => {
+    const getDisplacementColor = useCallback((displacement: { x: number; y: number; z: number }): string => {
         const mag = Math.sqrt(displacement.x ** 2 + displacement.y ** 2 + displacement.z ** 2);
         const maxMag = Math.max(...(currentMode?.displacements.map(d =>
             Math.sqrt(d.x ** 2 + d.y ** 2 + d.z ** 2)
@@ -114,7 +114,7 @@ export const AnimatedModeShapes: React.FC<{
         const b = Math.floor(255 * Math.max(0, 1 - ratio * 2));
 
         return `rgb(${r}, ${g}, ${b})`;
-    };
+    }, [currentMode]);
 
     /**
      * Draw the structure
@@ -211,7 +211,7 @@ export const AnimatedModeShapes: React.FC<{
             ctx.fillText(`Mode ${currentMode.modeNumber}: f = ${currentMode.frequency.toFixed(2)} Hz (T = ${currentMode.period.toFixed(3)} s)`, 10, 20);
             ctx.fillText(`Direction: ${currentMode.direction}, Participation: ${(currentMode.participationFactor * 100).toFixed(1)}%`, 10, 40);
         }
-    }, [currentMode, members, nodes, width, height, settings, getDeformedPosition]);
+    }, [currentMode, members, nodes, width, height, settings, getDeformedPosition, getDisplacementColor]);
 
     /**
      * Animation loop

@@ -700,73 +700,74 @@ export const AnimationControls: React.FC<AnimationControlsProps> = ({
     
     const totalFrames = frames.length || 120; // Default 120 frames for mode shapes
     
-    // Animation loop
-    const animate = useCallback((timestamp: number) => {
-        if (playbackState !== 'playing') return;
-        
-        const elapsed = timestamp - lastTimeRef.current;
-        const frameTime = 1000 / config.fps;
-        
-        if (elapsed >= frameTime / config.speed) {
-            lastTimeRef.current = timestamp;
-            
-            setCurrentFrame(prev => {
-                let next = config.reverse ? prev - 1 : prev + 1;
-                
-                if (next >= totalFrames) {
-                    if (config.loop) {
-                        next = 0;
-                    } else {
-                        setPlaybackState('stopped');
-                        return totalFrames - 1;
-                    }
-                } else if (next < 0) {
-                    if (config.loop) {
-                        next = totalFrames - 1;
-                    } else {
-                        setPlaybackState('stopped');
-                        return 0;
-                    }
-                }
-                
-                if (onFrameChange) {
-                    onFrameChange(next);
-                }
-                
-                return next;
-            });
+    // Animation effect - handles the animation loop
+    useEffect(() => {
+        if (playbackState !== 'playing') {
+            return;
         }
+        
+        lastTimeRef.current = performance.now();
+        
+        const animate = (timestamp: number) => {
+            const elapsed = timestamp - lastTimeRef.current;
+            const frameTime = 1000 / config.fps;
+            
+            if (elapsed >= frameTime / config.speed) {
+                lastTimeRef.current = timestamp;
+                
+                setCurrentFrame(prev => {
+                    let next = config.reverse ? prev - 1 : prev + 1;
+                    
+                    if (next >= totalFrames) {
+                        if (config.loop) {
+                            next = 0;
+                        } else {
+                            queueMicrotask(() => setPlaybackState('stopped'));
+                            return totalFrames - 1;
+                        }
+                    } else if (next < 0) {
+                        if (config.loop) {
+                            next = totalFrames - 1;
+                        } else {
+                            queueMicrotask(() => setPlaybackState('stopped'));
+                            return 0;
+                        }
+                    }
+                    
+                    if (onFrameChange) {
+                        onFrameChange(next);
+                    }
+                    
+                    return next;
+                });
+            }
+            
+            animationRef.current = requestAnimationFrame(animate);
+        };
         
         animationRef.current = requestAnimationFrame(animate);
-    }, [playbackState, config, totalFrames, onFrameChange]);
-    
-    useEffect(() => {
-        if (playbackState === 'playing') {
-            lastTimeRef.current = performance.now();
-            animationRef.current = requestAnimationFrame(animate);
-        }
         
         return () => {
             if (animationRef.current) {
                 cancelAnimationFrame(animationRef.current);
             }
         };
-    }, [playbackState, animate]);
+    }, [playbackState, config, totalFrames, onFrameChange]);
     
-    const handlePlay = () => {
+    const handlePlay = useCallback(() => {
         if (currentFrame >= totalFrames - 1) {
             setCurrentFrame(0);
         }
         setPlaybackState('playing');
-    };
+    }, [currentFrame, totalFrames]);
     
-    const handlePause = () => setPlaybackState('paused');
+    const handlePause = useCallback(() => setPlaybackState('paused'), []);
     
-    const handleStop = () => {
+    const handleStop = useCallback(() => {
         setPlaybackState('stopped');
         setCurrentFrame(0);
         if (onFrameChange) onFrameChange(0);
-    };
+    }, [onFrameChange]);
     
     const handleSeek = (progress: number) => {
         const frame = Math.floor(progress * (totalFrames - 1));
@@ -805,17 +806,24 @@ export const AnimationControls: React.FC<AnimationControlsProps> = ({
         if (onConfigChange) onConfigChange(newConfig);
     };
     
-    const handleStartRecording = async () => {
+    const handleStopRecording = useCallback(() => {
+        setIsRecording(false);
+        handlePause();
+        setRecordingProgress(0);
+        // Here you would trigger the actual export
+    }, [handlePause]);
+    
+    const handleStartRecording = useCallback(async () => {
         setIsRecording(true);
         setRecordingProgress(0);
         handlePlay();
         
         // Simulate recording progress
         const totalMs = recordingConfig.duration * 1000;
-        const startTime = Date.now();
+        const startTime = performance.now(); // Use performance.now() instead of Date.now()
         
-        const updateProgress = () => {
-            const elapsed = Date.now() - startTime;
+        const updateProgress = (timestamp: number) => {
+            const elapsed = timestamp - startTime;
             const progress = Math.min(elapsed / totalMs, 1);
             setRecordingProgress(progress);
             
@@ -827,14 +835,7 @@ export const AnimationControls: React.FC<AnimationControlsProps> = ({
         };
         
         requestAnimationFrame(updateProgress);
-    };
-    
-    const handleStopRecording = () => {
-        setIsRecording(false);
-        handlePause();
-        setRecordingProgress(0);
-        // Here you would trigger the actual export
-    };
+    }, [recordingConfig.duration, handlePlay, handleStopRecording]);
     
     const selectedModeData = modes.find(m => m.number === selectedMode);
     

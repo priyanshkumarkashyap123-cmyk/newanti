@@ -4,7 +4,7 @@
  * Shows comprehensive analysis with all loads, design cases, and results
  */
 
-import { FC, useState, useMemo, LucideIcon } from 'react';
+import { FC, useState, useMemo } from 'react';
 import {
     Building2,
     Wind,
@@ -13,6 +13,7 @@ import {
     CheckCircle,
     FileDown,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { generateBurjAnalysis, BurjAnalysisConfig, BurjAnalysisResult } from '../services/BurjKhalifaAnalysisService';
 
 // ============================================
@@ -45,10 +46,10 @@ interface LoadDistributionBarProps {
 }
 
 const LoadDistributionBar: FC<LoadDistributionBarProps> = ({ analysis }) => {
-    const total = analysis.summary.totalDeadLoad + 
-                 analysis.summary.totalLiveLoad + 
-                 analysis.summary.totalWindLoad + 
-                 analysis.summary.totalSeismicLoad;
+    const total = analysis.summary.totalDeadLoad +
+        analysis.summary.totalLiveLoad +
+        analysis.summary.totalWindLoad +
+        analysis.summary.totalSeismicLoad;
 
     const dl = (analysis.summary.totalDeadLoad / total) * 100;
     const ll = (analysis.summary.totalLiveLoad / total) * 100;
@@ -59,28 +60,28 @@ const LoadDistributionBar: FC<LoadDistributionBarProps> = ({ analysis }) => {
         <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg">
             <h3 className="font-semibold mb-3 text-sm">Load Distribution (%)</h3>
             <div className="flex h-10 rounded-full overflow-hidden gap-1 mb-4">
-                <div 
+                <div
                     className="bg-blue-500 hover:bg-blue-600 transition flex items-center justify-center text-white text-xs font-bold"
                     style={{ width: `${dl}%` }}
                     title={`Dead Load: ${analysis.summary.totalDeadLoad.toLocaleString()} kN`}
                 >
                     {dl > 10 ? 'DL' : ''}
                 </div>
-                <div 
+                <div
                     className="bg-green-500 hover:bg-green-600 transition flex items-center justify-center text-white text-xs font-bold"
                     style={{ width: `${ll}%` }}
                     title={`Live Load: ${analysis.summary.totalLiveLoad.toLocaleString()} kN`}
                 >
                     {ll > 10 ? 'LL' : ''}
                 </div>
-                <div 
+                <div
                     className="bg-red-500 hover:bg-red-600 transition flex items-center justify-center text-white text-xs font-bold"
                     style={{ width: `${wl}%` }}
                     title={`Wind Load: ${analysis.summary.totalWindLoad.toLocaleString()} kN`}
                 >
                     {wl > 10 ? 'WL' : ''}
                 </div>
-                <div 
+                <div
                     className="bg-orange-500 hover:bg-orange-600 transition flex items-center justify-center text-white text-xs font-bold"
                     style={{ width: `${sl}%` }}
                     title={`Seismic: ${analysis.summary.totalSeismicLoad.toLocaleString()} kN`}
@@ -134,7 +135,7 @@ const CriticalElementsTable: FC<CriticalElementsTableProps> = ({ analysis }) => 
                     const util = (elem.utilization * 100).toFixed(1);
                     const isOK = elem.utilization <= 0.95;
                     return (
-                        <tr 
+                        <tr
                             key={idx}
                             className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
                         >
@@ -183,11 +184,11 @@ const AnalysisStepsAccordion: FC<AnalysisStepsAccordionProps> = ({ analysis, exp
                     </div>
                     <span className={`transform transition ${expandedStep === step.stepNumber ? 'rotate-180' : ''}`}>▼</span>
                 </button>
-                
+
                 {expandedStep === step.stepNumber && (
                     <div className="p-4 bg-white dark:bg-gray-900 border-t border-gray-300 dark:border-gray-600">
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{step.description}</p>
-                        
+
                         <div className="space-y-2 mb-4">
                             {step.loads.map((load, idx) => (
                                 <div key={idx} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
@@ -200,7 +201,7 @@ const AnalysisStepsAccordion: FC<AnalysisStepsAccordionProps> = ({ analysis, exp
                                 </div>
                             ))}
                         </div>
-                        
+
                         <div className="grid grid-cols-3 gap-2">
                             {step.maxStress && (
                                 <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
@@ -370,11 +371,10 @@ export const BurjKhalifaAnalysisPanel: FC<BurjAnalysisPanelProps> = ({ onClose }
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
-                            className={`px-3 py-2 rounded transition ${
-                                activeTab === tab
+                            className={`px-3 py-2 rounded transition ${activeTab === tab
                                     ? 'bg-blue-600 text-white'
                                     : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'
-                            }`}
+                                }`}
                         >
                             {tab.charAt(0).toUpperCase() + tab.slice(1)}
                         </button>
@@ -443,10 +443,10 @@ export const BurjKhalifaAnalysisPanel: FC<BurjAnalysisPanelProps> = ({ onClose }
                 )}
 
                 {activeTab === 'loads' && (
-                    <AnalysisStepsAccordion 
-                        analysis={analysis} 
-                        expandedStep={expandedStep} 
-                        setExpandedStep={setExpandedStep} 
+                    <AnalysisStepsAccordion
+                        analysis={analysis}
+                        expandedStep={expandedStep}
+                        setExpandedStep={setExpandedStep}
                     />
                 )}
 

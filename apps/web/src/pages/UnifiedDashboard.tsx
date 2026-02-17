@@ -23,7 +23,7 @@ import {
     Play, Settings, HelpCircle, ChevronRight, Download,
     Upload, Zap, Layers, Grid3X3, ArrowUpRight, Filter,
     LayoutDashboard, FileText, TrendingUp, Bell, LogOut, Cpu,
-    Activity
+    Activity as ActivityIcon
 } from 'lucide-react';
 import { UserButton } from '@clerk/clerk-react';
 import { useAuth, isUsingClerk } from '../providers/AuthProvider';
@@ -164,7 +164,7 @@ const QUICK_ACTIONS: QuickAction[] = [
         id: 'ai-power',
         title: 'AI Power',
         description: 'Advanced AI Analytics',
-        icon: <Activity className="w-6 h-6" />,
+        icon: <ActivityIcon className="w-6 h-6" />,
         color: 'from-cyan-600 to-cyan-700',
         route: '/ai-dashboard',
         badge: '🚀'
@@ -244,7 +244,7 @@ const getActivityIcon = (type: Activity['type']): React.ReactNode => {
         case 'analyze': return <BarChart3 className="w-4 h-4" />;
         case 'export': return <Download className="w-4 h-4" />;
         case 'edit': return <FileText className="w-4 h-4" />;
-        default: return <Activity className="w-4 h-4" />;
+        default: return <ActivityIcon className="w-4 h-4" />;
     }
 };
 
@@ -485,7 +485,7 @@ export const UnifiedDashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                 {/* Quick Actions */}
                 <div className="mb-8">
                     <h2 className="text-lg font-semibold text-white mb-4">Quick Actions</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                         {QUICK_ACTIONS.map((action, index) => (
                             <motion.button
                                 key={action.id}
@@ -512,17 +512,18 @@ export const UnifiedDashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Projects Section */}
                     <div className="lg:col-span-2">
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between mb-4 gap-3">
                             <h2 className="text-lg font-semibold text-white">Recent Projects</h2>
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                                 <div className="relative">
                                     <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                                     <input
                                         type="text"
                                         placeholder="Search projects..."
+                                        aria-label="Search projects"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="pl-9 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-slate-300 placeholder-slate-500 focus:outline-none focus:border-blue-500 w-64"
+                                        className="pl-9 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-slate-300 placeholder-slate-500 focus:outline-none focus:border-blue-500 w-full sm:w-64"
                                     />
                                 </div>
                                 <select
@@ -587,7 +588,7 @@ export const UnifiedDashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                         {/* Activity Feed */}
                         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
                             <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-                                <Activity className="w-4 h-4 text-blue-400" />
+                                <ActivityIcon className="w-4 h-4 text-blue-400" />
                                 Recent Activity
                             </h3>
                             <div className="space-y-1">
@@ -641,7 +642,7 @@ export const UnifiedDashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
             {/* Footer */}
             <footer className="border-t border-slate-800 mt-16 py-8">
                 <div className="max-w-7xl mx-auto px-6 text-center text-sm text-slate-500">
-                    <p>© 2025 BeamLab Ultimate. Professional Structural Analysis Software.</p>
+                    <p>© {new Date().getFullYear()} BeamLab Ultimate. Professional Structural Analysis Software.</p>
                     <div className="flex items-center justify-center gap-4 mt-4">
                         <Link to="/privacy" className="hover:text-slate-300 transition-colors">Privacy</Link>
                         <Link to="/terms" className="hover:text-slate-300 transition-colors">Terms</Link>

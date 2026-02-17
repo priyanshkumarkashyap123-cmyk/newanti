@@ -5,7 +5,7 @@
  * to ensure their record exists in the database.
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth, useUser } from '../providers/AuthProvider';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -13,11 +13,12 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 export function useUserRegistration() {
     const { isSignedIn, getToken } = useAuth();
     const user = useUser();
-    const hasRegistered = useRef(false);
+    const hasRegisteredRef = useRef(false);
+    const [isRegistered, setIsRegistered] = useState(false);
 
     useEffect(() => {
         // Only run once when user signs in
-        if (!isSignedIn || !user || hasRegistered.current) {
+        if (!isSignedIn || !user || hasRegisteredRef.current) {
             return;
         }
 
@@ -43,7 +44,8 @@ export function useUserRegistration() {
                 if (response.ok) {
                     const data = await response.json();
                     console.log('[useUserRegistration] User registered:', data);
-                    hasRegistered.current = true;
+                    hasRegisteredRef.current = true;
+                    setIsRegistered(true);
                 } else {
                     console.error('[useUserRegistration] Registration failed:', response.status);
                 }
@@ -55,7 +57,7 @@ export function useUserRegistration() {
         registerUser();
     }, [isSignedIn, user, getToken]);
 
-    return { isRegistered: hasRegistered.current };
+    return { isRegistered };
 }
 
 export default useUserRegistration;

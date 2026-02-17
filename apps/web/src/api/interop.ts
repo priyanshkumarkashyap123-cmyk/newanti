@@ -9,7 +9,9 @@
  * - Report generation
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://beamlab-backend-node.azurewebsites.net';
+import { API_CONFIG } from '../config/env';
+
+const API_BASE = API_CONFIG.baseUrl;
 
 // ============================================
 // COMMON TYPES

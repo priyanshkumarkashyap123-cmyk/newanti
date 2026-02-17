@@ -306,7 +306,7 @@ export class GeometryGenerator {
     const dirZ = { x: dx / length, y: dy / length, z: dz / length };
     
     // Find perpendicular vectors
-    let dirX: Vector3D, dirY: Vector3D;
+    let dirX: Vector3D;
     if (Math.abs(dirZ.y) < 0.99) {
       // Cross with Y-axis
       dirX = this.normalize(this.cross({ x: 0, y: 1, z: 0 }, dirZ));
@@ -314,7 +314,7 @@ export class GeometryGenerator {
       // Cross with X-axis
       dirX = this.normalize(this.cross({ x: 1, y: 0, z: 0 }, dirZ));
     }
-    dirY = this.cross(dirZ, dirX);
+    const dirY = this.cross(dirZ, dirX);
 
     const hw = section.width / 2;
     const hh = section.height / 2;
