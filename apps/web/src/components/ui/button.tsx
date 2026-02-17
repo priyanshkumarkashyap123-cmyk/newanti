@@ -15,25 +15,26 @@ const buttonVariants = cva(
     // Base styles with press feedback animation and enhanced accessibility
     [
         'inline-flex items-center justify-center gap-1.5',
-        'rounded-md text-sm font-medium',
-        'transition-all duration-150',
-        'active:scale-95',
+        'rounded-lg text-sm font-medium',
+        'transition-all duration-200',
+        'active:scale-[0.97]',
         'focus-visible:outline-none focus-visible:ring-2',
         'focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
         'disabled:pointer-events-none disabled:opacity-50',
         'select-none', // Prevent text selection on buttons
-        'relative overflow-hidden' // For ripple effect
+        'relative overflow-hidden', // For ripple effect
+        'cursor-pointer'
     ].join(' '),
     {
         variants: {
             variant: {
-                default: 'bg-blue-600 text-white hover:bg-blue-500 shadow-sm shadow-blue-500/20',
-                destructive: 'bg-red-600 text-white hover:bg-red-500 shadow-sm shadow-red-500/20',
-                outline: 'border border-zinc-200 dark:border-zinc-700 bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300',
-                secondary: 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700',
-                ghost: 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400',
-                link: 'text-blue-600 underline-offset-4 hover:underline',
-                success: 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-sm shadow-emerald-500/20'
+                default: 'bg-blue-600 text-white hover:bg-blue-500 shadow-sm shadow-blue-500/25 hover:shadow-md hover:shadow-blue-500/30',
+                destructive: 'bg-red-600 text-white hover:bg-red-500 shadow-sm shadow-red-500/25',
+                outline: 'border border-white/[0.1] bg-transparent hover:bg-white/[0.04] hover:border-white/[0.15] text-slate-300',
+                secondary: 'bg-slate-800 text-slate-100 hover:bg-slate-700 border border-white/[0.06]',
+                ghost: 'hover:bg-white/[0.04] text-slate-400 hover:text-slate-200',
+                link: 'text-blue-400 underline-offset-4 hover:underline hover:text-blue-300',
+                success: 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-sm shadow-emerald-500/25'
             },
             size: {
                 default: 'h-9 px-4 py-2',

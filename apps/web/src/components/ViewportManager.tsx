@@ -6,7 +6,7 @@ import { BoxSelector } from './BoxSelector';
 import { WgpuCanvas } from './viewer/WgpuCanvas';
 import { SafeCanvasWrapper } from './viewer/SafeCanvasWrapper';
 import { useUIStore } from '../store/uiStore';
-import { useMultiplayerContext } from './collaborators/MultiplayerContext';
+import { useMultiplayerContextSafe } from './collaborators/MultiplayerContext';
 import { Cpu, Zap, Box, GitBranch } from 'lucide-react';
 
 type ViewportLayout = 'SINGLE' | 'QUAD';
@@ -25,8 +25,8 @@ const checkWebglSupport = (): { supported: boolean; reason?: string } => {
         const testCanvas = document.createElement('canvas');
         // Try WebGL2 first, then WebGL1
         // Use failIfMajorPerformanceCaveat: false to avoid rejecting software renderers
-        const gl = testCanvas.getContext('webgl2', { failIfMajorPerformanceCaveat: false }) 
-                || testCanvas.getContext('webgl', { failIfMajorPerformanceCaveat: false });
+        const gl = testCanvas.getContext('webgl2', { failIfMajorPerformanceCaveat: false })
+            || testCanvas.getContext('webgl', { failIfMajorPerformanceCaveat: false });
 
         if (!gl) {
             return {
@@ -313,15 +313,9 @@ const ViewportContainer: FC<{ className?: string; layout: ViewportLayout; useWeb
     const rightRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Get multiplayer users safely
-    let remoteUsers: any[] = [];
-    try {
-         
-        const mp = useMultiplayerContext();
-        remoteUsers = mp?.remoteUsers || [];
-    } catch (e) {
-        // Not in provider
-    }
+    // Get multiplayer users safely (null if outside provider)
+    const mp = useMultiplayerContextSafe();
+    const remoteUsers = mp?.remoteUsers || [];
 
     const orthoControlProps = {
         enableRotate: false,
@@ -376,10 +370,10 @@ const ViewportContainer: FC<{ className?: string; layout: ViewportLayout; useWeb
                 eventSource={containerRef as MutableRefObject<HTMLElement>}
                 shadows
                 dpr={[1, 2]}
-                gl={{ 
-                    preserveDrawingBuffer: true, 
-                    antialias: true, 
-                    alpha: false, 
+                gl={{
+                    preserveDrawingBuffer: true,
+                    antialias: true,
+                    alpha: false,
                     powerPreference: 'high-performance',
                     failIfMajorPerformanceCaveat: false, // Don't fail on software renderers
                 }}

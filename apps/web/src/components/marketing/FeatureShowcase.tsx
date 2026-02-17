@@ -45,16 +45,16 @@ export const CompetitiveAdvantage: FC = () => {
   ];
 
   return (
-    <section className="py-24 bg-gradient-to-b from-slate-900 to-slate-950">
+    <section className="py-24 bg-gradient-to-b from-slate-900/30 to-slate-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <span className="inline-block text-blue-400 text-sm font-semibold uppercase tracking-wider mb-4">
+          <span className="inline-block text-blue-400 text-xs font-semibold uppercase tracking-[0.2em] mb-5">
             Why BeamLab?
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          <h2 className="text-3xl md:text-5xl font-bold text-white mb-5 tracking-[-0.02em]">
             Built for the Modern Engineer
           </h2>
-          <p className="text-slate-300 max-w-2xl mx-auto">
+          <p className="text-slate-400 max-w-2xl mx-auto leading-relaxed">
             We studied what's broken in existing tools and built something better.
           </p>
         </div>
@@ -72,7 +72,7 @@ export const CompetitiveAdvantage: FC = () => {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="p-4 rounded-xl bg-red-500/5 border border-red-500/20"
+                className="p-4 rounded-xl bg-red-500/[0.04] border border-red-500/15"
               >
                 <p className="font-medium text-slate-300 mb-2">{comp.name}</p>
                 <div className="flex flex-wrap gap-2">
@@ -99,7 +99,7 @@ export const CompetitiveAdvantage: FC = () => {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
-                  className="flex items-center gap-4 p-4 rounded-xl bg-blue-500/5 border border-blue-500/20"
+                  className="flex items-center gap-4 p-4 rounded-xl bg-blue-500/[0.04] border border-blue-500/15 hover:bg-blue-500/[0.06] transition-colors duration-200"
                 >
                   <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400">
                     {adv.icon}
@@ -138,9 +138,9 @@ export const PerformanceMetrics: FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="text-center p-6 rounded-2xl bg-slate-900/50 border border-slate-800"
+              className="text-center p-6 rounded-2xl bg-slate-900/50 border border-white/[0.06] hover:border-white/[0.1] transition-all duration-300"
             >
-              <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">
+              <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent mb-2">
                 {metric.value}
               </div>
               <div className="text-white font-medium mb-1">{metric.label}</div>
@@ -295,10 +295,10 @@ export const Testimonials: FC = () => {
     <section className="py-24 bg-slate-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <span className="inline-block text-blue-400 text-sm font-semibold uppercase tracking-wider mb-4">
+          <span className="inline-block text-blue-400 text-xs font-semibold uppercase tracking-[0.2em] mb-5">
             Testimonials
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-white">
+          <h2 className="text-3xl md:text-5xl font-bold text-white tracking-[-0.02em]">
             Loved by Engineers Worldwide
           </h2>
         </div>
@@ -311,7 +311,7 @@ export const Testimonials: FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="group p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 hover:bg-slate-800/50 transition-all duration-300 hover-lift"
+              className="group p-6 rounded-2xl bg-slate-900/60 border border-white/[0.06] hover:border-white/[0.1] hover:bg-slate-800/40 transition-all duration-300 hover-lift"
             >
               <div className="flex gap-1 mb-4">
                 {[...Array(5)].map((_, j) => (
@@ -352,7 +352,7 @@ export const SecurityCompliance: FC = () => {
   ];
 
   return (
-    <section className="py-16 bg-slate-900/30 border-y border-slate-800">
+    <section className="py-16 bg-slate-900/20 border-y border-white/[0.06]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
           <div>
@@ -365,7 +365,7 @@ export const SecurityCompliance: FC = () => {
           </div>
           <div className="flex flex-wrap gap-4">
             {badges.map((badge, i) => (
-              <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-lg bg-slate-900 border border-slate-800">
+              <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-950/50 border border-white/[0.06]">
                 <div className="text-slate-400">{badge.icon}</div>
                 <div>
                   <p className="text-sm font-medium text-white">{badge.label}</p>
@@ -385,9 +385,8 @@ export const SecurityCompliance: FC = () => {
 // ============================================
 
 export const CTABanner: FC<{ onGetStarted: () => void }> = ({ onGetStarted }) => (
-  <section className="py-20 relative overflow-hidden">
-    <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-blue-600/20" />
-    <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
+  <section className="py-24 relative overflow-hidden">
+    <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-violet-600/15 to-blue-600/10" />
 
     <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
       <motion.div
@@ -395,27 +394,27 @@ export const CTABanner: FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =>
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
       >
-        <h2 id="cta-heading" className="text-4xl md:text-5xl font-bold text-white mb-6">
+        <h2 id="cta-heading" className="text-4xl md:text-5xl font-bold text-white mb-6 tracking-[-0.02em]">
           Ready to modernize your<br />structural workflow?
         </h2>
-        <p className="text-xl text-slate-300 mb-10 max-w-2xl mx-auto">
+        <p className="text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
           Join 300,000+ engineers who've already made the switch. Start free, no credit card required.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <button
             onClick={onGetStarted}
-            className="w-full sm:w-auto px-10 py-4 rounded-full bg-white text-slate-950 font-bold text-lg hover:bg-slate-100 transition-all shadow-2xl shadow-white/10 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-95"
+            className="w-full sm:w-auto px-10 py-4 rounded-full bg-white text-slate-950 font-bold text-lg hover:bg-blue-50 transition-all shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_4px_30px_rgba(59,130,246,0.15)] hover:shadow-[0_0_0_1px_rgba(255,255,255,0.2),0_8px_40px_rgba(59,130,246,0.3)] flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.98]"
           >
             Start Free Trial <ChevronRight className="w-5 h-5" />
           </button>
-          <button className="w-full sm:w-auto px-10 py-4 rounded-full border-2 border-slate-600 text-white font-medium hover:bg-slate-800 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-95">
+          <button className="w-full sm:w-auto px-10 py-4 rounded-full border border-white/10 text-white font-medium hover:bg-white/[0.04] hover:border-white/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.98]">
             Schedule Demo
           </button>
         </div>
 
-        <p className="text-slate-400 text-sm mt-6">
-          14-day Pro trial included • No credit card • Cancel anytime
+        <p className="text-slate-500 text-sm mt-8">
+          14-day Pro trial included · No credit card · Cancel anytime
         </p>
       </motion.div>
     </div>

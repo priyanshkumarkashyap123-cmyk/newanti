@@ -100,13 +100,13 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
             {/* ================================================
                 SIDEBAR (Updated with Avatar)
                 ================================================ */}
-            <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col">
-                <div className="h-16 flex items-center px-6 border-b border-slate-800">
-                    <Link to="/" className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded bg-blue-600 text-white">
+            <aside className="w-64 bg-slate-900/80 border-r border-white/[0.06] flex flex-col backdrop-blur-xl">
+                <div className="h-16 flex items-center px-6 border-b border-white/[0.06]">
+                    <Link to="/" className="flex items-center gap-2.5">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/20">
                             <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>architecture</span>
                         </div>
-                        <span className="text-lg font-bold text-white">BeamLab</span>
+                        <span className="text-lg font-bold text-white tracking-tight">BeamLab</span>
                     </Link>
                 </div>
 
@@ -116,10 +116,10 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`
-                                w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
+                                w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
                                 ${activeTab === tab.id
-                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20'
-                                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                                    ? 'bg-blue-500/[0.12] text-blue-400 border border-blue-500/20 shadow-sm'
+                                    : 'text-slate-400 hover:bg-white/[0.04] hover:text-slate-200 border border-transparent'
                                 }
                             `}
                         >
@@ -127,7 +127,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                             {tab.label}
                         </button>
                     ))}
-                    <div className="pt-4 mt-4 border-t border-slate-800">
+                    <div className="pt-4 mt-4 border-t border-white/[0.06]">
                         <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
                             <Settings className="w-4 h-4" />
                             Settings
@@ -139,7 +139,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                     </div>
                 </nav>
 
-                <div className="p-4 border-t border-slate-800 bg-slate-900/50">
+                <div className="p-4 border-t border-white/[0.06] bg-slate-950/40">
                     <div className="flex items-center gap-3">
                         <Avatar name={userName} size="md" status="online" className="bg-blue-600" />
                         <div className="flex-1 min-w-0">
@@ -165,7 +165,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                 ================================================ */}
             <main className="flex-1 flex flex-col overflow-hidden bg-slate-950">
                 {/* Header */}
-                <header className="h-16 bg-slate-900/50 backdrop-blur-sm border-b border-slate-800 flex items-center justify-between px-6 sticky top-0 z-10">
+                <header className="h-16 bg-slate-900/60 backdrop-blur-xl border-b border-white/[0.06] flex items-center justify-between px-6 sticky top-0 z-10">
                     <div className="flex items-center gap-4 flex-1">
                         <div className="relative max-w-md flex-1">
                             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -174,7 +174,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                                 placeholder="Search projects..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full h-10 pl-10 pr-4 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                                className="w-full h-10 pl-10 pr-4 bg-slate-950/60 border border-white/[0.08] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 transition-all"
                             />
                         </div>
                     </div>
@@ -230,9 +230,9 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                                 <button
                                     key={module.id}
                                     onClick={() => handleLaunchModule(module.id)}
-                                    className="group bg-slate-900 border border-slate-800 rounded-xl p-5 text-left hover:border-blue-500 hover:bg-slate-800/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all"
+                                    className="group bg-slate-900/60 border border-white/[0.06] rounded-xl p-5 text-left hover:border-blue-500/30 hover:bg-slate-800/40 hover:shadow-[0_8px_30px_rgba(59,130,246,0.08)] transition-all duration-300"
                                 >
-                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${module.bgColor} group-hover:bg-blue-600 group-hover:text-white transition-colors`}>
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${module.bgColor} group-hover:scale-105 transition-transform duration-300`}>
                                         <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>{module.icon}</span>
                                     </div>
                                     <h3 className="font-bold text-white mb-1 group-hover:text-blue-400 transition-colors">
@@ -262,7 +262,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                                         layout
                                         key={project.id}
                                         onClick={() => handleOpenProject(project.id)}
-                                        className="group bg-slate-900 border border-slate-800 rounded-xl overflow-hidden cursor-pointer hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/10 transition-all"
+                                        className="group bg-slate-900/60 border border-white/[0.06] rounded-xl overflow-hidden cursor-pointer hover:border-blue-500/30 hover:shadow-[0_12px_40px_rgba(59,130,246,0.08)] transition-all duration-300"
                                     >
                                         <div className="aspect-[4/3] bg-slate-950 relative grid-pattern flex items-center justify-center">
                                             <span className="material-symbols-outlined text-5xl text-slate-800 group-hover:text-blue-500/40 transition-colors">
@@ -295,7 +295,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                                 {/* Add New Card */}
                                 <button
                                     onClick={handleNewProject}
-                                    className="border-2 border-dashed border-slate-800 rounded-xl flex flex-col items-center justify-center gap-3 p-8 hover:border-blue-500 hover:bg-blue-500/5 transition-all min-h-[240px]"
+                                    className="border-2 border-dashed border-white/[0.08] rounded-xl flex flex-col items-center justify-center gap-3 p-8 hover:border-blue-500/30 hover:bg-blue-500/[0.03] transition-all duration-300 min-h-[240px]"
                                 >
                                     <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-blue-500 group-hover:bg-blue-500/20 transition-colors">
                                         <Plus className="w-6 h-6" />

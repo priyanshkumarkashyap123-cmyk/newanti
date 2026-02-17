@@ -28,6 +28,14 @@ export const useMultiplayerContext = () => {
     return context;
 };
 
+/**
+ * Safe version that returns null instead of throwing when outside provider.
+ * Use this in components that may render before the provider is mounted.
+ */
+export const useMultiplayerContextSafe = () => {
+    return useContext(MultiplayerContext);
+};
+
 interface MultiplayerProviderProps extends MultiplayerConfig {
     children: ReactNode;
 }

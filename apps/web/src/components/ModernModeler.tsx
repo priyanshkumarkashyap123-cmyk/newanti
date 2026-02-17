@@ -95,6 +95,7 @@ import { useContextMenu, getNodeContextMenuItems, getMemberContextMenuItems, get
 
 // Analysis service
 import { analysisService } from '../services/AnalysisService';
+import { API_CONFIG } from '../config/env';
 import { useRazorpayPayment } from './RazorpayPayment';
 import { useTierAccess } from '../hooks/useTierAccess';
 import { CloudProjectManager } from './CloudProjectManager';
@@ -102,7 +103,7 @@ import { ProjectService, Project } from '../services/ProjectService';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 
 // Multiplayer
-import { MultiplayerProvider, useMultiplayerContext } from './collaborators/MultiplayerContext';
+import { MultiplayerProvider, useMultiplayerContextSafe } from './collaborators/MultiplayerContext';
 import { Collaborators } from './collaborators/Collaborators';
 import { ServerUpdate } from '../hooks/useMultiplayer';
 
@@ -272,6 +273,22 @@ const StatusBar: FC<{ isAnalyzing: boolean }> = ({ isAnalyzing }) => {
 };
 
 // ============================================
+// MULTIPLAYER UI (outside ModernModeler to avoid re-creation every render)
+// ============================================
+
+const MultiplayerUI: FC = () => {
+    const mp = useMultiplayerContextSafe();
+    if (!mp) return null;
+    return (
+        <Collaborators
+            users={mp.remoteUsers}
+            currentUserColor={mp.userColor}
+            isConnected={mp.isConnected}
+        />
+    );
+};
+
+// ============================================
 // MAIN MODERN MODELER COMPONENT
 // ============================================
 
@@ -338,15 +355,15 @@ export const ModernModeler: FC = () => {
         hideNotification,
         showNotification
     } = useUIStore();
-    
+
     const toastSystem = useToast();
-    
+
     // Handle notifications from UIStore via ToastSystem
     useEffect(() => {
         if (notification?.show) {
             const method = notification.type === 'success' ? toastSystem.success
-                         : notification.type === 'error' ? toastSystem.error
-                         : toastSystem.info;
+                : notification.type === 'error' ? toastSystem.error
+                    : toastSystem.info;
             method(notification.message, { duration: 3000 });
             hideNotification();
         }
@@ -602,7 +619,7 @@ export const ModernModeler: FC = () => {
             }
 
             // Call stress calculation API
-            const PYTHON_API = import.meta.env.VITE_PYTHON_API_URL || 'https://beamlab-backend-python.azurewebsites.net';
+            const PYTHON_API = API_CONFIG.pythonUrl;
             const response = await fetch(`${PYTHON_API}/stress/calculate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1359,22 +1376,6 @@ export const ModernModeler: FC = () => {
         }
     }, []);
 
-    // Multiplayer Wrapper Component to access context
-    const MultiplayerUI = () => {
-        try {
-             
-            const mp = useMultiplayerContext();
-            return (
-                <Collaborators
-                    users={mp.remoteUsers}
-                    currentUserColor={mp.userColor}
-                    isConnected={mp.isConnected}
-                />
-            );
-        } catch (e) {
-            return null;
-        }
-    };
 
     // Mobile Sidebar State
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -1424,7 +1425,7 @@ export const ModernModeler: FC = () => {
                 <div className="flex-1 flex overflow-hidden relative min-h-0">
 
                     {/* 1. Workflow Sidebar (Left) */}
-                    <aside 
+                    <aside
                         className={`
                         w-48 flex-shrink-0 h-full z-30 shadow-xl bg-zinc-900 
                         transition-transform duration-300 
@@ -1754,7 +1755,7 @@ export const ModernModeler: FC = () => {
                             // Run auto-fix from model store
                             const result = useModelStore.getState().autoFixModel();
                             uiLogger.log('Auto-fix result:', result);
-                            
+
                             if (result.fixed.length > 0) {
                                 // Re-validate after fix
                                 setValidationErrors(null);

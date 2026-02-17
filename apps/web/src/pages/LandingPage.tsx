@@ -113,7 +113,7 @@ export const LandingPage: FC = () => {
             </a>
             
             {/* Navbar */}
-            <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/5 bg-slate-950/90 backdrop-blur-xl" role="navigation" aria-label="Main navigation">
+            <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/[0.06] bg-slate-950/80 backdrop-blur-2xl backdrop-saturate-150" role="navigation" aria-label="Main navigation">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         {/* Logo */}
@@ -197,147 +197,98 @@ export const LandingPage: FC = () => {
 
             {/* Hero Section */}
             <main id="main-content" role="main">
-                <section className="relative pt-28 pb-20 lg:pt-40 lg:pb-32 overflow-hidden" aria-labelledby="hero-heading">
-                    {/* Background Blobs - decorative, hidden from screen readers */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none" aria-hidden="true">
-                        <div className="absolute top-20 left-10 w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-[100px] opacity-40 mix-blend-screen animate-pulse" style={{ animationDuration: '4s' }} />
-                        <div className="absolute top-40 right-10 w-[400px] h-[400px] bg-purple-500/20 rounded-full blur-[100px] opacity-40 mix-blend-screen animate-pulse" style={{ animationDuration: '7s' }} />
+                <section className="relative pt-28 pb-20 lg:pt-44 lg:pb-36 overflow-hidden" aria-labelledby="hero-heading">
+                    {/* Animated gradient mesh background */}
+                    <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+                        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-blue-600/15 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '4s' }} />
+                        <div className="absolute top-20 right-1/4 w-[500px] h-[500px] bg-violet-600/15 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '6s' }} />
+                        <div className="absolute bottom-0 left-1/3 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '8s' }} />
+                        {/* Subtle grid */}
+                        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(to right, #94a3b8 1px, transparent 1px), linear-gradient(to bottom, #94a3b8 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
                     </div>
 
                     <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                        <motion.div
-                            initial="hidden"
-                            animate="visible"
-                            variants={fadeInUp}
-                            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-semibold uppercase tracking-wider mb-8"
-                            role="status"
-                            aria-label="Version 2.0 now live with 300,000+ members supported"
-                        >
-                            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" aria-hidden="true" />
+                        <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-emerald-500/[0.08] border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-10 backdrop-blur-sm" role="status" aria-label="Version 2.0 now live with 300,000+ members supported">
+                            <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" /></span>
                             v2.0 Now Live — 300K+ Members Supported
                         </motion.div>
 
-                        <motion.h1
-                            id="hero-heading"
-                            initial="hidden"
-                            animate="visible"
-                            variants={fadeInUp}
-                            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.1]"
-                        >
-                            Structural Analysis{' '}
-                            <br className="hidden sm:block" />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400">
-                            Reimagined for Web
-                        </span>
-                    </motion.h1>
+                        <motion.h1 id="hero-heading" initial="hidden" animate="visible" variants={fadeInUp} className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.5rem] xl:text-[5rem] font-extrabold tracking-[-0.02em] mb-8 leading-[1.08]">
+                            Structural Analysis{' '}<br className="hidden sm:block" />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-violet-400 to-cyan-400 animate-gradient" style={{ backgroundSize: '200% auto' }}>Reimagined for Web</span>
+                        </motion.h1>
 
-                    <motion.p
-                        initial="hidden"
-                        animate="visible"
-                        variants={fadeInUp}
-                        className="max-w-2xl mx-auto text-base sm:text-lg md:text-xl text-slate-400 mb-10 leading-relaxed px-4"
-                    >
-                        Free, instant, and professional-grade FEA in your browser.
-                        No installation required. Real-time 3D visualization, AI-powered design,
-                        and professional reporting — all in one platform.
-                    </motion.p>
+                        <motion.p initial="hidden" animate="visible" variants={fadeInUp} className="max-w-2xl mx-auto text-base sm:text-lg md:text-xl text-slate-400 mb-12 leading-relaxed px-4">
+                            Professional-grade FEA in your browser — no install, no license servers. Real-time 3D visualization, AI-powered design, and code-compliant reporting.
+                        </motion.p>
 
-                    <motion.div
-                        initial="hidden"
-                        animate="visible"
-                        variants={fadeInUp}
-                        className="flex flex-col sm:flex-row items-center justify-center gap-6 px-4"
-                    >
-                        <button
-                            onClick={handleGetStarted}
-                            className="group relative w-full sm:w-auto h-14 px-8 rounded-full bg-white text-slate-950 font-bold text-base hover:bg-slate-100 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_40px_rgba(255,255,255,0.6)] flex items-center justify-center gap-2 overflow-hidden"
-                        >
-                            <span className="relative z-10 flex items-center gap-2">
-                                Start Analyzing Free <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                            </span>
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full group-hover:animate-shimmer" />
-                        </button>
-                        <button
-                            onClick={() => navigate('/demo')}
-                            className="group w-full sm:w-auto h-14 px-8 rounded-full bg-slate-800/50 backdrop-blur-sm border border-slate-700 text-white font-medium hover:bg-slate-800 hover:border-slate-600 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
-                        >
-                            <Play className="w-4 h-4 fill-current group-hover:scale-110 transition-transform" /> View Live Demo
-                        </button>
-                    </motion.div>
+                        <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="flex flex-col sm:flex-row items-center justify-center gap-4 px-4">
+                            <button onClick={handleGetStarted} className="group relative w-full sm:w-auto h-14 px-10 rounded-full bg-white text-slate-950 font-bold text-base hover:bg-blue-50 transition-all shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_4px_30px_rgba(59,130,246,0.15)] hover:shadow-[0_0_0_1px_rgba(255,255,255,0.2),0_8px_40px_rgba(59,130,246,0.3)] flex items-center justify-center gap-2.5 overflow-hidden active:scale-[0.98]">
+                                <span className="relative z-10 flex items-center gap-2">Start Analyzing Free <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></span>
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-100/60 to-transparent -translate-x-full group-hover:animate-shimmer" />
+                            </button>
+                            <button onClick={() => navigate('/demo')} className="group w-full sm:w-auto h-14 px-8 rounded-full bg-white/[0.04] backdrop-blur-md border border-white/10 text-white font-medium hover:bg-white/[0.08] hover:border-white/20 transition-all flex items-center justify-center gap-2.5 active:scale-[0.98]">
+                                <Play className="w-4 h-4 fill-current group-hover:scale-110 transition-transform" /> View Live Demo
+                            </button>
+                        </motion.div>
 
-                    {/* Social Proof */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.8 }}
-                        className="mt-16 flex flex-col items-center gap-4"
-                    >
-                        <p className="text-sm text-slate-400 uppercase tracking-wider font-semibold">Trusted by engineers at</p>
-                        <div className="flex flex-wrap items-center justify-center gap-8 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-                            {TRUSTED_COMPANIES.map((company) => (
-                                <div key={company} className="px-4 py-2 text-lg font-bold text-slate-300">
-                                    {company}
-                                </div>
-                            ))}
-                        </div>
-                    </motion.div>
-
-                    {/* Dashboard Preview */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 50 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4, duration: 0.8 }}
-                        className="mt-20 relative mx-auto max-w-5xl group"
-                    >
-                        <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl blur opacity-20 group-hover:opacity-40 transition-opacity duration-1000" />
-                        <div className="relative rounded-xl border border-slate-800 bg-slate-900/80 backdrop-blur shadow-2xl overflow-hidden aspect-video flex items-center justify-center">
-                            {/* Animated Preview Placeholder */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-                                {/* Grid pattern overlay */}
-                                <div className="absolute inset-0 opacity-20" style={{ 
-                                    backgroundImage: 'linear-gradient(to right, #334155 1px, transparent 1px), linear-gradient(to bottom, #334155 1px, transparent 1px)',
-                                    backgroundSize: '40px 40px'
-                                }} />
-                                {/* Animated structure elements */}
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-48">
-                                    {/* Beam representation */}
-                                    <div className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500 rounded-full animate-pulse" />
-                                    {/* Support nodes */}
-                                    <div className="absolute bottom-0 left-0 w-4 h-4 bg-blue-500 rounded-sm rotate-45 animate-bounce" style={{ animationDelay: '0s' }} />
-                                    <div className="absolute bottom-0 right-0 w-4 h-4 bg-purple-500 rounded-sm rotate-45 animate-bounce" style={{ animationDelay: '0.2s' }} />
-                                    {/* Column lines */}
-                                    <div className="absolute bottom-0 left-2 w-0.5 h-20 bg-gradient-to-t from-blue-500/50 to-transparent" />
-                                    <div className="absolute bottom-0 right-2 w-0.5 h-20 bg-gradient-to-t from-purple-500/50 to-transparent" />
-                                </div>
+                        {/* Social Proof */}
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="mt-20 flex flex-col items-center gap-5">
+                            <p className="text-xs text-slate-500 uppercase tracking-[0.2em] font-medium">Trusted by engineers at</p>
+                            <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
+                                {TRUSTED_COMPANIES.map((company) => (
+                                    <div key={company} className="px-3 py-1.5 text-base sm:text-lg font-bold text-slate-500/70 hover:text-slate-300 transition-colors duration-300 tracking-wide">{company}</div>
+                                ))}
                             </div>
-                            <span className="relative z-10 px-4 py-2 bg-slate-900/80 rounded-full text-slate-400 font-medium text-sm border border-slate-700/50 backdrop-blur-sm">
-                                <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse" />
-                                Interactive 3D Canvas
-                            </span>
-                        </div>
-                    </motion.div>
-                </div>
-            </section>
+                        </motion.div>
+
+                        {/* Dashboard Preview */}
+                        <motion.div initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 1, ease: [0.25, 0.1, 0.25, 1] }} className="mt-24 relative mx-auto max-w-5xl group">
+                            <div className="absolute -inset-px bg-gradient-to-r from-blue-500/50 via-violet-500/50 to-cyan-500/50 rounded-2xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-violet-500/20 to-cyan-500/20 rounded-2xl blur-xl opacity-40" />
+                            <div className="relative rounded-2xl border border-white/[0.08] bg-slate-900/90 backdrop-blur-xl shadow-[0_20px_80px_rgba(0,0,0,0.5)] overflow-hidden aspect-video flex items-center justify-center">
+                                <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800/80 to-slate-900">
+                                    <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'linear-gradient(to right, #94a3b8 1px, transparent 1px), linear-gradient(to bottom, #94a3b8 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+                                    {/* Animated beam structure visualization */}
+                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-56">
+                                        {/* Beam */}
+                                        <div className="absolute top-1/2 left-8 right-8 h-1 bg-gradient-to-r from-blue-500 via-violet-400 to-cyan-500 rounded-full shadow-[0_0_20px_rgba(99,102,241,0.4)]" />
+                                        {/* Support triangles */}
+                                        <svg className="absolute bottom-12 left-6" width="24" height="20" viewBox="0 0 24 20"><polygon points="12,0 24,20 0,20" fill="none" stroke="#60a5fa" strokeWidth="2" /></svg>
+                                        <svg className="absolute bottom-12 right-6" width="24" height="20" viewBox="0 0 24 20"><polygon points="12,0 24,20 0,20" fill="none" stroke="#a78bfa" strokeWidth="2" /></svg>
+                                        {/* Vertical columns */}
+                                        <div className="absolute bottom-12 left-[18px] w-0.5 h-24 bg-gradient-to-t from-blue-500/60 to-transparent" />
+                                        <div className="absolute bottom-12 right-[18px] w-0.5 h-24 bg-gradient-to-t from-violet-500/60 to-transparent" />
+                                        {/* Load arrows */}
+                                        <div className="absolute top-6 left-1/3 flex flex-col items-center opacity-60"><div className="w-0.5 h-8 bg-red-400" /><div className="w-0 h-0 border-l-[4px] border-r-[4px] border-t-[6px] border-l-transparent border-r-transparent border-t-red-400" /></div>
+                                        <div className="absolute top-6 left-1/2 flex flex-col items-center opacity-60"><div className="w-0.5 h-12 bg-red-400" /><div className="w-0 h-0 border-l-[4px] border-r-[4px] border-t-[6px] border-l-transparent border-r-transparent border-t-red-400" /></div>
+                                        <div className="absolute top-6 right-1/3 flex flex-col items-center opacity-60"><div className="w-0.5 h-8 bg-red-400" /><div className="w-0 h-0 border-l-[4px] border-r-[4px] border-t-[6px] border-l-transparent border-r-transparent border-t-red-400" /></div>
+                                        {/* Nodes */}
+                                        <div className="absolute top-[calc(50%-3px)] left-8 w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)]" />
+                                        <div className="absolute top-[calc(50%-3px)] right-8 w-1.5 h-1.5 rounded-full bg-violet-400 shadow-[0_0_8px_rgba(167,139,250,0.8)]" />
+                                        <div className="absolute top-[calc(50%-3px)] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+                                    </div>
+                                </div>
+                                {/* Top bar mock */}
+                                <div className="absolute top-0 inset-x-0 h-10 bg-slate-800/60 backdrop-blur-sm border-b border-white/[0.05] flex items-center px-4 gap-2">
+                                    <div className="flex gap-1.5"><div className="w-3 h-3 rounded-full bg-red-500/60" /><div className="w-3 h-3 rounded-full bg-yellow-500/60" /><div className="w-3 h-3 rounded-full bg-green-500/60" /></div>
+                                    <div className="flex-1 text-center"><span className="text-[11px] text-slate-500 font-medium">BeamLab — 3D Structural Analysis</span></div>
+                                </div>
+                                <span className="relative z-10 px-5 py-2.5 bg-slate-900/80 rounded-full text-slate-300 font-medium text-sm border border-white/[0.08] backdrop-blur-md shadow-lg">
+                                    <span className="relative flex h-2 w-2 mr-2.5 inline-flex"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" /></span>Interactive 3D Canvas
+                                </span>
+                            </div>
+                        </motion.div>
+                    </div>
+                </section>
 
             {/* Features Grid */}
-            <section id="features" className="py-20 sm:py-24 bg-slate-950 relative">
+            <section id="features" className="py-24 sm:py-32 bg-slate-950 relative">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-12 sm:mb-16">
-                        <motion.span
-                            initial={{ opacity: 0 }}
-                            whileInView={{ opacity: 1 }}
-                            viewport={{ once: true }}
-                            className="inline-block text-blue-400 text-sm font-semibold uppercase tracking-wider mb-4"
-                        >
-                            Features
-                        </motion.span>
-                        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 px-4">
-                            Everything Engineers Need
-                        </h2>
-                        <p className="mt-4 text-slate-400 max-w-2xl mx-auto text-sm sm:text-base px-4">
-                            Professional-grade structural analysis tools powered by modern web technologies.
-                            From simple beams to complex 3D frames — we've got you covered.
-                        </p>
+                    <div className="text-center mb-14 sm:mb-20">
+                        <motion.span initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="inline-block text-blue-400 text-xs font-semibold uppercase tracking-[0.2em] mb-5">Features</motion.span>
+                        <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-400 px-4 tracking-[-0.02em]">Everything Engineers Need</h2>
+                        <p className="mt-5 text-slate-400 max-w-2xl mx-auto text-sm sm:text-base px-4 leading-relaxed">Professional-grade structural analysis tools powered by modern web technologies. From simple beams to complex 3D frames — we've got you covered.</p>
                     </div>
 
                     <motion.div
@@ -365,23 +316,12 @@ export const LandingPage: FC = () => {
             </section>
 
             {/* Pricing Section */}
-            <section id="pricing" className="py-20 sm:py-24 bg-slate-900/50">
+            <section id="pricing" className="py-24 sm:py-32 bg-slate-900/30">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-12 sm:mb-16">
-                        <motion.span
-                            initial={{ opacity: 0 }}
-                            whileInView={{ opacity: 1 }}
-                            viewport={{ once: true }}
-                            className="inline-block text-blue-400 text-sm font-semibold uppercase tracking-wider mb-4"
-                        >
-                            Pricing
-                        </motion.span>
-                        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4 px-4">
-                            Simple, Transparent Pricing
-                        </h2>
-                        <p className="text-slate-400 max-w-2xl mx-auto text-sm sm:text-base px-4">
-                            Choose the perfect plan for your engineering needs. All plans include core analysis features.
-                        </p>
+                    <div className="text-center mb-14 sm:mb-20">
+                        <motion.span initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="inline-block text-blue-400 text-xs font-semibold uppercase tracking-[0.2em] mb-5">Pricing</motion.span>
+                        <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-5 px-4 tracking-[-0.02em]">Simple, Transparent Pricing</h2>
+                        <p className="text-slate-400 max-w-2xl mx-auto text-sm sm:text-base px-4 leading-relaxed">Choose the perfect plan for your engineering needs. All plans include core analysis features.</p>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
@@ -393,8 +333,8 @@ export const LandingPage: FC = () => {
                                 viewport={{ once: true }}
                                 transition={{ delay: index * 0.1 }}
                                 className={`relative flex flex-col rounded-2xl sm:rounded-3xl p-6 sm:p-8 ${tier.popular
-                                    ? 'bg-slate-900 border-2 border-blue-500/50 shadow-2xl shadow-blue-500/10 lg:scale-105 z-10'
-                                    : 'bg-slate-950 border border-slate-800 hover:border-slate-700 transition-all'
+                                    ? 'bg-slate-900/90 border-2 border-blue-500/40 shadow-[0_0_60px_rgba(59,130,246,0.12)] lg:scale-105 z-10 backdrop-blur-sm'
+                                    : 'bg-slate-950/80 border border-white/[0.06] hover:border-white/[0.12] transition-all duration-300'
                                     }`}
                             >
                                 {tier.popular && (
@@ -454,7 +394,7 @@ export const LandingPage: FC = () => {
             </main>
 
             {/* Footer */}
-            <footer className="border-t border-slate-800 py-12 sm:py-16 bg-slate-950" role="contentinfo">
+            <footer className="border-t border-white/[0.06] py-14 sm:py-20 bg-slate-950" role="contentinfo">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
                         <div className="col-span-2">
@@ -513,17 +453,19 @@ export const LandingPage: FC = () => {
 const FeatureCard = ({ icon, title, desc, bullets }: { icon: any, title: string, desc: string, bullets: string[] }) => (
     <motion.div
         variants={fadeInUp}
-        className="p-6 sm:p-8 rounded-2xl bg-slate-900 border border-slate-800 hover:border-blue-500/30 hover:bg-slate-800/50 transition-all group h-full flex flex-col hover-lift focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2 focus-within:ring-offset-slate-950"
+        className="relative p-6 sm:p-8 rounded-2xl bg-slate-900/80 border border-white/[0.06] hover:border-blue-500/30 transition-all duration-300 group h-full flex flex-col hover-lift focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2 focus-within:ring-offset-slate-950 overflow-hidden"
     >
-        <div className="w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center mb-6 group-hover:bg-blue-500/20 group-hover:text-blue-400 transition-colors flex-shrink-0">
+        {/* Top gradient accent */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="w-11 h-11 rounded-xl bg-blue-500/[0.08] border border-blue-500/10 flex items-center justify-center mb-5 group-hover:bg-blue-500/15 group-hover:border-blue-500/20 group-hover:text-blue-400 text-slate-400 transition-all duration-300 flex-shrink-0">
             {icon}
         </div>
-        <h3 className="text-lg sm:text-xl font-bold text-slate-100 mb-3">{title}</h3>
-        <p className="text-slate-400 leading-relaxed text-sm mb-6 flex-grow">{desc}</p>
-        <ul className="space-y-2 mt-auto">
+        <h3 className="text-lg font-semibold text-white mb-2.5 tracking-[-0.01em]">{title}</h3>
+        <p className="text-slate-400 leading-relaxed text-[0.8125rem] mb-6 flex-grow">{desc}</p>
+        <ul className="space-y-2.5 mt-auto">
             {bullets.map((bullet, i) => (
-                <li key={i} className="flex items-center gap-2 text-xs text-slate-400">
-                    <CheckCircle className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+                <li key={i} className="flex items-center gap-2.5 text-xs text-slate-400">
+                    <CheckCircle className="w-3.5 h-3.5 text-blue-400/70 flex-shrink-0" />
                     <span>{bullet}</span>
                 </li>
             ))}
