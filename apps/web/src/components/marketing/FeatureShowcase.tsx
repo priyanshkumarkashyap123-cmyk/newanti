@@ -29,19 +29,19 @@ import {
 // ============================================
 
 export const CompetitiveAdvantage: FC = () => {
-  const competitors = [
-    { name: 'ETABS/SAP2000', weaknesses: ['Expensive licenses', 'Desktop-only', 'Slow updates'] },
-    { name: 'Robot Structural', weaknesses: ['Complex UI', 'Limited collaboration', 'Resource heavy'] },
-    { name: 'STAAD.Pro', weaknesses: ['Outdated interface', 'License servers', 'No cloud'] },
+  const painPoints = [
+    { label: 'Expensive Licensing', desc: 'Per-seat desktop licences that lock teams into annual contracts' },
+    { label: 'Desktop-Only Workflow', desc: 'Install, configure, and maintain software on every machine' },
+    { label: 'Limited Collaboration', desc: 'Sharing models means emailing files back and forth' },
   ];
 
   const advantages = [
-    { icon: <Globe className="w-5 h-5" />, text: 'Works everywhere - browser based' },
-    { icon: <Zap className="w-5 h-5" />, text: '10x faster with Rust/WASM engine' },
-    { icon: <Users className="w-5 h-5" />, text: 'Real-time collaboration built-in' },
-    { icon: <Brain className="w-5 h-5" />, text: 'AI-powered design assistance' },
-    { icon: <Smartphone className="w-5 h-5" />, text: 'AR/VR visualization included' },
-    { icon: <Cloud className="w-5 h-5" />, text: 'Auto-save & cloud backup' },
+    { icon: <Globe className="w-5 h-5" />, text: 'Browser-based — zero installation, any device' },
+    { icon: <Zap className="w-5 h-5" />, text: 'WebAssembly solver — near-native speed in the browser' },
+    { icon: <Users className="w-5 h-5" />, text: 'Real-time collaboration on the same model' },
+    { icon: <Brain className="w-5 h-5" />, text: 'AI design assistant for rapid model creation' },
+    { icon: <Cloud className="w-5 h-5" />, text: 'Auto-save & cloud backup — nothing to lose' },
+    { icon: <Smartphone className="w-5 h-5" />, text: 'Responsive layout — review on tablet or phone' },
   ];
 
   return (
@@ -55,33 +55,27 @@ export const CompetitiveAdvantage: FC = () => {
             Built for the Modern Engineer
           </h2>
           <p className="text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            We studied what's broken in existing tools and built something better.
+            Traditional desktop FEA tools haven't changed in decades. We're building something better.
           </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Competitor Pain Points */}
+          {/* Industry pain points — generic, factual */}
           <div className="space-y-6">
             <h3 className="text-xl font-semibold text-slate-300 mb-6">
-              Traditional tools are holding you back
+              Common pain points in structural software
             </h3>
-            {competitors.map((comp, i) => (
+            {painPoints.map((item, i) => (
               <motion.div
-                key={comp.name}
+                key={item.label}
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
                 className="p-4 rounded-xl bg-red-500/[0.04] border border-red-500/15"
               >
-                <p className="font-medium text-slate-300 mb-2">{comp.name}</p>
-                <div className="flex flex-wrap gap-2">
-                  {comp.weaknesses.map((w) => (
-                    <span key={w} className="text-xs px-2 py-1 rounded-full bg-red-500/10 text-red-400">
-                      ✗ {w}
-                    </span>
-                  ))}
-                </div>
+                <p className="font-medium text-slate-300 mb-1">{item.label}</p>
+                <p className="text-sm text-slate-400">{item.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -121,10 +115,10 @@ export const CompetitiveAdvantage: FC = () => {
 
 export const PerformanceMetrics: FC = () => {
   const metrics = [
-    { value: '0.3ms', label: '100-DOF Solve Time', comparison: 'vs 5ms traditional' },
-    { value: '300K+', label: 'Max Elements', comparison: 'GPU-accelerated' },
-    { value: '15x', label: 'Faster with WebGPU', comparison: 'Matrix operations' },
-    { value: '99.9%', label: 'Uptime SLA', comparison: 'Enterprise tier' },
+    { value: '<1s', label: '100-DOF Solve', comparison: 'WebAssembly solver' },
+    { value: '10K+', label: 'Max Members', comparison: 'With instanced rendering' },
+    { value: '3x', label: 'Faster with WebGPU', comparison: 'On supported browsers' },
+    { value: '24/7', label: 'Cloud Access', comparison: 'No license dongles' },
   ];
 
   return (
@@ -266,27 +260,27 @@ export const InteractiveDemo: FC = () => {
 export const Testimonials: FC = () => {
   const testimonials = [
     {
-      quote: "BeamLab has transformed how our team collaborates on structural projects. The real-time features are game-changing.",
-      author: "Priya Sharma",
-      role: "Senior Structural Engineer",
-      company: "Thornton Tomasetti India",
-      avatar: "PS",
+      quote: "I used to spend an hour just setting up a model in desktop software. BeamLab let me build and solve a 3-storey frame in my lunch break.",
+      author: "Beta Tester",
+      role: "Structural Engineer",
+      company: "Consulting Firm, India",
+      avatar: "SE",
       gradient: "from-pink-500 to-rose-500"
     },
     {
-      quote: "Finally, a structural analysis tool that feels modern. The AI assistant alone has saved me hours on every project.",
-      author: "James Chen",
-      role: "Principal Engineer",
-      company: "Arup Singapore",
-      avatar: "JC",
+      quote: "The step-by-step calculation output is brilliant for teaching. My students can finally see what happens inside the stiffness method.",
+      author: "Early Adopter",
+      role: "Associate Professor, Civil Engg.",
+      company: "University",
+      avatar: "AP",
       gradient: "from-blue-500 to-cyan-500"
     },
     {
-      quote: "We switched from ETABS and haven't looked back. The browser-based approach makes our remote team incredibly efficient.",
-      author: "Maria Rodriguez",
-      role: "Structural Lead",
-      company: "WSP Mexico",
-      avatar: "MR",
+      quote: "Being browser-based means I can pull up a model on-site from my tablet and check results without going back to the office.",
+      author: "Beta Tester",
+      role: "Project Engineer",
+      company: "Design-Build Contractor",
+      avatar: "PE",
       gradient: "from-emerald-500 to-teal-500"
     }
   ];
@@ -345,10 +339,10 @@ export const Testimonials: FC = () => {
 
 export const SecurityCompliance: FC = () => {
   const badges = [
-    { icon: <Lock className="w-6 h-6" />, label: 'SOC 2 Type II', desc: 'Enterprise security' },
-    { icon: <Shield className="w-6 h-6" />, label: 'GDPR Compliant', desc: 'Data protection' },
-    { icon: <Cloud className="w-6 h-6" />, label: '99.9% Uptime', desc: 'SLA guaranteed' },
-    { icon: <Cpu className="w-6 h-6" />, label: 'ISO 27001', desc: 'Info security' },
+    { icon: <Lock className="w-6 h-6" />, label: 'TLS Encryption', desc: '256-bit in transit' },
+    { icon: <Shield className="w-6 h-6" />, label: 'Data Privacy', desc: 'Your models stay yours' },
+    { icon: <Cloud className="w-6 h-6" />, label: 'Azure Hosted', desc: 'Geo-redundant storage' },
+    { icon: <Cpu className="w-6 h-6" />, label: 'OAuth 2.0', desc: 'Secure sign-in via Clerk' },
   ];
 
   return (
@@ -398,7 +392,7 @@ export const CTABanner: FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =>
           Ready to modernize your<br />structural workflow?
         </h2>
         <p className="text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-          Join 300,000+ engineers who've already made the switch. Start free, no credit card required.
+          Start analyzing structures in your browser today. Free plan, no credit card required.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

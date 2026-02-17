@@ -208,9 +208,9 @@ export const LandingPage: FC = () => {
                     </div>
 
                     <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                        <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-emerald-500/[0.08] border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-10 backdrop-blur-sm" role="status" aria-label="Version 2.0 now live with 300,000+ members supported">
+                        <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-emerald-500/[0.08] border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-10 backdrop-blur-sm" role="status" aria-label="Version 2.0 now live — open beta">
                             <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" /></span>
-                            v2.0 Now Live — 300K+ Members Supported
+                            v2.0 Now Live — Open Beta
                         </motion.div>
 
                         <motion.h1 id="hero-heading" initial="hidden" animate="visible" variants={fadeInUp} className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.5rem] xl:text-[5rem] font-extrabold tracking-[-0.02em] mb-8 leading-[1.08]">
@@ -234,49 +234,127 @@ export const LandingPage: FC = () => {
 
                         {/* Social Proof */}
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="mt-20 flex flex-col items-center gap-5">
-                            <p className="text-xs text-slate-500 uppercase tracking-[0.2em] font-medium">Trusted by engineers at</p>
+                            <p className="text-xs text-slate-500 uppercase tracking-[0.2em] font-medium">Built for professionals across</p>
                             <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
-                                {TRUSTED_COMPANIES.map((company) => (
-                                    <div key={company} className="px-3 py-1.5 text-base sm:text-lg font-bold text-slate-500/70 hover:text-slate-300 transition-colors duration-300 tracking-wide">{company}</div>
+                                {INDUSTRY_SEGMENTS.map((segment) => (
+                                    <div key={segment} className="px-3 py-1.5 text-base sm:text-lg font-bold text-slate-500/70 hover:text-slate-300 transition-colors duration-300 tracking-wide">{segment}</div>
                                 ))}
                             </div>
                         </motion.div>
 
-                        {/* Dashboard Preview */}
+                        {/* Dashboard Preview — Realistic Product UI Mock */}
                         <motion.div initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 1, ease: [0.25, 0.1, 0.25, 1] }} className="mt-24 relative mx-auto max-w-5xl group">
                             <div className="absolute -inset-px bg-gradient-to-r from-blue-500/50 via-violet-500/50 to-cyan-500/50 rounded-2xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                             <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-violet-500/20 to-cyan-500/20 rounded-2xl blur-xl opacity-40" />
-                            <div className="relative rounded-2xl border border-white/[0.08] bg-slate-900/90 backdrop-blur-xl shadow-[0_20px_80px_rgba(0,0,0,0.5)] overflow-hidden aspect-video flex items-center justify-center">
-                                <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800/80 to-slate-900">
-                                    <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'linear-gradient(to right, #94a3b8 1px, transparent 1px), linear-gradient(to bottom, #94a3b8 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
-                                    {/* Animated beam structure visualization */}
-                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-56">
-                                        {/* Beam */}
-                                        <div className="absolute top-1/2 left-8 right-8 h-1 bg-gradient-to-r from-blue-500 via-violet-400 to-cyan-500 rounded-full shadow-[0_0_20px_rgba(99,102,241,0.4)]" />
-                                        {/* Support triangles */}
-                                        <svg className="absolute bottom-12 left-6" width="24" height="20" viewBox="0 0 24 20"><polygon points="12,0 24,20 0,20" fill="none" stroke="#60a5fa" strokeWidth="2" /></svg>
-                                        <svg className="absolute bottom-12 right-6" width="24" height="20" viewBox="0 0 24 20"><polygon points="12,0 24,20 0,20" fill="none" stroke="#a78bfa" strokeWidth="2" /></svg>
-                                        {/* Vertical columns */}
-                                        <div className="absolute bottom-12 left-[18px] w-0.5 h-24 bg-gradient-to-t from-blue-500/60 to-transparent" />
-                                        <div className="absolute bottom-12 right-[18px] w-0.5 h-24 bg-gradient-to-t from-violet-500/60 to-transparent" />
-                                        {/* Load arrows */}
-                                        <div className="absolute top-6 left-1/3 flex flex-col items-center opacity-60"><div className="w-0.5 h-8 bg-red-400" /><div className="w-0 h-0 border-l-[4px] border-r-[4px] border-t-[6px] border-l-transparent border-r-transparent border-t-red-400" /></div>
-                                        <div className="absolute top-6 left-1/2 flex flex-col items-center opacity-60"><div className="w-0.5 h-12 bg-red-400" /><div className="w-0 h-0 border-l-[4px] border-r-[4px] border-t-[6px] border-l-transparent border-r-transparent border-t-red-400" /></div>
-                                        <div className="absolute top-6 right-1/3 flex flex-col items-center opacity-60"><div className="w-0.5 h-8 bg-red-400" /><div className="w-0 h-0 border-l-[4px] border-r-[4px] border-t-[6px] border-l-transparent border-r-transparent border-t-red-400" /></div>
-                                        {/* Nodes */}
-                                        <div className="absolute top-[calc(50%-3px)] left-8 w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)]" />
-                                        <div className="absolute top-[calc(50%-3px)] right-8 w-1.5 h-1.5 rounded-full bg-violet-400 shadow-[0_0_8px_rgba(167,139,250,0.8)]" />
-                                        <div className="absolute top-[calc(50%-3px)] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+                            <div className="relative rounded-2xl border border-white/[0.08] bg-slate-900/90 backdrop-blur-xl shadow-[0_20px_80px_rgba(0,0,0,0.5)] overflow-hidden aspect-video">
+                                {/* Title bar */}
+                                <div className="absolute top-0 inset-x-0 h-10 bg-slate-800/60 backdrop-blur-sm border-b border-white/[0.05] flex items-center px-4 gap-2 z-20">
+                                    <div className="flex gap-1.5"><div className="w-3 h-3 rounded-full bg-red-500/60" /><div className="w-3 h-3 rounded-full bg-yellow-500/60" /><div className="w-3 h-3 rounded-full bg-green-500/60" /></div>
+                                    <div className="flex-1 text-center"><span className="text-[11px] text-slate-500 font-medium">BeamLab Ultimate — G+4 Residential Block.blp</span></div>
+                                </div>
+
+                                {/* Left toolbar */}
+                                <div className="absolute top-10 left-0 bottom-0 w-12 bg-slate-800/40 border-r border-white/[0.05] flex flex-col items-center py-3 gap-3 z-10">
+                                    {['deployed_code','straighten','open_with','crop_free','visibility','grid_on','undo'].map((icon,i) => (
+                                        <div key={i} className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs ${i === 0 ? 'bg-blue-500/20 text-blue-400' : 'text-slate-600 hover:text-slate-400'} transition-colors`}>
+                                            <span className="material-symbols-outlined text-[16px]">{icon}</span>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Right properties panel */}
+                                <div className="absolute top-10 right-0 bottom-0 w-52 bg-slate-800/30 border-l border-white/[0.05] p-3 z-10 hidden sm:block">
+                                    <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-2 font-semibold">Properties</div>
+                                    <div className="space-y-2">
+                                        <div className="bg-slate-900/50 rounded-lg p-2">
+                                            <div className="text-[10px] text-slate-400 mb-1">Section</div>
+                                            <div className="text-[11px] text-white font-medium">ISMB 300</div>
+                                        </div>
+                                        <div className="bg-slate-900/50 rounded-lg p-2">
+                                            <div className="text-[10px] text-slate-400 mb-1">Material</div>
+                                            <div className="text-[11px] text-white font-medium">Fe 500 / M30</div>
+                                        </div>
+                                        <div className="bg-slate-900/50 rounded-lg p-2">
+                                            <div className="text-[10px] text-slate-400 mb-1">Max Bending</div>
+                                            <div className="text-[11px] text-emerald-400 font-mono font-medium">142.6 kN·m</div>
+                                        </div>
+                                        <div className="bg-slate-900/50 rounded-lg p-2">
+                                            <div className="text-[10px] text-slate-400 mb-1">Unity Check</div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden"><div className="h-full w-[72%] bg-emerald-500 rounded-full" /></div>
+                                                <span className="text-[11px] text-emerald-400 font-mono">0.72</span>
+                                            </div>
+                                        </div>
+                                        <div className="bg-slate-900/50 rounded-lg p-2">
+                                            <div className="text-[10px] text-slate-400 mb-1">Deflection</div>
+                                            <div className="text-[11px] text-white font-mono">L/386 <span className="text-emerald-400 ml-1">OK</span></div>
+                                        </div>
                                     </div>
                                 </div>
-                                {/* Top bar mock */}
-                                <div className="absolute top-0 inset-x-0 h-10 bg-slate-800/60 backdrop-blur-sm border-b border-white/[0.05] flex items-center px-4 gap-2">
-                                    <div className="flex gap-1.5"><div className="w-3 h-3 rounded-full bg-red-500/60" /><div className="w-3 h-3 rounded-full bg-yellow-500/60" /><div className="w-3 h-3 rounded-full bg-green-500/60" /></div>
-                                    <div className="flex-1 text-center"><span className="text-[11px] text-slate-500 font-medium">BeamLab — 3D Structural Analysis</span></div>
+
+                                {/* Main viewport with frame structure */}
+                                <div className="absolute top-10 left-12 right-0 sm:right-52 bottom-8 bg-gradient-to-br from-slate-900 via-slate-800/80 to-slate-900">
+                                    <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'linear-gradient(to right, #94a3b8 1px, transparent 1px), linear-gradient(to bottom, #94a3b8 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+                                    {/* 3-storey 2-bay frame structure */}
+                                    <svg viewBox="0 0 400 280" className="absolute inset-4 w-[calc(100%-2rem)] h-[calc(100%-2rem)]" preserveAspectRatio="xMidYMid meet">
+                                        {/* Ground line */}
+                                        <line x1="40" y1="250" x2="360" y2="250" stroke="#475569" strokeWidth="1" strokeDasharray="4,4" />
+                                        {/* Columns */}
+                                        {[100,200,300].map((x,i) => (
+                                            <g key={`col-${i}`}>
+                                                <line x1={x} y1="250" x2={x} y2="70" stroke="#60a5fa" strokeWidth="2.5" />
+                                                {/* Nodes at floor levels */}
+                                                <circle cx={x} cy={250} r="3.5" fill="#3b82f6" />
+                                                <circle cx={x} cy={190} r="3" fill="#60a5fa" className="animate-pulse" style={{ animationDelay: `${i*0.3}s` }} />
+                                                <circle cx={x} cy={130} r="3" fill="#60a5fa" className="animate-pulse" style={{ animationDelay: `${i*0.3+0.15}s` }} />
+                                                <circle cx={x} cy={70} r="3" fill="#60a5fa" className="animate-pulse" style={{ animationDelay: `${i*0.3+0.3}s` }} />
+                                            </g>
+                                        ))}
+                                        {/* Beams — Floor 1 */}
+                                        <line x1="100" y1="190" x2="200" y2="190" stroke="#a78bfa" strokeWidth="2" />
+                                        <line x1="200" y1="190" x2="300" y2="190" stroke="#a78bfa" strokeWidth="2" />
+                                        {/* Beams — Floor 2 */}
+                                        <line x1="100" y1="130" x2="200" y2="130" stroke="#a78bfa" strokeWidth="2" />
+                                        <line x1="200" y1="130" x2="300" y2="130" stroke="#a78bfa" strokeWidth="2" />
+                                        {/* Beams — Roof */}
+                                        <line x1="100" y1="70" x2="200" y2="70" stroke="#a78bfa" strokeWidth="2" />
+                                        <line x1="200" y1="70" x2="300" y2="70" stroke="#a78bfa" strokeWidth="2" />
+                                        {/* Supports — Fixed */}
+                                        {[100,200,300].map((x,i) => (
+                                            <g key={`sup-${i}`}>
+                                                <rect x={x-6} y={250} width={12} height={4} fill="#60a5fa" rx="1" />
+                                                {[0,1,2,3].map(j => <line key={j} x1={x-6+j*4} y1={254} x2={x-8+j*4} y2={258} stroke="#60a5fa" strokeWidth="1" />)}
+                                            </g>
+                                        ))}
+                                        {/* Load arrows on roof */}
+                                        {[120,150,180,220,250,280].map((x,i) => (
+                                            <g key={`load-${i}`} opacity={0.5}>
+                                                <line x1={x} y1="45" x2={x} y2="66" stroke="#f87171" strokeWidth="1" />
+                                                <polygon points={`${x-3},66 ${x+3},66 ${x},72`} fill="#f87171" />
+                                            </g>
+                                        ))}
+                                        {/* Deformed shape overlay */}
+                                        <path d="M100,190 Q150,194 200,192 Q250,194 300,190" stroke="#22d3ee" strokeWidth="1" fill="none" strokeDasharray="3,3" opacity="0.5" />
+                                        <path d="M100,130 Q150,133 200,132 Q250,133 300,130" stroke="#22d3ee" strokeWidth="1" fill="none" strokeDasharray="3,3" opacity="0.5" />
+                                        {/* Floor labels */}
+                                        <text x="50" y="193" fill="#64748b" fontSize="8" textAnchor="end">1F</text>
+                                        <text x="50" y="133" fill="#64748b" fontSize="8" textAnchor="end">2F</text>
+                                        <text x="50" y="73" fill="#64748b" fontSize="8" textAnchor="end">RF</text>
+                                        {/* Dimension line */}
+                                        <line x1="100" y1="265" x2="200" y2="265" stroke="#475569" strokeWidth="0.5" />
+                                        <text x="150" y="272" fill="#64748b" fontSize="7" textAnchor="middle">5.0 m</text>
+                                    </svg>
                                 </div>
-                                <span className="relative z-10 px-5 py-2.5 bg-slate-900/80 rounded-full text-slate-300 font-medium text-sm border border-white/[0.08] backdrop-blur-md shadow-lg">
-                                    <span className="relative flex h-2 w-2 mr-2.5 inline-flex"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" /></span>Interactive 3D Canvas
-                                </span>
+
+                                {/* Status bar */}
+                                <div className="absolute bottom-0 inset-x-0 h-8 bg-slate-800/60 border-t border-white/[0.05] flex items-center px-4 justify-between z-20">
+                                    <div className="flex items-center gap-4 text-[10px] text-slate-500">
+                                        <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Analysis Complete</span>
+                                        <span>Nodes: 12</span>
+                                        <span>Members: 15</span>
+                                    </div>
+                                    <div className="text-[10px] text-slate-600">IS 456 : 2000 · IS 800 : 2007</div>
+                                </div>
                             </div>
                         </motion.div>
                     </div>
@@ -439,7 +517,7 @@ export const LandingPage: FC = () => {
                     </div>
 
                     <div className="pt-8 border-t border-slate-900 flex flex-col sm:flex-row justify-between items-center gap-4">
-                        <p className="text-slate-400 text-sm">© 2026 BeamLab Ultimate. All rights reserved.</p>
+                        <p className="text-slate-400 text-sm">© {new Date().getFullYear()} BeamLab Ultimate. All rights reserved.</p>
                         <p className="text-slate-400 text-xs">Made with ❤️ for structural engineers worldwide</p>
                     </div>
                 </div>
@@ -473,7 +551,7 @@ const FeatureCard = ({ icon, title, desc, bullets }: { icon: any, title: string,
     </motion.div>
 );
 
-const TRUSTED_COMPANIES = ['AECOM', 'Bechtel', 'Fluor', 'WSP', 'Jacobs'];
+const INDUSTRY_SEGMENTS = ['Consulting Firms', 'Universities', 'Contractors', 'Independent Engineers', 'Research Labs'];
 
 const FEATURES = [
     {
@@ -508,9 +586,9 @@ const FEATURES = [
     },
     {
         title: 'Large Structures',
-        desc: 'Handle massive models with up to 300,000 members using GPU-accelerated sparse solvers and instanced rendering.',
+        desc: 'Handle complex models with thousands of members using WebAssembly sparse solvers and instanced rendering for smooth 3D performance.',
         icon: <Cpu className="w-6 h-6" />,
-        bullets: ['300K+ members', 'Sparse matrix solvers', 'WebGPU acceleration'],
+        bullets: ['10K+ members', 'Sparse matrix solvers', 'WebGPU acceleration'],
     },
 ];
 
