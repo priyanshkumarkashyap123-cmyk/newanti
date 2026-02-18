@@ -252,8 +252,10 @@ export class StressContourRenderer {
   }
 
   /**
-   * Interpolate color from scale
+   * Interpolate color from scale.
+   * Returns a pooled Color - clone if you need to keep it.
    */
+  private static _poolColor = new THREE.Color();
   private interpolateColor(
     value: number,
     min: number,
@@ -266,9 +268,8 @@ export class StressContourRenderer {
     const highIndex = Math.min(lowIndex + 1, scale.length - 1);
     const localT = scaleIndex - lowIndex;
 
-    const color = new THREE.Color();
-    color.lerpColors(scale[lowIndex], scale[highIndex], localT);
-    return color;
+    StressContourRenderer._poolColor.lerpColors(scale[lowIndex], scale[highIndex], localT);
+    return StressContourRenderer._poolColor;
   }
 
   /**
@@ -382,6 +383,9 @@ export class StressContourRenderer {
       }
     }
     if (this.legendSprite) {
+      if (this.legendSprite.material.map) {
+        this.legendSprite.material.map.dispose();
+      }
       this.legendSprite.material.dispose();
       this.legendSprite = null;
     }
@@ -534,6 +538,14 @@ export class ModeShapeAnimator {
   private animationId: number = 0;
   private currentPhase: number = 0;
 
+  // Pre-allocated vectors to avoid per-frame GC pressure
+  private readonly _startPos = new THREE.Vector3();
+  private readonly _endPos = new THREE.Vector3();
+  private readonly _direction = new THREE.Vector3();
+  private readonly _midPoint = new THREE.Vector3();
+  private readonly _quaternion = new THREE.Quaternion();
+  private static readonly _UP = new THREE.Vector3(0, 1, 0);
+
   constructor(scene: THREE.Scene) {
     this.scene = scene;
     this.modeGroup = new THREE.Group();
@@ -605,30 +617,29 @@ export class ModeShapeAnimator {
       this.currentPhase += 0.03 * speed;
       const factor = Math.sin(this.currentPhase);
 
-      // Update member positions
+      // Update member positions using pre-allocated vectors
       this.modeGroup.traverse((child) => {
         if (child instanceof THREE.Mesh && child.userData.memberId) {
           const data = child.userData;
           
-          // Calculate displaced positions
-          const startPos = data.startOriginal.clone().add(
-            data.startDisp.clone().multiplyScalar(factor)
-          );
-          const endPos = data.endOriginal.clone().add(
-            data.endDisp.clone().multiplyScalar(factor)
-          );
+          // Calculate displaced positions using pre-allocated vectors
+          this._startPos.copy(data.startOriginal);
+          this._startPos.addScaledVector(data.startDisp, factor);
+
+          this._endPos.copy(data.endOriginal);
+          this._endPos.addScaledVector(data.endDisp, factor);
 
           // Update mesh
-          const direction = new THREE.Vector3().subVectors(endPos, startPos);
-          const length = direction.length();
-          const midPoint = new THREE.Vector3().addVectors(startPos, endPos).multiplyScalar(0.5);
+          this._direction.subVectors(this._endPos, this._startPos);
+          const length = this._direction.length();
+          this._midPoint.addVectors(this._startPos, this._endPos).multiplyScalar(0.5);
 
           child.scale.y = length;
-          child.position.copy(midPoint);
+          child.position.copy(this._midPoint);
           
-          const quaternion = new THREE.Quaternion();
-          quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
-          child.quaternion.copy(quaternion);
+          this._direction.normalize();
+          this._quaternion.setFromUnitVectors(ModeShapeAnimator._UP, this._direction);
+          child.quaternion.copy(this._quaternion);
         }
       });
 
@@ -660,23 +671,22 @@ export class ModeShapeAnimator {
       if (child instanceof THREE.Mesh && child.userData.memberId) {
         const data = child.userData;
         
-        const startPos = data.startOriginal.clone().add(
-          data.startDisp.clone().multiplyScalar(factor)
-        );
-        const endPos = data.endOriginal.clone().add(
-          data.endDisp.clone().multiplyScalar(factor)
-        );
+        this._startPos.copy(data.startOriginal);
+        this._startPos.addScaledVector(data.startDisp, factor);
 
-        const direction = new THREE.Vector3().subVectors(endPos, startPos);
-        const length = direction.length();
-        const midPoint = new THREE.Vector3().addVectors(startPos, endPos).multiplyScalar(0.5);
+        this._endPos.copy(data.endOriginal);
+        this._endPos.addScaledVector(data.endDisp, factor);
+
+        this._direction.subVectors(this._endPos, this._startPos);
+        const length = this._direction.length();
+        this._midPoint.addVectors(this._startPos, this._endPos).multiplyScalar(0.5);
 
         child.scale.y = length;
-        child.position.copy(midPoint);
+        child.position.copy(this._midPoint);
         
-        const quaternion = new THREE.Quaternion();
-        quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
-        child.quaternion.copy(quaternion);
+        this._direction.normalize();
+        this._quaternion.setFromUnitVectors(ModeShapeAnimator._UP, this._direction);
+        child.quaternion.copy(this._quaternion);
       }
     });
   }

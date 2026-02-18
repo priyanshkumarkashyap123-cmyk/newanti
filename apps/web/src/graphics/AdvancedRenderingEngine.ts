@@ -348,9 +348,20 @@ export class AdvancedRenderingEngine {
   private frameCount: number = 0;
   private lastTime: number = 0;
   private rafId: number = 0;
+  private fpsHistory: number[] = [];
   
   // Depth texture for edge detection
   private depthRenderTarget: THREE.WebGLRenderTarget | null = null;
+  
+  // Secondary grid reference for proper disposal
+  private majorGridHelper: THREE.GridHelper | null = null;
+  
+  // Object pools to avoid per-frame/per-call allocations
+  private static _poolColor = new THREE.Color();
+  
+  // Material cache for result visualization (key -> material)
+  private resultMaterialCache: Map<string, THREE.MeshStandardMaterial> = new Map();
+  private static readonly MAX_MATERIAL_CACHE = 256;
 
   constructor(canvas: HTMLCanvasElement, config?: Partial<RenderingConfig>) {
     // Default configuration
@@ -553,16 +564,20 @@ export class AdvancedRenderingEngine {
     this.scene.add(this.gridHelper);
 
     // Add secondary grid for major divisions
-    const majorGrid = new THREE.GridHelper(
+    if (this.majorGridHelper) {
+      this.scene.remove(this.majorGridHelper);
+      this.majorGridHelper.dispose();
+    }
+    this.majorGridHelper = new THREE.GridHelper(
       gridSize,
       gridDivisions / 5,
       new THREE.Color(0x3a3a4e),
       new THREE.Color(0x2a2a3e)
     );
-    majorGrid.position.y = 0.001; // Slightly above to prevent z-fighting
-    majorGrid.material.opacity = 0.3;
-    majorGrid.material.transparent = true;
-    this.scene.add(majorGrid);
+    this.majorGridHelper.position.y = 0.001; // Slightly above to prevent z-fighting
+    this.majorGridHelper.material.opacity = 0.3;
+    this.majorGridHelper.material.transparent = true;
+    this.scene.add(this.majorGridHelper);
   }
 
   /**
@@ -663,7 +678,9 @@ export class AdvancedRenderingEngine {
   }
 
   /**
-   * Interpolate color from a color scale
+   * Interpolate color from a color scale.
+   * Uses a pooled Color object to avoid GC pressure.
+   * If you need to keep the result, clone it.
    */
   interpolateColor(value: number, min: number, max: number, scale: THREE.Color[]): THREE.Color {
     const t = Math.max(0, Math.min(1, (value - min) / (max - min || 1)));
@@ -672,13 +689,13 @@ export class AdvancedRenderingEngine {
     const highIndex = Math.min(lowIndex + 1, scale.length - 1);
     const localT = scaleIndex - lowIndex;
 
-    const color = new THREE.Color();
-    color.lerpColors(scale[lowIndex], scale[highIndex], localT);
-    return color;
+    AdvancedRenderingEngine._poolColor.lerpColors(scale[lowIndex], scale[highIndex], localT);
+    return AdvancedRenderingEngine._poolColor;
   }
 
   /**
-   * Create color-mapped material for results visualization
+   * Create color-mapped material for results visualization.
+   * Caches materials by quantized value to avoid creating thousands of identical materials.
    */
   createResultMaterial(
     value: number,
@@ -686,15 +703,33 @@ export class AdvancedRenderingEngine {
     max: number,
     scale: keyof typeof ColorScales = 'stress'
   ): THREE.MeshStandardMaterial {
-    const color = this.interpolateColor(value, min, max, ColorScales[scale]);
-    
-    return new THREE.MeshStandardMaterial({
+    // Quantize to 256 levels for effective caching
+    const t = Math.max(0, Math.min(1, (value - min) / (max - min || 1)));
+    const quantized = Math.round(t * 255);
+    const cacheKey = `${scale}_${quantized}`;
+
+    let mat = this.resultMaterialCache.get(cacheKey);
+    if (mat) return mat;
+
+    const color = this.interpolateColor(value, min, max, ColorScales[scale]).clone();
+    mat = new THREE.MeshStandardMaterial({
       color,
       metalness: 0.1,
       roughness: 0.6,
       emissive: color,
       emissiveIntensity: 0.1
     });
+
+    // LRU eviction
+    if (this.resultMaterialCache.size >= AdvancedRenderingEngine.MAX_MATERIAL_CACHE) {
+      const firstKey = this.resultMaterialCache.keys().next().value;
+      if (firstKey) {
+        this.resultMaterialCache.get(firstKey)?.dispose();
+        this.resultMaterialCache.delete(firstKey);
+      }
+    }
+    this.resultMaterialCache.set(cacheKey, mat);
+    return mat;
   }
 
   /**
@@ -730,7 +765,8 @@ export class AdvancedRenderingEngine {
   }
 
   /**
-   * Render frame
+   * Render frame with adaptive quality management.
+   * Automatically downgrades post-processing when FPS drops below 30.
    */
   render(): void {
     const now = performance.now();
@@ -740,6 +776,12 @@ export class AdvancedRenderingEngine {
     if (now - this.lastTime >= 1000) {
       this.stats.fps = this.frameCount;
       this.stats.frameTime = (now - this.lastTime) / this.frameCount;
+
+      // Track FPS history for adaptive quality (last 5 seconds)
+      this.fpsHistory.push(this.stats.fps);
+      if (this.fpsHistory.length > 5) this.fpsHistory.shift();
+      this.adaptQuality();
+
       this.frameCount = 0;
       this.lastTime = now;
     }
@@ -753,6 +795,24 @@ export class AdvancedRenderingEngine {
     this.stats.triangles = info.render.triangles;
     this.stats.geometries = info.memory.geometries;
     this.stats.textures = info.memory.textures;
+  }
+
+  /**
+   * Adaptive quality: disable expensive passes when FPS is consistently low.
+   */
+  private adaptQuality(): void {
+    if (this.fpsHistory.length < 3) return;
+    const avgFps = this.fpsHistory.reduce((a, b) => a + b, 0) / this.fpsHistory.length;
+
+    if (avgFps < 24 && this.config.quality !== 'low') {
+      // Disable heavy passes to recover frame rate
+      if (this.ssaoPass) this.ssaoPass.enabled = false;
+      if (this.bloomPass) this.bloomPass.enabled = false;
+    } else if (avgFps > 50 && this.config.quality !== 'low') {
+      // Re-enable if performance recovers
+      if (this.ssaoPass && this.config.enableSSAO) this.ssaoPass.enabled = true;
+      if (this.bloomPass && this.config.enableBloom) this.bloomPass.enabled = true;
+    }
   }
 
   /**
@@ -847,11 +907,18 @@ export class AdvancedRenderingEngine {
     if (this.gridHelper) {
       this.gridHelper.dispose();
     }
+    if (this.majorGridHelper) {
+      this.majorGridHelper.dispose();
+    }
 
     // Dispose axes
     if (this.axesHelper) {
       this.axesHelper.dispose();
     }
+
+    // Dispose cached materials
+    this.resultMaterialCache.forEach(m => m.dispose());
+    this.resultMaterialCache.clear();
 
     // Dispose renderer
     this.renderer.dispose();

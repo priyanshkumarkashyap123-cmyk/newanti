@@ -125,10 +125,13 @@ export {
 // ============================================
 
 import { AdvancedRenderingEngine } from './AdvancedRenderingEngine';
-import { SectionProfileLibrary } from './ProfessionalModelingTools';
+import { SectionProfileLibrary, sectionLibrary as _sectionLibrary } from './ProfessionalModelingTools';
 import { DiagramGenerator, DeflectedShapeVisualizer, LoadVisualizer, ReactionVisualizer } from './StructuralVisualization';
 import { StressContourRenderer, UtilizationRenderer, ModeShapeAnimator, ResultTableGenerator } from './AnalysisResultRenderer';
 import * as THREE from 'three';
+
+// Use the singleton imported from ProfessionalModelingTools
+const _libSingleton = _sectionLibrary;
 
 /**
  * Create a complete visualization context for a scene
@@ -146,27 +149,27 @@ export function createVisualizationContext(scene: THREE.Scene) {
 }
 
 /**
- * Get standard section by name
+ * Get standard section by name.
+ * Uses the singleton library to avoid recreating 50+ THREE.Shape profiles each call.
  */
 export function getStandardSection(name: string) {
-  const library = new SectionProfileLibrary();
-  return library.getSection(name);
+  return _libSingleton.getSection(name);
 }
 
 /**
- * Get all sections of a specific type
+ * Get all sections of a specific type.
+ * Uses the singleton library.
  */
 export function getSectionsByType(type: import('./ProfessionalModelingTools').SectionType) {
-  const library = new SectionProfileLibrary();
-  return library.getSectionsByType(type);
+  return _libSingleton.getSectionsByType(type);
 }
 
 /**
- * Get all available section names
+ * Get all available section names.
+ * Uses the singleton library.
  */
 export function getAllSectionNames() {
-  const library = new SectionProfileLibrary();
-  return library.getAllSectionNames();
+  return _libSingleton.getAllSectionNames();
 }
 
 // ============================================

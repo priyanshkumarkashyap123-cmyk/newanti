@@ -354,7 +354,7 @@ export class XRSessionManager {
   }
   
   /**
-   * Remove an annotation
+   * Remove an annotation and dispose its GPU resources
    */
   removeAnnotation(id: string): void {
     this.annotations.delete(id);
@@ -362,6 +362,16 @@ export class XRSessionManager {
     const object = this.scene.getObjectByName(`annotation-${id}`);
     if (object) {
       this.scene.remove(object);
+      object.traverse((child) => {
+        if (child instanceof THREE.Mesh || child instanceof THREE.Sprite) {
+          child.geometry?.dispose();
+          if (child.material) {
+            const mat = child.material as THREE.Material;
+            if ('map' in mat && (mat as any).map) (mat as any).map.dispose();
+            mat.dispose();
+          }
+        }
+      });
     }
   }
   
@@ -536,15 +546,31 @@ export class XRMeasurementTool {
   }
   
   /**
-   * Clear current measurement
+   * Clear current measurement and dispose GPU resources
    */
   clearMeasurement(): void {
     this.points = [];
     
-    this.lines.forEach(line => this.scene.remove(line));
+    this.lines.forEach(line => {
+      this.scene.remove(line);
+      line.geometry?.dispose();
+      if (line.material) {
+        if (Array.isArray(line.material)) {
+          line.material.forEach(m => m.dispose());
+        } else {
+          (line.material as THREE.Material).dispose();
+        }
+      }
+    });
     this.lines = [];
     
-    this.labels.forEach(label => this.scene.remove(label));
+    this.labels.forEach(label => {
+      this.scene.remove(label);
+      if (label instanceof THREE.Sprite) {
+        if (label.material.map) label.material.map.dispose();
+        label.material.dispose();
+      }
+    });
     this.labels = [];
   }
 }
@@ -1019,10 +1045,26 @@ export class XRStructuralViewer {
   }
   
   /**
-   * Dispose resources
+   * Dispose all resources properly
    */
   dispose(): void {
     this.renderer.setAnimationLoop(null);
+    
+    // Dispose all scene objects
+    this.scene.traverse((object) => {
+      if (object instanceof THREE.Mesh || object instanceof THREE.LineSegments || object instanceof THREE.Line) {
+        object.geometry?.dispose();
+        if (Array.isArray(object.material)) {
+          object.material.forEach(m => m.dispose());
+        } else if (object.material) {
+          (object.material as THREE.Material).dispose();
+        }
+      } else if (object instanceof THREE.Sprite) {
+        if (object.material.map) object.material.map.dispose();
+        object.material.dispose();
+      }
+    });
+    
     this.renderer.dispose();
   }
 }

@@ -99,7 +99,12 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
                 };
         }
 
-        self.postMessage(response);
+        // Use Transferable Objects for zero-copy transfer of large arrays
+        const transferables: ArrayBuffer[] = [];
+        if (response.data?.displacements instanceof Float64Array) {
+            transferables.push(response.data.displacements.buffer);
+        }
+        (self as any).postMessage(response, transferables);
     } catch (error) {
         self.postMessage({
             requestId: request.requestId,
@@ -127,14 +132,14 @@ async function handleSolve(request: SolveRequest): Promise<WorkerResponse> {
 
             if (method === 'cholesky') {
                 displacements = wasmModule.solve_system_cholesky(
-                    new Float64Array(stiffness),
-                    new Float64Array(forces),
+                    stiffness,
+                    forces,
                     dof
                 );
             } else {
                 displacements = wasmModule.solve_system(
-                    new Float64Array(stiffness),
-                    new Float64Array(forces),
+                    stiffness,
+                    forces,
                     dof
                 );
             }
@@ -142,7 +147,7 @@ async function handleSolve(request: SolveRequest): Promise<WorkerResponse> {
             return {
                 requestId,
                 success: true,
-                data: { displacements: Array.from(displacements) },
+                data: { displacements },
                 solveTimeMs: performance.now() - start,
                 usedWasm: true
             };
@@ -262,21 +267,20 @@ interface SolveResult {
 }
 
 function solveJS(K: Float64Array, F: Float64Array, n: number): SolveResult {
-    // Create working copies
-    const A = Array.from({ length: n }, (_, i) =>
-        Array.from({ length: n }, (_, j) => K[i * n + j])
-    );
-    const b = Array.from(F);
+    // Create working copies - use flat array instead of Array-of-Array for better cache locality
+    const A = new Float64Array(K);
+    const b = new Float64Array(F);
 
-    // Forward elimination with partial pivoting
+    // Forward elimination with partial pivoting (in-place on flat array)
     for (let k = 0; k < n - 1; k++) {
         // Find pivot
-        let maxVal = Math.abs(A[k][k]);
+        let maxVal = Math.abs(A[k * n + k]);
         let maxRow = k;
 
         for (let i = k + 1; i < n; i++) {
-            if (Math.abs(A[i][k]) > maxVal) {
-                maxVal = Math.abs(A[i][k]);
+            const absVal = Math.abs(A[i * n + k]);
+            if (absVal > maxVal) {
+                maxVal = absVal;
                 maxRow = i;
             }
         }
@@ -286,38 +290,45 @@ function solveJS(K: Float64Array, F: Float64Array, n: number): SolveResult {
             return { success: false, error: 'Matrix is singular or nearly singular' };
         }
 
-        // Swap rows if needed
+        // Swap rows if needed (in flat array)
         if (maxRow !== k) {
-            [A[k], A[maxRow]] = [A[maxRow], A[k]];
-            [b[k], b[maxRow]] = [b[maxRow], b[k]];
+            for (let j = 0; j < n; j++) {
+                const tmp = A[k * n + j];
+                A[k * n + j] = A[maxRow * n + j];
+                A[maxRow * n + j] = tmp;
+            }
+            const tmp = b[k];
+            b[k] = b[maxRow];
+            b[maxRow] = tmp;
         }
 
         // Eliminate
+        const pivot = A[k * n + k];
         for (let i = k + 1; i < n; i++) {
-            const factor = A[i][k] / A[k][k];
+            const factor = A[i * n + k] / pivot;
             for (let j = k; j < n; j++) {
-                A[i][j] -= factor * A[k][j];
+                A[i * n + j] -= factor * A[k * n + j];
             }
             b[i] -= factor * b[k];
         }
     }
 
     // Back substitution
-    const x: number[] = new Array(n).fill(0);
+    const x = new Float64Array(n);
 
     for (let i = n - 1; i >= 0; i--) {
-        if (Math.abs(A[i][i]) < 1e-15) {
+        if (Math.abs(A[i * n + i]) < 1e-15) {
             return { success: false, error: 'Matrix is singular' };
         }
 
         let sum = b[i];
         for (let j = i + 1; j < n; j++) {
-            sum -= A[i][j] * x[j];
+            sum -= A[i * n + j] * x[j];
         }
-        x[i] = sum / A[i][i];
+        x[i] = sum / A[i * n + i];
     }
 
-    return { success: true, displacements: x };
+    return { success: true, displacements: x as unknown as number[] };
 }
 
 // Export for TypeScript module recognition

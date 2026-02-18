@@ -464,20 +464,35 @@ export class DiagramGenerator {
   }
 
   /**
-   * Clear all diagrams
+   * Clear all diagrams and properly dispose GPU resources
    */
   clearDiagrams(): void {
     while (this.diagramGroup.children.length > 0) {
       const child = this.diagramGroup.children[0];
       this.diagramGroup.remove(child);
-      if (child instanceof THREE.Mesh) {
-        child.geometry.dispose();
-        (child.material as THREE.Material).dispose();
-      }
+      // Traverse sub-groups too (diagram groups contain multiple meshes)
+      child.traverse((obj) => {
+        if (obj instanceof THREE.Mesh || obj instanceof THREE.Line || obj instanceof THREE.LineSegments) {
+          obj.geometry?.dispose();
+          if (Array.isArray(obj.material)) {
+            obj.material.forEach(m => m.dispose());
+          } else if (obj.material) {
+            obj.material.dispose();
+          }
+        }
+      });
     }
     while (this.labelGroup.children.length > 0) {
       const child = this.labelGroup.children[0];
       this.labelGroup.remove(child);
+      if (child instanceof THREE.Mesh) {
+        child.geometry?.dispose();
+        if (Array.isArray(child.material)) {
+          child.material.forEach(m => m.dispose());
+        } else if (child.material) {
+          (child.material as THREE.Material).dispose();
+        }
+      }
     }
   }
 }
@@ -1069,12 +1084,23 @@ export class ReactionVisualizer {
   }
 
   /**
-   * Clear all reactions
+   * Clear all reactions and properly dispose GPU resources
    */
   clearReactions(): void {
     while (this.reactionGroup.children.length > 0) {
       const child = this.reactionGroup.children[0];
       this.reactionGroup.remove(child);
+      // Recursively dispose geometry/materials in reaction groups
+      child.traverse((obj) => {
+        if (obj instanceof THREE.Mesh || obj instanceof THREE.Line || obj instanceof THREE.LineSegments) {
+          obj.geometry?.dispose();
+          if (Array.isArray(obj.material)) {
+            obj.material.forEach(m => m.dispose());
+          } else if (obj.material) {
+            obj.material.dispose();
+          }
+        }
+      });
     }
   }
 }
