@@ -63,8 +63,8 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
         navigate(`/workspace/${moduleId}`);
     };
 
-    const handleNewProject = () => navigate('/demo');
-    const handleOpenProject = (projectId: string) => navigate(`/demo?project=${projectId}`);
+    const handleNewProject = () => navigate('/app');
+    const handleOpenProject = (_projectId: string) => navigate('/app');
 
     // Greeting
     const getGreeting = () => {

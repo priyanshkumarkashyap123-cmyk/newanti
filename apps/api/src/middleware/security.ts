@@ -7,6 +7,7 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import { randomUUID } from 'crypto';
 
 // ============================================
 // HTTP SECURITY HEADERS (Helmet)
@@ -140,6 +141,34 @@ export const requestLogger = (req: Request, _res: Response, next: NextFunction) 
 };
 
 // ============================================
+// REQUEST ID TRACEABILITY
+// ============================================
+
+export const requestIdMiddleware = (req: Request, res: Response, next: NextFunction) => {
+    const existingRequestId = req.get('x-request-id');
+    const requestId = existingRequestId && existingRequestId.trim().length > 0
+        ? existingRequestId
+        : randomUUID();
+
+    res.setHeader('x-request-id', requestId);
+    res.locals.requestId = requestId;
+    next();
+};
+
+export const requestLoggerWithId = (req: Request, res: Response, next: NextFunction) => {
+    const timestamp = new Date().toISOString();
+    const method = req.method;
+    const url = req.originalUrl;
+    const ip = req.ip || req.socket.remoteAddress || 'unknown';
+    const userAgent = req.get('user-agent') || 'unknown';
+    const requestId = String(res.locals.requestId || 'unknown');
+
+    console.log(`[${timestamp}] [${requestId}] ${method} ${url} - IP: ${ip} - UA: ${userAgent.slice(0, 50)}`);
+
+    next();
+};
+
+// ============================================
 // ERROR HANDLER (Hide stack traces in production)
 // ============================================
 
@@ -153,9 +182,11 @@ export const secureErrorHandler = (
 
     // Don't expose internal errors to client
     const isDev = process.env['NODE_ENV'] !== 'production';
+    const requestId = String(res.locals.requestId || 'unknown');
 
     res.status(500).json({
         success: false,
+        requestId,
         error: isDev ? err.message : 'Internal server error',
         ...(isDev && { stack: err.stack })
     });

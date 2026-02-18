@@ -922,10 +922,77 @@ export const ModernModeler: FC = () => {
                         result = { success: false, error: 'WASM analysis failed' };
                     }
                 } catch (err) {
-                    result = {
-                        success: false,
-                        error: err instanceof Error ? err.message : 'Failed to connect to analysis server'
-                    };
+                    // WASM failed — fall back to TypeScript solver with load conversion
+                    modelerLogger.warn('[Analysis] WASM solver failed, falling back to TypeScript solver:', err);
+                    setAnalysisStage('assembling');
+                    setAnalysisProgress(35);
+
+                    try {
+                        const { convertMemberLoadsToNodal, mergeNodalLoads } = await import('../utils/loadConversion');
+
+                        // Convert member loads (UDL/UVL) to equivalent nodal loads
+                        const conversionResult = convertMemberLoadsToNodal(
+                            memberLoads.map(ml => ({
+                                id: ml.id,
+                                memberId: ml.memberId,
+                                type: ml.type,
+                                w1: ml.w1 ?? 0,
+                                w2: ml.w2 ?? 0,
+                                direction: ml.direction,
+                                startPos: ml.startPos ?? 0,
+                                endPos: ml.endPos ?? 1
+                            })),
+                            membersArray.map(m => ({
+                                id: m.id,
+                                startNodeId: m.startNodeId,
+                                endNodeId: m.endNodeId,
+                                E: m.E,
+                                A: m.A,
+                                I: m.I
+                            })),
+                            nodesArray.map(n => ({
+                                id: n.id,
+                                x: n.x,
+                                y: n.y,
+                                z: n.z
+                            }))
+                        );
+
+                        // Merge with existing nodal loads
+                        const existingLoads = loads.map(l => ({
+                            nodeId: l.nodeId,
+                            fx: l.fx,
+                            fy: l.fy,
+                            fz: l.fz
+                        }));
+                        const allLoads = mergeNodalLoads([...existingLoads, ...conversionResult.nodalLoads]);
+
+                        modelerLogger.log(`[Analysis] Converted ${memberLoads.length} member loads → ${allLoads.length} nodal loads, using TS solver`);
+
+                        const modelData = {
+                            nodes: nodesArray,
+                            members: membersArray,
+                            loads: allLoads,
+                            memberLoads: [] as any[],
+                            dofPerNode: 3 as const
+                        };
+
+                        const token = await getToken();
+                        result = await analysisService.analyze(modelData, (stage, progress) => {
+                            setAnalysisStage(stage as AnalysisStage);
+                            setAnalysisProgress(progress);
+                        }, token);
+
+                        if (result.success && result.stats) {
+                            result.stats = { ...result.stats, solver: 'TypeScript (WASM fallback)', usedPythonApi: false };
+                        }
+                    } catch (fallbackErr) {
+                        modelerLogger.error('[Analysis] TypeScript fallback also failed:', fallbackErr);
+                        result = {
+                            success: false,
+                            error: `WASM solver: ${err instanceof Error ? err.message : String(err)}\nFallback solver: ${fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr)}`
+                        };
+                    }
                 }
             } else {
                 // Use local solver for simple models without member loads

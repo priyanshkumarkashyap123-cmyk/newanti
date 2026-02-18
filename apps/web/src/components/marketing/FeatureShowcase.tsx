@@ -115,10 +115,10 @@ export const CompetitiveAdvantage: FC = () => {
 
 export const PerformanceMetrics: FC = () => {
   const metrics = [
-    { value: '<1s', label: '100-DOF Solve', comparison: 'WebAssembly solver' },
-    { value: '10K+', label: 'Max Members', comparison: 'With instanced rendering' },
-    { value: '3x', label: 'Faster with WebGPU', comparison: 'On supported browsers' },
-    { value: '24/7', label: 'Cloud Access', comparison: 'No license dongles' },
+    { id: 'solve-speed', value: '<1s', label: '100-DOF Solve', comparison: 'WebAssembly solver' },
+    { id: 'member-capacity', value: '10K+', label: 'Max Members', comparison: 'With instanced rendering' },
+    { id: 'webgpu-speedup', value: 'Up to 3x', label: 'Faster with WebGPU', comparison: 'Results vary by browser/hardware' },
+    { id: 'cloud-access', value: '24/7', label: 'Cloud Access', comparison: 'No license dongles' },
   ];
 
   return (
@@ -127,7 +127,7 @@ export const PerformanceMetrics: FC = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {metrics.map((metric, i) => (
             <motion.div
-              key={i}
+              key={metric.id}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -182,13 +182,13 @@ export const InteractiveDemo: FC = () => {
   ];
 
   return (
-    <section className="py-24 bg-slate-900/50">
+    <section className="py-24 bg-slate-900/50" aria-labelledby="interactive-demo-heading">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <span className="inline-block text-blue-400 text-sm font-semibold uppercase tracking-wider mb-4">
             See It In Action
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          <h2 id="interactive-demo-heading" className="text-3xl md:text-4xl font-bold text-white mb-4">
             Powerful Features, Simple Interface
           </h2>
         </div>
@@ -199,7 +199,10 @@ export const InteractiveDemo: FC = () => {
             {demos.map((demo) => (
               <button
                 key={demo.id}
+                type="button"
                 onClick={() => setActiveDemo(demo.id)}
+                aria-pressed={activeDemo === demo.id}
+                aria-label={`Show ${demo.title} demo`}
                 className={`w-full text-left p-4 rounded-xl transition-all ${activeDemo === demo.id
                     ? 'bg-blue-500/20 border-2 border-blue-500'
                     : 'bg-slate-900 border-2 border-slate-800 hover:border-slate-700'
@@ -227,7 +230,7 @@ export const InteractiveDemo: FC = () => {
                 {/* Placeholder for actual demo */}
                 <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-950">
                   <div className="text-center">
-                    <button className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mb-4 mx-auto hover:bg-blue-500/30 transition-colors">
+                    <button type="button" aria-label={`Play ${demos.find(d => d.id === activeDemo)?.title || 'active'} demo video`} className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mb-4 mx-auto hover:bg-blue-500/30 transition-colors">
                       <Play className="w-6 h-6 text-blue-400 ml-1" />
                     </button>
                     <p className="text-slate-400">
@@ -307,7 +310,7 @@ export const Testimonials: FC = () => {
               transition={{ delay: i * 0.1 }}
               className="group p-6 rounded-2xl bg-slate-900/60 border border-white/[0.06] hover:border-white/[0.1] hover:bg-slate-800/40 transition-all duration-300 hover-lift"
             >
-              <div className="flex gap-1 mb-4">
+              <div className="flex gap-1 mb-4" aria-label="5 star rating">
                 {[...Array(5)].map((_, j) => (
                   <Sparkles key={j} className="w-4 h-4 text-yellow-400 fill-yellow-400 group-hover:scale-110 transition-transform" style={{ transitionDelay: `${j * 50}ms` }} />
                 ))}

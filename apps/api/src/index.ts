@@ -1,7 +1,7 @@
 import express, { type Request, type Response, type RequestHandler } from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
-import { clerkMiddleware, requireAuth, getAuth } from '@clerk/express';
+import { clerkMiddleware } from '@clerk/express';
 import { SocketServer } from './SocketServer.js';
 import analysisRouter from './routes/analysis/index.js';
 import designRouter from './routes/design/index.js';
@@ -19,7 +19,8 @@ import {
     generalRateLimit,
     analysisRateLimit,
     billingRateLimit,
-    requestLogger,
+    requestIdMiddleware,
+    requestLoggerWithId,
     secureErrorHandler
 } from './middleware/security.js';
 import * as Sentry from '@sentry/node';
@@ -32,8 +33,8 @@ if (process.env.SENTRY_DSN) {
         integrations: [
             nodeProfilingIntegration(),
         ],
-        // Performance Monitoring
-        tracesSampleRate: 1.0,
+        // Performance Monitoring (20% sample to control costs)
+        tracesSampleRate: 0.2,
         // Set sampling rate for profiling - this is relative to tracesSampleRate
         profilesSampleRate: 1.0,
     });
@@ -41,6 +42,9 @@ if (process.env.SENTRY_DSN) {
 
 const app = express();
 const PORT = process.env['PORT'] ?? 3001;
+
+// Respect reverse proxy headers in hosted environments (Azure, Nginx, etc.)
+app.set('trust proxy', 1);
 
 // Create HTTP server for socket.io
 const httpServer = createServer(app);
@@ -55,8 +59,9 @@ const socketServer = new SocketServer(httpServer);
 // HTTP security headers (helmet)
 app.use(securityHeaders);
 
-// Request logging
-app.use(requestLogger);
+// Request ID + structured request logging
+app.use(requestIdMiddleware);
+app.use(requestLoggerWithId);
 
 // General rate limiting
 app.use(generalRateLimit);
@@ -66,14 +71,19 @@ app.use(generalRateLimit);
 // ============================================
 
 // Allowed origins for CORS
-const ALLOWED_ORIGINS = [
+const configuredOrigins = (process.env['CORS_ALLOWED_ORIGINS'] || '')
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean);
+
+const ALLOWED_ORIGINS = Array.from(new Set([
     process.env['FRONTEND_URL'] || "http://localhost:5173",
     "https://beamlabultimate.tech",
     "https://www.beamlabultimate.tech",
     "https://brave-mushroom-0eae8ec00.4.azurestaticapps.net",
     "http://localhost:5173",
     "http://localhost:3000"
-].filter(Boolean);
+])).concat(configuredOrigins);
 
 app.use(cors({
     origin: (origin, callback) => {
@@ -91,7 +101,9 @@ app.use(cors({
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
+    exposedHeaders: ['X-Request-ID'],
+    optionsSuccessStatus: 204,
 }));
 app.use(express.json({ limit: '10mb' }));  // Limit payload size
 
@@ -153,9 +165,6 @@ app.use('/api/billing', billingRateLimit, razorpayRouter);
 // PROTECTED ROUTES (require authentication)
 // ============================================
 
-// Middleware to require authentication
-const authRequired = requireAuth();
-
 // Get current user projects
 // Project API handled by projectRoutes
 // app.get('/api/project', ... ) removed
@@ -177,6 +186,9 @@ app.get('/api/project/:id/users', (req: Request, res: Response) => {
     });
 });
 
+// Error handler (must be last middleware — BEFORE listen)
+app.use(secureErrorHandler);
+
 // Start server immediately to satisfy startup probes
 httpServer.listen(PORT, () => {
     console.log(`🚀 BeamLab Ultimate API running on http://localhost:${PORT}`);
@@ -190,6 +202,3 @@ httpServer.listen(PORT, () => {
         console.error('❌ Failed to connect to MongoDB:', err);
     });
 });
-
-// Error handler (must be last middleware)
-app.use(secureErrorHandler);

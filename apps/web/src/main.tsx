@@ -47,9 +47,9 @@ const initializeApp = async () => {
                         Sentry.browserTracingIntegration(),
                         Sentry.replayIntegration(),
                     ],
-                    // Performance Monitoring
-                    tracesSampleRate: 1.0,
-                    tracePropagationTargets: ["localhost", /^https:\/\/yourserver\.io\/api/],
+                    // Performance Monitoring (20% sample in production to control costs)
+                    tracesSampleRate: 0.2,
+                    tracePropagationTargets: ["localhost", /^https:\/\/.*\.beamlabultimate\.tech/],
                     // Session Replay
                     replaysSessionSampleRate: 0.1,
                     replaysOnErrorSampleRate: 1.0,

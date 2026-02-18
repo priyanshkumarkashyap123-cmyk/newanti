@@ -18,6 +18,13 @@
 
 import { API_CONFIG } from '../../config/env';
 
+function createRequestId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `req_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
 // ============================================================================
 // TYPES
 // ============================================================================
@@ -357,6 +364,7 @@ export class ApiClient {
   ): Promise<ApiResponse<T>> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
+    const requestId = createRequestId();
 
     // Merge signals
     const signal = config.signal
@@ -366,6 +374,7 @@ export class ApiClient {
     try {
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
+        'X-Request-ID': requestId,
         ...this.config.headers,
         ...config.headers,
       };
@@ -374,6 +383,7 @@ export class ApiClient {
         method: config.method || 'GET',
         headers,
         body: config.body ? JSON.stringify(config.body) : undefined,
+        credentials: 'include',
         signal,
       });
 
@@ -387,7 +397,7 @@ export class ApiClient {
           code: errorData.code || `HTTP_${response.status}`,
           details: errorData.details,
           timestamp: new Date().toISOString(),
-          requestId: response.headers.get('x-request-id') || undefined,
+          requestId: response.headers.get('x-request-id') || requestId,
         });
       }
 
@@ -411,6 +421,7 @@ export class ApiClient {
           status: 408,
           code: 'TIMEOUT',
           timestamp: new Date().toISOString(),
+          requestId,
         });
       }
 

@@ -384,8 +384,8 @@ export const UnifiedDashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
         { label: 'Time Saved', value: '156h', icon: <Clock className="w-5 h-5" />, trend: 'vs manual methods', color: 'from-orange-600 to-orange-700' }
     ];
 
-    const handleOpenProject = (projectId: string) => {
-        navigate(`/demo?project=${projectId}`);
+    const handleOpenProject = (_projectId: string) => {
+        navigate('/app');
     };
 
     const handleQuickAction = (route: string) => {

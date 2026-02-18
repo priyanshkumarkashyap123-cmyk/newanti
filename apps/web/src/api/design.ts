@@ -10,7 +10,7 @@
  * Now using high-performance Rust API for design checks
  */
 
-import { api } from '@/utils/api';
+import { apiClient } from '@/lib/api/client';
 import { API_CONFIG } from '@/config/env';
 
 // ============================================
@@ -247,7 +247,7 @@ export interface FootingResult {
 // ============================================
 
 async function apiCall<T>(endpoint: string, data: unknown): Promise<T> {
-    const { data: response } = await api.post<{ success?: boolean; result?: T; error?: string }>(
+    const { data: response } = await apiClient.post<{ success?: boolean; result?: T; error?: string }>(
         endpoint,
         data
     );
@@ -318,7 +318,7 @@ export async function getDesignCodes(): Promise<{
     connections: Array<{ code: string; name: string; country: string }>;
     foundations: Array<{ code: string; name: string; country: string }>;
 }> {
-    const { data } = await api.get<{
+    const { data } = await apiClient.get<{
         codes: {
             steel: Array<{ code: string; name: string; country: string }>;
             concrete: Array<{ code: string; name: string; country: string }>;
@@ -433,7 +433,11 @@ export const BOLT_GRADES = [
 const PYTHON_API = API_CONFIG.pythonUrl;
 
 async function pythonApiCall<T>(endpoint: string, payload: unknown): Promise<T> {
-    const { data } = await api.post<T>(endpoint, payload, { baseURL: PYTHON_API });
+    const normalizedBase = PYTHON_API.endsWith('/') ? PYTHON_API.slice(0, -1) : PYTHON_API;
+    const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const fullUrl = `${normalizedBase}${normalizedEndpoint}`;
+
+    const { data } = await apiClient.post<T>(fullUrl, payload);
     return data;
 }
 

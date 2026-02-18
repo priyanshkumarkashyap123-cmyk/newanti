@@ -138,7 +138,8 @@ export function validateEnvironment(): void {
         }
 
         if (!API_CONFIG.baseUrl.startsWith('https://')) {
-            errors.push('VITE_API_URL must use HTTPS in production');
+            // Log warning but don't crash — let the app load and show appropriate error UI
+            console.error('[API] 🔴 VITE_API_URL is not using HTTPS in production. API calls may fail. Current value:', API_CONFIG.baseUrl);
         }
     }
 
