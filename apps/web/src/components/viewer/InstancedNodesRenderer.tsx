@@ -121,6 +121,14 @@ export const InstancedNodesRenderer: React.FC = () => {
         });
     }, []);
 
+    // Dispose GPU resources on unmount
+    useEffect(() => {
+        return () => {
+            geometry.dispose();
+            material.dispose();
+        };
+    }, [geometry, material]);
+
     // ============================================
     // UPDATE INSTANCE MATRICES & COLORS
     // ============================================

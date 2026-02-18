@@ -230,6 +230,14 @@ export const UltraLightMembersRenderer: React.FC = React.memo(() => {
         });
     }, [config.useSimpleMaterial, memberCount]);
     
+    // Dispose GPU resources on unmount
+    useEffect(() => {
+        return () => {
+            geometry.dispose();
+            material.dispose();
+        };
+    }, [geometry, material]);
+    
     // ============================================
     // PROGRESSIVE INSTANCE BUILDING
     // ============================================

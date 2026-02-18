@@ -186,6 +186,14 @@ export const UltraLightNodesRenderer: React.FC = React.memo(() => {
         });
     }, [nodeCount]);
     
+    // Dispose GPU resources on unmount
+    useEffect(() => {
+        return () => {
+            geometry.dispose();
+            material.dispose();
+        };
+    }, [geometry, material]);
+    
     // ============================================
     // PROGRESSIVE INSTANCE BUILDING
     // ============================================

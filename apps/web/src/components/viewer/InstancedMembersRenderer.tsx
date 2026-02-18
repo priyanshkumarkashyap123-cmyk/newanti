@@ -161,6 +161,14 @@ export const InstancedMembersRenderer: React.FC = () => {
         });
     }, []);
     
+    // Dispose GPU resources on unmount
+    useEffect(() => {
+        return () => {
+            geometry.dispose();
+            material.dispose();
+        };
+    }, [geometry, material]);
+    
     // Track if we're in large model mode
     const isLargeModel = instanceCount > LARGE_MODEL_THRESHOLD;
     const isVeryLargeModel = instanceCount > VERY_LARGE_MODEL_THRESHOLD;

@@ -10,13 +10,11 @@
  * @version 1.0.0
  */
 
-import React, { useRef, useMemo, useState, useCallback, Suspense } from 'react';
+import React, { useRef, useMemo, useState, useCallback, useEffect, Suspense } from 'react';
 import { Canvas, useFrame, useThree, ThreeEvent } from '@react-three/fiber';
 import {
   OrbitControls,
   PerspectiveCamera,
-  Environment,
-  ContactShadows,
   Html,
   useHelper,
   Grid,
@@ -164,6 +162,17 @@ const BoltMesh: React.FC<BoltMeshProps> = ({
     createHexBoltHeadGeometry(diameter * 0.95, diameter * 0.8),
     [diameter]
   );
+
+  // Dispose geometries on unmount or when deps change
+  useEffect(() => {
+    return () => {
+      shankGeometry.dispose();
+      threadGeometry.dispose();
+      headGeometry.dispose();
+      washerGeometry.dispose();
+      nutGeometry.dispose();
+    };
+  }, [shankGeometry, threadGeometry, headGeometry, washerGeometry, nutGeometry]);
 
   // Colors
   const baseColor = useMemo(() => {
@@ -575,8 +584,8 @@ const Scene: React.FC<SceneProps> = ({
       />
       <pointLight position={[-10, 10, -10]} intensity={0.5} />
 
-      {/* Environment */}
-      <Environment preset="studio" />
+      {/* Engineering-grade local lighting (no remote HDR fetch) */}
+      <hemisphereLight args={['#b1e1ff', '#b97a20', 0.6]} />
 
       {/* Main Connection Group */}
       <group scale={[scale, scale, scale]}>
@@ -688,14 +697,11 @@ const Scene: React.FC<SceneProps> = ({
         )}
       </group>
 
-      {/* Ground plane */}
-      <ContactShadows
-        position={[0, -1, 0]}
-        opacity={0.4}
-        scale={20}
-        blur={2}
-        far={4}
-      />
+      {/* Ground shadow plane */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1, 0]} receiveShadow>
+        <planeGeometry args={[20, 20]} />
+        <shadowMaterial opacity={0.25} />
+      </mesh>
 
       {/* Reference grid */}
       <Grid

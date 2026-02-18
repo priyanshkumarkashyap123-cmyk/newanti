@@ -1,4 +1,4 @@
-import { FC, useMemo } from 'react';
+import { FC, useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import { useModelStore } from '../store/model';
 
@@ -63,6 +63,18 @@ export const SupportRenderer: FC = () => {
         roughness: 0.3,
         metalness: 0.5
     }), []);
+
+    // Dispose GPU resources on unmount
+    useEffect(() => {
+        return () => {
+            cubeGeometry.dispose();
+            tetraGeometry.dispose();
+            rollerGeometry.dispose();
+            fixedMaterial.dispose();
+            pinnedMaterial.dispose();
+            rollerMaterial.dispose();
+        };
+    }, [cubeGeometry, tetraGeometry, rollerGeometry, fixedMaterial, pinnedMaterial, rollerMaterial]);
 
     return (
         <group name="supports">

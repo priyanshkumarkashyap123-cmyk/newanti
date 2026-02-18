@@ -8,7 +8,7 @@
  * - Connection indicators at beam-column joints
  */
 
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
@@ -53,6 +53,13 @@ function ConnectionBall({ position, connection, isSelected, onClick }: Connectio
                 return new THREE.SphereGeometry(visual.size, 16, 16);
         }
     }, [visual.shape, visual.size]);
+
+    // Dispose old geometry when shape/size changes or on unmount
+    useEffect(() => {
+        return () => {
+            geometry.dispose();
+        };
+    }, [geometry]);
 
     return (
         <group position={position}>

@@ -184,7 +184,7 @@ class ConstructionManagementServiceClass {
             if (successors.length === 0) {
                 sched.LF = projectDuration;
             } else {
-                sched.LF = Math.min(...successors.map(s => schedule.get(s.id)!.LS));
+                sched.LF = Math.min(...successors.map(s => schedule.get(s.id)?.LS ?? projectDuration));
             }
             sched.LS = sched.LF - activity.duration;
 
@@ -193,7 +193,7 @@ class ConstructionManagementServiceClass {
 
             // Free float
             const minSuccES = successors.length > 0
-                ? Math.min(...successors.map(s => schedule.get(s.id)!.ES))
+                ? Math.min(...successors.map(s => schedule.get(s.id)?.ES ?? projectDuration))
                 : projectDuration;
             sched.FF = minSuccES - sched.EF;
 
@@ -202,7 +202,7 @@ class ConstructionManagementServiceClass {
         }
 
         // Find critical path
-        const criticalPath = sortedActivities.filter(id => schedule.get(id)!.isCritical);
+        const criticalPath = sortedActivities.filter(id => schedule.get(id)?.isCritical ?? false);
 
         // Create float maps
         const totalFloat = new Map<string, number>();

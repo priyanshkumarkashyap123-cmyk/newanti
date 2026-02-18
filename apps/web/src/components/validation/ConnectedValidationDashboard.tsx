@@ -5,7 +5,7 @@
  * instead of using mock data.
  */
 
-import { FC, useState, useEffect } from 'react';
+import { FC, useState, useEffect, useMemo } from 'react';
 import { aiValidation, ValidationReport, ValidationResult } from '../../services/AIValidationService';
 import { wasmSolver } from '../../services/wasmSolverService';
 import { useModelStore } from '../../store/model';
@@ -18,7 +18,12 @@ export const ConnectedValidationDashboard: FC = () => {
     const [report, setReport] = useState<ValidationReport | null>(null);
     const [loading, setLoading] = useState(false);
     const [analysisResults, setAnalysisResults] = useState<any>(null);
-    const model = useModelStore((state) => state);
+    const nodes = useModelStore((state) => state.nodes);
+    const members = useModelStore((state) => state.members);
+    const memberLoads = useModelStore((state) => state.memberLoads);
+
+    // Convenience wrapper so downstream code keeps working
+    const model = useMemo(() => ({ nodes, members, memberLoads }), [nodes, members, memberLoads]);
 
     // Run validation against real analysis
     const runValidation = async () => {

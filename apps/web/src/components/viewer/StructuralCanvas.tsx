@@ -15,8 +15,6 @@ import {
     Grid,
     GizmoHelper,
     GizmoViewport,
-    ContactShadows,
-    Environment,
     Line,
     PerspectiveCamera
 } from '@react-three/drei';
@@ -407,16 +405,12 @@ export const StructuralCanvas: FC<StructuralCanvasProps> = ({ children }) => {
                 {/* Infinite Grid */}
                 <InfiniteGrid />
 
-                {/* Contact Shadows for depth perception - disabled for large models */}
+                {/* Shadow plane for depth perception - disabled for large models */}
                 {!isLargeModel && (
-                    <ContactShadows
-                        position={[0, -0.01, 0]}
-                        opacity={0.4}
-                        scale={50}
-                        blur={2}
-                        far={10}
-                        color={COLORS.shadow}
-                    />
+                    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
+                        <planeGeometry args={[50, 50]} />
+                        <shadowMaterial opacity={0.25} />
+                    </mesh>
                 )}
 
                 {/* Axis Helper */}
