@@ -1,4 +1,4 @@
-import { FC, useLayoutEffect, useRef, useMemo, useEffect } from 'react';
+import { FC, useLayoutEffect, useRef, useMemo, useEffect, memo } from 'react';
 import * as THREE from 'three';
 import { useModelStore, Node } from '../store/model';
 
@@ -19,7 +19,7 @@ if (import.meta.hot) {
     });
 }
 
-export const NodesRenderer: FC = () => {
+export const NodesRenderer: FC = memo(() => {
     const nodes        = useModelStore((state) => state.nodes);
     const selectedIds  = useModelStore((state) => state.selectedIds);
     const select       = useModelStore((state) => state.select);
@@ -193,4 +193,6 @@ export const NodesRenderer: FC = () => {
             )}
         </group>
     );
-};
+});
+
+NodesRenderer.displayName = 'NodesRenderer';

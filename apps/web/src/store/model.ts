@@ -419,15 +419,24 @@ export const useModelStore = create<ModelState>()(
                         const newNodes = new Map(state.nodes);
                         newNodes.delete(id);
                         const newMembers = new Map(state.members);
+                        const deletedMemberIds = new Set<string>();
                         for (const [memberId, member] of newMembers.entries()) {
                             if (member.startNodeId === id || member.endNodeId === id) {
                                 newMembers.delete(memberId);
+                                deletedMemberIds.add(memberId);
                             }
                         }
                         const newSelected = new Set(state.selectedIds);
                         if (newSelected.has(id)) newSelected.delete(id);
                         const newLoads = state.loads.filter(l => l.nodeId !== id);
-                        return { nodes: newNodes, members: newMembers, selectedIds: newSelected, loads: newLoads };
+                        // Clean up member loads for cascade-deleted members
+                        const newMemberLoads = state.memberLoads.filter(ml => !deletedMemberIds.has(ml.memberId));
+                        // Clean up plates referencing deleted node
+                        const newPlates = new Map(state.plates);
+                        for (const [plateId, plate] of newPlates) {
+                            if (plate.nodeIds.includes(id)) newPlates.delete(plateId);
+                        }
+                        return { nodes: newNodes, members: newMembers, selectedIds: newSelected, loads: newLoads, memberLoads: newMemberLoads, plates: newPlates };
                     }),
 
                 addMember: (member) =>
@@ -628,6 +637,7 @@ export const useModelStore = create<ModelState>()(
                         const allIds = new Set<string>();
                         state.nodes.forEach((_, id) => allIds.add(id));
                         state.members.forEach((_, id) => allIds.add(id));
+                        state.plates.forEach((_, id) => allIds.add(id));
                         return { selectedIds: allIds };
                     }),
 
@@ -884,6 +894,7 @@ export const useModelStore = create<ModelState>()(
                     set((state) => {
                         const newNodes = new Map(state.nodes);
                         const newMembers = new Map(state.members);
+                        const newPlates = new Map(state.plates);
                         let newLoads = [...state.loads];
                         let newMemberLoads = [...state.memberLoads];
 
@@ -898,6 +909,10 @@ export const useModelStore = create<ModelState>()(
                                         newMemberLoads = newMemberLoads.filter(ml => ml.memberId !== memberId);
                                     }
                                 });
+                                // Delete plates referencing this node
+                                newPlates.forEach((plate, plateId) => {
+                                    if (plate.nodeIds.includes(id)) newPlates.delete(plateId);
+                                });
                                 // Delete loads on this node
                                 newLoads = newLoads.filter(l => l.nodeId !== id);
                             }
@@ -907,11 +922,17 @@ export const useModelStore = create<ModelState>()(
                                 newMembers.delete(id);
                                 newMemberLoads = newMemberLoads.filter(ml => ml.memberId !== id);
                             }
+
+                            // Delete plate
+                            if (state.plates.has(id)) {
+                                newPlates.delete(id);
+                            }
                         });
 
                         return {
                             nodes: newNodes,
                             members: newMembers,
+                            plates: newPlates,
                             loads: newLoads,
                             memberLoads: newMemberLoads,
                             selectedIds: new Set()
@@ -939,6 +960,7 @@ export const useModelStore = create<ModelState>()(
                 clearModel: () => set({
                     nodes: new Map(),
                     members: new Map(),
+                    plates: new Map(),
                     loads: [],
                     memberLoads: [],
                     selectedIds: new Set(),
@@ -956,7 +978,10 @@ export const useModelStore = create<ModelState>()(
                     modeAmplitude: 1.0,
                     isAnimating: false,
                     nextNodeNumber: 1,
-                    nextMemberNumber: 1
+                    nextMemberNumber: 1,
+                    nextPlateNumber: 1,
+                    civilData: new Map(),
+                    clipboard: null,
                 }),
 
                 autoFixModel: () => {
@@ -1324,17 +1349,57 @@ export const useModelStore = create<ModelState>()(
 
                         newNodes.delete(nodeId2);
 
-                        // Remap members
+                        // Remap members - build single update to avoid overwrite bug
                         newMembers.forEach((member, id) => {
-                            if (member.startNodeId === nodeId2) {
-                                newMembers.set(id, { ...member, startNodeId: nodeId1 });
-                            }
-                            if (member.endNodeId === nodeId2) {
-                                newMembers.set(id, { ...member, endNodeId: nodeId1 });
+                            const updates: Partial<Member> = {};
+                            if (member.startNodeId === nodeId2) updates.startNodeId = nodeId1;
+                            if (member.endNodeId === nodeId2) updates.endNodeId = nodeId1;
+                            if (Object.keys(updates).length > 0) {
+                                newMembers.set(id, { ...member, ...updates });
                             }
                         });
 
-                        return { nodes: newNodes, members: newMembers };
+                        // Remove zero-length members (both endpoints now same node)
+                        for (const [id, member] of newMembers) {
+                            if (member.startNodeId === member.endNodeId) {
+                                newMembers.delete(id);
+                            }
+                        }
+
+                        // Remap node loads from nodeId2 to nodeId1
+                        const newLoads = state.loads.map(l =>
+                            l.nodeId === nodeId2 ? { ...l, nodeId: nodeId1 } : l
+                        );
+
+                        // Update selectedIds
+                        const newSelected = new Set(state.selectedIds);
+                        if (newSelected.has(nodeId2)) {
+                            newSelected.delete(nodeId2);
+                            newSelected.add(nodeId1);
+                        }
+
+                        // Clean up plates referencing nodeId2
+                        const newPlates = new Map(state.plates);
+                        for (const [plateId, plate] of newPlates) {
+                            if (plate.nodeIds.includes(nodeId2)) {
+                                const remapped = plate.nodeIds.map(nid => nid === nodeId2 ? nodeId1 : nid);
+                                // Check for degenerate plate (duplicate node ids)
+                                if (new Set(remapped).size < remapped.length) {
+                                    newPlates.delete(plateId);
+                                } else {
+                                    newPlates.set(plateId, { ...plate, nodeIds: remapped as [string, string, string, string] });
+                                }
+                            }
+                        }
+
+                        return {
+                            nodes: newNodes,
+                            members: newMembers,
+                            loads: newLoads,
+                            plates: newPlates,
+                            selectedIds: newSelected,
+                            analysisResults: null
+                        };
                     }),
 
                 renumberNodes: () => set((state) => {
@@ -1382,10 +1447,18 @@ export const useModelStore = create<ModelState>()(
                         nodeId: idMap.get(load.nodeId) || load.nodeId
                     }));
 
+                    // Update plate node references
+                    const newPlates = new Map(state.plates);
+                    newPlates.forEach((plate, pid) => {
+                        const remapped = plate.nodeIds.map(nid => idMap.get(nid) || nid) as [string, string, string, string];
+                        newPlates.set(pid, { ...plate, nodeIds: remapped });
+                    });
+
                     return {
                         nodes: newNodes,
                         members: newMembers,
                         loads: newLoads,
+                        plates: newPlates,
                         selectedIds: newSelected,
                         nextNodeNumber: counter,
                         analysisResults: null // Invalidate results
@@ -1438,6 +1511,11 @@ export const useModelStore = create<ModelState>()(
                     set((state) => {
                         const newCivilData = new Map(state.civilData);
                         newCivilData.set(result.id, result);
+                        // Cap civil results at 50 to prevent unbounded memory growth
+                        if (newCivilData.size > 50) {
+                            const oldestKey = newCivilData.keys().next().value;
+                            if (oldestKey !== undefined) newCivilData.delete(oldestKey);
+                        }
                         return { civilData: newCivilData };
                     }),
 
@@ -1448,7 +1526,9 @@ export const useModelStore = create<ModelState>()(
                         return { civilData: newCivilData };
                     })
 
-            })),
+            }),
+            { limit: 100 } // Limit undo history to prevent unbounded memory growth
+        ),
         {
             name: 'StructuralModel',
             // Optional: Serializer for better Map visibility in Redux DevTools

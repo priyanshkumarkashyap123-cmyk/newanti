@@ -9,7 +9,7 @@
  * - Quick Start modal for new users
  */
 
-import { FC, useState, useEffect, useCallback, useRef } from 'react';
+import { FC, useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
     Box,
@@ -46,42 +46,45 @@ import ModalControls from './ModalControls';
 import { AICommandCenter, AutonomousAIAgent } from './ai';
 import { LoadInputDialog } from './ui/LoadInputDialog';
 import { TutorialOverlay } from './TutorialOverlay';
-import { StructureWizard } from './StructureWizard';
-import { FoundationDesignDialog } from './FoundationDesignDialog';
-import { IS875LoadDialog } from './IS875LoadDialog';
-import { GeometryToolsPanel } from './GeometryToolsPanel';
-import { ValidationErrorDisplay } from './ValidationErrorDisplay';
-import { ValidationDialog } from './ValidationDialog';
-import StressVisualization from './StressVisualization';
-import { InteroperabilityDialog } from './InteroperabilityDialog';
 import { validateStructure } from '../utils/structuralValidation';
-import { RailwayBridgeDialog } from './RailwayBridgeDialog';
-import { MeshingPanel } from './MeshingPanel';
-import { AdvancedSelectionPanel } from './AdvancedSelectionPanel';
-import { LoadDialog } from './LoadDialog';
-import WindLoadDialog from './WindLoadDialog';
-import SeismicLoadDialog from './SeismicLoadDialog';
-import MovingLoadDialog from './MovingLoadDialog';
-import { SplitMemberDialog } from './geometry/SplitMemberDialog';
-import { MemberSpecificationsDialog } from './specifications/MemberSpecificationsDialog';
-import ASCE7SeismicLoadDialog from './ASCE7SeismicLoadDialog';
-import ASCE7WindLoadDialog from './ASCE7WindLoadDialog';
-import LoadCombinationsDialog from './LoadCombinationsDialog';
-import { AdvancedAnalysisDialog } from './AdvancedAnalysisDialog';
-import { DesignCodesDialog } from './DesignCodesDialog';
-import { ModelingToolbar } from './toolbar/ModelingToolbar';
-import { ModalAnalysisPanel } from './analysis/ModalAnalysisPanel';
-import { ExportDialog } from './ExportDialog';
+
+// ---- Lazy-loaded dialogs & panels (only fetched when opened) ----
+const StructureWizard = lazy(() => import('./StructureWizard').then(m => ({ default: m.StructureWizard })));
+const FoundationDesignDialog = lazy(() => import('./FoundationDesignDialog').then(m => ({ default: m.FoundationDesignDialog })));
+const IS875LoadDialog = lazy(() => import('./IS875LoadDialog').then(m => ({ default: m.IS875LoadDialog })));
+const GeometryToolsPanel = lazy(() => import('./GeometryToolsPanel').then(m => ({ default: m.GeometryToolsPanel })));
+const ValidationErrorDisplay = lazy(() => import('./ValidationErrorDisplay').then(m => ({ default: m.ValidationErrorDisplay })));
+const ValidationDialog = lazy(() => import('./ValidationDialog').then(m => ({ default: m.ValidationDialog })));
+const StressVisualization = lazy(() => import('./StressVisualization'));
+const InteroperabilityDialog = lazy(() => import('./InteroperabilityDialog').then(m => ({ default: m.InteroperabilityDialog })));
+const RailwayBridgeDialog = lazy(() => import('./RailwayBridgeDialog').then(m => ({ default: m.RailwayBridgeDialog })));
+const MeshingPanel = lazy(() => import('./MeshingPanel').then(m => ({ default: m.MeshingPanel })));
+const AdvancedSelectionPanel = lazy(() => import('./AdvancedSelectionPanel').then(m => ({ default: m.AdvancedSelectionPanel })));
+const LoadDialog = lazy(() => import('./LoadDialog').then(m => ({ default: m.LoadDialog })));
+const WindLoadDialog = lazy(() => import('./WindLoadDialog'));
+const SeismicLoadDialog = lazy(() => import('./SeismicLoadDialog'));
+const MovingLoadDialog = lazy(() => import('./MovingLoadDialog'));
+const SplitMemberDialog = lazy(() => import('./geometry/SplitMemberDialog').then(m => ({ default: m.SplitMemberDialog })));
+const MemberSpecificationsDialog = lazy(() => import('./specifications/MemberSpecificationsDialog').then(m => ({ default: m.MemberSpecificationsDialog })));
+const ASCE7SeismicLoadDialog = lazy(() => import('./ASCE7SeismicLoadDialog'));
+const ASCE7WindLoadDialog = lazy(() => import('./ASCE7WindLoadDialog'));
+const LoadCombinationsDialog = lazy(() => import('./LoadCombinationsDialog'));
+const AdvancedAnalysisDialog = lazy(() => import('./AdvancedAnalysisDialog').then(m => ({ default: m.AdvancedAnalysisDialog })));
+const DesignCodesDialog = lazy(() => import('./DesignCodesDialog').then(m => ({ default: m.DesignCodesDialog })));
+const ModalAnalysisPanel = lazy(() => import('./analysis/ModalAnalysisPanel').then(m => ({ default: m.ModalAnalysisPanel })));
+const ExportDialog = lazy(() => import('./ExportDialog').then(m => ({ default: m.ExportDialog })));
+const CloudProjectManager = lazy(() => import('./CloudProjectManager').then(m => ({ default: m.CloudProjectManager })));
+const StructureGallery = lazy(() => import('./gallery/StructureGallery').then(m => ({ default: m.StructureGallery })));
+const PlateCreationDialog = lazy(() => import('./dialogs/PlateCreationDialog').then(m => ({ default: m.PlateCreationDialog })));
+const BoundaryConditionsDialog = lazy(() => import('./BoundaryConditionsDialog').then(m => ({ default: m.BoundaryConditionsDialog })));
+const SelectionToolbar = lazy(() => import('./SelectionToolbar').then(m => ({ default: m.SelectionToolbar })));
+const DeadLoadGenerator = lazy(() => import('./DeadLoadGenerator').then(m => ({ default: m.DeadLoadGenerator })));
 import { useToast } from './ui/ToastSystem';
+import { ModelingToolbar } from './toolbar/ModelingToolbar';
 import type { Node, Member } from '../store/model';
 import consentService from '../services/ConsentService';
 import { useAuth } from '../providers/AuthProvider';
 import { useSubscription } from '../hooks/useSubscription';
-import { StructureGallery } from './gallery/StructureGallery';
-import { PlateCreationDialog } from './dialogs/PlateCreationDialog';
-import { BoundaryConditionsDialog } from './BoundaryConditionsDialog';
-import { SelectionToolbar } from './SelectionToolbar';
-import { DeadLoadGenerator } from './DeadLoadGenerator';
 
 // Production-safe logging
 import { modelerLogger, stressLogger, uiLogger } from '../utils/logger';
@@ -98,7 +101,6 @@ import { analysisService } from '../services/AnalysisService';
 import { API_CONFIG } from '../config/env';
 import { useRazorpayPayment } from './RazorpayPayment';
 import { useTierAccess } from '../hooks/useTierAccess';
-import { CloudProjectManager } from './CloudProjectManager';
 import { ProjectService, Project } from '../services/ProjectService';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 
@@ -332,6 +334,12 @@ export const ModernModeler: FC = () => {
         return () => document.removeEventListener('trigger-upgrade', handleUpgradeTrigger);
     }, [userId, user, openPayment, refreshSubscription]);
 
+    // Clean up analysis worker when leaving the modeler
+    useEffect(() => {
+        return () => {
+            analysisService.dispose();
+        };
+    }, []);
 
 
     const showResults = useModelStore((state) => state.showResults);
@@ -1601,6 +1609,7 @@ export const ModernModeler: FC = () => {
                 {/* Quick Commands Toolbar (Spacebar) */}
                 {QuickCommandsToolbar}
 
+                <Suspense fallback={null}>
                 <ExportDialog
                     isOpen={showExportDialog}
                     onClose={() => setShowExportDialog(false)}
@@ -1874,6 +1883,7 @@ export const ModernModeler: FC = () => {
                     isOpen={modals.structureGallery}
                     onClose={() => closeModal('structureGallery')}
                 />
+                </Suspense>
 
                 {/* Command Palette - Quick Access (Cmd+K) */}
                 <CommandPalette

@@ -1,4 +1,4 @@
-import { FC, useMemo, useEffect } from 'react';
+import { FC, useMemo, useEffect, memo } from 'react';
 import * as THREE from 'three';
 import { useModelStore } from '../store/model';
 
@@ -10,7 +10,7 @@ import { useModelStore } from '../store/model';
 // - Pinned: Pyramid/Tetrahedron at node position (translations restrained)
 // - Roller: Triangle/Roller at node position (partial restraint)
 
-export const SupportRenderer: FC = () => {
+export const SupportRenderer: FC = memo(() => {
     const nodes = useModelStore((state) => state.nodes);
 
     // Categorize nodes by support type
@@ -111,4 +111,6 @@ export const SupportRenderer: FC = () => {
             ))}
         </group>
     );
-};
+});
+
+SupportRenderer.displayName = 'SupportRenderer';

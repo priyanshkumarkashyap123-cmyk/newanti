@@ -1,4 +1,4 @@
-import { FC, useMemo } from 'react';
+import { FC, useMemo, memo } from 'react';
 import * as THREE from 'three';
 import { useModelStore } from '../store/model';
 
@@ -15,7 +15,7 @@ const ARROW_HEAD_WIDTH = 0.15;
 const MIN_ARROW_LENGTH = 0.1;
 const REFERENCE_LOAD = 100;    // 100 kN as reference magnitude
 
-export const LoadRenderer: FC = () => {
+export const LoadRenderer: FC = memo(() => {
     const nodes = useModelStore((state) => state.nodes);
     const loads = useModelStore((state) => state.loads);
     const members = useModelStore((state) => state.members);
@@ -138,5 +138,7 @@ export const LoadRenderer: FC = () => {
             ))}
         </group>
     );
-};
+});
+
+LoadRenderer.displayName = 'LoadRenderer';
 

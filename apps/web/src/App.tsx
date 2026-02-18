@@ -328,7 +328,7 @@ function App() {
                     <Route path="/analysis/buckling" element={<RequireAuth><BucklingAnalysisPanel /></RequireAuth>} />
                     <Route path="/analysis/cable" element={<RequireAuth><CableAnalysisPanel /></RequireAuth>} />
                     <Route path="/analysis/pdelta" element={<RequireAuth><PDeltaAnalysisPanel /></RequireAuth>} />
-                    <Route path="/analysis/nonlinear" element={<RequireAuth><PDeltaAnalysisPanel /></RequireAuth>} />
+                    <Route path="/analysis/nonlinear" element={<RequireAuth><NonlinearAnalysisPage /></RequireAuth>} />
 
                     {/* Enhanced Analysis Pages (CEO Industry Gap Closure - Phase 14) */}
                     <Route path="/analysis/modal-page" element={

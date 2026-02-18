@@ -1,4 +1,4 @@
-import { FC, useLayoutEffect, useRef, useMemo, useEffect } from 'react';
+import { FC, useLayoutEffect, useRef, useMemo, useEffect, memo } from 'react';
 import * as THREE from 'three';
 import { Line } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
@@ -37,7 +37,7 @@ function getUtilizationColor(ratio: number): THREE.Color {
     }
 }
 
-export const MembersRenderer: FC<MembersRendererProps> = ({
+export const MembersRenderer: FC<MembersRendererProps> = memo(({
     colorMode = 'DEFAULT',
     utilizationMap,
     displayMode = 'AUTO'
@@ -371,7 +371,9 @@ export const MembersRenderer: FC<MembersRendererProps> = ({
             )}
         </group>
     );
-};
+});
+
+MembersRenderer.displayName = 'MembersRenderer';
 
 export default MembersRenderer;
 

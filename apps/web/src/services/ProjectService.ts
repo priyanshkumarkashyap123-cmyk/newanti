@@ -25,28 +25,42 @@ export const ProjectService = {
      * List all projects for current user
      */
     async listProjects(token: string): Promise<Project[]> {
-        const result = await fetchJson<{ projects: Project[] }>(`${API_BASE_URL}/api/project`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            timeout: 10000
-        });
+        try {
+            const result = await fetchJson<{ projects: Project[] }>(`${API_BASE_URL}/api/project`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                timeout: 10000
+            });
 
-        return result.projects || [];
+            return result.projects || [];
+        } catch (error) {
+            console.error('[ProjectService] listProjects failed:', error);
+            throw new Error(
+                error instanceof Error ? error.message : 'Failed to load projects. Please check your network connection.'
+            );
+        }
     },
 
     /**
      * Get specific project details
      */
     async getProject(id: string, token: string): Promise<Project> {
-        const result = await fetchJson<{ project: Project }>(`${API_BASE_URL}/api/project/${id}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            timeout: 10000
-        });
+        try {
+            const result = await fetchJson<{ project: Project }>(`${API_BASE_URL}/api/project/${id}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                timeout: 10000
+            });
 
-        return result.project;
+            return result.project;
+        } catch (error) {
+            console.error('[ProjectService] getProject failed:', error);
+            throw new Error(
+                error instanceof Error ? error.message : 'Failed to load project. Please check your network connection.'
+            );
+        }
     },
 
     /**
@@ -56,22 +70,27 @@ export const ProjectService = {
         project: { name: string; description?: string; data: any; thumbnail?: string },
         token: string
     ): Promise<Project> {
-        const response = await fetch(`${API_BASE_URL}/api/project`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(project)
-        });
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/project`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(project)
+            });
 
-        if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.error || 'Failed to create project');
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || 'Failed to create project');
+            }
+
+            const data = await response.json();
+            return data.project;
+        } catch (error) {
+            console.error('[ProjectService] createProject failed:', error);
+            throw error instanceof Error ? error : new Error('Failed to create project');
         }
-
-        const data = await response.json();
-        return data.project;
     },
 
     /**
@@ -82,36 +101,46 @@ export const ProjectService = {
         updates: { name?: string; description?: string; data?: any; thumbnail?: string },
         token: string
     ): Promise<Project> {
-        const response = await fetch(`${API_BASE_URL}/api/project/${id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(updates)
-        });
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/project/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(updates)
+            });
 
-        if (!response.ok) {
-            throw new Error('Failed to update project');
+            if (!response.ok) {
+                throw new Error('Failed to update project');
+            }
+
+            const data = await response.json();
+            return data.project;
+        } catch (error) {
+            console.error('[ProjectService] updateProject failed:', error);
+            throw error instanceof Error ? error : new Error('Failed to update project');
         }
-
-        const data = await response.json();
-        return data.project;
     },
 
     /**
      * Delete a project
      */
     async deleteProject(id: string, token: string): Promise<void> {
-        const response = await fetch(`${API_BASE_URL}/api/project/${id}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/project/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
 
-        if (!response.ok) {
-            throw new Error('Failed to delete project');
+            if (!response.ok) {
+                throw new Error('Failed to delete project');
+            }
+        } catch (error) {
+            console.error('[ProjectService] deleteProject failed:', error);
+            throw error instanceof Error ? error : new Error('Failed to delete project');
         }
     }
 };
