@@ -1,5 +1,5 @@
-import { FC, Suspense } from 'react';
-import { Grid, GizmoHelper, GizmoViewport, Environment, ContactShadows } from '@react-three/drei';
+import { FC } from 'react';
+import { Grid, GizmoHelper, GizmoViewport } from '@react-three/drei';
 import { ModelRenderer } from './ModelRenderer';
 import { SelectionTransform } from './SelectionTransform';
 import { InteractionManager } from './InteractionManager';
@@ -41,33 +41,33 @@ export const SharedScene: FC<{ remoteUsers?: RemoteUser[] }> = ({ remoteUsers = 
 
     return (
         <>
-            {/* Enhanced Environment: HDR Lighting — wrapped in Suspense so a slow/blocked
-                CDN fetch does not freeze the entire scene (falls back to plain lights) */}
-            <Suspense fallback={null}>
-                <Environment preset="city" blur={0.5} background={false} />
-            </Suspense>
-
-            {/* Ground Shadows for realism */}
-            <ContactShadows
-                position={[0, 0, 0]}
-                opacity={0.4}
-                scale={50}
-                blur={2}
-                far={10}
-                resolution={512}
-                color="#000000"
+            {/* Engineering-grade lighting — no remote HDR dependencies.
+                Matches the STAAD-Pro / SkyCiv default scene setup:
+                - hemisphereLight:  sky/ground tint for ambient occlusion feel
+                - directionalLight: primary sun (cast shadow for depth cues)
+                - ambientLight:     low base fill so shadowed faces aren't black
+                This replaces <Environment preset="city"> which fetched
+                potsdamer_platz_1k.hdr from storage.googleapis.com and was
+                blocked by the site's CSP, crashing the CanvasErrorBoundary. */}
+            <hemisphereLight
+                args={[0x8fb0d8, 0x404040, 0.6]}
             />
-
-            {/* Lighting - reduced intensity as Environment adds light */}
-            <ambientLight intensity={0.2} />
+            <ambientLight intensity={0.25} />
             <directionalLight
                 position={[10, 20, 10]}
-                intensity={0.8}
+                intensity={1.2}
                 castShadow
-                shadow-mapSize-width={2048}
-                shadow-mapSize-height={2048}
+                shadow-mapSize-width={1024}
+                shadow-mapSize-height={1024}
+                shadow-camera-near={0.1}
+                shadow-camera-far={200}
+                shadow-camera-left={-50}
+                shadow-camera-right={50}
+                shadow-camera-top={50}
+                shadow-camera-bottom={-50}
             />
-            {/* Hemisphere light removed as Environment covers it */}
+            {/* Fill light from opposite side — softens harsh shadows on members */}
+            <directionalLight position={[-8, 10, -10]} intensity={0.3} />
 
             {/* Axes Helper - More visible */}
             <axesHelper args={[10]} />
