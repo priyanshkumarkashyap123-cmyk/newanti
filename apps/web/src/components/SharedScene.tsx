@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, Suspense } from 'react';
 import { Grid, GizmoHelper, GizmoViewport, Environment, ContactShadows } from '@react-three/drei';
 import { ModelRenderer } from './ModelRenderer';
 import { SelectionTransform } from './SelectionTransform';
@@ -41,8 +41,11 @@ export const SharedScene: FC<{ remoteUsers?: RemoteUser[] }> = ({ remoteUsers = 
 
     return (
         <>
-            {/* Enhanced Environment: HDR Lighting */}
-            <Environment preset="city" blur={0.5} background={false} />
+            {/* Enhanced Environment: HDR Lighting — wrapped in Suspense so a slow/blocked
+                CDN fetch does not freeze the entire scene (falls back to plain lights) */}
+            <Suspense fallback={null}>
+                <Environment preset="city" blur={0.5} background={false} />
+            </Suspense>
 
             {/* Ground Shadows for realism */}
             <ContactShadows
@@ -83,7 +86,7 @@ export const SharedScene: FC<{ remoteUsers?: RemoteUser[] }> = ({ remoteUsers = 
             />
 
             {/* Backup Grid Helper for better visibility */}
-            <gridHelper args={[100, 100, '#444444', '#333333']} />
+            {/* gridHelper removed — <Grid> above already handles infinite ground grid */}
 
             {/* Gizmo Helper for orientation - Premium Look */}
             <GizmoHelper alignment="bottom-right" margin={[80, 80]}>

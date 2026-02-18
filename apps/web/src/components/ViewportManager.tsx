@@ -1,4 +1,4 @@
-import { FC, useRef, useState, MutableRefObject, useEffect } from 'react';
+import { FC, useRef, useState, MutableRefObject, useEffect, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { View, OrbitControls, OrthographicCamera, PerspectiveCamera } from '@react-three/drei';
 import { SharedScene } from './SharedScene';
@@ -402,7 +402,9 @@ const ViewportContainer: FC<{ className?: string; layout: ViewportLayout; useWeb
                         enablePan={true}
                         panSpeed={1.5}
                     />
-                    <SharedScene remoteUsers={remoteUsers} />
+                    <Suspense fallback={null}>
+                        <SharedScene remoteUsers={remoteUsers} />
+                    </Suspense>
                     <BoxSelector />
                 </View>
 
@@ -413,7 +415,9 @@ const ViewportContainer: FC<{ className?: string; layout: ViewportLayout; useWeb
                             <color attach="background" args={['#1a1a1a']} />
                             <OrthographicCamera makeDefault position={[0, 50, 0]} zoom={15} up={[0, 0, -1]} />
                             <OrbitControls makeDefault {...orthoControlProps} />
-                            <SharedScene remoteUsers={remoteUsers} />
+                            <Suspense fallback={null}>
+                                <SharedScene remoteUsers={remoteUsers} />
+                            </Suspense>
                             <BoxSelector />
                         </View>
 
@@ -422,7 +426,9 @@ const ViewportContainer: FC<{ className?: string; layout: ViewportLayout; useWeb
                             <color attach="background" args={['#1a1a1a']} />
                             <OrthographicCamera makeDefault position={[0, 0, 50]} zoom={15} />
                             <OrbitControls makeDefault {...orthoControlProps} />
-                            <SharedScene remoteUsers={remoteUsers} />
+                            <Suspense fallback={null}>
+                                <SharedScene remoteUsers={remoteUsers} />
+                            </Suspense>
                             <BoxSelector />
                         </View>
 
@@ -431,11 +437,16 @@ const ViewportContainer: FC<{ className?: string; layout: ViewportLayout; useWeb
                             <color attach="background" args={['#1a1a1a']} />
                             <OrthographicCamera makeDefault position={[50, 0, 0]} zoom={15} />
                             <OrbitControls makeDefault {...orthoControlProps} />
-                            <SharedScene remoteUsers={remoteUsers} />
+                            <Suspense fallback={null}>
+                                <SharedScene remoteUsers={remoteUsers} />
+                            </Suspense>
                             <BoxSelector />
                         </View>
                     </>
                 )}
+
+                {/* Required by @react-three/drei v9: renders all tracked Views into the Canvas */}
+                <View.Port />
             </Canvas>
         </div>
     );
