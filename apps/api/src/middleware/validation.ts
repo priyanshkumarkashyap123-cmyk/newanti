@@ -56,7 +56,7 @@ const restraintsSchema = z.object({
 }).optional();
 
 const nodeSchema = z.object({
-    id: z.union([z.string(), z.number()]),
+    id: z.union([z.string(), z.number()]).transform(String),
     x: z.number().finite(),
     y: z.number().finite(),
     z: z.number().finite().optional().default(0),
@@ -64,16 +64,19 @@ const nodeSchema = z.object({
 });
 
 const memberSchema = z.object({
-    id: z.union([z.string(), z.number()]),
-    startNodeId: z.union([z.string(), z.number()]),
-    endNodeId: z.union([z.string(), z.number()]),
+    id: z.union([z.string(), z.number()]).transform(String),
+    startNodeId: z.union([z.string(), z.number()]).transform(String),
+    endNodeId: z.union([z.string(), z.number()]).transform(String),
     E: z.number().positive().optional().default(200e6),
     A: z.number().positive().optional().default(0.01),
     I: z.number().positive().optional().default(1e-4),
+}).refine(data => data.startNodeId !== data.endNodeId, {
+    message: "Start and end nodes cannot be the same",
+    path: ["endNodeId"]
 });
 
 const loadSchema = z.object({
-    nodeId: z.union([z.string(), z.number()]),
+    nodeId: z.union([z.string(), z.number()]).transform(String),
     fx: z.number().finite().optional().default(0),
     fy: z.number().finite().optional().default(0),
     fz: z.number().finite().optional().default(0),
@@ -315,8 +318,44 @@ export const bucklingSchema = z.object({
         fx: z.number().finite().optional(),
         fy: z.number().finite().optional(),
         fz: z.number().finite().optional(),
-    })),
+    })).min(1),
     numModes: z.number().int().positive().optional().default(3),
+});
+
+export const cableSchema = z.object({
+    nodes: z.array(advancedNodeSchema).min(2),
+    members: z.array(advancedMemberSchema).min(1),
+    supports: z.array(supportSchema).min(1),
+    cables: z.array(z.object({
+        memberId: z.number(),
+        weight: z.number().positive().optional().default(10),
+        pretension: z.number().finite().optional().default(0),
+        sagRatio: z.number().positive().optional(),
+    })).min(1),
+    loads: z.array(z.object({
+        nodeId: z.number(),
+        fx: z.number().finite().optional(),
+        fy: z.number().finite().optional(),
+        fz: z.number().finite().optional(),
+    })).optional().default([]),
+});
+
+export const spectrumSchema = z.object({
+    nodes: z.array(advancedNodeSchema).min(2),
+    members: z.array(advancedMemberSchema).min(1),
+    supports: z.array(supportSchema).min(1),
+    numModes: z.number().int().positive().optional().default(12),
+    spectrum: z.object({
+        type: z.enum(['IS1893', 'custom']),
+        zoneLevel: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)]).optional(),
+        soilType: z.enum(['I', 'II', 'III']).optional(),
+        dampingRatio: z.number().min(0).max(1).optional().default(0.05),
+        customCurve: z.array(z.object({
+            period: z.number().positive(),
+            acceleration: z.number().positive(),
+        })).optional(),
+    }),
+    combinationMethod: z.enum(['CQC', 'SRSS']).optional().default('CQC'),
 });
 
 // Re-export Zod for convenience

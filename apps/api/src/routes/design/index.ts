@@ -234,14 +234,6 @@ router.post('/steel', validateBody(steelDesignSchema), async (req: Request, res:
     try {
         const request = req.body as SteelDesignRequest;
 
-        if (!request.section || !request.forces) {
-            res.status(400).json({
-                success: false,
-                error: 'Missing section or forces data'
-            });
-            return;
-        }
-
         const pythonScript = request.code === 'AISC360' ? `
 from design.steel.aisc360 import AISC360Designer, DesignMethod
 from design.steel.is800 import SectionProperties, MemberGeometry, DesignForces

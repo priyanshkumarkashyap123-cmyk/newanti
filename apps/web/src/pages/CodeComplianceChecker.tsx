@@ -8,8 +8,9 @@
  * SAP2000 verification, and RAM Structural System code checking.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { useModelStore } from '../store/model';
 
 // Types
 interface CodeCheck {
@@ -51,6 +52,10 @@ interface ComplianceReport {
 }
 
 const CodeComplianceChecker: React.FC = () => {
+  const nodes = useModelStore((s) => s.nodes);
+  const members = useModelStore((s) => s.members);
+  const analysisResults = useModelStore((s) => s.analysisResults);
+
   const [activeTab, setActiveTab] = useState<'check' | 'results' | 'standards' | 'history'>('check');
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -70,194 +75,164 @@ const CodeComplianceChecker: React.FC = () => {
     { id: 'EC8', name: 'Eurocode 8', fullName: 'Seismic Design', country: '🇪🇺 Europe', icon: '🌊', version: '2004', isActive: false, checksAvailable: 32 },
   ]);
 
-  const [checkResults] = useState<CodeCheck[]>([
-    // Strength Checks
-    {
-      id: '1',
-      code: 'IS 456',
-      clause: '38.1',
-      description: 'Flexural capacity check for beam',
-      category: 'strength',
-      element: 'Beam B-201',
-      location: 'Grid A-B, Level 2',
-      demand: 245.5,
-      capacity: 312.8,
-      ratio: 0.785,
-      status: 'pass',
-      severity: 'critical',
-    },
-    {
-      id: '2',
-      code: 'IS 456',
-      clause: '40.1',
-      description: 'Shear capacity check for beam',
-      category: 'strength',
-      element: 'Beam B-201',
-      location: 'Grid A-B, Level 2',
-      demand: 156.2,
-      capacity: 142.5,
-      ratio: 1.096,
-      status: 'fail',
-      severity: 'critical',
-      recommendation: 'Increase stirrup spacing or add additional shear reinforcement',
-    },
-    {
-      id: '3',
-      code: 'IS 800',
-      clause: '8.2.1',
-      description: 'Section classification check',
-      category: 'strength',
-      element: 'Column C-05',
-      location: 'Grid C, All Levels',
-      demand: 0,
-      capacity: 0,
-      ratio: 0,
-      status: 'pass',
-      severity: 'major',
-    },
-    {
-      id: '4',
-      code: 'IS 800',
-      clause: '9.2',
-      description: 'Compression member slenderness',
-      category: 'strength',
-      element: 'Column C-05',
-      location: 'Grid C, Level 1-2',
-      demand: 82.5,
-      capacity: 180,
-      ratio: 0.458,
-      status: 'pass',
-      severity: 'major',
-    },
-    // Serviceability Checks
-    {
-      id: '5',
-      code: 'IS 456',
-      clause: '23.2',
-      description: 'Deflection limit (L/250)',
-      category: 'serviceability',
-      element: 'Beam B-301',
-      location: 'Grid B-C, Level 3',
-      demand: 18.5,
-      capacity: 24.0,
-      ratio: 0.771,
-      status: 'pass',
-      severity: 'major',
-    },
-    {
-      id: '6',
-      code: 'IS 456',
-      clause: '43.1',
-      description: 'Crack width limit (0.3mm)',
-      category: 'serviceability',
-      element: 'Beam B-201',
-      location: 'Grid A-B, Level 2',
-      demand: 0.28,
-      capacity: 0.30,
-      ratio: 0.933,
-      status: 'warning',
-      severity: 'minor',
-      recommendation: 'Consider reducing bar spacing for crack control',
-    },
-    // Seismic Checks
-    {
-      id: '7',
-      code: 'IS 1893',
-      clause: '7.8.2.1',
-      description: 'Storey drift limit (0.004h)',
-      category: 'seismic',
-      element: 'Building',
-      location: 'Level 3-4',
-      demand: 0.0035,
-      capacity: 0.004,
-      ratio: 0.875,
-      status: 'pass',
-      severity: 'critical',
-    },
-    {
-      id: '8',
-      code: 'IS 1893',
-      clause: '7.1',
-      description: 'Building period verification',
-      category: 'seismic',
-      element: 'Building',
-      location: 'Global',
-      demand: 0.82,
-      capacity: 1.0,
-      ratio: 0.82,
-      status: 'pass',
-      severity: 'major',
-    },
-    {
-      id: '9',
-      code: 'IS 13920',
-      clause: '6.1.3',
-      description: 'Strong column weak beam',
-      category: 'seismic',
-      element: 'Joint J-A2',
-      location: 'Grid A, Level 2',
-      demand: 1.1,
-      capacity: 1.4,
-      ratio: 0.786,
-      status: 'pass',
-      severity: 'critical',
-    },
-    // Detailing Checks
-    {
-      id: '10',
-      code: 'IS 456',
-      clause: '26.5.1',
-      description: 'Minimum reinforcement ratio',
-      category: 'detailing',
-      element: 'Beam B-102',
-      location: 'Grid A, Level 1',
-      demand: 0.12,
-      capacity: 0.12,
-      ratio: 1.0,
-      status: 'pass',
-      severity: 'major',
-    },
-    {
-      id: '11',
-      code: 'IS 13920',
-      clause: '6.2.1',
-      description: 'Beam longitudinal steel limit (max 2.5%)',
-      category: 'detailing',
-      element: 'Beam B-201',
-      location: 'Grid A-B, Level 2',
-      demand: 2.8,
-      capacity: 2.5,
-      ratio: 1.12,
-      status: 'fail',
-      severity: 'major',
-      recommendation: 'Reduce tension reinforcement or increase beam depth',
-    },
-    {
-      id: '12',
-      code: 'IS 13920',
-      clause: '7.4.1',
-      description: 'Column longitudinal steel (min 0.8%)',
-      category: 'detailing',
-      element: 'Column C-03',
-      location: 'Grid A, Level 1',
-      demand: 0.95,
-      capacity: 0.8,
-      ratio: 1.188,
-      status: 'pass',
-      severity: 'major',
-    },
-  ]);
+  const [checkResults, setCheckResults] = useState<CodeCheck[]>([]);
 
-  const [complianceReport] = useState<ComplianceReport>({
-    projectName: 'Commercial Complex - Phase 1',
-    checkDate: new Date().toISOString().split('T')[0],
-    engineer: 'Rakshit Tiwari',
-    totalChecks: 156,
-    passed: 142,
-    failed: 8,
-    warnings: 6,
-    overallStatus: 'review-required',
-  });
+  const [complianceReport, setComplianceReport] = useState<ComplianceReport | null>(null);
+
+  // Build real compliance checks from model data
+  const buildChecksFromModel = useCallback((): CodeCheck[] => {
+    const checks: CodeCheck[] = [];
+    let idx = 0;
+    const memberEntries = Array.from(members.entries());
+    const nodeEntries = Array.from(nodes.entries());
+    const hasResults = analysisResults && analysisResults.memberForces && analysisResults.memberForces.size > 0;
+
+    if (memberEntries.length === 0) return [];
+
+    for (const [memberId, member] of memberEntries) {
+      const startNode = nodes.get(member.startNodeId);
+      const endNode = nodes.get(member.endNodeId);
+      if (!startNode || !endNode) continue;
+
+      const dx = endNode.x - startNode.x;
+      const dy = endNode.y - startNode.y;
+      const dz = (endNode.z ?? 0) - (startNode.z ?? 0);
+      const L = Math.sqrt(dx * dx + dy * dy + dz * dz); // Member length in meters
+      const E = member.E ?? 200e6; // kN/m²
+      const A = member.A ?? 0.01; // m²
+      const I = member.I ?? 1e-4; // m⁴
+
+      // Get member forces from analysis
+      const forces = hasResults ? analysisResults.memberForces.get(memberId) : undefined;
+      const maxBM = forces ? Math.max(Math.abs(forces.momentY), Math.abs(forces.momentZ)) : 0;
+      const maxSF = forces ? Math.max(Math.abs(forces.shearY), Math.abs(forces.shearZ)) : 0;
+      const maxAxial = forces?.axial ?? 0;
+
+      let maxDeflection = 0;
+      if (forces && forces.diagramData) {
+        const maxDefY = Math.max(...forces.diagramData.deflection_y.map(Math.abs));
+        const maxDefZ = Math.max(...forces.diagramData.deflection_z.map(Math.abs));
+        maxDeflection = Math.max(maxDefY, maxDefZ);
+      }
+
+      // IS 456/IS 800 Checks
+      if (selectedCodes.includes('IS456') || selectedCodes.includes('IS800')) {
+        // 1. Deflection check L/250 (total) and L/350 (live)
+        const deflLimit = L / 250;
+        const deflRatio = deflLimit > 0 ? Math.abs(maxDeflection) / deflLimit : 0;
+        checks.push({
+          id: String(++idx),
+          code: 'IS 456',
+          clause: '23.2',
+          description: 'Deflection limit (L/250)',
+          category: 'serviceability',
+          element: `Member ${memberId.slice(0, 8)}`,
+          location: `(${startNode.x.toFixed(1)}, ${startNode.y.toFixed(1)}) → (${endNode.x.toFixed(1)}, ${endNode.y.toFixed(1)})`,
+          demand: Math.abs(maxDeflection) * 1000, // mm
+          capacity: deflLimit * 1000, // mm
+          ratio: deflRatio,
+          status: deflRatio > 1 ? 'fail' : deflRatio > 0.85 ? 'warning' : 'pass',
+          severity: deflRatio > 1 ? 'critical' : 'major',
+          recommendation: deflRatio > 1 ? 'Increase member depth or reduce span' : undefined,
+        });
+
+        // 2. Slenderness check (L/r ≤ 180 for compression, 300 for tension)
+        const r = Math.sqrt(I / A); // radius of gyration
+        const slenderness = L / r;
+        const slenderLimit = Math.abs(maxAxial) > 0 && maxAxial < 0 ? 180 : 300;
+        const slenderRatio = slenderness / slenderLimit;
+        checks.push({
+          id: String(++idx),
+          code: 'IS 800',
+          clause: '3.8',
+          description: `Slenderness ratio (limit ${slenderLimit})`,
+          category: 'strength',
+          element: `Member ${memberId.slice(0, 8)}`,
+          location: `L=${L.toFixed(2)}m, r=${(r * 1000).toFixed(1)}mm`,
+          demand: slenderness,
+          capacity: slenderLimit,
+          ratio: slenderRatio,
+          status: slenderRatio > 1 ? 'fail' : slenderRatio > 0.9 ? 'warning' : 'pass',
+          severity: slenderRatio > 1 ? 'critical' : 'major',
+          recommendation: slenderRatio > 1 ? 'Increase section size or add bracing' : undefined,
+        });
+
+        // 3. Flexural capacity (simplified — compare demand BM against plastic moment Zp*fy)
+        if (Math.abs(maxBM) > 0) {
+          const fy = 250000; // kN/m² (Fe 250 default)
+          const Zp = (member.A ?? 0.01) * Math.sqrt((member.I ?? 1e-4) / (member.A ?? 0.01)) * 1.15; // approximate plastic section modulus
+          const Mp = Zp * fy; // kN·m
+          const flexRatio = Mp > 0 ? Math.abs(maxBM) / Mp : 0;
+          checks.push({
+            id: String(++idx),
+            code: 'IS 800',
+            clause: '9.2',
+            description: 'Flexural capacity check (Mu/Mp)',
+            category: 'strength',
+            element: `Member ${memberId.slice(0, 8)}`,
+            location: `Mu=${Math.abs(maxBM).toFixed(1)} kN·m`,
+            demand: Math.abs(maxBM),
+            capacity: Mp,
+            ratio: flexRatio,
+            status: flexRatio > 1 ? 'fail' : flexRatio > 0.85 ? 'warning' : 'pass',
+            severity: 'critical',
+            recommendation: flexRatio > 1 ? 'Increase section depth or use higher steel grade' : undefined,
+          });
+        }
+
+        // 4. Shear capacity (simplified — 0.6*fy*Aw)
+        if (Math.abs(maxSF) > 0) {
+          const fy = 250000;
+          const Aw = A * 0.6; // approx web area (60% of total)
+          const Vd = 0.6 * fy * Aw / 1.1; // IS 800 shear capacity
+          const shearRatio = Vd > 0 ? Math.abs(maxSF) / Vd : 0;
+          checks.push({
+            id: String(++idx),
+            code: 'IS 800',
+            clause: '8.4',
+            description: 'Shear capacity check (V/Vd)',
+            category: 'strength',
+            element: `Member ${memberId.slice(0, 8)}`,
+            location: `V=${Math.abs(maxSF).toFixed(1)} kN`,
+            demand: Math.abs(maxSF),
+            capacity: Vd,
+            ratio: shearRatio,
+            status: shearRatio > 1 ? 'fail' : shearRatio > 0.85 ? 'warning' : 'pass',
+            severity: 'critical',
+            recommendation: shearRatio > 1 ? 'Increase web depth or add stiffeners' : undefined,
+          });
+        }
+      }
+
+      // IS 1893 Seismic checks
+      if (selectedCodes.includes('IS1893')) {
+        // Storey drift check (simplified — use max deflection vs 0.004*h)
+        const h = Math.abs(dy); // storey height from vertical component
+        if (h > 0.5) {
+          const driftLimit = 0.004 * h;
+          const drift = Math.abs(maxDeflection);
+          const driftRatio = driftLimit > 0 ? drift / driftLimit : 0;
+          checks.push({
+            id: String(++idx),
+            code: 'IS 1893',
+            clause: '7.11.1',
+            description: 'Storey drift limit (0.004h)',
+            category: 'seismic',
+            element: `Member ${memberId.slice(0, 8)}`,
+            location: `h=${h.toFixed(2)}m`,
+            demand: drift * 1000,
+            capacity: driftLimit * 1000,
+            ratio: driftRatio,
+            status: driftRatio > 1 ? 'fail' : driftRatio > 0.85 ? 'warning' : 'pass',
+            severity: 'critical',
+            recommendation: driftRatio > 1 ? 'Increase lateral stiffness or add bracing' : undefined,
+          });
+        }
+      }
+    }
+
+    return checks;
+  }, [members, nodes, analysisResults, selectedCodes]);
 
   const toggleCode = (codeId: string) => {
     setSelectedCodes(prev =>
@@ -266,6 +241,10 @@ const CodeComplianceChecker: React.FC = () => {
   };
 
   const runComplianceCheck = () => {
+    if (members.size === 0) {
+      alert('No model loaded. Open the modeler and create a structure first.');
+      return;
+    }
     setIsRunning(true);
     setProgress(0);
     const interval = setInterval(() => {
@@ -273,12 +252,28 @@ const CodeComplianceChecker: React.FC = () => {
         if (prev >= 100) {
           clearInterval(interval);
           setIsRunning(false);
+          // Build real checks from model
+          const results = buildChecksFromModel();
+          setCheckResults(results);
+          const passed = results.filter(r => r.status === 'pass').length;
+          const failed = results.filter(r => r.status === 'fail').length;
+          const warnings = results.filter(r => r.status === 'warning').length;
+          setComplianceReport({
+            projectName: `Model (${members.size} members, ${nodes.size} nodes)`,
+            checkDate: new Date().toISOString().split('T')[0],
+            engineer: 'BeamLab Engine',
+            totalChecks: results.length,
+            passed,
+            failed,
+            warnings,
+            overallStatus: failed > 0 ? 'non-compliant' : warnings > 0 ? 'review-required' : 'compliant',
+          });
           setActiveTab('results');
           return 100;
         }
-        return prev + 2;
+        return prev + 5;
       });
-    }, 50);
+    }, 30);
   };
 
   const getStatusColor = (status: string) => {
@@ -314,11 +309,10 @@ const CodeComplianceChecker: React.FC = () => {
           {codeStandards.map((code) => (
             <label
               key={code.id}
-              className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                selectedCodes.includes(code.id)
-                  ? 'border-cyan-500 bg-cyan-900/20'
-                  : 'border-gray-600 bg-gray-700 hover:border-gray-500'
-              }`}
+              className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${selectedCodes.includes(code.id)
+                ? 'border-cyan-500 bg-cyan-900/20'
+                : 'border-gray-600 bg-gray-700 hover:border-gray-500'
+                }`}
             >
               <div className="flex items-center gap-4">
                 <input
@@ -380,12 +374,9 @@ const CodeComplianceChecker: React.FC = () => {
           <div className="space-y-4">
             <h4 className="text-white font-medium">Element Scope</h4>
             {[
-              { id: 'all', label: 'All Elements', count: 847 },
-              { id: 'beams', label: 'Beams Only', count: 312 },
-              { id: 'columns', label: 'Columns Only', count: 156 },
-              { id: 'slabs', label: 'Slabs Only', count: 48 },
-              { id: 'foundations', label: 'Foundations Only', count: 64 },
-              { id: 'failed', label: 'Previously Failed Only', count: 23 },
+              { id: 'all', label: 'All Elements', count: members.size },
+              { id: 'beams', label: 'Beams (horizontal)', count: Array.from(members.values()).filter(m => { const s = nodes.get(m.startNodeId); const e = nodes.get(m.endNodeId); return s && e && Math.abs(e.y - s.y) < 0.1; }).length },
+              { id: 'columns', label: 'Columns (vertical)', count: Array.from(members.values()).filter(m => { const s = nodes.get(m.startNodeId); const e = nodes.get(m.endNodeId); return s && e && Math.abs(e.y - s.y) > 0.5; }).length },
             ].map((scope) => (
               <label key={scope.id} className="flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600">
                 <div className="flex items-center gap-3">
@@ -412,17 +403,16 @@ const CodeComplianceChecker: React.FC = () => {
               Ready to check against {selectedCodes.length} code(s)
             </p>
             <p className="text-gray-400 text-sm">
-              Estimated checks: ~{selectedCodes.length * 45} • Time: ~{Math.ceil(selectedCodes.length * 3)} seconds
+              Estimated checks: ~{selectedCodes.length * members.size * 4} • Time: ~{Math.max(1, Math.ceil(selectedCodes.length * members.size * 0.01))}s
             </p>
           </div>
           <button
             onClick={runComplianceCheck}
             disabled={isRunning || selectedCodes.length === 0}
-            className={`px-8 py-4 rounded-lg font-bold transition-all flex items-center gap-3 ${
-              isRunning
-                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                : 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-500 hover:to-emerald-500'
-            }`}
+            className={`px-8 py-4 rounded-lg font-bold transition-all flex items-center gap-3 ${isRunning
+              ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+              : 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-500 hover:to-emerald-500'
+              }`}
           >
             {isRunning ? (
               <>
@@ -447,7 +437,7 @@ const CodeComplianceChecker: React.FC = () => {
               />
             </div>
             <p className="text-gray-400 text-sm mt-2">
-              Checking element {Math.floor((progress / 100) * 847)} of 847...
+              Checking {members.size} members against {selectedCodes.length} code(s)... {progress}%
             </p>
           </div>
         )}
@@ -483,11 +473,10 @@ const CodeComplianceChecker: React.FC = () => {
         </div>
 
         {/* Overall Status */}
-        <div className={`p-6 rounded-lg ${
-          failed > 0 ? 'bg-red-900/30 border border-red-600' :
+        <div className={`p-6 rounded-lg ${failed > 0 ? 'bg-red-900/30 border border-red-600' :
           warnings > 0 ? 'bg-yellow-900/30 border border-yellow-600' :
-          'bg-green-900/30 border border-green-600'
-        }`}>
+            'bg-green-900/30 border border-green-600'
+          }`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <span className="text-4xl">
@@ -498,11 +487,11 @@ const CodeComplianceChecker: React.FC = () => {
                   {failed > 0 ? 'NON-COMPLIANT' : warnings > 0 ? 'REVIEW REQUIRED' : 'FULLY COMPLIANT'}
                 </h3>
                 <p className="text-gray-400">
-                  {failed > 0 
+                  {failed > 0
                     ? `${failed} check(s) failed - design revisions required`
                     : warnings > 0
-                    ? `${warnings} warning(s) found - review recommended`
-                    : 'All checks passed successfully'}
+                      ? `${warnings} warning(s) found - review recommended`
+                      : 'All checks passed successfully'}
                 </p>
               </div>
             </div>
@@ -536,11 +525,10 @@ const CodeComplianceChecker: React.FC = () => {
             {checkResults.map((check) => (
               <div
                 key={check.id}
-                className={`p-4 rounded-lg border-l-4 ${
-                  check.status === 'pass' ? 'border-green-500 bg-gray-700/50' :
+                className={`p-4 rounded-lg border-l-4 ${check.status === 'pass' ? 'border-green-500 bg-gray-700/50' :
                   check.status === 'fail' ? 'border-red-500 bg-red-900/20' :
-                  'border-yellow-500 bg-yellow-900/20'
-                }`}
+                    'border-yellow-500 bg-yellow-900/20'
+                  }`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4">
@@ -569,11 +557,10 @@ const CodeComplianceChecker: React.FC = () => {
                     </div>
                     <div className="mt-2 text-sm">
                       <p className="text-gray-400">
-                        Ratio: <span className={`font-bold ${
-                          check.ratio <= 0.9 ? 'text-green-400' :
+                        Ratio: <span className={`font-bold ${check.ratio <= 0.9 ? 'text-green-400' :
                           check.ratio <= 1.0 ? 'text-yellow-400' :
-                          'text-red-400'
-                        }`}>{check.ratio.toFixed(3)}</span>
+                            'text-red-400'
+                          }`}>{check.ratio.toFixed(3)}</span>
                       </p>
                       <p className="text-gray-500 text-xs">
                         {check.demand.toFixed(1)} / {check.capacity.toFixed(1)}
@@ -698,11 +685,10 @@ const CodeComplianceChecker: React.FC = () => {
           ].map((entry, idx) => (
             <div key={idx} className="p-4 bg-gray-700 rounded-lg flex items-center justify-between hover:bg-gray-600 transition-colors cursor-pointer">
               <div className="flex items-center gap-4">
-                <span className={`w-3 h-3 rounded-full ${
-                  entry.status === 'pass' ? 'bg-green-500' :
+                <span className={`w-3 h-3 rounded-full ${entry.status === 'pass' ? 'bg-green-500' :
                   entry.status === 'review' ? 'bg-yellow-500' :
-                  'bg-red-500'
-                }`} />
+                    'bg-red-500'
+                  }`} />
                 <div>
                   <p className="text-white font-medium">{entry.date} at {entry.time}</p>
                   <p className="text-gray-400 text-sm">
@@ -711,14 +697,13 @@ const CodeComplianceChecker: React.FC = () => {
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                <span className={`px-3 py-1 rounded text-sm ${
-                  entry.status === 'pass' ? 'bg-green-600 text-white' :
+                <span className={`px-3 py-1 rounded text-sm ${entry.status === 'pass' ? 'bg-green-600 text-white' :
                   entry.status === 'review' ? 'bg-yellow-600 text-white' :
-                  'bg-red-600 text-white'
-                }`}>
+                    'bg-red-600 text-white'
+                  }`}>
                   {entry.status === 'pass' ? 'Compliant' :
-                   entry.status === 'review' ? 'Review Required' :
-                   'Non-Compliant'}
+                    entry.status === 'review' ? 'Review Required' :
+                      'Non-Compliant'}
                 </span>
                 <button className="p-2 text-gray-400 hover:text-white">📄</button>
               </div>
@@ -757,11 +742,10 @@ const CodeComplianceChecker: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${
-                activeTab === tab.id
-                  ? 'bg-cyan-600 text-white'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-              }`}
+              className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${activeTab === tab.id
+                ? 'bg-cyan-600 text-white'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
             >
               <span>{tab.icon}</span>
               {tab.label}

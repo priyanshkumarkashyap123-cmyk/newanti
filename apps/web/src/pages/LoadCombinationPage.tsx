@@ -75,15 +75,11 @@ export const LoadCombinationPage: React.FC = () => {
     setLoadCases(loadCases.map(c => c.id === id ? { ...c, ...updates } : c));
   };
 
-  const generateCombinations = async () => {
+  const generateCombinations = () => {
     setGenerating(true);
-    
-    // Simulate API call - in production this would call backend
-    setTimeout(() => {
-      const newCombos = generateByCode(designCode, loadCases);
-      setCombinations(newCombos);
-      setGenerating(false);
-    }, 500);
+    const newCombos = generateByCode(designCode, loadCases);
+    setCombinations(newCombos);
+    setGenerating(false);
   };
 
   const generateByCode = (code: DesignCode, cases: LoadCase[]): Combination[] => {
@@ -226,6 +222,76 @@ export const LoadCombinationPage: React.FC = () => {
             ],
             type: 'ULS'
           });
+        });
+      }
+    } else if (code === 'IBC') {
+      // IBC 2021 / ASCE 7-based combinations
+      if (DL) {
+        combos.push({
+          id: 'ibc1',
+          name: '1.4D',
+          cases: [{ caseId: DL.id, factor: 1.4 }],
+          type: 'ULS'
+        });
+      }
+      if (DL && LL) {
+        combos.push({
+          id: 'ibc2',
+          name: '1.2D + 1.6L',
+          cases: [
+            { caseId: DL.id, factor: 1.2 },
+            { caseId: LL.id, factor: 1.6 }
+          ],
+          type: 'ULS'
+        });
+      }
+      if (DL && LL && WL.length > 0) {
+        WL.forEach((wl, idx) => {
+          combos.push({
+            id: `ibc_wl${idx}`,
+            name: `1.2D + 1.0L + 1.0${wl.name}`,
+            cases: [
+              { caseId: DL.id, factor: 1.2 },
+              { caseId: LL.id, factor: 1.0 },
+              { caseId: wl.id, factor: 1.0 }
+            ],
+            type: 'ULS'
+          });
+        });
+      }
+      if (DL && LL && EQ.length > 0) {
+        EQ.forEach((eq, idx) => {
+          combos.push({
+            id: `ibc_eq${idx}`,
+            name: `1.2D + 1.0L + 1.0${eq.name}`,
+            cases: [
+              { caseId: DL.id, factor: 1.2 },
+              { caseId: LL.id, factor: 1.0 },
+              { caseId: eq.id, factor: 1.0 }
+            ],
+            type: 'ULS'
+          });
+          combos.push({
+            id: `ibc_eq${idx}b`,
+            name: `0.9D ± 1.0${eq.name}`,
+            cases: [
+              { caseId: DL.id, factor: 0.9 },
+              { caseId: eq.id, factor: 1.0 }
+            ],
+            type: 'ULS'
+          });
+        });
+      }
+      // SLS
+      if (DL && LL) {
+        combos.push({
+          id: 'ibc_sls',
+          name: '1.0D + 1.0L',
+          cases: [
+            { caseId: DL.id, factor: 1.0 },
+            { caseId: LL.id, factor: 1.0 }
+          ],
+          type: 'SLS'
         });
       }
     }

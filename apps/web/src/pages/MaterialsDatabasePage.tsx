@@ -8,8 +8,10 @@
  * with full property customization and code compliance.
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { useModelStore } from '../store/model';
 
 // Types
 interface Material {
@@ -44,12 +46,40 @@ interface MaterialCategory {
 }
 
 const MaterialsDatabasePage: React.FC = () => {
+  const navigate = useNavigate();
+  const members = useModelStore((s) => s.members);
+  const selectedMemberIds = useModelStore((s) => s.selectedIds);
+  const updateMember = useModelStore((s) => s.updateMember);
+
   const [activeTab, setActiveTab] = useState<'browse' | 'custom' | 'compare' | 'import'>('browse');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [materials] = useState<Material[]>([
+  // Custom material form state
+  const [customName, setCustomName] = useState('');
+  const [customType, setCustomType] = useState<Material['type']>('steel');
+  const [customGrade, setCustomGrade] = useState('');
+  const [customStandard, setCustomStandard] = useState('');
+  const [customE, setCustomE] = useState('');
+  const [customPoisson, setCustomPoisson] = useState('');
+  const [customFy, setCustomFy] = useState('');
+  const [customFu, setCustomFu] = useState('');
+  const [customDensity, setCustomDensity] = useState('');
+  const [customThermal, setCustomThermal] = useState('');
+  const [customGammaM, setCustomGammaM] = useState('');
+
+  const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  }, []);
+
+  const memberCount = members.size;
+  const selectedCount = selectedMemberIds?.size ?? 0;
+
+  const [materials, setMaterials] = useState<Material[]>([
     // Concrete - IS 456
     {
       id: 'c1',
@@ -297,7 +327,7 @@ const MaterialsDatabasePage: React.FC = () => {
   const filteredMaterials = useMemo(() => {
     return materials.filter(m => {
       const matchesType = selectedType === 'all' || m.type === selectedType;
-      const matchesSearch = searchQuery === '' || 
+      const matchesSearch = searchQuery === '' ||
         m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         m.grade.toLowerCase().includes(searchQuery.toLowerCase()) ||
         m.standard.toLowerCase().includes(searchQuery.toLowerCase());
@@ -306,7 +336,7 @@ const MaterialsDatabasePage: React.FC = () => {
   }, [materials, selectedType, searchQuery]);
 
   const toggleMaterialSelection = (id: string) => {
-    setSelectedMaterials(prev => 
+    setSelectedMaterials(prev =>
       prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]
     );
   };
@@ -319,11 +349,10 @@ const MaterialsDatabasePage: React.FC = () => {
           <button
             key={cat.type}
             onClick={() => setSelectedType(cat.type)}
-            className={`p-3 rounded-lg border-2 text-center transition-all ${
-              selectedType === cat.type
+            className={`p-3 rounded-lg border-2 text-center transition-all ${selectedType === cat.type
                 ? 'border-cyan-500 bg-cyan-900/30'
                 : 'border-gray-600 bg-gray-700 hover:border-gray-500'
-            }`}
+              }`}
           >
             <span className="text-2xl">{cat.icon}</span>
             <p className="text-white text-sm mt-1">{cat.label}</p>
@@ -363,21 +392,20 @@ const MaterialsDatabasePage: React.FC = () => {
           {filteredMaterials.map((material) => (
             <div
               key={material.id}
-              className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
-                selectedMaterials.includes(material.id)
+              className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${selectedMaterials.includes(material.id)
                   ? 'border-cyan-500 bg-cyan-900/20'
                   : 'border-gray-600 bg-gray-700 hover:border-gray-500'
-              }`}
+                }`}
               onClick={() => toggleMaterialSelection(material.id)}
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">
                     {material.type === 'concrete' ? '🏗️' :
-                     material.type === 'steel' ? '🔩' :
-                     material.type === 'rebar' ? '🔗' :
-                     material.type === 'timber' ? '🪵' :
-                     material.type === 'masonry' ? '🧱' : '🔘'}
+                      material.type === 'steel' ? '🔩' :
+                        material.type === 'rebar' ? '🔗' :
+                          material.type === 'timber' ? '🪵' :
+                            material.type === 'masonry' ? '🧱' : '🔘'}
                   </span>
                   <div>
                     <h4 className="text-white font-medium">{material.name}</h4>
@@ -414,13 +442,44 @@ const MaterialsDatabasePage: React.FC = () => {
 
               <p className="text-gray-400 text-xs mt-3">{material.description}</p>
 
-              <div className="flex justify-end mt-3">
-                <button
-                  onClick={(e) => { e.stopPropagation(); }}
-                  className="px-3 py-1 bg-cyan-600 text-white text-sm rounded hover:bg-cyan-500 transition-colors"
-                >
-                  Use Material
-                </button>
+              <div className="flex justify-end mt-3 gap-2">
+                {memberCount > 0 && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Apply material E to selected members (or all if none selected)
+                      const targetIds = selectedCount > 0
+                        ? Array.from(selectedMemberIds!)
+                        : Array.from(members.keys());
+                      if (targetIds.length === 0) {
+                        showToast('No members in model to assign material to', 'error');
+                        return;
+                      }
+                      const eMpa = material.properties.E;
+                      const eKnM2 = eMpa * 1000; // Convert MPa to kN/m²
+                      targetIds.forEach(mid => updateMember(mid, { E: eKnM2 }));
+                      showToast(
+                        `Applied ${material.name} (E=${eMpa.toLocaleString()} MPa) to ${targetIds.length} member(s)`,
+                        'success'
+                      );
+                    }}
+                    className="px-3 py-1 bg-cyan-600 text-white text-sm rounded hover:bg-cyan-500 transition-colors"
+                    title={selectedCount > 0 ? `Apply to ${selectedCount} selected member(s)` : `Apply to all ${memberCount} members`}
+                  >
+                    {selectedCount > 0 ? `Apply to ${selectedCount} Selected` : 'Apply to All Members'}
+                  </button>
+                )}
+                {memberCount === 0 && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate('/app');
+                    }}
+                    className="px-3 py-1 bg-gray-600 text-gray-300 text-sm rounded hover:bg-gray-500 transition-colors"
+                  >
+                    Open Modeler First
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -446,19 +505,25 @@ const MaterialsDatabasePage: React.FC = () => {
               <input
                 type="text"
                 placeholder="e.g., High Performance Concrete"
+                value={customName}
+                onChange={(e) => setCustomName(e.target.value)}
                 className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white"
               />
             </div>
             <div>
               <label className="block text-sm text-gray-300 mb-2">Material Type</label>
-              <select className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white">
+              <select
+                value={customType}
+                onChange={(e) => setCustomType(e.target.value as Material['type'])}
+                className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white"
+              >
                 <option value="concrete">Concrete</option>
                 <option value="steel">Structural Steel</option>
                 <option value="rebar">Reinforcement</option>
                 <option value="timber">Timber</option>
                 <option value="masonry">Masonry</option>
                 <option value="composite">Composite</option>
-                <option value="other">Other</option>
+                <option value="aluminum">Aluminum</option>
               </select>
             </div>
             <div>
@@ -466,6 +531,8 @@ const MaterialsDatabasePage: React.FC = () => {
               <input
                 type="text"
                 placeholder="e.g., M60, Fe 600"
+                value={customGrade}
+                onChange={(e) => setCustomGrade(e.target.value)}
                 className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white"
               />
             </div>
@@ -474,6 +541,8 @@ const MaterialsDatabasePage: React.FC = () => {
               <input
                 type="text"
                 placeholder="e.g., IS 456, ASTM A615"
+                value={customStandard}
+                onChange={(e) => setCustomStandard(e.target.value)}
                 className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white"
               />
             </div>
@@ -488,6 +557,8 @@ const MaterialsDatabasePage: React.FC = () => {
                 <input
                   type="number"
                   placeholder="200000"
+                  value={customE}
+                  onChange={(e) => setCustomE(e.target.value)}
                   className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white"
                 />
               </div>
@@ -497,6 +568,8 @@ const MaterialsDatabasePage: React.FC = () => {
                   type="number"
                   step="0.01"
                   placeholder="0.3"
+                  value={customPoisson}
+                  onChange={(e) => setCustomPoisson(e.target.value)}
                   className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white"
                 />
               </div>
@@ -505,6 +578,8 @@ const MaterialsDatabasePage: React.FC = () => {
                 <input
                   type="number"
                   placeholder="415"
+                  value={customFy}
+                  onChange={(e) => setCustomFy(e.target.value)}
                   className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white"
                 />
               </div>
@@ -513,6 +588,8 @@ const MaterialsDatabasePage: React.FC = () => {
                 <input
                   type="number"
                   placeholder="485"
+                  value={customFu}
+                  onChange={(e) => setCustomFu(e.target.value)}
                   className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white"
                 />
               </div>
@@ -521,6 +598,8 @@ const MaterialsDatabasePage: React.FC = () => {
                 <input
                   type="number"
                   placeholder="7850"
+                  value={customDensity}
+                  onChange={(e) => setCustomDensity(e.target.value)}
                   className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white"
                 />
               </div>
@@ -529,6 +608,8 @@ const MaterialsDatabasePage: React.FC = () => {
                 <input
                   type="text"
                   placeholder="12e-6"
+                  value={customThermal}
+                  onChange={(e) => setCustomThermal(e.target.value)}
                   className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white"
                 />
               </div>
@@ -539,6 +620,8 @@ const MaterialsDatabasePage: React.FC = () => {
                 type="number"
                 step="0.05"
                 placeholder="1.15"
+                value={customGammaM}
+                onChange={(e) => setCustomGammaM(e.target.value)}
                 className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white"
               />
             </div>
@@ -546,10 +629,49 @@ const MaterialsDatabasePage: React.FC = () => {
         </div>
 
         <div className="flex justify-end gap-4 mt-6">
-          <button className="px-6 py-3 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600">
+          <button
+            onClick={() => {
+              setCustomName(''); setCustomGrade(''); setCustomStandard('');
+              setCustomE(''); setCustomPoisson(''); setCustomFy(''); setCustomFu('');
+              setCustomDensity(''); setCustomThermal(''); setCustomGammaM('');
+            }}
+            className="px-6 py-3 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600"
+          >
             Reset
           </button>
-          <button className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold rounded-lg hover:from-cyan-500 hover:to-blue-500">
+          <button
+            onClick={() => {
+              if (!customName || !customE) {
+                showToast('Material name and E (modulus) are required', 'error');
+                return;
+              }
+              const newMat: Material = {
+                id: `custom_${Date.now()}`,
+                name: customName,
+                type: customType,
+                grade: customGrade || 'Custom',
+                standard: customStandard || 'User Defined',
+                properties: {
+                  E: parseFloat(customE) || 200000,
+                  fy: customFy ? parseFloat(customFy) : undefined,
+                  fu: customFu ? parseFloat(customFu) : undefined,
+                  density: parseFloat(customDensity) || 7850,
+                  poisson: parseFloat(customPoisson) || 0.3,
+                  thermalCoeff: customThermal ? parseFloat(customThermal) : 12e-6,
+                },
+                designValues: customGammaM ? { gamma_m: parseFloat(customGammaM) } : undefined,
+                description: 'User-defined custom material',
+                isCustom: true,
+              };
+              setMaterials(prev => [...prev, newMat]);
+              showToast(`Custom material "${customName}" saved to library`);
+              setCustomName(''); setCustomGrade(''); setCustomStandard('');
+              setCustomE(''); setCustomPoisson(''); setCustomFy(''); setCustomFu('');
+              setCustomDensity(''); setCustomThermal(''); setCustomGammaM('');
+              setActiveTab('browse');
+            }}
+            className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold rounded-lg hover:from-cyan-500 hover:to-blue-500"
+          >
             Save Custom Material
           </button>
         </div>
@@ -559,7 +681,7 @@ const MaterialsDatabasePage: React.FC = () => {
 
   const renderCompareTab = () => {
     const compareMaterials = materials.filter(m => selectedMaterials.includes(m.id));
-    
+
     return (
       <div className="space-y-6">
         <div className="bg-gray-800 rounded-lg p-6">
@@ -603,7 +725,7 @@ const MaterialsDatabasePage: React.FC = () => {
                     <tr key={prop.key} className="border-b border-gray-700/50">
                       <td className="p-3 text-gray-300">{prop.label}</td>
                       {compareMaterials.map(m => {
-                        const value = prop.isProperty 
+                        const value = prop.isProperty
                           ? m.properties[prop.key as keyof typeof m.properties]
                           : m[prop.key as keyof Material];
                         return (
@@ -647,10 +769,43 @@ const MaterialsDatabasePage: React.FC = () => {
           ))}
         </div>
 
-        <div className="border-2 border-dashed border-gray-600 rounded-lg p-12 text-center hover:border-cyan-500 transition-colors cursor-pointer">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+              try {
+                const data = JSON.parse(ev.target?.result as string);
+                const imported: Material[] = Array.isArray(data) ? data : data.materials || [];
+                if (imported.length === 0) throw new Error('No materials found');
+                // Validate and re-id
+                const valid = imported.map((m: Material, i: number) => ({
+                  ...m,
+                  id: `import_${Date.now()}_${i}`,
+                  isCustom: true,
+                }));
+                setMaterials(prev => [...prev, ...valid]);
+                showToast(`Imported ${valid.length} material(s)`);
+              } catch {
+                showToast('Failed to parse material file', 'error');
+              }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+          }}
+        />
+        <div
+          className="border-2 border-dashed border-gray-600 rounded-lg p-12 text-center hover:border-cyan-500 transition-colors cursor-pointer"
+          onClick={() => fileInputRef.current?.click()}
+        >
           <div className="text-5xl mb-4">📁</div>
           <p className="text-white font-medium mb-2">Drop material file here</p>
-          <p className="text-gray-400 text-sm">or click to browse</p>
+          <p className="text-gray-400 text-sm">or click to browse (.json)</p>
         </div>
       </div>
 
@@ -661,11 +816,40 @@ const MaterialsDatabasePage: React.FC = () => {
           Export Material Library
         </h3>
         <div className="flex gap-4">
-          <button className="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600">
-            📗 Export to Excel
-          </button>
-          <button className="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600">
+          <button
+            onClick={() => {
+              const json = JSON.stringify(materials, null, 2);
+              const blob = new Blob([json], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'beamlab-materials.json';
+              a.click();
+              URL.revokeObjectURL(url);
+              showToast(`Exported ${materials.length} materials to JSON`);
+            }}
+            className="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600"
+          >
             📄 Export to JSON
+          </button>
+          <button
+            onClick={() => {
+              const header = 'Name,Type,Grade,Standard,E (MPa),fy (MPa),fu (MPa),fck (MPa),Density (kg/m³),Poisson,Thermal Coeff\n';
+              const rows = materials.map(m =>
+                `${m.name},${m.type},${m.grade},${m.standard},${m.properties.E},${m.properties.fy ?? ''},${m.properties.fu ?? ''},${m.properties.fck ?? ''},${m.properties.density},${m.properties.poisson},${m.properties.thermalCoeff}`
+              ).join('\n');
+              const blob = new Blob([header + rows], { type: 'text/csv' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'beamlab-materials.csv';
+              a.click();
+              URL.revokeObjectURL(url);
+              showToast(`Exported ${materials.length} materials to CSV`);
+            }}
+            className="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600"
+          >
+            📗 Export to CSV
           </button>
         </div>
       </div>
@@ -700,11 +884,10 @@ const MaterialsDatabasePage: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${
-                activeTab === tab.id
+              className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${activeTab === tab.id
                   ? 'bg-cyan-600 text-white'
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-              }`}
+                }`}
             >
               <span>{tab.icon}</span>
               {tab.label}
@@ -717,6 +900,30 @@ const MaterialsDatabasePage: React.FC = () => {
         {activeTab === 'custom' && renderCustomTab()}
         {activeTab === 'compare' && renderCompareTab()}
         {activeTab === 'import' && renderImportTab()}
+
+        {/* Model Status Bar */}
+        {memberCount > 0 && (
+          <div className="mt-6 p-4 bg-blue-900/30 border border-blue-600/50 rounded-lg flex items-center justify-between">
+            <div className="text-blue-300 text-sm">
+              <span className="font-medium">Model loaded:</span> {memberCount} member(s)
+              {selectedCount > 0 && <span className="ml-2 text-cyan-400">• {selectedCount} selected</span>}
+            </div>
+            <button
+              onClick={() => navigate('/app')}
+              className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-500"
+            >
+              Open Modeler
+            </button>
+          </div>
+        )}
+
+        {/* Toast Notification */}
+        {toast && (
+          <div className={`fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-xl text-white font-medium z-50 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
+            }`}>
+            {toast.message}
+          </div>
+        )}
 
         {/* Standards Footer */}
         <div className="mt-8 p-6 bg-gray-800/50 rounded-lg border border-gray-700">

@@ -4,7 +4,7 @@
  * Contains ISMB, ISMC, ISA, SHS, RHS, CHS sections per IS standards
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   Search,
   Filter,
@@ -14,8 +14,10 @@ import {
   BookmarkCheck,
   Info,
   Ruler,
-  Database
+  Database,
+  CheckCircle2
 } from 'lucide-react';
+import { useModelStore } from '../store/model';
 
 // Import REAL section data from existing database
 import {
@@ -85,10 +87,57 @@ const sectionDatabase: SectionData[] = [
 ];
 
 export const SectionDatabasePage: React.FC = () => {
+  const members = useModelStore(s => s.members);
+  const selectedIds = useModelStore(s => s.selectedIds);
+  const updateMember = useModelStore(s => s.updateMember);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStandard, setSelectedStandard] = useState<SectionStandard | 'ALL'>('ALL');
   const [selectedSection, setSelectedSection] = useState<SectionData | null>(null);
   const [savedSections, setSavedSections] = useState<Set<string>>(new Set());
+  const [toast, setToast] = useState<string | null>(null);
+
+  const showToast = useCallback((msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  }, []);
+
+  const applyToModel = useCallback((section: SectionData) => {
+    const targets = selectedIds.size > 0
+      ? Array.from(selectedIds)
+      : Array.from(members.keys());
+    if (targets.length === 0) {
+      showToast('No members in model. Create a structure first.');
+      return;
+    }
+    // Convert cm² → mm², cm⁴ → mm⁴
+    const Amm2 = section.area * 100;
+    const Imm4 = section.Ixx * 10000;
+    // E for steel: 200,000 MPa → 200e6 kN/m² (model store units)
+    const E_kN_m2 = 200e6;
+    // Map standard → SectionType
+    const typeMap: Record<string, string> = {
+      'ISMB': 'I-BEAM', 'ISMC': 'C-CHANNEL', 'ISA': 'L-ANGLE',
+      'SHS': 'TUBE', 'RHS': 'TUBE', 'CHS': 'CIRCLE'
+    };
+    targets.forEach((id: string) => {
+      updateMember(id, {
+        sectionId: section.designation,
+        sectionType: (typeMap[section.standard] || 'I-BEAM') as any,
+        A: Amm2,
+        I: Imm4,
+        E: E_kN_m2,
+        dimensions: {
+          height: section.depth,
+          width: section.width,
+          webThickness: section.webThick,
+          flangeThickness: section.flangeThick,
+        }
+      });
+    });
+    const scope = selectedIds.size > 0 ? `${targets.length} selected` : `all ${targets.length}`;
+    showToast(`Applied ${section.designation} to ${scope} members`);
+  }, [members, selectedIds, updateMember, showToast]);
 
   // Real IS 808 section types (matching our database)
   const standards: SectionStandard[] = ['ISMB', 'ISMC', 'ISA', 'SHS', 'RHS', 'CHS'];
@@ -385,9 +434,15 @@ export const SectionDatabasePage: React.FC = () => {
                   </div>
 
                   {/* Use in Model Button */}
-                  <button className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-semibold transition-all shadow-lg">
-                    Use in Model
+                  <button
+                    onClick={() => applyToModel(selectedSection)}
+                    className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-semibold transition-all shadow-lg"
+                  >
+                    {selectedIds.size > 0 ? `Apply to ${selectedIds.size} Selected Members` : 'Apply to All Members'}
                   </button>
+                  <p className="text-xs text-slate-500 text-center mt-1">
+                    {members.size} members in model
+                  </p>
                 </div>
               </div>
             ) : (
@@ -404,6 +459,14 @@ export const SectionDatabasePage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Toast notification */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 z-50 animate-fade-in">
+          <CheckCircle2 className="w-5 h-5" />
+          {toast}
+        </div>
+      )}
     </div>
   );
 };

@@ -52,6 +52,7 @@ import {
   Box
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useModelStore } from '../store/model';
 
 // Types
 type ExportFormat = 'pdf' | 'dwg' | 'dxf' | 'xlsx' | 'docx' | 'html' | 'csv' | 'png' | 'svg';
@@ -88,6 +89,9 @@ interface ExportTemplate {
 }
 
 const PrintExportCenter: React.FC = () => {
+  const nodes = useModelStore(s => s.nodes);
+  const members = useModelStore(s => s.members);
+  const analysisResults = useModelStore(s => s.analysisResults);
   const [activeTab, setActiveTab] = useState<'print' | 'export' | 'templates'>('print');
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
@@ -171,27 +175,142 @@ const PrintExportCenter: React.FC = () => {
     setSelectedFormat(template.format);
   };
 
-  // Start export
+  // Start export - REAL export with actual data
   const startExport = useCallback(() => {
     setIsExporting(true);
     setExportProgress(0);
-    
-    const interval = setInterval(() => {
-      setExportProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsExporting(false);
-          // Update statuses
-          setExportItems(items => items.map(item => ({
-            ...item,
-            status: item.selected ? 'complete' : 'ready'
-          })));
-          return 100;
-        }
-        return prev + 2;
+
+    // Build export data from model store
+    const buildCSV = (): string => {
+      let csv = '';
+      // Nodes
+      csv += 'NODES\nID,X (m),Y (m),Z (m)\n';
+      nodes.forEach((n, id) => {
+        csv += `${id},${n.x},${n.y ?? 0},${n.z ?? 0}\n`;
       });
-    }, 100);
-  }, []);
+      csv += '\nMEMBERS\nID,Start Node,End Node,Section,E (kN/m²),A (mm²),I (mm⁴)\n';
+      members.forEach((m, id) => {
+        csv += `${id},${m.startNodeId},${m.endNodeId},${m.sectionId || '-'},${m.E || 200e6},${m.A || '-'},${m.I || '-'}\n`;
+      });
+      if (analysisResults) {
+        csv += '\nDISPLACEMENTS\nNode,dx (m),dy (m),dz (m),rx (rad),ry (rad),rz (rad)\n';
+        analysisResults.displacements.forEach((d, id) => {
+          csv += `${id},${d.dx.toFixed(6)},${d.dy.toFixed(6)},${d.dz.toFixed(6)},${d.rx.toFixed(6)},${d.ry.toFixed(6)},${d.rz.toFixed(6)}\n`;
+        });
+        csv += '\nMEMBER FORCES\nMember,Axial (kN),ShearY (kN),ShearZ (kN),MomentY (kNm),MomentZ (kNm),Torsion (kNm)\n';
+        analysisResults.memberForces.forEach((f, id) => {
+          csv += `${id},${f.axial.toFixed(2)},${f.shearY.toFixed(2)},${f.shearZ.toFixed(2)},${f.momentY.toFixed(2)},${f.momentZ.toFixed(2)},${f.torsion.toFixed(2)}\n`;
+        });
+        csv += '\nREACTIONS\nNode,Fx (kN),Fy (kN),Fz (kN),Mx (kNm),My (kNm),Mz (kNm)\n';
+        analysisResults.reactions.forEach((r, id) => {
+          csv += `${id},${r.fx.toFixed(2)},${r.fy.toFixed(2)},${r.fz.toFixed(2)},${r.mx.toFixed(2)},${r.my.toFixed(2)},${r.mz.toFixed(2)}\n`;
+        });
+      }
+      return csv;
+    };
+
+    const buildHTML = (): string => {
+      let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Structural Analysis Report</title>
+<style>body{font-family:Arial,sans-serif;margin:40px;color:#333}h1{color:#1a365d;border-bottom:2px solid #2b6cb0;padding-bottom:10px}
+h2{color:#2b6cb0;margin-top:20px}table{width:100%;border-collapse:collapse;margin:10px 0}th,td{border:1px solid #ccc;padding:6px 10px;text-align:right}
+th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pass{color:green}.fail{color:red}
+.header{display:flex;justify-content:space-between;align-items:center}.meta{color:#718096;font-size:0.9em}</style></head><body>`;
+      html += `<div class="header"><h1>Structural Analysis Report</h1><div class="meta">Generated: ${new Date().toLocaleDateString()}<br>BeamLab Engineering</div></div>`;
+      html += `<h2>Model Summary</h2><p>Nodes: ${nodes.size} | Members: ${members.size}</p>`;
+
+      // Nodes table
+      html += '<h2>Node Coordinates</h2><table><tr><th>Node</th><th>X (m)</th><th>Y (m)</th><th>Z (m)</th></tr>';
+      nodes.forEach((n, id) => { html += `<tr><td>${id}</td><td>${n.x}</td><td>${n.y ?? 0}</td><td>${n.z ?? 0}</td></tr>`; });
+      html += '</table>';
+
+      // Members table
+      html += '<h2>Member Properties</h2><table><tr><th>Member</th><th>Start</th><th>End</th><th>Section</th></tr>';
+      members.forEach((m, id) => { html += `<tr><td>${id}</td><td>${m.startNodeId}</td><td>${m.endNodeId}</td><td>${m.sectionId || '-'}</td></tr>`; });
+      html += '</table>';
+
+      if (analysisResults) {
+        html += '<h2>Displacements</h2><table><tr><th>Node</th><th>dx (mm)</th><th>dy (mm)</th><th>dz (mm)</th></tr>';
+        analysisResults.displacements.forEach((d, id) => {
+          html += `<tr><td>${id}</td><td>${(d.dx * 1000).toFixed(2)}</td><td>${(d.dy * 1000).toFixed(2)}</td><td>${(d.dz * 1000).toFixed(2)}</td></tr>`;
+        });
+        html += '</table>';
+
+        html += '<h2>Member Forces</h2><table><tr><th>Member</th><th>Axial (kN)</th><th>Shear Y (kN)</th><th>Moment Y (kNm)</th></tr>';
+        analysisResults.memberForces.forEach((f, id) => {
+          html += `<tr><td>${id}</td><td>${f.axial.toFixed(2)}</td><td>${f.shearY.toFixed(2)}</td><td>${f.momentY.toFixed(2)}</td></tr>`;
+        });
+        html += '</table>';
+
+        html += '<h2>Support Reactions</h2><table><tr><th>Node</th><th>Fx (kN)</th><th>Fy (kN)</th><th>Fz (kN)</th></tr>';
+        analysisResults.reactions.forEach((r, id) => {
+          html += `<tr><td>${id}</td><td>${r.fx.toFixed(2)}</td><td>${r.fy.toFixed(2)}</td><td>${r.fz.toFixed(2)}</td></tr>`;
+        });
+        html += '</table>';
+      }
+      html += '</body></html>';
+      return html;
+    };
+
+    const buildJSON = (): string => {
+      const data: any = {
+        meta: { generated: new Date().toISOString(), app: 'BeamLab' },
+        nodes: Object.fromEntries(nodes),
+        members: Object.fromEntries(
+          Array.from(members.entries()).map(([id, m]) => [id, { ...m }])
+        ),
+      };
+      if (analysisResults) {
+        data.displacements = Object.fromEntries(analysisResults.displacements);
+        data.memberForces = Object.fromEntries(analysisResults.memberForces);
+        data.reactions = Object.fromEntries(analysisResults.reactions);
+      }
+      return JSON.stringify(data, null, 2);
+    };
+
+    // Simulate progress while generating
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 10;
+      setExportProgress(Math.min(progress, 90));
+    }, 50);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      let content: string;
+      let ext: string;
+      let mime: string;
+
+      if (selectedFormat === 'csv' || selectedFormat === 'xlsx') {
+        content = buildCSV();
+        ext = 'csv';
+        mime = 'text/csv';
+      } else if (selectedFormat === 'html' || selectedFormat === 'pdf' || selectedFormat === 'docx') {
+        content = buildHTML();
+        ext = 'html';
+        mime = 'text/html';
+      } else {
+        content = buildJSON();
+        ext = 'json';
+        mime = 'application/json';
+      }
+
+      // Download file
+      const blob = new Blob([content], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `beamlab_export.${ext}`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      setExportProgress(100);
+      setExportItems(items => items.map(item => ({
+        ...item,
+        status: item.selected ? 'complete' : 'ready'
+      })));
+      setIsExporting(false);
+    }, 600);
+  }, [nodes, members, analysisResults, selectedFormat]);
 
   // Get icon for item type
   const getItemIcon = (type: string) => {

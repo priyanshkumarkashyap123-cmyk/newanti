@@ -13,16 +13,65 @@ interface LocalDiagramPoint {
 
 export default function VisualizationHubPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const model = useModelStore();
+  const nodes = useModelStore(s => s.nodes);
+  const members = useModelStore(s => s.members);
+  const analysisResults = useModelStore(s => s.analysisResults);
   const [diagramType, setDiagramType] = useState<DiagramType>('bmd');
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [span, setSpan] = useState(6);
   const [maxValue, setMaxValue] = useState(45);
   const [isAnimating, setIsAnimating] = useState(false);
   const [scale, setScale] = useState(1);
   const animationRef = useRef<number | null>(null);
 
-  // Generate diagram data based on type
+  // Build member list for selector
+  const memberList = useMemo(() => {
+    const list: { id: string; label: string; length: number }[] = [];
+    members.forEach((m, id) => {
+      const n1 = nodes.get(m.startNodeId);
+      const n2 = nodes.get(m.endNodeId);
+      if (!n1 || !n2) return;
+      const L = Math.sqrt((n2.x - n1.x) ** 2 + ((n2.y ?? 0) - (n1.y ?? 0)) ** 2 + ((n2.z ?? 0) - (n1.z ?? 0)) ** 2);
+      list.push({ id, label: `M${id} (${L.toFixed(1)}m)`, length: L });
+    });
+    return list;
+  }, [members, nodes]);
+
+  // Auto-select first member if available
+  const activeMemberId = selectedMemberId || (memberList.length > 0 ? memberList[0].id : null);
+  const hasRealData = !!(analysisResults && activeMemberId && analysisResults.memberForces.get(activeMemberId));
+
+  // Generate diagram data — use real analysis results if available, else parametric
   const diagramData = useMemo(() => {
+    if (hasRealData && activeMemberId) {
+      const forces = analysisResults!.memberForces.get(activeMemberId)!;
+      const dd = forces.diagramData;
+      if (dd && dd.x_values.length > 0) {
+        const xVals = dd.x_values;
+        let yVals: number[];
+        switch (diagramType) {
+          case 'bmd': yVals = dd.moment_y; break;
+          case 'sfd': yVals = dd.shear_y; break;
+          case 'deflection': yVals = dd.deflection_y; break;
+          case 'axial': yVals = dd.axial; break;
+        }
+        return xVals.map((x, i) => ({ x, y: 0, value: yVals[i] || 0 }));
+      }
+      // Fallback: only max values available, interpolate simply
+      const member = members.get(activeMemberId);
+      const n1 = member ? nodes.get(member.startNodeId) : null;
+      const n2 = member ? nodes.get(member.endNodeId) : null;
+      const L = n1 && n2 ? Math.sqrt((n2.x - n1.x) ** 2 + ((n2.y ?? 0) - (n1.y ?? 0)) ** 2) : span;
+      const maxVal = diagramType === 'bmd' ? forces.momentY : diagramType === 'sfd' ? forces.shearY : diagramType === 'axial' ? forces.axial : 0;
+      return Array.from({ length: 51 }, (_, i) => {
+        const x = (i / 50) * L;
+        const xn = x / L;
+        let value = diagramType === 'bmd' ? maxVal * 4 * xn * (1 - xn) : diagramType === 'sfd' ? maxVal * (1 - 2 * xn) : maxVal;
+        return { x, y: 0, value };
+      });
+    }
+
+    // Parametric fallback (no model)
     const numPoints = 51;
     const points: LocalDiagramPoint[] = [];
     
@@ -32,27 +81,23 @@ export default function VisualizationHubPage() {
       
       switch (diagramType) {
         case 'bmd':
-          // Parabolic for uniformly loaded simply supported beam
           value = maxValue * 4 * (x / span) * (1 - x / span);
           break;
         case 'sfd':
-          // Linear for uniformly loaded beam
           value = maxValue * (1 - 2 * x / span);
           break;
         case 'deflection':
-          // Cubic deflection curve
           const xn = x / span;
           value = -maxValue * 0.1 * xn * (1 - xn) * (1 + xn - xn * xn);
           break;
         case 'axial':
-          // Constant or stepped
           value = i < numPoints / 2 ? maxValue * 0.8 : maxValue * 0.5;
           break;
       }
       points.push({ x, y: 0, value });
     }
     return points;
-  }, [diagramType, span, maxValue]);
+  }, [diagramType, span, maxValue, hasRealData, activeMemberId, analysisResults, members, nodes]);
 
   // Draw diagram on canvas
   const drawDiagram = useCallback((animationProgress = 1) => {
@@ -65,6 +110,9 @@ export default function VisualizationHubPage() {
     const width = canvas.width;
     const height = canvas.height;
     const padding = 40;
+
+    // Determine actual span from data
+    const actualSpan = diagramData.length > 0 ? Math.max(diagramData[diagramData.length - 1].x, span) : span;
     
     // Clear
     ctx.fillStyle = '#0f172a';
@@ -135,13 +183,13 @@ export default function VisualizationHubPage() {
     ctx.moveTo(padding, height / 2);
     for (let i = 0; i < visiblePoints; i++) {
       const point = diagramData[i];
-      const x = padding + (point.x / span) * (width - 2 * padding);
+      const x = padding + (point.x / actualSpan) * (width - 2 * padding);
       const y = height / 2 - point.value * scaleFactor;
       ctx.lineTo(x, y);
     }
     if (visiblePoints > 0) {
       const lastPoint = diagramData[visiblePoints - 1];
-      const lastX = padding + (lastPoint.x / span) * (width - 2 * padding);
+      const lastX = padding + (lastPoint.x / actualSpan) * (width - 2 * padding);
       ctx.lineTo(lastX, height / 2);
     }
     ctx.closePath();
@@ -151,7 +199,7 @@ export default function VisualizationHubPage() {
     ctx.beginPath();
     for (let i = 0; i < visiblePoints; i++) {
       const point = diagramData[i];
-      const x = padding + (point.x / span) * (width - 2 * padding);
+      const x = padding + (point.x / actualSpan) * (width - 2 * padding);
       const y = height / 2 - point.value * scaleFactor;
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
@@ -162,8 +210,9 @@ export default function VisualizationHubPage() {
     ctx.fillStyle = '#e2e8f0';
     ctx.font = '12px monospace';
     ctx.fillText('0', padding - 5, height / 2 + 30);
-    ctx.fillText(`${span}m`, width - padding - 10, height / 2 + 30);
-    ctx.fillText(`Max: ${maxValue.toFixed(1)} ${diagramType === 'bmd' ? 'kN·m' : diagramType === 'sfd' ? 'kN' : 'mm'}`, padding, 25);
+    ctx.fillText(`${actualSpan.toFixed(1)}m`, width - padding - 10, height / 2 + 30);
+    const actualMax = Math.max(...diagramData.map(p => Math.abs(p.value)));
+    ctx.fillText(`Max: ${actualMax.toFixed(1)} ${diagramType === 'bmd' ? 'kN·m' : diagramType === 'sfd' ? 'kN' : 'mm'}`, padding, 25);
     
     // Title
     ctx.font = 'bold 14px sans-serif';
@@ -255,30 +304,51 @@ export default function VisualizationHubPage() {
           <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-3">
             <h2 className="font-semibold flex items-center gap-2"><Move className="w-5 h-5 text-purple-400" /> Controls</h2>
             <div className="space-y-3">
-              <div>
-                <label className="text-xs text-slate-400">Span (m)</label>
-                <input
-                  type="range"
-                  min="2"
-                  max="20"
-                  value={span}
-                  onChange={e => setSpan(parseFloat(e.target.value))}
-                  className="w-full"
-                />
-                <span className="text-sm">{span} m</span>
-              </div>
-              <div>
-                <label className="text-xs text-slate-400">Max Value</label>
-                <input
-                  type="range"
-                  min="10"
-                  max="200"
-                  value={maxValue}
-                  onChange={e => setMaxValue(parseFloat(e.target.value))}
-                  className="w-full"
-                />
-                <span className="text-sm">{maxValue.toFixed(0)}</span>
-              </div>
+              {memberList.length > 0 && (
+                <div>
+                  <label className="text-xs text-slate-400">Member</label>
+                  <select
+                    value={activeMemberId || ''}
+                    onChange={e => setSelectedMemberId(e.target.value)}
+                    className="w-full mt-1 px-2 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm"
+                  >
+                    {memberList.map(m => (
+                      <option key={m.id} value={m.id}>{m.label}</option>
+                    ))}
+                  </select>
+                  {hasRealData && (
+                    <span className="text-xs text-green-400 mt-1 block">Using real analysis data</span>
+                  )}
+                </div>
+              )}
+              {!hasRealData && (
+                <>
+                  <div>
+                    <label className="text-xs text-slate-400">Span (m)</label>
+                    <input
+                      type="range"
+                      min="2"
+                      max="20"
+                      value={span}
+                      onChange={e => setSpan(parseFloat(e.target.value))}
+                      className="w-full"
+                    />
+                    <span className="text-sm">{span} m</span>
+                  </div>
+                  <div>
+                    <label className="text-xs text-slate-400">Max Value</label>
+                    <input
+                      type="range"
+                      min="10"
+                      max="200"
+                      value={maxValue}
+                      onChange={e => setMaxValue(parseFloat(e.target.value))}
+                      className="w-full"
+                    />
+                    <span className="text-sm">{maxValue.toFixed(0)}</span>
+                  </div>
+                </>
+              )}
               <div>
                 <label className="text-xs text-slate-400">Scale</label>
                 <input

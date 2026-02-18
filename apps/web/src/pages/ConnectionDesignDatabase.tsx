@@ -28,6 +28,7 @@ import {
   Copy,
   Zap
 } from 'lucide-react';
+import { useModelStore } from '../store/model';
 
 // Connection Types
 type ConnectionCategory = 'moment' | 'shear' | 'bracing' | 'column-base' | 'splice' | 'truss';
@@ -377,6 +378,7 @@ interface DesignInput {
 }
 
 export default function ConnectionDesignDatabase() {
+  const analysisResults = useModelStore(s => s.analysisResults);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ConnectionCategory | 'all'>('all');
   const [selectedConnection, setSelectedConnection] = useState<Connection | null>(null);
@@ -392,6 +394,24 @@ export default function ConnectionDesignDatabase() {
     columnSection: 'ISMB 350',
     category: 'all'
   });
+
+  // Auto-fill from analysis results
+  const autoFillFromAnalysis = useCallback(() => {
+    if (!analysisResults) return;
+    let maxM = 0, maxV = 0, maxN = 0;
+    analysisResults.memberForces.forEach(f => {
+      maxM = Math.max(maxM, Math.abs(f.momentY));
+      maxV = Math.max(maxV, Math.abs(f.shearY));
+      maxN = Math.max(maxN, Math.abs(f.axial));
+    });
+    setDesignInput(prev => ({
+      ...prev,
+      momentDemand: Math.round(maxM * 10) / 10,
+      shearDemand: Math.round(maxV * 10) / 10,
+      axialDemand: Math.round(maxN * 10) / 10
+    }));
+    setShowDesignMode(true);
+  }, [analysisResults]);
 
   // Filter connections
   const filteredConnections = useMemo(() => {
@@ -479,6 +499,15 @@ export default function ConnectionDesignDatabase() {
             </div>
             
             <div className="flex items-center gap-3">
+              {analysisResults && (
+                <button
+                  onClick={autoFillFromAnalysis}
+                  className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+                >
+                  <Zap className="w-4 h-4" />
+                  Use Analysis Forces
+                </button>
+              )}
               <button
                 onClick={() => setShowDesignMode(!showDesignMode)}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${

@@ -85,14 +85,6 @@ const jobs = new Map<string, JobStatus>();
 async function handleAnalysisRequest(req: Request, res: Response): Promise<void> {
     const model = req.body as AnalyzeRequest;
 
-    if (!model.nodes || !model.members) {
-        res.status(400).json({
-            success: false,
-            error: 'Missing nodes or members in request body'
-        });
-        return;
-    }
-
     const nodeCount = model.nodes.length;
     console.log(`[Analysis] Received model with ${nodeCount} nodes, ${model.members.length} members`);
 

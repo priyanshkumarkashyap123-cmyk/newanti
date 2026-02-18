@@ -197,20 +197,104 @@ export const FoundationDesignPage: React.FC = () => {
       });
 
     } catch (err: any) {
-      console.error('Foundation design error:', err);
+      console.warn('Backend unavailable, using client-side footing design:', err.message);
       
-      if (err.message?.includes('fetch') || err.message?.includes('network')) {
-        setError(
-          'Cannot connect to design server. ' +
-          'Ensure backend is running: pnpm run dev:api'
-        );
-      } else if (err.message?.includes('404')) {
-        setError(
-          'Foundation design API not found. ' +
-          'Backend may need this endpoint implemented.'
-        );
-      } else {
-        setError(err.message || 'Foundation design failed. Check console for details.');
+      // ── CLIENT-SIDE FALLBACK: IS 456 / IS 1904 Footing Design ──
+      try {
+        const P = input.axialLoad; // kN
+        const Mx = input.momentX;
+        const My = input.momentY;
+        const fck = input.fck;
+        const fy = input.fy;
+        const qa = input.bearingCapacity; // kN/m²
+        const Lf = input.footingLength / 1000; // m
+        const Bf = input.footingWidth / 1000;  // m
+        const D = input.footingDepth;           // mm
+        const cover = input.cover;
+        const d = D - cover - 10;              // effective depth mm
+        const colW = input.columnWidth / 1000; // m
+        const colD = input.columnDepth / 1000; // m
+
+        // 1. Bearing pressure (unfactored)
+        const A_foot = Lf * Bf;
+        const W_footing = 25 * Lf * Bf * D / 1000; // self-weight kN
+        const P_total = P + W_footing;
+        const Zx = (Bf * Lf * Lf) / 6;
+        const Zy = (Lf * Bf * Bf) / 6;
+        const q_max = P_total / A_foot + (Mx > 0 ? Mx / Zx : 0) + (My > 0 ? My / Zy : 0);
+        const q_min = Math.max(0, P_total / A_foot - (Mx > 0 ? Mx / Zx : 0) - (My > 0 ? My / Zy : 0));
+        const bearingRatio = q_max / qa;
+
+        // 2. Factored net upward pressure
+        const Pu = 1.5 * P;
+        const qu_net = Pu / A_foot; // kN/m²
+
+        // 3. Punching shear (two-way shear) check - IS 456 Cl. 31.6.2
+        const bo = 2 * ((colW * 1000 + d) + (colD * 1000 + d)); // critical perimeter mm
+        const Vp = Pu - qu_net * (colW + d / 1000) * (colD + d / 1000); // kN
+        const tau_p = (Vp * 1000) / (bo * d); // MPa
+        const tau_p_allow = 0.25 * Math.sqrt(fck); // IS 456 Cl. 31.6.2
+        const punchingRatio = tau_p / tau_p_allow;
+
+        // 4. One-way shear check
+        const cantilever = (Lf - colD) / 2; // m from face of column
+        const Vone = qu_net * Bf * (cantilever - d / 1000); // kN
+        const tau_v = (Vone * 1000) / (Bf * 1000 * d); // MPa
+        const tau_c = 0.36; // conservative for 0.2% steel
+        const shearRatio = Math.max(0, tau_v / tau_c);
+
+        // 5. Flexure check
+        const Mu = qu_net * Bf * cantilever * cantilever / 2; // kN·m per m width
+        // Ast per metre width
+        const Ast = 0.5 * (fck / fy) * (1 - Math.sqrt(Math.max(0, 1 - 4.6 * Mu / (fck * Bf * d * d / 1e6)))) * Bf * 1000 * d;
+        const AstMin = 0.0012 * Bf * 1000 * D;
+        const finalAst = Math.max(Ast, AstMin);
+        const barDia = 12;
+        const barArea = Math.PI * barDia * barDia / 4;
+        const spacing = Math.min(Math.floor(barArea * Bf * 1000 / finalAst), 200);
+
+        const Mu_cap = 0.87 * fy * finalAst * (d - 0.42 * finalAst * fy / (fck * Bf * 1000 * 0.36)) / 1e6;
+        const flexureRatio = Mu_cap > 0 ? Mu / Mu_cap : 1;
+
+        setResults({
+          passed: bearingRatio <= 1.0 && punchingRatio <= 1.0 && flexureRatio <= 1.0,
+          utilization: Math.max(bearingRatio, punchingRatio, flexureRatio),
+          bearingPressure: {
+            max: q_max,
+            min: q_min,
+            allowable: qa
+          },
+          dimensions: { length: Lf * 1000, width: Bf * 1000, depth: D },
+          reinforcement: {
+            long: `${barDia}mm @ ${spacing}mm c/c`,
+            short: `${barDia}mm @ ${spacing}mm c/c`
+          },
+          checks: [
+            {
+              description: `Bearing pressure: ${q_max.toFixed(1)} / ${qa} kN/m² (${(bearingRatio * 100).toFixed(1)}%)`,
+              passed: bearingRatio <= 1.0,
+              ratio: bearingRatio
+            },
+            {
+              description: `Punching shear: τv=${tau_p.toFixed(2)} / τc=${tau_p_allow.toFixed(2)} MPa (${(punchingRatio * 100).toFixed(1)}%)`,
+              passed: punchingRatio <= 1.0,
+              ratio: punchingRatio
+            },
+            {
+              description: `Flexure: Mu=${Mu.toFixed(1)} / Mu,cap=${Mu_cap.toFixed(1)} kNm (${(flexureRatio * 100).toFixed(1)}%)`,
+              passed: flexureRatio <= 1.0,
+              ratio: flexureRatio
+            },
+            {
+              description: `One-way shear: τv=${tau_v.toFixed(2)} / τc=${tau_c.toFixed(2)} MPa (${(shearRatio * 100).toFixed(1)}%)`,
+              passed: shearRatio <= 1.0,
+              ratio: shearRatio
+            }
+          ],
+          _clientSide: true
+        });
+      } catch (calcErr: any) {
+        setError('Client-side calculation error: ' + (calcErr.message || 'Unknown error'));
       }
     } finally {
       setAnalyzing(false);
@@ -513,6 +597,11 @@ export const FoundationDesignPage: React.FC = () => {
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                   <CheckCircle2 className="w-6 h-6 text-emerald-400" />
                   Design Results
+                  {results._clientSide && (
+                    <span className="ml-auto text-xs px-2 py-1 bg-amber-900/40 text-amber-400 rounded border border-amber-600/30">
+                      Client-side IS 456 calc
+                    </span>
+                  )}
                 </h2>
 
                 <div className="space-y-4">

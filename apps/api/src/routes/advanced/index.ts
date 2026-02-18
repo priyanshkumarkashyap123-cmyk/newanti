@@ -13,7 +13,7 @@ import express, { Router, Request, Response } from 'express';
 import { spawn } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { validateBody, pDeltaSchema, modalSchema, bucklingSchema } from '../../middleware/validation.js';
+import { validateBody, pDeltaSchema, modalSchema, bucklingSchema, spectrumSchema, cableSchema } from '../../middleware/validation.js';
 
 const router: Router = express.Router();
 
@@ -358,7 +358,7 @@ result = {
  * POST /advanced/spectrum
  * Response Spectrum Analysis
  */
-router.post('/spectrum', async (req: Request, res: Response) => {
+router.post('/spectrum', validateBody(spectrumSchema), async (req: Request, res: Response) => {
     try {
         const request = req.body as SpectrumRequest;
 
@@ -470,7 +470,7 @@ result = {
  * POST /advanced/cable
  * Cable/Tension-Only Member Analysis
  */
-router.post('/cable', async (req: Request, res: Response) => {
+router.post('/cable', validateBody(cableSchema), async (req: Request, res: Response) => {
     try {
         const request = req.body as CableRequest;
 

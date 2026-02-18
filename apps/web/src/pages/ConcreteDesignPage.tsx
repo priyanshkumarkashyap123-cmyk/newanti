@@ -312,21 +312,185 @@ export const ConcreteDesignPage: React.FC = () => {
       }
 
     } catch (err: any) {
-      console.error('Design analysis error:', err);
+      console.warn('Backend unavailable, using client-side IS 456 calculations:', err.message);
       
-      // Provide helpful error messages
-      if (err.message?.includes('fetch') || err.message?.includes('Failed to fetch')) {
-        setError(
-          'Cannot connect to Python design server (port 8081). ' +
-          'Start it with: cd apps/backend-python && python main.py'
-        );
-      } else if (err.message?.includes('404')) {
-        setError(
-          'Design API endpoint not found. ' +
-          'Ensure Python backend has /design/beam, /design/column, /design/slab routes.'
-        );
-      } else {
-        setError(err.message || 'Design analysis failed. Check console for details.');
+      // ── CLIENT-SIDE FALLBACK: IS 456:2000 ──
+      try {
+        if (memberType === 'beam') {
+          const b = beamInput.width;
+          const d = beamInput.effectiveDepth;
+          const fck = beamInput.fck;
+          const fy = beamInput.fy;
+          const Mu = beamInput.Mu;
+          const Vu = beamInput.Vu;
+
+          // xu_max/d per Table D of SP 16 (IS 456)
+          const xuMaxRatio = fy <= 250 ? 0.53 : fy <= 415 ? 0.48 : fy <= 500 ? 0.46 : 0.44;
+          const xu_max = xuMaxRatio * d;
+          // Mu_limit = 0.36 × fck × b × xu_max × (d - 0.42 × xu_max) [kN·mm → kN·m]
+          const Mu_limit = 0.36 * fck * b * xu_max * (d - 0.42 * xu_max) / 1e6;
+
+          // Required Ast (singly reinforced)
+          const Ast = 0.5 * (fck / fy) * (1 - Math.sqrt(1 - 4.6 * Mu / (fck * b * d * d / 1e6))) * b * d;
+          const AstMin = Math.max(0.85 * b * d / fy, 0.0012 * b * beamInput.depth); // Cl. 26.5.1.1
+
+          const finalAst = Math.max(Ast, AstMin);
+          // Select bar diameter & count
+          const barDia = finalAst > 1200 ? 25 : finalAst > 600 ? 20 : finalAst > 300 ? 16 : 12;
+          const barArea = Math.PI * barDia * barDia / 4;
+          const barCount = Math.max(2, Math.ceil(finalAst / barArea));
+
+          // Shear check: τv = Vu/(b×d)
+          const tauV = Vu * 1000 / (b * d); // MPa
+          const pt = (barCount * barArea * 100) / (b * d); // percentage
+          // Approximate τc from Table 19 for M25
+          const tauC = Math.min(0.28 + 0.18 * pt, 0.8 * Math.sqrt(fck) * 0.1);
+          const Vus = Math.max(0, Vu - tauC * b * d / 1000);
+          // 2-legged stirrups: Asv = 2 × π/4 × 8² = 100.5 mm²
+          const stirDia = 8;
+          const Asv = 2 * Math.PI * stirDia * stirDia / 4;
+          const sv = Vus > 0.1 ? Math.min(Math.floor(0.87 * fy * Asv * d / (Vus * 1000)), 300, 0.75 * d) : Math.min(300, 0.75 * d);
+
+          setResults({
+            passed: Mu <= Mu_limit * 1.05,
+            utilization: Mu / Mu_limit,
+            reinforcement: {
+              mainBottom: `${barCount} - ${barDia}mm φ (${(barCount * barArea).toFixed(0)} mm²)`,
+              mainTop: 'Nominal (2-12mm φ holding stirrups)',
+              stirrups: `${stirDia}mm φ 2-legged @ ${sv}mm c/c`
+            },
+            capacities: { Mu: Mu_limit, Vu: tauC * b * d / 1000 + 0.87 * fy * Asv * d / (sv * 1000) },
+            checks: [
+              { description: `Mu (${Mu.toFixed(1)} kNm) ${Mu <= Mu_limit ? '≤' : '>'} Mu,lim (${Mu_limit.toFixed(1)} kNm)`, passed: Mu <= Mu_limit, clause: 'Cl. 38.1' },
+              { description: `Ast (${(barCount * barArea).toFixed(0)} mm²) ≥ Ast,min (${AstMin.toFixed(0)} mm²)`, passed: barCount * barArea >= AstMin, clause: 'Cl. 26.5.1.1' },
+              { description: `τv (${tauV.toFixed(2)} MPa) check against τc,max`, passed: tauV < 0.62 * Math.sqrt(fck), clause: 'Cl. 40.2' },
+              { description: `Stirrup spacing ${sv}mm ≤ 0.75d (${(0.75 * d).toFixed(0)}mm)`, passed: sv <= 0.75 * d, clause: 'Cl. 26.5.1.5' },
+            ],
+            _clientSide: true
+          });
+
+        } else if (memberType === 'column') {
+          const b = columnInput.width;
+          const D = columnInput.depth;
+          const fck = columnInput.fck;
+          const fy = columnInput.fy;
+          const Pu = columnInput.Pu;
+          const leff = columnInput.effectiveLength;
+
+          // Slenderness check (IS 456 Cl. 25.1.2)
+          const isShort = leff / Math.min(b, D) < 12;
+          const Ag = b * D;
+
+          // Minimum steel: 0.8% Ag (Cl. 26.5.3.1)
+          const AscMin = 0.008 * Ag;
+          const AscMax = 0.06 * Ag;
+
+          // Required Asc: Pu = 0.4×fck×(Ag - Asc) + 0.67×fy×Asc (Cl. 39.3)
+          let AscReq = (Pu * 1000 - 0.4 * fck * Ag) / (0.67 * fy - 0.4 * fck);
+          AscReq = Math.max(AscReq, AscMin);
+          if (AscReq > AscMax) AscReq = AscMax;
+
+          const barDia = AscReq > 3000 ? 25 : AscReq > 1500 ? 20 : 16;
+          const barArea = Math.PI * barDia * barDia / 4;
+          const barCount = Math.max(4, Math.ceil(AscReq / barArea));
+          // Even number of bars
+          const finalCount = barCount % 2 === 0 ? barCount : barCount + 1;
+
+          // Axial capacity
+          const Pu_cap = (0.4 * fck * (Ag - finalCount * barArea) + 0.67 * fy * finalCount * barArea) / 1000;
+
+          // Ties: diameter ≥ max(6mm, ¼ × main bar dia), spacing ≤ min(least dim, 16×main bar, 300)
+          const tieDia = Math.max(8, Math.ceil(barDia / 4));
+          const tieSpacing = Math.min(Math.min(b, D), 16 * barDia, 300);
+
+          setResults({
+            passed: Pu <= Pu_cap * 1.05,
+            utilization: Pu / Pu_cap,
+            reinforcement: {
+              longitudinal: `${finalCount} - ${barDia}mm φ (${(finalCount * barArea).toFixed(0)} mm²)`,
+              ties: `${tieDia}mm φ @ ${tieSpacing}mm c/c`
+            },
+            capacities: { Pu: Pu_cap, Mux: 0, Muy: 0 },
+            checks: [
+              { description: `Column type: ${isShort ? 'Short' : 'Long'} (leff/D = ${(leff / Math.min(b, D)).toFixed(1)})`, passed: true, clause: 'Cl. 25.1.2' },
+              { description: `Pu (${Pu.toFixed(0)} kN) ${Pu <= Pu_cap ? '≤' : '>'} Pu,cap (${Pu_cap.toFixed(0)} kN)`, passed: Pu <= Pu_cap, clause: 'Cl. 39.3' },
+              { description: `Steel ratio ${((finalCount * barArea * 100) / Ag).toFixed(2)}% (min 0.8%, max 6%)`, passed: finalCount * barArea >= AscMin && finalCount * barArea <= AscMax, clause: 'Cl. 26.5.3.1' },
+              { description: `Tie spacing ${tieSpacing}mm ≤ ${Math.min(Math.min(b, D), 300)}mm`, passed: true, clause: 'Cl. 26.5.3.2' },
+            ],
+            _clientSide: true
+          });
+
+        } else {
+          // Slab design
+          const lx = slabInput.lx / 1000; // mm to m
+          const ly = slabInput.ly / 1000;
+          const fck = slabInput.fck;
+          const fy = slabInput.fy;
+          const DL = slabInput.deadLoad;
+          const LL = slabInput.liveLoad;
+          const t = slabInput.thickness;
+          const d_eff = t - slabInput.cover - 5; // effective depth (half bar assumed ~10mm)
+
+          const ratio = ly / lx;
+          const isOneWay = ratio > 2;
+
+          // Self-weight
+          const SW = 25 * t / 1000; // kN/m²
+          const Wu = 1.5 * (DL + SW + LL); // factored load kN/m²
+
+          // BM coefficients (IS 456 Table 26, simply supported)
+          let Mx: number;
+          if (isOneWay) {
+            Mx = Wu * lx * lx / 8;
+          } else {
+            // Two-way slab - αx from IS 456 Table 26
+            const alphaX = slabInput.supportType === 'simply-supported' ? 0.0625 * (1 - 1 / (ratio * ratio)) + 0.045 : 0.04;
+            Mx = alphaX * Wu * lx * lx;
+          }
+
+          // Ast per metre width
+          const AstPerM = 0.5 * (fck / fy) * (1 - Math.sqrt(1 - 4.6 * Mx / (fck * 1000 * d_eff * d_eff / 1e6))) * 1000 * d_eff;
+          const AstMin = 0.0012 * 1000 * t;
+          const finalAst = Math.max(AstPerM, AstMin);
+
+          const barDia = finalAst > 500 ? 12 : finalAst > 250 ? 10 : 8;
+          const barArea = Math.PI * barDia * barDia / 4;
+          const spacing = Math.min(Math.floor(barArea * 1000 / finalAst), 300, 3 * t);
+
+          // Mu capacity
+          const Mu_cap = 0.87 * fy * finalAst * (d_eff - 0.42 * finalAst * fy / (fck * 1000 * 0.36)) / 1e6;
+
+          // Distribution steel (0.12% gross area)
+          const distAst = Math.max(0.0012 * 1000 * t, AstMin * 0.5);
+          const distDia = 8;
+          const distSpacing = Math.min(Math.floor(Math.PI * distDia * distDia / 4 * 1000 / distAst), 450, 5 * t);
+
+          setResults({
+            passed: Mx <= Mu_cap * 1.05,
+            utilization: Mu_cap > 0 ? Mx / Mu_cap : 1,
+            reinforcement: {
+              mainShort: `${barDia}mm φ @ ${spacing}mm c/c (${(barArea * 1000 / spacing).toFixed(0)} mm²/m)`,
+              mainLong: `${distDia}mm φ @ ${distSpacing}mm c/c`,
+              distribution: `${(Math.PI * distDia * distDia / 4 * 1000 / distSpacing).toFixed(0)} mm²/m`,
+              topSteel: slabInput.supportType !== 'simply-supported' ? `${barDia}mm φ @ ${spacing}mm c/c (at supports)` : 'None required'
+            },
+            capacities: { Mu: Mu_cap, thickness: t },
+            checks: [
+              { description: `Slab type: ${isOneWay ? 'One-way' : 'Two-way'} (ly/lx = ${ratio.toFixed(2)})`, passed: true, clause: 'Cl. 24.4' },
+              { description: `Mx (${Mx.toFixed(2)} kNm/m) ${Mx <= Mu_cap ? '≤' : '>'} Mu,cap (${Mu_cap.toFixed(2)} kNm/m)`, passed: Mx <= Mu_cap, clause: 'Cl. 38.1' },
+              { description: `Ast (${finalAst.toFixed(0)} mm²/m) ≥ Ast,min (${AstMin.toFixed(0)} mm²/m)`, passed: finalAst >= AstMin, clause: 'Cl. 26.5.2.1' },
+              { description: `Spacing ${spacing}mm ≤ 3×t (${3 * t}mm) & 300mm`, passed: spacing <= Math.min(300, 3 * t), clause: 'Cl. 26.3.3' },
+            ],
+            deflectionCheck: {
+              actual: lx * 1000 / d_eff,
+              limit: slabInput.supportType === 'simply-supported' ? 20 : 26,
+              passed: lx * 1000 / d_eff <= (slabInput.supportType === 'simply-supported' ? 20 : 26)
+            },
+            _clientSide: true
+          });
+        }
+      } catch (calcErr: any) {
+        setError('Client-side calculation error: ' + (calcErr.message || 'Unknown error'));
       }
     } finally {
       setAnalyzing(false);
@@ -723,6 +887,11 @@ export const ConcreteDesignPage: React.FC = () => {
         <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
           <CheckCircle2 className="w-6 h-6 text-emerald-400" />
           Design Results
+          {results._clientSide && (
+            <span className="ml-auto text-xs px-2 py-1 bg-amber-900/40 text-amber-400 rounded border border-amber-600/30">
+              Client-side IS 456 calc
+            </span>
+          )}
         </h2>
 
         <div className="space-y-4">
