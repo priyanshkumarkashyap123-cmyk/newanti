@@ -5,18 +5,34 @@
  * - Proper heading and description
  * - Navigation links (home, dashboard, demo)
  * - Support link
+ * 
+ * @vitest-environment jsdom
  */
 
-import { describe, it, expect } from 'vitest';
+import React from 'react';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+
+// Mock react-router-dom to avoid ESM/CJS resolution issues in vmForks pool
+vi.mock('react-router-dom', () => ({
+    Link: ({ children, to, ...props }: any) => React.createElement('a', { href: to, ...props }, children),
+    MemoryRouter: ({ children }: any) => React.createElement(React.Fragment, null, children),
+    useNavigate: () => vi.fn(),
+    useLocation: () => ({ pathname: '/', search: '', hash: '', state: null, key: 'default' }),
+    useParams: () => ({}),
+    useSearchParams: () => [new URLSearchParams(), vi.fn()],
+    NavLink: ({ children, to, ...props }: any) => React.createElement('a', { href: to, ...props }, children),
+    Outlet: () => null,
+    Routes: ({ children }: any) => React.createElement(React.Fragment, null, children),
+    Route: () => null,
+    BrowserRouter: ({ children }: any) => React.createElement(React.Fragment, null, children),
+}));
+
 import { NotFoundPage } from '../../pages/NotFoundPage';
 
 function renderWithRouter() {
     return render(
-        <MemoryRouter>
-            <NotFoundPage />
-        </MemoryRouter>
+        <NotFoundPage />
     );
 }
 

@@ -17,6 +17,14 @@ export default defineConfig({
         pool: 'vmForks',  // vmForks handles heavy module graphs best
         fileParallelism: false,  // Run test files sequentially to reduce memory pressure
         maxConcurrency: 3,
+        deps: {
+            inline: ['react-router-dom', 'react-router'],
+        },
+        server: {
+            deps: {
+                inline: ['react-router-dom', 'react-router'],
+            },
+        },
         coverage: {
             reporter: ['text', 'json', 'html'],
             exclude: ['node_modules/', 'src/__tests__/'],

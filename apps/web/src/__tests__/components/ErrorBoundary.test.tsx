@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { ErrorBoundary } from '../../components/ErrorBoundary';
 
 // Component that throws on render
@@ -24,9 +24,11 @@ describe('ErrorBoundary', () => {
     // Suppress console.error for expected errors in tests
     const originalConsoleError = console.error;
     beforeEach(() => {
+        cleanup();
         console.error = vi.fn();
     });
     afterEach(() => {
+        cleanup();
         console.error = originalConsoleError;
     });
 

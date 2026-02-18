@@ -27,6 +27,9 @@ export { useWasmSolver } from './useWasmSolver';
 // AI Workflow
 export { useAIWorkflow } from './useAIWorkflow';
 
+// AI Orchestrator (production-grade unified AI interface)
+export { useAIOrchestrator } from './useAIOrchestrator';
+
 // Advanced Analysis (P-Delta, Modal, Buckling, Cable)
 export { 
     useAdvancedAnalysis, 

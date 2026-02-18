@@ -6,8 +6,12 @@
 
 import { Router, Request, Response, type IRouter } from 'express';
 import { modelGeneratorService } from '../../services/ai/index.js';
+import { aiRateLimiter } from '../../middleware/aiRateLimiter.js';
 
 const router: IRouter = Router();
+
+// Apply rate limiting to all AI routes
+router.use(aiRateLimiter());
 
 /**
  * POST /api/ai/generate

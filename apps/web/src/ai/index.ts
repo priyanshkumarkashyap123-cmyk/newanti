@@ -146,9 +146,15 @@ export function clearContext(): void {
 export default aiArchitect;
 
 // ============================================
+// AI ORCHESTRATOR (Production-Grade Unified AI System)
+// ============================================
+export { aiOrchestrator, AIOrchestrator } from '../services/ai-orchestrator';
+export type { OrchestratorConfig } from '../services/ai-orchestrator';
+
+// ============================================
 // MODULE VERSION INFO
 // ============================================
-export const AI_MODULE_VERSION = '2.0.0';
+export const AI_MODULE_VERSION = '3.0.0';
 export const AI_MODULE_FEATURES = [
   'Comprehensive Civil Engineering Knowledge Base',
   'Advanced NLP with 20+ Intent Types',
