@@ -13,7 +13,7 @@ import { SignInPage } from './pages/SignInPage';
 import { SignUpPage } from './pages/SignUpPage';
 import { RequireAuth } from './components/layout/RequireAuth';
 import { LegalConsentModal, useCheckLegalConsent } from './components/LegalConsentModal';
-import './App.css';
+// App.css removed — all styles are in index.css + Tailwind
 
 // Lazy loaded components (Code Splitting)
 const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
@@ -53,9 +53,7 @@ const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 // Phase 12 Design Modules
 const ConnectionDesignPage = lazy(() => import('./pages/ConnectionDesignPage'));
-const WeldedConnectionsPage = lazy(() => import('./pages/ConnectionDesignPage')); // Reusing Connection Page
 const DetailingDesignPage = lazy(() => import('./pages/DetailingDesignPage'));
-const ReinforcementDesignPage = lazy(() => import('./pages/DetailingDesignPage')); // Reusing Detailing Page
 
 // New Complete Design Pages (CEO Gap Closure - Phase 13)
 const ConcreteDesignPage = lazy(() => import('./pages/ConcreteDesignPage'));
@@ -376,14 +374,14 @@ function App() {
                     {/* Welded Connections Module - Fillet, Groove, Base Plates */}
                     <Route path="/design/welded-connections" element={
                         <RequireAuth>
-                            <WeldedConnectionsPage />
+                            <ConnectionDesignPage />
                         </RequireAuth>
                     } />
 
                     {/* Reinforcement Design Module - Stirrups, Development Length, Lap Splices */}
                     <Route path="/design/reinforcement" element={
                         <RequireAuth>
-                            <ReinforcementDesignPage />
+                            <DetailingDesignPage />
                         </RequireAuth>
                     } />
 

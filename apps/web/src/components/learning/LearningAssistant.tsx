@@ -42,9 +42,9 @@ export const LearningAssistant: FC = () => {
     }
 
     return (
-        <div className="fixed bottom-4 right-4 w-80 bg-zinc-900/95 backdrop-blur-sm border border-zinc-700/50 rounded-xl shadow-2xl flex flex-col overflow-hidden z-30 max-h-[70vh]">
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-indigo-600/20 border-b border-indigo-500/20">
+        <div className="fixed bottom-4 right-4 w-80 bg-zinc-900/95 backdrop-blur-sm border border-zinc-700/50 rounded-xl shadow-2xl flex flex-col z-30 max-h-[70vh]">
+            {/* Header — never clipped */}
+            <div className="flex items-center justify-between px-4 py-3 bg-indigo-600/20 border-b border-indigo-500/20 flex-shrink-0">
                 <div className="flex items-center gap-2">
                     <Lightbulb className="w-4 h-4 text-yellow-400" />
                     <span className="text-sm font-bold text-white">AI Learning Assistant</span>
@@ -57,8 +57,8 @@ export const LearningAssistant: FC = () => {
                 </button>
             </div>
 
-            {/* Content */}
-            <div className="p-4 space-y-4 max-h-96 overflow-y-auto">
+            {/* Content — scrollable, fills remaining space */}
+            <div className="p-4 space-y-4 flex-1 overflow-y-auto">
 
                 {/* Skill Progress */}
                 {skills.length > 0 && (
@@ -70,7 +70,7 @@ export const LearningAssistant: FC = () => {
                             {skills.map(skill => (
                                 <div key={skill.skill} className="bg-zinc-950 p-2 rounded border border-zinc-800">
                                     <div className="flex justify-between text-xs mb-1">
-                                        <span className="text-zinc-300 capitalize">{skill.skill.replace('_', ' ')}</span>
+                                        <span className="text-zinc-200 capitalize truncate mr-2">{skill.skill.replace('_', ' ')}</span>
                                         <span className="text-indigo-400">{skill.currentLevel.toFixed(0)}%</span>
                                     </div>
                                     <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
@@ -103,8 +103,8 @@ export const LearningAssistant: FC = () => {
                                                 rec.type === 'topic' ? 'bg-green-500' : 'bg-blue-500'
                                             }`} />
                                         <div>
-                                            <div className="text-xs font-bold text-zinc-200">{rec.title}</div>
-                                            <div className="text-[10px] text-zinc-400 mt-0.5">{rec.description}</div>
+                                            <div className="text-xs font-bold text-zinc-100">{rec.title}</div>
+                                            <div className="text-[11px] text-zinc-300 mt-0.5">{rec.description}</div>
                                             <div className="mt-2 flex gap-2">
                                                 <button className="px-2 py-1 bg-indigo-600/20 text-indigo-400 text-[10px] rounded hover:bg-indigo-600/30">
                                                     Start Lesson

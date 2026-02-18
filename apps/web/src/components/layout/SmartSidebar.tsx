@@ -9,7 +9,7 @@
  * - DESIGN: Design Check panels
  */
 
-import { FC, useState, useCallback } from 'react';
+import { FC, useState, useCallback, useMemo } from 'react';
 import {
     ChevronDown,
     ChevronRight,
@@ -46,6 +46,17 @@ import { useSubscription } from '../../hooks/useSubscription';
 import { useNavigate } from 'react-router-dom';
 import { Tooltip } from '../ui/Tooltip';
 
+// Static color map for Tailwind JIT — dynamic class interpolation doesn't work
+const TOGGLE_COLOR_STYLES: Record<string, string> = {
+    blue: 'bg-blue-600/20 text-blue-400 border border-blue-500/30',
+    green: 'bg-green-600/20 text-green-400 border border-green-500/30',
+    orange: 'bg-orange-600/20 text-orange-400 border border-orange-500/30',
+    red: 'bg-red-600/20 text-red-400 border border-red-500/30',
+    purple: 'bg-purple-600/20 text-purple-400 border border-purple-500/30',
+    cyan: 'bg-cyan-600/20 text-cyan-400 border border-cyan-500/30',
+    amber: 'bg-amber-600/20 text-amber-400 border border-amber-500/30',
+};
+
 // ============================================
 // TYPES
 // ============================================
@@ -73,6 +84,7 @@ const AccordionItem: FC<AccordionItemProps> = ({
         <div className="border-b border-slate-700">
             <button
                 onClick={() => setIsOpen(!isOpen)}
+                aria-expanded={isOpen}
                 className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-slate-200 hover:bg-slate-800/50 transition-colors"
             >
                 {isOpen ? (
@@ -106,12 +118,12 @@ const TemplateBankPanel: FC = () => {
     const updateNode = useModelStore((state) => state.updateNode);
 
     // Get unique categories from TEMPLATE_BANK
-    const categories = ['all', ...new Set(Object.values(TEMPLATE_BANK).map(t => t.category))];
+    const categories = useMemo(() => ['all', ...new Set(Object.values(TEMPLATE_BANK).map(t => t.category))], []);
 
     // Filter templates by category
-    const filteredTemplates = Object.entries(TEMPLATE_BANK).filter(
+    const filteredTemplates = useMemo(() => Object.entries(TEMPLATE_BANK).filter(
         ([, template]) => selectedCategory === 'all' || template.category === selectedCategory
-    ).slice(0, 8); // Show max 8 templates
+    ).slice(0, 8), [selectedCategory]); // Show max 8 templates
 
     const handleTemplateClick = useCallback(async (templateKey: string, template: typeof TEMPLATE_BANK[keyof typeof TEMPLATE_BANK]) => {
         setLoading(templateKey);
@@ -140,8 +152,6 @@ const TemplateBankPanel: FC = () => {
                     };
                     updateNode(node.id, { restraints });
                 }
-
-                await new Promise(r => setTimeout(r, 20)); // Stagger
             }
 
             // Add members
@@ -152,7 +162,6 @@ const TemplateBankPanel: FC = () => {
                     endNodeId: member.endNode,
                     sectionId: member.section || 'ISMB300'
                 });
-                await new Promise(r => setTimeout(r, 15)); // Stagger
             }
 
             console.log(`✓ Loaded template: ${template.name}`);
@@ -597,18 +606,16 @@ const EditToolsPanel: FC = () => {
 // ADVANCED TOOLS PANEL
 // ============================================
 
-const AdvancedToolsPanel: FC = () => {
-    const openModal = useUIStore((s) => s.openModal);
-
-    const tools = [
-        {
-            id: 'deadLoadGenerator',
-            label: 'Dead Load Generator',
-            description: 'Auto-calculate self-weight & floor loads',
-            color: 'text-amber-400',
-            bgColor: 'bg-amber-500/10',
-            borderColor: 'border-amber-500/30'
-        },
+// Hoisted to module scope — no re-allocation per render
+const ADVANCED_TOOLS = [
+    {
+        id: 'deadLoadGenerator',
+        label: 'Dead Load Generator',
+        description: 'Auto-calculate self-weight & floor loads',
+        color: 'text-amber-400',
+        bgColor: 'bg-amber-500/10',
+        borderColor: 'border-amber-500/30'
+    },
         {
             id: 'loadDialog',
             label: 'Loading Manager',
@@ -705,11 +712,14 @@ const AdvancedToolsPanel: FC = () => {
             bgColor: 'bg-violet-500/10',
             borderColor: 'border-violet-500/30'
         },
-    ];
+    ] as const;
+
+const AdvancedToolsPanel: FC = () => {
+    const openModal = useUIStore((s) => s.openModal);
 
     return (
         <div className="space-y-2">
-            {tools.map((tool) => (
+            {ADVANCED_TOOLS.map((tool) => (
                 <button
                     key={tool.id}
                     onClick={() => openModal(tool.id as 'deadLoadGenerator' | 'structureWizard' | 'geometryTools' | 'interoperability' | 'railwayBridge' | 'loadDialog' | 'meshing' | 'windLoadDialog' | 'seismicLoadDialog' | 'movingLoadDialog' | 'asce7SeismicDialog' | 'asce7WindDialog' | 'loadCombinationsDialog')}
@@ -1119,7 +1129,7 @@ const ResultTogglesPanel: FC = () => {
                     className={`
                         w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
                         ${toggle.checked
-                            ? `bg-${toggle.color}-600/20 text-${toggle.color}-400 border border-${toggle.color}-500/30`
+                            ? TOGGLE_COLOR_STYLES[toggle.color] || 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
                             : 'bg-zinc-800/50 text-zinc-400 hover:bg-zinc-700/50'
                         }
                     `}

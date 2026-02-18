@@ -14,7 +14,7 @@
  * - Responsive design
  */
 
-import { FC, useState, useMemo } from 'react';
+import { FC, useState, useMemo, memo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -252,7 +252,7 @@ const getActivityIcon = (type: Activity['type']): React.ReactNode => {
 // SUB-COMPONENTS
 // ============================================
 
-const ProjectCard: FC<{ project: Project; onClick: () => void }> = ({ project, onClick }) => (
+const ProjectCard = memo<{ project: Project; onClick: () => void }>(({ project, onClick }) => (
     <motion.div
         whileHover={{ y: -4, scale: 1.01 }}
         whileTap={{ scale: 0.99 }}
@@ -305,9 +305,10 @@ const ProjectCard: FC<{ project: Project; onClick: () => void }> = ({ project, o
             </div>
         </div>
     </motion.div>
-);
+));
+ProjectCard.displayName = 'ProjectCard';
 
-const StatsCardComponent: FC<StatsCard> = ({ label, value, icon, trend, color }) => (
+const StatsCardComponent = memo<StatsCard>(({ label, value, icon, trend, color }) => (
     <div className={`bg-gradient-to-br ${color} rounded-xl p-4 border border-white/10`}>
         <div className="flex items-center justify-between mb-2">
             <span className="text-white/70 text-sm">{label}</span>
@@ -321,9 +322,10 @@ const StatsCardComponent: FC<StatsCard> = ({ label, value, icon, trend, color })
             </div>
         )}
     </div>
-);
+));
+StatsCardComponent.displayName = 'StatsCardComponent';
 
-const ActivityItem: FC<{ activity: Activity }> = ({ activity }) => (
+const ActivityItem = memo<{ activity: Activity }>(({ activity }) => (
     <div className="flex items-center gap-3 py-3 border-b border-slate-800 last:border-0">
         <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400">
             {getActivityIcon(activity.type)}
@@ -339,7 +341,8 @@ const ActivityItem: FC<{ activity: Activity }> = ({ activity }) => (
             <div className="text-xs text-slate-400">{activity.timestamp}</div>
         </div>
     </div>
-);
+));
+ActivityItem.displayName = 'ActivityItem';
 
 // ============================================
 // MAIN COMPONENT
