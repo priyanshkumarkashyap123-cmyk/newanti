@@ -9,7 +9,7 @@
  * - Quick Start modal for new users
  */
 
-import { FC, useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
+import { FC, useState, useEffect, useCallback, useRef, lazy, Suspense, memo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
     Box,
@@ -136,7 +136,7 @@ const STEP_TO_CATEGORY: Category[] = ['MODELING', 'MODELING', 'LOADING', 'ANALYS
 // CATEGORY SWITCHER
 // ============================================
 
-const CategorySwitcher: FC = () => {
+const CategorySwitcher: FC = memo(() => {
     const { activeCategory, setCategory, notification, hideNotification } = useUIStore();
 
     return (
@@ -180,13 +180,14 @@ const CategorySwitcher: FC = () => {
 
         </>
     );
-};
+});
+CategorySwitcher.displayName = 'CategorySwitcher';
 
 // ============================================
 // INSPECTOR PANEL
 // ============================================
 
-const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = ({ collapsed, onToggle }) => {
+const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = memo(({ collapsed, onToggle }) => {
     const selectedIds = useModelStore((state) => state.selectedIds);
 
     if (collapsed) {
@@ -204,7 +205,7 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = ({ coll
     }
 
     return (
-        <div className="w-72 h-full bg-slate-900 border-l border-slate-800 flex flex-col flex-shrink-0 absolute right-0 z-40 md:relative shadow-xl">
+        <div className="w-72 h-full bg-slate-900/95 backdrop-blur-sm border-l border-slate-800/60 flex flex-col flex-shrink-0 absolute right-0 z-20 md:relative shadow-xl md:shadow-none">
             <div className="flex items-center justify-between px-3 py-2 border-b border-slate-800">
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                     Properties
@@ -230,13 +231,14 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = ({ coll
             </div>
         </div>
     );
-};
+});
+InspectorPanel.displayName = 'InspectorPanel';
 
 // ============================================
 // STATUS BAR
 // ============================================
 
-const StatusBar: FC<{ isAnalyzing: boolean }> = ({ isAnalyzing }) => {
+const StatusBar: FC<{ isAnalyzing: boolean }> = memo(({ isAnalyzing }) => {
     const nodes = useModelStore((state) => state.nodes);
     const members = useModelStore((state) => state.members);
     const analysisResults = useModelStore((state) => state.analysisResults);
@@ -272,13 +274,14 @@ const StatusBar: FC<{ isAnalyzing: boolean }> = ({ isAnalyzing }) => {
             </div>
         </div>
     );
-};
+});
+StatusBar.displayName = 'StatusBar';
 
 // ============================================
 // MULTIPLAYER UI (outside ModernModeler to avoid re-creation every render)
 // ============================================
 
-const MultiplayerUI: FC = () => {
+const MultiplayerUI: FC = memo(() => {
     const mp = useMultiplayerContextSafe();
     if (!mp) return null;
     return (
@@ -288,7 +291,8 @@ const MultiplayerUI: FC = () => {
             isConnected={mp.isConnected}
         />
     );
-};
+});
+MultiplayerUI.displayName = 'MultiplayerUI';
 
 // ============================================
 // MAIN MODERN MODELER COMPONENT
@@ -1231,28 +1235,16 @@ export const ModernModeler: FC = () => {
     useEffect(() => {
         const onAnalysis = () => handleRunAnalysis();
         const onModal = () => setShowModalAnalysis(true);
+        const onExport = () => setShowExportDialog(true);
 
         document.addEventListener('trigger-analysis', onAnalysis);
         document.addEventListener('trigger-modal-analysis', onModal);
+        document.addEventListener('trigger-export', onExport);
 
         return () => {
             document.removeEventListener('trigger-analysis', onAnalysis);
             document.removeEventListener('trigger-modal-analysis', onModal);
-        };
-    }, [handleRunAnalysis]);
-
-
-    // Listener for Ribbon Analysis Trigger
-    useEffect(() => {
-        const handleTrigger = () => handleRunAnalysis();
-        const handleExport = () => setShowExportDialog(true);
-
-        document.addEventListener('trigger-analysis', handleTrigger);
-        document.addEventListener('trigger-export', handleExport);
-
-        return () => {
-            document.removeEventListener('trigger-analysis', handleTrigger);
-            document.removeEventListener('trigger-export', handleExport);
+            document.removeEventListener('trigger-export', onExport);
         };
     }, [handleRunAnalysis]);
 
@@ -1469,8 +1461,8 @@ export const ModernModeler: FC = () => {
         >
             <div className="h-screen w-screen flex flex-col bg-zinc-950 text-white overflow-hidden relative">
                 <MultiplayerUI />
-                {/* Top Bar - Minimal Header */}
-                <header className="h-8 bg-zinc-950 border-b border-zinc-800 flex items-center justify-between px-4 flex-shrink-0 select-none">
+                {/* Top Bar - Compact Header */}
+                <header className="h-9 bg-slate-950/90 backdrop-blur-sm border-b border-slate-800/60 flex items-center justify-between px-4 flex-shrink-0 select-none">
                     {/* Logo Area */}
                     <div className="flex items-center gap-3">
                         {/* Mobile Menu Button */}
@@ -1480,19 +1472,19 @@ export const ModernModeler: FC = () => {
                             aria-label="Toggle sidebar navigation"
                             aria-expanded={isSidebarOpen}
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                         </button>
 
                         <div className="flex items-center gap-2">
-                            <span className="text-xl text-blue-500">⬡</span>
-                            <span className="font-bold text-sm tracking-tight">BeamLab <span className="text-xs font-normal text-zinc-400">ULTIMATE</span></span>
+                            <span className="text-lg text-blue-500">⬡</span>
+                            <span className="font-semibold text-sm tracking-tight text-slate-200">BeamLab</span>
+                            <span className="text-[9px] font-bold text-slate-500 tracking-wider">ULTIMATE</span>
                         </div>
                     </div>
 
-                    {/* Window Controls / User */}
+                    {/* Right side */}
                     <div className="flex items-center gap-3">
-
-                        <span className="text-xs text-zinc-500">v24.01.00</span>
+                        <span className="text-[10px] text-slate-600">v24.01</span>
                     </div>
                 </header>
 
@@ -1502,10 +1494,10 @@ export const ModernModeler: FC = () => {
                     {/* 1. Workflow Sidebar (Left) */}
                     <aside
                         className={`
-                        w-48 flex-shrink-0 h-full z-30 shadow-xl bg-zinc-900 
+                        w-48 flex-shrink-0 h-full z-30 bg-slate-900/95 backdrop-blur-sm border-r border-slate-800/60
                         transition-transform duration-300 
                         absolute md:relative 
-                        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+                        ${isSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full md:translate-x-0'}
                     `}
                         role="navigation"
                         aria-label="Workflow sidebar"
@@ -1523,13 +1515,13 @@ export const ModernModeler: FC = () => {
                     <div className="flex-1 flex flex-col min-w-0">
 
                         {/* Top Ribbon */}
-                        <div className="flex-shrink-0 z-10 shadow-md">
+                        <div className="flex-shrink-0 z-10">
                             <EngineeringRibbon activeCategory={activeCategory} />
                         </div>
 
                         {/* 3D Canvas Area */}
                         <div
-                            className="flex-1 bg-zinc-900 relative min-h-0"
+                            className="flex-1 bg-zinc-950 relative min-h-0"
                             onContextMenu={(e) => {
                                 // Determine what was clicked and show appropriate context menu
                                 const selectedId = selectedIds.size === 1 ? Array.from(selectedIds)[0] : undefined;
@@ -1584,8 +1576,8 @@ export const ModernModeler: FC = () => {
                                 }
                             }}
                         >
-                            {/* Modeling Toolbar - Always visible for quick access */}
-                            <div className="absolute top-4 left-4 z-20">
+                            {/* Modeling Toolbar */}
+                            <div className="absolute top-3 left-3 z-20">
                                 <ModelingToolbar />
                             </div>
                             <ViewportManager />
@@ -1718,28 +1710,18 @@ export const ModernModeler: FC = () => {
                     onClose={() => closeModal('loadDialog')}
                 />
 
-                {/* Wind Load Generator (IS 875) */}
-                <WindLoadDialog />
+                {/* Wind / Seismic / Moving Load Generators — only mount when modal is open */}
+                {modals.windLoadDialog && <WindLoadDialog />}
+                {modals.seismicLoadDialog && <SeismicLoadDialog />}
+                {modals.movingLoadDialog && <MovingLoadDialog />}
 
-                {/* Seismic Load Generator (IS 1893) */}
-                <SeismicLoadDialog />
-
-                {/* Moving Load Analysis (IRC 6 / AASHTO) */}
-                <MovingLoadDialog />
-
-                {/* Boundary Conditions Dialog - NEW */}
+                {/* Boundary Conditions Dialog */}
                 <BoundaryConditionsDialog
                     open={modals.boundaryConditionsDialog}
                     onClose={() => closeModal('boundaryConditionsDialog')}
                 />
 
-                {/* Plate Creation Dialog - NEW */}
-                <PlateCreationDialog
-                    isOpen={modals.plateDialog}
-                    onClose={() => closeModal('plateDialog')}
-                />
-
-                {/* Advanced Selection Toolbar - NEW */}
+                {/* Advanced Selection Toolbar */}
                 <SelectionToolbar
                     open={modals.selectionToolbar}
                     onClose={() => closeModal('selectionToolbar')}
@@ -1785,14 +1767,10 @@ export const ModernModeler: FC = () => {
                     isPro={subscription?.tier === 'pro' || subscription?.tier === 'enterprise'}
                 />
 
-                {/* ASCE 7 Seismic Load Generator */}
-                <ASCE7SeismicLoadDialog />
-
-                {/* ASCE 7 Wind Load Generator */}
-                <ASCE7WindLoadDialog />
-
-                {/* Load Combinations Dialog */}
-                <LoadCombinationsDialog />
+                {/* ASCE 7 Load Generators — only mount when modal is open */}
+                {modals.asce7SeismicDialog && <ASCE7SeismicLoadDialog />}
+                {modals.asce7WindDialog && <ASCE7WindLoadDialog />}
+                {modals.loadCombinationsDialog && <LoadCombinationsDialog />}
 
                 {/* Structural Validation Dialog - Shows errors BEFORE analysis */}
                 <ValidationDialog

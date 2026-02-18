@@ -5,23 +5,30 @@ import { sequentialLearning, AdaptiveRecommendation, SkillProgression } from '..
 export const LearningAssistant: FC = () => {
     const [recommendations, setRecommendations] = useState<AdaptiveRecommendation[]>([]);
     const [skills, setSkills] = useState<SkillProgression[]>([]);
-    const [isOpen, setIsOpen] = useState(true);
+    const [isOpen, setIsOpen] = useState(false); // Start collapsed to reduce clutter
 
     // Mock user ID for now
     const userId = 'current_user';
 
     useEffect(() => {
-        // Poll for updates (in a real app this would be event-driven or reactive)
+        if (!isOpen) return; // Don't poll when collapsed
+        // Poll for updates at a reasonable interval
         const interval = setInterval(() => {
             const recs = sequentialLearning.getRecommendations(userId, 3);
             const progression = sequentialLearning.getSkillProgression(userId);
 
             setRecommendations(recs);
-            setSkills(progression.slice(0, 3)); // Top 3 active skills
-        }, 2000);
+            setSkills(progression.slice(0, 3));
+        }, 30000); // 30s instead of 2s — reduces re-renders by 15x
+
+        // Initial fetch
+        const recs = sequentialLearning.getRecommendations(userId, 3);
+        const progression = sequentialLearning.getSkillProgression(userId);
+        setRecommendations(recs);
+        setSkills(progression.slice(0, 3));
 
         return () => clearInterval(interval);
-    }, []);
+    }, [isOpen]);
 
     if (!isOpen) {
         return (
@@ -35,7 +42,7 @@ export const LearningAssistant: FC = () => {
     }
 
     return (
-        <div className="fixed bottom-4 right-4 w-80 bg-zinc-900/95 backdrop-blur border border-zinc-700 rounded-lg shadow-2xl flex flex-col overflow-hidden">
+        <div className="fixed bottom-4 right-4 w-80 bg-zinc-900/95 backdrop-blur-sm border border-zinc-700/50 rounded-xl shadow-2xl flex flex-col overflow-hidden z-30 max-h-[70vh]">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-indigo-600/20 border-b border-indigo-500/20">
                 <div className="flex items-center gap-2">

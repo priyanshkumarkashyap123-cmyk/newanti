@@ -9,7 +9,7 @@
  * - Dark theme with Tailwind CSS
  */
 
-import { FC, ReactNode, lazy, Suspense } from 'react';
+import { FC, ReactNode, lazy, Suspense, memo } from 'react';
 import {
     Panel,
     Group as PanelGroup,
@@ -54,6 +54,16 @@ interface TabConfig {
     icon: React.ReactNode;
     color: string;
 }
+
+// Static color maps for Tailwind JIT (dynamic class names like `bg-${color}-600/20` don't work)
+const TAB_ACTIVE_STYLES: Record<string, string> = {
+    blue:   'bg-blue-600/20 text-blue-400 border border-blue-500/30',
+    purple: 'bg-purple-600/20 text-purple-400 border border-purple-500/30',
+    orange: 'bg-orange-600/20 text-orange-400 border border-orange-500/30',
+    green:  'bg-green-600/20 text-green-400 border border-green-500/30',
+    red:    'bg-red-600/20 text-red-400 border border-red-500/30',
+    yellow: 'bg-yellow-600/20 text-yellow-400 border border-yellow-500/30',
+};
 
 interface SidebarItem {
     id: string;
@@ -126,23 +136,25 @@ const SIDEBAR_CONTENT: Record<Category, SidebarItem[]> = {
 // UMBRELLA SWITCHER COMPONENT
 // ============================================
 
-const UmbrellaSwitcher: FC = () => {
+const UmbrellaSwitcher: FC = memo(() => {
     const { activeCategory, setCategory } = useUIStore();
 
     return (
-        <div className="flex items-center gap-1 px-2">
+        <div className="flex items-center gap-1 px-2" role="tablist" aria-label="Workspace categories">
             {UMBRELLA_TABS.map((tab) => {
                 const isActive = activeCategory === tab.id;
                 return (
                     <button
                         key={tab.id}
+                        role="tab"
+                        aria-selected={isActive}
                         onClick={() => setCategory(tab.id)}
                         className={`
                             flex items-center gap-2 px-4 py-2 rounded-lg
                             text-sm font-medium transition-all duration-200
                             ${isActive
-                                ? `bg-${tab.color}-600/20 text-${tab.color}-400 border border-${tab.color}-500/30`
-                                : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+                                ? TAB_ACTIVE_STYLES[tab.color]
+                                : 'text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'
                             }
                         `}
                     >
@@ -153,13 +165,14 @@ const UmbrellaSwitcher: FC = () => {
             })}
         </div>
     );
-};
+});
+UmbrellaSwitcher.displayName = 'UmbrellaSwitcher';
 
 // ============================================
 // CONTEXT SIDEBAR COMPONENT
 // ============================================
 
-const ContextSidebar: FC = () => {
+const ContextSidebar: FC = memo(() => {
     const { activeCategory, activeTool, setActiveTool, sidebarMode, toggleSidebar } = useUIStore();
     const items = SIDEBAR_CONTENT[activeCategory];
     const isExpanded = sidebarMode === 'EXPANDED';
@@ -243,7 +256,8 @@ const ContextSidebar: FC = () => {
             )}
         </div>
     );
-};
+});
+ContextSidebar.displayName = 'ContextSidebar';
 
 // ============================================
 // INSPECTOR PANEL COMPONENT
@@ -299,14 +313,14 @@ const InspectorPanel: FC<InspectorPanelProps> = ({ collapsed, onToggle }) => {
 // STATUS BAR COMPONENT
 // ============================================
 
-const StatusBar: FC = () => {
+const StatusBar: FC = memo(() => {
     const { showGrid, snapToGrid, gridSize } = useUIStore();
 
     return (
         <div className="h-7 bg-zinc-950 border-t border-zinc-800 flex items-center justify-between px-4 text-xs text-zinc-400">
             <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    <span className="w-2 h-2 bg-green-500 rounded-full" />
                     Ready
                 </span>
                 <span>Units: kN, m</span>
@@ -318,7 +332,8 @@ const StatusBar: FC = () => {
             </div>
         </div>
     );
-};
+});
+StatusBar.displayName = 'StatusBar';
 
 // ============================================
 // RESIZE HANDLE COMPONENT
