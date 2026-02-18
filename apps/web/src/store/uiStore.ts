@@ -20,7 +20,7 @@ export type Category = 'MODELING' | 'PROPERTIES' | 'LOADING' | 'ANALYSIS' | 'DES
 /**
  * Sidebar display modes
  */
-export type SidebarMode = 'expanded' | 'collapsed' | 'hidden' | 'EXPANDED' | 'COLLAPSED' | 'HIDDEN';
+export type SidebarMode = 'EXPANDED' | 'COLLAPSED' | 'HIDDEN';
 
 /**
  * Analysis results interface

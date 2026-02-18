@@ -233,7 +233,7 @@ function computeFrame2DStiffness(E: number, A: number, I: number, L: number, x1:
  * 3D Frame element stiffness matrix (12×12)
  * Includes axial, shear (2 directions), torsion, bending (2 directions)
  */
-function computeFrame3DStiffness(E: number, A: number, Iy: number, Iz: number, J: number, L: number, x1: number, y1: number, z1: number, x2: number, y2: number, z2: number): number[][] {
+function computeFrame3DStiffness(E: number, A: number, Iy: number, Iz: number, J: number, L: number, x1: number, y1: number, z1: number, x2: number, y2: number, z2: number, nu: number = 0.3): number[][] {
   if (L === 0) throw new Error('Member length cannot be zero');
   
   // Direction cosines
@@ -243,7 +243,9 @@ function computeFrame3DStiffness(E: number, A: number, Iy: number, Iz: number, J
   
   // Local stiffness (12×12) - all effects
   const EA_L = E * A / L;
-  const GJ_L = (E / 2.6) * J / L;  // G ≈ E/2.6 for steel
+  // G = E / (2*(1+ν)), use provided Poisson's ratio or default 0.3 (steel)
+  const G = E / (2 * (1 + nu));
+  const GJ_L = G * J / L;
   const EIy_L = E * Iy / L;
   const EIz_L = E * Iz / L;
   
@@ -275,13 +277,21 @@ function computeFrame3DStiffness(E: number, A: number, Iy: number, Iz: number, J
   
   K_local[4][4] = 4*EIy_L;
   K_local[4][2] = -6*EIy_L/L;
-  K_local[4][10] = 6*EIy_L/L;
-  K_local[4][8] = -12*EIy_L/L**2;
+  K_local[4][10] = 2*EIy_L;
+  K_local[4][8] = 6*EIy_L/L;
   
   K_local[5][5] = 4*EIz_L;
   K_local[5][1] = 6*EIz_L/L;
-  K_local[5][11] = -6*EIz_L/L;
-  K_local[5][7] = -12*EIz_L/L**2;
+  K_local[5][11] = 2*EIz_L;
+  K_local[5][7] = -6*EIz_L/L;
+  
+  // Node 2 bending block (rows/cols 7-11) - must be explicit, not derived from symmetry
+  K_local[7][7] = 12*EIz_L/L**2;
+  K_local[7][11] = -6*EIz_L/L;
+  K_local[8][8] = 12*EIy_L/L**2;
+  K_local[8][10] = 6*EIy_L/L;
+  K_local[10][10] = 4*EIy_L;
+  K_local[11][11] = 4*EIz_L;
   
   // Symmetric terms (other half of matrix)
   for (let i = 0; i < 12; i++) {
@@ -307,15 +317,15 @@ function computeFrame3DStiffness(E: number, A: number, Iy: number, Iz: number, J
   
   const [qx, qy, qz] = crossProduct([cx, cy, cz], [px, py, pz]);
   
-  // Fill transformation matrix with 3×3 rotation blocks
+  // Fill transformation matrix with 3×3 rotation blocks (all 4 diagonal blocks)
   const rot_blocks = [
     [[cx, cy, cz], [px, py, pz], [qx, qy, qz]]
   ];
   
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < 4; i++) {
     for (let j = 0; j < 3; j++) {
       for (let k = 0; k < 3; k++) {
-        T[i*6 + j][i*6 + k] = rot_blocks[0][j][k];
+        T[i*3 + j][i*3 + k] = rot_blocks[0][j][k];
       }
     }
   }
@@ -497,9 +507,13 @@ export async function solveStructure(input: StructuralAnalysisInput): Promise<An
     const n2 = member.nodes[1];
     
     // Assemble element into global matrix
+    // DOF indices must be concatenated [node1_dofs..., node2_dofs...]
+    // NOT interleaved, to match element stiffness matrix ordering
     const dof_indices = [];
     for (let i = 0; i < dof_per_node; i++) {
       dof_indices.push(getGlobalDOFIndex(n1, i, dof_per_node));
+    }
+    for (let i = 0; i < dof_per_node; i++) {
       dof_indices.push(getGlobalDOFIndex(n2, i, dof_per_node));
     }
     
@@ -538,6 +552,15 @@ export async function solveStructure(input: StructuralAnalysisInput): Promise<An
     if (load.Fx) F_global[dof_offset][0] += load.Fx;
     if (load.Fy) F_global[dof_offset + 1][0] += load.Fy;
     if (input.type === '3D' && load.Fz) F_global[dof_offset + 2][0] += load.Fz;
+    // Apply moment loads (previously silently dropped)
+    if (input.type === '2D' && load.Mz && dof_per_node >= 3) {
+      F_global[dof_offset + 2][0] += load.Mz;
+    }
+    if (input.type === '3D') {
+      if (load.Mx && dof_per_node >= 4) F_global[dof_offset + 3][0] += load.Mx;
+      if (load.My && dof_per_node >= 5) F_global[dof_offset + 4][0] += load.My;
+      if (load.Mz && dof_per_node >= 6) F_global[dof_offset + 5][0] += load.Mz;
+    }
   }
   
   // Solve for displacements
@@ -598,7 +621,11 @@ export async function solveStructure(input: StructuralAnalysisInput): Promise<An
         ? Math.sqrt((member.x2! - member.x1!)** 2 + (member.y2! - member.y1!)** 2)
         : Math.sqrt((member.x2! - member.x1!)** 2 + (member.y2! - member.y1!)** 2 + (member.z2! - member.z1!)** 2);
       
-      const u_elongation = (u2[0] - u1[0]);
+      // Project relative displacement along member axis for correct axial elongation
+      const cx = (member.x2! - member.x1!) / L;
+      const cy = (member.y2! - member.y1!) / L;
+      const cz = ((member.z2 || 0) - (member.z1 || 0)) / L;
+      const u_elongation = (u2[0] - u1[0]) * cx + (u2[1] - u1[1]) * cy + ((u2[2] || 0) - (u1[2] || 0)) * cz;
       force_result.axial_force = (member.material.E * member.geometry.A! / L) * u_elongation;
       force_result.strain = u_elongation / L;
       force_result.stress = force_result.axial_force / member.geometry.A!;
@@ -638,7 +665,7 @@ export async function solveStructure(input: StructuralAnalysisInput): Promise<An
     reactions,
     member_forces,
     max_displacement: Math.max(...Array.from(displacements.values()).map(d => Math.max(...d.map(x => Math.abs(x))))),
-    max_stress: Math.max(...member_forces.map(f => f.stress || 0)),
+    max_stress: Math.max(...member_forces.map(f => Math.abs(f.stress || 0))),
     execution_time_ms: execution_time
   };
 }

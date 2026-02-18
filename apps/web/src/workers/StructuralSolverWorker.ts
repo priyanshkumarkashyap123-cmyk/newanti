@@ -284,7 +284,13 @@ function assembleStiffnessMatrix(
             const base = index * dofPerNode;
             if (node.restraints.fx) fixedDofs.add(base);
             if (node.restraints.fy) fixedDofs.add(base + 1);
-            if (node.restraints.fz && dofPerNode >= 3) fixedDofs.add(base + 2);
+            if (dofPerNode === 3) {
+                // 2D Frame: DOF order is [u, v, θz]
+                if (node.restraints.fz) fixedDofs.add(base + 2); // fz maps to θz restraint in 2D context
+                if (node.restraints.mz) fixedDofs.add(base + 2); // rotation restraint
+            } else if (dofPerNode >= 3) {
+                if (node.restraints.fz) fixedDofs.add(base + 2);
+            }
             if (node.restraints.mx && dofPerNode >= 4) fixedDofs.add(base + 3);
             if (node.restraints.my && dofPerNode >= 5) fixedDofs.add(base + 4);
             if (node.restraints.mz && dofPerNode >= 6) fixedDofs.add(base + 5);
@@ -298,10 +304,15 @@ function assembleStiffnessMatrix(
             const base = i * dofPerNode;
             if (load.fx) F[base] += load.fx;
             if (load.fy) F[base + 1] += load.fy;
-            if (load.fz && dofPerNode >= 3) F[base + 2] += load.fz;
-            if (load.mx && dofPerNode >= 4) F[base + 3] += load.mx;
-            if (load.my && dofPerNode >= 5) F[base + 4] += load.my;
-            if (load.mz && dofPerNode >= 6) F[base + 5] += load.mz;
+            if (dofPerNode === 3) {
+                // 2D Frame: DOF order is [u, v, θz] - apply Mz to rotation DOF
+                if (load.mz) F[base + 2] += load.mz;
+            } else {
+                if (load.fz && dofPerNode >= 3) F[base + 2] += load.fz;
+                if (load.mx && dofPerNode >= 4) F[base + 3] += load.mx;
+                if (load.my && dofPerNode >= 5) F[base + 4] += load.my;
+                if (load.mz && dofPerNode >= 6) F[base + 5] += load.mz;
+            }
         }
     }
 
@@ -646,10 +657,15 @@ function assembleStiffnessMatrixAndForces(
         const baseDof = nodeIndex * dofPerNode;
         if (load.fx) F[baseDof] += load.fx;
         if (load.fy) F[baseDof + 1] += load.fy;
-        if (load.fz && dofPerNode >= 3) F[baseDof + 2] += load.fz;
-        if (load.mx && dofPerNode >= 4) F[baseDof + 3] += load.mx;
-        if (load.my && dofPerNode >= 5) F[baseDof + 4] += load.my;
-        if (load.mz && dofPerNode >= 6) F[baseDof + 5] += load.mz;
+        if (dofPerNode === 3) {
+            // 2D Frame: DOF order is [u, v, θz] - apply Mz to rotation DOF
+            if (load.mz) F[baseDof + 2] += load.mz;
+        } else {
+            if (load.fz && dofPerNode >= 3) F[baseDof + 2] += load.fz;
+            if (load.mx && dofPerNode >= 4) F[baseDof + 3] += load.mx;
+            if (load.my && dofPerNode >= 5) F[baseDof + 4] += load.my;
+            if (load.mz && dofPerNode >= 6) F[baseDof + 5] += load.mz;
+        }
     }
 
     // Convert K sparse matrix to entries array
@@ -701,13 +717,14 @@ function computeFrameStiffness(E: number, A: number, I: number, L: number, cx: n
     const c = cx / Lproj;
     const s = cy / Lproj;
 
-    // Transformation matrix T (6x6)
+    // Transformation matrix T (6x6) - standard local->global
+    // T rotates from local to global: [c, s; -s, c]
     const T = [
-        [c, -s, 0, 0, 0, 0],
-        [s, c, 0, 0, 0, 0],
+        [c, s, 0, 0, 0, 0],
+        [-s, c, 0, 0, 0, 0],
         [0, 0, 1, 0, 0, 0],
-        [0, 0, 0, c, -s, 0],
-        [0, 0, 0, s, c, 0],
+        [0, 0, 0, c, s, 0],
+        [0, 0, 0, -s, c, 0],
         [0, 0, 0, 0, 0, 1]
     ];
 
@@ -846,11 +863,11 @@ function computeMemberEndForces(
             const c = cx / Lproj;
             const s = cy / Lproj;
             const T = [
-                [c, -s, 0, 0, 0, 0],
-                [s, c, 0, 0, 0, 0],
+                [c, s, 0, 0, 0, 0],
+                [-s, c, 0, 0, 0, 0],
                 [0, 0, 1, 0, 0, 0],
-                [0, 0, 0, c, -s, 0],
-                [0, 0, 0, s, c, 0],
+                [0, 0, 0, c, s, 0],
+                [0, 0, 0, -s, c, 0],
                 [0, 0, 0, 0, 0, 1]
             ];
 

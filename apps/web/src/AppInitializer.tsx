@@ -80,7 +80,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     const location = useLocation();
     const [state, setState] = useState<AppState>({
         initialized: false,
-        loading: false,
+        loading: true, // Default to true so children don't render before init completes
         error: null,
         services: beamlab
     });
@@ -170,7 +170,15 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 // GLOBAL EVENT HANDLERS
 // ============================================
 
+// Track AbortController for global handlers to prevent duplicate registration
+let globalHandlersAbort: AbortController | null = null;
+
 function registerGlobalHandlers() {
+    // Abort previous listeners to prevent duplicates on reinitialize
+    globalHandlersAbort?.abort();
+    globalHandlersAbort = new AbortController();
+    const { signal } = globalHandlersAbort;
+
     // Analysis trigger
     window.addEventListener('triggerAnalysis', async () => {
         try {
@@ -190,7 +198,7 @@ function registerGlobalHandlers() {
                 ERROR_CODES.ANALYSIS_CONVERGENCE_FAILED
             );
         }
-    });
+    }, { signal });
 
     // Voice command execution
     window.addEventListener('voiceCommand', async (e: any) => {
@@ -201,7 +209,7 @@ function registerGlobalHandlers() {
                 detail: result
             }));
         }
-    });
+    }, { signal });
 
     // Keyboard shortcuts
     window.addEventListener('keydown', (e) => {
@@ -225,7 +233,7 @@ function registerGlobalHandlers() {
             e.preventDefault();
             window.dispatchEvent(new CustomEvent('triggerAnalysis'));
         }
-    });
+    }, { signal });
 
     console.log('[BeamLab] Global event handlers registered');
 }

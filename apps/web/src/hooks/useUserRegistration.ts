@@ -5,23 +5,27 @@
  * to ensure their record exists in the database.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth, useUser } from '../providers/AuthProvider';
 import { API_CONFIG } from '../config/env';
 
 const API_URL = API_CONFIG.baseUrl;
 
+// Module-level flag to prevent duplicate registration across component remounts
+let hasRegisteredGlobal = false;
+
 export function useUserRegistration() {
     const { isSignedIn, getToken } = useAuth();
     const user = useUser();
-    const hasRegisteredRef = useRef(false);
     const [isRegistered, setIsRegistered] = useState(false);
 
     useEffect(() => {
-        // Only run once when user signs in
-        if (!isSignedIn || !user || hasRegisteredRef.current) {
+        // Only run once per session when user signs in
+        if (!isSignedIn || !user || hasRegisteredGlobal) {
             return;
         }
+
+        const controller = new AbortController();
 
         const registerUser = async () => {
             try {
@@ -39,23 +43,27 @@ export function useUserRegistration() {
                     },
                     body: JSON.stringify({
                         email: user.email || 'unknown@beamlab.com'
-                    })
+                    }),
+                    signal: controller.signal
                 });
 
                 if (response.ok) {
                     const data = await response.json();
                     console.log('[useUserRegistration] User registered:', data);
-                    hasRegisteredRef.current = true;
+                    hasRegisteredGlobal = true;
                     setIsRegistered(true);
                 } else {
                     console.error('[useUserRegistration] Registration failed:', response.status);
                 }
             } catch (error) {
-                console.error('[useUserRegistration] Error:', error);
+                if ((error as Error).name !== 'AbortError') {
+                    console.error('[useUserRegistration] Error:', error);
+                }
             }
         };
 
         registerUser();
+        return () => controller.abort();
     }, [isSignedIn, user, getToken]);
 
     return { isRegistered };

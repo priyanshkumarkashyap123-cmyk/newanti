@@ -17,7 +17,7 @@ function getEnv(key: string, fallback: string = ''): string {
     if (value === undefined && !fallback && import.meta.env.DEV) {
         console.warn(`⚠️ Environment variable ${key} is not set. Using fallback: "${fallback}"`);
     }
-    return value || fallback;
+    return value ?? fallback;
 }
 
 /**
@@ -133,12 +133,12 @@ export function validateEnvironment(): void {
     // Critical checks for production
     if (APP_ENV.isProd) {
         if (!AUTH_CONFIG.clerkPublishableKey) {
-            // Log warning but don't throw - allows app to load and show appropriate error UI
+            errors.push('VITE_CLERK_PUBLISHABLE_KEY is not configured. Authentication features will not work.');
             console.warn('[Auth] ⚠️ VITE_CLERK_PUBLISHABLE_KEY is not configured. Authentication features may not work.');
         }
 
         if (!API_CONFIG.baseUrl.startsWith('https://')) {
-            // Log warning but don't crash — let the app load and show appropriate error UI
+            errors.push(`VITE_API_URL is not using HTTPS in production. Current value: ${API_CONFIG.baseUrl}`);
             console.error('[API] 🔴 VITE_API_URL is not using HTTPS in production. API calls may fail. Current value:', API_CONFIG.baseUrl);
         }
     }

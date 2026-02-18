@@ -519,9 +519,12 @@ const authStoreCreator: StateCreator<AuthState> = (set, get) => ({
                     return null;
                 }
 
-                // Auto-refresh if expired
+                // Auto-refresh if expired - fire refresh but return null
+                // to signal callers that the token is not usable
                 if (isTokenExpired(tokens.expiresAt)) {
                     get().refreshSession();
+                    // Return null for expired tokens so callers don't use stale credentials
+                    return null;
                 }
 
                 return tokens.accessToken;
@@ -539,7 +542,7 @@ export const useAuthStore = create<AuthState>()(
 // ============================================
 
 export const useIsSignedIn = () => useAuthStore((state) =>
-    state.user !== null && state.tokens !== null
+    state.user !== null && state.tokens !== null && !isTokenExpired(state.tokens.expiresAt)
 );
 
 export const useUser = () => useAuthStore((state) => state.user);

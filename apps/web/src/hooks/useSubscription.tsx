@@ -145,8 +145,8 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
 
             // Fallback to localStorage for demo mode
             const savedTier = localStorage.getItem('beamlab_subscription_tier') as SubscriptionTier | null;
-            // Default to enterprise tier if no tier is saved
-            const tier = savedTier || 'enterprise';
+            // Default to free tier if no tier is saved (security: never grant premium on API failure)
+            const tier = savedTier || 'free';
 
             setSubscription({
                 tier,
@@ -158,8 +158,8 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
             subscriptionLogger.error('Failed to fetch subscription', error);
             // Fallback to localStorage
             const savedTier = localStorage.getItem('beamlab_subscription_tier') as SubscriptionTier | null;
-            // Default to enterprise tier if no tier is saved
-            const tier = savedTier || 'enterprise';
+            // Default to free tier if no tier is saved (security: never grant premium on failure)
+            const tier = savedTier || 'free';
             setSubscription({
                 tier,
                 isLoading: false,
@@ -170,9 +170,13 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
     };
 
     useEffect(() => {
+        const controller = new AbortController();
         queueMicrotask(() => {
-            fetchSubscription();
+            if (!controller.signal.aborted) {
+                fetchSubscription();
+            }
         });
+        return () => controller.abort();
     }, [isSignedIn, userId]);
 
     const canAccess = (feature: keyof SubscriptionStatus['features']): boolean => {
