@@ -13,6 +13,7 @@ import express, { Router, Request, Response } from 'express';
 import { spawn } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { validateBody, pDeltaSchema, modalSchema, bucklingSchema } from '../../middleware/validation.js';
 
 const router: Router = express.Router();
 
@@ -120,7 +121,7 @@ async function runPythonAnalysis(
 ): Promise<any> {
     return new Promise((resolve, reject) => {
         const backendPath = path.join(__dirname, '../../../backend-python');
-        
+
         const python = spawn('python3', ['-c', `
 import sys
 import json
@@ -180,7 +181,7 @@ print(json.dumps(result, default=lambda x: float(x) if isinstance(x, (np.floatin
  * POST /advanced/pdelta
  * P-Delta (Geometric Nonlinear) Analysis
  */
-router.post('/pdelta', async (req: Request, res: Response) => {
+router.post('/pdelta', validateBody(pDeltaSchema), async (req: Request, res: Response) => {
     try {
         const request = req.body as PDeltaRequest;
 
@@ -282,7 +283,7 @@ result = {
  * POST /advanced/modal
  * Modal (Eigenvalue) Analysis
  */
-router.post('/modal', async (req: Request, res: Response) => {
+router.post('/modal', validateBody(modalSchema), async (req: Request, res: Response) => {
     try {
         const request = req.body as ModalRequest;
 
@@ -414,7 +415,7 @@ result = {
  * POST /advanced/buckling
  * Linear Buckling Analysis
  */
-router.post('/buckling', async (req: Request, res: Response) => {
+router.post('/buckling', validateBody(bucklingSchema), async (req: Request, res: Response) => {
     try {
         const request = req.body as BucklingRequest;
 

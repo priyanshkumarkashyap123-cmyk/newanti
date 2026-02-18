@@ -12,6 +12,7 @@ import fs from 'fs/promises';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
 import { analyzeStructure } from '../../solver.js';
+import { validateBody, analyzeRequestSchema } from '../../middleware/validation.js';
 
 const router: Router = express.Router();
 
@@ -133,10 +134,10 @@ async function handleAnalysisRequest(req: Request, res: Response): Promise<void>
  * POST /analyze
  * Run structural analysis (synchronous for small models)
  */
-router.post('/', handleAnalysisRequest);
+router.post('/', validateBody(analyzeRequestSchema), handleAnalysisRequest);
 
 // Compatibility alias for older clients calling /analysis/solve
-router.post('/solve', handleAnalysisRequest);
+router.post('/solve', validateBody(analyzeRequestSchema), handleAnalysisRequest);
 
 /**
  * GET /analyze/job/:jobId

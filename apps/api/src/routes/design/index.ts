@@ -12,6 +12,14 @@ import express, { Router, Request, Response } from 'express';
 import { spawn } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import {
+    validateBody,
+    steelDesignSchema,
+    concreteBeamSchema,
+    concreteColumnSchema,
+    connectionDesignSchema,
+    foundationDesignSchema
+} from '../../middleware/validation.js';
 
 const router: Router = express.Router();
 
@@ -222,7 +230,7 @@ print(json.dumps(result))
  * POST /design/steel
  * Steel member design (IS 800 or AISC 360)
  */
-router.post('/steel', async (req: Request, res: Response) => {
+router.post('/steel', validateBody(steelDesignSchema), async (req: Request, res: Response) => {
     try {
         const request = req.body as SteelDesignRequest;
 
@@ -375,7 +383,7 @@ result = {
  * POST /design/concrete/beam
  * Concrete beam design (IS 456)
  */
-router.post('/concrete/beam', async (req: Request, res: Response) => {
+router.post('/concrete/beam', validateBody(concreteBeamSchema), async (req: Request, res: Response) => {
     try {
         const request = req.body as ConcreteBeamDesignRequest;
 
@@ -438,7 +446,7 @@ result = {
  * POST /design/concrete/column
  * Concrete column design (IS 456)
  */
-router.post('/concrete/column', async (req: Request, res: Response) => {
+router.post('/concrete/column', validateBody(concreteColumnSchema), async (req: Request, res: Response) => {
     try {
         const request = req.body as ConcreteColumnDesignRequest;
 
@@ -500,7 +508,7 @@ result = {
  * POST /design/connection
  * Connection design (bolted, welded, base plate)
  */
-router.post('/connection', async (req: Request, res: Response) => {
+router.post('/connection', validateBody(connectionDesignSchema), async (req: Request, res: Response) => {
     try {
         const request = req.body as ConnectionDesignRequest;
 
@@ -647,7 +655,7 @@ result = {
  * POST /design/foundation
  * Foundation design (isolated, combined, mat)
  */
-router.post('/foundation', async (req: Request, res: Response) => {
+router.post('/foundation', validateBody(foundationDesignSchema), async (req: Request, res: Response) => {
     try {
         const request = req.body as FootingDesignRequest;
 

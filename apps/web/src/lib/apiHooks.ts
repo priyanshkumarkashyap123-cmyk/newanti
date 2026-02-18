@@ -12,18 +12,19 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { APIError, categorizeError } from './errorHandling';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import {
+  apiClient as canonicalApiClient,
+  ApiClientError,
+  type RequestConfig as CanonicalRequestConfig,
+} from './api/client';
 
 // ============================================================================
 // TYPES
 // ============================================================================
 
-export interface RequestConfig<T = unknown> extends RequestInit {
+export interface RequestConfig<T = unknown> extends Omit<CanonicalRequestConfig, 'method' | 'body'> {
   baseUrl?: string;
-  timeout?: number;
-  retries?: number;
-  retryDelay?: number;
   transformResponse?: (data: unknown) => T;
 }
 
@@ -65,184 +66,113 @@ export interface MutationState<T> {
 }
 
 // ============================================================================
-// API CLIENT
+// API CLIENT ADAPTER (delegates to canonical client)
 // ============================================================================
 
-const DEFAULT_TIMEOUT = 30000;
-const DEFAULT_BASE_URL = typeof window !== 'undefined' 
-  ? (window as unknown as { __ENV__?: { NEXT_PUBLIC_API_URL?: string } }).__ENV__?.NEXT_PUBLIC_API_URL || '/api'
-  : '/api';
+function resolveUrl(endpoint: string, baseUrl?: string): string {
+  if (!baseUrl || endpoint.startsWith('http')) return endpoint;
 
-class ApiClient {
-  private baseUrl: string;
-  private defaultHeaders: Record<string, string>;
-  private requestInterceptors: ((config: RequestConfig) => RequestConfig)[] = [];
-  private responseInterceptors: ((response: Response) => Response)[] = [];
+  const normalizedBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+  const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  return `${normalizedBase}${normalizedEndpoint}`;
+}
 
-  constructor(baseUrl: string = DEFAULT_BASE_URL) {
-    this.baseUrl = baseUrl;
-    this.defaultHeaders = {
-      'Content-Type': 'application/json',
-    };
-  }
+function toError(error: unknown): Error {
+  if (error instanceof Error) return error;
+  if (error instanceof ApiClientError) return error;
+  return new Error(String(error));
+}
 
-  setAuthToken(token: string | null) {
-    if (token) {
-      this.defaultHeaders['Authorization'] = `Bearer ${token}`;
-    } else {
-      delete this.defaultHeaders['Authorization'];
-    }
-  }
+function applyTransform<T>(data: T, transform?: (data: unknown) => T): T {
+  if (!transform) return data;
+  return transform(data);
+}
 
-  addRequestInterceptor(interceptor: (config: RequestConfig) => RequestConfig) {
-    this.requestInterceptors.push(interceptor);
-  }
+function toCanonicalConfig<T>(config?: RequestConfig<T>): Omit<CanonicalRequestConfig, 'method' | 'body'> {
+  if (!config) return {};
 
-  addResponseInterceptor(interceptor: (response: Response) => Response) {
-    this.responseInterceptors.push(interceptor);
-  }
+  const { baseUrl: _baseUrl, transformResponse: _transformResponse, ...rest } = config;
+  return rest;
+}
 
-  private async executeWithRetry<T>(
-    url: string,
-    config: RequestConfig<T>,
-    retries: number,
-    retryDelay: number
-  ): Promise<Response> {
-    let lastError: Error | null = null;
-
-    for (let attempt = 0; attempt <= retries; attempt++) {
-      try {
-        // Create AbortController for timeout
-        const controller = new AbortController();
-        const timeoutId = setTimeout(
-          () => controller.abort(),
-          config.timeout || DEFAULT_TIMEOUT
-        );
-
-        // Apply request interceptors
-        let finalConfig: RequestConfig = { ...config };
-        for (const interceptor of this.requestInterceptors) {
-          finalConfig = interceptor(finalConfig);
-        }
-
-        const response = await fetch(url, {
-          ...finalConfig,
-          signal: controller.signal,
-          headers: {
-            ...this.defaultHeaders,
-            ...finalConfig.headers,
-          },
-        });
-
-        clearTimeout(timeoutId);
-
-        // Apply response interceptors
-        let finalResponse = response;
-        for (const interceptor of this.responseInterceptors) {
-          finalResponse = interceptor(finalResponse);
-        }
-
-        return finalResponse;
-      } catch (err) {
-        lastError = err instanceof Error ? err : new Error(String(err));
-        
-        if (attempt < retries) {
-          await new Promise((resolve) =>
-            setTimeout(resolve, retryDelay * Math.pow(2, attempt))
-          );
-        }
-      }
-    }
-
-    throw lastError;
-  }
-
-  async request<T>(
-    endpoint: string,
-    config: RequestConfig<T> = {}
-  ): Promise<ApiResponse<T>> {
-    const url = endpoint.startsWith('http')
-      ? endpoint
-      : `${config.baseUrl || this.baseUrl}${endpoint}`;
-
-    const retries = config.retries ?? 0;
-    const retryDelay = config.retryDelay ?? 1000;
-
-    try {
-      const response = await this.executeWithRetry(url, config, retries, retryDelay);
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new APIError(
-          errorData.message || `Request failed with status ${response.status}`,
-          response.status,
-          errorData.code || 'REQUEST_FAILED',
-          errorData
-        );
-      }
-
-      // Handle empty responses
-      const text = await response.text();
-      let data: T | null = null;
-
-      if (text) {
-        const parsed = JSON.parse(text);
-        data = config.transformResponse ? config.transformResponse(parsed) : parsed;
-      }
-
-      return { data, error: null, status: response.status };
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err));
-      return { data: null, error, status: null };
-    }
-  }
-
+class ApiClientAdapter {
   async get<T>(endpoint: string, config?: RequestConfig<T>): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, { ...config, method: 'GET' });
+    try {
+      const url = resolveUrl(endpoint, config?.baseUrl);
+      const response = await canonicalApiClient.get<T>(url, toCanonicalConfig(config));
+
+      return {
+        data: applyTransform(response.data, config?.transformResponse),
+        error: null,
+        status: response.status,
+      };
+    } catch (error) {
+      return { data: null, error: toError(error), status: null };
+    }
   }
 
-  async post<T>(
-    endpoint: string,
-    data?: unknown,
-    config?: RequestConfig<T>
-  ): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, {
-      ...config,
-      method: 'POST',
-      body: data ? JSON.stringify(data) : undefined,
-    });
+  async post<T>(endpoint: string, data?: unknown, config?: RequestConfig<T>): Promise<ApiResponse<T>> {
+    try {
+      const url = resolveUrl(endpoint, config?.baseUrl);
+      const response = await canonicalApiClient.post<T>(url, data, toCanonicalConfig(config));
+
+      return {
+        data: applyTransform(response.data, config?.transformResponse),
+        error: null,
+        status: response.status,
+      };
+    } catch (error) {
+      return { data: null, error: toError(error), status: null };
+    }
   }
 
-  async put<T>(
-    endpoint: string,
-    data?: unknown,
-    config?: RequestConfig<T>
-  ): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, {
-      ...config,
-      method: 'PUT',
-      body: data ? JSON.stringify(data) : undefined,
-    });
+  async put<T>(endpoint: string, data?: unknown, config?: RequestConfig<T>): Promise<ApiResponse<T>> {
+    try {
+      const url = resolveUrl(endpoint, config?.baseUrl);
+      const response = await canonicalApiClient.put<T>(url, data, toCanonicalConfig(config));
+
+      return {
+        data: applyTransform(response.data, config?.transformResponse),
+        error: null,
+        status: response.status,
+      };
+    } catch (error) {
+      return { data: null, error: toError(error), status: null };
+    }
   }
 
-  async patch<T>(
-    endpoint: string,
-    data?: unknown,
-    config?: RequestConfig<T>
-  ): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, {
-      ...config,
-      method: 'PATCH',
-      body: data ? JSON.stringify(data) : undefined,
-    });
+  async patch<T>(endpoint: string, data?: unknown, config?: RequestConfig<T>): Promise<ApiResponse<T>> {
+    try {
+      const url = resolveUrl(endpoint, config?.baseUrl);
+      const response = await canonicalApiClient.patch<T>(url, data, toCanonicalConfig(config));
+
+      return {
+        data: applyTransform(response.data, config?.transformResponse),
+        error: null,
+        status: response.status,
+      };
+    } catch (error) {
+      return { data: null, error: toError(error), status: null };
+    }
   }
 
   async delete<T>(endpoint: string, config?: RequestConfig<T>): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, { ...config, method: 'DELETE' });
+    try {
+      const url = resolveUrl(endpoint, config?.baseUrl);
+      const response = await canonicalApiClient.delete<T>(url, toCanonicalConfig(config));
+
+      return {
+        data: applyTransform(response.data, config?.transformResponse),
+        error: null,
+        status: response.status,
+      };
+    } catch (error) {
+      return { data: null, error: toError(error), status: null };
+    }
   }
 }
 
-export const apiClient = new ApiClient();
+export const apiClient = new ApiClientAdapter();
 
 // ============================================================================
 // CACHE

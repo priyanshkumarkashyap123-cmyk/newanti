@@ -11,6 +11,7 @@
 
 import React, { useState } from 'react';
 import { X, FileText, Download, Settings, CheckCircle, Building2 } from 'lucide-react';
+import { API_CONFIG } from '../config/env';
 
 interface ReportCustomization {
   // Company branding
@@ -85,7 +86,7 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
   const handleGenerate = async () => {
     setGenerating(true);
     try {
-      const PYTHON_API = import.meta.env['VITE_PYTHON_API_URL'] || 'https://api.beamlabultimate.tech';
+      const PYTHON_API = API_CONFIG.pythonUrl;
       
       const response = await fetch(`${PYTHON_API}/reports/generate`, {
         method: 'POST',

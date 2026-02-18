@@ -19,7 +19,7 @@ fi
 if [ -n "$VITE_PYTHON_API_URL" ]; then
     echo "✅ VITE_PYTHON_API_URL = $VITE_PYTHON_API_URL"
 else
-    echo "⚠️  VITE_PYTHON_API_URL not set (will use default: https://api.beamlabultimate.tech)"
+    echo "⚠️  VITE_PYTHON_API_URL not set (will use default: https://beamlab-backend-python.azurewebsites.net)"
 fi
 
 if [ -n "$VITE_CLERK_PUBLISHABLE_KEY" ]; then

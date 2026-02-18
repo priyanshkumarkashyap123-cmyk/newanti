@@ -68,7 +68,7 @@ interface DiagnosisIssue {
 // API CONFIGURATION
 // ============================================
 
-const PYTHON_API = import.meta.env.VITE_PYTHON_API_URL || 'https://beamlab-python-api.azurewebsites.net';
+const PYTHON_API = import.meta.env.VITE_PYTHON_API_URL || 'https://beamlab-backend-python.azurewebsites.net';
 
 // ============================================
 // HELPER FUNCTIONS

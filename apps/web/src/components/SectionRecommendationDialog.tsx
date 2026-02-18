@@ -8,6 +8,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, TrendingUp, Package, CheckCircle, AlertTriangle } from 'lucide-react';
+import { API_CONFIG } from '../config/env';
 
 interface SectionProperties {
   area: number;
@@ -81,7 +82,7 @@ export const SectionRecommendationDialog: React.FC<Props> = ({
   const fetchRecommendations = async () => {
     setLoading(true);
     try {
-      const PYTHON_API = import.meta.env['VITE_PYTHON_API_URL'] || 'https://api.beamlabultimate.tech';
+      const PYTHON_API = API_CONFIG.pythonUrl;
       
       const response = await fetch(`${PYTHON_API}/sections/recommend`, {
         method: 'POST',

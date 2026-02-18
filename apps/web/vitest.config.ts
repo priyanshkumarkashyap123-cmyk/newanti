@@ -13,11 +13,17 @@ export default defineConfig({
             'dist',
             'src/services/civil/__tests__/HydraulicsService.test.ts',  // Exclude problematic test
         ],
-        testTimeout: 10000,
-        hookTimeout: 10000,
+        testTimeout: 15000,
+        hookTimeout: 15000,
         teardownTimeout: 5000,
-        pool: 'threads',  // Use threads instead of forks for jsdom compatibility
-        maxConcurrency: 5,
+        pool: 'forks',  // Use forks for better compatibility with heavy module graphs
+        fileParallelism: false,  // Run test files sequentially to reduce memory pressure
+        maxConcurrency: 3,
+        poolOptions: {
+            forks: {
+                maxForks: 2,
+            },
+        },
         coverage: {
             reporter: ['text', 'json', 'html'],
             exclude: ['node_modules/', 'src/__tests__/'],

@@ -2,8 +2,14 @@ name: E2E Tests & Bundle Analysis
 
 on:
   workflow_dispatch:
+  # Run golden-path on every push to main so deploy regressions are caught immediately
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
+      - 'apps/api/**'
   schedule:
-    - cron: '0 2 * * 0'  # Weekly on Sunday at 2 AM UTC
+    - cron: '0 2 * * 0'  # Full suite weekly on Sunday at 2 AM UTC
 
 env:
   CI: true

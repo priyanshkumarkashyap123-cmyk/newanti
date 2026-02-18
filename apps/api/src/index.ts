@@ -23,6 +23,7 @@ import {
     requestLoggerWithId,
     secureErrorHandler
 } from './middleware/security.js';
+import { attachResponseHelpers } from './middleware/response.js';
 import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
 
@@ -63,6 +64,9 @@ app.use(securityHeaders);
 app.use(requestIdMiddleware);
 app.use(requestLoggerWithId);
 
+// Attach res.ok() / res.fail() unified envelope helpers
+app.use(attachResponseHelpers);
+
 // General rate limiting
 app.use(generalRateLimit);
 
@@ -87,8 +91,11 @@ const ALLOWED_ORIGINS = Array.from(new Set([
 
 app.use(cors({
     origin: (origin, callback) => {
-        // Allow requests with no origin (mobile apps, curl, etc.)
+        // In production, require origin header. In dev, allow server-to-server.
         if (!origin) {
+            if (process.env.NODE_ENV === 'production') {
+                return callback(new Error('Origin header required'));
+            }
             return callback(null, true);
         }
         // Check if origin is in allowed list
@@ -122,7 +129,6 @@ if (isUsingClerk()) {
 // ============================================
 
 // Auth routes (signup, signin, signout, etc.)
-// Auth routes (signup, signin, signout, etc.)
 if (!isUsingClerk()) {
     app.use('/api/auth', authRouter);
 }
@@ -133,13 +139,29 @@ app.get('/', (_req: Request, res: Response) => {
 });
 
 // Health check (public)
-app.get('/health', (_req: Request, res: Response) => {
-    res.json({
-        status: 'ok',
+app.get('/health', async (_req: Request, res: Response) => {
+    let dbStatus = 'unknown';
+    try {
+        const mongoose = await import('mongoose');
+        dbStatus = mongoose.default.connection.readyState === 1 ? 'connected' : 'disconnected';
+    } catch {
+        dbStatus = 'error';
+    }
+
+    const status = dbStatus === 'connected' ? 'ok' : 'degraded';
+
+    res.ok({
+        status,
         service: 'BeamLab Ultimate API',
+        version: process.env.npm_package_version || '1.0.0',
+        uptime: Math.floor(process.uptime()),
         websocket: true,
-        authProvider: isUsingClerk() ? 'clerk' : 'inhouse'
-    });
+        authProvider: isUsingClerk() ? 'clerk' : 'inhouse',
+        dependencies: {
+            mongodb: dbStatus,
+        },
+        timestamp: new Date().toISOString(),
+    }, status === 'ok' ? 200 : 503);
 });
 
 // Structural Analysis API (rate limited: 10/min)
@@ -179,8 +201,7 @@ app.use('/api/consent', consentRoutes);
 app.get('/api/project/:id/users', (req: Request, res: Response) => {
     const projectId = req.params['id'] ?? '';
     const users = socketServer.getProjectUsers(projectId);
-    res.json({
-        success: true,
+    res.ok({
         projectId,
         users: users.map(u => ({ id: u.id, name: u.name, color: u.color }))
     });

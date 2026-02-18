@@ -259,8 +259,9 @@ docker run -d --name beamlab-python -p 8000:8000 beamlab-python
 
 **Frontend (beamlabultimate.tech)**
 ```
-VITE_API_URL=https://api.beamlabultimate.tech
-VITE_PYTHON_API_URL=https://api.beamlabultimate.tech
+VITE_API_URL=https://beamlab-backend-node.azurewebsites.net
+VITE_PYTHON_API_URL=https://beamlab-backend-python.azurewebsites.net
+VITE_RUST_API_URL=https://beamlab-rust-api.azurewebsites.net
 VITE_CLERK_PUBLISHABLE_KEY=pk_live_YOUR_KEY
 ```
 

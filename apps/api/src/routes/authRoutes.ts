@@ -227,7 +227,7 @@ const handleOAuthUser = async (email: string, firstName: string, lastName: strin
 // ============================================
 
 router.get('/google/login', (req, res) => {
-    if (!GOOGLE_CLIENT_ID) return res.status(503).json({ message: 'Google OAuth not configured' });
+    if (!GOOGLE_CLIENT_ID) return res.status(503).json({ success: false, error: 'Google OAuth not configured' });
 
     const params = queryString.stringify({
         client_id: GOOGLE_CLIENT_ID,
@@ -242,7 +242,7 @@ router.get('/google/login', (req, res) => {
 });
 
 router.get('/github/login', (req, res) => {
-    if (!GITHUB_CLIENT_ID) return res.status(503).json({ message: 'GitHub OAuth not configured' });
+    if (!GITHUB_CLIENT_ID) return res.status(503).json({ success: false, error: 'GitHub OAuth not configured' });
 
     const params = queryString.stringify({
         client_id: GITHUB_CLIENT_ID,
@@ -254,7 +254,7 @@ router.get('/github/login', (req, res) => {
 });
 
 router.get('/linkedin/login', (req, res) => {
-    if (!LINKEDIN_CLIENT_ID) return res.status(503).json({ message: 'LinkedIn OAuth not configured' });
+    if (!LINKEDIN_CLIENT_ID) return res.status(503).json({ success: false, error: 'LinkedIn OAuth not configured' });
 
     const params = queryString.stringify({
         response_type: 'code',
@@ -276,10 +276,10 @@ router.get('/linkedin/login', (req, res) => {
 router.post('/google', async (req: Request, res: Response) => {
     try {
         const { code } = req.body;
-        if (!code) return res.status(400).json({ message: 'Authorization code required' });
+        if (!code) return res.status(400).json({ success: false, error: 'Authorization code required' });
 
         if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
-            return res.status(503).json({ message: 'Google OAuth not configured' });
+            return res.status(503).json({ success: false, error: 'Google OAuth not configured' });
         }
 
         // Exchange code for tokens
@@ -311,7 +311,7 @@ router.post('/google', async (req: Request, res: Response) => {
         });
     } catch (error: any) {
         console.error('Google OAuth error:', error.response?.data || error.message);
-        res.status(500).json({ success: false, message: 'Google authentication failed' });
+        res.status(500).json({ success: false, error: 'Google authentication failed' });
     }
 });
 
@@ -321,10 +321,10 @@ router.post('/google', async (req: Request, res: Response) => {
 router.post('/github', async (req: Request, res: Response) => {
     try {
         const { code } = req.body;
-        if (!code) return res.status(400).json({ message: 'Authorization code required' });
+        if (!code) return res.status(400).json({ success: false, error: 'Authorization code required' });
 
         if (!GITHUB_CLIENT_ID || !GITHUB_CLIENT_SECRET) {
-            return res.status(503).json({ message: 'GitHub OAuth not configured' });
+            return res.status(503).json({ success: false, error: 'GitHub OAuth not configured' });
         }
 
         // Exchange code for tokens
@@ -373,7 +373,7 @@ router.post('/github', async (req: Request, res: Response) => {
 
     } catch (error: any) {
         console.error('GitHub OAuth error:', error.response?.data || error.message);
-        res.status(500).json({ success: false, message: 'GitHub authentication failed' });
+        res.status(500).json({ success: false, error: 'GitHub authentication failed' });
     }
 });
 
@@ -383,10 +383,10 @@ router.post('/github', async (req: Request, res: Response) => {
 router.post('/linkedin', async (req: Request, res: Response) => {
     try {
         const { code } = req.body;
-        if (!code) return res.status(400).json({ message: 'Authorization code required' });
+        if (!code) return res.status(400).json({ success: false, error: 'Authorization code required' });
 
         if (!LINKEDIN_CLIENT_ID || !LINKEDIN_CLIENT_SECRET) {
-            return res.status(503).json({ message: 'LinkedIn OAuth not configured' });
+            return res.status(503).json({ success: false, error: 'LinkedIn OAuth not configured' });
         }
 
         // Exchange code for tokens
@@ -424,7 +424,7 @@ router.post('/linkedin', async (req: Request, res: Response) => {
 
     } catch (error: any) {
         console.error('LinkedIn OAuth error:', error.response?.data || error.message);
-        res.status(500).json({ success: false, message: 'LinkedIn authentication failed' });
+        res.status(500).json({ success: false, error: 'LinkedIn authentication failed' });
     }
 });
 
@@ -761,13 +761,10 @@ router.get('/me', async (req: Request, res: Response) => {
             });
         }
 
-        res.json(sanitizeUser(user));
+        res.json({ success: true, data: sanitizeUser(user) });
     } catch (error) {
         console.error('Get user error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to get user'
-        });
+        res.status(500).json({ success: false, error: 'Failed to get user' });
     }
 });
 
@@ -778,7 +775,7 @@ router.post('/verify-email', async (req: Request, res: Response) => {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ success: false, message: 'Not authenticated' });
+            return res.status(401).json({ success: false, error: 'Not authenticated' });
         }
 
         const token = authHeader.split(' ')[1];
@@ -961,7 +958,7 @@ router.put('/profile', async (req: Request, res: Response) => {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ success: false, message: 'Not authenticated' });
+            return res.status(401).json({ success: false, error: 'Not authenticated' });
         }
 
         const token = authHeader.split(' ')[1];
@@ -1006,7 +1003,7 @@ router.post('/change-password', async (req: Request, res: Response) => {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ success: false, message: 'Not authenticated' });
+            return res.status(401).json({ success: false, error: 'Not authenticated' });
         }
 
         const token = authHeader.split(' ')[1];
@@ -1076,7 +1073,7 @@ router.delete('/delete-account', async (req: Request, res: Response) => {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ success: false, message: 'Not authenticated' });
+            return res.status(401).json({ success: false, error: 'Not authenticated' });
         }
 
         const token = authHeader.split(' ')[1];

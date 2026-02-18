@@ -26,6 +26,7 @@ import {
 
 import { useModelStore } from '../store/model';
 import { useAuth } from '../providers/AuthProvider';
+import { API_CONFIG } from '../config/env';
 
 // Import panel components
 import { PDeltaAnalysisPanel } from './PDeltaAnalysisPanel';
@@ -132,7 +133,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
 
         try {
             const token = await getToken();
-            const PYTHON_API = import.meta.env['VITE_PYTHON_API_URL'] || 'https://api.beamlabultimate.tech';
+            const PYTHON_API = API_CONFIG.pythonUrl;
 
             // Prepare payload
             const payload = {

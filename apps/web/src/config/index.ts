@@ -28,7 +28,7 @@ export const APP_CONFIG = {
   
   // API Endpoints
   api: {
-    baseUrl: import.meta.env.VITE_API_URL || '/api',
+    baseUrl: import.meta.env.VITE_API_URL || 'https://beamlab-backend-node.azurewebsites.net',
     timeout: 30000,
   },
   
