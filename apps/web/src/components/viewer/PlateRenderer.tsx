@@ -5,7 +5,7 @@
  * with edge highlighting and optional stress coloring.
  */
 
-import React, { FC, useMemo } from 'react';
+import React, { FC, useEffect, useMemo } from 'react';
 import { useThree } from '@react-three/fiber';
 import { Line } from '@react-three/drei';
 import * as THREE from 'three';
@@ -89,7 +89,7 @@ interface PlateElementProps {
     thickness: number;
 }
 
-const PlateElement: FC<PlateElementProps> = ({ vertices, isSelected, thickness }) => {
+const PlateElement: FC<PlateElementProps> = React.memo(({ vertices, isSelected, thickness }) => {
     // Create geometry from 4 vertices (2 triangles)
     const geometry = useMemo(() => {
         const geom = new THREE.BufferGeometry();
@@ -126,6 +126,13 @@ const PlateElement: FC<PlateElementProps> = ({ vertices, isSelected, thickness }
         return geom;
     }, [vertices]);
 
+    // Dispose GPU geometry on unmount or when geometry changes
+    useEffect(() => {
+        return () => {
+            geometry.dispose();
+        };
+    }, [geometry]);
+
     // Edge loop for outline
     const edgePoints = useMemo(() => {
         return [...vertices, vertices[0]]; // Close the loop
@@ -161,6 +168,8 @@ const PlateElement: FC<PlateElementProps> = ({ vertices, isSelected, thickness }
             </mesh>
         </group>
     );
-};
+});
+
+PlateElement.displayName = 'PlateElement';
 
 export default PlateRenderer;

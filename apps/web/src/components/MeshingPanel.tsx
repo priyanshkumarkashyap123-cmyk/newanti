@@ -14,6 +14,7 @@ import {
     Check, AlertCircle, Settings2, Layers
 } from 'lucide-react';
 import { useModelStore } from '../store/model';
+import { MesherService } from '../utils/MesherService';
 
 // ============================================
 // TYPES
@@ -52,6 +53,9 @@ export const MeshingPanel: FC<MeshingPanelProps> = ({ isOpen, onClose }) => {
     // Store
     const selectedIds = useModelStore((s) => s.selectedIds);
     const nodes = useModelStore((s) => s.nodes);
+    const addNode = useModelStore((s) => s.addNode);
+    const addPlate = useModelStore((s) => s.addPlate);
+    const getNextPlateId = useModelStore((s) => s.getNextPlateId);
 
     // Get selected nodes as plate corners
     const getSelectedCorners = () => {
@@ -67,7 +71,7 @@ export const MeshingPanel: FC<MeshingPanelProps> = ({ isOpen, onClose }) => {
         return corners;
     };
 
-    // Mesh plate
+    // Mesh plate using local MesherService
     const handleMeshPlate = async () => {
         const corners = getSelectedCorners();
         if (!corners) {
@@ -80,39 +84,75 @@ export const MeshingPanel: FC<MeshingPanelProps> = ({ isOpen, onClose }) => {
         setSuccess(null);
 
         try {
-            const response = await fetch('/api/mesh/plate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    corners,
-                    nx,
-                    ny,
-                    hard_points: snapToNodes ? Array.from(nodes.values()).map(n => ({
-                        x: n.x, y: n.y, z: n.z
-                    })) : null
-                })
+            // Use local MesherService to generate the mesh
+            const result = MesherService.meshSurface(corners, {
+                meshSize: Math.max(
+                    Math.abs(corners[1].x - corners[0].x) / nx,
+                    Math.abs(corners[2].y - corners[0].y) / ny,
+                    0.1
+                ),
+                thickness: 0.15,
+                materialId: 'concrete',
             });
 
-            const data = await response.json();
+            // Map MesherService node IDs → model store node IDs
+            const meshNodeIdToStoreId = new Map<string, string>();
+            const { getNextNodeId } = useModelStore.getState();
 
-            if (data.success) {
-                setMeshResult({
-                    nodes: data.nodes.length,
-                    elements: data.elements.length,
-                    type: 'QUAD4'
-                });
-                setSuccess(`Generated ${data.elements.length} plate elements`);
-            } else {
-                setError(data.detail || 'Meshing failed');
+            for (const meshNode of result.nodes) {
+                // Check if a node already exists at this position (snap tolerance 0.01m)
+                let existingId: string | null = null;
+                for (const [id, n] of nodes) {
+                    if (Math.abs(n.x - meshNode.x) < 0.01 &&
+                        Math.abs(n.y - meshNode.y) < 0.01 &&
+                        Math.abs(n.z - meshNode.z) < 0.01) {
+                        existingId = id;
+                        break;
+                    }
+                }
+
+                if (existingId) {
+                    meshNodeIdToStoreId.set(meshNode.id, existingId);
+                } else {
+                    const storeId = getNextNodeId();
+                    meshNodeIdToStoreId.set(meshNode.id, storeId);
+                    addNode({
+                        id: storeId,
+                        x: meshNode.x,
+                        y: meshNode.y,
+                        z: meshNode.z,
+                    });
+                }
             }
+
+            // Create plate elements in the store
+            for (const elem of result.elements) {
+                const plateId = getNextPlateId();
+                const nodeIds = elem.nodes.map(nid => meshNodeIdToStoreId.get(nid)!);
+                addPlate({
+                    id: plateId,
+                    nodeIds: nodeIds as [string, string, string, string],
+                    thickness: elem.thickness,
+                    E: 25e6,  // Concrete default
+                    nu: 0.2,
+                    materialType: 'concrete',
+                });
+            }
+
+            setMeshResult({
+                nodes: result.nodes.length,
+                elements: result.elements.length,
+                type: 'QUAD4'
+            });
+            setSuccess(`Generated ${result.elements.length} plate elements with ${result.nodes.length} nodes`);
         } catch (err) {
-            setError(`API Error: ${err instanceof Error ? err.message : 'Unknown'}`);
+            setError(`Meshing Error: ${err instanceof Error ? err.message : 'Unknown'}`);
         } finally {
             setIsProcessing(false);
         }
     };
 
-    // Triangulate boundary
+    // Triangulate boundary using local MesherService
     const handleTriangulate = async () => {
         const selectedNodeIds = Array.from(selectedIds).filter((id: string) => nodes.has(id));
         if (selectedNodeIds.length < 3) {
@@ -126,32 +166,72 @@ export const MeshingPanel: FC<MeshingPanelProps> = ({ isOpen, onClose }) => {
         try {
             const boundary = selectedNodeIds.map(id => {
                 const node = nodes.get(id)!;
-                return { x: node.x, y: node.y };
+                return { x: node.x, y: node.y, z: node.z };
             });
 
-            const response = await fetch('/api/mesh/triangulate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    boundary,
-                    holes: null // Could be extended to support hole selection
-                })
+            // Use meshSurface for polygon meshing
+            const avgEdgeLength = boundary.reduce((sum, p, i) => {
+                const next = boundary[(i + 1) % boundary.length];
+                return sum + Math.hypot(next.x - p.x, next.y - p.y);
+            }, 0) / boundary.length;
+
+            const result = MesherService.meshSurface(boundary, {
+                meshSize: avgEdgeLength / 2,
+                thickness: 0.15,
+                materialId: 'concrete',
             });
 
-            const data = await response.json();
+            // Map mesh node IDs → model store node IDs
+            const meshNodeIdToStoreId = new Map<string, string>();
+            const { getNextNodeId } = useModelStore.getState();
 
-            if (data.success) {
-                setMeshResult({
-                    nodes: data.nodes.length,
-                    elements: data.elements.length,
-                    type: 'TRI3'
-                });
-                setSuccess(`Generated ${data.elements.length} triangular elements`);
-            } else {
-                setError(data.detail || 'Triangulation failed');
+            for (const meshNode of result.nodes) {
+                let existingId: string | null = null;
+                for (const [id, n] of nodes) {
+                    if (Math.abs(n.x - meshNode.x) < 0.01 &&
+                        Math.abs(n.y - meshNode.y) < 0.01 &&
+                        Math.abs(n.z - meshNode.z) < 0.01) {
+                        existingId = id;
+                        break;
+                    }
+                }
+
+                if (existingId) {
+                    meshNodeIdToStoreId.set(meshNode.id, existingId);
+                } else {
+                    const storeId = getNextNodeId();
+                    meshNodeIdToStoreId.set(meshNode.id, storeId);
+                    addNode({
+                        id: storeId,
+                        x: meshNode.x,
+                        y: meshNode.y,
+                        z: meshNode.z,
+                    });
+                }
             }
+
+            // Create plate elements
+            for (const elem of result.elements) {
+                const plateId = getNextPlateId();
+                const nodeIds = elem.nodes.map(nid => meshNodeIdToStoreId.get(nid)!);
+                addPlate({
+                    id: plateId,
+                    nodeIds: nodeIds as [string, string, string, string],
+                    thickness: elem.thickness,
+                    E: 25e6,
+                    nu: 0.2,
+                    materialType: 'concrete',
+                });
+            }
+
+            setMeshResult({
+                nodes: result.nodes.length,
+                elements: result.elements.length,
+                type: 'QUAD4'
+            });
+            setSuccess(`Generated ${result.elements.length} elements with ${result.nodes.length} nodes`);
         } catch (err) {
-            setError(`API Error: ${err instanceof Error ? err.message : 'Unknown'}`);
+            setError(`Meshing Error: ${err instanceof Error ? err.message : 'Unknown'}`);
         } finally {
             setIsProcessing(false);
         }

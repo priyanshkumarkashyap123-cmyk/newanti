@@ -8,6 +8,7 @@ import { LoadRenderer } from './LoadRenderer';
 import { MemberLoadRenderer } from './MemberLoadRenderer';
 import { AllMemberDiagrams } from './DiagramRenderer';
 import { LoadPlacementLayer } from './viewer/LoadPlacementLayer';
+import PlateRenderer from './viewer/PlateRenderer';
 import { AllResultsOverlay, StressColorOverlay } from './results';
 import AnimatedDeflection from './results/AnimatedDeflection';
 import { RemoteCursors } from './collaborators/RemoteCursors';
@@ -26,9 +27,10 @@ export const SharedScene: FC<{ remoteUsers?: RemoteUser[] }> = ({ remoteUsers = 
     const showDeflectedShape = useModelStore((state) => state.showDeflectedShape);
     const nodes = useModelStore((state) => state.nodes);
     const members = useModelStore((state) => state.members);
+    const plates = useModelStore((state) => state.plates);
 
     // Check if model is empty
-    const isModelEmpty = nodes.size === 0 && members.size === 0;
+    const isModelEmpty = nodes.size === 0 && members.size === 0 && plates.size === 0;
 
     // Use diagram scale from store, with fallback to displacement-based scale
     // Multiply by a factor to ensure diagrams are visible
@@ -121,6 +123,9 @@ export const SharedScene: FC<{ remoteUsers?: RemoteUser[] }> = ({ remoteUsers = 
 
             {/* Structural Model */}
             <ModelRenderer />
+
+            {/* Plate/Shell Elements */}
+            <PlateRenderer />
 
             {/* Support & Load Visualization */}
             <SupportRenderer />
