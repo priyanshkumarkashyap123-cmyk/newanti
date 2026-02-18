@@ -1,19 +1,42 @@
-import { FC, useLayoutEffect, useRef, useMemo } from 'react';
+import { FC, useLayoutEffect, useRef, useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import { useModelStore, Node } from '../store/model';
 
-// Geometry constants
+// Geometry constants — created once at module level for sharing across instances.
+// We register a Vite HMR disposal callback so these are cleaned up on hot-reload.
 const SPHERE_GEO = new THREE.SphereGeometry(0.2, 16, 16);
 const BOX_GEO = new THREE.BoxGeometry(0.3, 0.3, 0.3);
-const CONE_GEO = new THREE.ConeGeometry(0.2, 0.4, 8); // Pinned
-const CYL_GEO = new THREE.CylinderGeometry(0.2, 0.2, 0.3, 16); // Roller
+const CONE_GEO = new THREE.ConeGeometry(0.2, 0.4, 8);    // Pinned
+const CYL_GEO  = new THREE.CylinderGeometry(0.2, 0.2, 0.3, 16); // Roller
+
+// Dispose on Vite HMR so GPU buffers don’t accumulate across hot-reloads
+if (import.meta.hot) {
+    import.meta.hot.dispose(() => {
+        SPHERE_GEO.dispose();
+        BOX_GEO.dispose();
+        CONE_GEO.dispose();
+        CYL_GEO.dispose();
+    });
+}
 
 export const NodesRenderer: FC = () => {
-    const nodes = useModelStore((state) => state.nodes);
-    const selectedIds = useModelStore((state) => state.selectedIds);
-    const select = useModelStore((state) => state.select);
-    const analysisResults = useModelStore((state) => state.analysisResults);
+    const nodes        = useModelStore((state) => state.nodes);
+    const selectedIds  = useModelStore((state) => state.selectedIds);
+    const select       = useModelStore((state) => state.select);
+    const analysisResults   = useModelStore((state) => state.analysisResults);
     const displacementScale = useModelStore((state) => state.displacementScale);
+
+    // Stable scratch objects — allocated once, reused every update to avoid GC pressure
+    const tempObjectRef = useRef(new THREE.Object3D());
+    const colorRef      = useRef(new THREE.Color());
+
+    // Dispose scratch objects on unmount
+    useEffect(() => {
+        return () => {
+            // THREE.Object3D has no dispose, but Color is pure JS — nothing to do.
+            // This effect is here as a placeholder for future cleanup if needed.
+        };
+    }, []);
 
     // Group nodes by type for distinct rendering
     const { freeNodes, fixedNodes, pinnedNodes, rollerNodes } = useMemo(() => {
@@ -62,8 +85,8 @@ export const NodesRenderer: FC = () => {
     ) => {
         if (!mesh) return;
 
-        const tempObject = new THREE.Object3D();
-        const color = new THREE.Color();
+        const tempObject = tempObjectRef.current;
+        const color = colorRef.current;
 
         nodeList.forEach((node, index) => {
             const displacement = analysisResults?.displacements.get(node.id);

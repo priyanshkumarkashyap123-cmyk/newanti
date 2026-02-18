@@ -1,4 +1,4 @@
-import { FC, useLayoutEffect, useRef, useMemo } from 'react';
+import { FC, useLayoutEffect, useRef, useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import { Line } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
@@ -50,6 +50,14 @@ export const MembersRenderer: FC<MembersRendererProps> = ({
 
     const meshRef = useRef<THREE.InstancedMesh>(null);
     const idsRef = useRef<string[]>([]);
+    // Stable scratch objects — created once, reused every layout effect run
+    const dummyRef = useRef(new THREE.Object3D());
+    const startPosRef = useRef(new THREE.Vector3());
+    const endPosRef = useRef(new THREE.Vector3());
+    const directionRef = useRef(new THREE.Vector3());
+    const quaternionRef = useRef(new THREE.Quaternion());
+    const upRef = useRef(new THREE.Vector3(0, 1, 0));
+    const colorRef = useRef(new THREE.Color());
 
     // Get camera for LOD calculations
     const { camera } = useThree();
@@ -81,9 +89,17 @@ export const MembersRenderer: FC<MembersRendererProps> = ({
     }, [camera.position, structureCenter]);
 
     // Cached geometry - reuse instead of creating new instances
+    // useEffect cleanup disposes the geometry when it changes or the component unmounts,
+    // preventing GPU memory leaks across hot-reloads and re-mounts.
     const cylinderGeometry = useMemo(() =>
         new THREE.CylinderGeometry(0.1, 0.1, 1, geometryDetail),
         [geometryDetail]);
+
+    useEffect(() => {
+        return () => {
+            cylinderGeometry.dispose();
+        };
+    }, [cylinderGeometry]);
 
     // Memoize colors for performance
     const memberColors = useMemo(() => {
@@ -228,13 +244,14 @@ export const MembersRenderer: FC<MembersRendererProps> = ({
 
         idsRef.current = new Array(sectionMembers.length);
 
-        const dummy = new THREE.Object3D();
-        const startPos = new THREE.Vector3();
-        const endPos = new THREE.Vector3();
-        const direction = new THREE.Vector3();
-        const quaternion = new THREE.Quaternion();
-        const up = new THREE.Vector3(0, 1, 0);
-        const color = new THREE.Color();
+        // Reuse stable scratch objects — no heap allocation per render
+        const dummy = dummyRef.current;
+        const startPos = startPosRef.current;
+        const endPos = endPosRef.current;
+        const direction = directionRef.current;
+        const quaternion = quaternionRef.current;
+        const up = upRef.current;
+        const color = colorRef.current;
 
         let index = 0;
 

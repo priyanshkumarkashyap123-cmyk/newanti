@@ -1,4 +1,3 @@
-import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './providers/AuthProvider';
@@ -89,25 +88,29 @@ const initializeApp = async () => {
         // SubscriptionProvider provides subscription/tier context for feature gating
         // ErrorBoundary catches and displays any runtime errors gracefully
         // AppProviders adds: NotificationProvider, ConfirmProvider, CommandPalette (⌘K), KeyboardShortcuts (⌘/)
+        // NOTE: StrictMode is intentionally NOT used here.
+        // React 18 StrictMode double-invokes effects in development, which causes
+        // the R3F Canvas to create and immediately destroy WebGL contexts.
+        // Browsers allow only 8-16 WebGL contexts per page; double-mounting
+        // exhausts this budget and leaves the 3D viewport blank/black.
+        // Strict-mode linting is enforced via ESLint (react-hooks plugin) instead.
         createRoot(rootElement).render(
-            <StrictMode>
-                <ErrorBoundary onError={(error, errorInfo) => {
-                    logger.error('🔴 App Error Caught:', error);
-                    logger.error('📍 Component Stack:', errorInfo?.componentStack);
-                }}>
-                    <BrowserRouter>
-                        <AuthProvider>
-                            <SubscriptionProvider>
-                                <AppProvider>
-                                    <AppProviders>
-                                        <App />
-                                    </AppProviders>
-                                </AppProvider>
-                            </SubscriptionProvider>
-                        </AuthProvider>
-                    </BrowserRouter>
-                </ErrorBoundary>
-            </StrictMode>
+            <ErrorBoundary onError={(error, errorInfo) => {
+                logger.error('🔴 App Error Caught:', error);
+                logger.error('📍 Component Stack:', errorInfo?.componentStack);
+            }}>
+                <BrowserRouter>
+                    <AuthProvider>
+                        <SubscriptionProvider>
+                            <AppProvider>
+                                <AppProviders>
+                                    <App />
+                                </AppProviders>
+                            </AppProvider>
+                        </SubscriptionProvider>
+                    </AuthProvider>
+                </BrowserRouter>
+            </ErrorBoundary>
         );
 
 
