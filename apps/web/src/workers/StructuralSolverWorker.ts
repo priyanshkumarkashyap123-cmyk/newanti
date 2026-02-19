@@ -261,13 +261,26 @@ class SparseMatrix {
         return y;
     }
 
-    // Get all entries as array for WASM solver
+    // Get all entries as array for WASM solver (legacy – prefer getTypedArrays)
     getEntries(): { row: number; col: number; value: number }[] {
         const entries: { row: number; col: number; value: number }[] = new Array(this.count);
         for (let i = 0; i < this.count; i++) {
             entries[i] = { row: this.rowArr[i], col: this.colArr[i], value: this.valArr[i] };
         }
         return entries;
+    }
+
+    /**
+     * Return raw COO TypedArrays – zero-copy path to WASM.
+     * Returns trimmed views (length === count) so no excess data is copied.
+     */
+    getTypedArrays(): { rows: Uint32Array; cols: Uint32Array; vals: Float64Array; count: number } {
+        return {
+            rows: new Uint32Array(this.rowArr.buffer, 0, this.count),
+            cols: new Uint32Array(this.colArr.buffer, 0, this.count),
+            vals: new Float64Array(this.valArr.buffer, 0, this.count),
+            count: this.count,
+        };
     }
 }
 
@@ -530,7 +543,7 @@ function assembleStiffnessMatrixAndForces(
     loads: LoadData[],
     memberAxialForces?: Record<string, number>,
     elementDensities?: Record<string, number>
-): { entries: { row: number; col: number; value: number }[]; F: Float64Array; fixedDofs: Set<number> } {
+): { cooRows: Uint32Array; cooCols: Uint32Array; cooVals: Float64Array; nnz: number; F: Float64Array; fixedDofs: Set<number> } {
     // Build nodeIndexMap internally
     const nodeIndexMap = new Map<string, number>();
     nodes.forEach((n, i) => nodeIndexMap.set(n.id, i));
@@ -656,11 +669,12 @@ function assembleStiffnessMatrixAndForces(
                 const destIndices = [0, 1, 2, 6, 7, 8];
                 ke = mapMatrix(kTruss3D, destIndices, 12);
             } else {
-                // Using new Truss 3D for 'frame' type in 6DOF for now (placeholder for full 3D frame)
-                // This should be computeFrame3DStiffness, but for now, using Truss3D as a placeholder
-                const kTruss3D = computeTruss3DStiffness(E_eff, member.A, L, cx, cy, cz);
-                const destIndices = [0, 1, 2, 6, 7, 8];
-                ke = mapMatrix(kTruss3D, destIndices, 12);
+                // Full 3D Space Frame — bending about both axes, torsion, axial
+                const Iy = (member as any).Iy || member.I || 1e-6;
+                const Iz = (member as any).Iz || member.I || 1e-6;
+                const J  = (member as any).J  || 0;  // 0 → fallback Iy+Iz inside fn
+                const G  = (member as any).G  || 0;  // 0 → fallback E/2.6
+                ke = computeFrame3DStiffness(E_eff, member.A, Iy, Iz, J, G, L, cx, cy, cz);
             }
         } else {
             // Fallback
@@ -722,9 +736,9 @@ function assembleStiffnessMatrixAndForces(
         }
     }
 
-    // Convert K sparse matrix to entries array
-    const entries = K.getEntries();
-    return { entries, F, fixedDofs };
+    // Return raw TypedArrays – skip object-array intermediate
+    const { rows: cooRows, cols: cooCols, vals: cooVals, count: nnz } = K.getTypedArrays();
+    return { cooRows, cooCols, cooVals, nnz, F, fixedDofs };
 }
 
 function computeTrussStiffness(k: number, cx: number, cy: number, cz: number, dofPerNode: number): number[][] {
@@ -798,6 +812,150 @@ function computeFrameStiffness(E: number, A: number, I: number, L: number, cx: n
     }
 
     return kGlobal;
+}
+
+/**
+ * 3D Space Frame Element Stiffness — 12×12 in global coordinates.
+ *
+ * DOF order per node: [u, v, w, θx, θy, θz]
+ * Local x-axis = member axis.
+ *
+ * @param E  Young's modulus
+ * @param A  Cross-section area
+ * @param Iy Iy (moment of inertia about LOCAL y — bending in local xz)
+ * @param Iz Iz (moment of inertia about LOCAL z — bending in local xy)
+ * @param J  Torsion constant (Saint-Venant). If 0 use Iy+Iz approx.
+ * @param G  Shear modulus. If 0 use E / 2.6
+ * @param L  Element length
+ * @param cx, cy, cz  Direction cosines of the member
+ */
+function computeFrame3DStiffness(
+    E: number, A: number, Iy: number, Iz: number,
+    J: number, G: number, L: number,
+    cx: number, cy: number, cz: number
+): number[][] {
+    // Fallbacks
+    if (!J || J === 0) J = Iy + Iz; // Approximate torsion constant
+    if (!G || G === 0) G = E / (2 * (1 + 0.3)); // Steel Poisson = 0.3
+
+    const EA_L = (E * A) / L;
+    const EIz = E * Iz;
+    const EIy = E * Iy;
+    const GJ_L = (G * J) / L;
+    const L2 = L * L;
+    const L3 = L2 * L;
+
+    // Local 12×12 stiffness (standard Euler-Bernoulli beam)
+    // DOF order local: [u1, v1, w1, θx1, θy1, θz1, u2, v2, w2, θx2, θy2, θz2]
+    const kL: number[][] = Array.from({ length: 12 }, () => Array(12).fill(0));
+
+    // Axial
+    kL[0][0] = EA_L;   kL[0][6] = -EA_L;
+    kL[6][0] = -EA_L;  kL[6][6] = EA_L;
+
+    // Torsion
+    kL[3][3] = GJ_L;   kL[3][9] = -GJ_L;
+    kL[9][3] = -GJ_L;  kL[9][9] = GJ_L;
+
+    // Bending in local xy plane (uses Iz, rotation about z)
+    const a1 = 12 * EIz / L3;
+    const a2 = 6 * EIz / L2;
+    const a3 = 4 * EIz / L;
+    const a4 = 2 * EIz / L;
+
+    kL[1][1] = a1;   kL[1][5] = a2;    kL[1][7] = -a1;  kL[1][11] = a2;
+    kL[5][1] = a2;   kL[5][5] = a3;    kL[5][7] = -a2;  kL[5][11] = a4;
+    kL[7][1] = -a1;  kL[7][5] = -a2;   kL[7][7] = a1;   kL[7][11] = -a2;
+    kL[11][1] = a2;  kL[11][5] = a4;   kL[11][7] = -a2; kL[11][11] = a3;
+
+    // Bending in local xz plane (uses Iy, rotation about y)
+    const b1 = 12 * EIy / L3;
+    const b2 = 6 * EIy / L2;
+    const b3 = 4 * EIy / L;
+    const b4 = 2 * EIy / L;
+
+    kL[2][2] = b1;   kL[2][4] = -b2;   kL[2][8] = -b1;  kL[2][10] = -b2;
+    kL[4][2] = -b2;  kL[4][4] = b3;    kL[4][8] = b2;   kL[4][10] = b4;
+    kL[8][2] = -b1;  kL[8][4] = b2;    kL[8][8] = b1;   kL[8][10] = b2;
+    kL[10][2] = -b2; kL[10][4] = b4;   kL[10][8] = b2;  kL[10][10] = b3;
+
+    // Build 3×3 rotation matrix R from local to global
+    // Local x-axis along member: lx = (cx, cy, cz)
+    // Need to pick a local y-axis perpendicular to x
+    const lx = [cx, cy, cz];
+    let ly: number[];
+    const tol = 1e-6;
+    const isVertical = Math.abs(cx) < tol && Math.abs(cz) < tol;
+    if (isVertical) {
+        // Member along global Y — use global Z as reference
+        ly = [0, 0, 1];
+    } else {
+        // Cross product with global Y to get z, then y = z × x
+        // lz_temp = lx × (0,1,0)
+        const lz_temp = [
+            lx[2],  // cy*0 - cz*1 → -cz → wait: cx×(0,1,0) = (cy*0 - cz*1, cz*0 - cx*0, cx*1 - cy*0) = (-cz, 0, cx)
+            0,
+            lx[0]
+        ];
+        // Correct: lx × Y = (cy*0 - cz*1, cz*0 - cx*0, cx*1 - cy*0) = (-cz, 0, cx)
+        lz_temp[0] = -cz; lz_temp[1] = 0; lz_temp[2] = cx;
+        const lzLen = Math.sqrt(lz_temp[0]*lz_temp[0] + lz_temp[1]*lz_temp[1] + lz_temp[2]*lz_temp[2]);
+        const lz = [lz_temp[0]/lzLen, lz_temp[1]/lzLen, lz_temp[2]/lzLen];
+
+        // ly = lz × lx
+        ly = [
+            lz[1]*lx[2] - lz[2]*lx[1],
+            lz[2]*lx[0] - lz[0]*lx[2],
+            lz[0]*lx[1] - lz[1]*lx[0]
+        ];
+    }
+
+    // Recompute lz = lx × ly (ensure right-hand system)
+    const lz = [
+        lx[1]*ly[2] - lx[2]*ly[1],
+        lx[2]*ly[0] - lx[0]*ly[2],
+        lx[0]*ly[1] - lx[1]*ly[0]
+    ];
+
+    // Rotation matrix R (3×3): columns = lx, ly, lz (rows of R = local axes in global coords)
+    // Convention: u_local = R * u_global → ke_global = R^T * ke_local * R
+    const R = [
+        [lx[0], lx[1], lx[2]],
+        [ly[0], ly[1], ly[2]],
+        [lz[0], lz[1], lz[2]]
+    ];
+
+    // Build 12×12 transformation T = diag(R, R, R, R)
+    const T: number[][] = Array.from({ length: 12 }, () => Array(12).fill(0));
+    for (let block = 0; block < 4; block++) {
+        const off = block * 3;
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                T[off + i][off + j] = R[i][j];
+            }
+        }
+    }
+
+    // ke_global = T^T * kL * T
+    const temp: number[][] = Array.from({ length: 12 }, () => Array(12).fill(0));
+    for (let i = 0; i < 12; i++) {
+        for (let j = 0; j < 12; j++) {
+            let s = 0;
+            for (let k = 0; k < 12; k++) s += kL[i][k] * T[k][j];
+            temp[i][j] = s;
+        }
+    }
+
+    const kG: number[][] = Array.from({ length: 12 }, () => Array(12).fill(0));
+    for (let i = 0; i < 12; i++) {
+        for (let j = 0; j < 12; j++) {
+            let s = 0;
+            for (let k = 0; k < 12; k++) s += T[k][i] * temp[k][j];
+            kG[i][j] = s;
+        }
+    }
+
+    return kG;
 }
 
 function computeMemberEndForces(
@@ -1162,6 +1320,42 @@ async function waitForWasm(): Promise<void> {
 
 // Analysis Implementation
 // Helper to call WASM sparse solver with TypedArrays (Zero-Copy-ish)
+// Overload 1: Pre-built TypedArrays (fast path — zero intermediate allocations)
+// Overload 2: Object-array entries (legacy path — for dynamic_time_history)
+function solveSystemWasmTyped(rows: Uint32Array, cols: Uint32Array, vals: Float64Array, F: Float64Array, dof: number): Float64Array {
+    if (!wasmModule || !wasmModule.solve_sparse_system) {
+        if (wasmModule && wasmModule.solve_sparse_system_json) {
+            console.warn("Using slow JSON solver path");
+            const entries: any[] = new Array(rows.length);
+            for (let i = 0; i < rows.length; i++) entries[i] = { row: rows[i], col: cols[i], value: vals[i] };
+            const input = { entries, forces: Array.from(F), size: dof };
+            const res = JSON.parse(wasmModule.solve_sparse_system_json(JSON.stringify(input)));
+            if (!res.success) throw new Error(res.error);
+            return new Float64Array(res.displacements);
+        }
+        throw new Error("WASM solve_sparse_system not available. Please rebuild solver-wasm.");
+    }
+
+    try {
+        const estimatedBytes = (rows.length * 16) + (dof * 8 * 2);
+        if (estimatedBytes > 500 * 1024 * 1024) {
+            console.warn(`[Solver] Large allocation: ${(estimatedBytes / 1024 / 1024).toFixed(0)}MB`);
+        }
+        return wasmModule.solve_sparse_system(rows, cols, vals, F, dof);
+    } catch (e) {
+        const errorStr = String(e);
+        if (errorStr.includes('memory') || errorStr.includes('OOM') || errorStr.includes('alloc') || errorStr.includes('grow')) {
+            throw new Error(`Out of memory: Model with ${dof.toLocaleString()} DOF requires too much memory.`);
+        } else if (errorStr.includes('unreachable') || errorStr.includes('RuntimeError')) {
+            throw new Error(`Solver crashed (Error 5): Model may be too large or malformed.`);
+        } else if (errorStr.includes('unstable') || errorStr.includes('singular') || errorStr.includes('indefinite')) {
+            throw new Error("Structure is unstable. Add proper supports.");
+        } else {
+            throw new Error("Solver Failed: " + errorStr);
+        }
+    }
+}
+
 function solveSystemWasm(entries: any[], F: Float64Array | number[], dof: number): Float64Array {
     if (!wasmModule || !wasmModule.solve_sparse_system) {
         // Fallback or error
@@ -1223,6 +1417,34 @@ function solveSystemWasm(entries: any[], F: Float64Array | number[], dof: number
             throw new Error("Solver Failed: " + errorStr);
         }
     }
+}
+
+/**
+ * Apply penalty boundary conditions directly to COO TypedArrays.
+ * Appends penalty entries and zeroes out F at fixed DOFs.
+ * Returns new typed arrays with the extra entries appended.
+ */
+function applyPenaltyBC(
+    cooRows: Uint32Array, cooCols: Uint32Array, cooVals: Float64Array,
+    nnz: number, F: Float64Array, fixedDofs: Set<number>, penalty: number = 1e20
+): { rows: Uint32Array; cols: Uint32Array; vals: Float64Array } {
+    const bcCount = fixedDofs.size;
+    const totalNnz = nnz + bcCount;
+    const rows = new Uint32Array(totalNnz);
+    const cols = new Uint32Array(totalNnz);
+    const vals = new Float64Array(totalNnz);
+    rows.set(cooRows.subarray(0, nnz));
+    cols.set(cooCols.subarray(0, nnz));
+    vals.set(cooVals.subarray(0, nnz));
+    let idx = nnz;
+    for (const dof of fixedDofs) {
+        rows[idx] = dof;
+        cols[idx] = dof;
+        vals[idx] = penalty;
+        F[dof] = 0;
+        idx++;
+    }
+    return { rows, cols, vals };
 }
 
 async function analyze(model: ModelData): Promise<ResultData> {
@@ -1301,7 +1523,9 @@ async function analyze(model: ModelData): Promise<ResultData> {
             model.nodes.forEach((n, i) => nodeIndexMap.set(n.id, i));
 
             // K (Elastic)
-            const { entries: entriesK, F: F_static, fixedDofs } = assembleStiffnessMatrixAndForces(model.nodes, model.members, model.dofPerNode, model.loads);
+            const kResult = assembleStiffnessMatrixAndForces(model.nodes, model.members, model.dofPerNode, model.loads);
+            const F_static = kResult.F;
+            const fixedDofs = kResult.fixedDofs;
 
             // M (Lumped Default)
             const { entries: entriesM, M_diag } = assembleMassMatrix(model.nodes, model.members, model.dofPerNode);
@@ -1320,9 +1544,12 @@ async function analyze(model: ModelData): Promise<ResultData> {
             const a0 = 1 / (beta * dt * dt);
             const a1 = gamma / (beta * dt);
 
-            // Combine K and M into K_hat entries
-            // entriesK_hat = entriesK + a0 * entriesM
-            const entriesK_hat = [...entriesK];
+            // Combine K and M into K_hat entries (object array for legacy solveSystemWasm)
+            // Convert K TypedArrays to object entries for merging with M
+            const entriesK_hat: SparseEntry[] = [];
+            for (let i = 0; i < kResult.nnz; i++) {
+                entriesK_hat.push({ row: kResult.cooRows[i], col: kResult.cooCols[i], value: kResult.cooVals[i] });
+            }
             for (const em of entriesM) {
                 entriesK_hat.push({ row: em.row, col: em.col, value: em.value * a0 });
             }
@@ -1450,18 +1677,18 @@ async function analyze(model: ModelData): Promise<ResultData> {
                 model.nodes.forEach((n, i) => nodeIndexMap.set(n.id, i));
                 const dofPerNode = model.dofPerNode;
 
-                const { entries, F, fixedDofs } = assembleStiffnessMatrixAndForces(model.nodes, model.members, dofPerNode, model.loads, memberAxialForces);
+                const pdResult = assembleStiffnessMatrixAndForces(model.nodes, model.members, dofPerNode, model.loads, memberAxialForces);
+                const F = pdResult.F;
+                const fixedDofs = pdResult.fixedDofs;
 
                 const dof = model.nodes.length * dofPerNode;
-                const penalty = 1e20;
-                fixedDofs.forEach(idx => {
-                    entries.push({ row: idx, col: idx, value: penalty });
-                    F[idx] = 0;
-                });
+                const { rows: bcRows, cols: bcCols, vals: bcVals } = applyPenaltyBC(
+                    pdResult.cooRows, pdResult.cooCols, pdResult.cooVals, pdResult.nnz, F, fixedDofs
+                );
 
                 if (wasmReady && wasmModule) {
-                    displacements = solveSystemWasm(entries, F, dof);
-                    stats.solveTimeMs = (stats.solveTimeMs || 0) + 0; // Time tracking inside helper not returned yet
+                    displacements = solveSystemWasmTyped(bcRows, bcCols, bcVals, F, dof);
+                    stats.solveTimeMs = (stats.solveTimeMs || 0) + 0;
                 } else { throw new Error("WASM required"); }
 
                 memberForces = computeMemberEndForces(model, displacements, nodeIndexMap);
@@ -1514,17 +1741,20 @@ async function analyze(model: ModelData): Promise<ResultData> {
                 sendProgress('solving', (iter / optMaxIter) * 100, `Optimization Iteration ${iter + 1}/${optMaxIter}`);
 
                 // 1. Analyze (Linear with Scaled Stiffness)
-                const { entries, F, fixedDofs } = assembleStiffnessMatrixAndForces(
+                const topoResult = assembleStiffnessMatrixAndForces(
                     model.nodes, model.members, model.dofPerNode, model.loads, undefined, densities
                 );
+                const F = topoResult.F;
+                const fixedDofs = topoResult.fixedDofs;
                 const dof = model.nodes.length * model.dofPerNode;
-                const penalty = 1e20;
-                fixedDofs.forEach(idx => { entries.push({ row: idx, col: idx, value: penalty }); F[idx] = 0; });
+                const { rows: bcRows, cols: bcCols, vals: bcVals } = applyPenaltyBC(
+                    topoResult.cooRows, topoResult.cooCols, topoResult.cooVals, topoResult.nnz, F, fixedDofs
+                );
 
                 // Solve
                 let u: Float64Array;
                 if (wasmReady && wasmModule) {
-                    u = solveSystemWasm(entries, F, dof);
+                    u = solveSystemWasmTyped(bcRows, bcCols, bcVals, F, dof);
                 } else throw new Error("WASM required for Optimization");
 
                 finalDisplacements = Float64Array.from(u);
@@ -1689,18 +1919,16 @@ async function analyze(model: ModelData): Promise<ResultData> {
             // ... Standard assemble ...
             const nodeIndexMap = new Map();
             model.nodes.forEach((n, i) => nodeIndexMap.set(n.id, i));
-            const { entries, F, fixedDofs } = assembleStiffnessMatrixAndForces(model.nodes, model.members, model.dofPerNode, model.loads);
+            const linResult = assembleStiffnessMatrixAndForces(model.nodes, model.members, model.dofPerNode, model.loads);
+            const F = linResult.F;
             const dof = model.nodes.length * model.dofPerNode;
-            const fixedIndices = Array.from(fixedDofs);
-            const penalty = 1e20;
-            fixedIndices.forEach(idx => {
-                entries.push({ row: idx, col: idx, value: penalty });
-                F[idx] = 0;
-            });
+            const { rows: bcRows, cols: bcCols, vals: bcVals } = applyPenaltyBC(
+                linResult.cooRows, linResult.cooCols, linResult.cooVals, linResult.nnz, F, linResult.fixedDofs
+            );
 
             let displacements;
             if (wasmReady && wasmModule) {
-                displacements = solveSystemWasm(entries, F, dof);
+                displacements = solveSystemWasmTyped(bcRows, bcCols, bcVals, F, dof);
             } else { throw new Error("WASM not ready"); }
 
             const memberForces = computeMemberEndForces(model, displacements, nodeIndexMap);

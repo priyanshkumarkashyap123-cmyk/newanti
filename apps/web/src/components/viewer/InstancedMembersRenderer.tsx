@@ -15,7 +15,7 @@
  */
 
 import React, { useRef, useMemo, useEffect, useState, useCallback } from 'react';
-import { useFrame, useThree, ThreeEvent } from '@react-three/fiber';
+import { useThree, ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useModelStore } from '../../store/model';
 
@@ -36,16 +36,6 @@ const CYLINDER_SEGMENTS = 8; // 8-sided cylinder for good quality
 const LARGE_MODEL_THRESHOLD = 5000;  // Members count for "large model" mode
 const VERY_LARGE_MODEL_THRESHOLD = 20000; // Members count for "very large" mode
 const UPDATE_BATCH_SIZE = 2000; // Process colors in batches to avoid blocking
-
-// ============================================
-// TYPES
-// ============================================
-
-interface MemberInstanceData {
-    id: string;
-    matrix: THREE.Matrix4;
-    color: THREE.Color;
-}
 
 // ============================================
 // HELPER FUNCTIONS
@@ -102,11 +92,11 @@ export const InstancedMembersRenderer: React.FC = () => {
     const { raycaster, camera } = useThree();
     
     // ============================================
-    // BUILD INSTANCE DATA
+    // BUILD INSTANCE GEOMETRY (transforms only — stable unless topology changes)
     // ============================================
     
-    const instanceData = useMemo(() => {
-        const data: MemberInstanceData[] = [];
+    const instanceGeometry = useMemo(() => {
+        const data: { id: string; matrix: THREE.Matrix4 }[] = [];
         const memberArray = Array.from(members.entries());
         
         for (const [id, member] of memberArray) {
@@ -118,23 +108,23 @@ export const InstancedMembersRenderer: React.FC = () => {
             const startPos = new THREE.Vector3(startNode.x, startNode.y, startNode.z);
             const endPos = new THREE.Vector3(endNode.x, endNode.y, endNode.z);
             
-            // Determine color based on selection state
-            let color = COLORS.memberDefault.clone();
-            if (selectedIds.has(id)) {
-                color = COLORS.memberSelected.clone();
-            }
-            
             data.push({
                 id,
                 matrix: calculateMemberMatrix(startPos, endPos),
-                color,
             });
         }
         
         return data;
-    }, [members, nodes, selectedIds]);
+    }, [members, nodes]);
     
-    const instanceCount = instanceData.length;
+    const instanceCount = instanceGeometry.length;
+    
+    // Build a stable id→index map for fast lookups during color updates
+    const idToIndex = useMemo(() => {
+        const map = new Map<string, number>();
+        instanceGeometry.forEach((d, i) => map.set(d.id, i));
+        return map;
+    }, [instanceGeometry]);
     
     // ============================================
     // SHARED GEOMETRY (created once, reused for all instances)
@@ -181,74 +171,59 @@ export const InstancedMembersRenderer: React.FC = () => {
         if (!meshRef.current) return;
         
         const mesh = meshRef.current;
-        
-        // Set instance count
         mesh.count = instanceCount;
         
-        // For very large models, use requestIdleCallback to avoid blocking
+        // Apply matrices only (no colors here — handled by separate effect)
         if (isVeryLargeModel && typeof requestIdleCallback !== 'undefined') {
-            const colorArray = new Float32Array(instanceCount * 3);
             let currentIndex = 0;
-            
             const processChunk = (deadline: IdleDeadline) => {
                 while (currentIndex < instanceCount && deadline.timeRemaining() > 0) {
-                    const data = instanceData[currentIndex];
-                    if (data) {
-                        mesh.setMatrixAt(currentIndex, data.matrix);
-                        colorArray[currentIndex * 3 + 0] = data.color.r;
-                        colorArray[currentIndex * 3 + 1] = data.color.g;
-                        colorArray[currentIndex * 3 + 2] = data.color.b;
-                    }
+                    const data = instanceGeometry[currentIndex];
+                    if (data) mesh.setMatrixAt(currentIndex, data.matrix);
                     currentIndex++;
                 }
-                
                 if (currentIndex < instanceCount) {
                     requestIdleCallback(processChunk);
                 } else {
-                    // Done - apply changes
-                    if (!mesh.geometry.attributes.instanceColor) {
-                        mesh.geometry.setAttribute(
-                            'instanceColor',
-                            new THREE.InstancedBufferAttribute(colorArray, 3)
-                        );
-                    } else {
-                        (mesh.geometry.attributes.instanceColor as THREE.InstancedBufferAttribute).array = colorArray;
-                        mesh.geometry.attributes.instanceColor.needsUpdate = true;
-                    }
                     mesh.instanceMatrix.needsUpdate = true;
                 }
             };
-            
             requestIdleCallback(processChunk);
         } else {
-            // Standard processing for normal/large models
-            const colorArray = new Float32Array(instanceCount * 3);
-            
-            instanceData.forEach((data, i) => {
-                // Set matrix
+            instanceGeometry.forEach((data, i) => {
                 mesh.setMatrixAt(i, data.matrix);
-                
-                // Set color
-                colorArray[i * 3 + 0] = data.color.r;
-                colorArray[i * 3 + 1] = data.color.g;
-                colorArray[i * 3 + 2] = data.color.b;
             });
-            
-            // Apply colors as instanced attribute
-            if (!mesh.geometry.attributes.instanceColor) {
-                mesh.geometry.setAttribute(
-                    'instanceColor',
-                    new THREE.InstancedBufferAttribute(colorArray, 3)
-                );
-            } else {
-                (mesh.geometry.attributes.instanceColor as THREE.InstancedBufferAttribute).array = colorArray;
-                mesh.geometry.attributes.instanceColor.needsUpdate = true;
-            }
-            
             mesh.instanceMatrix.needsUpdate = true;
         }
-        
-    }, [instanceData, instanceCount, isVeryLargeModel]);
+    }, [instanceGeometry, instanceCount, isVeryLargeModel]);
+    
+    // ============================================
+    // UPDATE COLORS ONLY (runs on selection change — cheap, no matrix recalc)
+    // ============================================
+    
+    useEffect(() => {
+        if (!meshRef.current) return;
+        const mesh = meshRef.current;
+
+        const colorArray = new Float32Array(instanceCount * 3);
+        for (let i = 0; i < instanceCount; i++) {
+            const id = instanceGeometry[i].id;
+            const color = selectedIds.has(id) ? COLORS.memberSelected : COLORS.memberDefault;
+            colorArray[i * 3 + 0] = color.r;
+            colorArray[i * 3 + 1] = color.g;
+            colorArray[i * 3 + 2] = color.b;
+        }
+
+        if (!mesh.geometry.attributes.instanceColor) {
+            mesh.geometry.setAttribute(
+                'instanceColor',
+                new THREE.InstancedBufferAttribute(colorArray, 3)
+            );
+        } else {
+            (mesh.geometry.attributes.instanceColor as THREE.InstancedBufferAttribute).array = colorArray;
+            mesh.geometry.attributes.instanceColor.needsUpdate = true;
+        }
+    }, [instanceGeometry, instanceCount, selectedIds]);
     
     // ============================================
     // HOVER EFFECT (update color on hover) - throttled for large models
@@ -264,8 +239,8 @@ export const InstancedMembersRenderer: React.FC = () => {
         
         if (!colorAttribute) return;
         
-        instanceData.forEach((data, i) => {
-            let color = data.color.clone();
+        instanceGeometry.forEach((data, i) => {
+            let color = selectedIds.has(data.id) ? COLORS.memberSelected : COLORS.memberDefault;
             
             // Override with hover color if hovered
             if (hoveredInstanceId === i) {
@@ -277,7 +252,7 @@ export const InstancedMembersRenderer: React.FC = () => {
         
         colorAttribute.needsUpdate = true;
         
-    }, [hoveredInstanceId, instanceData]);
+    }, [hoveredInstanceId, instanceGeometry, selectedIds]);
     
     // ============================================
     // RAYCASTING FOR SELECTION
@@ -318,8 +293,8 @@ export const InstancedMembersRenderer: React.FC = () => {
         
         if (intersects.length > 0) {
             const instanceId = intersects[0].instanceId;
-            if (instanceId !== undefined && instanceId < instanceData.length) {
-                const memberId = instanceData[instanceId].id;
+            if (instanceId !== undefined && instanceId < instanceGeometry.length) {
+                const memberId = instanceGeometry[instanceId].id;
                 const multi = (event as any).shiftKey || (event as any).ctrlKey || (event as any).metaKey || false;
                 selectMember(memberId, multi);
             }
