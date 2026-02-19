@@ -17,6 +17,8 @@ from pydantic import BaseModel
 from typing import Optional, List, Dict
 import os
 from datetime import datetime
+import asyncio
+import importlib
 
 # Wrap imports in try-except to handle missing packages gracefully
 try:
@@ -97,6 +99,8 @@ GEMINI_API_KEY = get_env('GEMINI_API_KEY', 'mock-key-local-dev')
 USE_MOCK_AI = get_env('USE_MOCK_AI', 'true').lower() in ('true', '1', 'yes')
 FRONTEND_URL = get_env('FRONTEND_URL', 'http://localhost:5173')
 ALLOWED_ORIGINS_ENV = get_env('ALLOWED_ORIGINS', 'http://localhost:5173,http://localhost:3001')
+NODE_API_URL = get_env('NODE_API_URL', 'http://localhost:3001')
+RUST_API_URL = get_env('RUST_API_URL', 'http://localhost:3002')
 
 # Debug: Print environment info at startup
 print(f"\n{'='*60}")
@@ -198,6 +202,57 @@ async def health_check():
     }
 
 
+@app.get("/health/dependencies", tags=["Health"])
+async def health_dependencies():
+    """Check connectivity to dependent backend services (Node + Rust)."""
+    if importlib.util.find_spec("httpx") is None:
+        return {
+            "status": "degraded",
+            "python": "ok",
+            "node": "unknown",
+            "rust": "unknown",
+            "error": "httpx not installed"
+        }
+
+    httpx = importlib.import_module("httpx")
+
+    async def check_service(name: str, base_url: str):
+        url = f"{base_url.rstrip('/')}/health"
+        try:
+            async with httpx.AsyncClient(timeout=3.0) as client:
+                response = await client.get(url)
+                return {
+                    "name": name,
+                    "url": url,
+                    "ok": response.status_code == 200,
+                    "status_code": response.status_code,
+                }
+        except Exception as e:
+            return {
+                "name": name,
+                "url": url,
+                "ok": False,
+                "error": str(e),
+            }
+
+    node_result, rust_result = await asyncio.gather(
+        check_service("node", NODE_API_URL),
+        check_service("rust", RUST_API_URL),
+    )
+
+    overall_ok = node_result.get("ok") and rust_result.get("ok")
+    return {
+        "status": "ok" if overall_ok else "degraded",
+        "python": "ok",
+        "node": "ok" if node_result.get("ok") else "unhealthy",
+        "rust": "ok" if rust_result.get("ok") else "unhealthy",
+        "services": {
+            "node": node_result,
+            "rust": rust_result,
+        }
+    }
+
+
 # ============================================
 # ROUTER REGISTRATION
 # ============================================
@@ -207,6 +262,22 @@ if HAS_AI_ROUTES:
     print("[STARTUP] AI routes registered")
 else:
     print("[STARTUP] AI routes NOT available (import failed)")
+
+# Analysis Routes (Spectrum, Buckling, Time-History, Dynamic Analysis)
+try:
+    from analysis_routes import router as analysis_router
+    app.include_router(analysis_router, prefix="/analyze", tags=["Analysis"])
+    print("[STARTUP] Analysis routes registered at /analyze/*")
+except ImportError as e:
+    print(f"[STARTUP] Analysis routes not available: {e}")
+
+# Design Routes (Concrete, Steel, Connections, Foundations)
+try:
+    from design_routes import router as design_router
+    app.include_router(design_router, prefix="/design", tags=["Design"])
+    print("[STARTUP] Design routes registered at /design/*")
+except ImportError as e:
+    print(f"[STARTUP] Design routes not available: {e}")
 
 # PINN Solver Routes (Physics-Informed Neural Networks)
 try:
@@ -239,6 +310,111 @@ try:
     print("[STARTUP] Database routes registered at /db/*")
 except ImportError as e:
     print(f"[STARTUP] Database routes not available: {e}")
+
+
+# ============================================
+# WORKER POOL LIFECYCLE
+# ============================================
+
+@app.on_event("startup")
+async def start_worker_pool():
+    """Initialize background worker pool on startup"""
+    try:
+        from analysis.worker_pool import get_worker_pool
+        pool = await get_worker_pool()
+        print(f"[STARTUP] Worker pool started with {pool.max_workers} workers")
+    except Exception as e:
+        print(f"[STARTUP] Worker pool not available: {e}")
+
+@app.on_event("shutdown")
+async def shutdown_worker_pool():
+    """Graceful worker pool shutdown"""
+    try:
+        from analysis.worker_pool import shutdown_worker_pool as _shutdown
+        await _shutdown()
+        print("[SHUTDOWN] Worker pool stopped")
+    except Exception as e:
+        print(f"[SHUTDOWN] Worker pool shutdown error: {e}")
+
+
+# ============================================
+# JOB QUEUE API ENDPOINTS
+# ============================================
+
+class JobSubmitRequest(BaseModel):
+    job_type: str  # "static", "modal", "pdelta", "buckling", "spectrum"
+    priority: Optional[str] = "normal"
+    user_id: Optional[str] = None
+    input: Dict
+
+@app.post("/api/jobs/submit", tags=["Jobs"])
+async def submit_analysis_job(req: JobSubmitRequest):
+    """Submit a long-running analysis job to the worker pool"""
+    try:
+        from analysis.worker_pool import get_worker_pool, JobPriority
+        pool = await get_worker_pool()
+        priority_map = {
+            "urgent": JobPriority.URGENT,
+            "high": JobPriority.HIGH,
+            "normal": JobPriority.NORMAL,
+            "low": JobPriority.LOW,
+            "batch": JobPriority.BATCH,
+        }
+        priority = priority_map.get(req.priority or "normal", JobPriority.NORMAL)
+        job_id = await pool.submit(req.job_type, req.input, priority, req.user_id)
+        return {"success": True, "job_id": job_id, "message": f"Job queued as {req.priority}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/jobs/{job_id}", tags=["Jobs"])
+async def get_job_status(job_id: str):
+    """Get status of an analysis job"""
+    try:
+        from analysis.worker_pool import get_worker_pool
+        pool = await get_worker_pool()
+        job = pool.get_job(job_id)
+        if not job:
+            raise HTTPException(status_code=404, detail="Job not found")
+        return {
+            "job_id": job.id,
+            "status": job.status.value,
+            "job_type": job.job_type,
+            "progress": {
+                "percent": job.progress.percent,
+                "stage": job.progress.stage,
+                "message": job.progress.message,
+            },
+            "result": job.result,
+            "error": job.error,
+            "created_at": job.created_at,
+            "started_at": job.started_at,
+            "completed_at": job.completed_at,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/jobs/{job_id}", tags=["Jobs"])
+async def cancel_analysis_job(job_id: str):
+    """Cancel a queued analysis job"""
+    try:
+        from analysis.worker_pool import get_worker_pool
+        pool = await get_worker_pool()
+        cancelled = pool.cancel_job(job_id)
+        return {"success": cancelled, "job_id": job_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/jobs/queue/status", tags=["Jobs"])
+async def get_queue_status():
+    """Get worker queue statistics"""
+    try:
+        from analysis.worker_pool import get_worker_pool
+        pool = await get_worker_pool()
+        return pool.get_queue_status()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 class MeshPlateRequest(BaseModel):
     corners: List[Dict[str, float]]  # [{x, y, z}, ...]

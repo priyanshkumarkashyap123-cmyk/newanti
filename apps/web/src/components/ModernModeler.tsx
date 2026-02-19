@@ -9,7 +9,7 @@
  * - Quick Start modal for new users
  */
 
-import { FC, useState, useEffect, useCallback, useRef, lazy, Suspense, memo } from 'react';
+import { FC, useState, useEffect, useCallback, useRef, lazy, Suspense, memo, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
     Box,
@@ -99,6 +99,8 @@ import { useContextMenu, getNodeContextMenuItems, getMemberContextMenuItems, get
 // Analysis service
 import { analysisService } from '../services/AnalysisService';
 import { API_CONFIG } from '../config/env';
+import { useHealthCheck, type HealthStatus } from '../lib/health-check';
+const IntegrationDiagnostics = lazy(() => import('./IntegrationDiagnostics'));
 import { useRazorpayPayment } from './RazorpayPayment';
 import { useTierAccess } from '../hooks/useTierAccess';
 import { ProjectService, Project } from '../services/ProjectService';
@@ -238,11 +240,35 @@ InspectorPanel.displayName = 'InspectorPanel';
 // STATUS BAR
 // ============================================
 
-const StatusBar: FC<{ isAnalyzing: boolean }> = memo(({ isAnalyzing }) => {
+const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => void }> = memo(({ isAnalyzing, onOpenDiagnostics }) => {
     const nodes = useModelStore((state) => state.nodes);
     const members = useModelStore((state) => state.members);
     const analysisResults = useModelStore((state) => state.analysisResults);
     const { activeCategory, activeTool } = useUIStore();
+
+    const backendHealthConfigs = useMemo(
+        () => [
+            { name: 'Node', url: `${API_CONFIG.baseUrl}/health`, timeout: 3500 },
+            { name: 'Python', url: `${API_CONFIG.pythonUrl}/health`, timeout: 3500 },
+            { name: 'Rust', url: `${API_CONFIG.rustUrl}/health`, timeout: 3500 },
+        ],
+        []
+    );
+
+    const { health } = useHealthCheck({
+        configs: backendHealthConfigs,
+        interval: 30000,
+        enabled: true,
+    });
+
+    const statusDotClass = (status: HealthStatus): string => {
+        if (status === 'healthy') return 'bg-green-400';
+        if (status === 'degraded') return 'bg-yellow-400';
+        if (status === 'unhealthy') return 'bg-red-400';
+        return 'bg-slate-500';
+    };
+
+    const checkByName = new Map((health?.checks || []).map((c) => [c.name, c.status]));
 
     return (
         <div className="h-7 bg-slate-950 border-t border-slate-800 flex items-center justify-between px-4 text-xs text-slate-400 flex-shrink-0">
@@ -262,6 +288,23 @@ const StatusBar: FC<{ isAnalyzing: boolean }> = memo(({ isAnalyzing }) => {
                 <span>Members: <span className="text-slate-400 font-mono">{members.size}</span></span>
                 <span className="h-3 w-px bg-slate-700" />
                 <span>Units: <span className="text-slate-400">kN, m</span></span>
+                <span className="h-3 w-px bg-slate-700" />
+                <button
+                    onClick={onOpenDiagnostics}
+                    className="flex items-center gap-2 hover:bg-slate-800/60 rounded px-1.5 py-0.5 -my-0.5 transition cursor-pointer"
+                    title="Click for integration diagnostics"
+                >
+                    <span className="text-slate-500">Backends:</span>
+                    {(['Node', 'Python', 'Rust'] as const).map((name) => {
+                        const status = checkByName.get(name) || 'unknown';
+                        return (
+                            <span key={name} className="flex items-center gap-1" title={`${name}: ${status}`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${statusDotClass(status)}`} />
+                                <span className="text-slate-400">{name}</span>
+                            </span>
+                        );
+                    })}
+                </button>
                 {analysisResults && (
                     <>
                         <span className="h-3 w-px bg-zinc-700" />
@@ -400,6 +443,7 @@ export const ModernModeler: FC = () => {
 
     const [inspectorCollapsed, setInspectorCollapsed] = useState(false);
     const [showCloudManager, setShowCloudManager] = useState(false);
+    const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
 
     // ============================================
     // CLOUD PROJECT MANAGEMENT
@@ -1584,7 +1628,7 @@ export const ModernModeler: FC = () => {
 
                             {/* Status Bar Overlay */}
                             <div className="absolute bottom-0 w-full z-10">
-                                <StatusBar isAnalyzing={isAnalyzing} />
+                                <StatusBar isAnalyzing={isAnalyzing} onOpenDiagnostics={() => setDiagnosticsOpen(true)} />
                             </div>
                         </div>
                     </div>
@@ -1597,6 +1641,16 @@ export const ModernModeler: FC = () => {
                 </div>
 
                 {/* Modals & Overlays */}
+
+                {/* Integration Diagnostics Modal */}
+                {diagnosticsOpen && (
+                    <Suspense fallback={null}>
+                        <IntegrationDiagnostics
+                            open={diagnosticsOpen}
+                            onClose={() => setDiagnosticsOpen(false)}
+                        />
+                    </Suspense>
+                )}
 
                 {/* Quick Commands Toolbar (Spacebar) */}
                 {QuickCommandsToolbar}

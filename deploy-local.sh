@@ -1,59 +1,48 @@
 #!/bin/bash
 
 # ============================================
-# Quick Local Deployment - Start All Services
+# Full Local Deployment - Web + Node + Python + Rust + Mongo
 # ============================================
 
-echo "🚀 Starting BeamLab Local Deployment"
-echo "====================================="
+set -e
+
+echo "🚀 Starting BeamLab Full Local Deployment"
+echo "========================================="
 echo ""
 
-# Colors
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m'
-
-# Check if builds exist
-if [ ! -d "apps/web/dist" ]; then
-    echo "❌ Frontend build not found. Run: ./build-production.sh"
+if ! command -v docker >/dev/null 2>&1; then
+    echo "❌ Docker is required but not installed."
     exit 1
 fi
 
-if [ ! -f "apps/rust-api/target/release/beamlab-rust-api" ]; then
-    echo "❌ Rust API binary not found. Run: ./build-production.sh"
+if ! docker compose version >/dev/null 2>&1; then
+    echo "❌ docker compose plugin is required."
     exit 1
 fi
 
-echo "📦 Starting Services..."
-echo ""
-
-# Start frontend
-echo -e "${BLUE}Starting Frontend...${NC}"
-cd apps/web
-npx serve dist -p 5173 &
-FRONTEND_PID=$!
-cd ../..
-echo -e "${GREEN}✓${NC} Frontend started on http://localhost:5173 (PID: $FRONTEND_PID)"
-
-# Wait for frontend to start
-sleep 2
+echo "📦 Building and starting integrated stack..."
+docker compose up --build -d
 
 echo ""
-echo -e "${GREEN}✅ Deployment Complete!${NC}"
-echo ""
-echo "🌐 Access your application:"
-echo "   Frontend: http://localhost:5173"
-echo ""
-echo "📝 Note: Rust API requires MongoDB to start"
-echo "   To run Rust API, ensure MongoDB is running then:"
-echo "   cd apps/rust-api && ./target/release/beamlab-rust-api"
-echo ""
-echo "🛑 To stop services:"
-echo "   kill $FRONTEND_PID"
-echo ""
-echo "🎉 Your application is now running!"
-echo ""
+echo "⏳ Waiting for health checks to stabilize..."
+sleep 8
 
-# Keep script running
-wait $FRONTEND_PID
+echo ""
+echo "📊 Service status"
+docker compose ps
+
+echo ""
+echo "🔍 Health probe summary"
+curl -fsS http://localhost:3001/health >/dev/null && echo "✅ Node API healthy" || echo "⚠️ Node API not ready"
+curl -fsS http://localhost:8000/health >/dev/null && echo "✅ Python API healthy" || echo "⚠️ Python API not ready"
+curl -fsS http://localhost:3002/health >/dev/null && echo "✅ Rust API healthy" || echo "⚠️ Rust API not ready"
+curl -fsS http://localhost:5173/health >/dev/null && echo "✅ Frontend healthy" || echo "⚠️ Frontend not ready"
+
+echo ""
+echo "✅ Deployment complete"
+echo "🌐 Frontend: http://localhost:5173"
+echo "🧠 Node API: http://localhost:3001/health"
+echo "🐍 Python API: http://localhost:8000/health"
+echo "🦀 Rust API: http://localhost:3002/health"
+echo ""
+echo "🛑 Stop everything with: docker compose down"
