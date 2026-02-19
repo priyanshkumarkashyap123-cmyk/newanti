@@ -78,6 +78,9 @@ async-trait = "0.1"
 # Futures utilities
 futures = "0.3"
 
+# CPU count for worker pool
+num_cpus = "1.16"
+
 [dev-dependencies]
 tokio-test = "0.4"
 

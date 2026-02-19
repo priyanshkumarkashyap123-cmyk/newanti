@@ -11,12 +11,17 @@ pub mod middleware;
 pub mod models;
 
 pub use solver::cable::{CableMaterial, CableElement, CableSystem};
+pub use solver::sparse_solver::SparseSolver;
+pub use solver::load_combinations::LoadCombinationEngine;
+pub use solver::post_processor::PostProcessor;
+pub use solver::elements::{TimoshenkoBeamElement, TrussElement, PlateShellElement, ElementMaterial, CrossSection};
+pub use solver::section_database::SectionDatabase;
+pub use solver::job_queue::JobQueue;
+pub use solver::ws_progress::ProgressBroadcaster;
 
 // Re-export AppState for integration tests
 pub use crate::config::Config;
 pub use crate::db::Database;
-
-use std::sync::Arc;
 
 /// Application state shared across all handlers
 pub struct AppState {

@@ -28,6 +28,15 @@ pub mod pdelta;
 pub mod dynamics;
 pub mod seismic;
 
+// Industrial-grade engines (STAAD-grade)
+pub mod sparse_solver;
+pub mod load_combinations;
+pub mod post_processor;
+pub mod elements;
+pub mod section_database;
+pub mod job_queue;
+pub mod ws_progress;
+
 // Re-export key types
 pub use cable::{CableElement, CableMaterial};
 pub use pdelta::{PDeltaSolver, PDeltaConfig, PDeltaResult, MemberGeometry};

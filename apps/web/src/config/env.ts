@@ -73,6 +73,16 @@ export const API_CONFIG = {
     ),
 
     timeout: getNumEnv('VITE_API_TIMEOUT', 30000),
+
+    // WebSocket URL (derived from Python URL for analysis progress)
+    wsUrl: getEnv('VITE_WEBSOCKET_URL', (() => {
+        const pythonUrl = getEnv('VITE_PYTHON_API_URL',
+            import.meta.env.PROD
+                ? 'https://beamlab-backend-python.azurewebsites.net'
+                : 'http://localhost:8081'
+        );
+        return pythonUrl.replace('http://', 'ws://').replace('https://', 'wss://') + '/ws';
+    })()),
 } as const;
 
 // ============================================

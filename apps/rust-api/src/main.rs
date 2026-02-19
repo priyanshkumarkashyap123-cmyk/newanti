@@ -172,6 +172,12 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/design/aisc", post(handlers::design::design_aisc))
         .route("/api/design/eurocode", post(handlers::design::design_eurocode))
         
+        // Job queue endpoints
+        .route("/api/jobs", post(handlers::jobs::submit_job))
+        .route("/api/jobs/queue/status", get(handlers::jobs::get_queue_status))
+        .route("/api/jobs/:id", get(handlers::jobs::get_job_status))
+        .route("/api/jobs/:id", delete(handlers::jobs::cancel_job))
+        
         // Performance metrics
         .route("/api/metrics", get(handlers::metrics::get_metrics))
         .route("/api/metrics/detailed", get(handlers::metrics::get_detailed_metrics))
