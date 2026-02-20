@@ -1,7 +1,7 @@
 /**
  * LandingPage - BeamLab Ultimate Landing Page
  * Premium Dark SaaS homepage with vibrant gradients
- * Merged with Enhanced features (v2.0)
+ * Merged with Enhanced features (v3.0)
  */
 
 import { FC, useState } from 'react';
@@ -208,9 +208,9 @@ export const LandingPage: FC = () => {
                     </div>
 
                     <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                        <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-emerald-500/[0.08] border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-10 backdrop-blur-sm" role="status" aria-label="Version 2.0 now live — open beta">
+                        <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-emerald-500/[0.08] border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-10 backdrop-blur-sm" role="status" aria-label="Version 3.0 now live — open beta">
                             <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" /></span>
-                            v2.0 Now Live — Open Beta
+                            v3.0 Now Live — Reactions, 3D Frames & More
                         </motion.div>
 
                         <motion.h1 id="hero-heading" initial="hidden" animate="visible" variants={fadeInUp} className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.5rem] xl:text-[5rem] font-extrabold tracking-[-0.02em] mb-8 leading-[1.08]">
@@ -219,7 +219,7 @@ export const LandingPage: FC = () => {
                         </motion.h1>
 
                         <motion.p initial="hidden" animate="visible" variants={fadeInUp} className="max-w-2xl mx-auto text-base sm:text-lg md:text-xl text-slate-400 mb-12 leading-relaxed px-4">
-                            Professional-grade FEA in your browser — no install, no license servers. Real-time 3D visualization, AI-powered design, and code-compliant reporting.
+                            Professional-grade FEA in your browser — no install, no license servers. Full support reactions, 3D frame analysis with biaxial bending, member releases, P-Delta, and AI-powered design.
                         </motion.p>
 
                         <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="flex flex-col sm:flex-row items-center justify-center gap-4 px-4">
@@ -555,16 +555,16 @@ const INDUSTRY_SEGMENTS = ['Consulting Firms', 'Universities', 'Contractors', 'I
 
 const FEATURES = [
     {
-        title: '3D Visualization',
-        desc: 'Realistic I-beams, channels, and custom sections rendered in real-time with GPU-accelerated graphics. See stress heatmaps and deformed shapes instantly.',
+        title: '3D Frame Analysis',
+        desc: 'Full 6-DOF analysis with biaxial bending (Iy & Iz), torsion (J), and proper 12×12 stiffness matrices. Support reactions computed via R = K·u − F.',
         icon: <Layers className="w-6 h-6" />,
-        bullets: ['Real-time deformation', 'Stress heatmaps', 'GPU instanced rendering'],
+        bullets: ['Biaxial bending & torsion', 'Support reactions table', '12×12 3D stiffness'],
     },
     {
         title: 'Transparent Analysis',
         desc: 'See every formula, step, and calculation. Full Fixed-End Moments, stiffness matrices, and equilibrium equations — no black boxes.',
         icon: <Terminal className="w-6 h-6" />,
-        bullets: ['Step-by-step calculations', 'Moment distribution', 'Full traceability'],
+        bullets: ['Step-by-step calculations', 'Member releases', 'Full traceability'],
     },
     {
         title: 'AI-Powered Design',
@@ -574,15 +574,15 @@ const FEATURES = [
     },
     {
         title: 'Professional Reports',
-        desc: 'Export comprehensive PDF reports with diagrams, calculations, and your branding in one click. Code compliance included.',
+        desc: 'Export PDF reports with SFD, BMD, AFD diagrams, reactions table, and code compliance. CSV export included.',
         icon: <Globe2 className="w-6 h-6" />,
-        bullets: ['Customizable headers', 'Vector diagrams', 'Code compliance'],
+        bullets: ['SFD / BMD / AFD diagrams', 'Reactions & deflections', 'CSV & PDF export'],
     },
     {
-        title: 'Advanced Loads',
-        desc: 'Full support for UDL, triangular, trapezoidal, and point loads with proper Fixed-End Moment conversion. Seismic and wind loads included.',
+        title: 'Advanced Loads & P-Delta',
+        desc: 'UDL, triangular, trapezoidal, and point loads with member releases. Geometric nonlinearity via P-Delta iteration for stability analysis.',
         icon: <Shield className="w-6 h-6" />,
-        bullets: ['Dead loads & live loads', 'Seismic (IS 1893)', 'Wind (ASCE 7)'],
+        bullets: ['P-Delta analysis', 'Member end releases', 'Load combinations'],
     },
     {
         title: 'Large Structures',
@@ -598,7 +598,7 @@ const PRICING_TIERS = [
         description: 'Perfect for students and quick checks',
         price: '$0',
         period: 'forever',
-        features: ['Up to 5 projects', 'Basic beam & frame analysis', '2D structural models', 'Community support', 'Standard reports'],
+        features: ['Up to 5 projects', 'Beam & frame analysis', '2D/3D structural models', 'Support reactions table', 'Standard reports'],
         cta: 'Get Started',
         popular: false,
     },
@@ -607,7 +607,7 @@ const PRICING_TIERS = [
         description: 'For practicing engineers',
         price: '$49',
         period: 'month',
-        features: ['Unlimited projects', 'Advanced 3D analysis', 'P-Delta & buckling', 'Custom PDF branding', 'Priority email support', 'Cloud storage'],
+        features: ['Unlimited projects', 'Advanced 3D analysis', 'P-Delta & member releases', 'Biaxial bending (Iy/Iz/J)', 'Priority email support', 'Cloud storage'],
         cta: 'Start Free Trial',
         popular: true,
     },

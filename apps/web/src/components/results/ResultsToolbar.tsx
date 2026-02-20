@@ -647,9 +647,25 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
     const getMaxReaction = (): string => {
         if (!analysisResults.reactions || analysisResults.reactions.size === 0) return '-';
         const values = Array.from(analysisResults.reactions.values());
-        const max = Math.max(...values.map(r => Math.abs(r.fy) / 1000));
+        const max = Math.max(...values.map(r => Math.abs(r.fy)));
+        if (max < 0.001) return '-';
         return `${max.toFixed(2)} kN`;
     };
+
+    // Get support reactions (only nodes with non-negligible reactions)
+    const getSupportReactions = (): { nodeId: string; fx: number; fy: number; fz: number; mx: number; my: number; mz: number }[] => {
+        if (!analysisResults.reactions || analysisResults.reactions.size === 0) return [];
+        const supports: { nodeId: string; fx: number; fy: number; fz: number; mx: number; my: number; mz: number }[] = [];
+        analysisResults.reactions.forEach((r, nodeId) => {
+            const total = Math.abs(r.fx) + Math.abs(r.fy) + Math.abs(r.fz) + Math.abs(r.mx) + Math.abs(r.my) + Math.abs(r.mz);
+            if (total > 0.001) {
+                supports.push({ nodeId, fx: r.fx, fy: r.fy, fz: r.fz, mx: r.mx, my: r.my, mz: r.mz });
+            }
+        });
+        return supports;
+    };
+
+    const supportReactions = getSupportReactions();
 
     if (!isExpanded) {
         return (
@@ -687,6 +703,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                     <div className="flex items-center gap-2">
                         <BarChart2 className="w-4 h-4" />
                         <span className="font-medium">Analysis Results</span>
+                        <span className="text-[9px] bg-white/20 rounded px-1.5 py-0.5 font-mono">v3.0</span>
                     </div>
                     <div className="flex items-center gap-1">
                         <button
@@ -863,6 +880,43 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                         </div>
                     </div>
                 </div>
+
+                {/* Support Reactions Table — NEW: Visible computed reactions */}
+                {activeDiagram === 'reactions' && supportReactions.length > 0 && (
+                    <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 max-h-48 overflow-y-auto">
+                        <h4 className="text-xs font-medium text-purple-400 mb-2 uppercase tracking-wider flex items-center gap-1">
+                            <ArrowDownToLine className="w-3 h-3" />
+                            Support Reactions ({supportReactions.length} supports)
+                        </h4>
+                        <div className="space-y-1.5">
+                            {supportReactions.map((sr) => (
+                                <div key={sr.nodeId} className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                                    <div className="text-[10px] font-medium text-purple-600 dark:text-purple-300 mb-1">Node {sr.nodeId}</div>
+                                    <div className="grid grid-cols-3 gap-1 text-[9px]">
+                                        {Math.abs(sr.fx) > 0.001 && (
+                                            <div className="text-zinc-500 dark:text-zinc-400">Fx: <span className="font-mono text-white">{sr.fx.toFixed(2)}</span></div>
+                                        )}
+                                        {Math.abs(sr.fy) > 0.001 && (
+                                            <div className="text-zinc-500 dark:text-zinc-400">Fy: <span className="font-mono text-white">{sr.fy.toFixed(2)}</span></div>
+                                        )}
+                                        {Math.abs(sr.fz) > 0.001 && (
+                                            <div className="text-zinc-500 dark:text-zinc-400">Fz: <span className="font-mono text-white">{sr.fz.toFixed(2)}</span></div>
+                                        )}
+                                        {Math.abs(sr.mx) > 0.001 && (
+                                            <div className="text-zinc-500 dark:text-zinc-400">Mx: <span className="font-mono text-white">{sr.mx.toFixed(2)}</span></div>
+                                        )}
+                                        {Math.abs(sr.my) > 0.001 && (
+                                            <div className="text-zinc-500 dark:text-zinc-400">My: <span className="font-mono text-white">{sr.my.toFixed(2)}</span></div>
+                                        )}
+                                        {Math.abs(sr.mz) > 0.001 && (
+                                            <div className="text-zinc-500 dark:text-zinc-400">Mz: <span className="font-mono text-white">{sr.mz.toFixed(2)}</span></div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Advanced Tools - Quick Access */}
                 <div className="px-4 py-3 border-t border-zinc-200 dark:border-zinc-800">
