@@ -1278,7 +1278,7 @@ function computeMemberEndForces(
  *
  * Generates NUM_STATIONS equally-spaced points along each member.
  */
-const DIAGRAM_STATIONS = 21;
+const DIAGRAM_STATIONS = 51;
 
 function generateDiagramData(
     memberEndForces: any[],

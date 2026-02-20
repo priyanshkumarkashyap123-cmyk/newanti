@@ -13,6 +13,7 @@
  */
 
 import React, { FC, useState, useMemo, useCallback } from 'react';
+import { IS_COMBINATIONS, ASCE_COMBINATIONS, EC_COMBINATIONS } from '../../services/loads/LoadCombinationsService';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     BarChart2,
@@ -70,6 +71,7 @@ export interface MemberResult {
     startNodeId: string;
     endNodeId: string;
     length: number;
+    sectionType?: string;   // e.g. 'W-beam', 'Rectangular', 'Circular', 'Angle', etc.
     maxShear: number;
     minShear: number;
     maxMoment: number;
@@ -77,6 +79,10 @@ export interface MemberResult {
     maxAxial: number;
     minAxial: number;
     maxDeflection: number;
+    // Z-direction forces (3D frames)
+    maxShearZ?: number;
+    maxMomentY?: number;
+    torsion?: number;
     stress: number;
     utilization: number;
     diagramData?: {
@@ -103,7 +109,7 @@ export interface AnalysisResultsData {
     };
 }
 
-type ViewMode = 'overview' | 'diagrams' | 'heatmap' | 'reactions' | 'detailed';
+type ViewMode = 'overview' | 'diagrams' | 'heatmap' | 'reactions' | 'detailed' | 'dcRatio' | 'loadCombos';
 type DiagramType = 'SFD' | 'BMD' | 'AFD' | 'DEFLECTION';
 
 interface AnalysisResultsDashboardProps {
@@ -122,7 +128,17 @@ const VIEW_MODES = [
     { id: 'diagrams' as const, label: 'Force Diagrams', icon: BarChart2 },
     { id: 'heatmap' as const, label: 'Heat Map', icon: Flame },
     { id: 'reactions' as const, label: 'Reactions', icon: ArrowDown },
+    { id: 'dcRatio' as const, label: 'D/C Summary', icon: ArrowUpDown },
+    { id: 'loadCombos' as const, label: 'Load Combos', icon: Layers },
     { id: 'detailed' as const, label: 'Detailed', icon: FileText }
+];
+
+// Standard deflection limits (span/ratio)
+const DEFLECTION_LIMITS: { label: string; ratio: number; code: string }[] = [
+    { label: 'Floor beams (L/240)', ratio: 240, code: 'ASCE 7 / IS 800' },
+    { label: 'Roof beams (L/180)', ratio: 180, code: 'ASCE 7 / IS 800' },
+    { label: 'Cantilevers (L/120)', ratio: 120, code: 'General' },
+    { label: 'Sensitive finishes (L/360)', ratio: 360, code: 'ACI 318 / IS 456' },
 ];
 
 const STATUS_COLORS = {
@@ -499,13 +515,17 @@ const DetailedMemberTable: FC<DetailedMemberTableProps> = ({ members, onSelect }
     
     const columns: { key: keyof MemberResult; label: string; unit?: string }[] = [
         { key: 'id', label: 'ID' },
+        { key: 'sectionType', label: 'Section' },
         { key: 'length', label: 'Length', unit: 'm' },
-        { key: 'maxShear', label: 'Max Shear', unit: 'kN' },
-        { key: 'maxMoment', label: 'Max Moment', unit: 'kNm' },
-        { key: 'maxAxial', label: 'Max Axial', unit: 'kN' },
-        { key: 'maxDeflection', label: 'Deflection', unit: 'mm' },
+        { key: 'maxShear', label: 'Vy', unit: 'kN' },
+        { key: 'maxShearZ', label: 'Vz', unit: 'kN' },
+        { key: 'maxMoment', label: 'Mz', unit: 'kNm' },
+        { key: 'maxMomentY', label: 'My', unit: 'kNm' },
+        { key: 'maxAxial', label: 'Axial', unit: 'kN' },
+        { key: 'torsion', label: 'T', unit: 'kNm' },
+        { key: 'maxDeflection', label: 'Defl.', unit: 'mm' },
         { key: 'stress', label: 'Stress', unit: 'MPa' },
-        { key: 'utilization', label: 'Util. Ratio' }
+        { key: 'utilization', label: 'D/C' }
     ];
     
     return (
@@ -545,10 +565,14 @@ const DetailedMemberTable: FC<DetailedMemberTableProps> = ({ members, onSelect }
                                 className="border-b border-zinc-800 hover:bg-zinc-800/50 cursor-pointer transition-colors"
                             >
                                 <td className="px-3 py-2 font-medium text-white">M{member.id}</td>
+                                <td className="px-3 py-2 text-xs text-zinc-400">{member.sectionType || '—'}</td>
                                 <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.length)}</td>
                                 <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.maxShear)}</td>
+                                <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.maxShearZ ?? 0)}</td>
                                 <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.maxMoment)}</td>
+                                <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.maxMomentY ?? 0)}</td>
                                 <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.maxAxial)}</td>
+                                <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.torsion ?? 0)}</td>
                                 <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.maxDeflection)}</td>
                                 <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.stress)}</td>
                                 <td className="px-3 py-2">
@@ -829,6 +853,66 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                                 Support Reactions
                             </h3>
                             <ReactionDisplay nodes={nodes} />
+
+                            {/* Support Displacements / Settlement */}
+                            <div className="mt-6">
+                                <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide mb-3">
+                                    Support Displacements (Settlement Check)
+                                </h3>
+                                {(() => {
+                                    const supports = nodes.filter(n => n.reaction && (
+                                        Math.abs(n.reaction.fx) > 0.01 ||
+                                        Math.abs(n.reaction.fy) > 0.01 ||
+                                        Math.abs(n.reaction.fz) > 0.01
+                                    ));
+                                    if (supports.length === 0) {
+                                        return <div className="text-sm text-zinc-500 p-3 bg-zinc-800/50 rounded-lg border border-zinc-700">No support nodes found.</div>;
+                                    }
+                                    return (
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-sm">
+                                                <thead>
+                                                    <tr className="border-b border-zinc-700">
+                                                        <th className="px-3 py-2 text-left text-zinc-400 text-xs">Node</th>
+                                                        <th className="px-3 py-2 text-left text-zinc-400 text-xs">Δx (mm)</th>
+                                                        <th className="px-3 py-2 text-left text-zinc-400 text-xs">Δy (mm)</th>
+                                                        <th className="px-3 py-2 text-left text-zinc-400 text-xs">Δz (mm)</th>
+                                                        <th className="px-3 py-2 text-left text-zinc-400 text-xs">θx (rad)</th>
+                                                        <th className="px-3 py-2 text-left text-zinc-400 text-xs">θy (rad)</th>
+                                                        <th className="px-3 py-2 text-left text-zinc-400 text-xs">θz (rad)</th>
+                                                        <th className="px-3 py-2 text-left text-zinc-400 text-xs">Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {supports.map(n => {
+                                                        const d = n.displacement;
+                                                        const totalDisp = Math.sqrt(d.dx ** 2 + d.dy ** 2 + d.dz ** 2);
+                                                        const isFixed = totalDisp < 0.001;
+                                                        return (
+                                                            <tr key={n.id} className="border-b border-zinc-800 hover:bg-zinc-800/50">
+                                                                <td className="px-3 py-1.5 font-medium text-white text-xs">N{n.id}</td>
+                                                                <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">{d.dx.toFixed(4)}</td>
+                                                                <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">{d.dy.toFixed(4)}</td>
+                                                                <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">{d.dz.toFixed(4)}</td>
+                                                                <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">{(d.rx ?? 0).toFixed(6)}</td>
+                                                                <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">{(d.ry ?? 0).toFixed(6)}</td>
+                                                                <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">{(d.rz ?? 0).toFixed(6)}</td>
+                                                                <td className="px-3 py-1.5 text-xs">
+                                                                    <span className={`px-2 py-0.5 rounded ${
+                                                                        isFixed ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
+                                                                    }`}>
+                                                                        {isFixed ? 'FIXED' : `${totalDisp.toFixed(3)} mm`}
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    );
+                                })()}
+                            </div>
                         </motion.div>
                     )}
                     
@@ -850,7 +934,357 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                         </motion.div>
                     )}
                     
-                    {/* Heat Map Mode — member stress/utilization color table */}
+                    {/* Load Combinations Reference */}
+                    {viewMode === 'loadCombos' && (
+                        <motion.div
+                            key="loadCombos"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="space-y-6"
+                        >
+                            {/* Info notice */}
+                            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 flex items-start gap-3">
+                                <AlertTriangle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                                <div className="text-sm text-blue-200">
+                                    <strong>Load Combination Reference</strong> — Current analysis uses a single load case.
+                                    Below are the standard code combinations that would apply when multi-case analysis
+                                    is configured. Each combination shows the load factors per code provision.
+                                </div>
+                            </div>
+
+                            {/* Code selector tabs */}
+                            {(() => {
+                                const codes = [
+                                    { key: 'IS', label: 'IS 875 / IS 456', combos: IS_COMBINATIONS },
+                                    { key: 'ASCE', label: 'ASCE 7-22 / ACI 318', combos: ASCE_COMBINATIONS },
+                                    { key: 'EC', label: 'Eurocode EN 1990', combos: EC_COMBINATIONS },
+                                ] as const;
+                                return (
+                                    <div className="space-y-4">
+                                        {codes.map(codeGroup => (
+                                            <div key={codeGroup.key} className="bg-zinc-800/50 rounded-lg border border-zinc-700 overflow-hidden">
+                                                <div className="px-4 py-2.5 bg-zinc-800 border-b border-zinc-700 flex items-center gap-2">
+                                                    <FileText className="w-4 h-4 text-zinc-400" />
+                                                    <span className="text-sm font-medium text-white">{codeGroup.label}</span>
+                                                    <span className="ml-auto text-xs text-zinc-500">{codeGroup.combos.length} combinations</span>
+                                                </div>
+                                                <div className="overflow-x-auto">
+                                                    <table className="w-full text-sm">
+                                                        <thead>
+                                                            <tr className="border-b border-zinc-700">
+                                                                <th className="px-3 py-2 text-left text-zinc-400 text-xs">ID</th>
+                                                                <th className="px-3 py-2 text-left text-zinc-400 text-xs">Combination</th>
+                                                                <th className="px-3 py-2 text-left text-zinc-400 text-xs">Type</th>
+                                                                <th className="px-3 py-2 text-left text-zinc-400 text-xs">Description</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {codeGroup.combos.map(combo => (
+                                                                <tr key={combo.id} className="border-b border-zinc-800 hover:bg-zinc-800/50">
+                                                                    <td className="px-3 py-1.5 font-mono text-xs text-zinc-400">{combo.id}</td>
+                                                                    <td className="px-3 py-1.5 font-mono text-white text-xs">{combo.name}</td>
+                                                                    <td className="px-3 py-1.5">
+                                                                        <span className={`text-xs px-2 py-0.5 rounded ${
+                                                                            combo.type === 'strength' ? 'bg-red-500/20 text-red-400' :
+                                                                            combo.type === 'service' ? 'bg-green-500/20 text-green-400' :
+                                                                            combo.type === 'seismic' ? 'bg-purple-500/20 text-purple-400' :
+                                                                            'bg-cyan-500/20 text-cyan-400'
+                                                                        }`}>{combo.type.toUpperCase()}</span>
+                                                                    </td>
+                                                                    <td className="px-3 py-1.5 text-xs text-zinc-400">{combo.description}</td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                );
+                            })()}
+
+                            {/* Factor summary */}
+                            <div className="bg-zinc-800/50 rounded-lg border border-zinc-700 p-4">
+                                <h4 className="text-sm font-medium text-white mb-2">Typical Load Factors</h4>
+                                <div className="grid grid-cols-3 gap-4 text-xs">
+                                    <div>
+                                        <div className="text-zinc-400 mb-1">Dead Load (D/Gk)</div>
+                                        <div className="space-y-0.5 text-zinc-300">
+                                            <div>IS: 1.5 (strength) / 1.0 (service)</div>
+                                            <div>ASCE: 1.2–1.4 (strength)</div>
+                                            <div>EC: 1.35 (unfavourable)</div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="text-zinc-400 mb-1">Live Load (L/Qk)</div>
+                                        <div className="space-y-0.5 text-zinc-300">
+                                            <div>IS: 1.5 (strength)</div>
+                                            <div>ASCE: 1.6 (strength)</div>
+                                            <div>EC: 1.5 (strength)</div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="text-zinc-400 mb-1">Wind / Seismic</div>
+                                        <div className="space-y-0.5 text-zinc-300">
+                                            <div>IS: 1.2–1.5 (combined)</div>
+                                            <div>ASCE: 1.0 (W or E)</div>
+                                            <div>EC: 1.5W / 1.0AEd</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* D/C Ratio Summary with Deflection Limit Checks */}
+                    {viewMode === 'dcRatio' && (
+                        <motion.div
+                            key="dcRatio"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="space-y-6"
+                        >
+                            {/* Overall summary bar */}
+                            <div className="grid grid-cols-4 gap-4">
+                                {(() => {
+                                    const safe = members.filter(m => m.utilization <= 0.7).length;
+                                    const warn = members.filter(m => m.utilization > 0.7 && m.utilization <= 0.9).length;
+                                    const crit = members.filter(m => m.utilization > 0.9 && m.utilization <= 1.0).length;
+                                    const fail = members.filter(m => m.utilization > 1.0).length;
+                                    return (<>
+                                        <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 text-center">
+                                            <div className="text-2xl font-bold text-green-400">{safe}</div>
+                                            <div className="text-xs text-zinc-400">Safe (&le;70%)</div>
+                                        </div>
+                                        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-center">
+                                            <div className="text-2xl font-bold text-yellow-400">{warn}</div>
+                                            <div className="text-xs text-zinc-400">Warning (70-90%)</div>
+                                        </div>
+                                        <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-3 text-center">
+                                            <div className="text-2xl font-bold text-orange-400">{crit}</div>
+                                            <div className="text-xs text-zinc-400">Critical (90-100%)</div>
+                                        </div>
+                                        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-center">
+                                            <div className="text-2xl font-bold text-red-400">{fail}</div>
+                                            <div className="text-xs text-zinc-400">Failed (&gt;100%)</div>
+                                        </div>
+                                    </>);
+                                })()}
+                            </div>
+
+                            {/* D/C Ratio Table */}
+                            <div>
+                                <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide mb-3">
+                                    Demand/Capacity Ratio — All Members
+                                </h3>
+                                <div className="overflow-x-auto max-h-[280px] overflow-y-auto">
+                                    <table className="w-full text-sm">
+                                        <thead className="sticky top-0 bg-zinc-900">
+                                            <tr className="border-b border-zinc-700">
+                                                <th className="px-3 py-2 text-left text-zinc-400">Member</th>
+                                                <th className="px-3 py-2 text-left text-zinc-400">Length (m)</th>
+                                                <th className="px-3 py-2 text-left text-zinc-400">D/C Ratio</th>
+                                                <th className="px-3 py-2 text-left text-zinc-400">Stress (MPa)</th>
+                                                <th className="px-3 py-2 text-left text-zinc-400">Status</th>
+                                                <th className="px-3 py-2 text-left text-zinc-400">Governing</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {[...members].sort((a, b) => b.utilization - a.utilization).map(m => {
+                                                const st = getUtilizationStatus(m.utilization);
+                                                const governing = Math.abs(m.maxMoment) > Math.abs(m.maxShear) && Math.abs(m.maxMoment) > Math.abs(m.maxAxial)
+                                                    ? 'Bending' : Math.abs(m.maxShear) > Math.abs(m.maxAxial) ? 'Shear' : 'Axial';
+                                                return (
+                                                    <tr key={m.id}
+                                                        onClick={() => handleMemberSelect(m.id)}
+                                                        className="border-b border-zinc-800 hover:bg-zinc-800/50 cursor-pointer"
+                                                    >
+                                                        <td className="px-3 py-1.5 font-medium text-white">M{m.id}</td>
+                                                        <td className="px-3 py-1.5 font-mono text-zinc-300">{formatNumber(m.length)}</td>
+                                                        <td className="px-3 py-1.5">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-16 h-2 bg-zinc-700 rounded-full overflow-hidden">
+                                                                    <div className={`h-full rounded-full ${
+                                                                        st === 'safe' ? 'bg-green-500' :
+                                                                        st === 'warning' ? 'bg-yellow-500' :
+                                                                        st === 'critical' ? 'bg-orange-500' : 'bg-red-500'
+                                                                    }`} style={{ width: `${Math.min(m.utilization * 100, 100)}%` }} />
+                                                                </div>
+                                                                <span className="font-mono text-xs">{(m.utilization * 100).toFixed(1)}%</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-3 py-1.5 font-mono text-zinc-300">{formatNumber(m.stress)}</td>
+                                                        <td className="px-3 py-1.5">
+                                                            <span className={`text-xs px-2 py-0.5 rounded ${
+                                                                st === 'safe' ? 'bg-green-500/20 text-green-400' :
+                                                                st === 'warning' ? 'bg-yellow-500/20 text-yellow-400' :
+                                                                st === 'critical' ? 'bg-orange-500/20 text-orange-400' :
+                                                                'bg-red-500/20 text-red-400'
+                                                            }`}>{st.toUpperCase()}</span>
+                                                        </td>
+                                                        <td className="px-3 py-1.5 text-xs text-zinc-400">{governing}</td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {/* Deflection Limit Checks */}
+                            <div>
+                                <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide mb-3">
+                                    Deflection Serviceability Checks
+                                </h3>
+                                <div className="space-y-2">
+                                    {DEFLECTION_LIMITS.map(limit => {
+                                        const violations = members.filter(m => {
+                                            const allowable = (m.length * 1000) / limit.ratio; // mm
+                                            return m.maxDeflection > allowable;
+                                        });
+                                        const allPass = violations.length === 0;
+                                        return (
+                                            <div key={limit.label}
+                                                className={`flex items-center justify-between p-3 rounded-lg border ${
+                                                    allPass
+                                                        ? 'bg-green-500/5 border-green-500/20'
+                                                        : 'bg-red-500/5 border-red-500/20'
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    {allPass
+                                                        ? <CheckCircle className="w-4 h-4 text-green-400" />
+                                                        : <AlertTriangle className="w-4 h-4 text-red-400" />
+                                                    }
+                                                    <div>
+                                                        <div className="text-sm text-white">{limit.label}</div>
+                                                        <div className="text-xs text-zinc-400">{limit.code}</div>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    {allPass ? (
+                                                        <span className="text-xs text-green-400 font-medium">ALL PASS</span>
+                                                    ) : (
+                                                        <div>
+                                                            <span className="text-xs text-red-400 font-medium">
+                                                                {violations.length} FAIL
+                                                            </span>
+                                                            <div className="text-[10px] text-zinc-500">
+                                                                Worst: M{violations.sort((a, b) => b.maxDeflection - a.maxDeflection)[0]?.id}{' '}
+                                                                ({formatNumber(violations[0]?.maxDeflection ?? 0)} mm &gt;{' '}
+                                                                {formatNumber((violations[0]?.length ?? 1) * 1000 / limit.ratio)} mm)
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Inter-story Drift Check */}
+                            <div>
+                                <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide mb-3">
+                                    Inter-Story Drift Check
+                                </h3>
+                                {(() => {
+                                    // Group nodes by Y-coordinate (story level) — tolerance 0.1m
+                                    const storyMap = new Map<number, { y: number; nodes: NodeResult[] }>();
+                                    nodes.forEach(n => {
+                                        const roundedY = Math.round(n.y * 10) / 10;
+                                        if (!storyMap.has(roundedY)) {
+                                            storyMap.set(roundedY, { y: roundedY, nodes: [] });
+                                        }
+                                        storyMap.get(roundedY)!.nodes.push(n);
+                                    });
+                                    const stories = [...storyMap.values()].sort((a, b) => a.y - b.y);
+
+                                    if (stories.length < 2) {
+                                        return (
+                                            <div className="text-sm text-zinc-500 p-3 bg-zinc-800/50 rounded-lg border border-zinc-700">
+                                                Single-story structure — inter-story drift check not applicable.
+                                            </div>
+                                        );
+                                    }
+
+                                    // Compute drift between consecutive stories
+                                    const driftResults = stories.slice(1).map((story, idx) => {
+                                        const lowerStory = stories[idx]!;
+                                        const storyHeight = (story.y - lowerStory.y) * 1000; // mm
+
+                                        // Max lateral displacement at this story  
+                                        const maxDxUpper = Math.max(...story.nodes.map(n => Math.abs(n.displacement.dx)));
+                                        const maxDxLower = Math.max(...lowerStory.nodes.map(n => Math.abs(n.displacement.dx)));
+                                        const relativeDrift = Math.abs(maxDxUpper - maxDxLower); // mm
+                                        const driftRatio = storyHeight > 0 ? relativeDrift / storyHeight : 0;
+
+                                        // Code limits: H/400 (IS 1893) and H/500 (ASCE 7 for Risk Cat II)
+                                        const limitIS = storyHeight / 400;
+                                        const limitASCE = storyHeight / 500;
+                                        const passIS = relativeDrift <= limitIS;
+                                        const passASCE = relativeDrift <= limitASCE;
+
+                                        return {
+                                            storyLabel: `Level ${idx + 1} → ${idx + 2}`,
+                                            height: storyHeight,
+                                            yLower: lowerStory.y,
+                                            yUpper: story.y,
+                                            drift: relativeDrift,
+                                            driftRatio,
+                                            limitIS,
+                                            limitASCE,
+                                            passIS,
+                                            passASCE,
+                                        };
+                                    });
+
+                                    return (
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-sm">
+                                                <thead className="sticky top-0 bg-zinc-900">
+                                                    <tr className="border-b border-zinc-700">
+                                                        <th className="px-3 py-2 text-left text-zinc-400 text-xs">Story</th>
+                                                        <th className="px-3 py-2 text-left text-zinc-400 text-xs">Height (mm)</th>
+                                                        <th className="px-3 py-2 text-left text-zinc-400 text-xs">Drift (mm)</th>
+                                                        <th className="px-3 py-2 text-left text-zinc-400 text-xs">Δ/H Ratio</th>
+                                                        <th className="px-3 py-2 text-left text-zinc-400 text-xs">H/400 (IS 1893)</th>
+                                                        <th className="px-3 py-2 text-left text-zinc-400 text-xs">H/500 (ASCE 7)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {driftResults.map((dr, i) => (
+                                                        <tr key={i} className="border-b border-zinc-800 hover:bg-zinc-800/50">
+                                                            <td className="px-3 py-1.5 font-medium text-white text-xs">{dr.storyLabel}</td>
+                                                            <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">{dr.height.toFixed(0)}</td>
+                                                            <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">{dr.drift.toFixed(3)}</td>
+                                                            <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">{dr.driftRatio.toFixed(6)}</td>
+                                                            <td className="px-3 py-1.5 text-xs">
+                                                                <span className={`px-2 py-0.5 rounded ${
+                                                                    dr.passIS ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                                                                }`}>
+                                                                    {dr.passIS ? 'PASS' : 'FAIL'} ({dr.drift.toFixed(2)}/{dr.limitIS.toFixed(2)})
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-3 py-1.5 text-xs">
+                                                                <span className={`px-2 py-0.5 rounded ${
+                                                                    dr.passASCE ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                                                                }`}>
+                                                                    {dr.passASCE ? 'PASS' : 'FAIL'} ({dr.drift.toFixed(2)}/{dr.limitASCE.toFixed(2)})
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+                        </motion.div>
+                    )}
                     {viewMode === 'heatmap' && (
                         <motion.div
                             key="heatmap"
@@ -862,6 +1296,52 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                             <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide">
                                 Stress / Utilization Heat Map
                             </h3>
+
+                            {/* Section-Type Group Summary */}
+                            {(() => {
+                                const groups = new Map<string, { count: number; maxUtil: number; avgUtil: number; maxStress: number }>();
+                                members.forEach(m => {
+                                    const sType = m.sectionType || 'General';
+                                    const prev = groups.get(sType) || { count: 0, maxUtil: 0, avgUtil: 0, maxStress: 0 };
+                                    groups.set(sType, {
+                                        count: prev.count + 1,
+                                        maxUtil: Math.max(prev.maxUtil, m.utilization),
+                                        avgUtil: (prev.avgUtil * prev.count + m.utilization) / (prev.count + 1),
+                                        maxStress: Math.max(prev.maxStress, m.stress),
+                                    });
+                                });
+                                if (groups.size <= 1) return null;
+                                return (
+                                    <div className="grid grid-cols-3 gap-3 mb-2">
+                                        {[...groups.entries()].sort((a, b) => b[1].maxUtil - a[1].maxUtil).map(([sType, g]) => {
+                                            const st = getUtilizationStatus(g.maxUtil);
+                                            return (
+                                                <div key={sType} className="bg-zinc-800/50 rounded-lg border border-zinc-700 p-3">
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <span className="text-xs font-medium text-white">{sType}</span>
+                                                        <span className="text-[10px] text-zinc-500">{g.count} members</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex-1 h-2 bg-zinc-900 rounded-full overflow-hidden">
+                                                            <div className={`h-full rounded-full ${
+                                                                st === 'safe' ? 'bg-green-500' :
+                                                                st === 'warning' ? 'bg-yellow-500' :
+                                                                st === 'critical' ? 'bg-orange-500' : 'bg-red-500'
+                                                            }`} style={{ width: `${Math.min(g.maxUtil * 100, 100)}%` }} />
+                                                        </div>
+                                                        <span className="text-xs font-mono text-zinc-300">
+                                                            {(g.maxUtil * 100).toFixed(0)}%
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-[10px] text-zinc-500 mt-1">
+                                                        Avg: {(g.avgUtil * 100).toFixed(0)}% | Max σ: {formatNumber(g.maxStress)} MPa
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                );
+                            })()}
                             {/* Color legend */}
                             <div className="flex items-center gap-3 text-xs">
                                 <span className="text-zinc-400">Low</span>

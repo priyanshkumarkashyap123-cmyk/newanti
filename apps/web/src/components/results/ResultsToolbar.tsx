@@ -224,6 +224,7 @@ const convertToAnalysisResultsData = (
                 startNodeId: memberModel?.startNodeId ?? '',
                 endNodeId: memberModel?.endNodeId ?? '',
                 length: memberLength,
+                sectionType: memberModel?.sectionType ?? 'General',
                 maxShear: shear,
                 minShear: -shear,
                 maxMoment: moment,
@@ -231,6 +232,9 @@ const convertToAnalysisResultsData = (
                 maxAxial: axial,
                 minAxial: -axial,
                 maxDeflection: Math.abs(maxDisp * 1000), // Convert to mm
+                maxShearZ: Math.abs(forces.shearZ ?? 0),
+                maxMomentY: Math.abs(forces.momentY ?? 0),
+                torsion: Math.abs(forces.torsion ?? 0),
                 stress: Math.abs(estimatedStress),
                 utilization: util,
                 diagramData: {
