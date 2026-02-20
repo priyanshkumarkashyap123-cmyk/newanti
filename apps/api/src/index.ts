@@ -164,23 +164,35 @@ app.get('/health', async (_req: Request, res: Response) => {
     }, status === 'ok' ? 200 : 503);
 });
 
+// ============================================
+// API v1 ROUTES (versioned for forward compatibility)
+// All routes are available at both /api/... (legacy) and /api/v1/... (versioned)
+// ============================================
+
 // Structural Analysis API (rate limited: 10/min)
+app.use('/api/v1/analyze', analysisRateLimit, analysisRouter);
 app.use('/api/analyze', analysisRateLimit, analysisRouter);
+app.use('/api/v1/analysis', analysisRateLimit, analysisRouter);
 app.use('/api/analysis', analysisRateLimit, analysisRouter);
 
 // Structural Design API (rate limited: 10/min)
+app.use('/api/v1/design', analysisRateLimit, designRouter);
 app.use('/api/design', analysisRateLimit, designRouter);
 
 // Advanced Analysis API (P-Delta, Modal, Buckling)
+app.use('/api/v1/advanced', analysisRateLimit, advancedRouter);
 app.use('/api/advanced', analysisRateLimit, advancedRouter);
 
 // Interoperability API (STAAD, DXF import/export)
+app.use('/api/v1/interop', analysisRateLimit, interopRouter);
 app.use('/api/interop', analysisRateLimit, interopRouter);
 
 // User Activity API (protected)
+app.use('/api/v1/user', userRoutes);
 app.use('/api/user', userRoutes);
 
 // Razorpay Billing API (rate limited: 5/min)
+app.use('/api/v1/billing', billingRateLimit, razorpayRouter);
 app.use('/api/billing', billingRateLimit, razorpayRouter);
 
 // ============================================
@@ -223,3 +235,42 @@ httpServer.listen(PORT, () => {
         console.error('❌ Failed to connect to MongoDB:', err);
     });
 });
+
+// ===========================================================================
+// GRACEFUL SHUTDOWN
+// Ensures in-flight requests complete, DB connections close, and the process
+// exits cleanly — required for zero-downtime deploys (K8s, Azure App Service).
+// ===========================================================================
+const SHUTDOWN_TIMEOUT_MS = 15_000;
+
+function gracefulShutdown(signal: string) {
+    console.log(`\n⚠️  Received ${signal}. Starting graceful shutdown...`);
+
+    // 1. Stop accepting new connections
+    httpServer.close(() => {
+        console.log('✅ HTTP server closed — no new connections.');
+    });
+
+    // 2. Close WebSocket connections
+    socketServer.close();
+    console.log('✅ WebSocket server closed.');
+
+    // 3. Close MongoDB connection
+    import('mongoose').then(mongoose => {
+        mongoose.default.connection.close(false).then(() => {
+            console.log('✅ MongoDB connection closed.');
+            process.exit(0);
+        });
+    }).catch(() => {
+        process.exit(0);
+    });
+
+    // 4. Force kill if graceful shutdown takes too long
+    setTimeout(() => {
+        console.error('❌ Graceful shutdown timed out. Forcing exit.');
+        process.exit(1);
+    }, SHUTDOWN_TIMEOUT_MS);
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));

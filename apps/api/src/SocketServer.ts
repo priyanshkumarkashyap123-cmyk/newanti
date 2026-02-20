@@ -513,6 +513,15 @@ export class SocketServer {
     public getIO(): SocketIOServer {
         return this.io;
     }
+
+    /**
+     * Gracefully close all socket connections and the server itself.
+     * Used during shutdown to ensure clients receive disconnect events.
+     */
+    public close(): void {
+        this.io.disconnectSockets(true);
+        this.io.close();
+    }
 }
 
 export default SocketServer;

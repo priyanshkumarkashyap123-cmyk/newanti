@@ -26,8 +26,16 @@ export default defineConfig({
             },
         },
         coverage: {
-            reporter: ['text', 'json', 'html'],
-            exclude: ['node_modules/', 'src/__tests__/'],
+            reporter: ['text', 'json', 'html', 'lcov'],
+            exclude: ['node_modules/', 'src/__tests__/', 'src/**/*.d.ts', 'src/**/*.stories.tsx'],
+            // Minimum coverage thresholds — CI will fail if these are not met.
+            // Ramp these up over time: target 60% statements, 50% branches by Q3.
+            thresholds: {
+                statements: 20,
+                branches: 15,
+                functions: 15,
+                lines: 20,
+            },
         },
     },
     resolve: {

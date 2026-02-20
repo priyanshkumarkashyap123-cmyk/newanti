@@ -17,6 +17,42 @@ import * as THREE from 'three';
 import { ColorScales } from './AdvancedRenderingEngine';
 
 // ============================================
+// TEXT SPRITE HELPER (shared pattern)
+// ============================================
+
+function createTextSprite(
+  text: string,
+  color: number | THREE.Color = 0xffffff,
+  fontSize: number = 48,
+  bgColor: string = 'rgba(0,0,0,0.6)'
+): THREE.Sprite {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d')!;
+  const font = `bold ${fontSize}px monospace`;
+  ctx.font = font;
+  const metrics = ctx.measureText(text);
+  const padding = fontSize * 0.4;
+  canvas.width = Math.ceil(metrics.width + padding * 2);
+  canvas.height = Math.ceil(fontSize * 1.4 + padding * 2);
+  ctx.fillStyle = bgColor;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.font = font;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const c = new THREE.Color(color);
+  ctx.fillStyle = `rgb(${Math.round(c.r * 255)},${Math.round(c.g * 255)},${Math.round(c.b * 255)})`;
+  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.needsUpdate = true;
+  const mat = new THREE.SpriteMaterial({ map: texture, depthTest: false, transparent: true });
+  const sprite = new THREE.Sprite(mat);
+  const aspect = canvas.width / canvas.height;
+  const spriteHeight = 0.35;
+  sprite.scale.set(spriteHeight * aspect, spriteHeight, 1);
+  return sprite;
+}
+
+// ============================================
 // TYPE DEFINITIONS
 // ============================================
 
@@ -480,18 +516,16 @@ export class UtilizationRenderer {
         );
         labelPos.y += 0.3; // Offset above member
 
-        const labelGeom = new THREE.SphereGeometry(0.08);
-        const labelMat = new THREE.MeshBasicMaterial({
-          color: result.demandCapacityRatio > config.threshold ? 0xff0000 : 0x00ff00
-        });
-        const label = new THREE.Mesh(labelGeom, labelMat);
-        label.position.copy(labelPos);
-        label.userData = {
+        const utilText = (result.demandCapacityRatio * 100).toFixed(1) + '%';
+        const utilColor = result.demandCapacityRatio > config.threshold ? 0xff0000 : 0x00ff00;
+        const utilSprite = createTextSprite(utilText, utilColor, 36);
+        utilSprite.position.copy(labelPos);
+        utilSprite.userData = {
           type: 'utilizationLabel',
-          value: (result.demandCapacityRatio * 100).toFixed(1) + '%',
+          value: utilText,
           memberId: result.memberId
         };
-        this.utilizationGroup.add(label);
+        this.utilizationGroup.add(utilSprite);
       }
     }
   }

@@ -1,16 +1,20 @@
 /**
  * ============================================================================
- * RESULTS DASHBOARD
+ * RESULTS DASHBOARD — DEPRECATED / NOT CONNECTED TO REAL DATA
  * ============================================================================
  * 
- * Comprehensive dashboard for viewing and analyzing structural analysis results:
- * - Summary statistics and KPIs
- * - Quick access to all result types
- * - Interactive filtering and search
- * - Comparison views
- * - Export integration
+ * ⚠️  WARNING: This component uses 100% MOCK DATA (MOCK_RESULTS_SUMMARY,
+ * MOCK_MEMBER_RESULTS). It is NOT imported or used anywhere in the app.
+ * 
+ * The real results dashboard is:
+ *   - AnalysisResultsDashboard.tsx (in components/results/)
+ *   - ResultsToolbar.tsx (floating toolbar entry point)
+ * 
+ * This file is retained for reference only and should be removed or
+ * refactored to consume real AnalysisResults from the store.
  * 
  * @version 1.0.0
+ * @deprecated Use AnalysisResultsDashboard instead
  */
 
 import React, { useState, useMemo } from 'react';

@@ -18,11 +18,11 @@
         "jsx": "react-jsx",
         /* Linting */
         "strict": true,
-        "noUnusedLocals": false,
-        "noUnusedParameters": false,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
         "noFallthroughCasesInSwitch": true,
         "noImplicitReturns": true,
-        "noUncheckedIndexedAccess": false,
+        "noUncheckedIndexedAccess": true,
         "noImplicitOverride": true,
         "noPropertyAccessFromIndexSignature": false,
         "allowUnusedLabels": false,
@@ -41,9 +41,6 @@
     ],
     "exclude": [
         "src/components/parametric",
-        "src/workers",
-        "src/layouts/ModernWorkspace.tsx",
-        "src/layouts/WorkspaceLayout.tsx",
         "src/_demo"
     ],
     "references": [

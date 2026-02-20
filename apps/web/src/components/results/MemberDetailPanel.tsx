@@ -44,6 +44,18 @@ interface MemberDetailPanelProps {
     memberLength?: number;
     sectionId?: string;
     material?: 'steel' | 'concrete';
+    /** Actual section properties from model — if provided, design uses them instead of defaults */
+    sectionProps?: {
+        A?: number;       // Cross-section area (m²)
+        I?: number;       // Moment of inertia (m⁴)
+        Iy?: number;      // Minor-axis MOI (m⁴)
+        width?: number;   // Section width (mm)
+        depth?: number;   // Section depth (mm)
+        tf?: number;      // Flange thickness (mm)
+        tw?: number;      // Web thickness (mm)
+        fy?: number;      // Yield strength (MPa)
+        sectionType?: string; // e.g. 'W', 'I', 'HSS', 'rectangular', 'circular'
+    };
     onClose?: () => void;
     onNavigate?: (direction: 'prev' | 'next') => void;
 }
@@ -56,8 +68,9 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
     memberId,
     memberForces,
     memberLength = 5,
-    sectionId = 'ISMB300',
+    sectionId = 'Default',
     material = 'steel',
+    sectionProps,
     onClose,
     onNavigate
 }) => {
@@ -145,16 +158,33 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
         };
     }, [memberForces.diagramData, sectionCutPosition, memberLength]);
 
-    // Design results
+    // Design results — uses actual section properties when available
     const designResult = useMemo((): DesignResult => {
+        // Derive section dimensions from actual properties
+        const sp = sectionProps;
+        const actualWidth = sp?.width ?? (sp?.A ? Math.round(Math.sqrt(sp.A * 1e6) * 0.5) : 200); // mm
+        const actualDepth = sp?.depth ?? (sp?.A && sp?.I 
+            ? Math.round(Math.sqrt(12 * sp.I / sp.A) * 1000)  // d ≈ sqrt(12*I/A), m→mm
+            : 400); // mm
+        const actualFy = sp?.fy ?? 250;
+
+        // Infer section type
+        let sectionType: 'rectangular' | 'circular' | 'I-section' = 'rectangular';
+        const st = sp?.sectionType?.toLowerCase() ?? '';
+        if (st.includes('circ') || st.includes('pipe') || st.includes('chs')) {
+            sectionType = 'circular';
+        } else if (st.includes('i') || st.includes('w') || st.includes('hss') || st.includes('ismb') || st.includes('ismc')) {
+            sectionType = 'I-section';
+        }
+
         const input: DesignInput = {
             memberId,
             memberType: 'beam',
             material: material === 'steel' ? {
                 type: 'steel',
-                grade: 'Fe250',
-                fy: 250,
-                fu: 410,
+                grade: actualFy >= 345 ? 'Fe345' : actualFy >= 300 ? 'Fe300' : 'Fe250',
+                fy: actualFy,
+                fu: actualFy >= 345 ? 490 : actualFy >= 300 ? 440 : 410,
                 Es: 200,
             } : {
                 type: 'concrete',
@@ -163,9 +193,11 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                 fy: 415,
             },
             section: {
-                type: 'rectangular',
-                width: 200,
-                depth: 400,
+                type: sectionType as any,
+                width: actualWidth,
+                depth: actualDepth,
+                ...(sp?.tf ? { flangeThickness: sp.tf } : {}),
+                ...(sp?.tw ? { webThickness: sp.tw } : {}),
             },
             forces: memberForces,
             geometry: {
@@ -177,7 +209,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
         };
 
         return MemberDesignService.design(input);
-    }, [memberForces, memberId, memberLength, material, designCode]);
+    }, [memberForces, memberId, memberLength, material, designCode, sectionProps]);
 
     // Diagram config
     const getConfig = (type: 'SFD' | 'BMD' | 'AFD' | 'ALL'): Partial<DiagramConfig> => ({

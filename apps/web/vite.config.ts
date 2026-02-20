@@ -17,7 +17,7 @@ const securityHeaders = {
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://challenges.cloudflare.com https://*.clerk.accounts.dev https://*.clerk.dev https://clerk.com https://*.clerk.com https://clerk.beamlabultimate.tech blob:",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev https://clerk.beamlabultimate.tech",
     "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com data:",
-    "img-src 'self' data: blob: https:",
+    "img-src 'self' data: blob: https://*.clerk.com https://*.clerk.dev https://img.clerk.com",
     "connect-src 'self' https://*.beamlabultimate.tech https://beamlab-backend-node.azurewebsites.net https://beamlab-backend-python.azurewebsites.net https://beamlab-rust-api.azurewebsites.net https://*.clerk.accounts.dev https://*.clerk.com https://*.clerk.dev wss://*.clerk.accounts.dev wss://clerk.beamlabultimate.tech https://api.anthropic.com https://generativelanguage.googleapis.com https://raw.githack.com https://dl.polyhaven.org https://*.polyhaven.org https://raw.githubusercontent.com https://storage.googleapis.com",
     "frame-src 'self' https://challenges.cloudflare.com https://*.clerk.accounts.dev https://*.clerk.com https://*.clerk.dev https://clerk.beamlabultimate.tech",
     "worker-src 'self' blob:",
@@ -32,8 +32,8 @@ const securityHeaders = {
   // Prevent MIME type sniffing
   'X-Content-Type-Options': 'nosniff',
 
-  // Enable XSS filter
-  'X-XSS-Protection': '1; mode=block',
+  // XSS Protection (set to 0 — modern browsers should use CSP instead; '1; mode=block' can introduce vulnerabilities)
+  'X-XSS-Protection': '0',
 
   // Control referrer information
   'Referrer-Policy': 'strict-origin-when-cross-origin',

@@ -1,19 +1,20 @@
 /**
  * ============================================================================
- * INTERACTIVE RESULTS DASHBOARD - ULTRA-MODERN ANALYTICS
+ * INTERACTIVE RESULTS DASHBOARD — DEPRECATED / NOT CONNECTED TO REAL DATA
  * ============================================================================
  * 
- * Revolutionary structural analysis results visualization featuring:
- * - Real-time animated charts and graphs
- * - Interactive force/moment diagrams
- * - Heat maps for stress distribution
- * - Modal analysis frequency charts
- * - Time-history response plots
- * - Member utilization matrix
- * - Design check summaries
- * - Export to PDF/Excel
+ * ⚠️  WARNING: This component uses 100% HARDCODED / MOCK DATA.
+ * It is NOT imported or used anywhere in the app.
+ * 
+ * The real results dashboard is:
+ *   - AnalysisResultsDashboard.tsx (in components/results/)
+ *   - ResultsToolbar.tsx (floating toolbar entry point)
+ * 
+ * This file is retained for reference only and should be removed or
+ * refactored to consume real AnalysisResults from the store.
  * 
  * @version 4.0.0
+ * @deprecated Use AnalysisResultsDashboard instead
  */
 
 'use client';

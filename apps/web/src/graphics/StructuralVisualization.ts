@@ -20,6 +20,63 @@ import * as THREE from 'three';
 import { ColorScales } from './AdvancedRenderingEngine';
 
 // ============================================
+// TEXT SPRITE HELPER — renders actual text labels in 3D
+// ============================================
+
+function createTextSprite(
+  text: string,
+  color: number | THREE.Color = 0xffffff,
+  fontSize: number = 48,
+  bgColor: string = 'rgba(0,0,0,0.6)'
+): THREE.Sprite {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d')!;
+  const font = `bold ${fontSize}px monospace`;
+  ctx.font = font;
+  const metrics = ctx.measureText(text);
+  const textWidth = metrics.width;
+  const padding = fontSize * 0.4;
+  canvas.width = Math.ceil(textWidth + padding * 2);
+  canvas.height = Math.ceil(fontSize * 1.4 + padding * 2);
+
+  // Background
+  ctx.fillStyle = bgColor;
+  const r = 6;
+  const w = canvas.width;
+  const h = canvas.height;
+  ctx.beginPath();
+  ctx.moveTo(r, 0);
+  ctx.lineTo(w - r, 0);
+  ctx.quadraticCurveTo(w, 0, w, r);
+  ctx.lineTo(w, h - r);
+  ctx.quadraticCurveTo(w, h, w - r, h);
+  ctx.lineTo(r, h);
+  ctx.quadraticCurveTo(0, h, 0, h - r);
+  ctx.lineTo(0, r);
+  ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.closePath();
+  ctx.fill();
+
+  // Text
+  ctx.font = font;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const c = new THREE.Color(color);
+  ctx.fillStyle = `rgb(${Math.round(c.r * 255)},${Math.round(c.g * 255)},${Math.round(c.b * 255)})`;
+  ctx.fillText(text, w / 2, h / 2);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.needsUpdate = true;
+  const mat = new THREE.SpriteMaterial({ map: texture, depthTest: false, transparent: true });
+  const sprite = new THREE.Sprite(mat);
+  // Scale sprite so it appears ~0.4 units tall in world
+  const aspect = canvas.width / canvas.height;
+  const spriteHeight = 0.35;
+  sprite.scale.set(spriteHeight * aspect, spriteHeight, 1);
+  return sprite;
+}
+
+// ============================================
 // TYPE DEFINITIONS
 // ============================================
 
@@ -452,14 +509,12 @@ export class DiagramGenerator {
         settings.offsetFromMember + Math.abs(label.val) * settings.scale + 0.2
       ));
 
-      // Create a small sphere as label placeholder
-      // In production, use TextGeometry or CSS2DRenderer for actual text
-      const labelGeom = new THREE.SphereGeometry(0.05);
-      const labelMat = new THREE.MeshBasicMaterial({ color: settings.lineColor });
-      const labelMesh = new THREE.Mesh(labelGeom, labelMat);
-      labelMesh.position.copy(worldPos);
-      labelMesh.userData = { value: label.val.toFixed(2), type: 'label' };
-      group.add(labelMesh);
+      // Create text sprite label showing the actual value
+      const labelText = label.val.toFixed(2);
+      const sprite = createTextSprite(labelText, settings.lineColor, 36);
+      sprite.position.copy(worldPos);
+      sprite.userData = { value: labelText, type: 'label' };
+      group.add(sprite);
     }
   }
 
@@ -785,13 +840,12 @@ export class LoadVisualizer {
     );
     group.add(arrow);
 
-    // Add magnitude label placeholder
-    const labelGeom = new THREE.SphereGeometry(0.08);
-    const labelMat = new THREE.MeshBasicMaterial({ color });
-    const label = new THREE.Mesh(labelGeom, labelMat);
-    label.position.copy(startPoint).sub(normalizedDir.clone().multiplyScalar(0.3));
-    label.userData = { type: 'loadLabel', value: magnitude };
-    group.add(label);
+    // Add magnitude label as text sprite
+    const loadLabelText = magnitude.toFixed(1);
+    const loadSprite = createTextSprite(loadLabelText, color, 36);
+    loadSprite.position.copy(startPoint).sub(normalizedDir.clone().multiplyScalar(0.3));
+    loadSprite.userData = { type: 'loadLabel', value: magnitude };
+    group.add(loadSprite);
 
     group.userData = { type: 'pointLoad', magnitude };
     this.loadGroup.add(group);

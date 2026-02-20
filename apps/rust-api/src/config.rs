@@ -41,7 +41,7 @@ impl Config {
             .unwrap_or_else(|_| "mongodb://localhost:27017/beamlab".into());
 
         let jwt_secret = std::env::var("JWT_SECRET")
-            .unwrap_or_else(|_| "beamlab-rust-secret-key-change-in-production".into());
+            .context("FATAL: JWT_SECRET environment variable is required. Refusing to start with insecure defaults.")?;
 
         let frontend_url = std::env::var("FRONTEND_URL")
             .unwrap_or_else(|_| "http://localhost:5173".into());

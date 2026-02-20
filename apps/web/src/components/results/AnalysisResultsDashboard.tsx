@@ -355,62 +355,105 @@ const ReactionDisplay: FC<ReactionDisplayProps> = ({ nodes }) => {
         nodes.filter(n => n.reaction && (
             Math.abs(n.reaction.fx) > 0.01 ||
             Math.abs(n.reaction.fy) > 0.01 ||
-            Math.abs(n.reaction.fz) > 0.01
+            Math.abs(n.reaction.fz) > 0.01 ||
+            Math.abs(n.reaction.mx ?? 0) > 0.01 ||
+            Math.abs(n.reaction.my ?? 0) > 0.01 ||
+            Math.abs(n.reaction.mz ?? 0) > 0.01
         )),
         [nodes]
     );
+
+    // Detect if any node has 3D reactions (Fz, Mx, My)
+    const is3D = useMemo(() =>
+        supportNodes.some(n => n.reaction && (
+            Math.abs(n.reaction.fz) > 0.01 ||
+            Math.abs(n.reaction.mx ?? 0) > 0.01 ||
+            Math.abs(n.reaction.my ?? 0) > 0.01
+        )),
+        [supportNodes]
+    );
+
+    // Reaction cell helper
+    const ReactionCell: FC<{ label: string; value: number; unit: string; colorPos: string; colorNeg: string }> = 
+        ({ label, value, unit, colorPos, colorNeg }) => (
+        <div className="text-center p-2 bg-zinc-900 rounded">
+            <div className="text-xs text-zinc-400 mb-1">{label}</div>
+            <div className={`font-mono font-bold ${value >= 0 ? colorPos : colorNeg}`}>
+                {formatNumber(value)}
+            </div>
+            <div className="text-xs text-zinc-500">{unit}</div>
+        </div>
+    );
+
+    // Reaction sum row
+    const totals = useMemo(() => {
+        const sum = { fx: 0, fy: 0, fz: 0, mx: 0, my: 0, mz: 0 };
+        supportNodes.forEach(n => {
+            if (!n.reaction) return;
+            sum.fx += n.reaction.fx;
+            sum.fy += n.reaction.fy;
+            sum.fz += n.reaction.fz;
+            sum.mx += n.reaction.mx ?? 0;
+            sum.my += n.reaction.my ?? 0;
+            sum.mz += n.reaction.mz ?? 0;
+        });
+        return sum;
+    }, [supportNodes]);
     
     return (
-        <div className="grid grid-cols-2 gap-4">
-            {supportNodes.map(node => (
-                <motion.div
-                    key={node.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="bg-zinc-800/50 rounded-lg border border-zinc-700 p-4"
-                >
-                    <div className="flex items-center justify-between mb-3">
-                        <span className="font-medium text-white">Node {node.id}</span>
-                        <span className="text-xs text-zinc-400">
-                            ({formatNumber(node.x)}, {formatNumber(node.y)}, {formatNumber(node.z)})
-                        </span>
-                    </div>
-                    
-                    <div className="grid grid-cols-3 gap-2">
+        <div className="space-y-4">
+            {/* Summary totals */}
+            <div className="bg-zinc-800/50 rounded-lg border border-zinc-700 p-3">
+                <div className="text-xs font-medium text-zinc-400 uppercase tracking-wide mb-2">
+                    Reaction Totals (Equilibrium Check)
+                </div>
+                <div className={`grid ${is3D ? 'grid-cols-6' : 'grid-cols-3'} gap-2 text-center text-xs`}>
+                    <div><span className="text-zinc-400">ΣFx =</span> <span className="font-mono text-white">{formatNumber(totals.fx)} kN</span></div>
+                    <div><span className="text-zinc-400">ΣFy =</span> <span className="font-mono text-white">{formatNumber(totals.fy)} kN</span></div>
+                    {is3D && <div><span className="text-zinc-400">ΣFz =</span> <span className="font-mono text-white">{formatNumber(totals.fz)} kN</span></div>}
+                    {is3D && <div><span className="text-zinc-400">ΣMx =</span> <span className="font-mono text-white">{formatNumber(totals.mx)} kNm</span></div>}
+                    {is3D && <div><span className="text-zinc-400">ΣMy =</span> <span className="font-mono text-white">{formatNumber(totals.my)} kNm</span></div>}
+                    <div><span className="text-zinc-400">ΣMz =</span> <span className="font-mono text-white">{formatNumber(totals.mz)} kNm</span></div>
+                </div>
+            </div>
+
+            {/* Per-node reaction cards */}
+            <div className="grid grid-cols-2 gap-4">
+                {supportNodes.map(node => (
+                    <motion.div
+                        key={node.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="bg-zinc-800/50 rounded-lg border border-zinc-700 p-4"
+                    >
+                        <div className="flex items-center justify-between mb-3">
+                            <span className="font-medium text-white">Node {node.id}</span>
+                            <span className="text-xs text-zinc-400">
+                                ({formatNumber(node.x)}, {formatNumber(node.y)}, {formatNumber(node.z)})
+                            </span>
+                        </div>
+                        
                         {node.reaction && (
-                            <>
-                                <div className="text-center p-2 bg-zinc-900 rounded">
-                                    <div className="text-xs text-zinc-400 mb-1">Fx</div>
-                                    <div className={`font-mono font-bold ${
-                                        node.reaction.fx >= 0 ? 'text-blue-400' : 'text-red-400'
-                                    }`}>
-                                        {formatNumber(node.reaction.fx)}
-                                    </div>
-                                    <div className="text-xs text-zinc-500">kN</div>
+                            <div className="space-y-2">
+                                {/* Forces row */}
+                                <div className="text-[10px] text-zinc-500 uppercase tracking-wider">Forces</div>
+                                <div className={`grid ${is3D ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}>
+                                    <ReactionCell label="Fx" value={node.reaction.fx} unit="kN" colorPos="text-blue-400" colorNeg="text-red-400" />
+                                    <ReactionCell label="Fy" value={node.reaction.fy} unit="kN" colorPos="text-green-400" colorNeg="text-red-400" />
+                                    {is3D && <ReactionCell label="Fz" value={node.reaction.fz} unit="kN" colorPos="text-cyan-400" colorNeg="text-red-400" />}
                                 </div>
-                                <div className="text-center p-2 bg-zinc-900 rounded">
-                                    <div className="text-xs text-zinc-400 mb-1">Fy</div>
-                                    <div className={`font-mono font-bold ${
-                                        node.reaction.fy >= 0 ? 'text-green-400' : 'text-red-400'
-                                    }`}>
-                                        {formatNumber(node.reaction.fy)}
-                                    </div>
-                                    <div className="text-xs text-zinc-500">kN</div>
+                                {/* Moments row */}
+                                <div className="text-[10px] text-zinc-500 uppercase tracking-wider mt-1">Moments</div>
+                                <div className={`grid ${is3D ? 'grid-cols-3' : 'grid-cols-1'} gap-2`}>
+                                    {is3D && <ReactionCell label="Mx" value={node.reaction.mx ?? 0} unit="kNm" colorPos="text-purple-400" colorNeg="text-orange-400" />}
+                                    {is3D && <ReactionCell label="My" value={node.reaction.my ?? 0} unit="kNm" colorPos="text-purple-400" colorNeg="text-orange-400" />}
+                                    <ReactionCell label="Mz" value={node.reaction.mz ?? 0} unit="kNm" colorPos="text-purple-400" colorNeg="text-orange-400" />
                                 </div>
-                                <div className="text-center p-2 bg-zinc-900 rounded">
-                                    <div className="text-xs text-zinc-400 mb-1">Mz</div>
-                                    <div className={`font-mono font-bold ${
-                                        (node.reaction.mz ?? 0) >= 0 ? 'text-purple-400' : 'text-orange-400'
-                                    }`}>
-                                        {formatNumber(node.reaction.mz ?? 0)}
-                                    </div>
-                                    <div className="text-xs text-zinc-500">kNm</div>
-                                </div>
-                            </>
+                            </div>
                         )}
-                    </div>
-                </motion.div>
-            ))}
+                    </motion.div>
+                ))}
+            </div>
         </div>
     );
 };
@@ -807,28 +850,65 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                         </motion.div>
                     )}
                     
-                    {/* Heat Map Mode */}
+                    {/* Heat Map Mode — member stress/utilization color table */}
                     {viewMode === 'heatmap' && (
                         <motion.div
                             key="heatmap"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
-                            className="text-center py-12"
+                            className="space-y-4"
                         >
-                            <Flame className="w-12 h-12 text-orange-500 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-white mb-2">
-                                Heat Map Visualization
+                            <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide">
+                                Stress / Utilization Heat Map
                             </h3>
-                            <p className="text-zinc-400 mb-4">
-                                View stress distribution across your structure in the 3D viewport.
-                            </p>
-                            <button
-                                onClick={() => {/* Toggle 3D heat map */}}
-                                className="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-medium transition-colors"
-                            >
-                                Enable Heat Map in Viewport
-                            </button>
+                            {/* Color legend */}
+                            <div className="flex items-center gap-3 text-xs">
+                                <span className="text-zinc-400">Low</span>
+                                <div className="flex-1 h-3 rounded-full" style={{
+                                    background: 'linear-gradient(to right, #22d3ee, #22c55e, #eab308, #f97316, #ef4444)'
+                                }} />
+                                <span className="text-zinc-400">High</span>
+                            </div>
+                            {/* Member bars sorted by utilization */}
+                            <div className="space-y-1.5 max-h-[400px] overflow-y-auto pr-2">
+                                {[...members]
+                                    .sort((a, b) => b.utilization - a.utilization)
+                                    .map(m => {
+                                        const pct = Math.min(m.utilization, 1.5) / 1.5 * 100;
+                                        const hue = Math.max(0, 120 - m.utilization * 120); // 120=green → 0=red
+                                        const status = getUtilizationStatus(m.utilization);
+                                        return (
+                                            <div
+                                                key={m.id}
+                                                onClick={() => handleMemberSelect(m.id)}
+                                                className="flex items-center gap-3 p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 cursor-pointer transition-colors"
+                                            >
+                                                <span className="text-xs font-medium text-white w-12">M{m.id}</span>
+                                                <div className="flex-1 h-4 bg-zinc-900 rounded-full overflow-hidden relative">
+                                                    <div
+                                                        className="h-full rounded-full transition-all duration-500"
+                                                        style={{
+                                                            width: `${pct}%`,
+                                                            backgroundColor: `hsl(${hue}, 85%, 50%)`
+                                                        }}
+                                                    />
+                                                </div>
+                                                <span className={`text-xs font-mono w-14 text-right ${
+                                                    status === 'safe' ? 'text-green-400' :
+                                                    status === 'warning' ? 'text-yellow-400' :
+                                                    status === 'critical' ? 'text-orange-400' :
+                                                    'text-red-400'
+                                                }`}>
+                                                    {(m.utilization * 100).toFixed(1)}%
+                                                </span>
+                                                <span className="text-xs text-zinc-500 w-20 text-right">
+                                                    {formatNumber(m.stress)} MPa
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>

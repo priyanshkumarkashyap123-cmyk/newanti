@@ -30,8 +30,17 @@ const router: Router = Router();
 // CONFIGURATION
 // ============================================
 
-const JWT_SECRET = process.env['JWT_SECRET'] || 'beamlab-secret-key-change-in-production';
-const JWT_REFRESH_SECRET = process.env['JWT_REFRESH_SECRET'] || 'beamlab-refresh-secret-change-in-production';
+// SECURITY: Never fall back to a hardcoded secret. Crash early if misconfigured.
+const JWT_SECRET = process.env['JWT_SECRET'];
+const JWT_REFRESH_SECRET = process.env['JWT_REFRESH_SECRET'];
+
+if (!JWT_SECRET || !JWT_REFRESH_SECRET) {
+    throw new Error(
+        'FATAL: JWT_SECRET and JWT_REFRESH_SECRET environment variables are required. ' +
+        'Refusing to start with insecure defaults.'
+    );
+}
+
 const ACCESS_TOKEN_EXPIRY = '15m'; // 15 minutes
 const REFRESH_TOKEN_EXPIRY = '7d'; // 7 days
 const SALT_ROUNDS = 12;

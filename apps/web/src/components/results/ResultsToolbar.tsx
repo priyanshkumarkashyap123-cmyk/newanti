@@ -54,7 +54,68 @@ type DiagramType = 'deflection' | 'bmd' | 'sfd' | 'reactions' | 'axial' | 'heatm
 // HELPER: Convert store results to dashboard format
 // ============================================
 
-const convertToAnalysisResultsData = (results: AnalysisResults): AnalysisResultsData => {
+/**
+ * Helper: compute actual member length from node coordinates
+ */
+const getMemberLength = (
+    member: { startNodeId: string; endNodeId: string },
+    modelNodes: Map<string, { x: number; y: number; z?: number }>
+): number => {
+    const n1 = modelNodes.get(member.startNodeId);
+    const n2 = modelNodes.get(member.endNodeId);
+    if (!n1 || !n2) return 5; // fallback
+    const dx = n2.x - n1.x;
+    const dy = n2.y - n1.y;
+    const dz = (n2.z ?? 0) - (n1.z ?? 0);
+    return Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+};
+
+/**
+ * Helper: compute real stress and utilization from actual section properties.
+ * sigma_bending = M * c / I, sigma_axial = N / A
+ * Combined: sigma = sigma_axial + sigma_bending (conservative)
+ */
+const computeRealStress = (
+    moment: number,
+    axial: number,
+    member: { A?: number; I?: number; Iy?: number; dimensions?: any; sectionType?: string; E?: number }
+): { stress: number; utilization: number } => {
+    // Get actual section properties
+    const A = member.A ?? 0.01;           // m² (default ~100 cm²)
+    const I = member.I ?? member.Iy ?? 1e-4; // m⁴
+
+    // Estimate c (distance to extreme fiber) from section dimensions or from I and A
+    let c = 0.15; // fallback
+    const dims = member.dimensions;
+    if (dims) {
+        if (dims.height) c = dims.height / 2;
+        else if (dims.totalHeight) c = dims.totalHeight / 2;
+        else if (dims.rectHeight) c = dims.rectHeight / 2;
+        else if (dims.diameter) c = dims.diameter / 2;
+        else if (dims.channelHeight) c = dims.channelHeight / 2;
+    }
+    // If no dimensions but we have I and A, estimate c from Zx ≈ I/c, A = b*d → c ≈ √(12*I/A)/2
+    if (c === 0.15 && I > 0 && A > 0) {
+        c = Math.sqrt(12 * I / A) / 2;
+    }
+
+    // Compute stresses (kN & m → MPa = kN/m² / 1000)
+    const sigmaBending = I > 0 ? Math.abs(moment) * c / I / 1000 : 0; // MPa
+    const sigmaAxial = A > 0 ? Math.abs(axial) / A / 1000 : 0;        // MPa
+    const stress = sigmaBending + sigmaAxial; // Conservative linear combination
+
+    // Yield stress: default Fe250 for steel, Fe415 for rebar
+    const fy = 250; // MPa — could be enhanced with material lookup
+    const utilization = Math.min(stress / fy, 2.0);
+
+    return { stress, utilization };
+};
+
+const convertToAnalysisResultsData = (
+    results: AnalysisResults,
+    modelNodes?: Map<string, any>,
+    modelMembers?: Map<string, any>
+): AnalysisResultsData => {
     const nodes: AnalysisResultsData['nodes'] = [];
     const members: AnalysisResultsData['members'] = [];
 
@@ -102,6 +163,9 @@ const convertToAnalysisResultsData = (results: AnalysisResults): AnalysisResults
             const moment = Math.max(Math.abs(forces.momentY), Math.abs(forces.momentZ));
             const axial = Math.abs(forces.axial);
 
+            // Get actual member model data for real properties
+            const memberModel = modelMembers?.get(memberId);
+
             // Use actual PyNite diagram data if available, otherwise generate default
             const pyniteDiagram = forces.diagramData;
             let x_values: number[];
@@ -110,6 +174,13 @@ const convertToAnalysisResultsData = (results: AnalysisResults): AnalysisResults
             let axial_values: number[];
             let deflection_values: number[];
             let memberLength: number;
+
+            // Compute actual member length from model nodes
+            if (memberModel && modelNodes) {
+                memberLength = getMemberLength(memberModel, modelNodes);
+            } else {
+                memberLength = 5; // fallback only if no geometry
+            }
 
             if (pyniteDiagram && pyniteDiagram.x_values && pyniteDiagram.x_values.length > 0) {
                 // Use actual PyNite data
@@ -140,18 +211,18 @@ const convertToAnalysisResultsData = (results: AnalysisResults): AnalysisResults
                 }
             }
 
-            // Estimate stress from bending (sigma = M*c/I, simplified)
-            // Assuming typical beam: c ≈ 0.15m, I ≈ 1e-4 m^4
-            const estimatedStress = moment > 0 ? (moment * 0.15) / 1e-4 / 1000 : axial / 0.01 / 1000; // MPa
-            const util = Math.min(Math.abs(estimatedStress) / 250, 1.5); // 250 MPa yield
+            // Compute real stress from actual section properties
+            const { stress: estimatedStress, utilization: util } = computeRealStress(
+                moment, axial, memberModel || {}
+            );
 
             maxStress = Math.max(maxStress, Math.abs(estimatedStress));
             maxUtil = Math.max(maxUtil, util);
 
             members.push({
                 id: memberId,
-                startNodeId: '',
-                endNodeId: '',
+                startNodeId: memberModel?.startNodeId ?? '',
+                endNodeId: memberModel?.endNodeId ?? '',
                 length: memberLength,
                 maxShear: shear,
                 minShear: -shear,
@@ -183,7 +254,7 @@ const convertToAnalysisResultsData = (results: AnalysisResults): AnalysisResults
             maxDisplacement: maxDisp,
             maxStress,
             maxUtilization: maxUtil,
-            analysisTime: 0.5,
+            analysisTime: results.stats?.totalTimeMs ?? results.stats?.solveTimeMs ?? 0,
             status: maxUtil > 1 ? 'error' : maxUtil > 0.9 ? 'warning' : 'success'
         }
     };
@@ -480,7 +551,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                 }
 
                 // Add detailed individual member diagrams with calculations
-                const dashboardData = convertToAnalysisResultsData(analysisResults);
+                const dashboardData = convertToAnalysisResultsData(analysisResults, nodes, members);
                 if (dashboardData.members.length > 0) {
                     try {
                         // Prepare detailed member data
@@ -685,7 +756,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
                         <div className="w-[95vw] h-[90vh] max-w-[1800px] bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden">
                             <AnalysisResultsDashboard
-                                results={convertToAnalysisResultsData(analysisResults)}
+                                results={convertToAnalysisResultsData(analysisResults, nodes, members)}
                                 onClose={() => setShowDashboard(false)}
                             />
                         </div>
@@ -988,7 +1059,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
                     <div className="w-[95vw] h-[90vh] max-w-[1800px] bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden">
                         <AnalysisResultsDashboard
-                            results={convertToAnalysisResultsData(analysisResults)}
+                            results={convertToAnalysisResultsData(analysisResults, nodes, members)}
                             onClose={() => setShowDashboard(false)}
                             onExport={(format) => {
                                 if (format === 'pdf') {
@@ -1022,21 +1093,36 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
             )}
 
             {/* Member Detail Panel Modal */}
-            {showMemberDetail && selectedMemberId && selectedMemberForces && (
+            {showMemberDetail && selectedMemberId && selectedMemberForces && (() => {
+                const memberModel = members.get(selectedMemberId);
+                const actualLength = memberModel ? getMemberLength(memberModel, nodes) : 5;
+                return (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
                     <div className="w-[90vw] h-[85vh] max-w-[900px] bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden">
                         <MemberDetailPanel
                             memberId={selectedMemberId}
                             memberForces={selectedMemberForces}
-                            memberLength={5}
-                            sectionId={members.get(selectedMemberId)?.sectionId || 'ISMB300'}
+                            memberLength={actualLength}
+                            sectionId={memberModel?.sectionId || 'Default'}
                             material="steel"
+                            sectionProps={memberModel ? {
+                                A: memberModel.A,
+                                I: memberModel.I,
+                                Iy: (memberModel as any).Iy,
+                                width: memberModel.dimensions?.width ?? memberModel.dimensions?.rectWidth,
+                                depth: memberModel.dimensions?.height ?? memberModel.dimensions?.rectHeight,
+                                tf: memberModel.dimensions?.flangeThickness,
+                                tw: memberModel.dimensions?.webThickness,
+                                fy: (memberModel as any).fy,
+                                sectionType: memberModel.sectionType,
+                            } : undefined}
                             onClose={() => setShowMemberDetail(false)}
                             onNavigate={handleMemberNavigate}
                         />
                     </div>
                 </div>
-            )}
+                );
+            })()}
         </>
     );
 };

@@ -1314,13 +1314,22 @@ function generateDiagramData(
 
         // Extract end forces in local coords
         const V1 = mf.start?.shear ?? 0;   // Shear at start (local Y)
-        const M1 = mf.start?.moment ?? 0;  // Moment at start
+        const M1 = mf.start?.moment ?? 0;  // Moment at start (Mz)
         const N1 = mf.start?.axial ?? 0;   // Axial at start
         const V2 = mf.end?.shear ?? 0;
         const M2 = mf.end?.moment ?? 0;
         const N2 = mf.end?.axial ?? 0;
 
-        const EI = (member.E ?? 2e8) * (member.I ?? 1e-4);
+        // Z-direction forces (3D frames)
+        const Vz1 = mf.start?.shearZ ?? 0;   // Shear Z at start
+        const My1 = mf.start?.momentY ?? 0;   // Moment about Y at start
+        const Tx1 = mf.start?.torsion ?? 0;   // Torsion at start
+        const Vz2 = mf.end?.shearZ ?? 0;
+        const My2 = mf.end?.momentY ?? 0;
+        const Tx2 = mf.end?.torsion ?? 0;
+
+        const EIz = (member.E ?? 2e8) * (member.I ?? 1e-4);   // EI for bending about Z (deflection in Y)
+        const EIy = (member.E ?? 2e8) * (member.Iy ?? member.I ?? 1e-4); // EI for bending about Y (deflection in Z)
 
         // Check if this member has distributed loads
         const mLoads = memberLoadMap.get(member.id) || [];
@@ -1369,7 +1378,7 @@ function generateDiagramData(
             //   EI·v(x) = M1·x²/2 + V1·x³/6 - w·x⁴/24 + C1·x + C2
             //   BC: v(0)=0 → C2=0; v needs end condition.
             //   Since we have actual end displacements from the solver, use cubic interpolation:
-            if (EI > 0) {
+            if (EIz > 0) {
                 // Use exact beam-column deflection formula:
                 // EI·y'' = M(x) = M1 + V1·x - w·x²/2
                 // EI·y' = M1·x + V1·x²/2 - w·x³/6 + C1
@@ -1378,17 +1387,31 @@ function generateDiagramData(
                 // y(L) = 0 (approx for supported beams): C1 = -(M1·L/2 + V1·L²/6 - w·L³/24)/(1)
                 const C2 = 0;
                 const C1 = -(M1 * L / 2 + V1 * L * L / 6 - w * L * L * L / 24);
-                const y = (M1 * x * x / 2 + V1 * x * x * x / 6 - w * x * x * x * x / 24 + C1 * x + C2) / EI;
+                const y = (M1 * x * x / 2 + V1 * x * x * x / 6 - w * x * x * x * x / 24 + C1 * x + C2) / EIz;
                 deflection_y.push(y * 1000); // convert to mm
             } else {
                 deflection_y.push(0);
             }
 
-            // ─── Z-direction (zero for 2D, placeholder for 3D) ───
-            shear_z.push(0);
-            moment_z.push(0);
-            torsion.push(0);
-            deflection_z.push(0);
+            // ─── Z-direction: Shear Z, Moment about Y, Torsion, Deflection Z ───
+            // Shear Z: linear interpolation (no distributed load in Z assumed)
+            shear_z.push(Vz1 + (Vz2 - Vz1) * xi);
+
+            // Moment about Y: My(x) = My1 + Vz1·x (linear for no span load)
+            moment_z.push(My1 + Vz1 * x);
+
+            // Torsion: linear interpolation between ends
+            torsion.push(Tx1 + (Tx2 - Tx1) * xi);
+
+            // Deflection Z (bending about Y axis)
+            if (EIy > 0) {
+                const C2z = 0;
+                const C1z = -(My1 * L / 2 + Vz1 * L * L / 6);
+                const z = (My1 * x * x / 2 + Vz1 * x * x * x / 6 + C1z * x + C2z) / EIy;
+                deflection_z.push(z * 1000); // mm
+            } else {
+                deflection_z.push(0);
+            }
         }
 
         // Find max absolute values
