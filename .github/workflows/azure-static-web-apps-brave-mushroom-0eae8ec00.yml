@@ -12,7 +12,7 @@ on:
 
 jobs:
   build_and_deploy_job:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     steps:
@@ -45,11 +45,19 @@ jobs:
         run: |
           wasm-pack build --target web --out-dir ./pkg --release
           ls -la pkg/
+
+      - name: Build Solver WASM
+        working-directory: packages/solver-wasm
+        run: |
+          wasm-pack build --target web --out-dir ./pkg --release
+          ls -la pkg/
       
       - name: Verify WASM packages exist
         run: |
           echo "Checking backend-rust pkg..."
           ls -la apps/backend-rust/pkg/
+          echo "Checking solver-wasm pkg..."
+          ls -la packages/solver-wasm/pkg/
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
