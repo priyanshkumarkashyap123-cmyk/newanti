@@ -135,22 +135,28 @@ export function validateStructure(
         });
     }
 
-    // 3. Check support conditions (stability)
-    const supportedDOFs = countRestraints(nodes);
-    const totalDOFs = nodes.size * 3; // 3 DOF per node in 2D (x, y, rotation)
+    // 3. Check support conditions (stability) — auto-detect 2D / 3D
+    // Auto-detect if structure is 3D based on Z-coordinate variation
+    const earlyZCoords = Array.from(nodes.values()).map(n => n.z || 0);
+    const earlyUniqueZ = [...new Set(earlyZCoords.map(z => Math.round(z * 1000)))]; // Round to mm precision
+    const is3DGeometry = earlyUniqueZ.length > 1;
 
-    if (supportedDOFs < 3) {
+    const supportedTranslational = countTranslationalRestraints(nodes);
+    const supportedRotational = countRotationalRestraints(nodes);
+    const supportedDOFs = supportedTranslational + supportedRotational;
+
+    // Minimum restraints: 3 for 2D (2 translations + 1 rotation or 3 translations), 6 for 3D
+    const minRestraints = is3DGeometry ? 6 : 3;
+
+    if (supportedTranslational < minRestraints) {
         errors.push({
             type: 'critical',
-            message: 'UNSTABLE STRUCTURE - Insufficient supports',
-            details: `At least 3 restraints required for planar stability. Currently: ${supportedDOFs} restraint(s).\n\n` +
-                     'Add supports: Pin (2 DOF) or Fixed (3 DOF) or Roller (1 DOF)'
-        });
-    } else if (supportedDOFs === 1 || supportedDOFs === 2) {
-        errors.push({
-            type: 'critical',
-            message: 'UNSTABLE - Structure can move/rotate',
-            details: 'Add more support restraints to prevent rigid body motion'
+            message: is3DGeometry
+                ? 'UNSTABLE STRUCTURE — Insufficient supports for 3D analysis'
+                : 'UNSTABLE STRUCTURE — Insufficient supports',
+            details: is3DGeometry
+                ? `At least 6 translational restraints required for 3D stability. Currently: ${supportedTranslational}.\n\nAdd supports: Fixed (6 DOF) or Pin (3 DOF) at multiple locations.`
+                : `At least 3 restraints required for planar stability. Currently: ${supportedTranslational} restraint(s).\n\nAdd supports: Pin (2 DOF) or Fixed (3 DOF) or Roller (1 DOF)`
         });
     }
 
@@ -158,10 +164,14 @@ export function validateStructure(
     const numMembers = members.size;
     const numNodes = nodes.size;
     const numReactions = supportedDOFs;
-    
-    // For planar trusses: m + r >= 2n (static determinacy)
-    // For frames, this is more complex, but we can warn
-    const staticDeterminacy = numMembers + numReactions - 2 * numNodes;
+
+    // Use correct formula based on dimensionality:
+    //   2D Truss: m + r >= 2n
+    //   2D Frame: 3m + r >= 3n (accounting for per-member DOFs)
+    //   3D:       m + r >= 3n  (simplified 3D truss), 6m + r >= 6n for frames
+    // Using simple check for now:
+    const dofFactor = is3DGeometry ? 3 : 2;
+    const staticDeterminacy = numMembers + numReactions - dofFactor * numNodes;
     
     if (staticDeterminacy < 0) {
         errors.push({
@@ -262,20 +272,40 @@ export function validateStructure(
 }
 
 /**
- * Count total number of restraints in the structure
+ * Count total number of translational restraints (fx, fy, fz)
  */
-function countRestraints(nodes: Map<string, Node>): number {
+function countTranslationalRestraints(nodes: Map<string, Node>): number {
     let count = 0;
     nodes.forEach(node => {
         if (node.restraints) {
             if (node.restraints.fx) count++;
             if (node.restraints.fy) count++;
             if (node.restraints.fz) count++;
-            // Note: For 2D analysis, we typically only count translational restraints
-            // Rotational restraints are implicit in beam formulation
         }
     });
     return count;
+}
+
+/**
+ * Count rotational restraints (mx, my, mz)
+ */
+function countRotationalRestraints(nodes: Map<string, Node>): number {
+    let count = 0;
+    nodes.forEach(node => {
+        if (node.restraints) {
+            if (node.restraints.mx) count++;
+            if (node.restraints.my) count++;
+            if (node.restraints.mz) count++;
+        }
+    });
+    return count;
+}
+
+/**
+ * Count total number of restraints in the structure (translational + rotational)
+ */
+function countRestraints(nodes: Map<string, Node>): number {
+    return countTranslationalRestraints(nodes) + countRotationalRestraints(nodes);
 }
 
 /**

@@ -58,6 +58,26 @@ export interface MemberLoad {
     endPos?: number;   // Default 1
 }
 
+// Load Cases & Combinations (industry standard feature)
+export type LoadCaseType = 'dead' | 'live' | 'wind' | 'seismic' | 'snow' | 'temperature' | 'self_weight' | 'custom';
+
+export interface LoadCase {
+    id: string;
+    name: string;
+    type: LoadCaseType;
+    loads: NodeLoad[];
+    memberLoads: MemberLoad[];
+    selfWeight?: boolean;  // Auto-compute self-weight for this case
+    factor?: number;       // Scale factor (default 1.0)
+}
+
+export interface LoadCombination {
+    id: string;
+    name: string;
+    code?: string;  // Design code reference (e.g., 'IS 875', 'ASCE 7', 'ASCE 7-22')
+    factors: { loadCaseId: string; factor: number }[];
+}
+
 export type SectionType = 'I-BEAM' | 'TUBE' | 'L-ANGLE' | 'RECTANGLE' | 'CIRCLE' | 'C-CHANNEL';
 
 export interface SectionDimensions {
@@ -103,6 +123,10 @@ export interface Member {
     E?: number; // Young's Modulus (kN/m²)
     A?: number; // Cross-sectional Area (m²)
     I?: number; // Moment of Inertia (m⁴)
+    Iy?: number; // Moment of inertia about local y-axis (m⁴)
+    Iz?: number; // Moment of inertia about local z-axis (m⁴)
+    J?: number;  // Torsion constant (m⁴)
+    G?: number;  // Shear Modulus (kN/m²)
     // Member releases (hinges) - full 3D releases for all 6 DOFs at each end
     releases?: {
         startMoment?: boolean; // Legacy: Release moment at start

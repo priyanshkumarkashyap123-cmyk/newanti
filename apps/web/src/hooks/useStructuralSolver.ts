@@ -33,6 +33,17 @@ export interface MemberData {
     E: number;
     A: number;
     I: number;
+    Iy?: number;
+    Iz?: number;
+    J?: number;
+    G?: number;
+    type?: 'frame' | 'truss' | 'spring';
+    releases?: {
+        fxStart?: boolean; fyStart?: boolean; fzStart?: boolean;
+        mxStart?: boolean; myStart?: boolean; mzStart?: boolean;
+        fxEnd?: boolean; fyEnd?: boolean; fzEnd?: boolean;
+        mxEnd?: boolean; myEnd?: boolean; mzEnd?: boolean;
+    };
 }
 
 export interface LoadData {
@@ -177,7 +188,7 @@ export function useStructuralSolver() {
      */
     const prepareModel = useCallback((
         nodes: Array<{ id: string; x: number; y: number; z: number; restraints?: any }>,
-        members: Array<{ id: string; startNodeId: string; endNodeId: string; E?: number; A?: number; I?: number }>,
+        members: Array<{ id: string; startNodeId: string; endNodeId: string; E?: number; A?: number; I?: number; Iy?: number; Iz?: number; J?: number; G?: number; releases?: any }>,
         loads: Array<{ nodeId: string; fx?: number; fy?: number; fz?: number }>,
         dofPerNode: 2 | 3 | 6 = 6
     ): ModelData => {
@@ -195,7 +206,12 @@ export function useStructuralSolver() {
                 endNodeId: m.endNodeId,
                 E: m.E ?? 200e9,    // Default: Steel
                 A: m.A ?? 0.01,     // Default: 100 cm²
-                I: m.I ?? 1e-4      // Default: 10000 cm⁴
+                I: m.I ?? 1e-4,     // Default: 10000 cm⁴
+                Iy: m.Iy ?? m.I ?? 1e-4,
+                Iz: m.Iz ?? m.I ?? 1e-4,
+                J: m.J ?? (m.I ?? 1e-4) * 2,
+                G: m.G ?? (m.E ?? 200e9) / 2.6,
+                releases: m.releases
             })),
             loads: loads.map(l => ({
                 nodeId: l.nodeId,

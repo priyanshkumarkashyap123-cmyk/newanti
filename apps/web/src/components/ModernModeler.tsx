@@ -1030,7 +1030,7 @@ export const ModernModeler: FC = () => {
                             members: membersArray,
                             loads: allLoads,
                             memberLoads: [] as any[],
-                            dofPerNode: 3 as const
+                            // dofPerNode omitted — AnalysisService auto-detects 2D/3D
                         };
 
                         const token = await getToken();
@@ -1071,7 +1071,7 @@ export const ModernModeler: FC = () => {
                         startPos: ml.startPos,
                         endPos: ml.endPos
                     })),
-                    dofPerNode: 3 as const
+                    // dofPerNode omitted — AnalysisService auto-detects 2D/3D
                 };
 
                 // Run analysis with progress callback
@@ -1697,7 +1697,7 @@ export const ModernModeler: FC = () => {
 
                 {/* Global Dialogs triggered by Ribbon */}
                 <StructureWizard isOpen={modals.structureWizard} onClose={() => closeModal('structureWizard')} onGenerate={(structure) => {
-                    // Convert generated structure to model format
+                    // Convert generated structure to model format with material props
                     const nodes: Node[] = structure.nodes.map(n => ({
                         id: n.id,
                         x: n.x,
@@ -1709,9 +1709,45 @@ export const ModernModeler: FC = () => {
                         id: m.id,
                         startNodeId: m.startNodeId,
                         endNodeId: m.endNodeId,
-                        sectionId: 'ISMB300'
+                        sectionId: 'ISMB300',
+                        E: (m as any).E,
+                        A: (m as any).A,
+                        I: (m as any).I,
                     }));
+                    // loadStructure clears loads, so we add loads after
                     loadStructure(nodes, members);
+
+                    // Add wizard-generated loads (nodal + member)
+                    const store = useModelStore.getState();
+                    if (structure.loads) {
+                        for (const l of structure.loads) {
+                            if (l.nodeId) {
+                                store.addLoad({
+                                    id: l.id,
+                                    nodeId: l.nodeId,
+                                    fx: l.fx ?? 0,
+                                    fy: l.fy ?? 0,
+                                    fz: l.fz ?? 0,
+                                });
+                            }
+                        }
+                    }
+                    if (structure.memberLoads) {
+                        for (const ml of structure.memberLoads) {
+                            if (ml.memberId) {
+                                store.addMemberLoad({
+                                    id: ml.id,
+                                    memberId: ml.memberId,
+                                    type: (ml.type as any) ?? 'UDL',
+                                    w1: ml.w1,
+                                    w2: ml.w2,
+                                    P: ml.P,
+                                    a: ml.a,
+                                    direction: (ml.direction as any) ?? 'global_y',
+                                });
+                            }
+                        }
+                    }
                     closeModal('structureWizard');
                 }}
                 />

@@ -33,6 +33,8 @@ services:
       - ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3001,http://localhost:3002
       - NODE_API_URL=http://api-node:3001
       - RUST_API_URL=http://rust-api:8080
+      - ENABLE_RUST_BACKEND=true
+      - ANALYSIS_WORKERS=4
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)"]
@@ -49,7 +51,9 @@ services:
     environment:
       - PORT=8080
       - FRONTEND_URL=http://localhost:5173
+      - ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3001,http://localhost:8000
       - MONGODB_URI=${MONGODB_URI:-mongodb://mongo:27017/beamlab}
+      - RUST_LOG=info
     depends_on:
       mongo:
         condition: service_healthy

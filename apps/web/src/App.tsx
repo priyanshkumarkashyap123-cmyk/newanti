@@ -73,6 +73,7 @@ const AdvancedSettingsPage = lazy(() => import('./pages/AdvancedSettingsPage'));
 const ProfessionalReportGenerator = lazy(() => import('./pages/ProfessionalReportGenerator'));
 const ConnectionDesignDatabase = lazy(() => import('./pages/ConnectionDesignDatabase'));
 const PerformanceMonitorDashboard = lazy(() => import('./pages/PerformanceMonitorDashboard'));
+const BackendHealthDashboard = lazy(() => import('./components/BackendHealthDashboard'));
 
 // Phase 16: Enterprise Features (Industry Parity Complete)
 const BIMExportEnhanced = lazy(() => import('./pages/BIMExportEnhanced'));
@@ -131,6 +132,7 @@ const PageLoader = () => (
 
 // Hooks
 import { useUserRegistration } from './hooks/useUserRegistration';
+import { ApiErrorInterceptor } from './providers/ApiErrorInterceptor';
 
 function App() {
     // Ensure user is registered in MongoDB upon login/load
@@ -181,6 +183,7 @@ function App() {
 
     return (
         <ErrorBoundary>
+            <ApiErrorInterceptor />
             <Suspense fallback={<PageLoader />}>
                 <Routes>
                     {/* Landing Page */}
@@ -463,6 +466,11 @@ function App() {
                     <Route path="/performance/monitor" element={
                         <RequireAuth>
                             <PerformanceMonitorDashboard />
+                        </RequireAuth>
+                    } />
+                    <Route path="/system/health" element={
+                        <RequireAuth>
+                            <BackendHealthDashboard />
                         </RequireAuth>
                     } />
 

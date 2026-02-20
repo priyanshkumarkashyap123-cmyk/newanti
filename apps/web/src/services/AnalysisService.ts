@@ -10,6 +10,7 @@
 
 import { analysisLogger } from '../utils/logger';
 import { API_CONFIG } from '../config/env';
+import { getOptimalDofPerNode } from '../utils/structureDimensionality';
 
 // ============================================
 // TYPES
@@ -57,6 +58,17 @@ export interface MemberData {
     E?: number;
     A?: number;
     I?: number;
+    Iy?: number;
+    Iz?: number;
+    J?: number;
+    G?: number;
+    type?: 'frame' | 'truss' | 'spring';
+    releases?: {
+        fxStart?: boolean; fyStart?: boolean; fzStart?: boolean;
+        mxStart?: boolean; myStart?: boolean; mzStart?: boolean;
+        fxEnd?: boolean; fyEnd?: boolean; fzEnd?: boolean;
+        mxEnd?: boolean; myEnd?: boolean; mzEnd?: boolean;
+    };
 }
 
 export interface LoadData {
@@ -182,6 +194,13 @@ class AnalysisService {
     ): Promise<AnalysisResult> {
         const nodeCount = model.nodes.length;
 
+        // ── Auto-detect dimensionality if dofPerNode not explicitly set ──
+        if (!model.dofPerNode) {
+            const detected = getOptimalDofPerNode(model.nodes, model.members, model.loads);
+            model = { ...model, dofPerNode: detected };
+            analysisLogger.info(`[Auto-detect] dofPerNode = ${detected}`);
+        }
+
         onProgress?.('validating', 5, 'Validating model...');
 
         // Validate model first
@@ -301,8 +320,8 @@ class AnalysisService {
                             });
                         }
 
-                        // Member forces (if available)
-                        let memberForces: Record<string, { axial: number; shear?: number; momentStart?: number; momentEnd?: number }> | undefined;
+                        // Member forces (if available) — preserves diagramData from worker
+                        let memberForces: Record<string, any> | undefined;
                         if (data.memberForces && Array.isArray(data.memberForces)) {
                             memberForces = {};
                             for (const mf of data.memberForces as any[]) {
@@ -310,7 +329,20 @@ class AnalysisService {
                                     axial: mf.start?.axial ?? 0,
                                     shear: mf.start?.shear,
                                     momentStart: mf.start?.moment,
-                                    momentEnd: mf.end?.moment
+                                    momentEnd: mf.end?.moment,
+                                    // Pass through diagram arrays from generateDiagramData()
+                                    max_shear_y: mf.maxShearY,
+                                    max_moment_y: mf.maxMomentY,
+                                    x_values: mf.diagramData?.x_values,
+                                    shear_y: mf.diagramData?.shear_y,
+                                    shear_z: mf.diagramData?.shear_z,
+                                    moment_y: mf.diagramData?.moment_y,
+                                    moment_z: mf.diagramData?.moment_z,
+                                    // Use key 'axial' as array (matches PyNite format)
+                                    ...(mf.diagramData?.axial ? { axial: mf.diagramData.axial } : {}),
+                                    torsion: mf.diagramData?.torsion,
+                                    deflection_y: mf.diagramData?.deflection_y,
+                                    deflection_z: mf.diagramData?.deflection_z,
                                 };
                             }
                         }
@@ -401,7 +433,7 @@ class AnalysisService {
                         nodes: model.nodes,
                         members: model.members,
                         loads: allLoads,
-                        dofPerNode: model.dofPerNode ?? 3,
+                        dofPerNode: model.dofPerNode ?? getOptimalDofPerNode(model.nodes, model.members, model.loads),
                         settings: model.settings
                     }
                 });
@@ -491,7 +523,7 @@ class AnalysisService {
                     nodes: model.nodes,
                     members: model.members,
                     loads: model.loads,
-                    dofPerNode: model.dofPerNode ?? 6, // Cloud assumes 6DOF
+                    dofPerNode: model.dofPerNode ?? getOptimalDofPerNode(model.nodes, model.members, model.loads),
                     settings: model.settings
                 },
                 url: CONFIG.PYTHON_API_URL,
