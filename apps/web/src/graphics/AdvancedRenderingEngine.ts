@@ -1,9 +1,9 @@
 /**
  * AdvancedRenderingEngine.ts
- * 
+ *
  * Professional-Grade 3D Rendering Engine for Structural Engineering
  * Inspired by STAAD.Pro, SAP2000, ETABS visualization capabilities
- * 
+ *
  * Features:
  * - Multi-pass rendering with post-processing effects
  * - Real-time ambient occlusion (SSAO)
@@ -17,32 +17,45 @@
  * - HDR rendering with tone mapping
  */
 
-import * as THREE from 'three';
+import * as THREE from "three";
 // Core post-processing (lightweight, always needed)
 // @ts-ignore - Three.js postprocessing types may not be perfectly typed
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 // @ts-ignore
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 // @ts-ignore
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 // @ts-ignore
-import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectionShader.js';
+import { GammaCorrectionShader } from "three/examples/jsm/shaders/GammaCorrectionShader.js";
 
 // Heavy post-processing passes — lazy-loaded on demand to reduce initial bundle (~200KB savings)
 // SSAOPass, UnrealBloomPass, SMAAPass, OutlinePass, FXAAShader are loaded only when the
 // corresponding config flags are enabled.
-const lazySSAOPass = () => import('three/examples/jsm/postprocessing/SSAOPass.js').then(m => m.SSAOPass);
-const lazyUnrealBloomPass = () => import('three/examples/jsm/postprocessing/UnrealBloomPass.js').then(m => m.UnrealBloomPass);
-const lazySMAAPass = () => import('three/examples/jsm/postprocessing/SMAAPass.js').then(m => m.SMAAPass);
-const lazyOutlinePass = () => import('three/examples/jsm/postprocessing/OutlinePass.js').then(m => m.OutlinePass);
-const lazyFXAAShader = () => import('three/examples/jsm/shaders/FXAAShader.js').then(m => m.FXAAShader);
+const lazySSAOPass = () =>
+  import("three/examples/jsm/postprocessing/SSAOPass.js").then(
+    (m) => m.SSAOPass,
+  );
+const lazyUnrealBloomPass = () =>
+  import("three/examples/jsm/postprocessing/UnrealBloomPass.js").then(
+    (m) => m.UnrealBloomPass,
+  );
+const lazySMAAPass = () =>
+  import("three/examples/jsm/postprocessing/SMAAPass.js").then(
+    (m) => m.SMAAPass,
+  );
+const lazyOutlinePass = () =>
+  import("three/examples/jsm/postprocessing/OutlinePass.js").then(
+    (m) => m.OutlinePass,
+  );
+const lazyFXAAShader = () =>
+  import("three/examples/jsm/shaders/FXAAShader.js").then((m) => m.FXAAShader);
 
 // ============================================
 // TYPE DEFINITIONS
 // ============================================
 
 export interface RenderingConfig {
-  quality: 'low' | 'medium' | 'high' | 'ultra';
+  quality: "low" | "medium" | "high" | "ultra";
   enableSSAO: boolean;
   enableShadows: boolean;
   enableBloom: boolean;
@@ -69,8 +82,16 @@ export interface RenderStats {
 }
 
 export interface ViewMode {
-  type: 'perspective' | 'orthographic';
-  preset?: 'isometric' | 'top' | 'front' | 'right' | 'back' | 'left' | 'bottom' | 'custom';
+  type: "perspective" | "orthographic";
+  preset?:
+    | "isometric"
+    | "top"
+    | "front"
+    | "right"
+    | "back"
+    | "left"
+    | "bottom"
+    | "custom";
   fov?: number;
   zoom?: number;
 }
@@ -94,9 +115,15 @@ export interface DisplayOptions {
   showDimensions: boolean;
   showNodeNumbers: boolean;
   showMemberNumbers: boolean;
-  memberColorMode: 'default' | 'section' | 'material' | 'group' | 'utilization' | 'stress';
-  renderMode: 'solid' | 'wireframe' | 'hidden-line' | 'x-ray';
-  sectionDisplay: 'centerline' | 'true-shape' | 'schematic';
+  memberColorMode:
+    | "default"
+    | "section"
+    | "material"
+    | "group"
+    | "utilization"
+    | "stress";
+  renderMode: "solid" | "wireframe" | "hidden-line" | "x-ray";
+  sectionDisplay: "centerline" | "true-shape" | "schematic";
 }
 
 // ============================================
@@ -111,7 +138,7 @@ const EdgeDetectionShader = {
     edgeColor: { value: new THREE.Vector3(0.1, 0.1, 0.1) },
     edgeStrength: { value: 1.0 },
     depthThreshold: { value: 0.001 },
-    normalThreshold: { value: 0.5 }
+    normalThreshold: { value: 0.5 },
   },
   vertexShader: `
     varying vec2 vUv;
@@ -159,14 +186,14 @@ const EdgeDetectionShader = {
       
       gl_FragColor = vec4(finalColor, texel.a);
     }
-  `
+  `,
 };
 
 const XRayShader = {
   uniforms: {
     tDiffuse: { value: null },
     opacity: { value: 0.5 },
-    edgeColor: { value: new THREE.Vector3(0.2, 0.6, 1.0) }
+    edgeColor: { value: new THREE.Vector3(0.2, 0.6, 1.0) },
   },
   vertexShader: `
     varying vec2 vUv;
@@ -186,7 +213,7 @@ const XRayShader = {
       vec3 color = mix(texel.rgb, edgeColor, 0.3);
       gl_FragColor = vec4(color, texel.a * opacity);
     }
-  `
+  `,
 };
 
 // ============================================
@@ -198,25 +225,25 @@ export const MaterialPresets = {
     color: 0xb8b8c8,
     metalness: 0.8,
     roughness: 0.35,
-    envMapIntensity: 1.0
+    envMapIntensity: 1.0,
   },
   aluminum: {
     color: 0xe8e8e8,
     metalness: 0.9,
     roughness: 0.25,
-    envMapIntensity: 1.2
+    envMapIntensity: 1.2,
   },
   concrete: {
     color: 0xa0a0a0,
     metalness: 0.0,
     roughness: 0.9,
-    envMapIntensity: 0.3
+    envMapIntensity: 0.3,
   },
   timber: {
     color: 0xc4a35a,
     metalness: 0.0,
     roughness: 0.8,
-    envMapIntensity: 0.4
+    envMapIntensity: 0.4,
   },
   glass: {
     color: 0x88ccff,
@@ -224,28 +251,28 @@ export const MaterialPresets = {
     roughness: 0.1,
     transparent: true,
     opacity: 0.3,
-    envMapIntensity: 2.0
+    envMapIntensity: 2.0,
   },
   cable: {
     color: 0x404040,
     metalness: 0.7,
     roughness: 0.4,
-    envMapIntensity: 0.8
+    envMapIntensity: 0.8,
   },
   selected: {
     color: 0x4488ff,
     metalness: 0.3,
     roughness: 0.5,
     emissive: 0x224488,
-    emissiveIntensity: 0.3
+    emissiveIntensity: 0.3,
   },
   hovered: {
     color: 0x00ffff,
     metalness: 0.3,
     roughness: 0.5,
     emissive: 0x00aaaa,
-    emissiveIntensity: 0.4
-  }
+    emissiveIntensity: 0.4,
+  },
 };
 
 // ============================================
@@ -262,7 +289,7 @@ export const ColorScales = {
     new THREE.Color(0xff8800), // Orange
     new THREE.Color(0xff0000), // Max - Red
   ],
-  
+
   // Rainbow (full spectrum)
   rainbow: [
     new THREE.Color(0xff0000),
@@ -276,7 +303,7 @@ export const ColorScales = {
     new THREE.Color(0x0000ff),
     new THREE.Color(0x8800ff),
   ],
-  
+
   // Thermal (black-body radiation)
   thermal: [
     new THREE.Color(0x000000),
@@ -287,7 +314,7 @@ export const ColorScales = {
     new THREE.Color(0xffff00),
     new THREE.Color(0xffffff),
   ],
-  
+
   // Utilization ratio (green to red)
   utilization: [
     new THREE.Color(0x00aa00), // <50% - Green
@@ -297,7 +324,7 @@ export const ColorScales = {
     new THREE.Color(0xff0000), // 95-100% - Red
     new THREE.Color(0xaa0000), // >100% - Dark Red (overstressed)
   ],
-  
+
   // Displacement (blue-white-red diverging)
   displacement: [
     new THREE.Color(0x0000aa), // Negative max
@@ -307,7 +334,7 @@ export const ColorScales = {
     new THREE.Color(0xff8888),
     new THREE.Color(0xff4444),
     new THREE.Color(0xaa0000), // Positive max
-  ]
+  ],
 };
 
 // ============================================
@@ -321,52 +348,53 @@ export class AdvancedRenderingEngine {
   private composer: EffectComposer;
   private config: RenderingConfig;
   private stats: RenderStats;
-  
+
   // Post-processing passes
   private renderPass: RenderPass;
-  private ssaoPass: SSAOPass | null = null;
-  private outlinePass: OutlinePass | null = null;
-  private bloomPass: UnrealBloomPass | null = null;
+  private ssaoPass: any = null;
+  private outlinePass: any = null;
+  private bloomPass: any = null;
   private fxaaPass: ShaderPass | null = null;
-  private smaaPass: SMAAPass | null = null;
+  private smaaPass: any = null;
   private edgePass: ShaderPass | null = null;
   private gammaPass: ShaderPass;
-  
+
   // Scene objects
   private gridHelper: THREE.GridHelper | null = null;
   private axesHelper: THREE.AxesHelper | null = null;
   private ambientLight: THREE.AmbientLight;
   private directionalLights: THREE.DirectionalLight[] = [];
   private hemisphereLight: THREE.HemisphereLight;
-  
+
   // Selection
   private selectedObjects: THREE.Object3D[] = [];
   private hoveredObject: THREE.Object3D | null = null;
   private selectionConfig: SelectionConfig;
-  
+
   // Performance
   private frameCount: number = 0;
   private lastTime: number = 0;
   private rafId: number = 0;
   private fpsHistory: number[] = [];
-  
+
   // Depth texture for edge detection
   private depthRenderTarget: THREE.WebGLRenderTarget | null = null;
-  
+
   // Secondary grid reference for proper disposal
   private majorGridHelper: THREE.GridHelper | null = null;
-  
+
   // Object pools to avoid per-frame/per-call allocations
   private static _poolColor = new THREE.Color();
-  
+
   // Material cache for result visualization (key -> material)
-  private resultMaterialCache: Map<string, THREE.MeshStandardMaterial> = new Map();
+  private resultMaterialCache: Map<string, THREE.MeshStandardMaterial> =
+    new Map();
   private static readonly MAX_MATERIAL_CACHE = 256;
 
   constructor(canvas: HTMLCanvasElement, config?: Partial<RenderingConfig>) {
     // Default configuration — optimized for low memory usage
     this.config = {
-      quality: 'medium',
+      quality: "medium",
       enableSSAO: false,
       enableShadows: true,
       enableBloom: false,
@@ -374,12 +402,12 @@ export class AdvancedRenderingEngine {
       enableAntialiasing: true,
       shadowMapSize: 1024,
       maxLights: 3,
-      backgroundColor: '#0a0a0f',
-      gridColor: '#1a1a2e',
+      backgroundColor: "#0a0a0f",
+      gridColor: "#1a1a2e",
       enableHDR: false,
       toneMapping: THREE.ACESFilmicToneMapping,
       exposure: 1.0,
-      ...config
+      ...config,
     };
 
     this.selectionConfig = {
@@ -387,7 +415,7 @@ export class AdvancedRenderingEngine {
       highlightColor: new THREE.Color(0x00ffff),
       selectionColor: new THREE.Color(0x4488ff),
       hoverColor: new THREE.Color(0x00ffaa),
-      outlineWidth: 2
+      outlineWidth: 2,
     };
 
     this.stats = {
@@ -398,18 +426,18 @@ export class AdvancedRenderingEngine {
       geometries: 0,
       textures: 0,
       programs: 0,
-      gpuMemory: 0
+      gpuMemory: 0,
     };
 
     // Initialize WebGL renderer
     this.renderer = new THREE.WebGLRenderer({
       canvas,
-      antialias: this.config.quality !== 'low',
+      antialias: this.config.quality !== "low",
       alpha: false,
-      powerPreference: 'high-performance',
+      powerPreference: "high-performance",
       stencil: false,
       depth: true,
-      logarithmicDepthBuffer: true // Better depth precision for structural models
+      logarithmicDepthBuffer: true, // Better depth precision for structural models
     });
 
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -469,13 +497,13 @@ export class AdvancedRenderingEngine {
 
     // Setup post-processing (async — heavy passes loaded on demand)
     this.composer = new EffectComposer(this.renderer);
-    
+
     this.renderPass = new RenderPass(this.scene, this.camera);
     this.composer.addPass(this.renderPass);
 
     // Gamma correction
     this.gammaPass = new ShaderPass(GammaCorrectionShader);
-    
+
     this.setupPostProcessing();
     this.setupGrid();
     this.setupAxes();
@@ -492,16 +520,21 @@ export class AdvancedRenderingEngine {
     const height = this.renderer.domElement.clientHeight;
 
     // SSAO - Screen Space Ambient Occlusion (heavy — ~16 MB GPU for depth buffer)
-    if (this.config.enableSSAO && this.config.quality !== 'low') {
+    if (this.config.enableSSAO && this.config.quality !== "low") {
       try {
         const SSAOPassClass = await lazySSAOPass();
-        this.ssaoPass = new SSAOPassClass(this.scene, this.camera, width, height);
-        this.ssaoPass.kernelRadius = this.config.quality === 'ultra' ? 16 : 8;
+        this.ssaoPass = new SSAOPassClass(
+          this.scene,
+          this.camera,
+          width,
+          height,
+        );
+        this.ssaoPass.kernelRadius = this.config.quality === "ultra" ? 16 : 8;
         this.ssaoPass.minDistance = 0.005;
         this.ssaoPass.maxDistance = 0.1;
         this.composer.addPass(this.ssaoPass);
       } catch (e) {
-        console.warn('[RenderEngine] SSAO pass failed to load:', e);
+        console.warn("[RenderEngine] SSAO pass failed to load:", e);
       }
     }
 
@@ -512,7 +545,7 @@ export class AdvancedRenderingEngine {
         this.outlinePass = new OutlinePassClass(
           new THREE.Vector2(width, height),
           this.scene,
-          this.camera
+          this.camera,
         );
         this.outlinePass.visibleEdgeColor = this.selectionConfig.selectionColor;
         this.outlinePass.hiddenEdgeColor = new THREE.Color(0x222266);
@@ -521,7 +554,7 @@ export class AdvancedRenderingEngine {
         this.outlinePass.edgeThickness = this.selectionConfig.outlineWidth;
         this.composer.addPass(this.outlinePass);
       } catch (e) {
-        console.warn('[RenderEngine] Outline pass failed to load:', e);
+        console.warn("[RenderEngine] Outline pass failed to load:", e);
       }
     }
 
@@ -533,29 +566,29 @@ export class AdvancedRenderingEngine {
           new THREE.Vector2(width, height),
           0.5, // strength
           0.4, // radius
-          0.85 // threshold
+          0.85, // threshold
         );
         this.composer.addPass(this.bloomPass);
       } catch (e) {
-        console.warn('[RenderEngine] Bloom pass failed to load:', e);
+        console.warn("[RenderEngine] Bloom pass failed to load:", e);
       }
     }
 
     // Anti-aliasing
     if (this.config.enableAntialiasing) {
       try {
-        if (this.config.quality === 'ultra') {
+        if (this.config.quality === "ultra") {
           const SMAAPassClass = await lazySMAAPass();
           this.smaaPass = new SMAAPassClass(width, height);
           this.composer.addPass(this.smaaPass);
         } else {
           const FXAAShaderDef = await lazyFXAAShader();
           this.fxaaPass = new ShaderPass(FXAAShaderDef);
-          this.fxaaPass.uniforms['resolution'].value.set(1 / width, 1 / height);
+          this.fxaaPass.uniforms["resolution"].value.set(1 / width, 1 / height);
           this.composer.addPass(this.fxaaPass);
         }
       } catch (e) {
-        console.warn('[RenderEngine] Anti-aliasing pass failed to load:', e);
+        console.warn("[RenderEngine] Anti-aliasing pass failed to load:", e);
       }
     }
 
@@ -581,7 +614,7 @@ export class AdvancedRenderingEngine {
       gridSize,
       gridDivisions,
       new THREE.Color(0x2a2a3e), // Center line
-      new THREE.Color(0x1a1a2e)  // Grid lines
+      new THREE.Color(0x1a1a2e), // Grid lines
     );
     this.gridHelper.material.opacity = 0.5;
     this.gridHelper.material.transparent = true;
@@ -596,7 +629,7 @@ export class AdvancedRenderingEngine {
       gridSize,
       gridDivisions / 5,
       new THREE.Color(0x3a3a4e),
-      new THREE.Color(0x2a2a3e)
+      new THREE.Color(0x2a2a3e),
     );
     this.majorGridHelper.position.y = 0.001; // Slightly above to prevent z-fighting
     this.majorGridHelper.material.opacity = 0.3;
@@ -621,33 +654,33 @@ export class AdvancedRenderingEngine {
   /**
    * Set camera view preset
    */
-  setViewPreset(preset: ViewMode['preset']): void {
+  setViewPreset(preset: ViewMode["preset"]): void {
     const distance = 30;
-    
+
     switch (preset) {
-      case 'isometric':
+      case "isometric":
         this.camera.position.set(distance, distance, distance);
         break;
-      case 'top':
+      case "top":
         this.camera.position.set(0, distance * 2, 0.001);
         break;
-      case 'front':
+      case "front":
         this.camera.position.set(0, 0, distance);
         break;
-      case 'right':
+      case "right":
         this.camera.position.set(distance, 0, 0);
         break;
-      case 'back':
+      case "back":
         this.camera.position.set(0, 0, -distance);
         break;
-      case 'left':
+      case "left":
         this.camera.position.set(-distance, 0, 0);
         break;
-      case 'bottom':
+      case "bottom":
         this.camera.position.set(0, -distance * 2, 0.001);
         break;
     }
-    
+
     this.camera.lookAt(0, 0, 0);
     this.camera.updateProjectionMatrix();
   }
@@ -655,29 +688,35 @@ export class AdvancedRenderingEngine {
   /**
    * Switch between perspective and orthographic cameras
    */
-  setProjectionMode(mode: 'perspective' | 'orthographic'): void {
+  setProjectionMode(mode: "perspective" | "orthographic"): void {
     const canvas = this.renderer.domElement;
     const aspect = canvas.clientWidth / canvas.clientHeight;
     const currentPos = this.camera.position.clone();
     const currentTarget = new THREE.Vector3(0, 0, 0);
 
-    if (mode === 'orthographic' && this.camera instanceof THREE.PerspectiveCamera) {
+    if (
+      mode === "orthographic" &&
+      this.camera instanceof THREE.PerspectiveCamera
+    ) {
       const frustumSize = 50;
       this.camera = new THREE.OrthographicCamera(
-        -frustumSize * aspect / 2,
-        frustumSize * aspect / 2,
+        (-frustumSize * aspect) / 2,
+        (frustumSize * aspect) / 2,
         frustumSize / 2,
         -frustumSize / 2,
         0.1,
-        10000
+        10000,
       );
-    } else if (mode === 'perspective' && this.camera instanceof THREE.OrthographicCamera) {
+    } else if (
+      mode === "perspective" &&
+      this.camera instanceof THREE.OrthographicCamera
+    ) {
       this.camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 10000);
     }
 
     this.camera.position.copy(currentPos);
     this.camera.lookAt(currentTarget);
-    
+
     // Update passes
     this.renderPass.camera = this.camera;
     if (this.ssaoPass) this.ssaoPass.camera = this.camera;
@@ -706,14 +745,23 @@ export class AdvancedRenderingEngine {
    * Uses a pooled Color object to avoid GC pressure.
    * If you need to keep the result, clone it.
    */
-  interpolateColor(value: number, min: number, max: number, scale: THREE.Color[]): THREE.Color {
+  interpolateColor(
+    value: number,
+    min: number,
+    max: number,
+    scale: THREE.Color[],
+  ): THREE.Color {
     const t = Math.max(0, Math.min(1, (value - min) / (max - min || 1)));
     const scaleIndex = t * (scale.length - 1);
     const lowIndex = Math.floor(scaleIndex);
     const highIndex = Math.min(lowIndex + 1, scale.length - 1);
     const localT = scaleIndex - lowIndex;
 
-    AdvancedRenderingEngine._poolColor.lerpColors(scale[lowIndex], scale[highIndex], localT);
+    AdvancedRenderingEngine._poolColor.lerpColors(
+      scale[lowIndex],
+      scale[highIndex],
+      localT,
+    );
     return AdvancedRenderingEngine._poolColor;
   }
 
@@ -725,7 +773,7 @@ export class AdvancedRenderingEngine {
     value: number,
     min: number,
     max: number,
-    scale: keyof typeof ColorScales = 'stress'
+    scale: keyof typeof ColorScales = "stress",
   ): THREE.MeshStandardMaterial {
     // Quantize to 256 levels for effective caching
     const t = Math.max(0, Math.min(1, (value - min) / (max - min || 1)));
@@ -735,17 +783,25 @@ export class AdvancedRenderingEngine {
     let mat = this.resultMaterialCache.get(cacheKey);
     if (mat) return mat;
 
-    const color = this.interpolateColor(value, min, max, ColorScales[scale]).clone();
+    const color = this.interpolateColor(
+      value,
+      min,
+      max,
+      ColorScales[scale],
+    ).clone();
     mat = new THREE.MeshStandardMaterial({
       color,
       metalness: 0.1,
       roughness: 0.6,
       emissive: color,
-      emissiveIntensity: 0.1
+      emissiveIntensity: 0.1,
     });
 
     // LRU eviction
-    if (this.resultMaterialCache.size >= AdvancedRenderingEngine.MAX_MATERIAL_CACHE) {
+    if (
+      this.resultMaterialCache.size >=
+      AdvancedRenderingEngine.MAX_MATERIAL_CACHE
+    ) {
       const firstKey = this.resultMaterialCache.keys().next().value;
       if (firstKey) {
         this.resultMaterialCache.get(firstKey)?.dispose();
@@ -767,14 +823,14 @@ export class AdvancedRenderingEngine {
       this.camera.aspect = width / height;
     } else {
       const frustumSize = 50;
-      this.camera.left = -frustumSize * (width / height) / 2;
-      this.camera.right = frustumSize * (width / height) / 2;
+      this.camera.left = (-frustumSize * (width / height)) / 2;
+      this.camera.right = (frustumSize * (width / height)) / 2;
     }
     this.camera.updateProjectionMatrix();
 
     // Update FXAA resolution
     if (this.fxaaPass) {
-      this.fxaaPass.uniforms['resolution'].value.set(1 / width, 1 / height);
+      this.fxaaPass.uniforms["resolution"].value.set(1 / width, 1 / height);
     }
 
     // Update SSAO
@@ -826,16 +882,18 @@ export class AdvancedRenderingEngine {
    */
   private adaptQuality(): void {
     if (this.fpsHistory.length < 3) return;
-    const avgFps = this.fpsHistory.reduce((a, b) => a + b, 0) / this.fpsHistory.length;
+    const avgFps =
+      this.fpsHistory.reduce((a, b) => a + b, 0) / this.fpsHistory.length;
 
-    if (avgFps < 24 && this.config.quality !== 'low') {
+    if (avgFps < 24 && this.config.quality !== "low") {
       // Disable heavy passes to recover frame rate
       if (this.ssaoPass) this.ssaoPass.enabled = false;
       if (this.bloomPass) this.bloomPass.enabled = false;
-    } else if (avgFps > 50 && this.config.quality !== 'low') {
+    } else if (avgFps > 50 && this.config.quality !== "low") {
       // Re-enable if performance recovers
       if (this.ssaoPass && this.config.enableSSAO) this.ssaoPass.enabled = true;
-      if (this.bloomPass && this.config.enableBloom) this.bloomPass.enabled = true;
+      if (this.bloomPass && this.config.enableBloom)
+        this.bloomPass.enabled = true;
     }
   }
 
@@ -844,12 +902,12 @@ export class AdvancedRenderingEngine {
    */
   startAnimationLoop(): void {
     this.lastTime = performance.now();
-    
+
     const animate = () => {
       this.rafId = requestAnimationFrame(animate);
       this.render();
     };
-    
+
     animate();
   }
 
@@ -914,13 +972,13 @@ export class AdvancedRenderingEngine {
 
     // Dispose post-processing
     this.composer.dispose();
-    
+
     // Dispose scene objects
     this.scene.traverse((object) => {
       if (object instanceof THREE.Mesh) {
         object.geometry.dispose();
         if (Array.isArray(object.material)) {
-          object.material.forEach(m => m.dispose());
+          object.material.forEach((m) => m.dispose());
         } else {
           object.material.dispose();
         }
@@ -941,7 +999,7 @@ export class AdvancedRenderingEngine {
     }
 
     // Dispose cached materials
-    this.resultMaterialCache.forEach(m => m.dispose());
+    this.resultMaterialCache.forEach((m) => m.dispose());
     this.resultMaterialCache.clear();
 
     // Dispose renderer
@@ -952,7 +1010,7 @@ export class AdvancedRenderingEngine {
 // Export singleton factory
 export function createRenderingEngine(
   canvas: HTMLCanvasElement,
-  config?: Partial<RenderingConfig>
+  config?: Partial<RenderingConfig>,
 ): AdvancedRenderingEngine {
   return new AdvancedRenderingEngine(canvas, config);
 }

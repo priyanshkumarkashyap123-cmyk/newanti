@@ -98,11 +98,15 @@ class AnalysisWorkerPool:
         max_queue_size: int = 1000,
         enable_cache: bool = True,
         cache_ttl: int = 3600,
+        job_retention_ttl: int = 1800,
+        max_job_records: int = 5000,
     ):
         self.max_workers = max_workers
         self.max_queue_size = max_queue_size
         self.enable_cache = enable_cache
         self.cache_ttl = cache_ttl
+        self.job_retention_ttl = job_retention_ttl
+        self.max_job_records = max_job_records
         
         # Job storage
         self._jobs: Dict[str, Job] = {}
@@ -143,6 +147,7 @@ class AnalysisWorkerPool:
         
         # Start cache cleanup task
         self._workers.append(asyncio.create_task(self._cache_cleanup_loop()))
+        self._workers.append(asyncio.create_task(self._jobs_cleanup_loop()))
         
         logger.info(f"Worker pool started with {self.max_workers} workers")
     
@@ -543,6 +548,43 @@ class AnalysisWorkerPool:
                 break
             except Exception:
                 pass
+
+    async def _jobs_cleanup_loop(self):
+        """Periodically remove old terminal jobs to avoid unbounded memory growth."""
+        terminal_statuses = {JobStatus.COMPLETED, JobStatus.FAILED, JobStatus.CANCELLED}
+
+        while self._running:
+            try:
+                await asyncio.sleep(300)  # Every 5 minutes
+                now = time.time()
+
+                removable: List[str] = []
+                for job_id, job in self._jobs.items():
+                    if job.status in terminal_statuses:
+                        completed_at = job.completed_at or job.created_at
+                        if now - completed_at > self.job_retention_ttl:
+                            removable.append(job_id)
+
+                # Guardrail: if job table still grows too large, prune oldest terminal jobs
+                if len(self._jobs) - len(removable) > self.max_job_records:
+                    overflow = (len(self._jobs) - len(removable)) - self.max_job_records
+                    terminal_jobs = [
+                        (job_id, self._jobs[job_id])
+                        for job_id in self._jobs
+                        if self._jobs[job_id].status in terminal_statuses and job_id not in removable
+                    ]
+                    terminal_jobs.sort(key=lambda item: item[1].completed_at or item[1].created_at)
+                    removable.extend([job_id for job_id, _ in terminal_jobs[:overflow]])
+
+                if removable:
+                    for job_id in removable:
+                        self._jobs.pop(job_id, None)
+                        self._progress_callbacks.pop(job_id, None)
+                    logger.info(f"Jobs cleanup: removed {len(removable)} old terminal job records")
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logger.warning(f"Jobs cleanup loop error: {e}")
     
     def _compute_cache_key(self, job_type: str, input_data: Dict) -> str:
         """Deterministic hash for caching results"""

@@ -12,7 +12,7 @@
  * @version 1.0.0
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   rustApi,
   type AnalysisModel,
@@ -21,7 +21,7 @@ import {
   type DesignCheckResult,
   type SteelSection,
   type ProgressEvent,
-} from '../api/rustApi';
+} from "../api/rustApi";
 
 // ============================================================================
 // TYPES
@@ -31,9 +31,13 @@ export interface AnalysisState<T> {
   data: T | null;
   loading: boolean;
   error: string | null;
-  backend: 'wasm' | 'rust' | 'python' | null;
+  backend: "wasm" | "rust" | "python" | null;
   timeMs: number | null;
   progress: ProgressEvent | null;
+}
+
+function getErrorMessage(e: unknown, fallback: string): string {
+  return e instanceof Error ? e.message : fallback;
 }
 
 // ============================================================================
@@ -60,8 +64,8 @@ export function useSmartAnalysis() {
   const analyze = useCallback(
     async (
       model: AnalysisModel,
-      type: 'static' | 'modal' | 'pdelta' | 'buckling' | 'spectrum' = 'static',
-      options: Record<string, unknown> = {}
+      type: "static" | "modal" | "pdelta" | "buckling" | "spectrum" = "static",
+      options: Record<string, unknown> = {},
     ) => {
       setState((s) => ({ ...s, loading: true, error: null, progress: null }));
 
@@ -76,16 +80,16 @@ export function useSmartAnalysis() {
           progress: null,
         });
         return result;
-      } catch (e: any) {
+      } catch (e: unknown) {
         setState((s) => ({
           ...s,
           loading: false,
-          error: e.message || 'Analysis failed',
+          error: getErrorMessage(e, "Analysis failed"),
         }));
         throw e;
       }
     },
-    []
+    [],
   );
 
   return {
@@ -127,13 +131,17 @@ export function useStaticAnalysis() {
         data: result,
         loading: false,
         error: null,
-        backend: 'rust',
+        backend: "rust",
         timeMs: performance.now() - start,
         progress: null,
       });
       return result;
-    } catch (e: any) {
-      setState((s) => ({ ...s, loading: false, error: e.message }));
+    } catch (e: unknown) {
+      setState((s) => ({
+        ...s,
+        loading: false,
+        error: getErrorMessage(e, "Analysis failed"),
+      }));
       throw e;
     }
   }, []);
@@ -165,13 +173,17 @@ export function useModalAnalysis() {
         data: result,
         loading: false,
         error: null,
-        backend: 'rust',
+        backend: "rust",
         timeMs: performance.now() - start,
         progress: null,
       });
       return result;
-    } catch (e: any) {
-      setState((s) => ({ ...s, loading: false, error: e.message }));
+    } catch (e: unknown) {
+      setState((s) => ({
+        ...s,
+        loading: false,
+        error: getErrorMessage(e, "Analysis failed"),
+      }));
       throw e;
     }
   }, []);
@@ -210,7 +222,7 @@ export function useAnalysisJob() {
     async (
       jobType: string,
       input: Record<string, unknown>,
-      priority: 'urgent' | 'high' | 'normal' | 'low' = 'normal'
+      priority: "urgent" | "high" | "normal" | "low" = "normal",
     ) => {
       setLoading(true);
       setError(null);
@@ -220,7 +232,7 @@ export function useAnalysisJob() {
       try {
         const resp = await rustApi.submitJob(jobType, input, priority);
         setJobId(resp.job_id);
-        setStatus('queued');
+        setStatus("queued");
 
         // Connect WebSocket for progress
         wsRef.current?.close();
@@ -230,31 +242,31 @@ export function useAnalysisJob() {
             setProgress(event);
             if (event.status) setStatus(event.status);
 
-            if (event.status === 'completed') {
+            if (event.status === "completed") {
               setLoading(false);
               // Fetch the full result
               rustApi.getJobStatus(resp.job_id).then((st) => {
                 setResult(st.result);
               });
-            } else if (event.status === 'failed') {
+            } else if (event.status === "failed") {
               setLoading(false);
-              setError(event.message || 'Job failed');
+              setError(event.message || "Job failed");
             }
           },
           () => {
             // On WS error, fall back to polling
             startPolling(resp.job_id);
-          }
+          },
         );
 
         return resp.job_id;
-      } catch (e: any) {
+      } catch (e: unknown) {
         setLoading(false);
-        setError(e.message || 'Failed to submit job');
+        setError(getErrorMessage(e, "Failed to submit job"));
         throw e;
       }
     },
-    []
+    [],
   );
 
   const startPolling = useCallback((id: string) => {
@@ -263,17 +275,17 @@ export function useAnalysisJob() {
         const st = await rustApi.getJobStatus(id);
         setStatus(st.status);
         setProgress({
-          type: 'job_progress',
+          type: "job_progress",
           percent: st.progress,
           stage: st.stage,
           message: st.message,
         });
 
-        if (st.status === 'completed') {
+        if (st.status === "completed") {
           setResult(st.result);
           setLoading(false);
-        } else if (st.status === 'failed') {
-          setError(st.error || 'Job failed');
+        } else if (st.status === "failed") {
+          setError(st.error || "Job failed");
           setLoading(false);
         } else {
           setTimeout(poll, 2000);
@@ -288,7 +300,7 @@ export function useAnalysisJob() {
   const cancel = useCallback(async () => {
     if (jobId) {
       await rustApi.cancelJob(jobId);
-      setStatus('cancelled');
+      setStatus("cancelled");
       setLoading(false);
       wsRef.current?.close();
     }
@@ -310,7 +322,7 @@ export function useAnalysisJob() {
 // SECTION DATABASE HOOK
 // ============================================================================
 
-export function useSteelSections(standard: string = 'is') {
+export function useSteelSections(standard: string = "is") {
   const [sections, setSections] = useState<SteelSection[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -327,9 +339,9 @@ export function useSteelSections(standard: string = 'is') {
           setLoading(false);
         }
       })
-      .catch((e) => {
+      .catch((e: unknown) => {
         if (!cancelled) {
-          setError(e.message);
+          setError(getErrorMessage(e, "Failed to load steel sections"));
           setLoading(false);
         }
       });
@@ -369,13 +381,13 @@ export function useDesignCheck() {
         setResult(res);
         setLoading(false);
         return res;
-      } catch (e: any) {
-        setError(e.message);
+      } catch (e: unknown) {
+        setError(getErrorMessage(e, "Steel design check failed"));
         setLoading(false);
         throw e;
       }
     },
-    []
+    [],
   );
 
   const checkConcrete = useCallback(
@@ -387,13 +399,13 @@ export function useDesignCheck() {
         setResult(res);
         setLoading(false);
         return res;
-      } catch (e: any) {
-        setError(e.message);
+      } catch (e: unknown) {
+        setError(getErrorMessage(e, "Concrete design check failed"));
         setLoading(false);
         throw e;
       }
     },
-    []
+    [],
   );
 
   return { checkSteel, checkConcrete, result, loading, error };

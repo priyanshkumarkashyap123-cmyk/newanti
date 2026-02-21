@@ -2,7 +2,7 @@ name: Preview Deploy
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, closed]
     branches: [main]
 
 concurrency:
@@ -18,6 +18,7 @@ env:
 
 jobs:
   preview:
+    if: github.event.action != 'closed'
     name: Build & Deploy Preview
     runs-on: ubuntu-latest
     environment:
@@ -89,7 +90,7 @@ jobs:
   smoke:
     name: Smoke Test Preview
     needs: preview
-    if: needs.preview.outputs.preview_url != ''
+    if: github.event.action != 'closed' && needs.preview.outputs.preview_url != ''
     runs-on: ubuntu-latest
     steps:
       - name: Wait for preview to warm up
@@ -118,6 +119,7 @@ jobs:
   comment:
     name: PR Comment
     needs: preview
+    if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
