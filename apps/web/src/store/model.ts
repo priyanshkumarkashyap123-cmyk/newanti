@@ -189,14 +189,31 @@ export interface Plate {
 
 // Member Force Results with diagram data
 export interface MemberForceData {
-  // Max values for quick access
+  // Primary values (typically start-end values; kept for backward compat)
   axial: number;
   shearY: number;
   shearZ: number;
   momentY: number;
   momentZ: number;
   torsion: number;
-  // Diagram data arrays from PyNite (for visualization)
+  // Start / end forces (preserves full information from solver)
+  startForces?: {
+    axial: number;
+    shearY: number;
+    shearZ?: number;
+    momentY?: number;
+    momentZ: number;
+    torsion?: number;
+  };
+  endForces?: {
+    axial: number;
+    shearY: number;
+    shearZ?: number;
+    momentY?: number;
+    momentZ: number;
+    torsion?: number;
+  };
+  // Diagram data arrays for visualization (SFD, BMD, deflection)
   diagramData?: {
     x_values: number[];
     shear_y: number[];

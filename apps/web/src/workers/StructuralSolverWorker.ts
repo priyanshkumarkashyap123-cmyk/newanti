@@ -1696,8 +1696,8 @@ function generateDiagramData(
 
       x_values.push(x);
 
-      // ─── Axial: linear interpolation ───
-      axial.push(N1 + (N2 - N1) * xi);
+      // ─── Axial: constant along member (no intermediate axial loads) ───
+      axial.push(N1);
 
       // ─── Shear Y ───
       //   V(x) = V1 - w·x  (positive w = downward load in local Y)

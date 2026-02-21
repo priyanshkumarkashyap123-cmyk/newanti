@@ -1136,40 +1136,143 @@ export const ModernModeler: FC = () => {
               max_torsion?: number;
             };
 
+            // Helper: generate SFD/BMD/deflection diagram arrays from end forces
+            const genDiagram = (
+              axF: number,
+              v1: number,
+              m1: number,
+              memberElemId: string,
+            ) => {
+              const mInfo = membersArray.find((m) => m.id === memberElemId);
+              if (!mInfo) return undefined;
+              const nd1 = nodesArray.find((n) => n.id === mInfo.startNodeId);
+              const nd2 = nodesArray.find((n) => n.id === mInfo.endNodeId);
+              if (!nd1 || !nd2) return undefined;
+              const ddx = nd2.x - nd1.x,
+                ddy = nd2.y - nd1.y;
+              const ddz = (nd2.z ?? 0) - (nd1.z ?? 0);
+              const L = Math.sqrt(ddx * ddx + ddy * ddy + ddz * ddz) || 1;
+              const EI = (mInfo.E || 200e6) * (mInfo.I || 1e-4);
+              let w = 0;
+              for (const ml of memberLoads) {
+                if (ml.memberId === memberElemId && ml.type === "UDL")
+                  w += ml.w1 ?? 0;
+              }
+              const ST = 51;
+              const xv: number[] = [],
+                sy: number[] = [],
+                my: number[] = [];
+              const ax: number[] = [],
+                dy: number[] = [];
+              for (let s = 0; s < ST; s++) {
+                const x = (s / (ST - 1)) * L;
+                xv.push(x);
+                ax.push(axF);
+                sy.push(v1 - w * x);
+                my.push(m1 + v1 * x - (w * x * x) / 2);
+                if (EI > 0) {
+                  const C1 = -(
+                    (m1 * L) / 2 +
+                    (v1 * L * L) / 6 -
+                    (w * L * L * L) / 24
+                  );
+                  const yy =
+                    ((m1 * x * x) / 2 +
+                      (v1 * x * x * x) / 6 -
+                      (w * x * x * x * x) / 24 +
+                      C1 * x) /
+                    EI;
+                  dy.push(yy * 1000);
+                } else dy.push(0);
+              }
+              return {
+                x_values: xv,
+                shear_y: sy,
+                moment_y: my,
+                axial: ax,
+                deflection_y: dy,
+              };
+            };
+
             // Handle both 2D and 3D formats
             if (mf.forces_i && mf.forces_j) {
-              // 3D format: Full member end forces
+              // 3D format: Full member end forces [Fx, Fy, Fz, Mx, My, Mz]
+              const axV = (mf.forces_i[0] || 0) / 1000;
+              const syV = (mf.forces_i[1] || 0) / 1000;
+              const szV = (mf.forces_i[2] || 0) / 1000;
+              const txV = (mf.forces_i[3] || 0) / 1000;
+              const myV = (mf.forces_i[4] || 0) / 1000;
+              const mzV = (mf.forces_i[5] || 0) / 1000;
+              const syE = (mf.forces_j[1] || 0) / 1000;
+              const mzE = (mf.forces_j[5] || 0) / 1000;
+              const maxSY =
+                mf.max_shear_y != null
+                  ? mf.max_shear_y / 1000
+                  : Math.max(Math.abs(syV), Math.abs(syE));
+              const maxSZ = (mf.max_shear_z || 0) / 1000;
+              const maxMY = (mf.max_moment_y || 0) / 1000;
+              const maxMZ =
+                mf.max_moment_z != null
+                  ? mf.max_moment_z / 1000
+                  : Math.max(Math.abs(mzV), Math.abs(mzE));
+              const diag3D = genDiagram(axV, syV, mzV, elemId);
               membersDict[elemId] = {
                 memberId: elemId,
-                // Force at node i: [Fx, Fy, Fz, Mx, My, Mz]
-                axial: (mf.forces_i[0] || 0) / 1000, // Axial (Fx) in kN
-                shearY: (mf.forces_i[1] || 0) / 1000, // Shear Y (Fy) in kN
-                shearZ: (mf.forces_i[2] || 0) / 1000, // Shear Z (Fz) in kN
-                torsion: (mf.forces_i[3] || 0) / 1000, // Torsion (Mx) in kN·m
-                momentY: (mf.forces_i[4] || 0) / 1000, // Moment Y (My) in kN·m
-                momentZ: (mf.forces_i[5] || 0) / 1000, // Moment Z (Mz) in kN·m
-                // End forces
-                shearStart: (mf.forces_i[1] || 0) / 1000,
-                shearEnd: (mf.forces_j[1] || 0) / 1000,
-                momentStart: (mf.forces_i[5] || 0) / 1000,
-                momentEnd: (mf.forces_j[5] || 0) / 1000,
-                // Maximum values
-                maxShearY: (mf.max_shear_y || 0) / 1000,
-                maxShearZ: (mf.max_shear_z || 0) / 1000,
-                maxMomentY: (mf.max_moment_y || 0) / 1000,
-                maxMomentZ: (mf.max_moment_z || 0) / 1000,
-                maxAxial: (mf.max_axial || 0) / 1000,
-                maxTorsion: (mf.max_torsion || 0) / 1000,
+                axial: diag3D?.axial || [axV],
+                shearY: syV,
+                shearZ: szV,
+                torsion: txV,
+                momentY: myV,
+                momentZ: mzV,
+                shearStart: syV,
+                shearEnd: syE,
+                momentStart: mzV,
+                momentEnd: mzE,
+                // snake_case max values (needed by generic parser)
+                max_shear_y: maxSY,
+                max_shear_z: maxSZ,
+                max_moment_y: maxMY,
+                max_moment_z: maxMZ,
+                // diagram arrays
+                x_values: diag3D?.x_values,
+                shear_y: diag3D?.shear_y,
+                shear_z: [] as number[],
+                moment_y: diag3D?.moment_y,
+                moment_z: [] as number[],
+                torsion_arr: [] as number[],
+                deflection_y: diag3D?.deflection_y,
+                deflection_z: [] as number[],
               };
             } else {
-              // 2D format (backward compatibility)
+              // 2D format: map from Rust field names + generate diagram data
+              const axF = (mf.axial || 0) / 1000;
+              const v1 = (mf.shear_start || 0) / 1000;
+              const v2 = (mf.shear_end || 0) / 1000;
+              const m1 = (mf.moment_start || 0) / 1000;
+              const m2 = (mf.moment_end || 0) / 1000;
+              const diag2D = genDiagram(axF, v1, m1, elemId);
               membersDict[elemId] = {
                 memberId: elemId,
-                axial: (mf.axial || 0) / 1000,
-                shearStart: (mf.shear_start || 0) / 1000,
-                shearEnd: (mf.shear_end || 0) / 1000,
-                momentStart: (mf.moment_start || 0) / 1000,
-                momentEnd: (mf.moment_end || 0) / 1000,
+                axial: diag2D?.axial || [axF],
+                // snake_case max values (needed by generic parser)
+                max_shear_y: Math.max(Math.abs(v1), Math.abs(v2)),
+                max_shear_z: 0,
+                max_moment_y: Math.max(Math.abs(m1), Math.abs(m2)),
+                max_moment_z: 0,
+                // diagram arrays
+                x_values: diag2D?.x_values,
+                shear_y: diag2D?.shear_y,
+                shear_z: [] as number[],
+                moment_y: diag2D?.moment_y,
+                moment_z: [] as number[],
+                torsion: [] as number[],
+                deflection_y: diag2D?.deflection_y,
+                deflection_z: [] as number[],
+                // preserve start/end values
+                shearStart: v1,
+                shearEnd: v2,
+                momentStart: m1,
+                momentEnd: m2,
               };
             }
           }
@@ -1441,7 +1544,7 @@ export const ModernModeler: FC = () => {
               shear_z?: number[];
               moment_y?: number[];
               moment_z?: number[];
-              torsion?: number[];
+              torsion?: number[] | number;
               x_values?: number[];
               deflection_y?: number[];
               deflection_z?: number[];
@@ -1449,6 +1552,16 @@ export const ModernModeler: FC = () => {
               max_shear_z?: number;
               max_moment_y?: number;
               max_moment_z?: number;
+              // WASM format fields (camelCase / scalar)
+              shearY?: number;
+              shearZ?: number;
+              momentY?: number;
+              momentZ?: number;
+              shearStart?: number;
+              shearEnd?: number;
+              momentStart?: number;
+              momentEnd?: number;
+              torsion_arr?: number[];
             };
 
             // Handle both array (PyNite) and scalar (simple solver) formats
@@ -1460,7 +1573,7 @@ export const ModernModeler: FC = () => {
               );
             };
 
-            // Use max values if available, otherwise calculate from arrays
+            // Use max values if available, otherwise calculate from arrays, then fall back to WASM scalars
             const axialVal =
               f.max_shear_y !== undefined
                 ? Array.isArray(f.axial)
@@ -1469,13 +1582,32 @@ export const ModernModeler: FC = () => {
                 : typeof f.axial === "number"
                   ? f.axial
                   : getMaxAbs(f.axial as number[] | undefined);
-            const shearY = f.max_shear_y ?? getMaxAbs(f.shear_y);
-            const shearZ = f.max_shear_z ?? getMaxAbs(f.shear_z);
-            const momentY = f.max_moment_y ?? getMaxAbs(f.moment_y);
-            const momentZ = f.max_moment_z ?? getMaxAbs(f.moment_z);
-            const torsionVal = getMaxAbs(f.torsion);
+            const shearY =
+              f.max_shear_y ??
+              (typeof f.shearY === "number"
+                ? Math.abs(f.shearY)
+                : getMaxAbs(f.shear_y));
+            const shearZ =
+              f.max_shear_z ??
+              (typeof f.shearZ === "number"
+                ? Math.abs(f.shearZ)
+                : getMaxAbs(f.shear_z));
+            const momentY =
+              f.max_moment_y ??
+              (typeof f.momentY === "number"
+                ? Math.abs(f.momentY)
+                : getMaxAbs(f.moment_y));
+            const momentZ =
+              f.max_moment_z ??
+              (typeof f.momentZ === "number"
+                ? Math.abs(f.momentZ)
+                : getMaxAbs(f.moment_z));
+            const torsionVal =
+              typeof f.torsion === "number"
+                ? Math.abs(f.torsion)
+                : getMaxAbs(f.torsion as number[] | undefined);
 
-            // Store diagram data arrays if available (from PyNite)
+            // Store diagram data arrays if available (from PyNite or WASM-generated)
             const diagramData =
               f.x_values && f.shear_y
                 ? {
@@ -1485,7 +1617,9 @@ export const ModernModeler: FC = () => {
                     moment_y: f.moment_y || [],
                     moment_z: f.moment_z || [],
                     axial: Array.isArray(f.axial) ? f.axial : [],
-                    torsion: f.torsion || [],
+                    torsion:
+                      f.torsion_arr ||
+                      (Array.isArray(f.torsion) ? f.torsion : []),
                     deflection_y: f.deflection_y || [],
                     deflection_z: f.deflection_z || [],
                   }
@@ -1498,6 +1632,21 @@ export const ModernModeler: FC = () => {
               momentY,
               momentZ,
               torsion: torsionVal,
+              // Include start/end forces if available
+              ...(f.shearStart !== undefined
+                ? {
+                    startForces: {
+                      axial: axialVal as number,
+                      shearY: f.shearStart ?? shearY,
+                      momentZ: f.momentStart ?? momentZ,
+                    },
+                    endForces: {
+                      axial: -(axialVal as number),
+                      shearY: f.shearEnd ?? shearY,
+                      momentZ: f.momentEnd ?? momentZ,
+                    },
+                  }
+                : {}),
               diagramData,
             });
           });
