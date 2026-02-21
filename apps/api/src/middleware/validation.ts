@@ -358,5 +358,81 @@ export const spectrumSchema = z.object({
     combinationMethod: z.enum(['CQC', 'SRSS']).optional().default('CQC'),
 });
 
+// ============================================
+// AUTH SCHEMAS
+// ============================================
+
+const passwordSchema = z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Password must contain an uppercase letter')
+    .regex(/[a-z]/, 'Password must contain a lowercase letter')
+    .regex(/[0-9]/, 'Password must contain a number');
+
+export const signUpSchema = z.object({
+    email: z.string().email('Please enter a valid email address').transform(e => e.toLowerCase().trim()),
+    password: passwordSchema,
+    firstName: z.string().min(1, 'First name is required').trim(),
+    lastName: z.string().min(1, 'Last name is required').trim(),
+    company: z.string().trim().optional(),
+    phone: z.string().trim().optional(),
+});
+
+export const signInSchema = z.object({
+    email: z.string().email('Please enter a valid email address').transform(e => e.toLowerCase().trim()),
+    password: z.string().min(1, 'Password is required'),
+    rememberMe: z.boolean().optional().default(false),
+});
+
+export const forgotPasswordSchema = z.object({
+    email: z.string().email('Please enter a valid email address').transform(e => e.toLowerCase().trim()),
+});
+
+export const resetPasswordSchema = z.object({
+    token: z.string().min(1, 'Reset token is required'),
+    password: passwordSchema,
+});
+
+export const changePasswordSchema = z.object({
+    currentPassword: z.string().min(1, 'Current password is required'),
+    newPassword: passwordSchema,
+});
+
+export const verifyEmailSchema = z.object({
+    userId: z.string().min(1, 'User ID is required'),
+    code: z.string().length(6, 'Verification code must be 6 digits'),
+});
+
+export const updateProfileSchema = z.object({
+    firstName: z.string().min(1).trim().optional(),
+    lastName: z.string().min(1).trim().optional(),
+    company: z.string().trim().optional(),
+    phone: z.string().trim().optional(),
+    avatarUrl: z.string().url().optional(),
+});
+
+// ============================================
+// QUERY PARAM VALIDATION
+// ============================================
+
+/**
+ * Express middleware factory that validates req.query against a Zod schema.
+ */
+export function validateQuery<T extends z.ZodTypeAny>(schema: T): RequestHandler {
+    return (req: Request, res: Response, next: NextFunction) => {
+        const result = schema.safeParse(req.query);
+        if (!result.success) {
+            const errors = result.error.issues.map(issue => ({
+                path: issue.path.join('.'),
+                message: issue.message,
+                code: issue.code,
+            }));
+            res.status(400).json({ success: false, error: 'Query validation failed', details: errors });
+            return;
+        }
+        req.query = result.data;
+        next();
+    };
+}
+
 // Re-export Zod for convenience
 export { z };

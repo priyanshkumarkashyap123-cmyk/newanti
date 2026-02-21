@@ -4,12 +4,17 @@ main.py - FastAPI Entry Point
 REST API for structural model generation.
 """
 
+# Structured logging — must be imported FIRST so all modules get the config
+from logging_config import setup_logging, get_logger
+setup_logging()
+logger = get_logger(__name__)
+
 # Load environment variables from .env file (if it exists - for local dev only)
 try:
     from dotenv import load_dotenv
     load_dotenv(override=False)  # Don't override Azure app settings
 except Exception as e:
-    print(f"[WARNING] dotenv not available or failed: {e}")
+    logger.warning("dotenv not available or failed: %s", e)
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,6 +24,7 @@ import os
 from datetime import datetime
 import asyncio
 import importlib
+from request_logging import RequestLoggingMiddleware
 
 # Wrap imports in try-except to handle missing packages gracefully
 try:
@@ -28,28 +34,28 @@ try:
     )
     HAS_MODELS = True
 except ImportError as e:
-    print(f"[WARNING] Could not import models: {e}")
+    logger.warning("Could not import models: %s", e)
     HAS_MODELS = False
 
 try:
     from factory import StructuralFactory
     HAS_FACTORY = True
 except ImportError as e:
-    print(f"[WARNING] Could not import factory: {e}")
+    logger.warning("Could not import factory: %s", e)
     HAS_FACTORY = False
 
 try:
     from ai_routes import router as ai_router
     HAS_AI_ROUTES = True
 except ImportError as e:
-    print(f"[WARNING] Could not import ai_routes: {e}")
+    logger.warning("Could not import ai_routes: %s", e)
     HAS_AI_ROUTES = False
 
 try:
     from analysis.report_generator import ReportGenerator, ReportSettings
     HAS_REPORT_GEN = True
 except ImportError as e:
-    print(f"[WARNING] Could not import report_generator: {e}")
+    logger.warning("Could not import report_generator: %s", e)
     HAS_REPORT_GEN = False
 
 import base64
@@ -68,16 +74,16 @@ def get_env(key: str, default: str = "") -> str:
     if not value:
         if key == 'USE_MOCK_AI':
             value = 'true'  # Default to mock AI
-            print(f"[ENV] {key}: Using default (MOCK AI MODE)")
+            logger.info("ENV %s: Using default (MOCK AI MODE)", key)
         elif key == 'GEMINI_API_KEY':
             value = 'mock-key-local-dev'
-            print(f"[ENV] {key}: Not configured, using mock mode")
+            logger.info("ENV %s: Not configured, using mock mode", key)
         elif key == 'FRONTEND_URL':
             value = 'http://localhost:5173'
-            print(f"[ENV] {key}: Not configured, defaulting to {value}")
+            logger.info("ENV %s: Not configured, defaulting to %s", key, value)
         elif key == 'ALLOWED_ORIGINS':
             value = 'http://localhost:5173,http://localhost:3001,http://127.0.0.1:5173'
-            print(f"[ENV] {key}: Not configured, using localhost origins")
+            logger.info("ENV %s: Not configured, using localhost origins", key)
     
     return value or default
 
@@ -102,19 +108,22 @@ ALLOWED_ORIGINS_ENV = get_env('ALLOWED_ORIGINS', 'http://localhost:5173,http://l
 NODE_API_URL = get_env('NODE_API_URL', 'http://localhost:3001')
 RUST_API_URL = get_env('RUST_API_URL', 'http://localhost:3002')
 
-# Debug: Print environment info at startup
-print(f"\n{'='*60}")
-print(f"[STARTUP] BeamLab Backend Initializing...")
-print(f"[STARTUP] GEMINI_API_KEY configured: {bool(GEMINI_API_KEY and GEMINI_API_KEY != 'mock-key-local-dev')}")
-print(f"[STARTUP] USE_MOCK_AI: {USE_MOCK_AI}")
-print(f"[STARTUP] FRONTEND_URL: {FRONTEND_URL}")
-print(f"[STARTUP] Environment: {'LOCAL/MOCK' if USE_MOCK_AI else 'PRODUCTION'}")
-print(f"\n[COMPONENTS]")
-print(f"  Models Import: {'✓ OK' if HAS_MODELS else '✗ FAILED'}")
-print(f"  Factory Import: {'✓ OK' if HAS_FACTORY else '✗ FAILED'}")
-print(f"  AI Routes Import: {'✓ OK' if HAS_AI_ROUTES else '✗ FAILED'}")
-print(f"  Report Generator: {'✓ OK' if HAS_REPORT_GEN else '✗ FAILED'}")
-print(f"{'='*60}\n")
+# Structured startup log
+logger.info(
+    "BeamLab Backend initializing",
+    extra={
+        "gemini_configured": bool(GEMINI_API_KEY and GEMINI_API_KEY != 'mock-key-local-dev'),
+        "use_mock_ai": USE_MOCK_AI,
+        "frontend_url": FRONTEND_URL,
+        "environment": 'LOCAL/MOCK' if USE_MOCK_AI else 'PRODUCTION',
+        "components": {
+            "models": HAS_MODELS,
+            "factory": HAS_FACTORY,
+            "ai_routes": HAS_AI_ROUTES,
+            "report_generator": HAS_REPORT_GEN,
+        },
+    },
+)
 
 # ============================================
 # CORS CONFIGURATION
@@ -152,12 +161,13 @@ if FRONTEND_URL:
 # Remove duplicates
 allow_origins = list(set(allow_origins))
 
-# Print CORS config for debugging (visible in Azure logs)
-print(f"{'='*60}")
-print(f"[CORS] Configured allowed origins ({len(allow_origins)}):")
-for origin in sorted(allow_origins):
-    print(f"  ✓ {origin}")
-print(f"{'='*60}\n")
+logger.info(
+    "CORS configured",
+    extra={"allowed_origin_count": len(allow_origins), "origins": sorted(allow_origins)},
+)
+
+# Request logging middleware (added BEFORE CORS so it wraps everything)
+app.add_middleware(RequestLoggingMiddleware)
 
 # CORS Middleware - use specific origins to allow credentials
 app.add_middleware(
@@ -259,57 +269,57 @@ async def health_dependencies():
 
 if HAS_AI_ROUTES:
     app.include_router(ai_router)
-    print("[STARTUP] AI routes registered")
+    logger.info("AI routes registered")
 else:
-    print("[STARTUP] AI routes NOT available (import failed)")
+    logger.warning("AI routes NOT available (import failed)")
 
 # Analysis Routes (Spectrum, Buckling, Time-History, Dynamic Analysis)
 try:
     from analysis_routes import router as analysis_router
     app.include_router(analysis_router, prefix="/analyze", tags=["Analysis"])
-    print("[STARTUP] Analysis routes registered at /analyze/*")
+    logger.info("Analysis routes registered at /analyze/*")
 except ImportError as e:
-    print(f"[STARTUP] Analysis routes not available: {e}")
+    logger.warning("Analysis routes not available: %s", e)
 
 # Design Routes (Concrete, Steel, Connections, Foundations)
 try:
     from design_routes import router as design_router
     app.include_router(design_router, prefix="/design", tags=["Design"])
-    print("[STARTUP] Design routes registered at /design/*")
+    logger.info("Design routes registered at /design/*")
 except ImportError as e:
-    print(f"[STARTUP] Design routes not available: {e}")
+    logger.warning("Design routes not available: %s", e)
 
 # PINN Solver Routes (Physics-Informed Neural Networks)
 try:
     from pinn_routes import router as pinn_router
     app.include_router(pinn_router, prefix="/pinn", tags=["PINN Solver"])
-    print("[STARTUP] PINN solver routes registered at /pinn/*")
+    logger.info("PINN solver routes registered at /pinn/*")
 except ImportError as e:
-    print(f"[STARTUP] PINN solver not available (install jax): {e}")
+    logger.warning("PINN solver not available (install jax): %s", e)
 
 # Project Persistence Routes (Phase 3)
 try:
     from project_routes import router as project_router
     app.include_router(project_router, prefix="/projects", tags=["Projects"])
-    print("[STARTUP] Project routes registered at /projects/*")
+    logger.info("Project routes registered at /projects/*")
 except ImportError as e:
-    print(f"[STARTUP] Project routes not available: {e}")
+    logger.warning("Project routes not available: %s", e)
 
 # Real-time Collaboration Routes (Phase 4.2)
 try:
     from ws_routes import router as ws_router
     app.include_router(ws_router, tags=["Collaboration"])
-    print("[STARTUP] WebSocket routes registered at /ws/*")
+    logger.info("WebSocket routes registered at /ws/*")
 except ImportError as e:
-    print(f"[STARTUP] WebSocket routes not available: {e}")
+    logger.warning("WebSocket routes not available: %s", e)
 
 # Database Persistence Routes (Critical Analysis Fix)
 try:
     from db_routes import router as db_router
     app.include_router(db_router, prefix="/db", tags=["Database"])
-    print("[STARTUP] Database routes registered at /db/*")
+    logger.info("Database routes registered at /db/*")
 except ImportError as e:
-    print(f"[STARTUP] Database routes not available: {e}")
+    logger.warning("Database routes not available: %s", e)
 
 
 # ============================================
@@ -322,9 +332,9 @@ async def start_worker_pool():
     try:
         from analysis.worker_pool import get_worker_pool
         pool = await get_worker_pool()
-        print(f"[STARTUP] Worker pool started with {pool.max_workers} workers")
+        logger.info("Worker pool started", extra={"max_workers": pool.max_workers})
     except Exception as e:
-        print(f"[STARTUP] Worker pool not available: {e}")
+        logger.warning("Worker pool not available: %s", e)
 
 @app.on_event("shutdown")
 async def shutdown_worker_pool():
@@ -332,9 +342,9 @@ async def shutdown_worker_pool():
     try:
         from analysis.worker_pool import shutdown_worker_pool as _shutdown
         await _shutdown()
-        print("[SHUTDOWN] Worker pool stopped")
+        logger.info("Worker pool stopped")
     except Exception as e:
-        print(f"[SHUTDOWN] Worker pool shutdown error: {e}")
+        logger.error("Worker pool shutdown error: %s", e)
 
 
 # ============================================
@@ -632,7 +642,10 @@ async def analyze_3d_frame(request: FrameAnalysisRequest):
     try:
         from analysis.fea_engine import analyze_frame
         
-        print(f"[FEA] Received analysis request: {len(request.nodes)} nodes, {len(request.members)} members, {len(request.plates)} plates")
+        logger.info(
+            "FEA analysis request received",
+            extra={"nodes": len(request.nodes), "members": len(request.members), "plates": len(request.plates)},
+        )
         
         # Convert to dict format
         model_dict = {
@@ -697,22 +710,21 @@ async def analyze_3d_frame(request: FrameAnalysisRequest):
             ]
         }
         
-        print(f"[FEA] Running analysis...")
+        logger.info("FEA running analysis")
         
         # Run analysis
         result = analyze_frame(model_dict)
         
         if not result['success']:
             error_msg = result.get('error', 'Analysis failed')
-            print(f"[FEA] Analysis returned error: {error_msg}")
+            logger.warning("FEA analysis returned error", extra={"error": error_msg})
             raise HTTPException(status_code=400, detail=error_msg)
         
-        print(f"[FEA] Analysis successful! Max moment: {result.get('max_moment', 0):.2f}")
+        logger.info("FEA analysis successful", extra={"max_moment": result.get('max_moment', 0)})
         return result
         
     except ImportError as e:
-        print(f"[FEA] ImportError: {e}")
-        traceback.print_exc()
+        logger.error("FEA ImportError: %s", e, exc_info=True)
         raise HTTPException(
             status_code=500,
             detail=f"PyNiteFEA import error: {str(e)}"
@@ -720,8 +732,7 @@ async def analyze_3d_frame(request: FrameAnalysisRequest):
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[FEA] Exception: {e}")
-        traceback.print_exc()
+        logger.error("FEA Exception: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Analysis error: {str(e)}")
 
 

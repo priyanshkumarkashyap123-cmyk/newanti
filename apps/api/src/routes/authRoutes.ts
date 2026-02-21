@@ -23,6 +23,15 @@ import axios from 'axios';
 import queryString from 'query-string';
 import { UserModel, RefreshTokenModel, VerificationCodeModel } from '../models.js';
 import { emailService } from '../services/emailService.js';
+import {
+    validateBody,
+    signUpSchema,
+    signInSchema,
+    forgotPasswordSchema,
+    resetPasswordSchema,
+    changePasswordSchema,
+    updateProfileSchema,
+} from '../middleware/validation.js';
 
 const router: Router = Router();
 
@@ -444,45 +453,10 @@ router.post('/linkedin', async (req: Request, res: Response) => {
 /**
  * POST /api/auth/signup - Register new user
  */
-router.post('/signup', async (req: Request, res: Response) => {
+router.post('/signup', validateBody(signUpSchema), async (req: Request, res: Response) => {
     try {
-        const { email, password, firstName, lastName, company, phone }: SignUpBody = req.body;
-
-        // Validate required fields
-        if (!email || !password || !firstName || !lastName) {
-            res.status(400).json({
-                success: false,
-                message: 'Missing required fields',
-                errors: {
-                    email: !email ? 'Email is required' : undefined,
-                    password: !password ? 'Password is required' : undefined,
-                    firstName: !firstName ? 'First name is required' : undefined,
-                    lastName: !lastName ? 'Last name is required' : undefined
-                }
-            });
-            return;
-        }
-
-        // Validate email format
-        if (!isValidEmail(email)) {
-            res.status(400).json({
-                success: false,
-                message: 'Invalid email format',
-                errors: { email: 'Please enter a valid email address' }
-            });
-            return;
-        }
-
-        // Validate password strength
-        const passwordValidation = isValidPassword(password);
-        if (!passwordValidation.valid) {
-            res.status(400).json({
-                success: false,
-                message: passwordValidation.message,
-                errors: { password: passwordValidation.message }
-            });
-            return;
-        }
+        // Body is already validated & transformed by Zod middleware
+        const { email, password, firstName, lastName, company, phone } = req.body;
 
         // Check if user already exists
         const existingUser = await UserModel.findOne({ email: email.toLowerCase() });
@@ -564,17 +538,10 @@ router.post('/signup', async (req: Request, res: Response) => {
 /**
  * POST /api/auth/signin - Login user
  */
-router.post('/signin', async (req: Request, res: Response) => {
+router.post('/signin', validateBody(signInSchema), async (req: Request, res: Response) => {
     try {
-        const { email, password, rememberMe }: SignInBody = req.body;
-
-        // Validate required fields
-        if (!email || !password) {
-            return res.status(400).json({
-                success: false,
-                message: 'Email and password are required'
-            });
-        }
+        // Body is already validated & transformed by Zod middleware
+        const { email, password, rememberMe } = req.body;
 
         // Find user
         const user = await UserModel.findOne({ email: email.toLowerCase() });
@@ -838,18 +805,12 @@ router.post('/verify-email', async (req: Request, res: Response) => {
 /**
  * POST /api/auth/forgot-password - Request password reset
  */
-router.post('/forgot-password', async (req: Request, res: Response) => {
+router.post('/forgot-password', validateBody(forgotPasswordSchema), async (req: Request, res: Response) => {
     try {
+        // Body is already validated & transformed by Zod middleware
         const { email } = req.body;
 
-        if (!email) {
-            return res.status(400).json({
-                success: false,
-                message: 'Email is required'
-            });
-        }
-
-        const user = await UserModel.findOne({ email: email.toLowerCase() });
+        const user = await UserModel.findOne({ email });
 
         // Always return success to prevent email enumeration
         if (!user) {
@@ -895,25 +856,10 @@ router.post('/forgot-password', async (req: Request, res: Response) => {
 /**
  * POST /api/auth/reset-password - Reset password with token
  */
-router.post('/reset-password', async (req: Request, res: Response) => {
+router.post('/reset-password', validateBody(resetPasswordSchema), async (req: Request, res: Response) => {
     try {
-        const { token, newPassword } = req.body;
-
-        if (!token || !newPassword) {
-            return res.status(400).json({
-                success: false,
-                message: 'Token and new password are required'
-            });
-        }
-
-        // Validate password
-        const passwordValidation = isValidPassword(newPassword);
-        if (!passwordValidation.valid) {
-            return res.status(400).json({
-                success: false,
-                message: passwordValidation.message
-            });
-        }
+        // Body is already validated by Zod middleware
+        const { token, password: newPassword } = req.body;
 
         // Hash token for lookup
         const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
@@ -963,7 +909,7 @@ router.post('/reset-password', async (req: Request, res: Response) => {
 /**
  * PUT /api/auth/profile - Update user profile
  */
-router.put('/profile', async (req: Request, res: Response) => {
+router.put('/profile', validateBody(updateProfileSchema), async (req: Request, res: Response) => {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -1008,7 +954,7 @@ router.put('/profile', async (req: Request, res: Response) => {
 /**
  * POST /api/auth/change-password - Change password
  */
-router.post('/change-password', async (req: Request, res: Response) => {
+router.post('/change-password', validateBody(changePasswordSchema), async (req: Request, res: Response) => {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -1018,23 +964,8 @@ router.post('/change-password', async (req: Request, res: Response) => {
         const token = authHeader.split(' ')[1];
         const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
 
+        // Body is already validated by Zod middleware
         const { currentPassword, newPassword } = req.body;
-
-        if (!currentPassword || !newPassword) {
-            return res.status(400).json({
-                success: false,
-                message: 'Current password and new password are required'
-            });
-        }
-
-        // Validate new password
-        const passwordValidation = isValidPassword(newPassword);
-        if (!passwordValidation.valid) {
-            return res.status(400).json({
-                success: false,
-                message: passwordValidation.message
-            });
-        }
 
         const user = await UserModel.findById(decoded.userId);
         if (!user) {

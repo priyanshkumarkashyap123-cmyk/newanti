@@ -235,6 +235,13 @@ const convertToAnalysisResultsData = (
                 maxShearZ: Math.abs(forces.shearZ ?? 0),
                 maxMomentY: Math.abs(forces.momentY ?? 0),
                 torsion: Math.abs(forces.torsion ?? 0),
+                sectionProps: {
+                    A: memberModel?.A ?? 0.01,
+                    I: memberModel?.I ?? memberModel?.Iz ?? 1e-4,
+                    Iy: memberModel?.Iy ?? 1e-4,
+                    E: memberModel?.E ?? 200000000,  // kN/m² (200 GPa)
+                    fy: 250,  // MPa — steel default
+                },
                 stress: Math.abs(estimatedStress),
                 utilization: util,
                 diagramData: {
@@ -1068,7 +1075,20 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                             onExport={(format) => {
                                 if (format === 'pdf') {
                                     handleExportPDF();
-                                } else if (format === 'excel' || format === 'json') {
+                                } else if (format === 'json') {
+                                    // Direct JSON export with full analysis results
+                                    const data = convertToAnalysisResultsData(analysisResults, nodes, members);
+                                    const jsonStr = JSON.stringify(data, null, 2);
+                                    const blob = new Blob([jsonStr], { type: 'application/json' });
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = `BeamLab_Results_${new Date().toISOString().split('T')[0]}.json`;
+                                    document.body.appendChild(a);
+                                    a.click();
+                                    document.body.removeChild(a);
+                                    URL.revokeObjectURL(url);
+                                } else {
                                     handleExportCSV();
                                 }
                                 setShowDashboard(false);

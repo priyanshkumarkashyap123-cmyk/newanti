@@ -2,6 +2,8 @@ import express, { type Request, type Response, type RequestHandler } from 'expre
 import cors from 'cors';
 import { createServer } from 'http';
 import { clerkMiddleware } from '@clerk/express';
+// Validate environment FIRST — crashes in production if critical vars are missing
+import { env } from './config/env.js';
 import { SocketServer } from './SocketServer.js';
 import analysisRouter from './routes/analysis/index.js';
 import designRouter from './routes/design/index.js';
