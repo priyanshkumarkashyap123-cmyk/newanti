@@ -19,6 +19,7 @@ import React, { useRef, useMemo, useEffect, useState, useCallback } from 'react'
 import { useFrame, useThree, ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useModelStore } from '../../store/model';
+import { GpuResourcePool } from '../../utils/gpuResourcePool';
 
 // ============================================
 // PERFORMANCE THRESHOLDS
@@ -200,15 +201,7 @@ export const UltraLightMembersRenderer: React.FC = React.memo(() => {
     // ============================================
     
     const geometry = useMemo(() => {
-        const geo = new THREE.CylinderGeometry(
-            1, // Will be scaled by matrix
-            1,
-            1, // Length scaled by matrix
-            config.cylinderSegments,
-            1,
-            false // No end caps for performance
-        );
-        return geo;
+        return GpuResourcePool.getCylinderGeometry(1, config.cylinderSegments, false);
     }, [config.cylinderSegments]);
     
     // ============================================
@@ -217,24 +210,23 @@ export const UltraLightMembersRenderer: React.FC = React.memo(() => {
     
     const material = useMemo(() => {
         if (config.useSimpleMaterial) {
-            // Basic material for extreme performance
-            return new THREE.MeshBasicMaterial({
-                color: COLORS.memberBulk,
+            return GpuResourcePool.getBasicMaterial({
+                color: COLORS.memberBulk as unknown as number,
                 wireframe: false,
             });
         }
-        return new THREE.MeshStandardMaterial({
+        return GpuResourcePool.getStandardMaterial({
             metalness: 0.2,
             roughness: 0.8,
-            flatShading: memberCount > THRESHOLDS.LARGE, // Flat shading is faster
+            flatShading: memberCount > THRESHOLDS.LARGE,
         });
     }, [config.useSimpleMaterial, memberCount]);
     
-    // Dispose GPU resources on unmount
+    // Release pool refs on unmount
     useEffect(() => {
         return () => {
-            geometry.dispose();
-            material.dispose();
+            GpuResourcePool.release(geometry);
+            GpuResourcePool.release(material);
         };
     }, [geometry, material]);
     

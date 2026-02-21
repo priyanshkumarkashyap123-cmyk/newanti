@@ -580,7 +580,7 @@ const Scene: React.FC<SceneProps> = ({
         position={[10, 20, 10]}
         intensity={1}
         castShadow
-        shadow-mapSize={[2048, 2048]}
+        shadow-mapSize={[1024, 1024]}
       />
       <pointLight position={[-10, 10, -10]} intensity={0.5} />
 

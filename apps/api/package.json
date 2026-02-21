@@ -13,7 +13,10 @@
         "clean": "rm -rf dist",
         "test": "vitest",
         "test:run": "vitest run",
-        "test:coverage": "vitest run --coverage"
+        "test:coverage": "vitest run --coverage",
+        "migrate": "tsx src/migrations/runner.ts",
+        "migrate:status": "tsx src/migrations/runner.ts --status",
+        "migrate:rollback": "tsx src/migrations/runner.ts --down"
     },
     "dependencies": {
         "@clerk/express": "^1.7.58",

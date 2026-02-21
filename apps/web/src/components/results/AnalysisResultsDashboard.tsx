@@ -12,9 +12,9 @@
  * This is the main entry point for result visualization that engineers will love.
  */
 
-import React, { FC, useState, useMemo, useCallback } from 'react';
+import React, { FC, useState, useMemo, useCallback, useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { IS_COMBINATIONS, ASCE_COMBINATIONS, EC_COMBINATIONS } from '../../services/loads/LoadCombinationsService';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
     BarChart2,
     Activity,
@@ -31,10 +31,8 @@ import {
     ArrowDown,
     ArrowUp,
     ChevronRight,
-    Maximize2,
     Eye,
     EyeOff,
-    RefreshCw,
     Layers,
     Grid3X3
 } from 'lucide-react';
@@ -198,10 +196,8 @@ const SummaryCard: FC<SummaryCardProps> = ({
     trend,
     subtitle 
 }) => (
-    <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-4 hover:border-zinc-600 transition-colors"
+    <div
+        className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-4 hover:border-zinc-600 transition-colors animate-slideUp"
     >
         <div className="flex items-start justify-between">
             <div>
@@ -233,7 +229,7 @@ const SummaryCard: FC<SummaryCardProps> = ({
                 </span>
             </div>
         )}
-    </motion.div>
+    </div>
 );
 
 // ============================================
@@ -327,11 +323,10 @@ const MemberDiagramMini: FC<MemberDiagramMiniProps> = ({
     }, [member, type, isSelected]);
     
     return (
-        <motion.div
-            whileHover={{ scale: 1.02 }}
+        <div
             onClick={onClick}
             className={`
-                relative p-3 rounded-lg border cursor-pointer transition-all
+                relative p-3 rounded-lg border cursor-pointer transition-all hover:scale-[1.02]
                 ${isSelected 
                     ? 'border-blue-500 bg-blue-500/10' 
                     : 'border-zinc-700 hover:border-zinc-600 bg-zinc-800/50'
@@ -364,7 +359,7 @@ const MemberDiagramMini: FC<MemberDiagramMiniProps> = ({
                                         member.maxDeflection)}</span>
                 <span>L: {formatNumber(member.length)}m</span>
             </div>
-        </motion.div>
+        </div>
     );
 };
 
@@ -446,11 +441,9 @@ const ReactionDisplay: FC<ReactionDisplayProps> = ({ nodes }) => {
             {/* Per-node reaction cards */}
             <div className="grid grid-cols-2 gap-4">
                 {supportNodes.map(node => (
-                    <motion.div
+                    <div
                         key={node.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="bg-zinc-800/50 rounded-lg border border-zinc-700 p-4"
+                        className="bg-zinc-800/50 rounded-lg border border-zinc-700 p-4 animate-slideIn"
                     >
                         <div className="flex items-center justify-between mb-3">
                             <span className="font-medium text-white">Node {node.id}</span>
@@ -477,7 +470,7 @@ const ReactionDisplay: FC<ReactionDisplayProps> = ({ nodes }) => {
                                 </div>
                             </div>
                         )}
-                    </motion.div>
+                    </div>
                 ))}
             </div>
         </div>
@@ -538,6 +531,17 @@ const DetailedMemberTable: FC<DetailedMemberTableProps> = ({ members, onSelect }
         { key: 'utilization', label: 'D/C' }
     ];
     
+    const ROW_HEIGHT = 36;
+    const MAX_VISIBLE_HEIGHT = 480; // ~13 rows visible at once
+    const parentRef = useRef<HTMLDivElement>(null);
+    
+    const rowVirtualizer = useVirtualizer({
+        count: sortedMembers.length,
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => ROW_HEIGHT,
+        overscan: 8,
+    });
+
     return (
         <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -562,45 +566,68 @@ const DetailedMemberTable: FC<DetailedMemberTableProps> = ({ members, onSelect }
                         ))}
                     </tr>
                 </thead>
-                <tbody>
-                    {sortedMembers.map(member => {
-                        const status = getUtilizationStatus(member.utilization);
-                        
-                        return (
-                            <motion.tr
-                                key={member.id}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                onClick={() => onSelect(member.id)}
-                                className="border-b border-zinc-800 hover:bg-zinc-800/50 cursor-pointer transition-colors"
-                            >
-                                <td className="px-3 py-2 font-medium text-white">M{member.id}</td>
-                                <td className="px-3 py-2 text-xs text-zinc-400">{member.sectionType || '—'}</td>
-                                <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.length)}</td>
-                                <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.maxShear)}</td>
-                                <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.maxShearZ ?? 0)}</td>
-                                <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.maxMoment)}</td>
-                                <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.maxMomentY ?? 0)}</td>
-                                <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.maxAxial)}</td>
-                                <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.torsion ?? 0)}</td>
-                                <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.maxDeflection)}</td>
-                                <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.stress)}</td>
-                                <td className="px-3 py-2">
-                                    <span className={`
-                                        px-2 py-0.5 rounded text-xs font-medium
-                                        ${status === 'safe' ? 'bg-green-500/20 text-green-400' : ''}
-                                        ${status === 'warning' ? 'bg-yellow-500/20 text-yellow-400' : ''}
-                                        ${status === 'critical' ? 'bg-orange-500/20 text-orange-400' : ''}
-                                        ${status === 'failed' ? 'bg-red-500/20 text-red-400' : ''}
-                                    `}>
-                                        {(member.utilization * 100).toFixed(1)}%
-                                    </span>
-                                </td>
-                            </motion.tr>
-                        );
-                    })}
-                </tbody>
             </table>
+            <div
+                ref={parentRef}
+                className="overflow-y-auto"
+                style={{ maxHeight: MAX_VISIBLE_HEIGHT }}
+            >
+                <table className="w-full text-sm">
+                    <tbody
+                        style={{
+                            height: `${rowVirtualizer.getTotalSize()}px`,
+                            position: 'relative',
+                            display: 'block',
+                        }}
+                    >
+                        {rowVirtualizer.getVirtualItems().map(virtualRow => {
+                            const member = sortedMembers[virtualRow.index];
+                            if (!member) return null;
+                            const status = getUtilizationStatus(member.utilization);
+                            
+                            return (
+                                <tr
+                                    key={member.id}
+                                    onClick={() => onSelect(member.id)}
+                                    className="border-b border-zinc-800 hover:bg-zinc-800/50 cursor-pointer transition-colors"
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        width: '100%',
+                                        height: `${virtualRow.size}px`,
+                                        transform: `translateY(${virtualRow.start}px)`,
+                                        display: 'table-row',
+                                    }}
+                                >
+                                    <td className="px-3 py-2 font-medium text-white">M{member.id}</td>
+                                    <td className="px-3 py-2 text-xs text-zinc-400">{member.sectionType || '—'}</td>
+                                    <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.length)}</td>
+                                    <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.maxShear)}</td>
+                                    <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.maxShearZ ?? 0)}</td>
+                                    <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.maxMoment)}</td>
+                                    <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.maxMomentY ?? 0)}</td>
+                                    <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.maxAxial)}</td>
+                                    <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.torsion ?? 0)}</td>
+                                    <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.maxDeflection)}</td>
+                                    <td className="px-3 py-2 font-mono text-zinc-300">{formatNumber(member.stress)}</td>
+                                    <td className="px-3 py-2">
+                                        <span className={`
+                                            px-2 py-0.5 rounded text-xs font-medium
+                                            ${status === 'safe' ? 'bg-green-500/20 text-green-400' : ''}
+                                            ${status === 'warning' ? 'bg-yellow-500/20 text-yellow-400' : ''}
+                                            ${status === 'critical' ? 'bg-orange-500/20 text-orange-400' : ''}
+                                            ${status === 'failed' ? 'bg-red-500/20 text-red-400' : ''}
+                                        `}>
+                                            {(member.utilization * 100).toFixed(1)}%
+                                        </span>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };
@@ -611,7 +638,7 @@ const DetailedMemberTable: FC<DetailedMemberTableProps> = ({ members, onSelect }
 
 export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
     results,
-    onClose,
+    onClose: _onClose,
     onExport,
     onMemberSelect
 }) => {
@@ -630,10 +657,8 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
     }, [onMemberSelect]);
     
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden"
+        <div
+            className="bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden animate-fadeIn"
         >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 bg-zinc-800/50 border-b border-zinc-800">
@@ -683,14 +708,12 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                     const isActive = viewMode === mode.id;
                     
                     return (
-                        <motion.button
+                        <button
                             key={mode.id}
                             onClick={() => setViewMode(mode.id)}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
                             className={`
                                 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-                                transition-all border
+                                transition-all border active:scale-[0.98] hover:scale-[1.02]
                                 ${isActive 
                                     ? 'bg-white text-black border-white' 
                                     : 'border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-600'
@@ -699,23 +722,19 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                         >
                             <Icon className="w-4 h-4" />
                             {mode.label}
-                        </motion.button>
+                        </button>
                     );
                 })}
             </div>
             
             {/* Content Area */}
             <div className="p-6">
-                <AnimatePresence mode="wait">
-                    {/* Overview Mode */}
-                    {viewMode === 'overview' && (
-                        <motion.div
-                            key="overview"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            className="space-y-6"
-                        >
+                {/* Overview Mode */}
+                {viewMode === 'overview' && (
+                    <div
+                        key="overview"
+                        className="space-y-6 animate-slideUp"
+                    >
                             {/* Summary Cards */}
                             <div className="grid grid-cols-5 gap-4">
                                 <SummaryCard
@@ -882,17 +901,14 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                                     </>);
                                 })()}
                             </div>
-                        </motion.div>
+                        </div>
                     )}
                     
                     {/* Diagrams Mode */}
                     {viewMode === 'diagrams' && (
-                        <motion.div
+                        <div
                             key="diagrams"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            className="space-y-4"
+                            className="space-y-4 animate-slideUp"
                         >
                             {/* Diagram Type Selector */}
                             <div className="flex items-center gap-2">
@@ -925,16 +941,14 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                                     />
                                 ))}
                             </div>
-                        </motion.div>
+                        </div>
                     )}
                     
                     {/* Reactions Mode */}
                     {viewMode === 'reactions' && (
-                        <motion.div
+                        <div
                             key="reactions"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
+                            className="animate-slideUp"
                         >
                             <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide mb-4">
                                 Support Reactions
@@ -1000,16 +1014,14 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                                     );
                                 })()}
                             </div>
-                        </motion.div>
+                        </div>
                     )}
                     
                     {/* Detailed Table Mode */}
                     {viewMode === 'detailed' && (
-                        <motion.div
+                        <div
                             key="detailed"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
+                            className="animate-slideUp"
                         >
                             <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide mb-4">
                                 Detailed Member Results
@@ -1018,17 +1030,14 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                                 members={members} 
                                 onSelect={handleMemberSelect}
                             />
-                        </motion.div>
+                        </div>
                     )}
 
                     {/* Stability — P-M Interaction, Euler Buckling, Approx. Modal */}
                     {viewMode === 'stability' && (
-                        <motion.div
+                        <div
                             key="stability"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            className="space-y-6"
+                            className="space-y-6 animate-slideUp"
                         >
                             {/* ── Euler Buckling Check ── */}
                             <div>
@@ -1413,17 +1422,14 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                                     </div>
                                 </div>
                             </div>
-                        </motion.div>
+                        </div>
                     )}
 
                     {/* Load Combinations Reference */}
                     {viewMode === 'loadCombos' && (
-                        <motion.div
+                        <div
                             key="loadCombos"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            className="space-y-6"
+                            className="space-y-6 animate-slideUp"
                         >
                             {/* Info notice */}
                             <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 flex items-start gap-3">
@@ -1516,17 +1522,14 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                                     </div>
                                 </div>
                             </div>
-                        </motion.div>
+                        </div>
                     )}
 
                     {/* D/C Ratio Summary with Deflection Limit Checks */}
                     {viewMode === 'dcRatio' && (
-                        <motion.div
+                        <div
                             key="dcRatio"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            className="space-y-6"
+                            className="space-y-6 animate-slideUp"
                         >
                             {/* Overall summary bar */}
                             <div className="grid grid-cols-4 gap-4">
@@ -1765,15 +1768,12 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                                     );
                                 })()}
                             </div>
-                        </motion.div>
+                        </div>
                     )}
                     {viewMode === 'heatmap' && (
-                        <motion.div
+                        <div
                             key="heatmap"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            className="space-y-4"
+                            className="space-y-4 animate-slideUp"
                         >
                             <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide">
                                 Stress / Utilization Heat Map
@@ -1871,9 +1871,8 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                                         );
                                     })}
                             </div>
-                        </motion.div>
+                        </div>
                     )}
-                </AnimatePresence>
             </div>
             
             {/* Footer */}
@@ -1907,7 +1906,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                     </button>
                 </div>
             </div>
-        </motion.div>
+        </div>
     );
 };
 

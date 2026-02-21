@@ -18,11 +18,8 @@ import {
   type AnalysisModel,
   type StaticResult,
   type ModalResult,
-  type BucklingResult,
-  type SpectrumResult,
   type DesignCheckResult,
   type SteelSection,
-  type JobStatus,
   type ProgressEvent,
 } from '../api/rustApi';
 

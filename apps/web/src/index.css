@@ -459,16 +459,34 @@ textarea::placeholder {
    Utility Classes
    ============================================ */
 
-.fade-in {
+.fade-in,
+.animate-fadeIn {
   animation: fadeIn 0.3s ease-out;
 }
 
-.slide-up {
-  animation: slideUp 0.3s ease-out;
+.slide-up,
+.animate-slideUp {
+  animation: slideUp 0.25s ease-out;
+}
+
+.animate-slideIn {
+  animation: slideIn 0.25s ease-out;
 }
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
+}
+
+/* Respect reduced-motion preferences for all custom animations */
+@media (prefers-reduced-motion: reduce) {
+  .fade-in,
+  .animate-fadeIn,
+  .slide-up,
+  .animate-slideUp,
+  .animate-slideIn,
+  .animate-float {
+    animation: none !important;
+  }
 }
 
 .loading-spinner {

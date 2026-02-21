@@ -21,7 +21,7 @@ import { computeTruss2DStiffness, computeTruss2DMemberForces } from '../solvers/
 import { computeTruss3DStiffness, computeTruss3DMemberForces, computeMemberGeometry3D } from '../solvers/elements/compute-truss-3d';
 import { computeSpringStiffness, computeSpringForces } from '../solvers/elements/compute-spring';
 import { computeGeometricStiffness } from '../solvers/elements/compute-geometric-stiffness';
-import { computeConsistentFrameMass, computeConsistentTrussMass, computeLumpedMass } from '../solvers/elements/compute-mass';
+import { computeConsistentTrussMass, computeLumpedMass } from '../solvers/elements/compute-mass';
 
 // Solver options type (inline for worker)
 interface SolverOptions {
@@ -206,7 +206,7 @@ class SparseMatrix {
 
     get(row: number, col: number): number {
         for (let i = 0; i < this.count; i++) {
-            if (this.rowArr[i] === row && this.colArr[i] === col) return this.valArr[i];
+            if (this.rowArr[i] === row && this.colArr[i] === col) return this.valArr[i]!;
         }
         return 0;
     }
@@ -217,9 +217,9 @@ class SparseMatrix {
                 if (Math.abs(value) < 1e-15) {
                     // Remove entry by swapping with last
                     this.count--;
-                    this.rowArr[i] = this.rowArr[this.count];
-                    this.colArr[i] = this.colArr[this.count];
-                    this.valArr[i] = this.valArr[this.count];
+                    this.rowArr[i] = this.rowArr[this.count]!;
+                    this.colArr[i] = this.colArr[this.count]!;
+                    this.valArr[i] = this.valArr[this.count]!;
                 } else {
                     this.valArr[i] = value;
                 }
@@ -256,7 +256,8 @@ class SparseMatrix {
         const diag = new Float64Array(Math.min(this.rows, this.cols));
         for (let i = 0; i < this.count; i++) {
             if (this.rowArr[i] === this.colArr[i]) {
-                diag[this.rowArr[i]] += this.valArr[i];
+                const ri = this.rowArr[i] as number;
+                diag[ri] = (diag[ri] ?? 0) + (this.valArr[i] ?? 0);
             }
         }
         this.diagCache = diag;
@@ -268,7 +269,9 @@ class SparseMatrix {
         const y = new Float64Array(this.rows);
         const r = this.rowArr, c = this.colArr, v = this.valArr;
         for (let i = 0; i < this.count; i++) {
-            y[r[i]] += v[i] * x[c[i]];
+            const ri = r[i] as number;
+            const ci = c[i] as number;
+            y[ri] = (y[ri] ?? 0) + (v[i] ?? 0) * (x[ci] ?? 0);
         }
         return y;
     }
@@ -277,7 +280,7 @@ class SparseMatrix {
     getEntries(): { row: number; col: number; value: number }[] {
         const entries: { row: number; col: number; value: number }[] = new Array(this.count);
         for (let i = 0; i < this.count; i++) {
-            entries[i] = { row: this.rowArr[i], col: this.colArr[i], value: this.valArr[i] };
+            entries[i] = { row: this.rowArr[i]!, col: this.colArr[i]!, value: this.valArr[i]! };
         }
         return entries;
     }

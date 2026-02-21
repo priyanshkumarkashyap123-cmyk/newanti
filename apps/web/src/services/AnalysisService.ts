@@ -534,7 +534,9 @@ class AnalysisService {
 
     /**
      * Poll for async job results with exponential backoff and timeout
+     * Reserved for async backend polling (Phase 2)
      */
+    // @ts-expect-error Reserved for Phase 2 async polling
     private async pollForResults(
         jobId: string,
         onProgress?: ProgressCallback,

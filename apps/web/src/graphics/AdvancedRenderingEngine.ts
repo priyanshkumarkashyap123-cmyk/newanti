@@ -18,6 +18,7 @@
  */
 
 import * as THREE from 'three';
+// Core post-processing (lightweight, always needed)
 // @ts-ignore - Three.js postprocessing types may not be perfectly typed
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 // @ts-ignore
@@ -25,17 +26,16 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 // @ts-ignore
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 // @ts-ignore
-import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass.js';
-// @ts-ignore
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
-// @ts-ignore
-import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js';
-// @ts-ignore
-import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
-// @ts-ignore
-import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
-// @ts-ignore
 import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectionShader.js';
+
+// Heavy post-processing passes — lazy-loaded on demand to reduce initial bundle (~200KB savings)
+// SSAOPass, UnrealBloomPass, SMAAPass, OutlinePass, FXAAShader are loaded only when the
+// corresponding config flags are enabled.
+const lazySSAOPass = () => import('three/examples/jsm/postprocessing/SSAOPass.js').then(m => m.SSAOPass);
+const lazyUnrealBloomPass = () => import('three/examples/jsm/postprocessing/UnrealBloomPass.js').then(m => m.UnrealBloomPass);
+const lazySMAAPass = () => import('three/examples/jsm/postprocessing/SMAAPass.js').then(m => m.SMAAPass);
+const lazyOutlinePass = () => import('three/examples/jsm/postprocessing/OutlinePass.js').then(m => m.OutlinePass);
+const lazyFXAAShader = () => import('three/examples/jsm/shaders/FXAAShader.js').then(m => m.FXAAShader);
 
 // ============================================
 // TYPE DEFINITIONS
@@ -364,19 +364,19 @@ export class AdvancedRenderingEngine {
   private static readonly MAX_MATERIAL_CACHE = 256;
 
   constructor(canvas: HTMLCanvasElement, config?: Partial<RenderingConfig>) {
-    // Default configuration
+    // Default configuration — optimized for low memory usage
     this.config = {
-      quality: 'high',
-      enableSSAO: true,
+      quality: 'medium',
+      enableSSAO: false,
       enableShadows: true,
       enableBloom: false,
       enableOutlines: true,
       enableAntialiasing: true,
-      shadowMapSize: 2048,
-      maxLights: 4,
+      shadowMapSize: 1024,
+      maxLights: 3,
       backgroundColor: '#0a0a0f',
       gridColor: '#1a1a2e',
-      enableHDR: true,
+      enableHDR: false,
       toneMapping: THREE.ACESFilmicToneMapping,
       exposure: 1.0,
       ...config
@@ -467,7 +467,7 @@ export class AdvancedRenderingEngine {
     this.directionalLights.push(rimLight);
     this.scene.add(rimLight);
 
-    // Setup post-processing
+    // Setup post-processing (async — heavy passes loaded on demand)
     this.composer = new EffectComposer(this.renderer);
     
     this.renderPass = new RenderPass(this.scene, this.camera);
@@ -482,56 +482,80 @@ export class AdvancedRenderingEngine {
   }
 
   /**
-   * Setup post-processing pipeline
+   * Setup post-processing pipeline.
+   * Heavy passes (SSAO, Bloom, SMAA, Outline, FXAA) are lazy-loaded to
+   * keep the initial bundle small and avoid allocating GPU resources for
+   * features that may never be used.
    */
-  private setupPostProcessing(): void {
+  private async setupPostProcessing(): Promise<void> {
     const width = this.renderer.domElement.clientWidth;
     const height = this.renderer.domElement.clientHeight;
 
-    // SSAO - Screen Space Ambient Occlusion
+    // SSAO - Screen Space Ambient Occlusion (heavy — ~16 MB GPU for depth buffer)
     if (this.config.enableSSAO && this.config.quality !== 'low') {
-      this.ssaoPass = new SSAOPass(this.scene, this.camera, width, height);
-      this.ssaoPass.kernelRadius = this.config.quality === 'ultra' ? 16 : 8;
-      this.ssaoPass.minDistance = 0.005;
-      this.ssaoPass.maxDistance = 0.1;
-      this.composer.addPass(this.ssaoPass);
+      try {
+        const SSAOPassClass = await lazySSAOPass();
+        this.ssaoPass = new SSAOPassClass(this.scene, this.camera, width, height);
+        this.ssaoPass.kernelRadius = this.config.quality === 'ultra' ? 16 : 8;
+        this.ssaoPass.minDistance = 0.005;
+        this.ssaoPass.maxDistance = 0.1;
+        this.composer.addPass(this.ssaoPass);
+      } catch (e) {
+        console.warn('[RenderEngine] SSAO pass failed to load:', e);
+      }
     }
 
     // Outline pass for selection
     if (this.config.enableOutlines) {
-      this.outlinePass = new OutlinePass(
-        new THREE.Vector2(width, height),
-        this.scene,
-        this.camera
-      );
-      this.outlinePass.visibleEdgeColor = this.selectionConfig.selectionColor;
-      this.outlinePass.hiddenEdgeColor = new THREE.Color(0x222266);
-      this.outlinePass.edgeStrength = 3;
-      this.outlinePass.edgeGlow = 0.5;
-      this.outlinePass.edgeThickness = this.selectionConfig.outlineWidth;
-      this.composer.addPass(this.outlinePass);
+      try {
+        const OutlinePassClass = await lazyOutlinePass();
+        this.outlinePass = new OutlinePassClass(
+          new THREE.Vector2(width, height),
+          this.scene,
+          this.camera
+        );
+        this.outlinePass.visibleEdgeColor = this.selectionConfig.selectionColor;
+        this.outlinePass.hiddenEdgeColor = new THREE.Color(0x222266);
+        this.outlinePass.edgeStrength = 3;
+        this.outlinePass.edgeGlow = 0.5;
+        this.outlinePass.edgeThickness = this.selectionConfig.outlineWidth;
+        this.composer.addPass(this.outlinePass);
+      } catch (e) {
+        console.warn('[RenderEngine] Outline pass failed to load:', e);
+      }
     }
 
     // Bloom for emissive materials
     if (this.config.enableBloom) {
-      this.bloomPass = new UnrealBloomPass(
-        new THREE.Vector2(width, height),
-        0.5, // strength
-        0.4, // radius
-        0.85 // threshold
-      );
-      this.composer.addPass(this.bloomPass);
+      try {
+        const UnrealBloomPassClass = await lazyUnrealBloomPass();
+        this.bloomPass = new UnrealBloomPassClass(
+          new THREE.Vector2(width, height),
+          0.5, // strength
+          0.4, // radius
+          0.85 // threshold
+        );
+        this.composer.addPass(this.bloomPass);
+      } catch (e) {
+        console.warn('[RenderEngine] Bloom pass failed to load:', e);
+      }
     }
 
     // Anti-aliasing
     if (this.config.enableAntialiasing) {
-      if (this.config.quality === 'ultra') {
-        this.smaaPass = new SMAAPass(width, height);
-        this.composer.addPass(this.smaaPass);
-      } else {
-        this.fxaaPass = new ShaderPass(FXAAShader);
-        this.fxaaPass.uniforms['resolution'].value.set(1 / width, 1 / height);
-        this.composer.addPass(this.fxaaPass);
+      try {
+        if (this.config.quality === 'ultra') {
+          const SMAAPassClass = await lazySMAAPass();
+          this.smaaPass = new SMAAPassClass(width, height);
+          this.composer.addPass(this.smaaPass);
+        } else {
+          const FXAAShaderDef = await lazyFXAAShader();
+          this.fxaaPass = new ShaderPass(FXAAShaderDef);
+          this.fxaaPass.uniforms['resolution'].value.set(1 / width, 1 / height);
+          this.composer.addPass(this.fxaaPass);
+        }
+      } catch (e) {
+        console.warn('[RenderEngine] Anti-aliasing pass failed to load:', e);
       }
     }
 

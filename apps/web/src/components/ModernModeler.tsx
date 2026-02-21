@@ -19,33 +19,29 @@ import {
     Ruler,
     ChevronLeft,
     ChevronRight,
-    PanelLeftClose,
-    PanelLeftOpen,
-    HelpCircle,
     Landmark
 } from 'lucide-react';
 import { useUIStore, Category } from '../store/uiStore';
 import { useModelStore, saveProjectToStorage } from '../store/model';
-import { SmartSidebar } from './layout/SmartSidebar';
 import { ViewportManager } from './ViewportManager';
 // import { Toolbar } from './Toolbar'; // Replaced by Ribbon
 import { PropertiesPanel } from './PropertiesPanel';
-import { ResultsTable } from './ResultsTable';
+// ResultsTable — replaced by AnalysisResultsDashboard
 
 // New layout components
 import { WorkflowSidebar } from './layout/WorkflowSidebar';
 import { EngineeringRibbon } from './layout/EngineeringRibbon';
 
 // New workflow components
-import { AnalysisWorkflow } from './AnalysisWorkflow'; // Keep for now if types rely on it or if used in stepper
+// AnalysisWorkflow replaced by AnalysisProgressModal stepper
 import { AnalysisProgressModal, type AnalysisStage } from './AnalysisProgressModal';
 import { QuickStartModal } from './QuickStartModal';
 import { ProjectDetailsDialog } from './ProjectDetailsDialog';
 import { ResultsToolbar } from './results/ResultsToolbar';
 import ModalControls from './ModalControls';
-import { AICommandCenter, AutonomousAIAgent } from './ai';
+import { AutonomousAIAgent } from './ai';
 import { LoadInputDialog } from './ui/LoadInputDialog';
-import { TutorialOverlay } from './TutorialOverlay';
+// TutorialOverlay deferred to Phase 2
 import { validateStructure } from '../utils/structuralValidation';
 
 // ---- Lazy-loaded dialogs & panels (only fetched when opened) ----
@@ -82,7 +78,7 @@ const DeadLoadGenerator = lazy(() => import('./DeadLoadGenerator').then(m => ({ 
 import { useToast } from './ui/ToastSystem';
 import { ModelingToolbar } from './toolbar/ModelingToolbar';
 import type { Node, Member } from '../store/model';
-import consentService from '../services/ConsentService';
+// ConsentService — consumed via useCheckLegalConsent hook
 import { useAuth } from '../providers/AuthProvider';
 import { useSubscription } from '../hooks/useSubscription';
 
@@ -132,14 +128,14 @@ const CATEGORY_TABS: TabConfig[] = [
 ];
 
 // Map workflow steps to categories
-const STEP_TO_CATEGORY: Category[] = ['MODELING', 'MODELING', 'LOADING', 'ANALYSIS', 'ANALYSIS'];
+// Step-to-category mapping now handled by WorkflowSidebar
 
 // ============================================
 // CATEGORY SWITCHER
 // ============================================
 
 const CategorySwitcher: FC = memo(() => {
-    const { activeCategory, setCategory, notification, hideNotification } = useUIStore();
+    const { activeCategory, setCategory } = useUIStore();
 
     return (
         <>
@@ -389,7 +385,6 @@ export const ModernModeler: FC = () => {
     }, []);
 
 
-    const showResults = useModelStore((state) => state.showResults);
     const nodes = useModelStore((state) => state.nodes);
     const members = useModelStore((state) => state.members);
     const loads = useModelStore((state) => state.loads);
@@ -565,8 +560,7 @@ export const ModernModeler: FC = () => {
     // Export state
     const [showExportDialog, setShowExportDialog] = useState(false);
 
-    // AI Assistant state
-    const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
+    // Modal Analysis state
     const [showModalAnalysis, setShowModalAnalysis] = useState(false);
 
     // Command Palette state (Cmd+K)
@@ -1240,7 +1234,8 @@ export const ModernModeler: FC = () => {
                 });
                 window.dispatchEvent(event);
 
-                setIsAIAssistantOpen(true);
+                // Open AI assistant via modal system
+                openModal('aiAssistant' as any);
                 showNotification('error', 'Analysis failed. AI Architect is analyzing the issue...');
             }
         } catch (err) {
@@ -1298,7 +1293,9 @@ export const ModernModeler: FC = () => {
         if (analysisStage === 'complete') {
             setCategory('ANALYSIS');
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [analysisStage, setCategory]);
+    void handleCloseProgressModal; // referenced via event handlers
 
     // Workflow state
     // const [activeStep, setActiveStep] = useState(0); // Removed
@@ -1307,8 +1304,7 @@ export const ModernModeler: FC = () => {
     // Quick start modal
     // const [showQuickStart, setShowQuickStart] = useState(false); // Moved to top
 
-    // Tutorial overlay for first-time users
-    const [showTutorial, setShowTutorial] = useState(false);
+    // Tutorial overlay deferred to Phase 2
 
     // Legal consent state
     // const { hasConsent } = useCheckLegalConsent(); // Moved to top
@@ -1320,7 +1316,8 @@ export const ModernModeler: FC = () => {
     // const closeModal = useUIStore((s) => s.closeModal); // Moved to top
 
     // Alias modal states for cleaner code
-    const showStructureWizard = modals.structureWizard;
+    const _showStructureWizard = modals.structureWizard;
+    void _showStructureWizard; // accessed via modals.structureWizard directly
     const showFoundationDesign = modals.foundationDesign;
     const showIS875Load = modals.is875Load;
     const showGeometryTools = modals.geometryTools;
@@ -1577,7 +1574,7 @@ export const ModernModeler: FC = () => {
                                         onAssignLoad: () => openModal('loadDialog'),
                                         onMerge: () => {
                                             const nodeIds = Array.from(selectedIds).filter(id => id.startsWith('N'));
-                                            if (nodeIds.length >= 2) {
+                                            if (nodeIds.length >= 2 && nodeIds[0] && nodeIds[1]) {
                                                 useModelStore.getState().mergeNodes(nodeIds[0], nodeIds[1]);
                                             }
                                         },
@@ -1895,7 +1892,7 @@ export const ModernModeler: FC = () => {
                             setShowValidationErrors(false);
                             setValidationErrors(null);
                         }}
-                        onAutoFix={(issue) => {
+                        onAutoFix={(_issue) => {
                             // Run auto-fix from model store
                             const result = useModelStore.getState().autoFixModel();
                             uiLogger.log('Auto-fix result:', result);

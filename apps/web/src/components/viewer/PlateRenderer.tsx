@@ -1,13 +1,14 @@
 /**
- * PlateRenderer.tsx - Render Plate/Shell Elements in 3D
+ * PlateRenderer.tsx - Render Plate/Shell Elements in 3D (Optimised)
  * 
- * Renders quadrilateral plate elements as transparent surfaces
- * with edge highlighting and optional stress coloring.
+ * Renders ALL quadrilateral plate elements with merged BufferGeometry
+ * to minimise draw calls and GPU memory:
+ *   - Single mesh for all plate surfaces (per-vertex colour for selection)
+ *   - Single LineSegments for all edges
+ *   - Optional single offset mesh for thickness visualisation
  */
 
-import React, { FC, useEffect, useMemo } from 'react';
-import { useThree } from '@react-three/fiber';
-import { Line } from '@react-three/drei';
+import { FC, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useModelStore, Plate, Node } from '../../store/model';
 
@@ -20,29 +21,58 @@ interface PlateRendererProps {
     stressColorScale?: 'displacement' | 'stress' | 'utilization';
 }
 
+// Colours
+const COL_DEFAULT = new THREE.Color('#6366f1');
+const COL_SELECTED = new THREE.Color('#a855f7');
+const EDGE_DEFAULT = new THREE.Color('#818cf8');
+const EDGE_SELECTED = new THREE.Color('#f472b6');
+const BACK_DEFAULT = new THREE.Color('#4f46e5');
+const BACK_SELECTED = new THREE.Color('#7c3aed');
+
+// Shared materials (created once, never disposed)
+const SURFACE_MAT = new THREE.MeshStandardMaterial({
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.45,
+    side: THREE.DoubleSide,
+});
+const EDGE_MAT = new THREE.LineBasicMaterial({
+    vertexColors: true,
+});
+const BACK_MAT = new THREE.MeshStandardMaterial({
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.2,
+    side: THREE.DoubleSide,
+});
+
 // ============================================
 // COMPONENT
 // ============================================
 
-export const PlateRenderer: FC<PlateRendererProps> = ({ showStress = false }) => {
+export const PlateRenderer: FC<PlateRendererProps> = ({ showStress: _showStress = false }) => {
     const nodes = useModelStore((s) => s.nodes);
     const plates = useModelStore((s) => s.plates);
     const selectedIds = useModelStore((s) => s.selectedIds);
 
-    // Convert plates to renderable geometries
-    const plateGeometries = useMemo(() => {
-        const geometries: Array<{
-            plate: Plate;
-            vertices: THREE.Vector3[];
-            isSelected: boolean;
+    const surfaceRef = useRef<THREE.Mesh>(null);
+    const edgesRef = useRef<THREE.LineSegments>(null);
+    const backRef = useRef<THREE.Mesh>(null);
+
+    // Build merged geometry data
+    const { surfaceGeo, edgesGeo, backGeo, count } = useMemo(() => {
+        // Collect valid plates
+        const validPlates: Array<{
+            verts: THREE.Vector3[];
+            thickness: number;
+            selected: boolean;
         }> = [];
 
-        plates.forEach((plate) => {
+        plates.forEach((plate: Plate) => {
             const verts: THREE.Vector3[] = [];
             let valid = true;
-
             for (const nodeId of plate.nodeIds) {
-                const node = nodes.get(nodeId);
+                const node: Node | undefined = nodes.get(nodeId);
                 if (node) {
                     verts.push(new THREE.Vector3(node.x, node.y, node.z));
                 } else {
@@ -50,126 +80,132 @@ export const PlateRenderer: FC<PlateRendererProps> = ({ showStress = false }) =>
                     break;
                 }
             }
-
             if (valid && verts.length === 4) {
-                geometries.push({
-                    plate,
-                    vertices: verts,
-                    isSelected: selectedIds.has(plate.id),
+                validPlates.push({
+                    verts,
+                    thickness: plate.thickness,
+                    selected: selectedIds.has(plate.id),
                 });
             }
         });
 
-        return geometries;
+        const n = validPlates.length;
+        if (n === 0) {
+            return { surfaceGeo: null, edgesGeo: null, backGeo: null, count: 0 };
+        }
+
+        // ----- Surface geometry (6 verts per plate: 2 tris) -----
+        const sPositions = new Float32Array(n * 6 * 3);
+        const sNormals = new Float32Array(n * 6 * 3);
+        const sColors = new Float32Array(n * 6 * 3);
+
+        // ----- Back (thickness) geometry (same topology, offset by -thickness in normal dir) -----
+        const bPositions = new Float32Array(n * 6 * 3);
+        const bNormals = new Float32Array(n * 6 * 3);
+        const bColors = new Float32Array(n * 6 * 3);
+
+        // ----- Edges (4 line segments per plate = 8 verts * 3) -----
+        const ePositions = new Float32Array(n * 8 * 3);
+        const eColors = new Float32Array(n * 8 * 3);
+
+        const _v1 = new THREE.Vector3();
+        const _v2 = new THREE.Vector3();
+        const _normal = new THREE.Vector3();
+
+        for (let i = 0; i < n; i++) {
+            const plate = validPlates[i];
+            if (!plate) continue;
+            const { verts, thickness, selected } = plate;
+            const col = selected ? COL_SELECTED : COL_DEFAULT;
+            const ecol = selected ? EDGE_SELECTED : EDGE_DEFAULT;
+            const bcol = selected ? BACK_SELECTED : BACK_DEFAULT;
+
+            // Normal
+            _v1.subVectors(verts[1], verts[0]);
+            _v2.subVectors(verts[2], verts[0]);
+            _normal.crossVectors(_v1, _v2).normalize();
+
+            // Surface triangles (0-1-2, 0-2-3)
+            const si = i * 18; // 6 verts * 3
+            const triOrder = [0, 1, 2, 0, 2, 3];
+            for (let t = 0; t < 6; t++) {
+                const v = verts[triOrder[t]];
+                sPositions[si + t * 3] = v.x;
+                sPositions[si + t * 3 + 1] = v.y;
+                sPositions[si + t * 3 + 2] = v.z;
+                sNormals[si + t * 3] = _normal.x;
+                sNormals[si + t * 3 + 1] = _normal.y;
+                sNormals[si + t * 3 + 2] = _normal.z;
+                sColors[si + t * 3] = col.r;
+                sColors[si + t * 3 + 1] = col.g;
+                sColors[si + t * 3 + 2] = col.b;
+
+                // Back face offset along normal
+                bPositions[si + t * 3] = v.x - _normal.x * thickness;
+                bPositions[si + t * 3 + 1] = v.y - _normal.y * thickness;
+                bPositions[si + t * 3 + 2] = v.z - _normal.z * thickness;
+                bNormals[si + t * 3] = -_normal.x;
+                bNormals[si + t * 3 + 1] = -_normal.y;
+                bNormals[si + t * 3 + 2] = -_normal.z;
+                bColors[si + t * 3] = bcol.r;
+                bColors[si + t * 3 + 1] = bcol.g;
+                bColors[si + t * 3 + 2] = bcol.b;
+            }
+
+            // Edges: 4 segments → (0-1, 1-2, 2-3, 3-0)
+            const ei = i * 24; // 8 verts * 3
+            const edgeOrder = [0, 1, 1, 2, 2, 3, 3, 0];
+            for (let e = 0; e < 8; e++) {
+                const v = verts[edgeOrder[e]];
+                ePositions[ei + e * 3] = v.x;
+                ePositions[ei + e * 3 + 1] = v.y;
+                ePositions[ei + e * 3 + 2] = v.z;
+                eColors[ei + e * 3] = ecol.r;
+                eColors[ei + e * 3 + 1] = ecol.g;
+                eColors[ei + e * 3 + 2] = ecol.b;
+            }
+        }
+
+        const sg = new THREE.BufferGeometry();
+        sg.setAttribute('position', new THREE.BufferAttribute(sPositions, 3));
+        sg.setAttribute('normal', new THREE.BufferAttribute(sNormals, 3));
+        sg.setAttribute('color', new THREE.BufferAttribute(sColors, 3));
+
+        const eg = new THREE.BufferGeometry();
+        eg.setAttribute('position', new THREE.BufferAttribute(ePositions, 3));
+        eg.setAttribute('color', new THREE.BufferAttribute(eColors, 3));
+
+        const bg = new THREE.BufferGeometry();
+        bg.setAttribute('position', new THREE.BufferAttribute(bPositions, 3));
+        bg.setAttribute('normal', new THREE.BufferAttribute(bNormals, 3));
+        bg.setAttribute('color', new THREE.BufferAttribute(bColors, 3));
+
+        return { surfaceGeo: sg, edgesGeo: eg, backGeo: bg, count: n };
     }, [plates, nodes, selectedIds]);
 
-    if (plateGeometries.length === 0) return null;
+    // Dispose old geometries on unmount / re-build
+    useEffect(() => {
+        return () => {
+            surfaceGeo?.dispose();
+            edgesGeo?.dispose();
+            backGeo?.dispose();
+        };
+    }, [surfaceGeo, edgesGeo, backGeo]);
+
+    if (count === 0 || !surfaceGeo) return null;
 
     return (
         <group>
-            {plateGeometries.map(({ plate, vertices, isSelected }) => (
-                <PlateElement
-                    key={plate.id}
-                    vertices={vertices}
-                    isSelected={isSelected}
-                    thickness={plate.thickness}
-                />
-            ))}
+            {/* All plate surfaces – 1 draw call */}
+            <mesh ref={surfaceRef} geometry={surfaceGeo} material={SURFACE_MAT} />
+
+            {/* All edges – 1 draw call */}
+            <lineSegments ref={edgesRef} geometry={edgesGeo} material={EDGE_MAT} />
+
+            {/* Thickness offset – 1 draw call */}
+            <mesh ref={backRef} geometry={backGeo} material={BACK_MAT} />
         </group>
     );
 };
-
-// ============================================
-// INDIVIDUAL PLATE ELEMENT
-// ============================================
-
-interface PlateElementProps {
-    vertices: THREE.Vector3[];
-    isSelected: boolean;
-    thickness: number;
-}
-
-const PlateElement: FC<PlateElementProps> = React.memo(({ vertices, isSelected, thickness }) => {
-    // Create geometry from 4 vertices (2 triangles)
-    const geometry = useMemo(() => {
-        const geom = new THREE.BufferGeometry();
-
-        // Vertices for 2 triangles (0-1-2, 0-2-3)
-        const positions = new Float32Array([
-            // Triangle 1
-            vertices[0].x, vertices[0].y, vertices[0].z,
-            vertices[1].x, vertices[1].y, vertices[1].z,
-            vertices[2].x, vertices[2].y, vertices[2].z,
-            // Triangle 2
-            vertices[0].x, vertices[0].y, vertices[0].z,
-            vertices[2].x, vertices[2].y, vertices[2].z,
-            vertices[3].x, vertices[3].y, vertices[3].z,
-        ]);
-
-        // Calculate normal (assuming CCW winding)
-        const v1 = new THREE.Vector3().subVectors(vertices[1], vertices[0]);
-        const v2 = new THREE.Vector3().subVectors(vertices[2], vertices[0]);
-        const normal = new THREE.Vector3().crossVectors(v1, v2).normalize();
-
-        const normals = new Float32Array([
-            normal.x, normal.y, normal.z,
-            normal.x, normal.y, normal.z,
-            normal.x, normal.y, normal.z,
-            normal.x, normal.y, normal.z,
-            normal.x, normal.y, normal.z,
-            normal.x, normal.y, normal.z,
-        ]);
-
-        geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geom.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
-
-        return geom;
-    }, [vertices]);
-
-    // Dispose GPU geometry on unmount or when geometry changes
-    useEffect(() => {
-        return () => {
-            geometry.dispose();
-        };
-    }, [geometry]);
-
-    // Edge loop for outline
-    const edgePoints = useMemo(() => {
-        return [...vertices, vertices[0]]; // Close the loop
-    }, [vertices]);
-
-    return (
-        <group>
-            {/* Plate surface */}
-            <mesh geometry={geometry}>
-                <meshStandardMaterial
-                    color={isSelected ? '#a855f7' : '#6366f1'}
-                    transparent
-                    opacity={isSelected ? 0.6 : 0.4}
-                    side={THREE.DoubleSide}
-                />
-            </mesh>
-
-            {/* Edge outline */}
-            <Line
-                points={edgePoints}
-                color={isSelected ? '#f472b6' : '#818cf8'}
-                lineWidth={isSelected ? 3 : 2}
-            />
-
-            {/* Thickness indicator - small offset mesh on back */}
-            <mesh geometry={geometry} position={[0, -thickness, 0]}>
-                <meshStandardMaterial
-                    color={isSelected ? '#7c3aed' : '#4f46e5'}
-                    transparent
-                    opacity={0.2}
-                    side={THREE.DoubleSide}
-                />
-            </mesh>
-        </group>
-    );
-});
-
-PlateElement.displayName = 'PlateElement';
 
 export default PlateRenderer;

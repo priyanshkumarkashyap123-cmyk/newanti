@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 
 export default defineConfig({
-    plugins: [react()],
+    plugins: [react() as any],
     test: {
         globals: true,
         environment: 'jsdom',
@@ -17,9 +17,6 @@ export default defineConfig({
         pool: 'vmForks',  // vmForks handles heavy module graphs best
         fileParallelism: false,  // Run test files sequentially to reduce memory pressure
         maxConcurrency: 3,
-        deps: {
-            inline: ['react-router-dom', 'react-router'],
-        },
         server: {
             deps: {
                 inline: ['react-router-dom', 'react-router'],

@@ -19,9 +19,6 @@ export { UltraModernDesignStudio } from './UltraModernDesignStudio';
 // Advanced 3D Structural Viewer - WebGL-based visualization
 export { Advanced3DStructuralViewer } from './Advanced3DStructuralViewer';
 
-// Interactive Results Dashboard - Real-time analytics
-export { InteractiveResultsDashboard } from './InteractiveResultsDashboard';
-
 // Real-Time Analysis Panel - Live computation engine
 export { RealTimeAnalysisPanel } from './RealTimeAnalysisPanel';
 
@@ -63,13 +60,6 @@ export const ENHANCED_COMPONENTS = {
     version: '4.0.0',
     category: 'ultra-modern',
     features: ['webgl', 'stress-visualization', 'deformation', 'annotations'],
-  },
-  'InteractiveResultsDashboard': {
-    name: 'Interactive Results Dashboard',
-    description: 'Real-time analytics dashboard with live metrics, design ratios, and result charts',
-    version: '4.0.0',
-    category: 'ultra-modern',
-    features: ['real-time', 'analytics', 'charts', 'metrics'],
   },
   'RealTimeAnalysisPanel': {
     name: 'Real-Time Analysis Panel',

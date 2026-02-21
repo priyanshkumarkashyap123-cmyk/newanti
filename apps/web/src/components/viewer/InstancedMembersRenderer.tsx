@@ -18,6 +18,7 @@ import React, { useRef, useMemo, useEffect, useState, useCallback } from 'react'
 import { useThree, ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useModelStore } from '../../store/model';
+import { GpuResourcePool } from '../../utils/gpuResourcePool';
 
 // ============================================
 // CONFIGURATION
@@ -131,13 +132,7 @@ export const InstancedMembersRenderer: React.FC = () => {
     // ============================================
     
     const geometry = useMemo(() => {
-        return new THREE.CylinderGeometry(
-            MEMBER_RADIUS,
-            MEMBER_RADIUS,
-            1, // Length will be scaled via matrix
-            CYLINDER_SEGMENTS,
-            1
-        );
+        return GpuResourcePool.getCylinderGeometry(MEMBER_RADIUS, CYLINDER_SEGMENTS);
     }, []);
     
     // ============================================
@@ -145,17 +140,17 @@ export const InstancedMembersRenderer: React.FC = () => {
     // ============================================
     
     const material = useMemo(() => {
-        return new THREE.MeshStandardMaterial({
+        return GpuResourcePool.getStandardMaterial({
             metalness: 0.3,
             roughness: 0.7,
         });
     }, []);
     
-    // Dispose GPU resources on unmount
+    // Release pool refs on unmount (pool keeps resources alive for reuse)
     useEffect(() => {
         return () => {
-            geometry.dispose();
-            material.dispose();
+            GpuResourcePool.release(geometry);
+            GpuResourcePool.release(material);
         };
     }, [geometry, material]);
     

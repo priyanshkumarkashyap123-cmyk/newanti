@@ -150,6 +150,13 @@ app.get('/health', async (_req: Request, res: Response) => {
         dbStatus = 'error';
     }
 
+    // Circuit breaker stats
+    let circuitBreakers: Record<string, unknown> = {};
+    try {
+        const { getAllCircuitStats } = await import('./utils/circuitBreaker.js');
+        circuitBreakers = getAllCircuitStats();
+    } catch { /* not critical */ }
+
     const status = dbStatus === 'connected' ? 'ok' : 'degraded';
 
     res.ok({
@@ -162,6 +169,7 @@ app.get('/health', async (_req: Request, res: Response) => {
         dependencies: {
             mongodb: dbStatus,
         },
+        circuitBreakers,
         timestamp: new Date().toISOString(),
     }, status === 'ok' ? 200 : 503);
 });

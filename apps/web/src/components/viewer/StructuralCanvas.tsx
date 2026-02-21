@@ -8,8 +8,8 @@
  * - Pre-highlighting on hover (cyan) and selection (blue)
  */
 
-import { FC, useRef, useState, useMemo, useCallback, Suspense, useEffect } from 'react';
-import { Canvas, useFrame, useThree, ThreeEvent } from '@react-three/fiber';
+import { FC, useRef, useMemo, useCallback, useEffect } from 'react';
+import { Canvas, ThreeEvent } from '@react-three/fiber';
 import {
     OrbitControls,
     Grid,
@@ -26,6 +26,7 @@ import { UltraLightMembersRenderer } from './UltraLightMembersRenderer';
 import { UltraLightNodesRenderer } from './UltraLightNodesRenderer';
 import { PlateRenderer } from './PlateRenderer';
 import { announce, prefersReducedMotion } from '../../utils/accessibility';
+import { useRenderQuality } from '../../utils/gpuQuality';
 
 // ============================================
 // PERFORMANCE THRESHOLDS
@@ -82,7 +83,8 @@ const COLORS = {
 // MEMBER MESH COMPONENT (with hover/selection)
 // ============================================
 
-const MemberMesh: FC<MemberMeshProps> = ({
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const _MemberMesh: FC<MemberMeshProps> = ({
     id,
     startPos,
     endPos,
@@ -153,7 +155,8 @@ const MemberMesh: FC<MemberMeshProps> = ({
 // NODE MESH COMPONENT (with hover/selection)
 // ============================================
 
-const NodeMesh: FC<NodeMeshProps> = ({
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const _NodeMesh: FC<NodeMeshProps> = ({
     id,
     position,
     isSelected,
@@ -301,11 +304,12 @@ const AxisLabels: FC = () => {
 export const StructuralCanvas: FC<StructuralCanvasProps> = ({ children }) => {
     const members = useModelStore((state) => state.members);
     const nodes = useModelStore((state) => state.nodes);
+    const quality = useRenderQuality();
 
     const memberCount = members.size;
     const nodeCount = nodes.size;
     const totalElements = memberCount + nodeCount;
-    const isLargeModel = totalElements > ULTRA_LIGHT_THRESHOLD;
+    const isLargeModel = totalElements > quality.ultraLightThreshold;
     const reducedMotion = prefersReducedMotion();
 
     // Announce model size changes for screen readers
@@ -315,16 +319,16 @@ export const StructuralCanvas: FC<StructuralCanvasProps> = ({ children }) => {
         }
     }, [totalElements, nodeCount, memberCount]);
 
-    // Adaptive settings based on model size
+    // Adaptive settings based on model size and GPU quality
     const glSettings = useMemo(() => ({
-        antialias: !isLargeModel, // Disable AA for large models
+        antialias: quality.antialias && !isLargeModel,
         alpha: false,
         powerPreference: 'high-performance' as const,
         failIfMajorPerformanceCaveat: false,
         preserveDrawingBuffer: false,
         stencil: false, // Disable stencil for performance
         depth: true,
-    }), [isLargeModel]);
+    }), [isLargeModel, quality.antialias]);
 
     // Keyboard shortcuts for 3D navigation
     const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -354,10 +358,11 @@ export const StructuralCanvas: FC<StructuralCanvasProps> = ({ children }) => {
             id="main-content"
         >
             <Canvas
-                shadows={!isLargeModel && !reducedMotion}
+                shadows={quality.enableShadows && !isLargeModel && !reducedMotion}
                 gl={glSettings}
+                dpr={quality.pixelRatio}
                 style={{ background: '#0a0a0f' }}
-                frameloop={isLargeModel ? 'demand' : 'always'}
+                frameloop="demand"
                 performance={{ min: 0.5 }}
             >
                 {/* Camera */}
@@ -376,7 +381,7 @@ export const StructuralCanvas: FC<StructuralCanvasProps> = ({ children }) => {
                         position={[10, 20, 10]}
                         intensity={0.8}
                         castShadow
-                        shadow-mapSize={[2048, 2048]}
+                        shadow-mapSize={[quality.shadowMapSize, quality.shadowMapSize]}
                         shadow-camera-far={50}
                         shadow-camera-left={-20}
                         shadow-camera-right={20}

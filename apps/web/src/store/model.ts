@@ -243,6 +243,9 @@ interface ModelState {
 
     loads: NodeLoad[];
     memberLoads: MemberLoad[];  // NEW: Member loads (UDL, UVL, point)
+    loadCases: LoadCase[];  // Load case definitions (DL, LL, WL, etc.)
+    loadCombinations: LoadCombination[];  // Factored load combinations (IS 875, ASCE 7, EC)
+    activeLoadCaseId: string | null;  // Currently active load case for editing
     selectedIds: Set<string>;
     analysisResults: AnalysisResults | null;
     isAnalyzing: boolean;
@@ -287,6 +290,14 @@ interface ModelState {
     addMemberLoad: (load: MemberLoad) => void;  // NEW
     removeMemberLoad: (id: string) => void;     // NEW
     updateMemberLoadById: (id: string, updates: Partial<MemberLoad>) => void; // Performance optimization
+    // Load Case Management
+    addLoadCase: (lc: LoadCase) => void;
+    removeLoadCase: (id: string) => void;
+    updateLoadCase: (id: string, updates: Partial<LoadCase>) => void;
+    setActiveLoadCase: (id: string | null) => void;
+    addLoadCombination: (combo: LoadCombination) => void;
+    removeLoadCombination: (id: string) => void;
+    updateLoadCombination: (id: string, updates: Partial<LoadCombination>) => void;
     setAnalysisResults: (results: AnalysisResults | null) => void;
     setIsAnalyzing: (analyzing: boolean) => void;
     select: (id: string, multi: boolean) => void;
@@ -380,6 +391,9 @@ export const useModelStore = create<ModelState>()(
                 civilData: new Map(), // NEW: Phase 2 Civil Persistence
                 loads: [],
                 memberLoads: [],  // NEW: Member distributed/point loads
+                loadCases: [],  // Load case definitions
+                loadCombinations: [],  // Factored load combinations
+                activeLoadCaseId: null,  // No active load case initially
                 selectedIds: new Set(),
                 analysisResults: null,
                 isAnalyzing: false,
@@ -528,6 +542,41 @@ export const useModelStore = create<ModelState>()(
 
                 removeMemberLoad: (id) =>
                     set((state) => ({ memberLoads: state.memberLoads.filter(l => l.id !== id) })),
+
+                // Load Case Management
+                addLoadCase: (lc) =>
+                    set((state) => {
+                        if (state.loadCases.some(c => c.id === lc.id)) return state;
+                        return { loadCases: [...state.loadCases, lc] };
+                    }),
+
+                removeLoadCase: (id) =>
+                    set((state) => ({
+                        loadCases: state.loadCases.filter(c => c.id !== id),
+                        activeLoadCaseId: state.activeLoadCaseId === id ? null : state.activeLoadCaseId,
+                    })),
+
+                updateLoadCase: (id, updates) =>
+                    set((state) => ({
+                        loadCases: state.loadCases.map(c => c.id === id ? { ...c, ...updates } : c),
+                    })),
+
+                setActiveLoadCase: (id) =>
+                    set({ activeLoadCaseId: id }),
+
+                addLoadCombination: (combo) =>
+                    set((state) => {
+                        if (state.loadCombinations.some(c => c.id === combo.id)) return state;
+                        return { loadCombinations: [...state.loadCombinations, combo] };
+                    }),
+
+                removeLoadCombination: (id) =>
+                    set((state) => ({ loadCombinations: state.loadCombinations.filter(c => c.id !== id) })),
+
+                updateLoadCombination: (id, updates) =>
+                    set((state) => ({
+                        loadCombinations: state.loadCombinations.map(c => c.id === id ? { ...c, ...updates } : c),
+                    })),
 
                 // Targeted update for single member load - prevents full re-render cascade
                 updateMemberLoadById: (id, updates) =>
@@ -987,6 +1036,9 @@ export const useModelStore = create<ModelState>()(
                     plates: new Map(),
                     loads: [],
                     memberLoads: [],
+                    loadCases: [],
+                    loadCombinations: [],
+                    activeLoadCaseId: null,
                     selectedIds: new Set(),
                     analysisResults: null,
                     isAnalyzing: false,
@@ -1242,12 +1294,17 @@ export const useModelStore = create<ModelState>()(
                         // Restore loads
                         const loads = Array.isArray(data.loads) ? data.loads : [];
                         const memberLoads = Array.isArray(data.memberLoads) ? data.memberLoads : [];
+                        const loadCases = Array.isArray((data as any).loadCases) ? (data as any).loadCases : [];
+                        const loadCombinations = Array.isArray((data as any).loadCombinations) ? (data as any).loadCombinations : [];
 
                         set({
                             nodes: nodesMap,
                             members: membersMap,
                             loads,
                             memberLoads,
+                            loadCases,
+                            loadCombinations,
+                            activeLoadCaseId: null,
                             projectInfo: data.projectInfo,
                             selectedIds: new Set(),
                             analysisResults: null,

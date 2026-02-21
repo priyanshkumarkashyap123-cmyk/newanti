@@ -12,14 +12,4 @@ export { AdvancedDashboard } from './AdvancedDashboard';
 export { EngineeringDashboard } from './EngineeringDashboard';
 export { IntegratedEngineeringDashboard } from './IntegratedEngineeringDashboard';
 
-// Results Dashboard
-export {
-    ResultsDashboard,
-    SummaryCard,
-    KPICard,
-    MemberResultsTable,
-    type ResultCategory,
-    type ResultsSummary,
-    type MemberResult,
-    type LoadCaseResult
-} from './ResultsDashboard';
+// Deprecated dashboards are intentionally not re-exported.

@@ -32,6 +32,7 @@ import {
     changePasswordSchema,
     updateProfileSchema,
 } from '../middleware/validation.js';
+import { getCircuitBreaker } from '../utils/circuitBreaker.js';
 
 const router: Router = Router();
 
@@ -300,19 +301,24 @@ router.post('/google', async (req: Request, res: Response) => {
             return res.status(503).json({ success: false, error: 'Google OAuth not configured' });
         }
 
-        // Exchange code for tokens
-        const { data: { access_token } } = await axios.post('https://oauth2.googleapis.com/token', {
-            client_id: GOOGLE_CLIENT_ID,
-            client_secret: GOOGLE_CLIENT_SECRET,
-            code,
-            grant_type: 'authorization_code',
-            redirect_uri: GOOGLE_CALLBACK_URL,
-        });
+        // Exchange code for tokens (circuit-breaker protected)
+        const googleBreaker = getCircuitBreaker('google-oauth', { failureThreshold: 3, resetTimeoutMs: 60_000 });
+        const { data: { access_token } } = await googleBreaker.execute(() =>
+            axios.post('https://oauth2.googleapis.com/token', {
+                client_id: GOOGLE_CLIENT_ID,
+                client_secret: GOOGLE_CLIENT_SECRET,
+                code,
+                grant_type: 'authorization_code',
+                redirect_uri: GOOGLE_CALLBACK_URL,
+            })
+        );
 
         // Get user info
-        const { data: profile } = await axios.get('https://www.googleapis.com/oauth2/v2/userinfo', {
-            headers: { Authorization: `Bearer ${access_token}` },
-        });
+        const { data: profile } = await googleBreaker.execute(() =>
+            axios.get('https://www.googleapis.com/oauth2/v2/userinfo', {
+                headers: { Authorization: `Bearer ${access_token}` },
+            })
+        );
 
         const result = await handleOAuthUser(
             profile.email,
@@ -345,29 +351,36 @@ router.post('/github', async (req: Request, res: Response) => {
             return res.status(503).json({ success: false, error: 'GitHub OAuth not configured' });
         }
 
-        // Exchange code for tokens
-        const { data: tokenData } = await axios.post('https://github.com/login/oauth/access_token', {
-            client_id: GITHUB_CLIENT_ID,
-            client_secret: GITHUB_CLIENT_SECRET,
-            code,
-            redirect_uri: GITHUB_CALLBACK_URL
-        }, {
-            headers: { Accept: 'application/json' }
-        });
+        // Exchange code for tokens (circuit-breaker protected)
+        const githubBreaker = getCircuitBreaker('github-oauth', { failureThreshold: 3, resetTimeoutMs: 60_000 });
+        const { data: tokenData } = await githubBreaker.execute(() =>
+            axios.post('https://github.com/login/oauth/access_token', {
+                client_id: GITHUB_CLIENT_ID,
+                client_secret: GITHUB_CLIENT_SECRET,
+                code,
+                redirect_uri: GITHUB_CALLBACK_URL
+            }, {
+                headers: { Accept: 'application/json' }
+            })
+        );
 
         if (tokenData.error) throw new Error(tokenData.error_description);
 
         // Get user info
-        const { data: profile } = await axios.get('https://api.github.com/user', {
-            headers: { Authorization: `Bearer ${tokenData.access_token}` },
-        });
+        const { data: profile } = await githubBreaker.execute(() =>
+            axios.get('https://api.github.com/user', {
+                headers: { Authorization: `Bearer ${tokenData.access_token}` },
+            })
+        );
 
         // Get user email (might be private)
         let email = profile.email;
         if (!email) {
-            const { data: emails } = await axios.get('https://api.github.com/user/emails', {
-                headers: { Authorization: `Bearer ${tokenData.access_token}` },
-            });
+            const { data: emails } = await githubBreaker.execute(() =>
+                axios.get('https://api.github.com/user/emails', {
+                    headers: { Authorization: `Bearer ${tokenData.access_token}` },
+                })
+            );
             const primary = emails.find((e: any) => e.primary && e.verified);
             email = primary ? primary.email : emails[0].email;
         }
@@ -416,15 +429,21 @@ router.post('/linkedin', async (req: Request, res: Response) => {
             client_secret: LINKEDIN_CLIENT_SECRET,
         });
 
-        const { data: tokenData } = await axios.post('https://www.linkedin.com/oauth/v2/accessToken',
-            tokenParams.toString(),
-            { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+        // Exchange code for tokens (circuit-breaker protected)
+        const linkedinBreaker = getCircuitBreaker('linkedin-oauth', { failureThreshold: 3, resetTimeoutMs: 60_000 });
+        const { data: tokenData } = await linkedinBreaker.execute(() =>
+            axios.post('https://www.linkedin.com/oauth/v2/accessToken',
+                tokenParams.toString(),
+                { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+            )
         );
 
         // Get user info
-        const { data: profile } = await axios.get('https://api.linkedin.com/v2/userinfo', {
-            headers: { Authorization: `Bearer ${tokenData.access_token}` },
-        });
+        const { data: profile } = await linkedinBreaker.execute(() =>
+            axios.get('https://api.linkedin.com/v2/userinfo', {
+                headers: { Authorization: `Bearer ${tokenData.access_token}` },
+            })
+        );
 
         const result = await handleOAuthUser(
             profile.email,

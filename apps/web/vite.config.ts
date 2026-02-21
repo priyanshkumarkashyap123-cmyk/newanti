@@ -172,6 +172,7 @@ export default defineConfig({
           'react-vendor': ['react', 'react-dom'],
           'three-vendor': ['three', '@react-three/fiber', '@react-three/drei'],
           'animation-vendor': ['framer-motion'],
+          'chart-vendor': ['recharts'],
           'clerk-vendor': ['@clerk/clerk-react'],
         },
       },

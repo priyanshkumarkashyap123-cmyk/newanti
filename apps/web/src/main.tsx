@@ -6,6 +6,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { AppProvider } from './AppInitializer';
 import { AppProviders } from './components/providers/AppProviders';
 import { safeguards } from './utils/productionSafeguards';
+import { RenderQualityManager } from './utils/gpuQuality';
 import { logger } from './utils/logger';
 import env from './config/env';
 import './index.css';
@@ -69,6 +70,11 @@ const initializeApp = async () => {
             console.warn('⚠️ Safeguards initialization failed:', safeguardsError);
             // Continue anyway, safeguards are optional
         }
+
+        // Start GPU quality detection early (non-blocking)
+        RenderQualityManager.init().catch(() => {
+            console.warn('⚠️ GPU quality detection failed, using defaults');
+        });
 
         logger.info('📦 Importing App...');
         console.log('📦 About to import App component');
