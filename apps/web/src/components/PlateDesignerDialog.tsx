@@ -7,6 +7,7 @@ import { MaterialSelector } from './MaterialSelector';
 import axios from 'axios';
 import { API_CONFIG } from '../config/env';
 import { Grid3X3, Layers } from 'lucide-react';
+import { getApiErrorMessage } from '../lib/errorHandling';
 
 interface Node {
     id: string | number;
@@ -68,9 +69,9 @@ export function PlateDesignerDialog({ open, onClose, availableNodes, onPlateCrea
                 }
                 onClose();
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Error creating plate:", err);
-            setError(err.response?.data?.detail || "Failed to create plate element.");
+            setError(getApiErrorMessage(err, 'Failed to create plate element.'));
         } finally {
             setLoading(false);
         }

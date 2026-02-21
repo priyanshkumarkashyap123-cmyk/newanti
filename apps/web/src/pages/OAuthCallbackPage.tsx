@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { API_CONFIG } from '../config/env';
+import { getErrorMessage } from '../lib/errorHandling';
 
 const OAuthCallbackPage = () => {
     const { provider } = useParams<{ provider: string }>();
@@ -42,9 +43,9 @@ const OAuthCallbackPage = () => {
                 } else {
                     setError(data.message || 'Authentication failed');
                 }
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error('OAuth callback error:', err);
-                setError(err.message || 'Authentication failed');
+                setError(getErrorMessage(err, 'Authentication failed'));
             }
         };
 

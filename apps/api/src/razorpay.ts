@@ -7,6 +7,8 @@ import * as crypto from 'crypto';
 import { Request, Response, Router, type IRouter } from 'express';
 import { User, Subscription } from './models.js';
 import { createRequire } from 'module';
+import { resolveRazorpayPlanId } from './utils/billingConfig.js';
+import { env } from './config/env.js';
 
 // ESM-compatible require for razorpay CommonJS module
 const require = createRequire(import.meta.url);
@@ -16,9 +18,9 @@ const Razorpay = require('razorpay');
 // RAZORPAY INITIALIZATION
 // ============================================
 
-const RAZORPAY_KEY_ID = process.env['RAZORPAY_KEY_ID'] ?? '';
-const RAZORPAY_KEY_SECRET = process.env['RAZORPAY_KEY_SECRET'] ?? '';
-const RAZORPAY_WEBHOOK_SECRET = process.env['RAZORPAY_WEBHOOK_SECRET'] ?? '';
+const RAZORPAY_KEY_ID = env.RAZORPAY_KEY_ID ?? '';
+const RAZORPAY_KEY_SECRET = env.RAZORPAY_KEY_SECRET ?? '';
+const RAZORPAY_WEBHOOK_SECRET = env.RAZORPAY_WEBHOOK_SECRET ?? '';
 
 // Initialize Razorpay only if credentials are available
 let razorpay: InstanceType<typeof Razorpay> | null = null;
@@ -38,9 +40,9 @@ if (RAZORPAY_KEY_ID && RAZORPAY_KEY_SECRET) {
 // ============================================
 
 const PLANS = {
-    PRO_MONTHLY: process.env['RAZORPAY_PRO_MONTHLY_PLAN_ID'] ?? 'plan_xxx',
-    PRO_YEARLY: process.env['RAZORPAY_PRO_YEARLY_PLAN_ID'] ?? 'plan_yyy',
-    ENTERPRISE_MONTHLY: process.env['RAZORPAY_ENTERPRISE_MONTHLY_PLAN_ID'] ?? 'plan_zzz',
+    PRO_MONTHLY: env.RAZORPAY_PRO_MONTHLY_PLAN_ID,
+    PRO_YEARLY: env.RAZORPAY_PRO_YEARLY_PLAN_ID,
+    ENTERPRISE_MONTHLY: env.RAZORPAY_ENTERPRISE_MONTHLY_PLAN_ID,
 };
 
 // ============================================
@@ -70,6 +72,9 @@ export class RazorpayBillingService {
 
         // Select plan
         const selectedPlanId = planId ?? (planType === 'yearly' ? PLANS.PRO_YEARLY : PLANS.PRO_MONTHLY);
+        if (!selectedPlanId) {
+            throw new Error('PAYMENT_PLAN_NOT_CONFIGURED');
+        }
 
         // Check if Razorpay is configured
         if (!razorpay) {
@@ -345,10 +350,23 @@ razorpayRouter.post('/create-subscription', requireAuth(), async (req: Request, 
             return;
         }
 
+        // Fail fast before hitting DB/payment provider if plan env is missing
+        const selectedPlanId = resolveRazorpayPlanId(planId, planType, {
+            proMonthly: env.RAZORPAY_PRO_MONTHLY_PLAN_ID,
+            proYearly: env.RAZORPAY_PRO_YEARLY_PLAN_ID,
+        });
+        if (!selectedPlanId) {
+            res.status(503).json({
+                success: false,
+                message: 'Billing plan is not configured. Set RAZORPAY_*_PLAN_ID environment variables.'
+            });
+            return;
+        }
+
         const result = await RazorpayBillingService.createSubscription(
             userId,
             email,
-            planId,
+            selectedPlanId,
             planType
         );
 
@@ -366,6 +384,14 @@ razorpayRouter.post('/create-subscription', requireAuth(), async (req: Request, 
             res.status(503).json({
                 success: false,
                 message: 'Payment service is currently unavailable. Please try again later.'
+            });
+            return;
+        }
+
+        if (message === 'PAYMENT_PLAN_NOT_CONFIGURED') {
+            res.status(503).json({
+                success: false,
+                message: 'Billing plan is not configured. Set RAZORPAY_*_PLAN_ID environment variables.'
             });
             return;
         }

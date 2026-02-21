@@ -160,6 +160,24 @@ const isValidPassword = (password: string): { valid: boolean; message?: string }
 };
 
 /**
+ * Safely extract error message from unknown values.
+ */
+const getErrorMessage = (error: unknown, fallback: string): string => {
+    if (error instanceof Error) return error.message;
+    return fallback;
+};
+
+/**
+ * Safely extract provider error details from Axios-like errors.
+ */
+const getProviderErrorDetails = (error: unknown): unknown => {
+    if (error && typeof error === 'object' && 'response' in error) {
+        return (error as { response?: { data?: unknown } }).response?.data;
+    }
+    return getErrorMessage(error, 'Unknown error');
+};
+
+/**
  * Sanitize user object for response (remove sensitive fields)
  */
 const sanitizeUser = (user: any) => {
@@ -333,8 +351,8 @@ router.post('/google', async (req: Request, res: Response) => {
             accessToken: result.accessToken,
             refreshToken: result.refreshToken
         });
-    } catch (error: any) {
-        console.error('Google OAuth error:', error.response?.data || error.message);
+    } catch (error: unknown) {
+        console.error('Google OAuth error:', getProviderErrorDetails(error));
         res.status(500).json({ success: false, error: 'Google authentication failed' });
     }
 });
@@ -402,8 +420,8 @@ router.post('/github', async (req: Request, res: Response) => {
             refreshToken: result.refreshToken
         });
 
-    } catch (error: any) {
-        console.error('GitHub OAuth error:', error.response?.data || error.message);
+    } catch (error: unknown) {
+        console.error('GitHub OAuth error:', getProviderErrorDetails(error));
         res.status(500).json({ success: false, error: 'GitHub authentication failed' });
     }
 });
@@ -459,8 +477,8 @@ router.post('/linkedin', async (req: Request, res: Response) => {
             refreshToken: result.refreshToken
         });
 
-    } catch (error: any) {
-        console.error('LinkedIn OAuth error:', error.response?.data || error.message);
+    } catch (error: unknown) {
+        console.error('LinkedIn OAuth error:', getProviderErrorDetails(error));
         res.status(500).json({ success: false, error: 'LinkedIn authentication failed' });
     }
 });

@@ -7,6 +7,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { isUsingClerk, useAuth } from '../providers/AuthProvider';
+import { getErrorMessage } from '../lib/errorHandling';
 
 export const ForgotPasswordPage = () => {
     const [email, setEmail] = useState('');
@@ -32,8 +33,8 @@ export const ForgotPasswordPage = () => {
         try {
             await forgotPassword(email);
             setSuccess(true);
-        } catch (err: any) {
-            setError(err.message || 'Failed to send reset email');
+        } catch (err: unknown) {
+            setError(getErrorMessage(err, 'Failed to send reset email'));
         } finally {
             setIsLoading(false);
         }

@@ -15,6 +15,8 @@
 // TYPES
 // ============================================
 
+import { getErrorMessage } from '../../lib/errorHandling';
+
 export interface SolverJob {
     id: string;
     modelId: string;
@@ -155,9 +157,9 @@ class CloudSolverServiceClass {
 
             this.emit('job_completed', { job, result });
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             job.status = 'failed';
-            job.error = error.message;
+            job.error = getErrorMessage(error, 'Job processing failed');
             this.emit('job_failed', job);
         }
     }

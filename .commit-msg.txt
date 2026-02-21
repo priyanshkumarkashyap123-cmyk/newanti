@@ -1,0 +1,27 @@
+feat: industry-standard engineering overhaul - Structure Wizard, Analysis Panels, Reports
+
+Structure Wizard (StructureWizard.tsx):
+- All beam generators use single members with UDL member loads
+- Added Overhanging Beam, Pratt Truss, Braced Frame templates
+- IS 808 section properties: ISMB 300/400, ISHB 300/400, ISA 150x150x12
+- Portal/Building Frame: UDL on rafters/beams, auto section sizing
+- SVG preview: UDL arrows, fixed vs pinned support distinction
+
+Time History Panel (TimeHistoryPanel.tsx):
+- 8 earthquake records with verified PGA values
+- IS 1893 Table 3 damping per structure type
+- Correct G=E/(2(1+v)), J=I/100 for open I-sections
+- Newmark-beta: gamma=0.5, beta=0.25 (unconditionally stable)
+
+Response Spectrum (AdvancedAnalysisDialog.tsx):
+- IS 1893:2016 Sa/g formula (3-branch per soil type)
+- Correct zone factors, Ah=(Z/2)(I/R)(Sa/g)
+- Fixed G/J calculations, removed broken zone mapping
+
+P-Delta Panel (PDeltaAnalysisPanel.tsx):
+- Uses actual model loads (was hardcoded)
+- 1st vs 2nd order comparison from actual AnalysisResults
+- IS 800 Cl.4.4.2 / AISC 360 App. 8 references
+
+Codes: IS 800, IS 808, IS 875, IS 1893:2016, AISC 341/360, ASCE 7-22
+Build: 0 TS errors, 4/4 tasks pass, 250 precache entries

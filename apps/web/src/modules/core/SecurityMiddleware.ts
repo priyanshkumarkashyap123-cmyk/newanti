@@ -13,6 +13,7 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
+import { getErrorMessage } from '../../lib/errorHandling';
 
 // ============================================================================
 // RATE LIMITER
@@ -440,7 +441,7 @@ export async function secureCalculation<TInput, TOutput>(
     });
 
     return { success: true, result };
-  } catch (error: any) {
+  } catch (error: unknown) {
     const executionTimeMs = Date.now() - startTime;
 
     // Log failure
@@ -450,11 +451,11 @@ export async function secureCalculation<TInput, TOutput>(
       action: 'CALCULATION_FAILED',
       resource: calculationType,
       inputs: { ...inputs as any },
-      outputs: { status: 'error', summary: error.message },
+      outputs: { status: 'error', summary: getErrorMessage(error, 'Calculation failed') },
       metadata: { ip: options.ip, userAgent: options.userAgent, calculationType, executionTimeMs },
     });
 
-    return { success: false, error: error.message || 'Calculation failed' };
+    return { success: false, error: getErrorMessage(error, 'Calculation failed') };
   }
 }
 

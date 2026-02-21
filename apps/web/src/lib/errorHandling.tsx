@@ -24,6 +24,7 @@ import { motion } from 'framer-motion';
 import { AlertTriangle, RefreshCw, Home, Bug, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { cn } from './utils';
+import { getErrorMessage, isAbortError, getApiErrorMessage } from './errorUtils';
 
 // ============================================================================
 // TYPES
@@ -497,5 +498,11 @@ export const InlineError: React.FC<InlineErrorProps> = ({
     )}
   </div>
 );
+
+// ============================================================================
+// ERROR MESSAGE EXTRACTION UTILITIES
+// ============================================================================
+
+export { getErrorMessage, isAbortError, getApiErrorMessage };
 
 export default ErrorBoundary;

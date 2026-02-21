@@ -43,6 +43,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AdvancedAnalysisService, TimeHistoryRequest } from '../services/AdvancedAnalysisService';
+import { getErrorMessage } from '../lib/errorHandling';
 
 // Types for Time History Analysis
 type IntegrationMethod = 'newmark' | 'hht-alpha' | 'wilson-theta' | 'central-difference';
@@ -333,9 +334,9 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
           total: peakVel * peakVel * input.rayleighAlpha * 0.5
         }
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Time history analysis failed:', err);
-      setError(err.message || 'Time history analysis failed. Check console for details.');
+      setError(getErrorMessage(err, 'Time history analysis failed. Check console for details.'));
     } finally {
       setAnalyzing(false);
     }

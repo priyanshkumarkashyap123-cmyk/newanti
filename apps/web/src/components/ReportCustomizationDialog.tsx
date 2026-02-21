@@ -130,30 +130,35 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-zinc-900 border border-zinc-700 rounded-lg shadow-2xl w-[800px] max-h-[90vh] flex flex-col">
+      <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[800px] max-h-[90vh] flex flex-col">
+        {/* Accent strip */}
+        <div className="h-0.5 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 rounded-t-xl" />
+
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-700">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
           <div className="flex items-center gap-3">
-            <FileText className="w-6 h-6 text-blue-500" />
+            <div className="w-9 h-9 rounded-lg bg-cyan-500/15 flex items-center justify-center">
+              <FileText className="w-5 h-5 text-cyan-400" />
+            </div>
             <div>
-              <h2 className="text-lg font-semibold text-white">
+              <h2 className="text-lg font-bold text-white tracking-tight">
                 Generate PDF Report
               </h2>
-              <p className="text-sm text-zinc-400">
+              <p className="text-[11px] text-slate-500">
                 Customize your professional analysis report
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
+            className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-zinc-400" />
+            <X className="w-5 h-5 text-slate-400" />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-zinc-700 px-6">
+        <div className="flex border-b border-slate-800 px-6">
           {[
             { id: 'project' as const, label: 'Project Info', icon: FileText },
             { id: 'company' as const, label: 'Company', icon: Building2 },
@@ -165,14 +170,14 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
+                className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors text-xs font-semibold uppercase tracking-wider ${
                   activeTab === tab.id
-                    ? 'border-blue-500 text-blue-500'
-                    : 'border-transparent text-zinc-400 hover:text-zinc-300'
+                    ? 'border-cyan-500 text-cyan-400'
+                    : 'border-transparent text-slate-400 hover:text-slate-300'
                 }`}
               >
                 <Icon className="w-4 h-4" />
-                <span className="text-sm font-medium">{tab.label}</span>
+                <span>{tab.label}</span>
               </button>
             );
           })}
@@ -184,82 +189,82 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
           {activeTab === 'project' && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
                   Project Name *
                 </label>
                 <input
                   type="text"
                   value={customization.project_name}
                   onChange={(e) => updateCustomization('project_name', e.target.value)}
-                  className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/40"
                   placeholder="Multi-Story Frame Analysis"
                 />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
                     Project Number
                   </label>
                   <input
                     type="text"
                     value={customization.project_number}
                     onChange={(e) => updateCustomization('project_number', e.target.value)}
-                    className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/40"
                     placeholder="2026-001"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
                     Location
                   </label>
                   <input
                     type="text"
                     value={customization.project_location}
                     onChange={(e) => updateCustomization('project_location', e.target.value)}
-                    className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/40"
                     placeholder="Mumbai, India"
                   />
                 </div>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
                   Client Name
                 </label>
                 <input
                   type="text"
                   value={customization.client_name}
                   onChange={(e) => updateCustomization('client_name', e.target.value)}
-                  className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/40"
                   placeholder="Client Organization"
                 />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
                     Prepared By
                   </label>
                   <input
                     type="text"
                     value={customization.engineer_name}
                     onChange={(e) => updateCustomization('engineer_name', e.target.value)}
-                    className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/40"
                     placeholder="Your Name, P.E."
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
                     Checked By
                   </label>
                   <input
                     type="text"
                     value={customization.checked_by}
                     onChange={(e) => updateCustomization('checked_by', e.target.value)}
-                    className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/40"
                     placeholder="Reviewer Name"
                   />
                 </div>
@@ -271,26 +276,26 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
           {activeTab === 'company' && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
                   Company Name *
                 </label>
                 <input
                   type="text"
                   value={customization.company_name}
                   onChange={(e) => updateCustomization('company_name', e.target.value)}
-                  className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/40"
                   placeholder="Your Engineering Firm"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
                   Address
                 </label>
                 <textarea
                   value={customization.company_address}
                   onChange={(e) => updateCustomization('company_address', e.target.value)}
-                  className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/40"
                   rows={3}
                   placeholder="123 Main Street, City, State 12345"
                 />
@@ -298,27 +303,27 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
                     Phone
                   </label>
                   <input
                     type="text"
                     value={customization.company_phone}
                     onChange={(e) => updateCustomization('company_phone', e.target.value)}
-                    className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/40"
                     placeholder="+1 (555) 123-4567"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
                     Email
                   </label>
                   <input
                     type="email"
                     value={customization.company_email}
                     onChange={(e) => updateCustomization('company_email', e.target.value)}
-                    className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/40"
                     placeholder="info@company.com"
                   />
                 </div>
@@ -329,7 +334,7 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
           {/* Content Selection Tab */}
           {activeTab === 'content' && (
             <div className="space-y-4">
-              <p className="text-sm text-zinc-400 mb-4">
+              <p className="text-[11px] text-slate-500 uppercase tracking-wider mb-4">
                 Select which sections to include in the report
               </p>
               
@@ -342,17 +347,17 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
               ].map(section => (
                 <label
                   key={section.key}
-                  className="flex items-start gap-3 p-3 bg-zinc-800/50 rounded-lg cursor-pointer hover:bg-zinc-800 transition-colors"
+                  className="flex items-start gap-3 p-3 bg-slate-800/50 rounded-lg cursor-pointer hover:bg-slate-800 transition-colors border border-slate-700/50"
                 >
                   <input
                     type="checkbox"
                     checked={customization[section.key]}
                     onChange={(e) => updateCustomization(section.key, e.target.checked)}
-                    className="mt-1"
+                    className="mt-1 rounded bg-slate-700 border-slate-600 text-cyan-500 focus:ring-cyan-500/40"
                   />
                   <div>
                     <div className="text-sm font-medium text-white">{section.label}</div>
-                    <div className="text-xs text-zinc-400">{section.desc}</div>
+                    <div className="text-[11px] text-slate-500">{section.desc}</div>
                   </div>
                 </label>
               ))}
@@ -361,9 +366,9 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
 
           {/* Style Tab */}
           {activeTab === 'style' && (
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
                   Page Size
                 </label>
                 <div className="flex gap-2">
@@ -371,10 +376,10 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
                     <button
                       key={size}
                       onClick={() => updateCustomization('page_size', size)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                      className={`px-5 py-2 rounded-lg font-medium text-sm transition-all ${
                         customization.page_size === size
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                          ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/20'
+                          : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700/60'
                       }`}
                     >
                       {size}
@@ -384,7 +389,7 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
                   Primary Color
                 </label>
                 <div className="flex gap-4">
@@ -397,19 +402,19 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
                     <button
                       key={preset.name}
                       onClick={() => updateCustomization('primary_color', preset.color as [number, number, number])}
-                      className="flex flex-col items-center gap-1"
+                      className="flex flex-col items-center gap-1.5"
                     >
                       <div
-                        className={`w-12 h-12 rounded-lg border-2 transition-all ${
+                        className={`w-12 h-12 rounded-lg border-2 transition-all shadow-md ${
                           JSON.stringify(customization.primary_color) === JSON.stringify(preset.color)
-                            ? 'border-white scale-110'
-                            : 'border-zinc-700'
+                            ? 'border-white scale-110 ring-2 ring-cyan-500/30'
+                            : 'border-slate-700 hover:border-slate-500'
                         }`}
                         style={{
                           backgroundColor: `rgb(${preset.color.map(c => c * 255).join(', ')})`
                         }}
                       />
-                      <span className="text-xs text-zinc-400">{preset.name}</span>
+                      <span className="text-[10px] text-slate-400 font-medium">{preset.name}</span>
                     </button>
                   ))}
                 </div>
@@ -419,31 +424,31 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-zinc-700 flex items-center justify-between">
-          <div className="text-sm text-zinc-400">
-            Report will be generated as PDF
+        <div className="px-6 py-4 border-t border-slate-800 flex items-center justify-between">
+          <div className="text-[11px] text-slate-500">
+            Report will be generated as PDF &middot; {customization.page_size}
           </div>
           <div className="flex gap-2">
             <button
               onClick={onClose}
               disabled={generating}
-              className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors disabled:opacity-50 border border-slate-700/60"
             >
               Cancel
             </button>
             <button
               onClick={handleGenerate}
               disabled={generating || !customization.project_name}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+              className={`px-5 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${
                 generating || !customization.project_name
-                  ? 'bg-zinc-800 text-zinc-400 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white shadow-lg shadow-cyan-500/20'
               }`}
             >
               {generating ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  Generating...
+                  Generating…
                 </>
               ) : (
                 <>

@@ -147,7 +147,9 @@ export const aiRateLimit: RequestHandler = rateLimit({
   legacyHeaders: false,
   keyGenerator: (req) => {
     // Rate limit per user if authenticated, otherwise by IP
-    const userId = (req as any).auth?.userId || req.ip;
+    // Use safe accessor: Clerk attaches auth as a function on the request
+    const authFn = (req as Record<string, unknown>).auth;
+    const userId = (typeof authFn === 'function' ? (authFn() as Record<string, unknown>)?.userId : undefined) || req.ip;
     return `ai:${userId}`;
   },
 }) as unknown as RequestHandler;

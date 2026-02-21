@@ -93,7 +93,7 @@ export const WgpuCanvasOriginal: FC<WgpuCanvasProps> = ({ className }) => {
                 };
 
                 render();
-            } catch (err: any) {
+            } catch (err: unknown) {
                 const errorMessage = err.message || err.toString() || 'Unknown error';
                 console.warn('[WgpuCanvas] WebGPU initialization failed:', errorMessage);
                 console.warn('[WgpuCanvas] Falling back to WebGL renderer...');

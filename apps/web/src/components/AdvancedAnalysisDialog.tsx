@@ -27,6 +27,7 @@ import {
 import { useModelStore } from '../store/model';
 import { useAuth } from '../providers/AuthProvider';
 import { API_CONFIG } from '../config/env';
+import { getErrorMessage } from '../lib/errorHandling';
 
 // Import panel components
 import { PDeltaAnalysisPanel } from './PDeltaAnalysisPanel';
@@ -106,12 +107,27 @@ const ANALYSIS_OPTIONS: Array<{
 // RESPONSE SPECTRUM PANEL (Inline)
 // ============================================
 
+/** IS 1893:2016 Zone factors (Table 3) */
+const IS1893_ZONE_FACTORS: Record<number, number> = { 2: 0.10, 3: 0.16, 4: 0.24, 5: 0.36 };
+
+/** IS 1893:2016 Sa/g spectral acceleration coefficient
+ *  Soil Type I (Rock): 1+15T for T≤0.10; 2.50 for 0.10<T≤0.40; 1.00/T for T>0.40
+ *  Soil Type II (Medium): 1+15T for T≤0.10; 2.50 for 0.10<T≤0.55; 1.36/T for T>0.55
+ *  Soil Type III (Soft): 1+15T for T≤0.10; 2.50 for 0.10<T≤0.67; 1.67/T for T>0.67 */
+function getSaOverG(T: number, soilType: string): number {
+    if (T <= 0) return 1.0;
+    if (T <= 0.10) return 1 + 15 * T;
+    if (soilType === 'I') return T <= 0.40 ? 2.50 : 1.00 / T;
+    if (soilType === 'II') return T <= 0.55 ? 2.50 : 1.36 / T;
+    /* Type III */ return T <= 0.67 ? 2.50 : 1.67 / T;
+}
+
 const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
     const [zone, setZone] = useState(4);
     const [soilType, setSoilType] = useState('II');
     const [importance, setImportance] = useState(1.0);
     const [response, setResponse] = useState(5.0);
-    const [numModes, setNumModes] = useState(12);
+    const [numModes] = useState(12);
     const [direction, setDirection] = useState('X');
     const [damping, setDamping] = useState(0.05);
 
@@ -146,13 +162,21 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                                 n.restraints.fy ? 'roller' : 'none'
                     ) : 'none'
                 })),
-                members: Array.from(members.values()).map(m => ({
-                    id: m.id,
-                    startNodeId: m.startNodeId,
-                    endNodeId: m.endNodeId,
-                    E: m.E, G: (m.E || 200e6) / 2.6,
-                    A: m.A, Iy: m.I, Iz: m.I, J: (m.I || 1e-4) * 2
-                })),
+                members: Array.from(members.values()).map(m => {
+                    const E = m.E || 200e6;
+                    const G = m.G || E / (2 * (1 + 0.3)); // ν=0.3 for steel
+                    const I = m.I || 8.33e-6;
+                    return {
+                        id: m.id,
+                        startNodeId: m.startNodeId,
+                        endNodeId: m.endNodeId,
+                        E, G,
+                        A: m.A || 0.01,
+                        Iy: m.Iy || I,
+                        Iz: m.Iz || I,
+                        J: m.J || I / 100, // Conservative for open I-sections
+                    };
+                }),
                 node_loads: loads.map(l => ({
                     nodeId: l.nodeId,
                     fx: l.fx, fy: l.fy, fz: l.fz,
@@ -165,7 +189,8 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                     startPos: l.startPos ?? 0, endPos: l.endPos ?? 1,
                     isRatio: true
                 })),
-                zone: ['II', 'II', 'II', 'III', 'IV', 'V'][zone] || 'V', // Map 2->II etc
+                zone: zone,
+                zone_factor: IS1893_ZONE_FACTORS[zone] || 0.24,
                 soil_type: soilType,
                 importance_factor: importance,
                 response_reduction: response,
@@ -174,12 +199,6 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                 num_modes: numModes,
                 combination_method: 'CQC'
             };
-
-            // Fix Zone Mapping: 2->II is index 2? No.
-            // Zone integers in state: 2, 3, 4, 5.
-            // Map: 2->II, 3->III, 4->IV, 5->V
-            const zoneMap: Record<number, string> = { 2: 'II', 3: 'III', 4: 'IV', 5: 'V' };
-            payload.zone = zoneMap[zone];
 
             const res = await fetch(`${PYTHON_API}/analyze/spectrum`, {
                 method: 'POST',
@@ -198,9 +217,9 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
             const data = await res.json();
             setResult(data);
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            setError(err.message);
+            setError(getErrorMessage(err, 'Analysis failed'));
         } finally {
             setIsRunning(false);
         }
@@ -229,7 +248,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                             <option value={5}>Zone V (Very Severe)</option>
                         </select>
                         <div className="text-xs text-gray-400 mt-1">
-                            Z = {[0, 0, 0.10, 0.16, 0.24, 0.36][zone]}
+                            Z = {IS1893_ZONE_FACTORS[zone]?.toFixed(2) ?? '—'}
                         </div>
                     </div>
 
@@ -269,10 +288,11 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                             onChange={(e) => setResponse(parseFloat(e.target.value))}
                             className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
                         >
-                            <option value={3.0}>3.0 - Unreinforced Masonry</option>
-                            <option value={4.0}>4.0 - Ordinary RC Frame</option>
-                            <option value={5.0}>5.0 - Special RC Frame</option>
-                            <option value={5.0}>5.0 - Steel Frame (SMRF)</option>
+                            <option value={1.5}>1.5 - Unreinforced Masonry (IS 1893 Table 9)</option>
+                            <option value={3.0}>3.0 - Ordinary RC Moment Frame</option>
+                            <option value={4.0}>4.0 - Steel OMRF / RC Dual System</option>
+                            <option value={5.0}>5.0 - Special RC Frame / Steel SMRF</option>
+                            <option value={5.0}>5.0 - Steel EBF (IS 800, AISC 341)</option>
                         </select>
                     </div>
 
@@ -305,27 +325,77 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                     </div>
                 </div>
 
-                {/* Design Spectrum Preview */}
+                {/* IS 1893:2016 Design Spectrum — Computed from Sa/g formula */}
                 <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg mb-4">
-                    <div className="text-xs font-medium text-gray-500 mb-2">Design Spectrum Curve</div>
-                    <div className="h-32 relative">
-                        <svg width="100%" height="100%" viewBox="0 0 300 100">
-                            {/* Axes */}
-                            <line x1="30" y1="90" x2="290" y2="90" stroke="#888" strokeWidth="1" />
-                            <line x1="30" y1="10" x2="30" y2="90" stroke="#888" strokeWidth="1" />
+                    <div className="text-xs font-medium text-gray-500 mb-2">
+                        Design Spectrum (IS 1893:2016 Fig. 2) — Soil Type {soilType}
+                    </div>
+                    <div className="h-36 relative">
+                        <svg width="100%" height="100%" viewBox="0 0 320 120">
+                            {/* Grid */}
+                            {[0, 1, 2, 3, 4].map(i => (
+                                <line key={`sg-${i}`} x1="40" y1={15 + i * 25} x2="310" y2={15 + i * 25} stroke="#ddd" strokeWidth="0.5" strokeDasharray="2,2" />
+                            ))}
 
-                            {/* Spectrum curve (simplified visual) */}
+                            {/* Axes */}
+                            <line x1="40" y1="110" x2="310" y2="110" stroke="#888" strokeWidth="1.5" />
+                            <line x1="40" y1="10" x2="40" y2="110" stroke="#888" strokeWidth="1.5" />
+
+                            {/* IS 1893 Sa/g curve — generate from formula */}
                             <path
-                                d={`M 30,60 L 50,${90 - zone * 8} L 100,${90 - zone * 8} C 150,${90 - zone * 8} 180,70 290,85`}
+                                d={(() => {
+                                    const pts: string[] = [];
+                                    const Z = IS1893_ZONE_FACTORS[zone] || 0.24;
+                                    const Ah_scale = (Z / 2) * (importance / response);
+                                    for (let i = 0; i <= 60; i++) {
+                                        const T = i * 0.067; // 0 to ~4.0 s
+                                        const saG = getSaOverG(T, soilType);
+                                        const Ah = Ah_scale * saG;
+                                        const x = 40 + (T / 4.0) * 270;
+                                        // Scale: max Ah ≈ 0.36/2*1.5/1.5*2.5 = 0.45   -> use 0.5 as max
+                                        const y = 110 - (Ah / 0.5) * 95;
+                                        pts.push(i === 0 ? `M ${x.toFixed(1)},${Math.max(12, y).toFixed(1)}` : `L ${x.toFixed(1)},${Math.max(12, y).toFixed(1)}`);
+                                    }
+                                    return pts.join(' ');
+                                })()}
                                 fill="none"
                                 stroke="#6366f1"
                                 strokeWidth="2"
                             />
 
-                            {/* Labels */}
-                            <text x="160" y="98" fontSize="8" textAnchor="middle" fill="#888">Period (T)</text>
-                            <text x="10" y="50" fontSize="8" textAnchor="middle" fill="#888" transform="rotate(-90, 10, 50)">Sa/g</text>
+                            {/* Fill under curve */}
+                            <path
+                                d={(() => {
+                                    const pts: string[] = [];
+                                    const Z = IS1893_ZONE_FACTORS[zone] || 0.24;
+                                    const Ah_scale = (Z / 2) * (importance / response);
+                                    for (let i = 0; i <= 60; i++) {
+                                        const T = i * 0.067;
+                                        const saG = getSaOverG(T, soilType);
+                                        const Ah = Ah_scale * saG;
+                                        const x = 40 + (T / 4.0) * 270;
+                                        const y = 110 - (Ah / 0.5) * 95;
+                                        pts.push(i === 0 ? `M ${x.toFixed(1)},${Math.max(12, y).toFixed(1)}` : `L ${x.toFixed(1)},${Math.max(12, y).toFixed(1)}`);
+                                    }
+                                    pts.push('L 310,110 L 40,110 Z');
+                                    return pts.join(' ');
+                                })()}
+                                fill="#6366f1"
+                                fillOpacity="0.08"
+                            />
+
+                            {/* Axis labels */}
+                            <text x="175" y="108" fontSize="8" textAnchor="middle" fill="#888">Period T (s)</text>
+                            <text x="12" y="60" fontSize="8" textAnchor="middle" fill="#888" transform="rotate(-90, 12, 60)">Aₕ = (Z/2)(I/R)(Sa/g)</text>
+
+                            {/* X-axis ticks */}
+                            {[0, 1, 2, 3, 4].map(t => (
+                                <text key={`xt-${t}`} x={40 + (t / 4) * 270} y="118" fontSize="7" textAnchor="middle" fill="#888">{t}</text>
+                            ))}
                         </svg>
+                    </div>
+                    <div className="text-[10px] text-gray-400 mt-1">
+                        Aₕ = (Z/2) × (I/R) × (Sa/g) = ({(IS1893_ZONE_FACTORS[zone] || 0.24).toFixed(2)}/2) × ({importance}/{response}) × Sa/g
                     </div>
                 </div>
 
@@ -407,10 +477,12 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                 )}
             </button>
 
-            {/* Info */}
-            <div className="mt-4 text-xs text-gray-500">
+            {/* Info — IS 1893 Design Horizontal Seismic Coefficient */}
+            <div className="mt-4 text-xs text-gray-500 space-y-1">
+                <p>Design horizontal seismic coefficient (IS 1893 Cl.6.4.2):</p>
+                <p className="font-mono">A<sub>h</sub> = (Z/2) × (I/R) × (S<sub>a</sub>/g)</p>
                 <p>Design base shear: V<sub>B</sub> = A<sub>h</sub> × W</p>
-                <p className="mt-1">where A<sub>h</sub> = (Z/2) × (I/R) × (S<sub>a</sub>/g)</p>
+                <p className="mt-1 text-[10px]">CQC modal combination: IS 1893 Cl.7.8.4.4</p>
             </div>
         </div>
     );
@@ -420,7 +492,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
 // CABLE ANALYSIS PANEL (Inline)
 // ============================================
 
-const CableAnalysisPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
+const CableAnalysisPanel: FC<{ isPro: boolean }> = ({ isPro: _isPro }) => {
 
 
     return (
@@ -522,11 +594,6 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
             default:
                 return null;
         }
-    };
-
-    const getTabColor = (id: AnalysisType) => {
-        const option = ANALYSIS_OPTIONS.find((o) => o.id === id);
-        return option?.color || 'gray';
     };
 
     return (

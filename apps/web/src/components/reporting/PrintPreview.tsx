@@ -168,6 +168,9 @@ const PagePreview: React.FC<PagePreviewProps> = ({
     const size = PAGE_SIZES[pageSize];
     const width = orientation === 'portrait' ? size.width : size.height;
     const height = orientation === 'portrait' ? size.height : size.width;
+    const isCover = page.type === 'cover';
+    const isToc = page.type === 'toc';
+    const isAppendix = page.type === 'appendix';
     
     const formatText = (text: string): string => {
         return text
@@ -195,11 +198,11 @@ const PagePreview: React.FC<PagePreviewProps> = ({
             }}
         >
             {/* Page Shadow */}
-            <div className="absolute inset-0 bg-black/20 transform translate-x-1 translate-y-1 rounded" />
+            <div className="absolute inset-0 bg-black/20 transform translate-x-1 translate-y-1 rounded-md" />
             
             {/* Page */}
             <div 
-                className="absolute inset-0 bg-white rounded shadow-lg overflow-hidden"
+                className="absolute inset-0 bg-white rounded-md shadow-xl overflow-hidden border border-slate-200"
                 style={{
                     padding: `${margins.top * scale}px ${margins.right * scale}px ${margins.bottom * scale}px ${margins.left * scale}px`
                 }}
@@ -210,7 +213,7 @@ const PagePreview: React.FC<PagePreviewProps> = ({
                         className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden"
                     >
                         <span 
-                            className="text-gray-300 font-bold whitespace-nowrap"
+                            className="text-slate-300 font-bold whitespace-nowrap"
                             style={{
                                 fontSize: watermark.fontSize * scale,
                                 opacity: watermark.opacity,
@@ -225,7 +228,7 @@ const PagePreview: React.FC<PagePreviewProps> = ({
                 {/* Header */}
                 {header.enabled && (
                     <div 
-                        className={`absolute left-0 right-0 flex items-center justify-between text-gray-600 ${header.showLine ? 'border-b border-gray-300' : ''}`}
+                        className={`absolute left-0 right-0 flex items-center justify-between text-slate-500 ${header.showLine ? 'border-b border-slate-200' : ''}`}
                         style={{
                             top: margins.top * scale * 0.3,
                             left: margins.left * scale,
@@ -242,42 +245,69 @@ const PagePreview: React.FC<PagePreviewProps> = ({
                 
                 {/* Content Area */}
                 <div 
-                    className="h-full overflow-hidden text-gray-800"
+                    className="h-full overflow-hidden text-slate-800"
                     style={{ 
                         fontSize: 10 * scale,
                         marginTop: header.enabled ? 15 * scale : 0,
                         marginBottom: footer.enabled ? 15 * scale : 0
                     }}
                 >
-                    {page.type === 'cover' ? (
+                    {isCover ? (
                         <div className="h-full flex flex-col items-center justify-center text-center">
-                            <div className="text-lg font-bold text-gray-800 mb-2" style={{ fontSize: 18 * scale }}>
+                            <div className="w-10 h-1 bg-cyan-500 rounded-full mb-3" style={{ height: 4 * scale }} />
+                            <div className="text-lg font-bold text-slate-900 mb-2" style={{ fontSize: 18 * scale }}>
                                 {projectName}
                             </div>
-                            <div className="text-gray-600" style={{ fontSize: 14 * scale }}>
+                            <div className="text-slate-600" style={{ fontSize: 13 * scale }}>
                                 Structural Analysis Report
                             </div>
-                            <div className="text-gray-500 mt-4" style={{ fontSize: 10 * scale }}>
+                            <div className="text-slate-500 mt-4" style={{ fontSize: 10 * scale }}>
                                 {new Date().toLocaleDateString()}
+                            </div>
+                            <div className="mt-6 grid grid-cols-2 gap-2 text-left text-[8px] text-slate-500" style={{ fontSize: 8 * scale }}>
+                                <div className="font-medium text-slate-400">Document Ref</div>
+                                <div className="text-slate-700">RPT-{pageNumber.toString().padStart(3, '0')}</div>
+                                <div className="font-medium text-slate-400">Revision</div>
+                                <div className="text-slate-700">A</div>
+                            </div>
+                        </div>
+                    ) : isToc ? (
+                        <div>
+                            <div className="text-[9px] uppercase tracking-wider text-slate-400 mb-2" style={{ fontSize: 9 * scale }}>
+                                Table of Contents
+                            </div>
+                            <div className="space-y-1">
+                                {['Executive Summary', 'Design Basis', 'Model Overview', 'Analysis Results', 'Design Checks', 'Appendices']
+                                    .map((label, i) => (
+                                        <div key={label} className="flex items-center gap-2">
+                                            <span className="text-slate-700" style={{ fontSize: 9 * scale }}>{i + 1}. {label}</span>
+                                            <span className="flex-1 border-b border-dotted border-slate-300" />
+                                            <span className="text-slate-400" style={{ fontSize: 9 * scale }}>{i + 2}</span>
+                                        </div>
+                                    ))}
                             </div>
                         </div>
                     ) : (
                         <div>
-                            <div className="font-semibold mb-2" style={{ fontSize: 12 * scale }}>
+                            <div className="text-[9px] uppercase tracking-wider text-slate-400" style={{ fontSize: 9 * scale }}>
+                                {isAppendix ? 'Appendix' : `Section ${pageNumber}`}
+                            </div>
+                            <div className="font-semibold mb-2 text-slate-800" style={{ fontSize: 12 * scale }}>
                                 {page.title}
                             </div>
-                            <div className="text-gray-600 leading-relaxed">
-                                {/* Simplified content representation */}
+                            <div className="text-slate-600 leading-relaxed">
                                 <div className="space-y-1">
-                                    {[75, 62, 80, 55, 70, 48, 78, 65].map((width, i) => (
-                                        <div 
+                                    {[78, 64, 86, 58, 72, 52, 80, 66].map((width, i) => (
+                                        <div
                                             key={i}
-                                            className="bg-gray-100 rounded"
-                                            style={{ 
-                                                height: 6 * scale,
-                                                width: `${width}%`
-                                            }}
+                                            className="bg-slate-100 rounded"
+                                            style={{ height: 6 * scale, width: `${width}%` }}
                                         />
+                                    ))}
+                                </div>
+                                <div className="mt-3 grid grid-cols-3 gap-1">
+                                    {[1, 2, 3].map(col => (
+                                        <div key={col} className="h-10 bg-slate-50 border border-slate-200 rounded" style={{ height: 18 * scale }} />
                                     ))}
                                 </div>
                             </div>
@@ -288,7 +318,7 @@ const PagePreview: React.FC<PagePreviewProps> = ({
                 {/* Footer */}
                 {footer.enabled && (
                     <div 
-                        className={`absolute left-0 right-0 flex items-center justify-between text-gray-600 ${footer.showLine ? 'border-t border-gray-300' : ''}`}
+                        className={`absolute left-0 right-0 flex items-center justify-between text-slate-500 ${footer.showLine ? 'border-t border-slate-200' : ''}`}
                         style={{
                             bottom: margins.bottom * scale * 0.3,
                             left: margins.left * scale,
@@ -362,7 +392,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
                         className={`
-                            flex-1 py-2 text-xs font-medium flex items-center justify-center gap-1 transition-colors
+                            flex-1 py-2 text-[10px] font-semibold uppercase tracking-wider flex items-center justify-center gap-1 transition-colors
                             ${activeTab === tab.id 
                                 ? 'text-cyan-400 border-b-2 border-cyan-400' 
                                 : 'text-slate-400 hover:text-white'
@@ -751,7 +781,15 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
                     <div className="flex items-center gap-2">
                         <FileText className="w-5 h-5 text-cyan-400" />
                         <span className="font-semibold text-white">{projectName}</span>
-                        <span className="text-slate-400">• Print Preview</span>
+                        <span className="text-slate-500">• Print Preview</span>
+                    </div>
+                    <div className="hidden md:flex items-center gap-2 text-[10px] text-slate-400">
+                        <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700/70">
+                            {settings.pageSize} · {settings.orientation}
+                        </span>
+                        <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700/70 uppercase">
+                            {settings.quality}
+                        </span>
                     </div>
                 </div>
                 

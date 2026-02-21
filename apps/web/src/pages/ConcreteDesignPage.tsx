@@ -31,6 +31,7 @@ import {
   designColumnIS456,
   designSlabIS456
 } from '../api/design';
+import { getErrorMessage } from '../lib/errorHandling';
 
 type DesignCode = 'IS456' | 'ACI318';
 type MemberType = 'beam' | 'column' | 'slab';
@@ -311,8 +312,8 @@ export const ConcreteDesignPage: React.FC = () => {
         });
       }
 
-    } catch (err: any) {
-      console.warn('Backend unavailable, using client-side IS 456 calculations:', err.message);
+    } catch (err: unknown) {
+      console.warn('Backend unavailable, using client-side IS 456 calculations:', getErrorMessage(err));
       
       // ── CLIENT-SIDE FALLBACK: IS 456:2000 ──
       try {
@@ -489,8 +490,8 @@ export const ConcreteDesignPage: React.FC = () => {
             _clientSide: true
           });
         }
-      } catch (calcErr: any) {
-        setError('Client-side calculation error: ' + (calcErr.message || 'Unknown error'));
+      } catch (calcErr: unknown) {
+        setError('Client-side calculation error: ' + getErrorMessage(calcErr, 'Unknown error'));
       }
     } finally {
       setAnalyzing(false);

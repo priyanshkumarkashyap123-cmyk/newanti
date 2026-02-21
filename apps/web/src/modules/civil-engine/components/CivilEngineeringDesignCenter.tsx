@@ -10,6 +10,7 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
+import { sanitizeHTML } from '../../../lib/sanitize';
 
 // =============================================================================
 // TYPES
@@ -830,7 +831,7 @@ function ResultsVisualizationPanel({
       <div className="bg-white border border-gray-200 rounded-lg p-4 min-h-[300px]">
         <h4 className="font-medium text-gray-900 mb-2">Visualization</h4>
         {latestResult.visualization ? (
-          <div dangerouslySetInnerHTML={{ __html: latestResult.visualization }} />
+          <div dangerouslySetInnerHTML={{ __html: sanitizeHTML(latestResult.visualization) }} />
         ) : (
           <div className="h-64 flex items-center justify-center bg-gray-50 rounded">
             <span className="text-gray-400">Visualization will appear here</span>

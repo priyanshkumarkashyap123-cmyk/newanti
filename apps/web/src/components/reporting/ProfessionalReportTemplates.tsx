@@ -251,10 +251,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ selected, onSelect 
                     key={key}
                     onClick={() => onSelect(key as ReportTemplate)}
                     className={`
-                        p-4 rounded-xl border-2 transition-all text-left
+                        p-4 rounded-xl border transition-all text-left shadow-sm hover:shadow-md
                         ${selected === key 
-                            ? 'border-cyan-500 bg-cyan-500/10' 
-                            : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
+                            ? 'border-cyan-500 bg-cyan-500/10 ring-1 ring-cyan-500/30'
+                            : 'border-slate-700 bg-slate-900/60 hover:border-slate-600'
                         }
                     `}
                 >
@@ -263,7 +263,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ selected, onSelect 
                     </div>
                     <h4 className="font-medium text-white text-sm mb-1">{template.name}</h4>
                     <p className="text-xs text-slate-400 line-clamp-2">{template.description}</p>
-                    <div className="mt-2 text-xs text-slate-400">
+                    <div className="mt-3 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-slate-800 text-slate-300 border border-slate-700/70">
                         ~{template.estimatedPages} pages
                     </div>
                 </button>
@@ -319,20 +319,20 @@ const SectionConfigurator: React.FC<SectionConfiguratorProps> = ({
     return (
         <div className="space-y-3">
             <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-400">
+                <span className="text-[11px] text-slate-400 uppercase tracking-wider">
                     {includedCount} of {sections.length} sections included
                 </span>
                 <div className="flex items-center gap-2">
                     <button
                         onClick={selectAll}
-                        className="text-xs text-cyan-400 hover:text-cyan-300"
+                        className="text-xs text-cyan-400 hover:text-cyan-300 font-medium"
                     >
                         Select All
                     </button>
                     <span className="text-slate-500">|</span>
                     <button
                         onClick={selectNone}
-                        className="text-xs text-slate-400 hover:text-slate-300"
+                        className="text-xs text-slate-400 hover:text-slate-300 font-medium"
                     >
                         Clear
                     </button>
@@ -346,7 +346,7 @@ const SectionConfigurator: React.FC<SectionConfiguratorProps> = ({
                         className={`
                             rounded-lg border transition-colors
                             ${section.included 
-                                ? 'border-slate-700 bg-slate-800/50' 
+                                ? 'border-slate-700 bg-slate-800/60' 
                                 : 'border-slate-800 bg-slate-900/50 opacity-60'
                             }
                         `}
@@ -524,20 +524,27 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({ config }) => {
     const includedSections = config.sections.filter(s => s.included);
     
     return (
-        <div className="bg-white rounded-lg shadow-xl overflow-hidden" style={{ maxHeight: '500px' }}>
+        <div className="relative bg-white rounded-lg shadow-xl overflow-hidden" style={{ maxHeight: '500px' }}>
             {/* Cover Page Preview */}
             <div className="p-8 border-b border-gray-200">
-                {config.includeCompanyLogo && (
-                    <div className="w-32 h-10 bg-gray-200 rounded mb-6" />
-                )}
-                
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                <div className="flex items-center justify-between mb-6">
+                    {config.includeCompanyLogo ? (
+                        <div className="w-32 h-10 bg-gray-200 rounded" />
+                    ) : (
+                        <div className="text-xs text-gray-400 uppercase tracking-wider">Company Logo</div>
+                    )}
+                    <div className="text-[10px] text-gray-500">
+                        Doc Ref: RPT-{config.projectInfo.projectNumber || '0001'}
+                    </div>
+                </div>
+
+                <h1 className="text-2xl font-bold text-gray-900 mb-1">
                     {config.projectInfo.projectName || 'Untitled Project'}
                 </h1>
-                
-                <h2 className="text-lg text-gray-600 mb-4">{template.name}</h2>
-                
-                <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+
+                <h2 className="text-base text-gray-600 mb-4">{template.name}</h2>
+
+                <div className="grid grid-cols-2 gap-3 text-xs text-gray-600">
                     {config.projectInfo.projectNumber && (
                         <div>
                             <span className="text-gray-400">Project No:</span>
@@ -559,9 +566,22 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({ config }) => {
                         <span className="ml-2">{config.projectInfo.dateCreated.toLocaleDateString()}</span>
                     </div>
                 </div>
-                
+
+                <div className="mt-5 border border-gray-200 rounded text-[11px]">
+                    <div className="grid grid-cols-3 bg-gray-50 px-3 py-2 text-gray-500 font-medium">
+                        <span>Prepared</span>
+                        <span>Checked</span>
+                        <span>Approved</span>
+                    </div>
+                    <div className="grid grid-cols-3 px-3 py-2 text-gray-700">
+                        <span>{config.projectInfo.engineerName || '—'}</span>
+                        <span>{config.projectInfo.checkerName || '—'}</span>
+                        <span>{config.projectInfo.approverName || '—'}</span>
+                    </div>
+                </div>
+
                 {config.confidential && (
-                    <div className="mt-4 inline-block px-3 py-1 bg-red-100 text-red-600 text-xs font-medium rounded">
+                    <div className="mt-4 inline-block px-3 py-1 bg-red-100 text-red-600 text-[10px] font-semibold tracking-wider rounded">
                         CONFIDENTIAL
                     </div>
                 )}
@@ -569,7 +589,7 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({ config }) => {
             
             {/* Table of Contents Preview */}
             <div className="p-6 overflow-y-auto" style={{ maxHeight: '300px' }}>
-                <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wider">
+                <h3 className="text-xs font-semibold text-gray-700 mb-3 uppercase tracking-wider border-b border-gray-200 pb-2">
                     Table of Contents
                 </h3>
                 <div className="space-y-2">
@@ -578,8 +598,8 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({ config }) => {
                             <span className="text-gray-700">
                                 {index + 1}. {section.title}
                             </span>
-                            <span className="text-gray-400 border-b border-dotted border-gray-300 flex-1 mx-2" />
-                            <span className="text-gray-400">{index + 2}</span>
+                            <span className="text-gray-300 border-b border-dotted border-gray-300 flex-1 mx-2" />
+                            <span className="text-gray-400 tabular-nums">{index + 2}</span>
                         </div>
                     ))}
                 </div>
@@ -684,9 +704,9 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                             <button
                                 onClick={() => setActiveStep(step.number)}
                                 className={`
-                                    flex items-center gap-2 px-4 py-2 rounded-lg transition-colors
+                                    flex items-center gap-2 px-4 py-2 rounded-lg transition-all
                                     ${activeStep === step.number 
-                                        ? 'bg-cyan-500 text-white' 
+                                        ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/20' 
                                         : activeStep > step.number
                                             ? 'bg-green-500/20 text-green-400'
                                             : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
@@ -695,15 +715,15 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                             >
                                 <span className={`
                                     w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold
-                                    ${activeStep > step.number ? 'bg-green-500' : 'bg-slate-700'}
+                                    ${activeStep > step.number ? 'bg-green-500 text-white' : 'bg-slate-700'}
                                 `}>
                                     {activeStep > step.number ? <Check className="w-3 h-3" /> : step.number}
                                 </span>
                                 <span className="hidden sm:inline">{step.title}</span>
                             </button>
                             {index < steps.length - 1 && (
-                                <div className={`flex-1 h-0.5 mx-2 ${
-                                    activeStep > step.number ? 'bg-green-500' : 'bg-slate-700'
+                                <div className={`flex-1 h-0.5 mx-2 rounded-full ${
+                                    activeStep > step.number ? 'bg-green-500' : 'bg-slate-700/70'
                                 }`} />
                             )}
                         </React.Fragment>
@@ -824,7 +844,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                             <button
                                 onClick={handleGenerate}
                                 disabled={isGenerating}
-                                className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold rounded-xl hover:from-cyan-400 hover:to-blue-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold rounded-xl hover:from-cyan-400 hover:to-blue-400 transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
                                 {isGenerating ? (
                                     <>

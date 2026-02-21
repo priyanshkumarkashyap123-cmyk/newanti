@@ -10,6 +10,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { Calculator, Shapes, Save, Download, Upload } from 'lucide-react';
 import axios from 'axios';
 import { API_CONFIG } from '../config/env';
+import { getApiErrorMessage } from '../lib/errorHandling';
 
 interface Point {
     x: number;
@@ -158,9 +159,9 @@ export function SectionDesignerDialog({ open, onClose, onSave }: SectionDesigner
                     setProperties(response.data.section.properties);
                 }
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Section calculation error:', err);
-            setError(err.response?.data?.detail || 'Failed to calculate section properties');
+            setError(getApiErrorMessage(err, 'Failed to calculate section properties'));
         } finally {
             setLoading(false);
         }

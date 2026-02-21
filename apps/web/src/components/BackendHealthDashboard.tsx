@@ -10,6 +10,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { API_CONFIG } from '../config/env';
 import rustApi from '../api/rustApi';
+import { getErrorMessage, isAbortError } from '../lib/errorHandling';
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -70,13 +71,13 @@ export default function BackendHealthDashboard() {
         capabilities: data.capabilities,
         error: resp.ok ? undefined : `HTTP ${resp.status}`,
       };
-    } catch (e: any) {
+    } catch (e: unknown) {
       return {
         ...svc,
         status: 'offline',
         responseTimeMs: null,
         lastChecked: new Date(),
-        error: e.name === 'AbortError' ? 'Timeout (5s)' : e.message,
+        error: isAbortError(e) ? 'Timeout (5s)' : getErrorMessage(e, 'Request failed'),
       };
     }
   }, [services]);
@@ -102,7 +103,7 @@ export default function BackendHealthDashboard() {
 
   useEffect(() => {
     checkAllServices();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line
 
   useEffect(() => {
     if (!autoRefresh) return;

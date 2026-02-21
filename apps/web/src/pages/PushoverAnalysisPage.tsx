@@ -132,7 +132,7 @@ export const PushoverAnalysisPage: React.FC = () => {
         _note: 'Sample calculation using FEMA 356/440 principles. Full Rust backend (1078 lines) ready for WASM integration.'
       });
 
-    } catch (err: any) {
+    } catch (_err: unknown) {
       setError(
         'Pushover calculation error. ' +
         'Backend module exists: apps/backend-rust/src/pushover_analysis.rs (1078 lines). ' +

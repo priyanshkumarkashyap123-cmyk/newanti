@@ -10,6 +10,7 @@
 import { FC, useState, useCallback, useEffect, memo } from 'react';
 import { X, RefreshCw, CheckCircle2, AlertTriangle, XCircle, Loader2 } from 'lucide-react';
 import { API_CONFIG } from '../config/env';
+import { getErrorMessage, isAbortError } from '../lib/errorHandling';
 
 // ============================================
 // Types
@@ -58,14 +59,14 @@ async function probeService(name: string, baseUrl: string): Promise<ServiceResul
         } catch {
             return { name, url, status: 'healthy', latencyMs, detail: 'ok (non-JSON)' };
         }
-    } catch (err: any) {
+    } catch (err: unknown) {
         const latencyMs = Math.round(performance.now() - t0);
         return {
             name,
             url,
             status: 'unhealthy',
             latencyMs,
-            detail: err?.name === 'AbortError' ? 'Timeout (>5 s)' : (err?.message || 'unreachable'),
+            detail: isAbortError(err) ? 'Timeout (>5 s)' : getErrorMessage(err, 'unreachable'),
         };
     }
 }

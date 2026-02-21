@@ -209,7 +209,7 @@ router.post('/chat', async (req: Request, res: Response) => {
             });
         }
 
-        const geminiResult = await apiResponse.json() as any;
+        const geminiResult = await apiResponse.json() as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
         const responseText = geminiResult.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
         // Cache the response

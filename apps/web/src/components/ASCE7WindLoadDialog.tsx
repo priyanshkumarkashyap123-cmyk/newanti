@@ -28,6 +28,7 @@ import { Badge } from './ui/badge';
 import { Wind, MapPin, Mountain, AlertTriangle, Calculator, Info, Building2 } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
 import { API_CONFIG } from '../config/env';
+import { getErrorMessage } from '../lib/errorHandling';
 // import { useToast } from './ui/use-toast';
 
 // ===== CONSTANTS =====
@@ -203,9 +204,9 @@ const ASCE7WindLoadDialog: React.FC = () => {
 
             setActiveTab('results');
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(error);
-            alert(`Calculation Failed: ${error.message}`);
+            alert(`Calculation Failed: ${getErrorMessage(error, 'Unknown error')}`);
         } finally {
             setLoading(false);
         }

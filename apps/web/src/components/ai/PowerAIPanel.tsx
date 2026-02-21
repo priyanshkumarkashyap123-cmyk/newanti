@@ -63,6 +63,7 @@ import {
   SmartSuggestion, 
   ExpertModeSettings 
 } from '../../services/AIPowerEngine';
+import { getErrorMessage } from '../../lib/errorHandling';
 
 // ============================================
 // TYPES
@@ -613,11 +614,11 @@ Welcome to the **most powerful AI** in structural engineering!
         confidence.overall
       );
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: `⚠️ **Error:** ${error.message || 'Something went wrong'}`,
+        content: `⚠️ **Error:** ${getErrorMessage(error, 'Something went wrong')}`,
         timestamp: new Date(),
       }]);
     } finally {

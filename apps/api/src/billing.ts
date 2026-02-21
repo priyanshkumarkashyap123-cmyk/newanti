@@ -6,14 +6,16 @@
 import Stripe from 'stripe';
 import { Request, Response, Router, type IRouter } from 'express';
 import { User, Subscription } from './models.js';
+import { resolveStripePriceId } from './utils/billingConfig.js';
+import { env } from './config/env.js';
 
 // ============================================
 // STRIPE INITIALIZATION
 // ============================================
 
-const STRIPE_SECRET_KEY = process.env['STRIPE_SECRET_KEY'] ?? '';
-const STRIPE_WEBHOOK_SECRET = process.env['STRIPE_WEBHOOK_SECRET'] ?? '';
-const FRONTEND_URL = process.env['FRONTEND_URL'] ?? 'http://localhost:5173';
+const STRIPE_SECRET_KEY = env.STRIPE_SECRET_KEY ?? '';
+const STRIPE_WEBHOOK_SECRET = env.STRIPE_WEBHOOK_SECRET ?? '';
+const FRONTEND_URL = env.FRONTEND_URL ?? 'http://localhost:5173';
 
 if (!STRIPE_SECRET_KEY) {
     console.warn('⚠️ Missing STRIPE_SECRET_KEY environment variable');
@@ -26,9 +28,9 @@ const stripe = new Stripe(STRIPE_SECRET_KEY);
 // ============================================
 
 const PRICES = {
-    PRO_MONTHLY: process.env['STRIPE_PRO_MONTHLY_PRICE_ID'] ?? 'price_xxx',
-    PRO_YEARLY: process.env['STRIPE_PRO_YEARLY_PRICE_ID'] ?? 'price_yyy',
-    ENTERPRISE_MONTHLY: process.env['STRIPE_ENTERPRISE_MONTHLY_PRICE_ID'] ?? 'price_zzz',
+    PRO_MONTHLY: env.STRIPE_PRO_MONTHLY_PRICE_ID,
+    PRO_YEARLY: env.STRIPE_PRO_YEARLY_PRICE_ID,
+    ENTERPRISE_MONTHLY: env.STRIPE_ENTERPRISE_MONTHLY_PRICE_ID,
 };
 
 // ============================================
@@ -281,7 +283,17 @@ billingRouter.post('/checkout', async (req: Request, res: Response) => {
             return;
         }
 
-        const selectedPriceId = priceId ?? (plan === 'yearly' ? PRICES.PRO_YEARLY : PRICES.PRO_MONTHLY);
+        const selectedPriceId = resolveStripePriceId(priceId, plan, {
+            proMonthly: PRICES.PRO_MONTHLY,
+            proYearly: PRICES.PRO_YEARLY,
+        });
+        if (!selectedPriceId) {
+            res.status(503).json({
+                success: false,
+                message: 'Billing plan is not configured. Set STRIPE_*_PRICE_ID environment variables.'
+            });
+            return;
+        }
 
         const session = await BillingService.createCheckoutSession(
             userId,

@@ -533,7 +533,9 @@ class GeminiAIService {
   constructor() {
     // Try to get API key from environment or localStorage
     this.apiKey = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('gemini_api_key');
-    console.log('[GeminiAI] 🚀 Power AI Service initialized, API key status:', this.apiKey ? 'Found' : 'Not found');
+    if (import.meta.env.DEV) {
+      console.log('[GeminiAI] 🚀 Power AI Service initialized, API key status:', this.apiKey ? 'Found' : 'Not found');
+    }
   }
 
   // ============================================
@@ -941,7 +943,7 @@ Provide detailed reasoning with formulas shown.`;
     };
 
     try {
-      console.log('[GeminiAI] Sending request...');
+      if (import.meta.env.DEV) console.log('[GeminiAI] Sending request...');
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -956,7 +958,7 @@ Provide detailed reasoning with formulas shown.`;
 
       const data = await response.json();
       const result = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated';
-      console.log('[GeminiAI] Response received:', result.substring(0, 100) + '...');
+      if (import.meta.env.DEV) console.log('[GeminiAI] Response received:', result.substring(0, 100) + '...');
       return result;
     } catch (error) {
       console.error('[GeminiAI] Gemini API error:', error);

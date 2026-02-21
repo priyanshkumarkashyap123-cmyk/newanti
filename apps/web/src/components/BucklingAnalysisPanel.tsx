@@ -23,6 +23,7 @@ import {
 import { useModelStore } from '../store/model';
 import { useAdvancedAnalysis } from '../hooks/useAdvancedAnalysis';
 import { useAuth } from '../providers/AuthProvider';
+import { getErrorMessage } from '../lib/errorHandling';
 
 // ============================================
 // TYPES
@@ -320,9 +321,9 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
                 }))
             });
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('[Buckling] WASM analysis error:', err);
-            setError(err.message || 'Analysis failed');
+            setError(getErrorMessage(err, 'Analysis failed'));
         } finally {
             setIsRunning(false);
         }

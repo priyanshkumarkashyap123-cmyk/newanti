@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AdvancedAnalysisService, ModalAnalysisRequest } from '../services/AdvancedAnalysisService';
+import { getErrorMessage } from '../lib/errorHandling';
 
 // Types
 type EigenSolver = 'subspace' | 'lanczos' | 'arnoldi' | 'jacobi';
@@ -224,9 +225,9 @@ export const ModalAnalysisPage: React.FC = () => {
         }
       });
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Modal analysis failed:', err);
-      setError(err.message || 'Modal analysis failed');
+      setError(getErrorMessage(err, 'Modal analysis failed'));
     } finally {
       setAnalyzing(false);
     }

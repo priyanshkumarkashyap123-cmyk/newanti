@@ -54,6 +54,7 @@ import {
 } from 'lucide-react';
 import { useModelStore } from '../../store/model';
 import { geminiAI, AIAction, AIPlan, AIModelContext } from '../../services/GeminiAIService';
+import { getErrorMessage } from '../../lib/errorHandling';
 
 // ============================================
 // TYPES
@@ -553,14 +554,14 @@ ${apiStatus}
       
       setProcessingState({ status: 'idle' });
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Remove thinking message
       setMessages(prev => prev.filter(m => m.role !== 'thinking'));
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: `⚠️ **Error:** ${error.message || 'Something went wrong'}\n\n${!hasApiKey ? 'Consider setting up your Gemini API key for enhanced capabilities.' : 'Please try again or rephrase your request.'}`,
+        content: `⚠️ **Error:** ${getErrorMessage(error, 'Something went wrong')}\n\n${!hasApiKey ? 'Consider setting up your Gemini API key for enhanced capabilities.' : 'Please try again or rephrase your request.'}`,
         timestamp: new Date(),
         type: 'error',
       };

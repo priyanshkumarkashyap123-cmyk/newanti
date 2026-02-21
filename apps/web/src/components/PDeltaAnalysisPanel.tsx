@@ -1,11 +1,15 @@
 /**
  * PDeltaAnalysisPanel.tsx - P-Delta (Geometric Nonlinear) Analysis
  * 
- * Displays second-order analysis results:
- * - Convergence status
- * - Amplification factors
- * - Displacement comparison (1st vs 2nd order)
- * - Iteration history
+ * Second-order geometric nonlinear analysis per:
+ *   - IS 800:2007 Cl.4.4.2 — Second-order effects (P-Δ and P-δ)
+ *   - AISC 360-22 Appendix 8 — Approximate Second-Order Analysis
+ *   - Amplification factor B₂ = 1 / (1 − ΣP_story / P_e_story)
+ *   
+ * Displays:
+ *   - Convergence history (log-scale residual)
+ *   - Amplification factors per IS 800 / AISC
+ *   - 1st vs 2nd order displacement & moment comparison
  */
 
 import { FC, useState, useMemo } from 'react';
@@ -158,7 +162,7 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
         convertModelForAdvancedAnalysis,
     } = useAdvancedAnalysis();
 
-    // Run P-Delta analysis
+    // Run P-Delta analysis using model's actual loads
     const handleRunAnalysis = async () => {
         const nodesArray = Array.from(nodes.values());
         const membersArray = Array.from(members.values()).map((m, idx) => {
@@ -171,13 +175,18 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
             };
         });
 
+        // Derive support types from full restraint data
         const supportsArray = Array.from(nodes.values())
-            .filter(n => n.restraints)
-            .map(n => ({
-                nodeId: n.id,
-                type: (n.restraints?.fx && n.restraints?.fy && n.restraints?.fz && n.restraints?.mx) ? 'FIXED' : 'PINNED'
-                // Simplified support type mapping for this example
-            }));
+            .filter(n => n.restraints && (n.restraints.fx || n.restraints.fy || n.restraints.fz))
+            .map(n => {
+                const r = n.restraints!;
+                const allFixed = r.fx && r.fy && r.fz && r.mx && r.my && r.mz;
+                const allTranslation = r.fx && r.fy && r.fz;
+                return {
+                    nodeId: n.id,
+                    type: allFixed ? 'FIXED' : allTranslation ? 'PINNED' : 'ROLLER'
+                };
+            });
 
         const model = convertModelForAdvancedAnalysis(
             nodesArray.map((n) => ({ id: n.id, x: n.x, y: n.y, z: n.z })),
@@ -185,19 +194,19 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
             supportsArray
         );
 
-        // Get loads from existing analysis or create default
-        const loads = nodesArray
-            .filter((n) => !supportsArray.some((s) => s.nodeId === n.id))
-            .slice(0, 1)
-            .map((n, i) => ({
-                nodeId: i + 1,
-                fy: -100, // 100 kN downward
-                fx: 10,   // 10 kN lateral
-            }));
+        // Use actual nodal loads from the model store
+        const storeLoads = useModelStore.getState().loads;
+        const actualLoads = storeLoads.length > 0
+            ? storeLoads.map(l => ({
+                nodeId: parseInt(l.nodeId) || 0,
+                fx: l.fx || 0, fy: l.fy || 0, fz: l.fz || 0,
+                mx: l.mx || 0, my: l.my || 0, mz: l.mz || 0,
+            }))
+            : []; // If no loads defined, send empty — backend should handle
 
         await runPDelta({
             ...model,
-            loads,
+            loads: actualLoads,
             options: {
                 maxIterations,
                 tolerance,
@@ -215,13 +224,13 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
 
         if (factor > 1.5) {
             status = 'critical';
-            message = 'High P-Delta effect - consider increasing stiffness';
+            message = 'High P-Δ effect — consider increasing lateral stiffness (IS 800 Cl.4.4.2)';
         } else if (factor > 1.1) {
             status = 'warning';
-            message = 'Moderate P-Delta effect - review design';
+            message = 'Moderate P-Δ effect — review design per AISC 360 App. 8';
         } else {
             status = 'safe';
-            message = 'P-Delta effect within acceptable limits';
+            message = 'P-Δ effect within acceptable limits (B₂ < 1.1)';
         }
 
         return { factor, status, message };
@@ -391,7 +400,7 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
                             </div>
                         </div>
 
-                        {/* 1st vs 2nd Order Comparison */}
+                        {/* 1st vs 2nd Order Comparison — use actual analysis results */}
                         {showComparison && analysisResults && (
                             <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                                 <div className="flex items-center justify-between mb-3">
@@ -401,31 +410,48 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
                                     <BarChart3 className="w-4 h-4 text-gray-400" />
                                 </div>
 
-                                <ComparisonBar
-                                    label="Max Displacement"
-                                    firstOrder={5.2} // From linear analysis
-                                    secondOrder={pdeltaResult.maxDisplacement || 5.5}
-                                    unit="mm"
-                                />
-
-                                <ComparisonBar
-                                    label="Max Moment"
-                                    firstOrder={120}
-                                    secondOrder={120 * (pdeltaResult.amplificationFactor || 1)}
-                                    unit="kN.m"
-                                />
+                                {(() => {
+                                    // Compute max displacement from 1st-order results
+                                    let maxDisp1st = 0;
+                                    analysisResults.displacements.forEach(d => {
+                                        const mag = Math.sqrt(d.dx * d.dx + d.dy * d.dy + d.dz * d.dz) * 1000; // mm
+                                        if (mag > maxDisp1st) maxDisp1st = mag;
+                                    });
+                                    // Compute max moment from 1st-order member forces
+                                    let maxMom1st = 0;
+                                    analysisResults.memberForces.forEach(f => {
+                                        const m = Math.max(Math.abs(f.momentY ?? 0), Math.abs(f.momentZ ?? 0));
+                                        if (m > maxMom1st) maxMom1st = m;
+                                    });
+                                    return (
+                                        <>
+                                            <ComparisonBar
+                                                label="Max Displacement"
+                                                firstOrder={maxDisp1st || 0.01}
+                                                secondOrder={pdeltaResult.maxDisplacement || maxDisp1st * (pdeltaResult.amplificationFactor || 1)}
+                                                unit="mm"
+                                            />
+                                            <ComparisonBar
+                                                label="Max Moment (amplified)"
+                                                firstOrder={maxMom1st || 0.01}
+                                                secondOrder={maxMom1st * (pdeltaResult.amplificationFactor || 1)}
+                                                unit="kN·m"
+                                            />
+                                        </>
+                                    );
+                                })()}
                             </div>
                         )}
 
-                        {/* Info Box */}
+                        {/* Info Box — P-Delta theory reference */}
                         <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                             <div className="flex items-start gap-2">
                                 <TrendingUp className="w-4 h-4 text-blue-500 mt-0.5" />
                                 <div className="text-xs text-blue-600 dark:text-blue-400">
-                                    <strong>P-Delta Effect:</strong> Second-order moments arise when
-                                    axial loads act on the deformed structure. The amplification
-                                    factor B₂ = 1 / (1 - ΣP/ΣPcr) indicates the increase in
-                                    moments due to this effect.
+                                    <strong>P-Δ Effect (IS 800 Cl.4.4.2, AISC 360 App. 8):</strong> Second-order
+                                    moments arise when axial loads act on the deformed structure.
+                                    Amplification factor B₂ = 1 / (1 − ΣP<sub>story</sub>/P<sub>e,story</sub>).
+                                    If B₂ &gt; 1.5, sway stability is critical.
                                 </div>
                             </div>
                         </div>

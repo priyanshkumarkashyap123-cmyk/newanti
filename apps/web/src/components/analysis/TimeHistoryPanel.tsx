@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AdvancedAnalysisService, TimeHistoryRequest, TimeHistoryResponse } from '../../services/AdvancedAnalysisService';
+import { getErrorMessage } from '../../lib/errorHandling';
 
 export const TimeHistoryPanel: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -23,8 +24,8 @@ export const TimeHistoryPanel: React.FC = () => {
       };
       const res = await service.timeHistoryAnalysis(req);
       setResult(res);
-    } catch (e: any) {
-      setError(e.message || 'Time-history analysis failed');
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, 'Time-history analysis failed'));
     } finally {
       setLoading(false);
     }

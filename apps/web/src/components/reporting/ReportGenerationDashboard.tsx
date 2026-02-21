@@ -360,29 +360,39 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
 
     // Render
     return (
-        <div className={`bg-white rounded-xl shadow-lg ${className}`}>
+        <div className={`bg-white rounded-xl shadow-xl border border-slate-200 ${className}`}>
             {/* Header */}
-            <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700 rounded-t-xl">
+            <div className="px-6 py-5 border-b border-slate-200 bg-slate-900 rounded-t-xl">
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                        <FileText className="w-8 h-8 text-white" />
+                    <div className="flex items-center space-x-4">
+                        <div className="w-10 h-10 rounded-lg bg-blue-600/20 flex items-center justify-center">
+                            <FileText className="w-5 h-5 text-blue-400" />
+                        </div>
                         <div>
-                            <h2 className="text-xl font-bold text-white">Report Generation</h2>
-                            <p className="text-blue-100 text-sm">{projectName} • {projectNumber}</p>
+                            <h2 className="text-lg font-black text-white tracking-tight">Report Generation Centre</h2>
+                            <p className="text-slate-400 text-[12px] font-medium">
+                                <span className="text-slate-500">Project:</span> {projectName} &nbsp;•&nbsp;
+                                <span className="text-slate-500">No:</span> {projectNumber}
+                            </p>
                         </div>
                     </div>
                     
-                    {!analysisComplete && (
-                        <div className="flex items-center space-x-2 px-3 py-1 bg-yellow-500 rounded-full">
-                            <AlertTriangle className="w-4 h-4 text-white" />
-                            <span className="text-sm text-white font-medium">Analysis Required</span>
+                    {!analysisComplete ? (
+                        <div className="flex items-center space-x-2 px-3 py-1.5 bg-amber-500/15 border border-amber-500/30 rounded-lg">
+                            <AlertTriangle className="w-4 h-4 text-amber-400" />
+                            <span className="text-[11px] text-amber-300 font-bold uppercase tracking-wider">Run Analysis First</span>
+                        </div>
+                    ) : (
+                        <div className="flex items-center space-x-2 px-3 py-1.5 bg-green-500/15 border border-green-500/30 rounded-lg">
+                            <CheckCircle className="w-4 h-4 text-green-400" />
+                            <span className="text-[11px] text-green-300 font-bold uppercase tracking-wider">Analysis Complete</span>
                         </div>
                     )}
                 </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-gray-200">
+            <div className="flex border-b border-slate-200 bg-slate-50">
                 {[
                     { id: 'generate', label: 'Generate Report', icon: FileText },
                     { id: 'history', label: 'Report History', icon: Clock },
@@ -391,10 +401,10 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                        className={`flex items-center space-x-2 px-6 py-3 font-medium transition-colors ${
+                        className={`flex items-center space-x-2 px-6 py-3 text-[12px] font-bold uppercase tracking-wider transition-colors ${
                             activeTab === tab.id
-                                ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                                ? 'text-blue-700 border-b-2 border-blue-600 bg-white'
+                                : 'text-slate-400 hover:text-slate-600 hover:bg-white/50'
                         }`}
                     >
                         <tab.icon className="w-4 h-4" />
@@ -409,35 +419,46 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                     <div className="space-y-6">
                         {/* Report Type Selection */}
                         <div>
-                            <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                                <FileText className="w-4 h-4 mr-2" />
-                                Report Type
+                            <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center">
+                                <FileText className="w-3.5 h-3.5 mr-2" />
+                                Select Report Type
                             </h3>
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
                                 {Object.entries(REPORT_TYPES).map(([type, info]) => (
                                     <button
                                         key={type}
                                         onClick={() => handleTypeChange(type as ReportType)}
-                                        className={`p-4 rounded-lg border-2 transition-all ${
+                                        className={`group relative p-4 rounded-lg border-2 transition-all ${
                                             selectedType === type
-                                                ? 'border-blue-500 bg-blue-50 shadow-md'
-                                                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                                ? 'border-blue-500 bg-blue-50 shadow-lg shadow-blue-100'
+                                                : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                                         }`}
                                     >
-                                        <info.icon className={`w-8 h-8 mx-auto mb-2 ${
-                                            selectedType === type ? 'text-blue-600' : 'text-gray-400'
+                                        {selectedType === type && (
+                                            <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-blue-500" />
+                                        )}
+                                        <info.icon className={`w-7 h-7 mx-auto mb-2 transition-colors ${
+                                            selectedType === type ? 'text-blue-600' : 'text-slate-300 group-hover:text-slate-400'
                                         }`} />
-                                        <p className={`text-sm font-medium text-center ${
-                                            selectedType === type ? 'text-blue-700' : 'text-gray-700'
+                                        <p className={`text-[11px] font-bold text-center leading-tight ${
+                                            selectedType === type ? 'text-blue-700' : 'text-slate-600'
                                         }`}>
                                             {info.name}
                                         </p>
                                     </button>
                                 ))}
                             </div>
-                            <p className="mt-2 text-sm text-gray-500">
-                                {REPORT_TYPES[selectedType].description}
-                            </p>
+                            <div className="mt-3 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg">
+                                <p className="text-[11px] text-slate-500">
+                                    <span className="font-bold text-slate-600">{REPORT_TYPES[selectedType].name}:</span>{' '}
+                                    {REPORT_TYPES[selectedType].description}
+                                </p>
+                                <div className="flex flex-wrap gap-1 mt-1.5">
+                                    {REPORT_TYPES[selectedType].sections.map((s) => (
+                                        <span key={s} className="text-[9px] font-bold text-slate-400 bg-white border border-slate-200 rounded px-1.5 py-0.5 uppercase tracking-wider">{s}</span>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
 
                         {/* Output Format */}
@@ -678,40 +699,40 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                         </div>
 
                         {/* Actions */}
-                        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                        <div className="flex items-center justify-between pt-5 border-t-2 border-slate-200">
                             <button
                                 onClick={handlePreview}
-                                className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                className="flex items-center space-x-2 px-4 py-2.5 text-slate-600 border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors text-sm font-medium"
                             >
-                                <Eye className="w-5 h-5" />
+                                <Eye className="w-4 h-4" />
                                 <span>Preview</span>
                             </button>
                             
-                            <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-2">
                                 <button
-                                    className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                    className="flex items-center space-x-2 px-4 py-2.5 text-slate-500 border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors text-sm font-medium"
                                 >
-                                    <Printer className="w-5 h-5" />
+                                    <Printer className="w-4 h-4" />
                                     <span>Print</span>
                                 </button>
                                 
                                 <button
                                     onClick={handleGenerate}
                                     disabled={isGenerating || !analysisComplete}
-                                    className={`flex items-center space-x-2 px-6 py-2 rounded-lg font-medium transition-all ${
+                                    className={`flex items-center space-x-2 px-8 py-2.5 rounded-lg text-sm font-bold transition-all ${
                                         isGenerating || !analysisComplete
-                                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                            : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl'
+                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                                            : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-200 hover:shadow-blue-300'
                                     }`}
                                 >
                                     {isGenerating ? (
                                         <>
-                                            <RefreshCw className="w-5 h-5 animate-spin" />
-                                            <span>Generating...</span>
+                                            <RefreshCw className="w-4 h-4 animate-spin" />
+                                            <span>Generating…</span>
                                         </>
                                     ) : (
                                         <>
-                                            <Download className="w-5 h-5" />
+                                            <Download className="w-4 h-4" />
                                             <span>Generate Report</span>
                                         </>
                                     )}

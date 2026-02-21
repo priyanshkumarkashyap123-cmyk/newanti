@@ -1,15 +1,25 @@
 /**
- * StructureWizard.tsx - Modern Parametric Structure Generator
+ * StructureWizard.tsx - Industry-Standard Parametric Structure Generator
  *
- * Generates ready-to-analyze structures with geometry + supports + default loads.
- * Templates include the most common structural analysis cases.
+ * Generates ready-to-analyze structures following structural engineering conventions:
+ * - One member per structural element (beam span, column lift, brace)
+ * - Nodes only at support, connection, and load application points
+ * - Distributed loads applied as member loads (UDL/UVL), not lumped nodal approximations
+ * - Standard Indian/International steel section properties
+ * - Support conditions per IS 800 / AISC 360 conventions
+ *
+ * References:
+ * - IS 800:2007 - General construction in steel
+ * - IS 875 Part 1-5 - Code of practice for design loads
+ * - IS 1893:2016 - Seismic design criteria
+ * - AISC 360-22 - Specification for Structural Steel Buildings
  */
 
 import { FC, useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     X, Check, Sparkles, Triangle, Building2, Factory,
-    Columns, Grid3X3, Ruler, ArrowDown, Zap
+    Columns, Grid3X3, Ruler, ArrowDown, Zap, Shield
 } from 'lucide-react';
 
 // ============================================
@@ -96,12 +106,27 @@ interface ParamDef {
 }
 
 // ============================================
-// MATERIAL DEFAULTS (Steel ISMB 300)
+// STANDARD SECTION PROPERTIES (IS 808)
 // ============================================
+// Each section: { E: Young's modulus (kN/m²), A: area (m²), I: Ixx (m⁴) }
+// E = 200 GPa = 200e6 kN/m²
 
-const STEEL = { E: 200e6, A: 0.00478, I: 8.603e-5 };
-const STEEL_COL = { E: 200e6, A: 0.00785, I: 1.696e-4 };
-const STEEL_BRACE = { E: 200e6, A: 0.00217, I: 2.88e-5 };
+// ISMB 300: Standard I-beam for typical floor beams (span 4-8m)
+const BEAM_ISMB300 = { E: 200e6, A: 0.00478, I: 8.603e-5 };
+// ISMB 400: Heavy beam for longer spans / higher loads (span 6-12m)
+const BEAM_ISMB400 = { E: 200e6, A: 0.00786, I: 2.0458e-4 };
+// ISHB 300: Column section for low-rise frames (up to 5 stories)
+const COL_ISHB300 = { E: 200e6, A: 0.00785, I: 1.2545e-4 };
+// ISHB 400: Column section for medium-rise frames (5-10 stories)
+const COL_ISHB400 = { E: 200e6, A: 0.01071, I: 2.8080e-4 };
+// ISA 150x150x12: Equal angle for truss members and bracing
+const BRACE_ISA150 = { E: 200e6, A: 0.003459, I: 7.18e-6 };
+// Pipe 168.3x6.3: CHS for truss chords
+const TRUSS_CHS168 = { E: 200e6, A: 0.003206, I: 1.087e-5 };
+
+// Legacy aliases (backward compatibility)
+const STEEL = BEAM_ISMB300;
+const STEEL_BRACE = BRACE_ISA150;
 
 // ============================================
 // GENERATORS
@@ -110,44 +135,24 @@ const STEEL_BRACE = { E: 200e6, A: 0.00217, I: 2.88e-5 };
 function genSimplySupported(p: Record<string, number>): GeneratedStructure {
     const L = p.span;
     const w = p.udl;
-    const nSeg = Math.max(Math.round(L), 4);
     const nodes: GeneratedNode[] = [];
     const members: GeneratedMember[] = [];
     const loads: GeneratedLoad[] = [];
     const memberLoads: GeneratedLoad[] = [];
 
-    for (let i = 0; i <= nSeg; i++) {
-        const x = (i / nSeg) * L;
-        const node: GeneratedNode = { id: 'N' + (i + 1), x, y: 0, z: 0 };
-        if (i === 0) {
-            node.restraints = { fx: true, fy: true, fz: true, mx: false, my: false, mz: false };
-        } else if (i === nSeg) {
-            node.restraints = { fx: false, fy: true, fz: true, mx: false, my: false, mz: false };
-        }
-        nodes.push(node);
-    }
+    // Industry standard: single beam member between two support nodes
+    nodes.push(
+        { id: 'N1', x: 0, y: 0, z: 0, restraints: { fx: true, fy: true, fz: true, mx: false, my: false, mz: false } },
+        { id: 'N2', x: L, y: 0, z: 0, restraints: { fx: false, fy: true, fz: true, mx: false, my: false, mz: false } },
+    );
 
-    for (let i = 0; i < nSeg; i++) {
-        members.push({
-            id: 'M' + (i + 1),
-            startNodeId: 'N' + (i + 1),
-            endNodeId: 'N' + (i + 2),
-            type: 'beam', ...STEEL
-        });
-    }
+    members.push({ id: 'M1', startNodeId: 'N1', endNodeId: 'N2', type: 'beam', ...STEEL });
 
     if (w !== 0) {
-        const segLen = L / nSeg;
-        for (let i = 0; i <= nSeg; i++) {
-            const tributary = (i === 0 || i === nSeg) ? segLen / 2 : segLen;
-            loads.push({ id: 'L' + (i + 1), nodeId: 'N' + (i + 1), type: 'nodal', fy: -w * tributary });
-        }
-        for (let i = 0; i < nSeg; i++) {
-            memberLoads.push({
-                id: 'ML' + (i + 1), memberId: 'M' + (i + 1), type: 'UDL',
-                w1: -w, w2: -w, direction: 'global_y',
-            });
-        }
+        memberLoads.push({
+            id: 'ML1', memberId: 'M1', type: 'UDL',
+            w1: -w, w2: -w, direction: 'global_y',
+        });
     }
 
     return { nodes, members, loads, memberLoads, name: 'Simply Supported Beam (' + L + 'm, ' + w + ' kN/m)' };
@@ -156,26 +161,20 @@ function genSimplySupported(p: Record<string, number>): GeneratedStructure {
 function genCantilever(p: Record<string, number>): GeneratedStructure {
     const L = p.span;
     const P = p.tipLoad;
-    const nSeg = Math.max(Math.round(L), 4);
     const nodes: GeneratedNode[] = [];
     const members: GeneratedMember[] = [];
     const loads: GeneratedLoad[] = [];
 
-    for (let i = 0; i <= nSeg; i++) {
-        const x = (i / nSeg) * L;
-        const node: GeneratedNode = { id: 'N' + (i + 1), x, y: 0, z: 0 };
-        if (i === 0) {
-            node.restraints = { fx: true, fy: true, fz: true, mx: true, my: true, mz: true };
-        }
-        nodes.push(node);
-    }
+    // Industry standard: single cantilever member, fixed at root, free at tip
+    nodes.push(
+        { id: 'N1', x: 0, y: 0, z: 0, restraints: { fx: true, fy: true, fz: true, mx: true, my: true, mz: true } },
+        { id: 'N2', x: L, y: 0, z: 0 },
+    );
 
-    for (let i = 0; i < nSeg; i++) {
-        members.push({ id: 'M' + (i + 1), startNodeId: 'N' + (i + 1), endNodeId: 'N' + (i + 2), type: 'beam', ...STEEL });
-    }
+    members.push({ id: 'M1', startNodeId: 'N1', endNodeId: 'N2', type: 'beam', ...STEEL });
 
     if (P !== 0) {
-        loads.push({ id: 'L1', nodeId: 'N' + (nSeg + 1), type: 'nodal', fy: -P });
+        loads.push({ id: 'L1', nodeId: 'N2', type: 'nodal', fy: -P });
     }
 
     return { nodes, members, loads, memberLoads: [], name: 'Cantilever (' + L + 'm, P=' + P + ' kN)' };
@@ -189,38 +188,31 @@ function genContinuousBeam(p: Record<string, number>): GeneratedStructure {
     const members: GeneratedMember[] = [];
     const loads: GeneratedLoad[] = [];
     const memberLoads: GeneratedLoad[] = [];
-    let nId = 1;
-    let mId = 1;
 
-    const segPerSpan = Math.max(4, Math.round(L));
-    const totalSeg = segPerSpan * nSpans;
-
-    for (let i = 0; i <= totalSeg; i++) {
-        const x = (i / totalSeg) * L * nSpans;
-        const node: GeneratedNode = { id: 'N' + (nId++), x, y: 0, z: 0 };
-        if (i % segPerSpan === 0) {
-            if (i === 0) {
-                node.restraints = { fx: true, fy: true, fz: true, mx: false, my: false, mz: false };
-            } else {
-                node.restraints = { fx: false, fy: true, fz: true, mx: false, my: false, mz: false };
-            }
+    // Industry standard: one node per support, one member per span
+    for (let i = 0; i <= nSpans; i++) {
+        const node: GeneratedNode = { id: 'N' + (i + 1), x: i * L, y: 0, z: 0 };
+        if (i === 0) {
+            node.restraints = { fx: true, fy: true, fz: true, mx: false, my: false, mz: false };
+        } else {
+            node.restraints = { fx: false, fy: true, fz: true, mx: false, my: false, mz: false };
         }
         nodes.push(node);
     }
 
-    for (let i = 0; i < totalSeg; i++) {
-        members.push({ id: 'M' + (mId++), startNodeId: 'N' + (i + 1), endNodeId: 'N' + (i + 2), type: 'beam', ...STEEL });
+    for (let i = 0; i < nSpans; i++) {
+        members.push({
+            id: 'M' + (i + 1),
+            startNodeId: 'N' + (i + 1),
+            endNodeId: 'N' + (i + 2),
+            type: 'beam', ...STEEL
+        });
     }
 
     if (w !== 0) {
-        const segLen = (L * nSpans) / totalSeg;
-        for (let i = 0; i <= totalSeg; i++) {
-            const tributary = (i === 0 || i === totalSeg) ? segLen / 2 : segLen;
-            loads.push({ id: 'L' + (i + 1), nodeId: 'N' + (i + 1), type: 'nodal', fy: -w * tributary });
-        }
-        for (let i = 0; i < totalSeg; i++) {
+        for (let i = 0; i < nSpans; i++) {
             memberLoads.push({
-                id: 'ML' + (mId + i), memberId: 'M' + (i + 1), type: 'UDL',
+                id: 'ML' + (i + 1), memberId: 'M' + (i + 1), type: 'UDL',
                 w1: -w, w2: -w, direction: 'global_y',
             });
         }
@@ -236,7 +228,12 @@ function genPortalFrame(p: Record<string, number>): GeneratedStructure {
     const nodes: GeneratedNode[] = [];
     const members: GeneratedMember[] = [];
     const loads: GeneratedLoad[] = [];
+    const memberLoads: GeneratedLoad[] = [];
 
+    // Industry standard portal frame geometry:
+    // - Rigid base connections (fixed) per IS 800 Clause 12
+    // - Eave height at 75% of ridge height (typical pitch ~15°)
+    // - Haunch at eave-knee connections implied by rigid joints
     const eaveH = height * 0.75;
     nodes.push(
         { id: 'N1', x: 0, y: 0, z: 0, restraints: { fx: true, fy: true, fz: true, mx: true, my: true, mz: true } },
@@ -247,22 +244,22 @@ function genPortalFrame(p: Record<string, number>): GeneratedStructure {
     );
 
     members.push(
-        { id: 'M1', startNodeId: 'N1', endNodeId: 'N2', type: 'column', ...STEEL_COL },
-        { id: 'M2', startNodeId: 'N2', endNodeId: 'N3', type: 'beam', ...STEEL },
-        { id: 'M3', startNodeId: 'N3', endNodeId: 'N4', type: 'beam', ...STEEL },
-        { id: 'M4', startNodeId: 'N4', endNodeId: 'N5', type: 'column', ...STEEL_COL },
+        { id: 'M1', startNodeId: 'N1', endNodeId: 'N2', type: 'column', ...COL_ISHB300 },
+        { id: 'M2', startNodeId: 'N2', endNodeId: 'N3', type: 'beam', ...BEAM_ISMB400 },
+        { id: 'M3', startNodeId: 'N3', endNodeId: 'N4', type: 'beam', ...BEAM_ISMB400 },
+        { id: 'M4', startNodeId: 'N4', endNodeId: 'N5', type: 'column', ...COL_ISHB300 },
     );
 
+    // UDL applied as member loads on the rafter members (projected load, per IS 875)
+    // w is given as kN/m on horizontal projection; applied to rafter members directly
     if (w !== 0) {
-        const totalLoad = w * span;
-        loads.push(
-            { id: 'L1', nodeId: 'N2', type: 'nodal', fy: -totalLoad / 4 },
-            { id: 'L2', nodeId: 'N3', type: 'nodal', fy: -totalLoad / 2 },
-            { id: 'L3', nodeId: 'N4', type: 'nodal', fy: -totalLoad / 4 },
+        memberLoads.push(
+            { id: 'ML1', memberId: 'M2', type: 'UDL', w1: -w, w2: -w, direction: 'global_y' },
+            { id: 'ML2', memberId: 'M3', type: 'UDL', w1: -w, w2: -w, direction: 'global_y' },
         );
     }
 
-    return { nodes, members, loads, memberLoads: [], name: 'Portal Frame (' + span + 'm x ' + height + 'm)' };
+    return { nodes, members, loads, memberLoads, name: 'Portal Frame (' + span + 'm x ' + height + 'm)' };
 }
 
 function genBuildingFrame(p: Record<string, number>): GeneratedStructure {
@@ -275,10 +272,13 @@ function genBuildingFrame(p: Record<string, number>): GeneratedStructure {
     const nodes: GeneratedNode[] = [];
     const members: GeneratedMember[] = [];
     const loads: GeneratedLoad[] = [];
-    let nId = 1, mId = 1;
+    const memberLoads: GeneratedLoad[] = [];
+    let nId = 1, mId = 1, mlId = 1;
     const nodeMap = new Map<string, string>();
     const is3D = nBaysY > 0;
 
+    // --- NODE GENERATION ---
+    // One node per column-beam intersection (industry standard grid)
     for (let floor = 0; floor <= nStorys; floor++) {
         const yMax = is3D ? nBaysY : 0;
         for (let ix = 0; ix <= nBaysX; ix++) {
@@ -288,6 +288,7 @@ function genBuildingFrame(p: Record<string, number>): GeneratedStructure {
                 nodeMap.set(key, id);
                 const node: GeneratedNode = { id, x: ix * bayW, y: floor * storyH, z: is3D ? iy * bayW : 0 };
                 if (floor === 0) {
+                    // Fixed base per IS 800 Clause 12 / AISC base plate design
                     node.restraints = { fx: true, fy: true, fz: true, mx: true, my: true, mz: true };
                 }
                 nodes.push(node);
@@ -295,6 +296,9 @@ function genBuildingFrame(p: Record<string, number>): GeneratedStructure {
         }
     }
 
+    // --- COLUMN MEMBERS ---
+    // Use heavier section for taller buildings (>5 stories)
+    const colProps = nStorys > 5 ? COL_ISHB400 : COL_ISHB300;
     for (let floor = 0; floor < nStorys; floor++) {
         const yMax = is3D ? nBaysY : 0;
         for (let ix = 0; ix <= nBaysX; ix++) {
@@ -303,60 +307,68 @@ function genBuildingFrame(p: Record<string, number>): GeneratedStructure {
                     id: 'M' + (mId++),
                     startNodeId: nodeMap.get(floor + '-' + ix + '-' + iy)!,
                     endNodeId: nodeMap.get((floor + 1) + '-' + ix + '-' + iy)!,
-                    type: 'column', ...STEEL_COL
+                    type: 'column', ...colProps
                 });
             }
         }
     }
 
+    // --- BEAM MEMBERS (X-direction) ---
+    // Using ISMB 400 for longer bays, ISMB 300 for shorter
+    const beamProps = bayW >= 8 ? BEAM_ISMB400 : BEAM_ISMB300;
+    const beamMemberIds: { memberId: string; floor: number }[] = [];
     for (let floor = 1; floor <= nStorys; floor++) {
         const yMax = is3D ? nBaysY : 0;
         for (let ix = 0; ix < nBaysX; ix++) {
             for (let iy = 0; iy <= yMax; iy++) {
+                const memberId = 'M' + (mId++);
                 members.push({
-                    id: 'M' + (mId++),
+                    id: memberId,
                     startNodeId: nodeMap.get(floor + '-' + ix + '-' + iy)!,
                     endNodeId: nodeMap.get(floor + '-' + (ix + 1) + '-' + iy)!,
-                    type: 'beam', ...STEEL
+                    type: 'beam', ...beamProps
                 });
+                beamMemberIds.push({ memberId, floor });
             }
         }
     }
 
+    // --- BEAM MEMBERS (Y-direction for 3D) ---
     if (is3D) {
         for (let floor = 1; floor <= nStorys; floor++) {
             for (let ix = 0; ix <= nBaysX; ix++) {
                 for (let iy = 0; iy < nBaysY; iy++) {
+                    const memberId = 'M' + (mId++);
                     members.push({
-                        id: 'M' + (mId++),
+                        id: memberId,
                         startNodeId: nodeMap.get(floor + '-' + ix + '-' + iy)!,
                         endNodeId: nodeMap.get(floor + '-' + ix + '-' + (iy + 1))!,
-                        type: 'beam', ...STEEL
+                        type: 'beam', ...beamProps
                     });
+                    beamMemberIds.push({ memberId, floor });
                 }
             }
         }
     }
 
+    // --- GRAVITY LOADS (UDL on beams per IS 875) ---
+    // Floor load applied as UDL on each beam, using tributary width
+    // For 2D frames: full tributary width = bayWidth (slab spanning one way)
+    // For 3D frames: each beam carries tributary width = bayWidth/2 from each side
     if (w !== 0) {
-        for (let floor = 1; floor <= nStorys; floor++) {
-            const yMax = is3D ? nBaysY : 0;
-            for (let ix = 0; ix <= nBaysX; ix++) {
-                for (let iy = 0; iy <= yMax; iy++) {
-                    const txRatio = (ix === 0 || ix === nBaysX) ? 0.5 : 1;
-                    const tyRatio = is3D ? ((iy === 0 || iy === yMax) ? 0.5 : 1) : 1;
-                    const tributaryArea = bayW * txRatio * (is3D ? bayW * tyRatio : 1);
-                    const nodeId = nodeMap.get(floor + '-' + ix + '-' + iy);
-                    if (nodeId) {
-                        loads.push({ id: 'L' + (loads.length + 1), nodeId, type: 'nodal', fy: -w * tributaryArea });
-                    }
-                }
-            }
+        const tributaryWidth = is3D ? bayW / 2 : 1; // 3D: half bay each side; 2D: per meter run
+        const udlIntensity = w * tributaryWidth; // kN/m on beam
+
+        for (const { memberId } of beamMemberIds) {
+            memberLoads.push({
+                id: 'ML' + (mlId++), memberId, type: 'UDL',
+                w1: -udlIntensity, w2: -udlIntensity, direction: 'global_y',
+            });
         }
     }
 
     const dimLabel = is3D ? (nBaysX + 'x' + nBaysY) : (nBaysX + '-bay');
-    return { nodes, members, loads, memberLoads: [], name: nStorys + '-Story Building (' + dimLabel + ')' };
+    return { nodes, members, loads, memberLoads, name: nStorys + '-Story Building (' + dimLabel + ')' };
 }
 
 function genTruss(p: Record<string, number>): GeneratedStructure {
@@ -415,36 +427,21 @@ function genTruss(p: Record<string, number>): GeneratedStructure {
 function genProppedCantilever(p: Record<string, number>): GeneratedStructure {
     const L = p.span;
     const w = p.udl;
-    const nSeg = Math.max(Math.round(L), 4);
     const nodes: GeneratedNode[] = [];
     const members: GeneratedMember[] = [];
     const loads: GeneratedLoad[] = [];
     const memberLoads: GeneratedLoad[] = [];
 
-    for (let i = 0; i <= nSeg; i++) {
-        const x = (i / nSeg) * L;
-        const node: GeneratedNode = { id: 'N' + (i + 1), x, y: 0, z: 0 };
-        if (i === 0) {
-            node.restraints = { fx: true, fy: true, fz: true, mx: true, my: true, mz: true };
-        } else if (i === nSeg) {
-            node.restraints = { fx: false, fy: true, fz: true, mx: false, my: false, mz: false };
-        }
-        nodes.push(node);
-    }
+    // Industry standard: single member, fixed end + roller end
+    nodes.push(
+        { id: 'N1', x: 0, y: 0, z: 0, restraints: { fx: true, fy: true, fz: true, mx: true, my: true, mz: true } },
+        { id: 'N2', x: L, y: 0, z: 0, restraints: { fx: false, fy: true, fz: true, mx: false, my: false, mz: false } },
+    );
 
-    for (let i = 0; i < nSeg; i++) {
-        members.push({ id: 'M' + (i + 1), startNodeId: 'N' + (i + 1), endNodeId: 'N' + (i + 2), type: 'beam', ...STEEL });
-    }
+    members.push({ id: 'M1', startNodeId: 'N1', endNodeId: 'N2', type: 'beam', ...STEEL });
 
     if (w !== 0) {
-        const segLen = L / nSeg;
-        for (let i = 0; i <= nSeg; i++) {
-            const tributary = (i === 0 || i === nSeg) ? segLen / 2 : segLen;
-            loads.push({ id: 'L' + (i + 1), nodeId: 'N' + (i + 1), type: 'nodal', fy: -w * tributary });
-        }
-        for (let i = 0; i < nSeg; i++) {
-            memberLoads.push({ id: 'ML' + (i + 1), memberId: 'M' + (i + 1), type: 'UDL', w1: -w, w2: -w, direction: 'global_y' });
-        }
+        memberLoads.push({ id: 'ML1', memberId: 'M1', type: 'UDL', w1: -w, w2: -w, direction: 'global_y' });
     }
 
     return { nodes, members, loads, memberLoads, name: 'Propped Cantilever (' + L + 'm, ' + w + ' kN/m)' };
@@ -453,37 +450,207 @@ function genProppedCantilever(p: Record<string, number>): GeneratedStructure {
 function genFixedBeam(p: Record<string, number>): GeneratedStructure {
     const L = p.span;
     const w = p.udl;
-    const nSeg = Math.max(Math.round(L), 4);
     const nodes: GeneratedNode[] = [];
     const members: GeneratedMember[] = [];
     const loads: GeneratedLoad[] = [];
     const memberLoads: GeneratedLoad[] = [];
 
-    for (let i = 0; i <= nSeg; i++) {
-        const x = (i / nSeg) * L;
-        const node: GeneratedNode = { id: 'N' + (i + 1), x, y: 0, z: 0 };
-        if (i === 0 || i === nSeg) {
-            node.restraints = { fx: true, fy: true, fz: true, mx: true, my: true, mz: true };
-        }
-        nodes.push(node);
-    }
+    // Industry standard: single member, both ends fixed
+    nodes.push(
+        { id: 'N1', x: 0, y: 0, z: 0, restraints: { fx: true, fy: true, fz: true, mx: true, my: true, mz: true } },
+        { id: 'N2', x: L, y: 0, z: 0, restraints: { fx: true, fy: true, fz: true, mx: true, my: true, mz: true } },
+    );
 
-    for (let i = 0; i < nSeg; i++) {
-        members.push({ id: 'M' + (i + 1), startNodeId: 'N' + (i + 1), endNodeId: 'N' + (i + 2), type: 'beam', ...STEEL });
-    }
+    members.push({ id: 'M1', startNodeId: 'N1', endNodeId: 'N2', type: 'beam', ...STEEL });
 
     if (w !== 0) {
-        const segLen = L / nSeg;
-        for (let i = 0; i <= nSeg; i++) {
-            const tributary = (i === 0 || i === nSeg) ? segLen / 2 : segLen;
-            loads.push({ id: 'L' + (i + 1), nodeId: 'N' + (i + 1), type: 'nodal', fy: -w * tributary });
-        }
-        for (let i = 0; i < nSeg; i++) {
-            memberLoads.push({ id: 'ML' + (i + 1), memberId: 'M' + (i + 1), type: 'UDL', w1: -w, w2: -w, direction: 'global_y' });
-        }
+        memberLoads.push({ id: 'ML1', memberId: 'M1', type: 'UDL', w1: -w, w2: -w, direction: 'global_y' });
     }
 
     return { nodes, members, loads, memberLoads, name: 'Fixed Beam (' + L + 'm, ' + w + ' kN/m)' };
+}
+
+function genOverhangingBeam(p: Record<string, number>): GeneratedStructure {
+    const L = p.span;
+    const overhang = p.overhang;
+    const w = p.udl;
+    const nodes: GeneratedNode[] = [];
+    const members: GeneratedMember[] = [];
+    const loads: GeneratedLoad[] = [];
+    const memberLoads: GeneratedLoad[] = [];
+
+    // Industry standard: pin at left, roller at right end of main span, free overhang tip
+    // 3 nodes: left support, right support, overhang tip
+    // 2 members: main span + overhang cantilever
+    nodes.push(
+        { id: 'N1', x: 0, y: 0, z: 0, restraints: { fx: true, fy: true, fz: true, mx: false, my: false, mz: false } },
+        { id: 'N2', x: L, y: 0, z: 0, restraints: { fx: false, fy: true, fz: true, mx: false, my: false, mz: false } },
+        { id: 'N3', x: L + overhang, y: 0, z: 0 },
+    );
+
+    members.push(
+        { id: 'M1', startNodeId: 'N1', endNodeId: 'N2', type: 'beam', ...BEAM_ISMB300 },
+        { id: 'M2', startNodeId: 'N2', endNodeId: 'N3', type: 'beam', ...BEAM_ISMB300 },
+    );
+
+    if (w !== 0) {
+        memberLoads.push(
+            { id: 'ML1', memberId: 'M1', type: 'UDL', w1: -w, w2: -w, direction: 'global_y' },
+            { id: 'ML2', memberId: 'M2', type: 'UDL', w1: -w, w2: -w, direction: 'global_y' },
+        );
+    }
+
+    return { nodes, members, loads, memberLoads, name: 'Overhanging Beam (' + L + 'm + ' + overhang + 'm)' };
+}
+
+function genPrattTruss(p: Record<string, number>): GeneratedStructure {
+    const span = p.span;
+    const height = p.height;
+    const nPanels = Math.round(p.panels);
+    const panelW = span / nPanels;
+    const w = p.load;
+    const nodes: GeneratedNode[] = [];
+    const members: GeneratedMember[] = [];
+    const loads: GeneratedLoad[] = [];
+    let nId = 1, mId = 1;
+
+    // Pratt truss: verticals + diagonals sloping toward center
+    // Bottom chord nodes
+    for (let i = 0; i <= nPanels; i++) {
+        const node: GeneratedNode = { id: 'N' + (nId++), x: i * panelW, y: 0, z: 0 };
+        if (i === 0) node.restraints = { fx: true, fy: true, fz: true, mx: false, my: false, mz: false };
+        if (i === nPanels) node.restraints = { fx: false, fy: true, fz: true, mx: false, my: false, mz: false };
+        nodes.push(node);
+    }
+
+    // Top chord nodes
+    const topOff = nPanels + 1;
+    for (let i = 0; i <= nPanels; i++) {
+        nodes.push({ id: 'N' + (nId++), x: i * panelW, y: height, z: 0 });
+    }
+
+    // Bottom chord
+    for (let i = 0; i < nPanels; i++) {
+        members.push({ id: 'M' + (mId++), startNodeId: 'N' + (i + 1), endNodeId: 'N' + (i + 2), type: 'brace', ...TRUSS_CHS168 });
+    }
+    // Top chord
+    for (let i = 0; i < nPanels; i++) {
+        members.push({ id: 'M' + (mId++), startNodeId: 'N' + (topOff + i + 1), endNodeId: 'N' + (topOff + i + 2), type: 'brace', ...TRUSS_CHS168 });
+    }
+    // Verticals
+    for (let i = 0; i <= nPanels; i++) {
+        members.push({ id: 'M' + (mId++), startNodeId: 'N' + (i + 1), endNodeId: 'N' + (topOff + i + 1), type: 'brace', ...BRACE_ISA150 });
+    }
+    // Diagonals (Pratt pattern: diagonals slope toward center under gravity)
+    const mid = nPanels / 2;
+    for (let i = 0; i < nPanels; i++) {
+        if (i < mid) {
+            // Left half: diagonal from bottom-right to top-left (tension under gravity)
+            members.push({ id: 'M' + (mId++), startNodeId: 'N' + (i + 2), endNodeId: 'N' + (topOff + i + 1), type: 'brace', ...BRACE_ISA150 });
+        } else {
+            // Right half: diagonal from bottom-left to top-right (tension under gravity)
+            members.push({ id: 'M' + (mId++), startNodeId: 'N' + (i + 1), endNodeId: 'N' + (topOff + i + 2), type: 'brace', ...BRACE_ISA150 });
+        }
+    }
+
+    // Joint loads on top chord (purlin loads)
+    if (w !== 0) {
+        for (let i = 0; i <= nPanels; i++) {
+            const tributary = (i === 0 || i === nPanels) ? panelW / 2 : panelW;
+            loads.push({ id: 'L' + (loads.length + 1), nodeId: 'N' + (topOff + i + 1), type: 'nodal', fy: -w * tributary });
+        }
+    }
+
+    return { nodes, members, loads, memberLoads: [], name: 'Pratt Truss (' + span + 'm, H=' + height + 'm)' };
+}
+
+function genBracedFrame(p: Record<string, number>): GeneratedStructure {
+    const nStorys = Math.round(p.stories);
+    const nBays = Math.round(p.bays);
+    const storyH = p.storyHeight;
+    const bayW = p.bayWidth;
+    const w = p.floorLoad;
+    const nodes: GeneratedNode[] = [];
+    const members: GeneratedMember[] = [];
+    const loads: GeneratedLoad[] = [];
+    const memberLoads: GeneratedLoad[] = [];
+    let nId = 1, mId = 1, mlId = 1;
+    const nodeMap = new Map<string, string>();
+
+    // Concentrically Braced Frame (CBF) per IS 800 / AISC 341
+    // X-bracing in all bays for maximum lateral stiffness
+
+    // Nodes
+    for (let floor = 0; floor <= nStorys; floor++) {
+        for (let ix = 0; ix <= nBays; ix++) {
+            const id = 'N' + (nId++);
+            nodeMap.set(floor + '-' + ix, id);
+            const node: GeneratedNode = { id, x: ix * bayW, y: floor * storyH, z: 0 };
+            if (floor === 0) {
+                node.restraints = { fx: true, fy: true, fz: true, mx: true, my: true, mz: true };
+            }
+            nodes.push(node);
+        }
+    }
+
+    // Columns
+    for (let floor = 0; floor < nStorys; floor++) {
+        for (let ix = 0; ix <= nBays; ix++) {
+            members.push({
+                id: 'M' + (mId++),
+                startNodeId: nodeMap.get(floor + '-' + ix)!,
+                endNodeId: nodeMap.get((floor + 1) + '-' + ix)!,
+                type: 'column', ...COL_ISHB300
+            });
+        }
+    }
+
+    // Beams
+    const beamIds: string[] = [];
+    for (let floor = 1; floor <= nStorys; floor++) {
+        for (let ix = 0; ix < nBays; ix++) {
+            const id = 'M' + (mId++);
+            members.push({
+                id,
+                startNodeId: nodeMap.get(floor + '-' + ix)!,
+                endNodeId: nodeMap.get(floor + '-' + (ix + 1))!,
+                type: 'beam', ...BEAM_ISMB300
+            });
+            beamIds.push(id);
+        }
+    }
+
+    // X-Bracing in each bay/story
+    for (let floor = 0; floor < nStorys; floor++) {
+        for (let ix = 0; ix < nBays; ix++) {
+            // Diagonal 1: bottom-left to top-right
+            members.push({
+                id: 'M' + (mId++),
+                startNodeId: nodeMap.get(floor + '-' + ix)!,
+                endNodeId: nodeMap.get((floor + 1) + '-' + (ix + 1))!,
+                type: 'brace', ...BRACE_ISA150
+            });
+            // Diagonal 2: bottom-right to top-left
+            members.push({
+                id: 'M' + (mId++),
+                startNodeId: nodeMap.get(floor + '-' + (ix + 1))!,
+                endNodeId: nodeMap.get((floor + 1) + '-' + ix)!,
+                type: 'brace', ...BRACE_ISA150
+            });
+        }
+    }
+
+    // UDL on all beams (gravity load per IS 875)
+    if (w !== 0) {
+        for (const beamId of beamIds) {
+            memberLoads.push({
+                id: 'ML' + (mlId++), memberId: beamId, type: 'UDL',
+                w1: -w, w2: -w, direction: 'global_y',
+            });
+        }
+    }
+
+    return { nodes, members, loads, memberLoads, name: nStorys + '-Story Braced Frame (' + nBays + '-bay)' };
 }
 
 // ============================================
@@ -493,7 +660,7 @@ function genFixedBeam(p: Record<string, number>): GeneratedStructure {
 const TEMPLATES: TemplateConfig[] = [
     {
         id: 'ss_beam', category: 'beam', name: 'Simply Supported Beam', icon: Ruler,
-        description: 'Pin-roller beam with UDL - the classic benchmark',
+        description: 'Pin-roller beam with UDL — the classic benchmark case',
         color: 'text-emerald-400', bgColor: 'bg-emerald-500/10',
         params: [
             { key: 'span', label: 'Span', unit: 'm', min: 1, max: 30, step: 0.5, default: 6 },
@@ -513,7 +680,7 @@ const TEMPLATES: TemplateConfig[] = [
     },
     {
         id: 'fixed_beam', category: 'beam', name: 'Fixed Beam', icon: Columns,
-        description: 'Both ends fixed with UDL',
+        description: 'Both ends fixed with UDL — zero slope at supports',
         color: 'text-emerald-400', bgColor: 'bg-emerald-500/10',
         params: [
             { key: 'span', label: 'Span', unit: 'm', min: 1, max: 30, step: 0.5, default: 6 },
@@ -523,7 +690,7 @@ const TEMPLATES: TemplateConfig[] = [
     },
     {
         id: 'propped_cantilever', category: 'beam', name: 'Propped Cantilever', icon: ArrowDown,
-        description: 'Fixed + roller support with UDL',
+        description: 'Fixed + roller support with UDL — one degree indeterminate',
         color: 'text-emerald-400', bgColor: 'bg-emerald-500/10',
         params: [
             { key: 'span', label: 'Span', unit: 'm', min: 1, max: 30, step: 0.5, default: 6 },
@@ -532,8 +699,19 @@ const TEMPLATES: TemplateConfig[] = [
         generate: genProppedCantilever,
     },
     {
+        id: 'overhanging', category: 'beam', name: 'Overhanging Beam', icon: Ruler,
+        description: 'Pin-roller beam with cantilever overhang beyond one support',
+        color: 'text-emerald-400', bgColor: 'bg-emerald-500/10',
+        params: [
+            { key: 'span', label: 'Main Span', unit: 'm', min: 2, max: 20, step: 0.5, default: 6 },
+            { key: 'overhang', label: 'Overhang', unit: 'm', min: 0.5, max: 8, step: 0.5, default: 2 },
+            { key: 'udl', label: 'UDL Intensity', unit: 'kN/m', min: 0, max: 100, step: 1, default: 10 },
+        ],
+        generate: genOverhangingBeam,
+    },
+    {
         id: 'continuous', category: 'beam', name: 'Continuous Beam', icon: Grid3X3,
-        description: 'Multi-span beam with intermediate supports',
+        description: 'Multi-span beam with intermediate supports — indeterminate',
         color: 'text-emerald-400', bgColor: 'bg-emerald-500/10',
         params: [
             { key: 'span', label: 'Span per bay', unit: 'm', min: 2, max: 15, step: 0.5, default: 5 },
@@ -544,7 +722,7 @@ const TEMPLATES: TemplateConfig[] = [
     },
     {
         id: 'truss', category: 'truss', name: 'Warren Truss', icon: Triangle,
-        description: 'Alternating diagonals - balanced and efficient',
+        description: 'Alternating diagonals — balanced, efficient for uniform loads',
         color: 'text-amber-400', bgColor: 'bg-amber-500/10',
         params: [
             { key: 'span', label: 'Span', unit: 'm', min: 6, max: 60, step: 2, default: 24 },
@@ -555,8 +733,20 @@ const TEMPLATES: TemplateConfig[] = [
         generate: genTruss,
     },
     {
+        id: 'pratt_truss', category: 'truss', name: 'Pratt Truss', icon: Triangle,
+        description: 'Verticals + tension diagonals — optimal for gravity loads',
+        color: 'text-amber-400', bgColor: 'bg-amber-500/10',
+        params: [
+            { key: 'span', label: 'Span', unit: 'm', min: 6, max: 60, step: 2, default: 24 },
+            { key: 'height', label: 'Height', unit: 'm', min: 1, max: 10, step: 0.5, default: 4 },
+            { key: 'panels', label: 'Panels', unit: '', min: 4, max: 16, step: 2, default: 6 },
+            { key: 'load', label: 'Top chord UDL', unit: 'kN/m', min: 0, max: 50, step: 1, default: 5 },
+        ],
+        generate: genPrattTruss,
+    },
+    {
         id: 'portal', category: 'frame', name: 'Portal Frame', icon: Factory,
-        description: 'Industrial shed with pitched roof',
+        description: 'Industrial shed with pitched roof — UDL on rafters',
         color: 'text-blue-400', bgColor: 'bg-blue-500/10',
         params: [
             { key: 'span', label: 'Span', unit: 'm', min: 6, max: 40, step: 1, default: 15 },
@@ -567,7 +757,7 @@ const TEMPLATES: TemplateConfig[] = [
     },
     {
         id: 'building', category: 'frame', name: 'Multi-Story Frame', icon: Building2,
-        description: 'Steel frame building - set baysY=0 for pure 2D',
+        description: 'Moment-resisting frame — UDL on beams, set baysY=0 for 2D',
         color: 'text-blue-400', bgColor: 'bg-blue-500/10',
         params: [
             { key: 'stories', label: 'Stories', unit: '', min: 1, max: 15, step: 1, default: 3 },
@@ -575,9 +765,22 @@ const TEMPLATES: TemplateConfig[] = [
             { key: 'baysY', label: 'Bays Y (0=2D)', unit: '', min: 0, max: 6, step: 1, default: 0 },
             { key: 'storyHeight', label: 'Story Height', unit: 'm', min: 2.5, max: 5, step: 0.5, default: 3.5 },
             { key: 'bayWidth', label: 'Bay Width', unit: 'm', min: 3, max: 10, step: 0.5, default: 6 },
-            { key: 'floorLoad', label: 'Floor Load', unit: 'kN/m2', min: 0, max: 20, step: 1, default: 5 },
+            { key: 'floorLoad', label: 'Floor Load', unit: 'kN/m²', min: 0, max: 20, step: 1, default: 5 },
         ],
         generate: genBuildingFrame,
+    },
+    {
+        id: 'braced_frame', category: 'frame', name: 'Braced Frame', icon: Shield,
+        description: 'X-braced CBF — lateral stiffness per IS 800 / AISC 341',
+        color: 'text-blue-400', bgColor: 'bg-blue-500/10',
+        params: [
+            { key: 'stories', label: 'Stories', unit: '', min: 1, max: 10, step: 1, default: 3 },
+            { key: 'bays', label: 'Bays', unit: '', min: 1, max: 6, step: 1, default: 2 },
+            { key: 'storyHeight', label: 'Story Height', unit: 'm', min: 2.5, max: 5, step: 0.5, default: 3.5 },
+            { key: 'bayWidth', label: 'Bay Width', unit: 'm', min: 3, max: 10, step: 0.5, default: 6 },
+            { key: 'floorLoad', label: 'Floor UDL', unit: 'kN/m', min: 0, max: 50, step: 1, default: 10 },
+        ],
+        generate: genBracedFrame,
     },
 ];
 
@@ -614,9 +817,11 @@ function StructurePreview({ structure }: { structure: GeneratedStructure | null 
     const ty = (y: number) => H - pad - (y - yMin) * scale - ((H - 2 * pad) - rangeY * scale) / 2;
 
     const nodeById = new Map(structure.nodes.map(n => [n.id, n]));
+    const memberById = new Map(structure.members.map(m => [m.id, m]));
 
     return (
         <svg viewBox={'0 0 ' + W + ' ' + H} className="w-full h-48 rounded-xl bg-slate-800/60 border border-slate-700/50">
+            {/* Member lines */}
             {structure.members.map(m => {
                 const n1 = nodeById.get(m.startNodeId);
                 const n2 = nodeById.get(m.endNodeId);
@@ -627,21 +832,86 @@ function StructurePreview({ structure }: { structure: GeneratedStructure | null 
                         stroke={col} strokeWidth={2} strokeLinecap="round" />
                 );
             })}
+
+            {/* UDL arrows on members (industry-standard distributed load visualization) */}
+            {structure.memberLoads.filter(ml => ml.type === 'UDL' && ml.memberId).slice(0, 30).map((ml, i) => {
+                const member = memberById.get(ml.memberId || '');
+                if (!member) return null;
+                const n1 = nodeById.get(member.startNodeId);
+                const n2 = nodeById.get(member.endNodeId);
+                if (!n1 || !n2) return null;
+
+                const x1 = tx(n1.x), y1 = ty(n1.y), x2 = tx(n2.x), y2 = ty(n2.y);
+                const len = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+                const nArrows = Math.max(3, Math.min(8, Math.round(len / 15)));
+                const dir = (ml.w1 || 0) < 0 ? 1 : -1; // positive screen-y = downward
+                const arrowLen = 12;
+                const offset = 6; // offset from member line
+
+                // Direction perpendicular to member (for UDL arrows)
+                const dx = (x2 - x1) / len;
+                const dy = (y2 - y1) / len;
+                // Normal perpendicular (pointing "up" relative to member)
+                const nx = -dy;
+                const ny = dx;
+
+                const arrows = [];
+                for (let j = 0; j <= nArrows; j++) {
+                    const t = j / nArrows;
+                    const ax = x1 + (x2 - x1) * t;
+                    const ay = y1 + (y2 - y1) * t;
+                    // Arrow base offset from member
+                    const bx = ax + nx * (offset + arrowLen) * dir;
+                    const by = ay + ny * (offset + arrowLen) * dir;
+                    // Arrow tip near member
+                    const tipX = ax + nx * offset * dir;
+                    const tipY = ay + ny * offset * dir;
+                    arrows.push(
+                        <line key={'udl-line-' + i + '-' + j} x1={bx} y1={by} x2={tipX} y2={tipY}
+                            stroke="#ef4444" strokeWidth={1} opacity={0.7} />,
+                        <polygon key={'udl-tip-' + i + '-' + j}
+                            points={tipX + ',' + tipY + ' ' + (tipX + nx * 3 * dir - dx * 2) + ',' + (tipY + ny * 3 * dir - dy * 2) + ' ' + (tipX + nx * 3 * dir + dx * 2) + ',' + (tipY + ny * 3 * dir + dy * 2)}
+                            fill="#ef4444" opacity={0.7} />
+                    );
+                }
+                // Connecting line at top of arrows
+                const topStartX = x1 + nx * (offset + arrowLen) * dir;
+                const topStartY = y1 + ny * (offset + arrowLen) * dir;
+                const topEndX = x2 + nx * (offset + arrowLen) * dir;
+                const topEndY = y2 + ny * (offset + arrowLen) * dir;
+
+                return (
+                    <g key={'udl-' + i}>
+                        <line x1={topStartX} y1={topStartY} x2={topEndX} y2={topEndY}
+                            stroke="#ef4444" strokeWidth={1} opacity={0.7} />
+                        {arrows}
+                    </g>
+                );
+            })}
+
+            {/* Node dots and supports */}
             {structure.nodes.map(n => {
                 const hasSupport = n.restraints && (n.restraints.fx || n.restraints.fy);
+                const isFixed = n.restraints && n.restraints.mx;
                 return (
                     <g key={n.id}>
                         <circle cx={tx(n.x)} cy={ty(n.y)} r={hasSupport ? 5 : 3}
                             fill={hasSupport ? '#f97316' : '#94a3b8'} />
-                        {hasSupport && (
+                        {hasSupport && !isFixed && (
                             <polygon
                                 points={tx(n.x) + ',' + (ty(n.y) + 6) + ' ' + (tx(n.x) - 7) + ',' + (ty(n.y) + 16) + ' ' + (tx(n.x) + 7) + ',' + (ty(n.y) + 16)}
                                 fill="none" stroke="#f97316" strokeWidth={1.5}
                             />
                         )}
+                        {hasSupport && isFixed && (
+                            <rect x={tx(n.x) - 7} y={ty(n.y) + 3} width={14} height={4}
+                                fill="#f97316" opacity={0.8} />
+                        )}
                     </g>
                 );
             })}
+
+            {/* Nodal point load arrows */}
             {structure.loads.filter(l => l.fy && Math.abs(l.fy) > 0.01).slice(0, 20).map((l, i) => {
                 const node = nodeById.get(l.nodeId || '');
                 if (!node) return null;
@@ -694,11 +964,30 @@ export const StructureWizard: FC<StructureWizardProps> = ({ isOpen, onClose, onG
 
     const stats = useMemo(() => {
         if (!preview) return null;
-        const totalLoad = preview.loads.reduce((s, l) => s + Math.abs(l.fy || 0), 0);
+        const nodalLoad = preview.loads.reduce((s, l) => s + Math.abs(l.fy || 0), 0);
+        // Calculate total load from member UDLs  (w × L for each member)
+        const nodeById = new Map(preview.nodes.map(n => [n.id, n]));
+        const memberById = new Map(preview.members.map(m => [m.id, m]));
+        let udlLoad = 0;
+        for (const ml of preview.memberLoads) {
+            if (ml.type === 'UDL' && ml.memberId) {
+                const member = memberById.get(ml.memberId);
+                if (member) {
+                    const n1 = nodeById.get(member.startNodeId);
+                    const n2 = nodeById.get(member.endNodeId);
+                    if (n1 && n2) {
+                        const L = Math.sqrt((n2.x - n1.x) ** 2 + (n2.y - n1.y) ** 2 + (n2.z - n1.z) ** 2);
+                        udlLoad += Math.abs(ml.w1 || 0) * L;
+                    }
+                }
+            }
+        }
+        const totalLoad = nodalLoad + udlLoad;
         return {
             nodes: preview.nodes.length,
             members: preview.members.length,
             supports: preview.nodes.filter(n => n.restraints && (n.restraints.fx || n.restraints.fy)).length,
+            loads: preview.loads.length + preview.memberLoads.length,
             totalLoad: totalLoad.toFixed(1),
         };
     }, [preview]);
@@ -849,11 +1138,12 @@ export const StructureWizard: FC<StructureWizardProps> = ({ isOpen, onClose, onG
                                 </div>
 
                                 {stats && (
-                                    <div className="grid grid-cols-4 gap-2">
+                                    <div className="grid grid-cols-5 gap-2">
                                         {[
                                             { label: 'Nodes', value: String(stats.nodes) },
                                             { label: 'Members', value: String(stats.members) },
                                             { label: 'Supports', value: String(stats.supports) },
+                                            { label: 'Loads', value: String(stats.loads) },
                                             { label: 'Total Load', value: stats.totalLoad + ' kN' },
                                         ].map(s => (
                                             <div key={s.label} className="bg-slate-800/50 rounded-lg p-2 text-center border border-slate-700/30">

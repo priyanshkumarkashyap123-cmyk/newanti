@@ -49,7 +49,7 @@ router.post('/', async (req: Request, res: Response) => {
             type,
             feature,
             sessionId,
-            userId: (req as any).auth?.userId,
+            userId: ((req as Record<string, unknown>).auth as Record<string, unknown> | undefined)?.userId as string | undefined,
             originalInput: originalInput || '',
             originalOutput,
             correctedOutput,

@@ -1,15 +1,19 @@
 /**
  * authMiddleware.ts - Clerk Authentication Middleware
- * 
+ *
  * Uses Clerk for API authentication.
  * All protected routes require valid Clerk JWT tokens.
- * 
+ *
  * Environment Variables:
  * - CLERK_SECRET_KEY: Required for Clerk backend verification
  */
 
 import { Request, Response, NextFunction, RequestHandler } from 'express';
-import { clerkMiddleware, requireAuth as clerkRequireAuth, getAuth as clerkGetAuth } from '@clerk/express';
+import {
+    clerkMiddleware,
+    requireAuth as clerkRequireAuth,
+    getAuth as clerkGetAuth,
+} from '@clerk/express';
 
 // ============================================
 // CONFIGURATION
@@ -33,6 +37,32 @@ export interface AuthenticatedRequest extends Request {
     };
 }
 
+/**
+ * Minimal auth shape returned by our helpers.
+ * Keeps downstream code free of `as any`.
+ */
+interface ClerkAuthResult {
+    userId: string | null;
+    sessionId: string | null;
+}
+
+// ============================================
+// INTERNAL HELPERS
+// ============================================
+
+/**
+ * Single cast boundary — Clerk SDK v5 ships Express v4 types whereas we use
+ * Express v5.  This cast is intentional and confined to one spot.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const safeGetAuth = (req: Request): ClerkAuthResult => {
+    const auth = clerkGetAuth(req as any);
+    return {
+        userId: (auth as Record<string, unknown>).userId as string | null ?? null,
+        sessionId: (auth as Record<string, unknown>).sessionId as string | null ?? null,
+    };
+};
+
 // ============================================
 // CLERK MIDDLEWARE
 // ============================================
@@ -55,10 +85,10 @@ export const requireAuth = (): RequestHandler => {
  * Get authentication info from request
  */
 export const getAuth = (req: Request) => {
-    const auth = clerkGetAuth(req as any);
+    const { userId, sessionId } = safeGetAuth(req);
     return {
-        userId: (auth as any).userId ?? null,
-        sessionId: (auth as any).sessionId ?? null,
+        userId,
+        sessionId,
         email: null as string | null // Email must be fetched from Clerk user API separately
     };
 };
@@ -67,16 +97,14 @@ export const getAuth = (req: Request) => {
  * Get user ID from request (convenience helper)
  */
 export const getUserId = (req: Request): string | null => {
-    const auth = clerkGetAuth(req as any);
-    return (auth as any).userId ?? null;
+    return safeGetAuth(req).userId;
 };
 
 /**
  * Check if request is authenticated
  */
 export const isAuthenticated = (req: Request): boolean => {
-    const auth = clerkGetAuth(req as any);
-    return !!(auth as any).userId;
+    return !!safeGetAuth(req).userId;
 };
 
 // ============================================
@@ -88,9 +116,9 @@ export const isAuthenticated = (req: Request): boolean => {
  */
 export const requireRole = (_roles: string[]): RequestHandler => {
     return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        const auth = clerkGetAuth(req as any);
+        const { userId } = safeGetAuth(req);
 
-        if (!(auth as any).userId) {
+        if (!userId) {
             res.status(401).json({
                 success: false,
                 message: 'Authentication required'
@@ -100,7 +128,7 @@ export const requireRole = (_roles: string[]): RequestHandler => {
 
         // For now, all authenticated users pass
         // Can be extended to check Clerk user metadata for roles
-        // const user = await clerkClient.users.getUser(auth.userId);
+        // const user = await clerkClient.users.getUser(userId);
         // const userRole = user.publicMetadata.role as string;
         // if (!roles.includes(userRole)) { ... }
 
@@ -115,7 +143,7 @@ export const requireRole = (_roles: string[]): RequestHandler => {
 /**
  * Handle authentication errors
  */
-export const handleAuthError = (err: Error, req: Request, res: Response, next: NextFunction): void => {
+export const handleAuthError = (err: Error, _req: Request, res: Response, next: NextFunction): void => {
     if (err.name === 'ClerkError' || err.message.includes('Unauthenticated')) {
         res.status(401).json({
             success: false,

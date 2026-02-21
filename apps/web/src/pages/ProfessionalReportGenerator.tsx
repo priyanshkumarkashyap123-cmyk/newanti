@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
+import { sanitizeHTML } from '../lib/sanitize';
 import {
   FileText,
   Download,
@@ -969,7 +970,7 @@ export default function ProfessionalReportGenerator() {
                 </div>
                 <div 
                   className="max-h-[700px] overflow-y-auto"
-                  dangerouslySetInnerHTML={{ __html: reportPreview }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHTML(reportPreview) }}
                   style={{ transform: 'scale(0.8)', transformOrigin: 'top left', width: '125%' }}
                 />
               </div>

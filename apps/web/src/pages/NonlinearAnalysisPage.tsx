@@ -36,6 +36,7 @@ import {
   Activity
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { getErrorMessage } from '../lib/errorHandling';
 
 // Types
 type NonlinearType = 'geometric' | 'material' | 'both';
@@ -192,9 +193,9 @@ export const NonlinearAnalysisPage: React.FC = () => {
         message: `Analysis converged in ${input.loadSteps} steps with ${totalIterations} total iterations`
       });
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Nonlinear analysis failed:', err);
-      setError(err.message || 'Nonlinear analysis failed');
+      setError(getErrorMessage(err, 'Nonlinear analysis failed'));
     } finally {
       setAnalyzing(false);
       setCurrentStep(0);

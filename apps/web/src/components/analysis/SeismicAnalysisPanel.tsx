@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AdvancedAnalysisService, SeismicAnalysisRequest, SeismicAnalysisResponse } from '../../services/AdvancedAnalysisService';
+import { getErrorMessage } from '../../lib/errorHandling';
 
 export const SeismicAnalysisPanel: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -32,8 +33,8 @@ export const SeismicAnalysisPanel: React.FC = () => {
       };
       const res = await service.seismicAnalysis(req);
       setResult(res);
-    } catch (e: any) {
-      setError(e.message || 'Seismic analysis failed');
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, 'Seismic analysis failed'));
     } finally {
       setLoading(false);
     }
