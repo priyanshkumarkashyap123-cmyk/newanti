@@ -196,13 +196,27 @@ export async function analyzeStructure(
       elements.length,
       "elements",
     );
-    wasmLogger.debug(
+    wasmLogger.info(
       "Loads:",
       pointLoads.length,
       "point loads,",
       memberLoads.length,
       "member loads",
     );
+
+    // Log detailed input for debugging (only first few entries to avoid spam)
+    if (nodes.length > 0) {
+      wasmLogger.debug("First node:", JSON.stringify(nodes[0]));
+    }
+    if (elements.length > 0) {
+      wasmLogger.debug("First element:", JSON.stringify(elements[0]));
+    }
+    if (pointLoads.length > 0) {
+      wasmLogger.debug("First point load:", JSON.stringify(pointLoads[0]));
+    }
+    if (memberLoads.length > 0) {
+      wasmLogger.debug("First member load:", JSON.stringify(memberLoads[0]));
+    }
 
     const startTime = performance.now();
 
@@ -213,7 +227,22 @@ export async function analyzeStructure(
     const solveTime = endTime - startTime;
 
     wasmLogger.success("Analysis completed in", solveTime.toFixed(2), "ms");
-    wasmLogger.debug("Raw result:", result);
+
+    // Check if result is a string (error from WASM)
+    if (typeof result === "string") {
+      wasmLogger.error("WASM returned error string:", result);
+      return {
+        displacements: {},
+        reactions: {},
+        member_forces: {},
+        success: false,
+        error: result,
+      };
+    }
+
+    wasmLogger.debug("Displacements count:", Object.keys(result.displacements || {}).length);
+    wasmLogger.debug("Reactions count:", Object.keys(result.reactions || {}).length);
+    wasmLogger.debug("Member forces count:", Object.keys(result.member_forces || {}).length);
 
     if (result.error) {
       return {

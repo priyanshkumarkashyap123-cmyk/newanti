@@ -439,11 +439,21 @@ pub fn solve_3d_frame(
         Err(e) => return JsValue::from_str(&format!("Error parsing elements: {}", e)),
     };
     
-    let nodal_loads: Vec<solver_3d::NodalLoad> = serde_wasm_bindgen::from_value(nodal_loads_val)
-        .unwrap_or_default();
+    let nodal_loads: Vec<solver_3d::NodalLoad> = match serde_wasm_bindgen::from_value(nodal_loads_val) {
+        Ok(v) => v,
+        Err(e) => {
+            web_sys::console::warn_1(&format!("Warning: Failed to parse nodal loads (using empty): {}", e).into());
+            vec![]
+        }
+    };
         
-    let distributed_loads: Vec<solver_3d::DistributedLoad> = serde_wasm_bindgen::from_value(distributed_loads_val)
-        .unwrap_or_default();
+    let distributed_loads: Vec<solver_3d::DistributedLoad> = match serde_wasm_bindgen::from_value(distributed_loads_val) {
+        Ok(v) => v,
+        Err(e) => {
+            web_sys::console::warn_1(&format!("Warning: Failed to parse distributed loads (using empty): {}", e).into());
+            vec![]
+        }
+    };
     
     match solver_3d::analyze_3d_frame(nodes, elements, nodal_loads, distributed_loads, vec![]) {
         Ok(mut result) => {

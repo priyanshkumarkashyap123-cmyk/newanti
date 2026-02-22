@@ -6,7 +6,7 @@
  * potential process.exit in the production path.
  */
 import { describe, it, expect } from 'vitest';
-import { z } from 'zod';
+import z from 'zod';
 
 /**
  * Mirror of the env schema from config/env.ts.

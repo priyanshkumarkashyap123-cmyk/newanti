@@ -1009,6 +1009,18 @@ export const ModernModeler: FC = () => {
         modelerLogger.log(
           `[Analysis] Member loads: ${wasmMemberLoads.length}, Point loads: ${wasmPointLoads.length}`,
         );
+        if (wasmMemberLoads.length > 0) {
+          modelerLogger.log(
+            `[Analysis] First member load:`,
+            JSON.stringify(wasmMemberLoads[0]),
+          );
+        }
+        if (wasmPointLoads.length > 0) {
+          modelerLogger.log(
+            `[Analysis] First point load:`,
+            JSON.stringify(wasmPointLoads[0]),
+          );
+        }
 
         // Use Rust WASM solver (client-side) for frame analysis
         try {
@@ -1639,7 +1651,9 @@ export const ModernModeler: FC = () => {
           displacements,
           reactions,
           memberForces,
-        });
+          completed: true,
+          timestamp: Date.now(),
+        } as any);
 
         setAnalysisStage("complete");
         setAnalysisProgress(100);
@@ -1689,22 +1703,20 @@ export const ModernModeler: FC = () => {
     // STEP 1: Validate structure BEFORE anything else
     const validationResult = validateStructure(nodes, members);
 
-    if (
-      !validationResult.valid ||
-      validationResult.errors.length > 0 ||
-      validationResult.warnings.length > 0
-    ) {
-      // Show validation dialog with errors/warnings
+    if (!validationResult.valid || validationResult.errors.length > 0) {
+      // Show validation dialog for actual errors — block analysis
       setStructuralValidationErrors(validationResult.errors);
       setStructuralValidationWarnings(validationResult.warnings);
       setShowValidationDialog(true);
-
-      // If there are critical errors, don't proceed
-      if (!validationResult.valid) {
-        return;
-      }
-      // If only warnings, dialog will let user proceed
       return;
+    }
+
+    // Warnings are informational — log them but don't block analysis
+    if (validationResult.warnings.length > 0) {
+      modelerLogger.log(
+        `[Analysis] Proceeding with ${validationResult.warnings.length} warning(s):`,
+        validationResult.warnings.map((w) => w.message).join(", "),
+      );
     }
 
     // Run analysis directly (Clerk handles legal consent at sign-up)
