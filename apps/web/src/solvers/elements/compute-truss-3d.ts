@@ -103,7 +103,7 @@ export function computeTruss3DStiffness(
  * 
  * @param u1 Displacement vector node 1 [u, v, w]
  * @param u2 Displacement vector node 2 [u, v, w]
- * @param E Young's modulus
+ * @param E Young's modulus (same units as desired force output per unit area)
  * @param A Area
  * @param L Length
  * @param cx Direction cosine x
@@ -120,8 +120,8 @@ export function computeTruss3DMemberForces(
   cy: number,
   cz: number
 ): {
-  axialForce: number; // kN
-  stress: number;     // Pa
+  axialForce: number; // Same force units as E×A
+  stress: number;     // Same units as E
   strain: number;     // Dimensionless
 } {
   // Relative displacements
@@ -143,7 +143,7 @@ export function computeTruss3DMemberForces(
   const stress = E * strain;
 
   return {
-    axialForce: force_N / 1000, // Convert to kN
+    axialForce: force_N, // Unit-consistent with E×A
     stress,
     strain
   };

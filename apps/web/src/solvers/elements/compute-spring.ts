@@ -76,7 +76,7 @@ export function computeSpringStiffness(
  * 
  * @param u1 Displacement vector node 1 [u, v, w]
  * @param u2 Displacement vector node 2 [u, v, w]
- * @param k Spring stiffness (N/m)
+ * @param k Spring stiffness (force/length units)
  * @param cx Direction cosine x
  * @param cy Direction cosine y
  * @param cz Direction cosine z
@@ -89,8 +89,8 @@ export function computeSpringForces(
   cy: number,
   cz: number
 ): {
-  force: number; // kN (Tension + / Compression -)
-  elongation: number; // m
+  force: number; // Same force units as k×length (Tension + / Compression -)
+  elongation: number; // Same length units as input displacements
 } {
   // Relative displacements
   const du = u2[0] - u1[0];
@@ -104,7 +104,7 @@ export function computeSpringForces(
   const force_N = k * delta_L;
   
   return {
-    force: force_N / 1000, // Convert to kN
+    force: force_N, // Unit-consistent with k×displacement
     elongation: delta_L
   };
 }

@@ -848,120 +848,121 @@ fn compute_fixed_end_forces(
         return Ok(fef_global);
     }
     
-    // Calculate Fixed End Forces in LOCAL coordinates
-    // FEF are the negative of the reactions (applied to make the beam fixed)
-    let (r1, r2, m1, m2) = if (w1 - w2).abs() < 1e-12 {
-        // ========================================
-        // UNIFORM LOAD (UDL)
-        // ========================================
-        // R1 = R2 = wL/2 (reaction forces)
-        // M1 = wL²/12 (moment at start - positive counterclockwise)
-        // M2 = -wL²/12 (moment at end)
-        let w = w1;
-        let r = w * length / 2.0;
-        let m = w * length * length / 12.0;
-        (r, r, m, -m)
-    } else if w1.abs() < 1e-12 {
-        // ========================================
-        // TRIANGULAR LOAD: 0 to w2 (ascending)
-        // ========================================
-        // Roark's Table 8.1: Load increasing from 0 at A to w at B
-        // R1 = wL/6 (reaction at A, lighter side)
-        // R2 = wL/3 (reaction at B, heavier side - 2× larger)
-        // M1 = wL²/30 (fixed-end moment at A - smaller magnitude)
-        // M2 = -wL²/20 (fixed-end moment at B - larger magnitude)
-        let r1 = w2 * length / 6.0;
-        let r2 = w2 * length / 3.0;
-        let m1 = w2 * length * length / 30.0;
-        let m2 = -w2 * length * length / 20.0;
-        (r1, r2, m1, m2)
-    } else if w2.abs() < 1e-12 {
-        // ========================================
-        // TRIANGULAR LOAD: w1 to 0 (descending)
-        // ========================================
-        // Roark's Table 8.1: Load decreasing from w at A to 0 at B
-        // R1 = wL/3 (reaction at A, heavier side - 2× larger)
-        // R2 = wL/6 (reaction at B, lighter side)
-        // M1 = wL²/20 (fixed-end moment at A - larger magnitude)
-        // M2 = -wL²/30 (fixed-end moment at B - smaller magnitude)
-        let r1 = w1 * length / 3.0;
-        let r2 = w1 * length / 6.0;
-        let m1 = w1 * length * length / 20.0;
-        let m2 = -w1 * length * length / 30.0;
-        (r1, r2, m1, m2)
-    } else {
-        // ========================================
-        // TRAPEZOIDAL LOAD: w1 to w2
-        // ========================================
-        // Decompose into uniform + triangular
-        let w_uniform = w1.min(w2);
-        let w_triangular = (w1 - w2).abs();
-        let ascending = w2 > w1;
-        
-        // Uniform component
-        let r_u = w_uniform * length / 2.0;
-        let m_u = w_uniform * length * length / 12.0;
-        
-        // Triangular component (per Roark's Table 8.1)
-        let (r1_t, r2_t, m1_t, m2_t) = if ascending {
-            // Ascending: 0 to w_triangular
+    // Get transformation matrix (needed for global load decomposition)
+    let t_matrix = transformation_matrix_3d(dx, dy, dz, length, element.beta);
+    // R is the 3×3 rotation sub-matrix (rows 0-2, cols 0-2 of T)
+    // R transforms from global to local: u_local = R * u_global
+    
+    // Determine the load direction in LOCAL coordinates
+    // For local loads: load is directly in the specified local axis
+    // For global loads: decompose global direction into local components via R
+    let (w_local_x1, w_local_y1, w_local_z1, w_local_x2, w_local_y2, w_local_z2) = match dl.direction {
+        LoadDirection::LocalX => (w1, 0.0, 0.0, w2, 0.0, 0.0),
+        LoadDirection::LocalY => (0.0, w1, 0.0, 0.0, w2, 0.0),
+        LoadDirection::LocalZ => (0.0, 0.0, w1, 0.0, 0.0, w2),
+        LoadDirection::GlobalX => {
+            // Global X unit vector [1,0,0] → local = R * [1,0,0] = [R00, R10, R20]
+            let rx = t_matrix[(0, 0)]; // projection onto local x
+            let ry = t_matrix[(1, 0)]; // projection onto local y
+            let rz = t_matrix[(2, 0)]; // projection onto local z
+            (rx * w1, ry * w1, rz * w1, rx * w2, ry * w2, rz * w2)
+        },
+        LoadDirection::GlobalY => {
+            // Global Y unit vector [0,1,0] → local = R * [0,1,0] = [R01, R11, R21]
+            let rx = t_matrix[(0, 1)];
+            let ry = t_matrix[(1, 1)];
+            let rz = t_matrix[(2, 1)];
+            (rx * w1, ry * w1, rz * w1, rx * w2, ry * w2, rz * w2)
+        },
+        LoadDirection::GlobalZ => {
+            // Global Z unit vector [0,0,1] → local = R * [0,0,1] = [R02, R12, R22]
+            let rx = t_matrix[(0, 2)];
+            let ry = t_matrix[(1, 2)];
+            let rz = t_matrix[(2, 2)];
+            (rx * w1, ry * w1, rz * w1, rx * w2, ry * w2, rz * w2)
+        },
+    };
+    
+    // Helper: compute FEF for a single direction (r1, r2, m1, m2)
+    // from load intensities (wa, wb) over length L
+    let compute_fef_1d = |wa: f64, wb: f64| -> (f64, f64, f64, f64) {
+        if wa.abs() < 1e-12 && wb.abs() < 1e-12 {
+            return (0.0, 0.0, 0.0, 0.0);
+        }
+        if (wa - wb).abs() < 1e-12 {
+            // UDL
+            let r = wa * length / 2.0;
+            let m = wa * length * length / 12.0;
+            (r, r, m, -m)
+        } else if wa.abs() < 1e-12 {
+            // Ascending: 0 → wb
             (
-                w_triangular * length / 6.0,
-                w_triangular * length / 3.0,
-                w_triangular * length * length / 30.0,  // Smaller magnitude at light end
-                -w_triangular * length * length / 20.0, // Larger magnitude at heavy end
+                wb * length / 6.0,
+                wb * length / 3.0,
+                wb * length * length / 30.0,
+                -wb * length * length / 20.0,
+            )
+        } else if wb.abs() < 1e-12 {
+            // Descending: wa → 0
+            (
+                wa * length / 3.0,
+                wa * length / 6.0,
+                wa * length * length / 20.0,
+                -wa * length * length / 30.0,
             )
         } else {
-            // Descending: w_triangular to 0
-            (
-                w_triangular * length / 3.0,
-                w_triangular * length / 6.0,
-                w_triangular * length * length / 20.0,  // Larger magnitude at heavy end
-                -w_triangular * length * length / 30.0, // Smaller magnitude at light end
-            )
-        };
-        
-        // Combine
-        (r_u + r1_t, r_u + r2_t, m_u + m1_t, -m_u + m2_t)
+            // Trapezoidal: decompose into uniform + triangular
+            let w_uniform = wa.min(wb);
+            let w_triangular = (wa - wb).abs();
+            let ascending = wb > wa;
+            let r_u = w_uniform * length / 2.0;
+            let m_u = w_uniform * length * length / 12.0;
+            let (r1_t, r2_t, m1_t, m2_t) = if ascending {
+                (
+                    w_triangular * length / 6.0,
+                    w_triangular * length / 3.0,
+                    w_triangular * length * length / 30.0,
+                    -w_triangular * length * length / 20.0,
+                )
+            } else {
+                (
+                    w_triangular * length / 3.0,
+                    w_triangular * length / 6.0,
+                    w_triangular * length * length / 20.0,
+                    -w_triangular * length * length / 30.0,
+                )
+            };
+            (r_u + r1_t, r_u + r2_t, m_u + m1_t, -m_u + m2_t)
+        }
     };
+    
+    // Compute FEF for each local direction
+    let (rx1, rx2, _mx1, _mx2) = compute_fef_1d(w_local_x1, w_local_x2);
+    let (ry1, ry2, mz1, mz2) = compute_fef_1d(w_local_y1, w_local_y2);
+    let (rz1, rz2, my1, my2) = compute_fef_1d(w_local_z1, w_local_z2);
     
     // Build local FEF vector (12 DOF: 6 at each node)
     // DOF order: Fx, Fy, Fz, Mx, My, Mz
     let mut fef_local = DVector::zeros(12);
     
-    // Apply forces based on load direction
-    match dl.direction {
-        LoadDirection::GlobalY | LoadDirection::LocalY => {
-            // Load in Y direction (typical gravity load)
-            // Reactions are in Y, moments about Z
-            fef_local[1] = r1;      // Fy at node i
-            fef_local[5] = m1;      // Mz at node i
-            fef_local[7] = r2;      // Fy at node j
-            fef_local[11] = m2;     // Mz at node j
-        },
-        LoadDirection::GlobalZ | LoadDirection::LocalZ => {
-            // Load in Z direction
-            // Reactions are in Z, moments about Y
-            fef_local[2] = r1;      // Fz at node i
-            fef_local[4] = -m1;     // My at node i (opposite sign for Z bending)
-            fef_local[8] = r2;      // Fz at node j
-            fef_local[10] = -m2;    // My at node j
-        },
-        LoadDirection::GlobalX | LoadDirection::LocalX => {
-            // Axial load distribution
-            fef_local[0] = r1;      // Fx at node i
-            fef_local[6] = r2;      // Fx at node j
-        },
-    }
+    // Axial (local X)
+    fef_local[0] = rx1;
+    fef_local[6] = rx2;
     
-    // Transform to global coordinates for local loads
-    let fef_transformed = match dl.direction {
-        LoadDirection::LocalY | LoadDirection::LocalZ | LoadDirection::LocalX => {
-            let t_matrix = transformation_matrix_3d(dx, dy, dz, length, element.beta);
-            t_matrix.transpose() * fef_local
-        },
-        _ => fef_local, // Global loads - no transformation needed
-    };
+    // Transverse Y (bending about Z)
+    fef_local[1] = ry1;
+    fef_local[5] = mz1;
+    fef_local[7] = ry2;
+    fef_local[11] = mz2;
+    
+    // Transverse Z (bending about Y) — opposite sign convention for moments
+    fef_local[2] = rz1;
+    fef_local[4] = -my1;
+    fef_local[8] = rz2;
+    fef_local[10] = -my2;
+    
+    // ALWAYS transform from local to global: FEF_global = T^T * FEF_local
+    let fef_transformed = t_matrix.transpose() * fef_local;
     
     // Assemble into global FEF vector
     let dof_i = i_idx * 6;
@@ -1049,80 +1050,92 @@ fn calculate_member_forces(
         let f_local = &k_local * &u_local;
         
         // Add fixed end forces from distributed loads on this element
+        // FEF must be in LOCAL coordinates (same frame as k_local * u_local)
         let mut fef_local = DVector::zeros(12);
         for dl in distributed_loads {
             if dl.element_id == elem.id {
                 let w1 = dl.w_start;
                 let w2 = dl.w_end;
                 
-                // Calculate FEF (same logic as compute_fixed_end_forces)
-                let (r1, r2, m1, m2) = if (w1 - w2).abs() < 1e-12 {
-                    let w = w1;
-                    let r = w * length / 2.0;
-                    let m = w * length * length / 12.0;
-                    (r, r, m, -m)
-                } else if w1.abs() < 1e-12 {
-                    // Ascending: 0 to w2 (Roark's Table 8.1)
-                    let r1 = w2 * length / 6.0;
-                    let r2 = w2 * length / 3.0;
-                    let m1 = w2 * length * length / 30.0;  // Smaller at light end
-                    let m2 = -w2 * length * length / 20.0; // Larger at heavy end
-                    (r1, r2, m1, m2)
-                } else if w2.abs() < 1e-12 {
-                    // Descending: w1 to 0 (Roark's Table 8.1)
-                    let r1 = w1 * length / 3.0;
-                    let r2 = w1 * length / 6.0;
-                    let m1 = w1 * length * length / 20.0;  // Larger at heavy end
-                    let m2 = -w1 * length * length / 30.0; // Smaller at light end
-                    (r1, r2, m1, m2)
-                } else {
-                    let w_uniform = w1.min(w2);
-                    let w_triangular = (w1 - w2).abs();
-                    let ascending = w2 > w1;
-                    
-                    let r_u = w_uniform * length / 2.0;
-                    let m_u = w_uniform * length * length / 12.0;
-                    
-                    let (r1_t, r2_t, m1_t, m2_t) = if ascending {
-                        // Ascending: 0 to w_triangular (Roark's)
-                        (
-                            w_triangular * length / 6.0,
-                            w_triangular * length / 3.0,
-                            w_triangular * length * length / 30.0,
-                            -w_triangular * length * length / 20.0,
-                        )
-                    } else {
-                        // Descending: w_triangular to 0 (Roark's)
-                        (
-                            w_triangular * length / 3.0,
-                            w_triangular * length / 6.0,
-                            w_triangular * length * length / 20.0,
-                            -w_triangular * length * length / 30.0,
-                        )
-                    };
-                    
-                    (r_u + r1_t, r_u + r2_t, m_u + m1_t, -m_u + m2_t)
+                if w1.abs() < 1e-12 && w2.abs() < 1e-12 {
+                    continue;
+                }
+                
+                // Decompose load into local directions (same as assembly)
+                let (w_lx1, w_ly1, w_lz1, w_lx2, w_ly2, w_lz2) = match dl.direction {
+                    LoadDirection::LocalX => (w1, 0.0, 0.0, w2, 0.0, 0.0),
+                    LoadDirection::LocalY => (0.0, w1, 0.0, 0.0, w2, 0.0),
+                    LoadDirection::LocalZ => (0.0, 0.0, w1, 0.0, 0.0, w2),
+                    LoadDirection::GlobalX => {
+                        let rx = t_matrix[(0, 0)];
+                        let ry = t_matrix[(1, 0)];
+                        let rz = t_matrix[(2, 0)];
+                        (rx * w1, ry * w1, rz * w1, rx * w2, ry * w2, rz * w2)
+                    },
+                    LoadDirection::GlobalY => {
+                        let rx = t_matrix[(0, 1)];
+                        let ry = t_matrix[(1, 1)];
+                        let rz = t_matrix[(2, 1)];
+                        (rx * w1, ry * w1, rz * w1, rx * w2, ry * w2, rz * w2)
+                    },
+                    LoadDirection::GlobalZ => {
+                        let rx = t_matrix[(0, 2)];
+                        let ry = t_matrix[(1, 2)];
+                        let rz = t_matrix[(2, 2)];
+                        (rx * w1, ry * w1, rz * w1, rx * w2, ry * w2, rz * w2)
+                    },
                 };
                 
-                // Apply based on direction (in local coords for member forces)
-                match dl.direction {
-                    LoadDirection::GlobalY | LoadDirection::LocalY => {
-                        fef_local[1] += r1;
-                        fef_local[5] += m1;
-                        fef_local[7] += r2;
-                        fef_local[11] += m2;
-                    },
-                    LoadDirection::GlobalZ | LoadDirection::LocalZ => {
-                        fef_local[2] += r1;
-                        fef_local[4] += -m1;
-                        fef_local[8] += r2;
-                        fef_local[10] += -m2;
-                    },
-                    LoadDirection::GlobalX | LoadDirection::LocalX => {
-                        fef_local[0] += r1;
-                        fef_local[6] += r2;
-                    },
-                }
+                // Helper: compute FEF (r1, r2, m1, m2) for a single direction
+                let fef_1d = |wa: f64, wb: f64| -> (f64, f64, f64, f64) {
+                    if wa.abs() < 1e-12 && wb.abs() < 1e-12 {
+                        return (0.0, 0.0, 0.0, 0.0);
+                    }
+                    if (wa - wb).abs() < 1e-12 {
+                        let r = wa * length / 2.0;
+                        let m = wa * length * length / 12.0;
+                        (r, r, m, -m)
+                    } else if wa.abs() < 1e-12 {
+                        (wb * length / 6.0, wb * length / 3.0,
+                         wb * length * length / 30.0, -wb * length * length / 20.0)
+                    } else if wb.abs() < 1e-12 {
+                        (wa * length / 3.0, wa * length / 6.0,
+                         wa * length * length / 20.0, -wa * length * length / 30.0)
+                    } else {
+                        let w_u = wa.min(wb);
+                        let w_t = (wa - wb).abs();
+                        let asc = wb > wa;
+                        let r_u = w_u * length / 2.0;
+                        let m_u = w_u * length * length / 12.0;
+                        let (r1t, r2t, m1t, m2t) = if asc {
+                            (w_t * length / 6.0, w_t * length / 3.0,
+                             w_t * length * length / 30.0, -w_t * length * length / 20.0)
+                        } else {
+                            (w_t * length / 3.0, w_t * length / 6.0,
+                             w_t * length * length / 20.0, -w_t * length * length / 30.0)
+                        };
+                        (r_u + r1t, r_u + r2t, m_u + m1t, -m_u + m2t)
+                    }
+                };
+                
+                // Compute FEF for each local direction
+                let (rx1, rx2, _mx1, _mx2) = fef_1d(w_lx1, w_lx2);
+                let (ry1, ry2, mz1, mz2) = fef_1d(w_ly1, w_ly2);
+                let (rz1, rz2, my1, my2) = fef_1d(w_lz1, w_lz2);
+                
+                // Axial (local X)
+                fef_local[0] += rx1;
+                fef_local[6] += rx2;
+                // Transverse Y (bending about Z)
+                fef_local[1] += ry1;
+                fef_local[5] += mz1;
+                fef_local[7] += ry2;
+                fef_local[11] += mz2;
+                // Transverse Z (bending about Y) — opposite sign for moments
+                fef_local[2] += rz1;
+                fef_local[4] += -my1;
+                fef_local[8] += rz2;
+                fef_local[10] += -my2;
             }
         }
         

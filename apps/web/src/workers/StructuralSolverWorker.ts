@@ -570,12 +570,23 @@ function assembleStiffnessMatrixAndForces(
   nodes.forEach((node, nodeIndex) => {
     if (node.restraints) {
       const baseDof = nodeIndex * dofPerNode;
-      if (node.restraints.fx) fixedDofs.add(baseDof);
-      if (node.restraints.fy) fixedDofs.add(baseDof + 1);
-      if (node.restraints.fz && dofPerNode >= 3) fixedDofs.add(baseDof + 2);
-      if (node.restraints.mx && dofPerNode >= 4) fixedDofs.add(baseDof + 3);
-      if (node.restraints.my && dofPerNode >= 5) fixedDofs.add(baseDof + 4);
-      if (node.restraints.mz && dofPerNode >= 6) fixedDofs.add(baseDof + 5);
+      if (dofPerNode === 3) {
+        // 2D Frame: DOF order = [u, v, θz]
+        // DOF 0: translation X (fx)
+        // DOF 1: translation Y (fy)
+        // DOF 2: rotation about Z (accept both fz and mz for backward compat)
+        if (node.restraints.fx) fixedDofs.add(baseDof);
+        if (node.restraints.fy) fixedDofs.add(baseDof + 1);
+        if (node.restraints.fz || node.restraints.mz) fixedDofs.add(baseDof + 2);
+      } else {
+        // 2D truss (2 DOF) or 3D frame (6 DOF) — standard mapping
+        if (node.restraints.fx) fixedDofs.add(baseDof);
+        if (node.restraints.fy) fixedDofs.add(baseDof + 1);
+        if (node.restraints.fz && dofPerNode >= 3) fixedDofs.add(baseDof + 2);
+        if (node.restraints.mx && dofPerNode >= 4) fixedDofs.add(baseDof + 3);
+        if (node.restraints.my && dofPerNode >= 5) fixedDofs.add(baseDof + 4);
+        if (node.restraints.mz && dofPerNode >= 6) fixedDofs.add(baseDof + 5);
+      }
     }
   });
 
@@ -1179,8 +1190,6 @@ function computeMemberEndForces(
   const { members, nodes, dofPerNode } = model;
   const results: MemberForceResult[] = [];
 
-  if (dofPerNode < 3) return results;
-
   for (const member of members) {
     const i = nodeIndexMap.get(member.startNodeId);
     const j = nodeIndexMap.get(member.endNodeId);
@@ -1199,120 +1208,55 @@ function computeMemberEndForces(
     const cz = dz / L;
 
     if (member.type === "truss") {
-      // TRUSS FORCE CALCULATION
-      // Extract relevant displacements based on dofPerNode
-      if (dofPerNode === 2) {
-        const u1 = [displacements[i * 2] || 0, displacements[i * 2 + 1] || 0];
-        const u2 = [displacements[j * 2] || 0, displacements[j * 2 + 1] || 0];
-        // Need angle
-        const angle = Math.atan2(dy, dx);
-        // 2D Truss Forces require global displacements for 4 DOF?
-        // computeTruss2DMemberForces expects [u1, v1, u2, v2]
-        const uGlobal = [...u1, ...u2];
-        const forceData = computeTruss2DMemberForces(
-          uGlobal,
-          member.E || 0,
-          member.A || 0,
-          L,
-          angle,
-        );
-
-        results.push({
-          id: member.id,
-          start: { axial: forceData.axialForce, shear: 0, moment: 0 },
-          end: { axial: -forceData.axialForce, shear: 0, moment: 0 },
-        });
+      // TRUSS FORCE CALCULATION — inline, unit-consistent
+      // Axial force = (EA/L) * (projection of relative displacement onto member axis)
+      // Works for any dofPerNode (2, 3, or 6)
+      const baseI = i * dofPerNode;
+      const baseJ = j * dofPerNode;
+      const du_x = (displacements[baseJ] || 0) - (displacements[baseI] || 0);
+      const du_y = (displacements[baseJ + 1] || 0) - (displacements[baseI + 1] || 0);
+      const du_z = dofPerNode >= 3 && dofPerNode !== 3
+        ? (displacements[baseJ + 2] || 0) - (displacements[baseI + 2] || 0)
+        : 0; // dofPerNode=3 means 2D frame [u,v,θ] — DOF 2 is rotation, not Z
+      
+      // For dofPerNode=6, use translational DOFs only (indices 0,1,2)
+      let deltaAxial: number;
+      if (dofPerNode === 6) {
+        deltaAxial = du_x * cx + du_y * cy + du_z * cz;
       } else {
-        // 3D or mixed (use 3D logic for generality if geometric)
-        // Extract translational DOFs
-        // Node i: indices 0,1,2
-        // Node j: indices 0,1,2 (relative to node start)
-        let u1, u2;
-        if (dofPerNode >= 3) {
-          // 3D Frame/Truss
-          const baseI = i * dofPerNode;
-          const baseJ = j * dofPerNode;
-          u1 = [
-            displacements[baseI],
-            displacements[baseI + 1],
-            dofPerNode >= 3 ? displacements[baseI + 2] : 0,
-          ];
-          u2 = [
-            displacements[baseJ],
-            displacements[baseJ + 1],
-            dofPerNode >= 3 ? displacements[baseJ + 2] : 0,
-          ];
-        } else {
-          // Should not happen here
-          u1 = [0, 0, 0];
-          u2 = [0, 0, 0];
-        }
-
-        const forceData = computeTruss3DMemberForces(
-          u1 as number[],
-          u2 as number[],
-          member.E || 0,
-          member.A || 0,
-          L,
-          cx,
-          cy,
-          cz,
-        );
-
-        results.push({
-          id: member.id,
-          start: { axial: forceData.axialForce, shear: 0, moment: 0 },
-          end: { axial: -forceData.axialForce, shear: 0, moment: 0 },
-        });
+        // 2D: project onto member axis using only x,y components
+        deltaAxial = du_x * cx + du_y * cy;
       }
-    } else if (member.type === "spring") {
-      // SPRING FORCE CALCULATION
-      let u1: number[], u2: number[];
-      if (dofPerNode === 2) {
-        u1 = [displacements[i * 2] || 0, displacements[i * 2 + 1] || 0, 0];
-        u2 = [displacements[j * 2] || 0, displacements[j * 2 + 1] || 0, 0];
-      } else if (dofPerNode === 3) {
-        const baseI = i * dofPerNode;
-        const baseJ = j * dofPerNode;
-        u1 = [
-          displacements[baseI] || 0,
-          displacements[baseI + 1] || 0,
-          displacements[baseI + 2] || 0,
-        ];
-        u2 = [
-          displacements[baseJ] || 0,
-          displacements[baseJ + 1] || 0,
-          displacements[baseJ + 2] || 0,
-        ];
-      } else if (dofPerNode === 6) {
-        const baseI = i * dofPerNode;
-        const baseJ = j * dofPerNode;
-        u1 = [
-          displacements[baseI] || 0,
-          displacements[baseI + 1] || 0,
-          displacements[baseI + 2] || 0,
-        ];
-        u2 = [
-          displacements[baseJ] || 0,
-          displacements[baseJ + 1] || 0,
-          displacements[baseJ + 2] || 0,
-        ];
-      } else {
-        u1 = [0, 0, 0];
-        u2 = [0, 0, 0];
-      }
-      const forceData = computeSpringForces(
-        u1,
-        u2,
-        member.springStiffness || member.E || 1.0,
-        cx,
-        cy,
-        cz,
-      );
+
+      const E = member.E || 0;
+      const A = member.A || 0;
+      const axialForce = (E * A / L) * deltaAxial;
+
       results.push({
         id: member.id,
-        start: { axial: forceData.force, shear: 0, moment: 0 },
-        end: { axial: -forceData.force, shear: 0, moment: 0 },
+        start: { axial: axialForce, shear: 0, moment: 0 },
+        end: { axial: -axialForce, shear: 0, moment: 0 },
+      });
+    } else if (member.type === "spring") {
+      // SPRING FORCE CALCULATION — inline, unit-consistent
+      // Spring force = k * (projection of relative displacement onto spring axis)
+      const baseI = i * dofPerNode;
+      const baseJ = j * dofPerNode;
+      const du_x = (displacements[baseJ] || 0) - (displacements[baseI] || 0);
+      const du_y = (displacements[baseJ + 1] || 0) - (displacements[baseI + 1] || 0);
+      let du_z = 0;
+      if (dofPerNode === 6) {
+        du_z = (displacements[baseJ + 2] || 0) - (displacements[baseI + 2] || 0);
+      }
+      
+      const kSpring = member.springStiffness || member.E || 1.0;
+      const deltaAxial = du_x * cx + du_y * cy + du_z * cz;
+      const springForce = kSpring * deltaAxial;
+
+      results.push({
+        id: member.id,
+        start: { axial: springForce, shear: 0, moment: 0 },
+        end: { axial: -springForce, shear: 0, moment: 0 },
       });
     } else if (dofPerNode === 6) {
       // 3D SPACE FRAME FORCE CALCULATION — full 12×12
@@ -1499,7 +1443,7 @@ function computeMemberEndForces(
           moment: fLocal12[11] || 0, // Mz at end
         },
       });
-    } else {
+    } else if (dofPerNode >= 3) {
       // 2D FRAME FORCE CALCULATION (dofPerNode = 3)
       const dofIndices = [
         i * dofPerNode + 0,

@@ -1221,6 +1221,9 @@ function __wbg_get_imports() {
         const ret = getObject(arg0).value;
         return addHeapObject(ret);
     };
+    imports.wbg.__wbg_warn_6e567d0d926ff881 = function(arg0) {
+        console.warn(getObject(arg0));
+    };
     imports.wbg.__wbindgen_cast_2241b6af4c4b2941 = function(arg0, arg1) {
         // Cast intrinsic for `Ref(String) -> Externref`.
         const ret = getStringFromWasm0(arg0, arg1);

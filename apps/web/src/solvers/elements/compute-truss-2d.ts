@@ -121,31 +121,31 @@ export function computeTruss2DStiffness(
  * 4. Return force (tension/compression)
  * 
  * @param u_global Global displacements [u1, v1, u2, v2]
- * @param E Young's modulus (Pa)
+ * @param E Young's modulus (same units as desired output force per area)
  * @param A Cross-sectional area (m²)
  * @param L Member length (m)
  * @param angle Member angle from horizontal (radians)
  * 
- * @returns Object with axial force (kN)
+ * @returns Object with axial force (same force unit as E×A implies)
  *   - Positive = Tension
  *   - Negative = Compression
+ *   - If E is in kN/m², force is in kN. If E is in Pa, force is in N.
  * 
  * Example Usage:
  * const u_global = [0.001, 0.002, 0.0015, 0.0025];  // in meters
  * const force = computeTruss2DMemberForces(u_global, E, A, L, angle);
- * console.log(`Axial force: ${force.axialForce} kN`);
- * // Output: "Axial force: 80.5 kN" (tension) or "-85.3 kN" (compression)
+ * console.log(`Axial force: ${force.axialForce}`);
  */
 export function computeTruss2DMemberForces(
   u_global: number[],  // Global displacements [u1, v1, u2, v2] in meters
-  E: number,           // Young's modulus (Pa)
+  E: number,           // Young's modulus
   A: number,           // Cross-sectional area (m²)
   L: number,           // Member length (m)
   angle: number        // Member angle from horizontal (radians)
 ): {
-  axialForce: number;  // kN
+  axialForce: number;  // Same force unit as E*A/L*displacement
   strain: number;      // Axial strain (dimensionless)
-  stress: number;      // Normal stress (Pa)
+  stress: number;      // Normal stress (same unit as E)
 } {
   // Calculate direction cosines
   const c = Math.cos(angle);
@@ -171,8 +171,9 @@ export function computeTruss2DMemberForces(
   // ============================================
   // F = (EA/L) × Δu
   // Note: Positive = Tension, Negative = Compression
+  // Force units match E×A units (e.g., kN if E in kN/m² and A in m²)
   const k = (E * A) / L;
-  const axialForce = k * delta_u / 1000;  // Convert to kN
+  const axialForce = k * delta_u;
   
   // ============================================
   // STEP 4: Calculate Strain and Stress
