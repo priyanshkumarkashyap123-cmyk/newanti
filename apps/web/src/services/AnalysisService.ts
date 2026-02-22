@@ -83,6 +83,9 @@ export interface LoadData {
   fx?: number;
   fy?: number;
   fz?: number;
+  mx?: number;
+  my?: number;
+  mz?: number;
 }
 
 export interface AnalysisResult {

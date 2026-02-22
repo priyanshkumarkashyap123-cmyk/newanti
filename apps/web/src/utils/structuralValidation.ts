@@ -150,7 +150,7 @@ export function validateStructure(
   // Minimum restraints: 3 for 2D (2 translations + 1 rotation or 3 translations), 6 for 3D
   const minRestraints = is3DGeometry ? 6 : 3;
 
-  if (supportedTranslational < minRestraints) {
+  if (supportedDOFs < minRestraints) {
     errors.push({
       type: "critical",
       message: is3DGeometry

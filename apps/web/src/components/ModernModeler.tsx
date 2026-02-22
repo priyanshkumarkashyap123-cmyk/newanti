@@ -897,9 +897,6 @@ export const ModernModeler: FC = () => {
     const startTime = Date.now();
 
     try {
-      // Check if we have member loads (UDL, point loads on members)
-      const hasMemberLoads = memberLoads.length > 0;
-
       // Build model data for analysis
       const nodesArray = Array.from(nodes.values()).map((n) => ({
         id: n.id,
@@ -946,8 +943,8 @@ export const ModernModeler: FC = () => {
         error?: string;
       };
 
-      // Use Python API for frame analysis with member loads
-      if (hasMemberLoads) {
+      // Always try WASM solver first (handles both with and without member loads)
+      {
         setAnalysisStage("assembling");
         setAnalysisProgress(30);
 
@@ -998,12 +995,15 @@ export const ModernModeler: FC = () => {
           }));
 
         // Build point loads from nodal loads in WASM format
-        // WASM PointLoad struct: { node_id, fx, fy, mz }
+        // WASM NodalLoad struct: { node_id, fx, fy, fz, mx, my, mz }
         const wasmPointLoads = loads.map((l) => ({
           node_id: parseInt(l.nodeId), // MUST be node_id to match Rust struct
           fx: (l.fx ?? 0) * 1000, // Convert kN to N for WASM
           fy: (l.fy ?? 0) * 1000,
-          mz: (l.mz ?? 0) * 1000, // Convert kN·m to N·m
+          fz: (l.fz ?? 0) * 1000,
+          mx: (l.mx ?? 0) * 1000, // Convert kN·m to N·m
+          my: (l.my ?? 0) * 1000,
+          mz: (l.mz ?? 0) * 1000,
         }));
 
         modelerLogger.log(
@@ -1024,6 +1024,19 @@ export const ModernModeler: FC = () => {
           // Initialize WASM module
           await initSolver();
 
+          // Detect 2D structure (all nodes coplanar in XY plane)
+          // For 2D, auto-constrain out-of-plane DOFs (fz, mx, my) at ALL nodes
+          // to prevent singular stiffness matrix in the 3D solver
+          const allZValues = nodesArray.map((n) => n.z ?? 0);
+          const zRange = Math.max(...allZValues) - Math.min(...allZValues);
+          const is2DPlanar = zRange < 0.001; // 1mm tolerance
+
+          if (is2DPlanar) {
+            modelerLogger.log(
+              "[Analysis] 2D planar structure detected — constraining out-of-plane DOFs",
+            );
+          }
+
           // Convert nodes to WASM format with full 6 DOF restraints for 3D analysis
           // DOF order: [Fx, Fy, Fz, Mx, My, Mz] = [dx, dy, dz, rx, ry, rz]
           const wasmNodes = nodesArray.map((n) => ({
@@ -1035,24 +1048,26 @@ export const ModernModeler: FC = () => {
             restraints: [
               n.restraints?.fx || false, // Translation X
               n.restraints?.fy || false, // Translation Y
-              n.restraints?.fz || false, // Translation Z
-              n.restraints?.mx || false, // Rotation X
-              n.restraints?.my || false, // Rotation Y
+              is2DPlanar ? true : n.restraints?.fz || false, // Translation Z (auto-restrained for 2D)
+              is2DPlanar ? true : n.restraints?.mx || false, // Rotation X (auto-restrained for 2D)
+              is2DPlanar ? true : n.restraints?.my || false, // Rotation Y (auto-restrained for 2D)
               n.restraints?.mz || false, // Rotation Z
             ],
           }));
 
           // Convert members to WASM format with full 3D section properties
+          // CRITICAL: Store uses kN/m² for E, but WASM expects Pa (N/m²)
+          // Multiply E and G by 1000 to convert kN/m² → Pa
           const wasmElements = membersArray.map((m) => ({
             id: parseInt(m.id),
             node_i: m.startNodeId, // Use node_i (Rust native name)
             node_j: m.endNodeId, // Use node_j (Rust native name)
-            E: m.E || 200e9, // Young's modulus [Pa]
-            G: m.G || 80e9, // Shear modulus [Pa]
+            E: (m.E || 200e6) * 1000, // kN/m² → Pa [Young's modulus]
+            G: (m.G || 76.9e6) * 1000, // kN/m² → Pa [Shear modulus]
             A: m.A || 0.01, // Cross-sectional area [m²]
-            Iy: m.Iy || 8.33e-6, // Moment of inertia Y [m⁴]
-            Iz: m.Iz || 8.33e-6, // Moment of inertia Z [m⁴]
-            J: m.J || 1e-5, // Torsional constant [m⁴]
+            Iy: m.Iy || 1e-4, // Moment of inertia Y [m⁴]
+            Iz: m.Iz || 1e-4, // Moment of inertia Z [m⁴]
+            J: m.J || 2e-4, // Torsional constant [m⁴]
           }));
 
           // Run WASM analysis WITH LOADS
@@ -1080,15 +1095,15 @@ export const ModernModeler: FC = () => {
           const displacements = wasmResult.displacements || {};
           for (const [nodeId, disp] of Object.entries(displacements)) {
             const dispArray = disp as number[];
-            // Handle both 3 DOF (2D) and 6 DOF (3D) results
+            // 3D solver always returns 6 DOF: [dx, dy, dz, rx, ry, rz]
             nodesDict[nodeId] = {
               nodeId,
-              DX: dispArray[0] || 0, // Already in meters from Rust
-              DY: dispArray[1] || 0,
-              DZ: dispArray[2] || 0,
-              RX: dispArray[3] || 0, // Rotation about X in radians
-              RY: dispArray[4] || 0, // Rotation about Y in radians
-              RZ: dispArray[5] || dispArray[2] || 0, // 3D: RZ at [5], 2D: rz at [2]
+              DX: dispArray[0] ?? 0, // Already in meters from Rust
+              DY: dispArray[1] ?? 0,
+              DZ: dispArray[2] ?? 0,
+              RX: dispArray[3] ?? 0, // Rotation about X in radians
+              RY: dispArray[4] ?? 0, // Rotation about Y in radians
+              RZ: dispArray[5] ?? 0, // Rotation about Z in radians
             };
           }
           modelerLogger.log(
@@ -1100,14 +1115,14 @@ export const ModernModeler: FC = () => {
           const reactions = wasmResult.reactions || {};
           for (const [nodeId, rxn] of Object.entries(reactions)) {
             const rxnArray = rxn as number[];
-            // Handle both 3 DOF (2D) and 6 DOF (3D) results
+            // 3D solver always returns 6 DOF: [Fx, Fy, Fz, Mx, My, Mz]
             reactionsDict[nodeId] = [
-              (rxnArray[0] || 0) / 1000, // Fx: Convert N to kN
-              (rxnArray[1] || 0) / 1000, // Fy
-              (rxnArray[2] || 0) / 1000, // Fz
-              (rxnArray[3] || 0) / 1000, // Mx: Convert N·m to kN·m
-              (rxnArray[4] || 0) / 1000, // My
-              (rxnArray[5] || rxnArray[2] || 0) / 1000, // Mz (3D: [5], 2D: [2])
+              (rxnArray[0] ?? 0) / 1000, // Fx: Convert N to kN
+              (rxnArray[1] ?? 0) / 1000, // Fy
+              (rxnArray[2] ?? 0) / 1000, // Fz
+              (rxnArray[3] ?? 0) / 1000, // Mx: Convert N·m to kN·m
+              (rxnArray[4] ?? 0) / 1000, // My
+              (rxnArray[5] ?? 0) / 1000, // Mz
             ];
           }
           modelerLogger.log(
@@ -1161,7 +1176,7 @@ export const ModernModeler: FC = () => {
               const ST = 51;
               const xv: number[] = [],
                 sy: number[] = [],
-                my: number[] = [];
+                mzArr: number[] = [];
               const ax: number[] = [],
                 dy: number[] = [];
               for (let s = 0; s < ST; s++) {
@@ -1169,7 +1184,7 @@ export const ModernModeler: FC = () => {
                 xv.push(x);
                 ax.push(axF);
                 sy.push(v1 - w * x);
-                my.push(m1 + v1 * x - (w * x * x) / 2);
+                mzArr.push(m1 + v1 * x - (w * x * x) / 2);
                 if (EI > 0) {
                   const C1 = -(
                     (m1 * L) / 2 +
@@ -1188,7 +1203,7 @@ export const ModernModeler: FC = () => {
               return {
                 x_values: xv,
                 shear_y: sy,
-                moment_y: my,
+                moment_z: mzArr,
                 axial: ax,
                 deflection_y: dy,
               };
@@ -1197,20 +1212,20 @@ export const ModernModeler: FC = () => {
             // Handle both 2D and 3D formats
             if (mf.forces_i && mf.forces_j) {
               // 3D format: Full member end forces [Fx, Fy, Fz, Mx, My, Mz]
-              const axV = (mf.forces_i[0] || 0) / 1000;
-              const syV = (mf.forces_i[1] || 0) / 1000;
-              const szV = (mf.forces_i[2] || 0) / 1000;
-              const txV = (mf.forces_i[3] || 0) / 1000;
-              const myV = (mf.forces_i[4] || 0) / 1000;
-              const mzV = (mf.forces_i[5] || 0) / 1000;
-              const syE = (mf.forces_j[1] || 0) / 1000;
-              const mzE = (mf.forces_j[5] || 0) / 1000;
+              const axV = (mf.forces_i[0] ?? 0) / 1000;
+              const syV = (mf.forces_i[1] ?? 0) / 1000;
+              const szV = (mf.forces_i[2] ?? 0) / 1000;
+              const txV = (mf.forces_i[3] ?? 0) / 1000;
+              const myV = (mf.forces_i[4] ?? 0) / 1000;
+              const mzV = (mf.forces_i[5] ?? 0) / 1000;
+              const syE = (mf.forces_j[1] ?? 0) / 1000;
+              const mzE = (mf.forces_j[5] ?? 0) / 1000;
               const maxSY =
                 mf.max_shear_y != null
                   ? mf.max_shear_y / 1000
                   : Math.max(Math.abs(syV), Math.abs(syE));
-              const maxSZ = (mf.max_shear_z || 0) / 1000;
-              const maxMY = (mf.max_moment_y || 0) / 1000;
+              const maxSZ = (mf.max_shear_z ?? 0) / 1000;
+              const maxMY = (mf.max_moment_y ?? 0) / 1000;
               const maxMZ =
                 mf.max_moment_z != null
                   ? mf.max_moment_z / 1000
@@ -1237,19 +1252,19 @@ export const ModernModeler: FC = () => {
                 x_values: diag3D?.x_values,
                 shear_y: diag3D?.shear_y,
                 shear_z: [] as number[],
-                moment_y: diag3D?.moment_y,
-                moment_z: [] as number[],
+                moment_y: [] as number[],
+                moment_z: diag3D?.moment_z,
                 torsion_arr: [] as number[],
                 deflection_y: diag3D?.deflection_y,
                 deflection_z: [] as number[],
               };
             } else {
               // 2D format: map from Rust field names + generate diagram data
-              const axF = (mf.axial || 0) / 1000;
-              const v1 = (mf.shear_start || 0) / 1000;
-              const v2 = (mf.shear_end || 0) / 1000;
-              const m1 = (mf.moment_start || 0) / 1000;
-              const m2 = (mf.moment_end || 0) / 1000;
+              const axF = (mf.axial ?? 0) / 1000;
+              const v1 = (mf.shear_start ?? 0) / 1000;
+              const v2 = (mf.shear_end ?? 0) / 1000;
+              const m1 = (mf.moment_start ?? 0) / 1000;
+              const m2 = (mf.moment_end ?? 0) / 1000;
               const diag2D = genDiagram(axF, v1, m1, elemId);
               membersDict[elemId] = {
                 memberId: elemId,
@@ -1257,14 +1272,14 @@ export const ModernModeler: FC = () => {
                 // snake_case max values (needed by generic parser)
                 max_shear_y: Math.max(Math.abs(v1), Math.abs(v2)),
                 max_shear_z: 0,
-                max_moment_y: Math.max(Math.abs(m1), Math.abs(m2)),
-                max_moment_z: 0,
+                max_moment_y: 0,
+                max_moment_z: Math.max(Math.abs(m1), Math.abs(m2)),
                 // diagram arrays
                 x_values: diag2D?.x_values,
                 shear_y: diag2D?.shear_y,
                 shear_z: [] as number[],
-                moment_y: diag2D?.moment_y,
-                moment_z: [] as number[],
+                moment_y: [] as number[],
+                moment_z: diag2D?.moment_z,
                 torsion: [] as number[],
                 deflection_y: diag2D?.deflection_y,
                 deflection_z: [] as number[],
@@ -1352,12 +1367,15 @@ export const ModernModeler: FC = () => {
               })),
             );
 
-            // Merge with existing nodal loads
+            // Merge with existing nodal loads (include moment loads)
             const existingLoads = loads.map((l) => ({
               nodeId: l.nodeId,
               fx: l.fx,
               fy: l.fy,
               fz: l.fz,
+              mx: l.mx,
+              my: l.my,
+              mz: l.mz,
             }));
             const allLoads = mergeNodalLoads([
               ...existingLoads,
@@ -1405,41 +1423,6 @@ export const ModernModeler: FC = () => {
             };
           }
         }
-      } else {
-        // Use local solver for simple models without member loads
-        const modelData = {
-          nodes: nodesArray,
-          members: membersArray,
-          loads: loads.map((l) => ({
-            nodeId: l.nodeId,
-            fx: l.fx,
-            fy: l.fy,
-            fz: l.fz,
-          })),
-          memberLoads: memberLoads.map((ml) => ({
-            id: ml.id,
-            memberId: ml.memberId,
-            type: ml.type,
-            w1: ml.w1,
-            w2: ml.w2,
-            direction: ml.direction,
-            startPos: ml.startPos,
-            endPos: ml.endPos,
-          })),
-          // dofPerNode omitted — AnalysisService auto-detects 2D/3D
-        };
-
-        // Run analysis with progress callback
-        const token = await getToken();
-        const { analysisService } = await getAnalysisService();
-        result = await analysisService.analyze(
-          modelData,
-          (stage, progress) => {
-            setAnalysisStage(stage as AnalysisStage);
-            setAnalysisProgress(progress);
-          },
-          token,
-        );
       }
 
       const endTime = Date.now();
