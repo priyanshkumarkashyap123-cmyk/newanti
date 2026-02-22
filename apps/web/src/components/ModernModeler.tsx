@@ -921,18 +921,23 @@ export const ModernModeler: FC = () => {
           : "none",
       }));
 
-      const membersArray = Array.from(members.values()).map((m) => ({
-        id: m.id,
-        startNodeId: m.startNodeId,
-        endNodeId: m.endNodeId,
-        E: m.E ?? 200e6, // 200 GPa in kN/m²
-        G: (m.E ?? 200e6) / 2.6, // Approximate shear modulus
-        A: m.A ?? 0.01,
-        Iy: m.I ?? 1e-4,
-        Iz: m.I ?? 1e-4,
-        J: (m.I ?? 1e-4) * 2, // Approximate torsion constant
-        I: m.I ?? 1e-4,
-      }));
+      const membersArray = Array.from(members.values()).map((m) => {
+        const E = m.E ?? 200e6; // 200 GPa in kN/m²
+        const G = m.G ?? E / 2.6; // Shear modulus (kN/m²) — use store value or approximate from E
+        const I = m.I ?? 1e-4; // Legacy single I (m⁴)
+        const Iy = m.Iy ?? I; // Use store Iy, fallback to legacy I
+        const Iz = m.Iz ?? I; // Use store Iz, fallback to legacy I
+        const J = m.J ?? (Iy + Iz); // Use store J, fallback to Iy+Iz (exact for circular)
+        return {
+          id: m.id,
+          startNodeId: m.startNodeId,
+          endNodeId: m.endNodeId,
+          E, G, A: m.A ?? 0.01, Iy, Iz, J,
+          I, // keep legacy I for diagram generation
+          betaAngle: m.betaAngle ?? 0, // degrees
+          releases: m.releases,
+        };
+      });
 
       let result: {
         success: boolean;
@@ -994,17 +999,91 @@ export const ModernModeler: FC = () => {
             is_projected: false, // Default to false, could be extended later
           }));
 
+        // Convert member point loads and moments to equivalent nodal loads
+        // (Rust solver only supports distributed loads, not concentrated member loads)
+        const memberPointLoads = memberLoads.filter(
+          (ml) => ml.type === "point" || ml.type === "moment",
+        );
+        const equivalentNodalFromMemberPt: Array<{
+          node_id: string; fx: number; fy: number; fz: number;
+          mx: number; my: number; mz: number;
+        }> = [];
+        for (const mpl of memberPointLoads) {
+          const mInfo = membersArray.find((m) => m.id === mpl.memberId);
+          if (!mInfo) continue;
+          const nd1 = nodesArray.find((n) => n.id === mInfo.startNodeId);
+          const nd2 = nodesArray.find((n) => n.id === mInfo.endNodeId);
+          if (!nd1 || !nd2) continue;
+          const dx = nd2.x - nd1.x, dy = nd2.y - nd1.y;
+          const dz = (nd2.z ?? 0) - (nd1.z ?? 0);
+          const L = Math.sqrt(dx * dx + dy * dy + dz * dz);
+          if (L < 1e-12) continue;
+          // Distance from start node (convert ratio to actual if <= 1)
+          const aRaw = mpl.a ?? 0.5;
+          const a = aRaw <= 1.0 ? aRaw * L : aRaw; // ratio or absolute
+          const b = L - a;
+          if (mpl.type === "point" && mpl.P) {
+            // Fixed-end reactions for concentrated load P at distance a from start
+            // R1 = Pb²(3a+b)/L³, R2 = Pa²(a+3b)/L³
+            // M1 = Pab²/L², M2 = -Pa²b/L²
+            const P = mpl.P * 1000; // kN → N
+            const R1 = P * b * b * (3 * a + b) / (L * L * L);
+            const R2 = P * a * a * (a + 3 * b) / (L * L * L);
+            const M1 = P * a * b * b / (L * L);
+            const M2 = -P * a * a * b / (L * L);
+            // Determine load direction in global coordinates
+            const dir = mpl.direction || "global_y";
+            if (dir === "local_y" || dir === "global_y") {
+              equivalentNodalFromMemberPt.push(
+                { node_id: mInfo.startNodeId, fx: 0, fy: R1, fz: 0, mx: 0, my: 0, mz: M1 },
+                { node_id: mInfo.endNodeId, fx: 0, fy: R2, fz: 0, mx: 0, my: 0, mz: M2 },
+              );
+            } else if (dir === "local_z" || dir === "global_z") {
+              equivalentNodalFromMemberPt.push(
+                { node_id: mInfo.startNodeId, fx: 0, fy: 0, fz: R1, mx: 0, my: -M1, mz: 0 },
+                { node_id: mInfo.endNodeId, fx: 0, fy: 0, fz: R2, mx: 0, my: -M2, mz: 0 },
+              );
+            } else if (dir === "global_x" || dir === "axial") {
+              // Axial point load
+              const R1x = P * b / L;
+              const R2x = P * a / L;
+              equivalentNodalFromMemberPt.push(
+                { node_id: mInfo.startNodeId, fx: R1x, fy: 0, fz: 0, mx: 0, my: 0, mz: 0 },
+                { node_id: mInfo.endNodeId, fx: R2x, fy: 0, fz: 0, mx: 0, my: 0, mz: 0 },
+              );
+            }
+          } else if (mpl.type === "moment" && mpl.M) {
+            // Fixed-end reactions for concentrated moment M at distance a from start
+            // R1 = 6M·a·b / L³ (upward), R2 = -6M·a·b / L³ (downward)
+            // M1 = M·b·(2a - b)/L², M2 = M·a·(2b - a)/L²
+            const Mo = mpl.M * 1000; // kN·m → N·m
+            const R1 = 6 * Mo * a * b / (L * L * L);
+            const R2 = -R1;
+            const M1 = Mo * b * (2 * a - b) / (L * L);
+            const M2 = Mo * a * (2 * b - a) / (L * L);
+            // Moment loads typically about Z axis
+            equivalentNodalFromMemberPt.push(
+              { node_id: mInfo.startNodeId, fx: 0, fy: R1, fz: 0, mx: 0, my: 0, mz: M1 },
+              { node_id: mInfo.endNodeId, fx: 0, fy: R2, fz: 0, mx: 0, my: 0, mz: M2 },
+            );
+          }
+        }
+
         // Build point loads from nodal loads in WASM format
         // WASM NodalLoad struct: { node_id, fx, fy, fz, mx, my, mz }
-        const wasmPointLoads = loads.map((l) => ({
-          node_id: l.nodeId, // String ID — Rust deserialize_string_or_number handles both
-          fx: (l.fx ?? 0) * 1000, // Convert kN to N for WASM
-          fy: (l.fy ?? 0) * 1000,
-          fz: (l.fz ?? 0) * 1000,
-          mx: (l.mx ?? 0) * 1000, // Convert kN·m to N·m
-          my: (l.my ?? 0) * 1000,
-          mz: (l.mz ?? 0) * 1000,
-        }));
+        const wasmPointLoads = [
+          ...loads.map((l) => ({
+            node_id: l.nodeId,
+            fx: (l.fx ?? 0) * 1000, // Convert kN to N for WASM
+            fy: (l.fy ?? 0) * 1000,
+            fz: (l.fz ?? 0) * 1000,
+            mx: (l.mx ?? 0) * 1000, // Convert kN·m to N·m
+            my: (l.my ?? 0) * 1000,
+            mz: (l.mz ?? 0) * 1000,
+          })),
+          // Merge equivalent nodal loads from member point loads
+          ...equivalentNodalFromMemberPt,
+        ];
 
         modelerLogger.log(
           `[Analysis] Member loads: ${wasmMemberLoads.length}, Point loads: ${wasmPointLoads.length}`,
@@ -1070,17 +1149,32 @@ export const ModernModeler: FC = () => {
           // Convert members to WASM format with full 3D section properties
           // CRITICAL: Store uses kN/m² for E, but WASM expects Pa (N/m²)
           // Multiply E and G by 1000 to convert kN/m² → Pa
-          const wasmElements = membersArray.map((m) => ({
-            id: m.id, // Pass string ID directly — Rust accepts string or number
-            node_i: m.startNodeId, // Use node_i (Rust native name)
-            node_j: m.endNodeId, // Use node_j (Rust native name)
-            E: (m.E || 200e6) * 1000, // kN/m² → Pa [Young's modulus]
-            G: (m.G || 76.9e6) * 1000, // kN/m² → Pa [Shear modulus]
-            A: m.A || 0.01, // Cross-sectional area [m²]
-            Iy: m.Iy || 1e-4, // Moment of inertia Y [m⁴]
-            Iz: m.Iz || 1e-4, // Moment of inertia Z [m⁴]
-            J: m.J || 2e-4, // Torsional constant [m⁴]
-          }));
+          const wasmElements = membersArray.map((m) => {
+            // Convert releases from store format to Rust [bool;6] arrays
+            const rel = m.releases;
+            const releases_i = rel ? [
+              rel.fxStart || false, rel.fyStart || false, rel.fzStart || false,
+              rel.mxStart || false, rel.myStart || false, rel.mzStart || (rel.startMoment || false),
+            ] : [false, false, false, false, false, false];
+            const releases_j = rel ? [
+              rel.fxEnd || false, rel.fyEnd || false, rel.fzEnd || false,
+              rel.mxEnd || false, rel.myEnd || false, rel.mzEnd || (rel.endMoment || false),
+            ] : [false, false, false, false, false, false];
+            return {
+              id: m.id,
+              node_i: m.startNodeId,
+              node_j: m.endNodeId,
+              E: (m.E || 200e6) * 1000, // kN/m² → Pa
+              G: (m.G || 76.9e6) * 1000, // kN/m² → Pa
+              A: m.A || 0.01, // m²
+              Iy: m.Iy || 1e-4, // m⁴
+              Iz: m.Iz || 1e-4, // m⁴
+              J: m.J || 2e-4, // m⁴
+              beta: (m.betaAngle || 0) * Math.PI / 180, // degrees → radians
+              releases_i,
+              releases_j,
+            };
+          });
 
           // Run WASM analysis WITH LOADS
           modelerLogger.log(

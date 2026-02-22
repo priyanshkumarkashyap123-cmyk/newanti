@@ -501,12 +501,57 @@ pub fn analyze_3d_frame(
         }
         
         // Get local stiffness matrix
-        let k_local = match element.element_type {
+        let mut k_local = match element.element_type {
             ElementType::Frame => frame_element_stiffness(element, length),
             ElementType::Truss => truss_element_stiffness(element, length),
             ElementType::Cable => cable_element_stiffness(element, length),
             _ => return Err("Unexpected element type logic".to_string()),
         };
+        
+        // Apply member end releases via static condensation
+        // Released DOFs: releases_i[0..6] for node i (local DOFs 0-5)
+        //                releases_j[0..6] for node j (local DOFs 6-11)
+        let released: Vec<usize> = (0..6)
+            .filter(|&d| element.releases_i[d])
+            .chain((0..6).filter(|&d| element.releases_j[d]).map(|d| d + 6))
+            .collect();
+        if !released.is_empty() {
+            let retained: Vec<usize> = (0..12).filter(|d| !released.contains(d)).collect();
+            let nc = released.len();
+            let nr = retained.len();
+            // Extract sub-matrices for static condensation
+            // K_condensed = K_RR - K_RC * K_CC^{-1} * K_CR
+            let mut k_cc = DMatrix::zeros(nc, nc);
+            let mut k_rc = DMatrix::zeros(nr, nc);
+            let mut k_cr = DMatrix::zeros(nc, nr);
+            for (ri, &r) in released.iter().enumerate() {
+                for (rj, &c) in released.iter().enumerate() {
+                    k_cc[(ri, rj)] = k_local[(r, c)];
+                }
+                for (ci, &c) in retained.iter().enumerate() {
+                    k_cr[(ri, ci)] = k_local[(r, c)];
+                    k_rc[(ci, ri)] = k_local[(c, r)];
+                }
+            }
+            // Use matrix inverse for K_CC^{-1} * K_CR
+            if let Some(k_cc_inv) = k_cc.try_inverse() {
+                let correction = &k_rc * &k_cc_inv * &k_cr;
+                // Apply condensation: zero released rows/cols, modify retained
+                for &r in &released {
+                    for j in 0..12 { k_local[(r, j)] = 0.0; k_local[(j, r)] = 0.0; }
+                }
+                for (ri, &r) in retained.iter().enumerate() {
+                    for (ci, &c) in retained.iter().enumerate() {
+                        k_local[(r, c)] -= correction[(ri, ci)];
+                    }
+                }
+            } else {
+                // If K_CC is singular (shouldn't happen for valid releases), just zero rows/cols
+                for &r in &released {
+                    for j in 0..12 { k_local[(r, j)] = 0.0; k_local[(j, r)] = 0.0; }
+                }
+            }
+        }
         
         // Get transformation matrix
         let t_matrix = transformation_matrix_3d(
