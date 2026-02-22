@@ -982,7 +982,7 @@ export const ModernModeler: FC = () => {
         const wasmMemberLoads = memberLoads
           .filter((ml) => ml.type === "UDL" || ml.type === "UVL")
           .map((ml) => ({
-            element_id: parseInt(ml.memberId),
+            element_id: ml.memberId, // String ID — Rust deserializes strings natively
             w1: (ml.w1 ?? 0) * 1000, // Convert kN/m to N/m for WASM
             w2:
               ml.type === "UDL"
@@ -997,7 +997,7 @@ export const ModernModeler: FC = () => {
         // Build point loads from nodal loads in WASM format
         // WASM NodalLoad struct: { node_id, fx, fy, fz, mx, my, mz }
         const wasmPointLoads = loads.map((l) => ({
-          node_id: parseInt(l.nodeId), // MUST be node_id to match Rust struct
+          node_id: l.nodeId, // String ID — Rust deserialize_string_or_number handles both
           fx: (l.fx ?? 0) * 1000, // Convert kN to N for WASM
           fy: (l.fy ?? 0) * 1000,
           fz: (l.fz ?? 0) * 1000,
@@ -1040,7 +1040,7 @@ export const ModernModeler: FC = () => {
           // Convert nodes to WASM format with full 6 DOF restraints for 3D analysis
           // DOF order: [Fx, Fy, Fz, Mx, My, Mz] = [dx, dy, dz, rx, ry, rz]
           const wasmNodes = nodesArray.map((n) => ({
-            id: parseInt(n.id),
+            id: n.id, // Pass string ID directly — Rust accepts string or number
             x: n.x,
             y: n.y,
             z: n.z ?? 0, // Include Z coordinate for 3D
@@ -1059,7 +1059,7 @@ export const ModernModeler: FC = () => {
           // CRITICAL: Store uses kN/m² for E, but WASM expects Pa (N/m²)
           // Multiply E and G by 1000 to convert kN/m² → Pa
           const wasmElements = membersArray.map((m) => ({
-            id: parseInt(m.id),
+            id: m.id, // Pass string ID directly — Rust accepts string or number
             node_i: m.startNodeId, // Use node_i (Rust native name)
             node_j: m.endNodeId, // Use node_j (Rust native name)
             E: (m.E || 200e6) * 1000, // kN/m² → Pa [Young's modulus]

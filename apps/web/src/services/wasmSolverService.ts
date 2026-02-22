@@ -25,7 +25,7 @@ import init, {
 // ============================================
 
 export interface Node {
-  id: number;
+  id: number | string;
   x: number;
   y: number;
   z?: number; // Optional for 2D models
@@ -37,7 +37,7 @@ export interface Node {
 }
 
 export interface Element {
-  id: number;
+  id: number | string;
   // 2D format (backward compatibility)
   node_start?: number;
   node_end?: number;
@@ -56,7 +56,7 @@ export interface Element {
 }
 
 export interface PointLoad {
-  node_id: number; // MUST match Rust struct field name
+  node_id: number | string; // MUST match Rust struct field name
   fx: number; // Force X (N)
   fy: number; // Force Y (N)
   fz?: number; // Force Z (N)
@@ -68,7 +68,7 @@ export interface PointLoad {
 export type LoadDistribution = "Uniform" | "Triangular" | "Trapezoidal";
 
 export interface MemberLoad {
-  element_id: number;
+  element_id: number | string;
   distribution?: LoadDistribution; // Optional - Rust infers from w1/w2
   w1: number; // Load intensity at start (N/m)
   w2: number; // Load intensity at end (N/m)
