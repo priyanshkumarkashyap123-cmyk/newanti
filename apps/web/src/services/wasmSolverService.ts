@@ -21,6 +21,25 @@ import init, {
 } from "backend-rust";
 
 // ============================================
+// UTILITY: Convert JS Map → plain object
+// ============================================
+// serde-wasm-bindgen v0.6 serializes Rust HashMap as JavaScript Map,
+// NOT a plain object.  Object.entries() / Object.keys() return []
+// for JS Maps.  Convert them so the rest of the codebase works.
+function jsMapToPlainObject(val: any): Record<string, any> {
+  if (val instanceof Map) {
+    const obj: Record<string, any> = {};
+    val.forEach((v: any, k: any) => {
+      // Recursively convert nested Maps (e.g. MemberForces with sub-Maps)
+      obj[String(k)] = v instanceof Map ? jsMapToPlainObject(v) : v;
+    });
+    return obj;
+  }
+  // Already a plain object (or null/undefined) — return as-is
+  return val || {};
+}
+
+// ============================================
 // TYPE DEFINITIONS
 // ============================================
 
@@ -240,9 +259,14 @@ export async function analyzeStructure(
       };
     }
 
-    wasmLogger.debug("Displacements count:", Object.keys(result.displacements || {}).length);
-    wasmLogger.debug("Reactions count:", Object.keys(result.reactions || {}).length);
-    wasmLogger.debug("Member forces count:", Object.keys(result.member_forces || {}).length);
+    // serde-wasm-bindgen v0.6 returns JS Maps — convert to plain objects
+    const displacements = jsMapToPlainObject(result.displacements);
+    const reactions = jsMapToPlainObject(result.reactions);
+    const member_forces = jsMapToPlainObject(result.member_forces);
+
+    wasmLogger.debug("Displacements count:", Object.keys(displacements).length);
+    wasmLogger.debug("Reactions count:", Object.keys(reactions).length);
+    wasmLogger.debug("Member forces count:", Object.keys(member_forces).length);
 
     if (result.error) {
       return {
@@ -255,9 +279,9 @@ export async function analyzeStructure(
     }
 
     return {
-      displacements: result.displacements || {},
-      reactions: result.reactions || {},
-      member_forces: result.member_forces || {},
+      displacements,
+      reactions,
+      member_forces,
       success: true,
       stats: {
         solveTimeMs: solveTime,
@@ -340,9 +364,9 @@ export async function analyzePDelta(
     }
 
     return {
-      displacements: result.displacements || {},
-      reactions: result.reactions || {},
-      member_forces: result.member_forces || {},
+      displacements: jsMapToPlainObject(result.displacements),
+      reactions: jsMapToPlainObject(result.reactions),
+      member_forces: jsMapToPlainObject(result.member_forces),
       success: true,
       converged: result.converged || false,
       iterations: result.iterations,
