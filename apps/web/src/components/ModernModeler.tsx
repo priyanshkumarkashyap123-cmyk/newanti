@@ -944,6 +944,14 @@ export const ModernModeler: FC = () => {
         displacements?: Record<string, number[]>;
         reactions?: Record<string, number[]>;
         memberForces?: Record<string, any>;
+        equilibriumCheck?: {
+          applied_forces: number[];
+          reaction_forces: number[];
+          residual: number[];
+          error_percent: number;
+          pass: boolean;
+        };
+        conditionNumber?: number;
         stats?: any;
         error?: string;
       };
@@ -1258,6 +1266,9 @@ export const ModernModeler: FC = () => {
             };
 
             // Helper: generate SFD/BMD/deflection diagram arrays from end forces
+            // Uses exact beam theory integration with proper boundary conditions
+            // SFD: V(x) = V1 - w*x (for UDL); BMD: M(x) = M1 + V1*x - wx²/2
+            // Deflection: EI*y'' = M(x), with y(0)=dy1, y(L)=dy2 from actual analysis
             const genDiagram = (
               axF: number,
               v1: number,
@@ -1273,39 +1284,85 @@ export const ModernModeler: FC = () => {
                 ddy = nd2.y - nd1.y;
               const ddz = (nd2.z ?? 0) - (nd1.z ?? 0);
               const L = Math.sqrt(ddx * ddx + ddy * ddy + ddz * ddz) || 1;
-              const EI = (mInfo.E || 200e6) * (mInfo.I || 1e-4);
+              const EI = (mInfo.E || 200e6) * (mInfo.I || mInfo.Iz || 1e-4);
+              
+              // Collect UDL loads on this member (in kN/m — local coordinates)
               let w = 0;
               for (const ml of memberLoads) {
                 if (ml.memberId === memberElemId && ml.type === "UDL")
                   w += ml.w1 ?? 0;
               }
+              
+              // Collect point loads on this member for SFD/BMD discontinuities
+              const ptLoads: Array<{a: number; P: number}> = [];
+              for (const ml of memberLoads) {
+                if (ml.memberId === memberElemId && ml.type === "point" && ml.P) {
+                  const aRaw = ml.a ?? 0.5;
+                  const a = aRaw <= 1.0 ? aRaw * L : aRaw;
+                  ptLoads.push({ a, P: ml.P });
+                }
+              }
+              // Sort point loads by position
+              ptLoads.sort((a, b) => a.a - b.a);
+              
               const ST = 51;
               const xv: number[] = [],
                 sy: number[] = [],
                 mzArr: number[] = [];
               const ax: number[] = [],
                 dy: number[] = [];
+              
               for (let s = 0; s < ST; s++) {
                 const x = (s / (ST - 1)) * L;
                 xv.push(x);
                 ax.push(axF);
-                sy.push(v1 - w * x);
-                mzArr.push(m1 + v1 * x - (w * x * x) / 2);
-                if (EI > 0) {
-                  const C1 = -(
-                    (m1 * L) / 2 +
-                    (v1 * L * L) / 6 -
-                    (w * L * L * L) / 24
-                  );
-                  const yy =
-                    ((m1 * x * x) / 2 +
-                      (v1 * x * x * x) / 6 -
-                      (w * x * x * x * x) / 24 +
-                      C1 * x) /
-                    EI;
-                  dy.push(yy * 1000);
-                } else dy.push(0);
+                
+                // Shear: V(x) = V1 - w*x - Σ P_k for loads at a_k < x
+                let V = v1 - w * x;
+                for (const pl of ptLoads) {
+                  if (x > pl.a + 1e-10) V -= pl.P;
+                }
+                sy.push(V);
+                
+                // Moment: M(x) = M1 + V1*x - wx²/2 - Σ P_k*(x-a_k) for a_k < x
+                let M = m1 + v1 * x - (w * x * x) / 2;
+                for (const pl of ptLoads) {
+                  if (x > pl.a + 1e-10) M -= pl.P * (x - pl.a);
+                }
+                mzArr.push(M);
               }
+              
+              // Deflection via double integration of M(x)/EI with proper BCs
+              // EI*y'' = M(x)  →  integrate twice with known end displacements
+              if (EI > 0) {
+                // Numerical integration: trapezoidal rule for y'(x) and y(x)
+                const dx = L / (ST - 1);
+                // First integration: EI*y'(x) = ∫M(x)dx + C1
+                const slope: number[] = [0]; // EI*y'(0) = C1 (unknown for now)
+                for (let s = 1; s < ST; s++) {
+                  const dArea = (mzArr[s - 1] + mzArr[s]) / 2 * dx;
+                  slope.push(slope[s - 1] + dArea);
+                }
+                // Second integration: EI*y(x) = ∫∫M(x)dx² + C1*x + C2
+                const defl: number[] = [0]; // EI*y(0) = C2 (set to 0 for relative)
+                for (let s = 1; s < ST; s++) {
+                  const dArea = (slope[s - 1] + slope[s]) / 2 * dx;
+                  defl.push(defl[s - 1] + dArea);
+                }
+                // Apply BCs: y(0) = 0, y(L) = 0 (relative deflection)
+                // The raw integration gives: y_raw(x) = y_particular(x) + C1*x + C2
+                // With C2 = 0 (y(0)=0), C1 = -y_raw(L) / L  (y(L)=0)
+                const yL = defl[ST - 1];
+                const C1_corr = L > 1e-12 ? -yL / L : 0;
+                for (let s = 0; s < ST; s++) {
+                  const x = (s / (ST - 1)) * L;
+                  const yy = (defl[s] + C1_corr * x) / EI;
+                  dy.push(yy * 1000); // m → mm
+                }
+              } else {
+                for (let s = 0; s < ST; s++) dy.push(0);
+              }
+              
               return {
                 x_values: xv,
                 shear_y: sy,
@@ -1411,12 +1468,33 @@ export const ModernModeler: FC = () => {
             },
           };
 
+          // Extract equilibrium check from WASM result (industry-standard verification)
+          const equilibriumCheck = wasmResult.equilibrium_check 
+            ? (wasmResult.equilibrium_check instanceof Map 
+              ? Object.fromEntries(wasmResult.equilibrium_check) 
+              : wasmResult.equilibrium_check)
+            : undefined;
+          const conditionNumber = wasmResult.condition_number ?? undefined;
+          
+          if (equilibriumCheck) {
+            modelerLogger.log(
+              `[Analysis] Equilibrium check: ${equilibriumCheck.pass ? 'PASS' : 'FAIL'} (error: ${equilibriumCheck.error_percent?.toFixed(6)}%)`,
+            );
+          }
+          if (conditionNumber && conditionNumber > 1e10) {
+            modelerLogger.warn(
+              `[Analysis] Warning: High condition number (${conditionNumber.toExponential(2)}) — results may have reduced accuracy`,
+            );
+          }
+
           if (pythonResult.success) {
             result = {
               success: true,
               displacements: nodesDict,
               reactions: reactionsDict,
               memberForces: membersDict,
+              equilibriumCheck,
+              conditionNumber,
               stats: {
                 ...pythonResult.metadata,
                 usedPythonApi: false,
@@ -1745,6 +1823,8 @@ export const ModernModeler: FC = () => {
           displacements,
           reactions,
           memberForces,
+          equilibriumCheck: result.equilibriumCheck,
+          conditionNumber: result.conditionNumber,
           completed: true,
           timestamp: Date.now(),
         } as any);

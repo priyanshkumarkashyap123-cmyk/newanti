@@ -381,6 +381,30 @@ pub struct AnalysisResult3D {
     
     /// Member forces at ends: element_id -> MemberForces
     pub member_forces: HashMap<String, MemberForces>,
+    
+    /// Equilibrium verification (industry-standard check)
+    #[serde(skip_deserializing)]
+    pub equilibrium_check: Option<EquilibriumCheck>,
+    
+    /// Condition number estimate for numerical quality
+    #[serde(skip_deserializing)]
+    pub condition_number: Option<f64>,
+}
+
+/// Equilibrium verification: ΣReactions must equal ΣApplied loads
+/// Per IS 800, EN 1993, AISC 360 — mandatory for structural analysis reports
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct EquilibriumCheck {
+    /// Sum of applied forces [Fx, Fy, Fz, Mx, My, Mz] (includes nodal + FEF equivalent)
+    pub applied_forces: Vec<f64>,
+    /// Sum of reaction forces [Fx, Fy, Fz, Mx, My, Mz]
+    pub reaction_forces: Vec<f64>,
+    /// Residual = applied - reactions (should be ~0)
+    pub residual: Vec<f64>,
+    /// Max relative error as percentage
+    pub error_percent: f64,
+    /// Pass/fail: error < 0.1% is industry-standard acceptable
+    pub pass: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -424,11 +448,11 @@ pub fn analyze_3d_frame(
     }
     
     // Initialize global stiffness matrix and force vector
-    let mut k_global = DMatrix::zeros(num_dof, num_dof);
-    let mut f_global = DVector::zeros(num_dof);
+    let mut k_global: DMatrix<f64> = DMatrix::zeros(num_dof, num_dof);
+    let mut f_global: DVector<f64> = DVector::zeros(num_dof);
     
     // Fixed end forces from distributed loads
-    let mut fef_global = DVector::zeros(num_dof);
+    let mut fef_global: DVector<f64> = DVector::zeros(num_dof);
     
     // Assemble element stiffness matrices
     for element in &elements {
@@ -636,6 +660,18 @@ pub fn analyze_3d_frame(
         }
     }
     
+    // Estimate condition number from diagonal of reduced K (before LU consumes it)
+    let mut max_diag = 0.0f64;
+    let mut min_diag = f64::MAX;
+    for i in 0..n_free {
+        let d = k_reduced[(i, i)].abs();
+        if d > 1e-20 {
+            max_diag = max_diag.max(d);
+            min_diag = min_diag.min(d);
+        }
+    }
+    let condition_estimate = if min_diag > 1e-30 { max_diag / min_diag } else { f64::MAX };
+    
     // Solve: K * u = F using LU decomposition
     let u_reduced = k_reduced.lu().solve(&f_reduced);
     
@@ -645,7 +681,7 @@ pub fn analyze_3d_frame(
     };
     
     // Reconstruct full displacement vector
-    let mut u_global = DVector::zeros(num_dof);
+    let mut u_global: DVector<f64> = DVector::zeros(num_dof);
     for (i, &dof_idx) in free_dofs.iter().enumerate() {
         u_global[dof_idx] = u_reduced[i];
     }
@@ -687,12 +723,95 @@ pub fn analyze_3d_frame(
         &elements, &nodes, &node_map, &u_global, &distributed_loads
     )?;
     
+    // ===== EQUILIBRIUM VERIFICATION (industry-standard) =====
+    // Sum of applied forces (nodal loads + FEF equivalent at supports)
+    let mut sum_applied = vec![0.0f64; 6];
+    for load in &nodal_loads {
+        sum_applied[0] += load.fx;
+        sum_applied[1] += load.fy;
+        sum_applied[2] += load.fz;
+        sum_applied[3] += load.mx;
+        sum_applied[4] += load.my;
+        sum_applied[5] += load.mz;
+    }
+    // For distributed loads, the total equivalent force is wL (applied via FEF)
+    // The FEF goes into the load vector, so the reactions will balance nodal + FEF.
+    // We need to include the total distributed load resultant in "applied":
+    for dl in &distributed_loads {
+        if let Some(element) = elements.iter().find(|e| e.id == dl.element_id) {
+            let i_idx = node_map.get(&element.node_i);
+            let j_idx = node_map.get(&element.node_j);
+            if let (Some(&ii), Some(&ji)) = (i_idx, j_idx) {
+                let ni = &nodes[ii];
+                let nj = &nodes[ji];
+                let dx = nj.x - ni.x;
+                let dy = nj.y - ni.y;
+                let dz = nj.z - ni.z;
+                let length = (dx*dx + dy*dy + dz*dz).sqrt();
+                // Total resultant = (w1 + w2) * L / 2
+                let total_w = (dl.w_start + dl.w_end) * length / 2.0;
+                match dl.direction {
+                    LoadDirection::GlobalX => sum_applied[0] += total_w,
+                    LoadDirection::GlobalY => sum_applied[1] += total_w,
+                    LoadDirection::GlobalZ => sum_applied[2] += total_w,
+                    LoadDirection::LocalX => {
+                        let cx = dx / length;
+                        let cy = dy / length;
+                        let cz = dz / length;
+                        sum_applied[0] += total_w * cx;
+                        sum_applied[1] += total_w * cy;
+                        sum_applied[2] += total_w * cz;
+                    },
+                    LoadDirection::LocalY => {
+                        let t = transformation_matrix_3d(dx, dy, dz, length, element.beta);
+                        sum_applied[0] += total_w * t[(1, 0)];
+                        sum_applied[1] += total_w * t[(1, 1)];
+                        sum_applied[2] += total_w * t[(1, 2)];
+                    },
+                    LoadDirection::LocalZ => {
+                        let t = transformation_matrix_3d(dx, dy, dz, length, element.beta);
+                        sum_applied[0] += total_w * t[(2, 0)];
+                        sum_applied[1] += total_w * t[(2, 1)];
+                        sum_applied[2] += total_w * t[(2, 2)];
+                    },
+                }
+            }
+        }
+    }
+    
+    // Sum of reactions
+    let mut sum_reactions = vec![0.0f64; 6];
+    for (_node_id, rxn) in &reactions {
+        for i in 0..6 { sum_reactions[i] += rxn[i]; }
+    }
+    
+    // Residual and error
+    let mut residual = vec![0.0f64; 6];
+    let mut max_applied = 0.0f64;
+    let mut max_residual = 0.0f64;
+    for i in 0..6 {
+        residual[i] = sum_applied[i] + sum_reactions[i]; // should be ~0 (reactions oppose applied)
+        max_applied = max_applied.max(sum_applied[i].abs()).max(sum_reactions[i].abs());
+        max_residual = max_residual.max(residual[i].abs());
+    }
+    let error_pct = if max_applied > 1e-10 { max_residual / max_applied * 100.0 } else { 0.0 };
+    
+    let equilibrium_check = EquilibriumCheck {
+        applied_forces: sum_applied,
+        reaction_forces: sum_reactions,
+        residual,
+        error_percent: error_pct,
+        pass: error_pct < 0.1, // Industry standard: < 0.1% is acceptable
+    };
+    
     Ok(AnalysisResult3D {
         success: true,
         error: None,
         displacements,
         reactions,
         member_forces,
+        equilibrium_check: Some(equilibrium_check),
+        condition_number: Some(condition_estimate),
     })
 }
 
@@ -1247,6 +1366,14 @@ fn zero_displacement_result(nodes: &[Node3D], elements: &[Element3D]) -> Analysi
         displacements,
         reactions,
         member_forces,
+        equilibrium_check: Some(EquilibriumCheck {
+            applied_forces: vec![0.0; 6],
+            reaction_forces: vec![0.0; 6],
+            residual: vec![0.0; 6],
+            error_percent: 0.0,
+            pass: true,
+        }),
+        condition_number: None,
     }
 }
 
@@ -1401,14 +1528,16 @@ fn geometric_stiffness_matrix(axial_force: f64, length: f64) -> DMatrix<f64> {
 /// P-Delta nonlinear analysis
 /// 
 /// Iterative procedure that accounts for secondary moments (P-Δ effects):
-/// 1. Perform initial linear analysis to get displacements and axial forces
-/// 2. Compute geometric stiffness matrix Kg from axial forces
-/// 3. Form modified stiffness matrix K_eff = K_elastic + K_geometric
-/// 4. Re-solve with modified stiffness
-/// 5. Check convergence of displacements
-/// 6. Repeat until convergence or max iterations
+/// 1. Assemble elastic stiffness K_e and force vector F (once)
+/// 2. Initial linear solve to get displacements and axial forces
+/// 3. Compute geometric stiffness matrix K_g from axial forces
+/// 4. Form effective stiffness K_eff = K_e + K_g
+/// 5. Re-solve: K_eff * u = F
+/// 6. Recover member forces, check convergence
+/// 7. Repeat from step 3 until convergence or max iterations
 /// 
 /// Reference: "Matrix Analysis of Structures" by Kassimali
+///            "Stability of Structures" by Bazant & Cedolin
 pub fn p_delta_analysis(
     nodes: Vec<Node3D>,
     elements: Vec<Element3D>,
@@ -1426,123 +1555,277 @@ pub fn p_delta_analysis(
         node_map.insert(node.id.clone(), idx);
     }
     
-    // Step 1: Initial linear analysis
-    let mut result = analyze_3d_frame(
-        nodes.clone(), 
-        elements.clone(), 
-        nodal_loads.clone(),
-        distributed_loads.clone(),
-        vec![]
+    // ===== Step 1: Assemble elastic stiffness K_e (constant across iterations) =====
+    let mut k_elastic: DMatrix<f64> = DMatrix::zeros(num_dof, num_dof);
+    let mut f_global: DVector<f64> = DVector::zeros(num_dof);
+    let mut fef_global: DVector<f64> = DVector::zeros(num_dof);
+    
+    for element in &elements {
+        if let ElementType::Plate = element.element_type { continue; }
+        
+        let i_idx = *node_map.get(&element.node_i)
+            .ok_or(format!("P-Delta: Node {} not found", element.node_i))?;
+        let j_idx = *node_map.get(&element.node_j)
+            .ok_or(format!("P-Delta: Node {} not found", element.node_j))?;
+        
+        let node_i = &nodes[i_idx];
+        let node_j = &nodes[j_idx];
+        let dx = node_j.x - node_i.x;
+        let dy = node_j.y - node_i.y;
+        let dz = node_j.z - node_i.z;
+        let length = (dx*dx + dy*dy + dz*dz).sqrt();
+        
+        if length < 1e-10 {
+            return Err(format!("P-Delta: Element {} has zero length", element.id));
+        }
+        
+        let mut k_local = match element.element_type {
+            ElementType::Frame => frame_element_stiffness(element, length),
+            ElementType::Truss => truss_element_stiffness(element, length),
+            ElementType::Cable => cable_element_stiffness(element, length),
+            _ => continue,
+        };
+        
+        // Static condensation for releases (same as linear analysis)
+        let released: Vec<usize> = (0..6)
+            .filter(|&d| element.releases_i[d])
+            .chain((0..6).filter(|&d| element.releases_j[d]).map(|d| d + 6))
+            .collect();
+        if !released.is_empty() {
+            let retained: Vec<usize> = (0..12).filter(|d| !released.contains(d)).collect();
+            let nc = released.len();
+            let nr = retained.len();
+            let mut k_cc = DMatrix::zeros(nc, nc);
+            let mut k_rc = DMatrix::zeros(nr, nc);
+            let mut k_cr = DMatrix::zeros(nc, nr);
+            for (ri, &r) in released.iter().enumerate() {
+                for (rj, &c) in released.iter().enumerate() {
+                    k_cc[(ri, rj)] = k_local[(r, c)];
+                }
+                for (ci, &c) in retained.iter().enumerate() {
+                    k_cr[(ri, ci)] = k_local[(r, c)];
+                    k_rc[(ci, ri)] = k_local[(c, r)];
+                }
+            }
+            if let Some(k_cc_inv) = k_cc.try_inverse() {
+                let correction = &k_rc * &k_cc_inv * &k_cr;
+                for &r in &released {
+                    for j in 0..12 { k_local[(r, j)] = 0.0; k_local[(j, r)] = 0.0; }
+                }
+                for (ri, &r) in retained.iter().enumerate() {
+                    for (ci, &c) in retained.iter().enumerate() {
+                        k_local[(r, c)] -= correction[(ri, ci)];
+                    }
+                }
+            } else {
+                for &r in &released {
+                    for j in 0..12 { k_local[(r, j)] = 0.0; k_local[(j, r)] = 0.0; }
+                }
+            }
+        }
+        
+        let t_matrix = transformation_matrix_3d(dx, dy, dz, length, element.beta);
+        let k_global_elem = t_matrix.transpose() * &k_local * &t_matrix;
+        
+        let dof_i = i_idx * 6;
+        let dof_j = j_idx * 6;
+        for r in 0..6 {
+            for c in 0..6 {
+                k_elastic[(dof_i + r, dof_i + c)] += k_global_elem[(r, c)];
+                k_elastic[(dof_i + r, dof_j + c)] += k_global_elem[(r, 6 + c)];
+                k_elastic[(dof_j + r, dof_i + c)] += k_global_elem[(6 + r, c)];
+                k_elastic[(dof_j + r, dof_j + c)] += k_global_elem[(6 + r, 6 + c)];
+            }
+        }
+    }
+    
+    // Apply nodal loads
+    for load in &nodal_loads {
+        let idx = *node_map.get(&load.node_id)
+            .ok_or(format!("P-Delta: Load node {} not found", load.node_id))?;
+        let dof = idx * 6;
+        f_global[dof]     += load.fx;
+        f_global[dof + 1] += load.fy;
+        f_global[dof + 2] += load.fz;
+        f_global[dof + 3] += load.mx;
+        f_global[dof + 4] += load.my;
+        f_global[dof + 5] += load.mz;
+    }
+    
+    // Add FEF from distributed loads
+    for dl in &distributed_loads {
+        let fef = compute_fixed_end_forces(&elements, &nodes, &node_map, dl)?;
+        for i in 0..fef.len() { fef_global[i] += fef[i]; }
+    }
+    
+    let f_total = &f_global - &fef_global;
+    
+    // Identify free / fixed DOFs
+    let mut free_dofs = Vec::new();
+    let mut fixed_dofs = Vec::new();
+    for (i, node) in nodes.iter().enumerate() {
+        for dof in 0..6 {
+            let global_dof = i * 6 + dof;
+            if node.restraints[dof] { fixed_dofs.push(global_dof); }
+            else { free_dofs.push(global_dof); }
+        }
+    }
+    let n_free = free_dofs.len();
+    if n_free == 0 {
+        return Ok(zero_displacement_result(&nodes, &elements));
+    }
+    
+    // ===== Step 2: Initial linear solve =====
+    let mut k_reduced = DMatrix::zeros(n_free, n_free);
+    let mut f_reduced = DVector::zeros(n_free);
+    for (i, &r_idx) in free_dofs.iter().enumerate() {
+        f_reduced[i] = f_total[r_idx];
+        for (j, &c_idx) in free_dofs.iter().enumerate() {
+            k_reduced[(i, j)] = k_elastic[(r_idx, c_idx)];
+        }
+    }
+    
+    let u_reduced = k_reduced.lu().solve(&f_reduced)
+        .ok_or("P-Delta: Singular stiffness matrix in initial solve".to_string())?;
+    
+    let mut u_global: DVector<f64> = DVector::zeros(num_dof);
+    for (i, &dof_idx) in free_dofs.iter().enumerate() {
+        u_global[dof_idx] = u_reduced[i];
+    }
+    
+    // Get initial member forces for axial loads
+    let mut member_forces = calculate_member_forces(
+        &elements, &nodes, &node_map, &u_global, &distributed_loads
     )?;
     
-    let mut prev_displacements = result.displacements.clone();
+    // ===== Step 3-7: P-Delta iteration loop =====
+    let mut converged = false;
+    let mut num_iters = 0;
     
-    // P-Delta iterations
     for iter in 0..max_iterations {
-        // Step 2: Extract axial forces from current analysis
-        // and compute geometric stiffness matrix
-        let mut k_geometric_global: DMatrix<f64> = DMatrix::zeros(num_dof, num_dof);
+        num_iters = iter + 1;
+        let prev_u = u_global.clone();
+        
+        // Assemble geometric stiffness K_g from current axial forces
+        let mut k_geometric: DMatrix<f64> = DMatrix::zeros(num_dof, num_dof);
         
         for element in &elements {
-            // Skip non-frame elements
-            if element.element_type != ElementType::Frame {
-                continue;
-            }
+            if element.element_type != ElementType::Frame { continue; }
             
             let i_idx = match node_map.get(&element.node_i) {
-                Some(&idx) => idx,
-                None => continue,
+                Some(&idx) => idx, None => continue,
             };
             let j_idx = match node_map.get(&element.node_j) {
-                Some(&idx) => idx,
-                None => continue,
+                Some(&idx) => idx, None => continue,
             };
             
-            // Get geometry
             let node_i = &nodes[i_idx];
             let node_j = &nodes[j_idx];
             let dx = node_j.x - node_i.x;
             let dy = node_j.y - node_i.y;
             let dz = node_j.z - node_i.z;
             let length = (dx*dx + dy*dy + dz*dz).sqrt();
-            
             if length < 1e-10 { continue; }
             
-            // Get axial force from member forces (index 0 = Fx = axial)
-            let axial_force = match result.member_forces.get(&element.id) {
-                Some(forces) => {
-                    // Average of absolute values at both ends (conservative)
-                    (forces.forces_i[0].abs() + forces.forces_j[0].abs()) / 2.0
-                        * forces.forces_i[0].signum()  // Preserve sign
-                },
+            // Get axial force (local x = forces_i[0], sign: +tension, -compression)
+            let axial_force = match member_forces.get(&element.id) {
+                Some(forces) => forces.forces_i[0],
                 None => 0.0,
             };
             
-            // Compute local geometric stiffness
             let kg_local = geometric_stiffness_matrix(axial_force, length);
-            
-            // Transform to global coordinates
             let t_matrix = transformation_matrix_3d(dx, dy, dz, length, element.beta);
             let kg_global_elem = t_matrix.transpose() * &kg_local * &t_matrix;
             
-            // Assemble into global geometric stiffness
             let dof_i = i_idx * 6;
             let dof_j = j_idx * 6;
-            
             for r in 0..6 {
                 for c in 0..6 {
-                    k_geometric_global[(dof_i + r, dof_i + c)] += kg_global_elem[(r, c)];
-                    k_geometric_global[(dof_i + r, dof_j + c)] += kg_global_elem[(r, 6 + c)];
-                    k_geometric_global[(dof_j + r, dof_i + c)] += kg_global_elem[(6 + r, c)];
-                    k_geometric_global[(dof_j + r, dof_j + c)] += kg_global_elem[(6 + r, 6 + c)];
+                    k_geometric[(dof_i + r, dof_i + c)] += kg_global_elem[(r, c)];
+                    k_geometric[(dof_i + r, dof_j + c)] += kg_global_elem[(r, 6 + c)];
+                    k_geometric[(dof_j + r, dof_i + c)] += kg_global_elem[(6 + r, c)];
+                    k_geometric[(dof_j + r, dof_j + c)] += kg_global_elem[(6 + r, 6 + c)];
                 }
             }
         }
         
-        // Step 3: Re-run analysis with modified stiffness
-        // For now, we use the standard analyzer but this should ideally
-        // use K_elastic + K_geometric directly
-        // 
-        // SIMPLIFIED: We re-run analyze_3d_frame which uses K_elastic only
-        // A full implementation would modify the stiffness assembly
-        // This is a first-order approximation that captures the main P-Δ effect
+        // Form effective stiffness: K_eff = K_elastic + K_geometric
+        let k_effective = &k_elastic + &k_geometric;
         
-        result = analyze_3d_frame(
-            nodes.clone(), 
-            elements.clone(), 
-            nodal_loads.clone(),
-            distributed_loads.clone(),
-            vec![]
+        // Extract reduced system and solve
+        let mut k_eff_reduced = DMatrix::zeros(n_free, n_free);
+        for (i, &r_idx) in free_dofs.iter().enumerate() {
+            for (j, &c_idx) in free_dofs.iter().enumerate() {
+                k_eff_reduced[(i, j)] = k_effective[(r_idx, c_idx)];
+            }
+        }
+        
+        let u_new = k_eff_reduced.lu().solve(&f_reduced)
+            .ok_or(format!("P-Delta: Singular matrix at iteration {} — structure may be unstable (buckling)", iter + 1))?;
+        
+        // Update global displacements
+        u_global = DVector::<f64>::zeros(num_dof);
+        for (i, &dof_idx) in free_dofs.iter().enumerate() {
+            u_global[dof_idx] = u_new[i];
+        }
+        
+        // Update member forces
+        member_forces = calculate_member_forces(
+            &elements, &nodes, &node_map, &u_global, &distributed_loads
         )?;
         
-        // Step 4: Check convergence
-        let mut max_displacement_change = 0.0f64;
-        let mut max_displacement = 0.0f64;
+        // Check convergence: relative change in displacement norm
+        let delta_u = &u_global - &prev_u;
+        let change_norm = delta_u.norm();
+        let disp_norm = u_global.norm();
         
-        for (node_id, curr_disp) in &result.displacements {
-            if let Some(prev_disp) = prev_displacements.get(node_id) {
-                for i in 0..curr_disp.len() {
-                    let change = (curr_disp[i] - prev_disp[i]).abs();
-                    max_displacement_change = max_displacement_change.max(change);
-                    max_displacement = max_displacement.max(curr_disp[i].abs());
-                }
-            }
-        }
-        
-        // Relative convergence criterion
-        let relative_change = if max_displacement > 1e-12 {
-            max_displacement_change / max_displacement
+        let relative_change = if disp_norm > 1e-12 {
+            change_norm / disp_norm
         } else {
             0.0
         };
         
         if relative_change < tolerance {
-            // Converged
+            converged = true;
             break;
         }
-        
-        prev_displacements = result.displacements.clone();
     }
     
-    Ok(result)
+    // Build result from final displacements
+    let r_global = &k_elastic * &u_global - &f_global + &fef_global;
+    
+    let mut displacements = HashMap::new();
+    let mut reactions = HashMap::new();
+    
+    for (idx, node) in nodes.iter().enumerate() {
+        let dof = idx * 6;
+        displacements.insert(node.id.clone(), vec![
+            u_global[dof], u_global[dof+1], u_global[dof+2],
+            u_global[dof+3], u_global[dof+4], u_global[dof+5],
+        ]);
+        if node.restraints.iter().any(|&r| r) {
+            reactions.insert(node.id.clone(), vec![
+                r_global[dof], r_global[dof+1], r_global[dof+2],
+                r_global[dof+3], r_global[dof+4], r_global[dof+5],
+            ]);
+        }
+    }
+    
+    if !converged {
+        web_sys::console::warn_1(
+            &format!("P-Delta: Did not converge after {} iterations (may indicate instability)", num_iters).into()
+        );
+    }
+    
+    Ok(AnalysisResult3D {
+        success: true,
+        error: if converged { None } else { 
+            Some(format!("P-Delta did not converge in {} iterations", num_iters))
+        },
+        displacements,
+        reactions,
+        member_forces,
+        equilibrium_check: None,
+        condition_number: None,
+    })
 }

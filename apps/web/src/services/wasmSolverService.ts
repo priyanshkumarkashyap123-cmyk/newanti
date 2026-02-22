@@ -130,6 +130,15 @@ export interface AnalysisResult {
     solveTimeMs: number;
     method: string;
   };
+  // Industry-standard verification data from Rust solver
+  equilibrium_check?: {
+    applied_forces: number[];
+    reaction_forces: number[];
+    residual: number[];
+    error_percent: number;
+    pass: boolean;
+  };
+  condition_number?: number;
 }
 
 export interface PDeltaResult extends AnalysisResult {
@@ -263,6 +272,13 @@ export async function analyzeStructure(
     const displacements = jsMapToPlainObject(result.displacements);
     const reactions = jsMapToPlainObject(result.reactions);
     const member_forces = jsMapToPlainObject(result.member_forces);
+    
+    // Extract equilibrium check (may be Map or plain object)
+    const rawEqCheck = result.equilibrium_check;
+    const equilibrium_check = rawEqCheck instanceof Map 
+      ? Object.fromEntries(rawEqCheck) as AnalysisResult['equilibrium_check']
+      : rawEqCheck ?? undefined;
+    const condition_number = result.condition_number ?? undefined;
 
     wasmLogger.debug("Displacements count:", Object.keys(displacements).length);
     wasmLogger.debug("Reactions count:", Object.keys(reactions).length);
@@ -283,6 +299,8 @@ export async function analyzeStructure(
       reactions,
       member_forces,
       success: true,
+      equilibrium_check,
+      condition_number,
       stats: {
         solveTimeMs: solveTime,
         method: "Direct Stiffness Method",

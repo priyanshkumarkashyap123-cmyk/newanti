@@ -118,6 +118,31 @@ export interface AnalysisResultsData {
     analysisTime: number;
     status: "success" | "warning" | "error";
   };
+  // Industry-standard verification data
+  equilibriumCheck?: {
+    applied_forces: number[];
+    reaction_forces: number[];
+    residual: number[];
+    error_percent: number;
+    pass: boolean;
+  };
+  conditionNumber?: number;
+  // Serviceability check results (computed per member)
+  serviceabilityChecks?: Array<{
+    memberId: string;
+    length: number;
+    maxDeflection: number;  // mm
+    ratios: Array<{
+      limit: string;
+      code: string;
+      allowable: number;   // mm
+      actual: number;       // mm
+      ratio: number;        // L/actual
+      pass: boolean;
+    }>;
+    worstRatio: number;
+    pass: boolean;
+  }>;
 }
 
 type ViewMode =
@@ -1158,6 +1183,146 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                 );
               })()}
             </div>
+
+            {/* ===== EQUILIBRIUM VERIFICATION (Industry Standard) ===== */}
+            {results.equilibriumCheck && (
+              <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-medium text-zinc-300 uppercase tracking-wide flex items-center gap-2">
+                    {results.equilibriumCheck.pass ? (
+                      <CheckCircle className="w-4 h-4 text-green-400" />
+                    ) : (
+                      <AlertTriangle className="w-4 h-4 text-red-400" />
+                    )}
+                    Equilibrium Verification
+                  </h3>
+                  <span className={`text-xs px-2 py-1 rounded font-mono ${
+                    results.equilibriumCheck.pass 
+                      ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                      : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                  }`}>
+                    Error: {results.equilibriumCheck.error_percent < 0.001 
+                      ? '< 0.001' 
+                      : results.equilibriumCheck.error_percent.toFixed(4)}%
+                    {results.equilibriumCheck.pass ? ' — PASS' : ' — FAIL'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-6 gap-2 text-xs">
+                  {['Fx', 'Fy', 'Fz', 'Mx', 'My', 'Mz'].map((label, i) => {
+                    const applied = (results.equilibriumCheck!.applied_forces[i] ?? 0) / 1000; // N→kN
+                    const reaction = (results.equilibriumCheck!.reaction_forces[i] ?? 0) / 1000;
+                    const residual = (results.equilibriumCheck!.residual[i] ?? 0) / 1000;
+                    const unit = i < 3 ? 'kN' : 'kNm';
+                    return (
+                      <div key={label} className="bg-zinc-900 rounded p-2 text-center">
+                        <div className="text-zinc-500 text-[10px] mb-1">Σ{label}</div>
+                        <div className="font-mono text-zinc-300">{formatNumber(applied)} {unit}</div>
+                        <div className="text-zinc-500 text-[10px] mt-1">Reaction</div>
+                        <div className="font-mono text-zinc-400">{formatNumber(-reaction)} {unit}</div>
+                        <div className="text-zinc-500 text-[10px] mt-1">Residual</div>
+                        <div className={`font-mono ${Math.abs(residual) < 0.01 ? 'text-green-400' : 'text-red-400'}`}>
+                          {formatNumber(residual)} {unit}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {results.conditionNumber && results.conditionNumber > 1e8 && (
+                  <div className="mt-3 flex items-center gap-2 text-xs text-yellow-400 bg-yellow-500/10 border border-yellow-500/20 rounded-lg px-3 py-2">
+                    <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+                    <span>
+                      Condition number: {results.conditionNumber.toExponential(1)} — 
+                      {results.conditionNumber > 1e12 
+                        ? ' Structure may be ill-conditioned. Check for mechanism or very different stiffnesses.' 
+                        : ' Moderate conditioning. Results should be verified.'}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ===== SERVICEABILITY CHECKS (Industry Standard) ===== */}
+            {results.serviceabilityChecks && results.serviceabilityChecks.length > 0 && (
+              <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-medium text-zinc-300 uppercase tracking-wide flex items-center gap-2">
+                    {results.serviceabilityChecks.every(c => c.pass) ? (
+                      <CheckCircle className="w-4 h-4 text-green-400" />
+                    ) : (
+                      <AlertTriangle className="w-4 h-4 text-yellow-400" />
+                    )}
+                    Serviceability — Deflection Limits
+                  </h3>
+                  <span className={`text-xs px-2 py-1 rounded ${
+                    results.serviceabilityChecks.every(c => c.pass)
+                      ? 'bg-green-500/20 text-green-400' 
+                      : 'bg-yellow-500/20 text-yellow-400'
+                  }`}>
+                    {results.serviceabilityChecks.filter(c => c.pass).length}/{results.serviceabilityChecks.length} members OK
+                  </span>
+                </div>
+                <div className="overflow-x-auto max-h-[200px] overflow-y-auto">
+                  <table className="w-full text-xs">
+                    <thead className="sticky top-0 bg-zinc-900">
+                      <tr className="border-b border-zinc-700">
+                        <th className="px-2 py-1.5 text-left text-zinc-400">Member</th>
+                        <th className="px-2 py-1.5 text-right text-zinc-400">L (m)</th>
+                        <th className="px-2 py-1.5 text-right text-zinc-400">δ_max (mm)</th>
+                        <th className="px-2 py-1.5 text-right text-zinc-400">L/δ</th>
+                        <th className="px-2 py-1.5 text-center text-zinc-400">L/240</th>
+                        <th className="px-2 py-1.5 text-center text-zinc-400">L/360</th>
+                        <th className="px-2 py-1.5 text-center text-zinc-400">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {results.serviceabilityChecks
+                        .sort((a, b) => a.worstRatio - b.worstRatio)
+                        .slice(0, 20)
+                        .map((check) => {
+                          const l240 = check.ratios.find(r => r.limit.includes('L/240'));
+                          const l360 = check.ratios.find(r => r.limit.includes('L/360'));
+                          return (
+                            <tr key={check.memberId} className="border-b border-zinc-800 hover:bg-zinc-800/50">
+                              <td className="px-2 py-1 font-medium text-white">M{check.memberId}</td>
+                              <td className="px-2 py-1 text-right font-mono text-zinc-300">{check.length.toFixed(2)}</td>
+                              <td className="px-2 py-1 text-right font-mono text-zinc-300">{check.maxDeflection.toFixed(3)}</td>
+                              <td className="px-2 py-1 text-right font-mono text-zinc-300">
+                                {check.worstRatio === Infinity ? '∞' : `L/${Math.round(check.worstRatio)}`}
+                              </td>
+                              <td className="px-2 py-1 text-center">
+                                {l240 ? (
+                                  <span className={l240.pass ? 'text-green-400' : 'text-red-400'}>
+                                    {l240.pass ? '✓' : '✗'}
+                                  </span>
+                                ) : '—'}
+                              </td>
+                              <td className="px-2 py-1 text-center">
+                                {l360 ? (
+                                  <span className={l360.pass ? 'text-green-400' : 'text-red-400'}>
+                                    {l360.pass ? '✓' : '✗'}
+                                  </span>
+                                ) : '—'}
+                              </td>
+                              <td className="px-2 py-1 text-center">
+                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                  check.pass 
+                                    ? 'bg-green-500/20 text-green-400' 
+                                    : 'bg-red-500/20 text-red-400'
+                                }`}>
+                                  {check.pass ? 'OK' : 'FAIL'}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="mt-2 text-[10px] text-zinc-500">
+                  Limits per IS 800:2007 Table 6, EN 1993-1-1 §7.2, AISC 360 Commentary L3
+                </div>
+              </div>
+            )}
           </div>
         )}
 

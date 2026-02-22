@@ -284,6 +284,39 @@ const convertToAnalysisResultsData = (
     });
   }
 
+  // ===== SERVICEABILITY CHECKS (industry-standard per IS 800/EN 1993/AISC 360) =====
+  const serviceabilityLimits = [
+    { limit: "Floor beams (L/240)", code: "IS 800 / ASCE 7", ratio: 240 },
+    { limit: "Roof beams (L/180)", code: "IS 800 / ASCE 7", ratio: 180 },
+    { limit: "Sensitive finishes (L/360)", code: "ACI 318 / IS 456", ratio: 360 },
+    { limit: "Cantilevers (L/120)", code: "General", ratio: 120 },
+  ];
+  
+  const serviceabilityChecks = members.map((m) => {
+    const L_mm = m.length * 1000; // m → mm
+    const maxDefl = m.maxDeflection; // already in mm
+    const ratios = serviceabilityLimits.map((sl) => {
+      const allowable = L_mm / sl.ratio;
+      return {
+        limit: sl.limit,
+        code: sl.code,
+        allowable,
+        actual: maxDefl,
+        ratio: maxDefl > 1e-6 ? L_mm / maxDefl : Infinity,
+        pass: maxDefl <= allowable,
+      };
+    });
+    const worstRatio = Math.min(...ratios.map((r) => r.ratio));
+    return {
+      memberId: m.id,
+      length: m.length,
+      maxDeflection: maxDefl,
+      ratios,
+      worstRatio,
+      pass: ratios.every((r) => r.pass),
+    };
+  });
+
   return {
     nodes,
     members,
@@ -298,6 +331,9 @@ const convertToAnalysisResultsData = (
         results.stats?.totalTimeMs ?? results.stats?.solveTimeMs ?? 0,
       status: maxUtil > 1 ? "error" : maxUtil > 0.9 ? "warning" : "success",
     },
+    equilibriumCheck: results.equilibriumCheck,
+    conditionNumber: results.conditionNumber,
+    serviceabilityChecks,
   };
 };
 

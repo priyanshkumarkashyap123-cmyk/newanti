@@ -254,6 +254,16 @@ export interface AnalysisResults {
       von_mises?: number;
     }
   >;
+  // Industry-standard equilibrium verification
+  equilibriumCheck?: {
+    applied_forces: number[];   // [Fx, Fy, Fz, Mx, My, Mz] in N/N·m
+    reaction_forces: number[];  // [Fx, Fy, Fz, Mx, My, Mz] in N/N·m
+    residual: number[];         // should be ~0
+    error_percent: number;      // < 0.1% is acceptable
+    pass: boolean;
+  };
+  // Condition number estimate for numerical quality
+  conditionNumber?: number;
   stats?: {
     solveTimeMs: number;
     assemblyTimeMs?: number;
