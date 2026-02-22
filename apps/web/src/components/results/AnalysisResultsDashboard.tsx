@@ -1276,13 +1276,13 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                                 N{n.id}
                               </td>
                               <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">
-                                {d.dx.toFixed(4)}
+                                {(d.dx * 1000).toFixed(4)}
                               </td>
                               <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">
-                                {d.dy.toFixed(4)}
+                                {(d.dy * 1000).toFixed(4)}
                               </td>
                               <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">
-                                {d.dz.toFixed(4)}
+                                {(d.dz * 1000).toFixed(4)}
                               </td>
                               <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">
                                 {(d.rx ?? 0).toFixed(6)}
@@ -1303,7 +1303,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                                 >
                                   {isFixed
                                     ? "FIXED"
-                                    : `${totalDisp.toFixed(3)} mm`}
+                                    : `${(totalDisp * 1000).toFixed(3)} mm`}
                                 </span>
                               </td>
                             </tr>

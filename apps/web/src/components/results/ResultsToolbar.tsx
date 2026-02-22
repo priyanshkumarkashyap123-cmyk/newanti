@@ -257,7 +257,10 @@ const convertToAnalysisResultsData = (
         minMoment: -moment,
         maxAxial: axial,
         minAxial: -axial,
-        maxDeflection: Math.abs(maxDisp * 1000), // Convert to mm
+        maxDeflection:
+          deflection_values.length > 0
+            ? Math.max(...deflection_values.map(Math.abs))
+            : Math.abs(maxDisp * 1000), // mm — prefer diagram data, fallback to global max
         maxShearZ: Math.abs(forces.shearZ ?? 0),
         maxMomentY: Math.abs(forces.momentY ?? 0),
         torsion: Math.abs(forces.torsion ?? 0),
@@ -288,7 +291,7 @@ const convertToAnalysisResultsData = (
       totalNodes: nodes.length,
       totalMembers: members.length,
       totalDOF: nodes.length * 6,
-      maxDisplacement: maxDisp,
+      maxDisplacement: maxDisp * 1000, // Convert m → mm for display
       maxStress,
       maxUtilization: maxUtil,
       analysisTime:
