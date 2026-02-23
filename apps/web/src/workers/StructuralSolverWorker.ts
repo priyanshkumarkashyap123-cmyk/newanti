@@ -1601,17 +1601,6 @@ function generateDiagramData(
 ): MemberForceResult[] {
   const enriched: MemberForceResult[] = [];
 
-  // Build a map of member loads per member ID
-  const modelWithLoads = model as ModelDataWithMemberLoads;
-  const memberLoadMap = new Map<string, MemberLoadItem[]>();
-  if (modelWithLoads.memberLoads) {
-    for (const ml of modelWithLoads.memberLoads) {
-      if (!memberLoadMap.has(ml.memberId)) memberLoadMap.set(ml.memberId, []);
-      const bucket = memberLoadMap.get(ml.memberId);
-      if (bucket) bucket.push(ml);
-    }
-  }
-
   for (const mf of memberEndForces) {
     const member = model.members.find((m) => m.id === mf.id);
     if (!member) {
@@ -1642,10 +1631,12 @@ function generateDiagramData(
     }
 
     // Extract end forces in local coords
+    // These are TOTAL forces (k_local * u_local + FEF), already include all load effects
     const V1 = mf.start?.shear ?? 0; // Shear at start (local Y)
     const M1 = mf.start?.moment ?? 0; // Moment at start (Mz)
     const N1 = mf.start?.axial ?? 0; // Axial at start
     const N2 = mf.end?.axial ?? 0;
+    const V2 = mf.end?.shear ?? 0; // Shear at end (local Y)
 
     // Z-direction forces (3D frames)
     const Vz1 = mf.start?.shearZ ?? 0; // Shear Z at start
@@ -1657,14 +1648,10 @@ function generateDiagramData(
     const EIz = (member.E ?? 2e8) * (member.I ?? 1e-4); // EI for bending about Z (deflection in Y)
     const EIy = (member.E ?? 2e8) * (member.Iy ?? member.I ?? 1e-4); // EI for bending about Y (deflection in Z)
 
-    // Check if this member has distributed loads
-    const mLoads = memberLoadMap.get(member.id) || [];
-    let w = 0; // net UDL intensity in local Y (kN/m)
-    for (const ml of mLoads) {
-      if (ml.type === "UDL") {
-        w += ml.w1 ?? 0;
-      }
-    }
+    // Back-calculate equivalent distributed load from equilibrium of TOTAL end forces.
+    // This avoids double-counting: V1 already includes UDL effect via FEF.
+    // Vertical equilibrium: V1 - w*L + V2 = 0 → w = (V1 + V2) / L
+    const w = L > 1e-12 ? (V1 + V2) / L : 0;
 
     // Generate stations
     const x_values: number[] = [];

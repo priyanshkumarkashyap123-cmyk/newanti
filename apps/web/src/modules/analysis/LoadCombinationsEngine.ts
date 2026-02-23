@@ -375,7 +375,13 @@ export class LoadCombinationsEngine {
     });
     
     // Combination 2: Dead + Live (basic gravity)
+    // ASCE 7-22 Combo 2: 1.2D + 1.6L (NOT 1.4D + 1.6L)
+    // IS 456/IS 1893: 1.5(D+L)
     if (liveCases.length > 0) {
+      const deadFactorForDL = (this.code.startsWith('ASCE') || this.code.startsWith('ACI'))
+        ? 1.2  // ASCE 7-22 Combo 2
+        : factors.dead.unfavorable;
+      
       this.combinations.push({
         id: `ULS${combId++}`,
         name: this.getCodeSpecificName('Dead + Live', 'ULS'),
@@ -385,8 +391,8 @@ export class LoadCombinationsEngine {
           ...deadCases.map(dc => ({
             loadCaseId: dc.id,
             loadType: dc.type,
-            factor: factors.dead.unfavorable,
-            gammaValue: factors.dead.unfavorable,
+            factor: deadFactorForDL,
+            gammaValue: deadFactorForDL,
           })),
           ...liveCases.map(lc => ({
             loadCaseId: lc.id,
@@ -482,6 +488,14 @@ export class LoadCombinationsEngine {
       
       // Full seismic combination
       if (liveCases.length > 0) {
+        // IS 1893:2016 Table 6: 1.2(DL + LL ± EQ)
+        // ASCE 7-22 Combo 5: 1.2D + 1.0E + 0.5L
+        const dlFactorSeismic = this.code === 'IS1893' ? 1.2
+          : this.code.startsWith('ASCE') ? 1.2
+          : factors.dead.unfavorable;
+        const eqFactorSeismic = this.code === 'IS1893' ? 1.2
+          : factors.seismic.unfavorable;
+        
         this.combinations.push({
           id: `ULS${combId++}`,
           name: this.getCodeSpecificName('Dead + Live + Seismic', 'ULS'),
@@ -491,23 +505,25 @@ export class LoadCombinationsEngine {
             ...deadCases.map(dc => ({
               loadCaseId: dc.id,
               loadType: dc.type,
-              factor: this.code.startsWith('ASCE') ? 1.2 : factors.dead.unfavorable,
-              gammaValue: factors.dead.unfavorable,
+              factor: dlFactorSeismic,
+              gammaValue: dlFactorSeismic,
             })),
             ...liveCases.map(lc => ({
               loadCaseId: lc.id,
               loadType: lc.type,
-              factor: this.getSeismicLiveFactor(),
+              factor: this.code === 'IS1893' ? 1.2 : this.getSeismicLiveFactor(),
               psiValue: this.getSeismicLiveFactor(),
             })),
             ...seismicCases.map(sc => ({
               loadCaseId: sc.id,
               loadType: sc.type,
-              factor: factors.seismic.unfavorable,
-              gammaValue: factors.seismic.unfavorable,
+              factor: eqFactorSeismic,
+              gammaValue: eqFactorSeismic,
             })),
           ],
-          description: 'Full seismic design combination',
+          description: this.code === 'IS1893'
+            ? 'IS 1893 Table 6: 1.2(DL + LL ± EQ)'
+            : 'Full seismic design combination',
         });
         
         // Minimum dead with seismic (overturning)

@@ -50,7 +50,7 @@ export default function VisualizationHubPage() {
         const xVals = dd.x_values;
         let yVals: number[];
         switch (diagramType) {
-          case 'bmd': yVals = dd.moment_y; break;
+          case 'bmd': yVals = dd.moment_z || dd.moment_y; break;
           case 'sfd': yVals = dd.shear_y; break;
           case 'deflection': yVals = dd.deflection_y; break;
           case 'axial': yVals = dd.axial; break;

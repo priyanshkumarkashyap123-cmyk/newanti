@@ -689,8 +689,9 @@ export class IS1893Checker {
         storyHeight: number,
         hasBrittleElements: boolean = false
     ): CodeCheck {
-        // Drift limit (Clause 7.11.1)
-        const limit = hasBrittleElements ? 0.004 : 0.004;
+        // IS 1893:2016 Clause 7.11.1 — storey drift shall not exceed 0.004 × storey height
+        // Note: IS 1893 prescribes a single limit regardless of non-structural element type
+        const limit = 0.004;
         const allowable = limit * storyHeight * 1000; // mm
         const ratio = storyDrift / allowable;
 

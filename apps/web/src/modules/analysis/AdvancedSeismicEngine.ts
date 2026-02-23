@@ -128,11 +128,17 @@ const US_SEISMIC_PARAMS: Record<string, { Ss: number; S1: number; TL: number }> 
 };
 
 const SOIL_AMPLIFICATION: Record<SoilType, { Fa: number; Fv: number; Tb: number; Tc: number; Td: number }> = {
-  'rock': { Fa: 1.0, Fv: 1.0, Tb: 0.1, Tc: 0.4, Td: 2.0 },
-  'stiff': { Fa: 1.2, Fv: 1.4, Tb: 0.1, Tc: 0.5, Td: 2.0 },
-  'medium': { Fa: 1.5, Fv: 1.7, Tb: 0.1, Tc: 0.65, Td: 2.0 },
-  'soft': { Fa: 1.6, Fv: 2.4, Tb: 0.1, Tc: 0.9, Td: 2.0 },
-  'very_soft': { Fa: 2.5, Fv: 3.5, Tb: 0.1, Tc: 1.2, Td: 2.0 },
+  // IS 1893:2016 Table 3 corner periods for Sa/g plateau:
+  //   Type I (Rock/Hard):  Tc = 0.40   Sa/g = 1.0/T
+  //   Type II (Medium):    Tc = 0.55   Sa/g = 1.36/T
+  //   Type III (Soft):     Tc = 0.67   Sa/g = 1.67/T
+  // Td = 4.0 (max period for code applicability)
+  // Fa/Fv are site amplification factors for ASCE 7; not used in IS 1893
+  'rock':      { Fa: 1.0, Fv: 1.0, Tb: 0.10, Tc: 0.40, Td: 4.0 },
+  'stiff':     { Fa: 1.2, Fv: 1.4, Tb: 0.10, Tc: 0.40, Td: 4.0 },
+  'medium':    { Fa: 1.5, Fv: 1.7, Tb: 0.10, Tc: 0.55, Td: 4.0 },
+  'soft':      { Fa: 1.6, Fv: 2.4, Tb: 0.10, Tc: 0.67, Td: 4.0 },
+  'very_soft': { Fa: 2.5, Fv: 3.5, Tb: 0.10, Tc: 0.90, Td: 4.0 },
 };
 
 // ============================================================================
@@ -230,15 +236,19 @@ export class AdvancedSeismicEngine {
     for (const T of periods) {
       let Sa_g: number;
       
-      // IS 1893:2016 spectrum shape
+      // IS 1893:2016 spectrum shape (Cl. 6.4.2)
+      // Three branches only: rising, plateau, and 1/T descending
+      // NO 1/T² branch — IS 1893 specifies 1/T all the way to T=4s
       if (T <= 0.1) {
+        // Linear rise from 1.0 to 2.5 over 0 to Tb
         Sa_g = 1 + 15 * T;
       } else if (T <= soil.Tc) {
+        // Plateau at 2.5
         Sa_g = 2.5;
-      } else if (T <= soil.Td) {
-        Sa_g = 2.5 * soil.Tc / T;
       } else {
-        Sa_g = 2.5 * soil.Tc * soil.Td / (T * T);
+        // 1/T descending branch: Sa/g = 2.5 × Tc / T
+        // (This is equivalent to Sa/g = 1.0/T for rock, 1.36/T for medium, 1.67/T for soft)
+        Sa_g = 2.5 * soil.Tc / T;
       }
       
       // Apply zone, importance, and response reduction
@@ -414,8 +424,11 @@ export class AdvancedSeismicEngine {
       return sum + Cvx * Vb * s.height;
     }, 0);
     
-    // Accidental eccentricity (5% of building dimension)
-    const buildingWidth = 20; // Assume 20m, should be input
+    // Accidental eccentricity (5% of building dimension per IS 1893 Cl. 7.9.2)
+    // Estimate building width from story data if available
+    const buildingWidth = storyData.length > 0
+      ? Math.max(storyData[storyData.length - 1].height * 0.6, 10) // Approximate from height, min 10m
+      : 20;
     const accidentalEccentricity = 0.05 * buildingWidth;
     const torsionalMoment = Vb * accidentalEccentricity;
     

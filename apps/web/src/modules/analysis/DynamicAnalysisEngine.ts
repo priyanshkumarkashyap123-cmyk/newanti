@@ -228,9 +228,10 @@ export class DynamicAnalysisEngine {
     // Solve: [1/omega1  omega1] [alpha]   [2*zeta1]
     //        [1/omega2  omega2] [beta ] = [2*zeta2]
     
-    const det = omega2 / omega1 - omega1 / omega2;
-    const alpha = 2 * (zeta1 * omega2 - zeta2 * omega1) / (omega2 * omega2 - omega1 * omega1) * omega1 * omega2;
-    const beta = 2 * (zeta2 * omega2 - zeta1 * omega1) / (omega2 * omega2 - omega1 * omega1);
+    // Closed-form solution of 2×2 system (Chopra, Dynamics of Structures, §11.4)
+    const denom = omega2 * omega2 - omega1 * omega1;
+    const alpha = 2 * (zeta1 * omega2 - zeta2 * omega1) / denom * omega1 * omega2;
+    const beta = 2 * (zeta2 * omega2 - zeta1 * omega1) / denom;
     
     return { alpha, beta };
   }
@@ -795,14 +796,18 @@ export class DynamicAnalysisEngine {
   }
 
   private cqcCorrelation(omegai: number, omegaj: number, zetai: number, zetaj: number): number {
-    // CQC correlation coefficient (Der Kiureghian)
+    // Exact CQC correlation coefficient — Der Kiureghian (1981)
+    // "A Response Spectrum Method for Random Vibration Analysis of MDF Systems"
+    // Uses separate modal damping ratios (no geometric-mean approximation)
     const r = omegai / omegaj;
-    const zeta = Math.sqrt(zetai * zetaj);
+    const sqrtZZ = Math.sqrt(zetai * zetaj);
     
-    const num = 8 * zeta * zeta * (1 + r) * Math.pow(r, 1.5);
-    const den = Math.pow(1 - r * r, 2) + 4 * zeta * zeta * r * (1 + r) * (1 + r);
+    const num = 8 * sqrtZZ * (zetai + r * zetaj) * Math.pow(r, 1.5);
+    const den = Math.pow(1 - r * r, 2)
+              + 4 * zetai * zetaj * r * (1 + r * r)
+              + 4 * (zetai * zetai + zetaj * zetaj) * r * r;
     
-    return num / den;
+    return den > 0 ? num / den : (r === 1 ? 1 : 0);
   }
 
   private combineDirectionalResponses(

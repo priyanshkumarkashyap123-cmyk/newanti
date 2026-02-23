@@ -218,13 +218,17 @@ const convertToAnalysisResultsData = (
         deflection_values = pyniteDiagram.deflection_y || [];
         memberLength = x_values[x_values.length - 1] || 5;
       } else {
-        // Fallback: Generate physically meaningful diagram shapes from end forces
-        // Uses beam theory integration rather than flat lines
+        // Fallback: Generate diagrams from end forces using equilibrium
+        // w = (Vi + Vj)/L,  V(x) = Vi - w*x,  M(x) = Mi + Vi*x - w*x²/2
         const numPoints = 40;
         const L = memberLength;
-        const Vi = forces.shearY;
-        const Mi = forces.momentZ;
+        const Vi = forces.startForces?.shearY ?? forces.shearY;
+        const Vj = forces.endForces?.shearY ?? -forces.shearY;
+        const Mi = forces.startForces?.momentZ ?? forces.momentZ;
         const ax = forces.axial;
+
+        // Back-calculate equivalent distributed load from equilibrium
+        const w = L > 1e-12 ? (Vi + Vj) / L : 0;
 
         x_values = [];
         shear_values = [];
@@ -236,30 +240,14 @@ const convertToAnalysisResultsData = (
           const t = i / numPoints;
           const x = t * L;
           x_values.push(x);
-          // Shear: linear variation (assumes possible UDL w between ends)
-          // If V_i and V_j are different, w = (V_i - V_j) / L
-          shear_values.push(Vi * (1 - t));
-          // Moment: parabolic shape — M(x) = Mi + Vi*x - (Vi*x^2)/(2*L)
-          moment_values.push(Mi + Vi * x * (1 - t / 2) / (L || 1) * L - Mi * t);
+          // Shear: V(x) = Vi - w*x
+          shear_values.push(Vi - w * x);
+          // Moment: M(x) = Mi + Vi*x - w*x²/2
+          moment_values.push(Mi + Vi * x - (w * x * x) / 2);
           // Axial: constant
           axial_values.push(ax);
-          // Deflection: cubic approximation from end moments
+          // Deflection: zero (no EI info in fallback)
           deflection_values.push(0);
-        }
-        // Correct moment to simple linear interpolation if end forces only
-        // M(x) = Mi*(1-t) + Mj*t  where Mj ~ -Mi for equilibrium
-        const Mj = -(Mi + Vi * L); // from equilibrium: Mi + Mj + Vi*L = 0
-        for (let i = 0; i <= numPoints; i++) {
-          const t = i / numPoints;
-          moment_values[i] = Mi * (1 - t) + Mj * t;
-          // Improved: shear = -dM/dx = (Mi - Mj)/L
-          shear_values[i] = (Mi - Mj) / (L || 1);
-        }
-        // Override shear with actual end value if non-zero
-        if (Math.abs(Vi) > 1e-6) {
-          for (let i = 0; i <= numPoints; i++) {
-            shear_values[i] = Vi;
-          }
         }
       }
 

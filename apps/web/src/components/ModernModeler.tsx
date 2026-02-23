@@ -1376,7 +1376,7 @@ export const ModernModeler: FC = () => {
                 mf.max_moment_z != null
                   ? mf.max_moment_z / 1000
                   : Math.max(Math.abs(mzV), Math.abs(mzE));
-              const diag3D = genDiagram(axV, syV, mzV, elemId);
+              const diag3D = genDiagram(axV, syV, mzV, syE, mzE, elemId);
               membersDict[elemId] = {
                 memberId: elemId,
                 axial: diag3D?.axial || [axV],
@@ -1411,7 +1411,7 @@ export const ModernModeler: FC = () => {
               const v2 = (mf.shear_end ?? 0) / 1000;
               const m1 = (mf.moment_start ?? 0) / 1000;
               const m2 = (mf.moment_end ?? 0) / 1000;
-              const diag2D = genDiagram(axF, v1, m1, elemId);
+              const diag2D = genDiagram(axF, v1, m1, v2, m2, elemId);
               membersDict[elemId] = {
                 memberId: elemId,
                 axial: diag2D?.axial || [axF],

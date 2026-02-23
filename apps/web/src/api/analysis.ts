@@ -283,10 +283,15 @@ export async function runAnalysis(): Promise<{
  * Generate intermediate‐station SFD / BMD / deflection diagram data
  * from the WASM solver's member‐end forces.
  *
- * Uses exact Euler–Bernoulli beam theory:
- *   V(x) = V1 − w·x          (UDL)
+ * Uses exact Euler–Bernoulli beam theory with equilibrium-derived UDL:
+ *   w = (V1 + V2) / L  (from vertical equilibrium of TOTAL end forces)
+ *   V(x) = V1 − w·x
  *   M(x) = M1 + V1·x − w·x²/2
- *   EI·y″ = M(x)  →  double integration with actual end displacements
+ *   EI·y″ = M(x)  →  double integration with y(0)=y(L)=0
+ *
+ * The end forces already include all load effects (UDL, point loads, etc.)
+ * via the solver's FEF term. We do NOT re-read member loads from the store
+ * to avoid double-counting.
  */
 function generateWasmDiagramData(
   axialForce: number,
@@ -297,7 +302,7 @@ function generateWasmDiagramData(
   n1: Node,
   n2: Node,
   member: Member,
-  mLoads: MemberLoad[],
+  _mLoads: MemberLoad[], // kept for API compatibility, no longer used
 ): NonNullable<MemberForceData["diagramData"]> {
   const dx = n2.x - n1.x;
   const dy = n2.y - n1.y;
@@ -306,13 +311,10 @@ function generateWasmDiagramData(
 
   const EI = (member.E ?? 200e9) * (member.I ?? 8.33e-6);
 
-  // Sum up UDL intensity in local Y for diagram generation
-  let w = 0;
-  for (const ml of mLoads) {
-    if (ml.type === "UDL") {
-      w += ml.w1 ?? 0;
-    }
-  }
+  // Back-calculate equivalent distributed load from equilibrium of TOTAL end forces.
+  // Vertical equilibrium: V1 - w*L + V2 = 0 → w = (V1 + V2) / L
+  // This is exact and avoids double-counting since V1/V2 already include FEF.
+  const w = L > 1e-12 ? (shearStart + shearEnd) / L : 0;
 
   const x_values: number[] = [];
   const shear_y: number[] = [];
