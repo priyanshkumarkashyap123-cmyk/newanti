@@ -355,22 +355,12 @@ const MemberDiagramMini: FC<MemberDiagramMiniProps> = ({
     const plotH = H - pad.top - pad.bottom;
 
     const maxVal = Math.max(...values.map(Math.abs), 1e-10);
-    const maxIdx = values.reduce((mi, v, i, a) => Math.abs(v) > Math.abs(a[mi]) ? i : mi, 0);
     const minIdx = values.reduce((mi, v, i) => v < values[mi] ? i : mi, 0);
     const maxValIdx = values.reduce((mi, v, i) => v > values[mi] ? i : mi, 0);
 
     // Determine baseline position (0 line)
     const allPos = values.every(v => v >= -1e-10);
     const allNeg = values.every(v => v <= 1e-10);
-    let baseY: number;
-    if (allPos) baseY = pad.top + plotH;
-    else if (allNeg) baseY = pad.top;
-    else baseY = pad.top + plotH * (Math.max(...values) / (Math.max(...values) - Math.min(...values)));
-
-    const scaleY = (v: number) => {
-      if (maxVal < 1e-10) return baseY;
-      return baseY - (v / maxVal) * (baseY - pad.top) * (allPos || allNeg ? 1 : Math.max(...values) / maxVal);
-    };
 
     // Proper scaling: map value to y coordinate
     const vMax = Math.max(...values);
@@ -581,6 +571,111 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
     AFD: React.useRef<HTMLCanvasElement>(null),
     DEFLECTION: React.useRef<HTMLCanvasElement>(null),
   };
+  const overlayRefs = {
+    SFD: React.useRef<HTMLCanvasElement>(null),
+    BMD: React.useRef<HTMLCanvasElement>(null),
+    AFD: React.useRef<HTMLCanvasElement>(null),
+    DEFLECTION: React.useRef<HTMLCanvasElement>(null),
+  };
+  // Store diagram geometry for each type so hover can compute values
+  const diagramMeta = React.useRef<Record<string, {
+    values: number[];
+    xVals: number[];
+    pad: { top: number; right: number; bottom: number; left: number };
+    plotW: number;
+    plotH: number;
+    W: number;
+    H: number;
+    vMax: number;
+    vMin: number;
+    range: number;
+    length: number;
+    colors: typeof DIAGRAM_COLORS[DiagramType];
+  }>>({});
+
+  const handleCanvasMouseMove = React.useCallback((type: DiagramType, e: React.MouseEvent<HTMLCanvasElement>) => {
+    const overlay = overlayRefs[type].current;
+    const meta = diagramMeta.current[type];
+    if (!overlay || !meta) return;
+    const rect = overlay.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const dpr = window.devicePixelRatio || 1;
+    const ctx = overlay.getContext('2d');
+    if (!ctx) return;
+    ctx.clearRect(0, 0, overlay.width, overlay.height);
+    ctx.scale(dpr, dpr);
+
+    const { pad, plotW, plotH, values, xVals, W, H, vMax, vMin, range, length: mLen, colors } = meta;
+    // Only draw if within plot area
+    if (mx < pad.left || mx > pad.left + plotW || my < pad.top || my > pad.top + plotH) {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      return;
+    }
+
+    // Compute closest data index
+    const frac = (mx - pad.left) / plotW;
+    const idx = Math.min(Math.max(Math.round(frac * (values.length - 1)), 0), values.length - 1);
+    const val = values[idx];
+    const pos = xVals[idx] ?? (idx / (values.length - 1)) * mLen;
+    const toY = (v: number) => pad.top + plotH * (1 - (v - vMin) / range);
+    const toX = (i: number) => pad.left + (i / (values.length - 1)) * plotW;
+    const cx = toX(idx);
+    const cy = toY(val);
+
+    // Crosshair lines
+    ctx.setLineDash([3, 2]);
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(cx, pad.top);
+    ctx.lineTo(cx, pad.top + plotH);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(pad.left, cy);
+    ctx.lineTo(pad.left + plotW, cy);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Dot on curve
+    ctx.fillStyle = colors.line;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Tooltip box
+    const text = `${formatEngineering(val)} @ ${pos.toFixed(2)}m`;
+    ctx.font = '600 10px Inter, system-ui, sans-serif';
+    const tw = ctx.measureText(text).width;
+    let lx = cx + 10;
+    let ly = cy - 10;
+    if (lx + tw + 10 > W - pad.right) lx = cx - tw - 16;
+    if (ly - 14 < pad.top) ly = cy + 20;
+
+    ctx.fillStyle = 'rgba(0,0,0,0.9)';
+    ctx.beginPath();
+    ctx.roundRect(lx - 4, ly - 12, tw + 8, 17, 3);
+    ctx.fill();
+    ctx.strokeStyle = colors.line;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'left';
+    ctx.fillText(text, lx, ly);
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+  }, []);
+
+  const handleCanvasMouseLeave = React.useCallback((type: DiagramType) => {
+    const overlay = overlayRefs[type].current;
+    if (!overlay) return;
+    const ctx = overlay.getContext('2d');
+    if (ctx) ctx.clearRect(0, 0, overlay.width, overlay.height);
+  }, []);
 
   const drawDiagram = React.useCallback((
     canvas: HTMLCanvasElement | null,
@@ -602,6 +697,14 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
     ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, W, H);
 
+    // Also size the overlay canvas to match
+    const overlay = overlayRefs[type].current;
+    if (overlay) {
+      overlay.width = W * dpr;
+      overlay.height = H * dpr;
+      overlay.style.height = `${H}px`;
+    }
+
     const colors = DIAGRAM_COLORS[type];
     const pad = { top: 20, right: 55, bottom: 28, left: 55 };
     const plotW = W - pad.left - pad.right;
@@ -612,6 +715,9 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
     const range = Math.max(vMax - vMin, 1e-10);
     const toY = (v: number) => pad.top + plotH * (1 - (v - vMin) / range);
     const toX = (i: number) => pad.left + (i / (values.length - 1)) * plotW;
+
+    // Store metadata for hover crosshair
+    diagramMeta.current[type] = { values, xVals, pad, plotW, plotH, W, H, vMax, vMin, range, length, colors };
 
     // Grid
     const nGridY = 4;
@@ -814,11 +920,20 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
             <div className="text-[10px] font-medium mb-1" style={{ color: DIAGRAM_COLORS[dt].line }}>
               {dt === 'DEFLECTION' ? 'Deflection' : dt} — {DIAGRAM_COLORS[dt].label}
             </div>
-            <canvas
-              ref={canvasRefs[dt]}
-              className="w-full rounded"
-              style={{ height: '160px' }}
-            />
+            <div className="relative" style={{ height: '160px' }}>
+              <canvas
+                ref={canvasRefs[dt]}
+                className="w-full rounded absolute inset-0"
+                style={{ height: '160px' }}
+              />
+              <canvas
+                ref={overlayRefs[dt]}
+                className="w-full rounded absolute inset-0 cursor-crosshair"
+                style={{ height: '160px' }}
+                onMouseMove={(e) => handleCanvasMouseMove(dt, e)}
+                onMouseLeave={() => handleCanvasMouseLeave(dt)}
+              />
+            </div>
           </div>
         ))}
       </div>
@@ -1946,14 +2061,29 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
 
         {/* Detailed Table Mode */}
         {viewMode === "detailed" && (
-          <div key="detailed" className="animate-slideUp">
-            <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide mb-4">
-              Detailed Member Results
-            </h3>
+          <div key="detailed" className="space-y-4 animate-slideUp">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide">
+                Detailed Member Results
+              </h3>
+              <input
+                type="text"
+                value={memberSearch}
+                onChange={(e) => setMemberSearch(e.target.value)}
+                placeholder="Filter by ID or section..."
+                className="px-3 py-1.5 rounded-lg bg-zinc-800 border border-zinc-700 text-sm text-white placeholder-zinc-500 w-52 focus:border-blue-500 focus:outline-none transition-colors"
+              />
+            </div>
             <DetailedMemberTable
-              members={members}
+              members={filteredMembers}
               onSelect={handleMemberSelect}
             />
+            {selectedMember && (
+              <ExpandedDiagram
+                member={selectedMember}
+                onClose={() => setSelectedMemberId(null)}
+              />
+            )}
           </div>
         )}
 
@@ -2899,13 +3029,22 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                       .sort((a, b) => b.utilization - a.utilization)
                       .map((m) => {
                         const st = getUtilizationStatus(m.utilization);
-                        const governing =
-                          Math.abs(m.maxMoment) > Math.abs(m.maxShear) &&
-                          Math.abs(m.maxMoment) > Math.abs(m.maxAxial)
-                            ? "Bending"
-                            : Math.abs(m.maxShear) > Math.abs(m.maxAxial)
-                              ? "Shear"
-                              : "Axial";
+                        const governing = (() => {
+                          const sp = m.sectionProps;
+                          const fy = sp?.fy ?? 250;
+                          const A = sp?.A ?? 0.01;
+                          const I = sp?.I ?? 1e-4;
+                          const c_est = Math.sqrt((12 * I) / A) / 2 || 0.15;
+                          const Mcap = fy * (I / c_est) * 1000; // kNm capacity
+                          const Ncap = fy * A * 1000; // kN capacity
+                          const Vcap = 0.6 * fy * A * 1000; // kN shear capacity
+                          const mRatio = Mcap > 0 ? Math.abs(m.maxMoment) / Mcap : 0;
+                          const nRatio = Ncap > 0 ? Math.abs(m.maxAxial) / Ncap : 0;
+                          const vRatio = Vcap > 0 ? Math.abs(m.maxShear) / Vcap : 0;
+                          if (mRatio >= nRatio && mRatio >= vRatio) return 'Bending';
+                          if (vRatio >= nRatio) return 'Shear';
+                          return 'Axial';
+                        })();
                         return (
                           <tr
                             key={m.id}
@@ -3199,6 +3338,136 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
             <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide">
               Stress / Utilization Heat Map
             </h3>
+
+            {/* Spatial Structure View — SVG wireframe colored by utilization */}
+            {(() => {
+              // Build unique node coordinate map from members' start/end nodes
+              const nodeCoords = new Map<string, { x: number; y: number; z: number }>();
+              nodes.forEach((n) => nodeCoords.set(n.id, { x: n.x, y: n.y, z: n.z }));
+              const hasCoords = [...nodeCoords.values()].some(c => c.x !== 0 || c.y !== 0 || c.z !== 0);
+
+              if (!hasCoords) return null; // Fall back to bars if no geometry
+
+              // Project 2D: use XY plane (elevation view) or XZ if structure is planar in Y
+              const allPts = [...nodeCoords.values()];
+              const xMin = Math.min(...allPts.map(p => p.x));
+              const xMax = Math.max(...allPts.map(p => p.x));
+              const yMin = Math.min(...allPts.map(p => p.y));
+              const yMax = Math.max(...allPts.map(p => p.y));
+              const zMin = Math.min(...allPts.map(p => p.z));
+              const zMax = Math.max(...allPts.map(p => p.z));
+              const ySpan = yMax - yMin;
+              const zSpan = zMax - zMin;
+              // Choose Y or Z for the vertical axis
+              const useZ = zSpan > ySpan;
+              const vMin2 = useZ ? zMin : yMin;
+              const vMax2 = useZ ? zMax : yMax;
+              const hSpan = Math.max(xMax - xMin, 1e-6);
+              const vSpan = Math.max(vMax2 - vMin2, 1e-6);
+
+              const svgW = 600;
+              const svgH = Math.max(250, Math.min(400, Math.round(svgW * (vSpan / hSpan))));
+              const pad = 40;
+              const scale = Math.min((svgW - 2 * pad) / hSpan, (svgH - 2 * pad) / vSpan);
+              const ofsX = pad + ((svgW - 2 * pad) - hSpan * scale) / 2;
+              const ofsY = pad + ((svgH - 2 * pad) - vSpan * scale) / 2;
+
+              const px = (x: number) => ofsX + (x - xMin) * scale;
+              const py = (v: number) => svgH - ofsY - (v - vMin2) * scale; // flip Y
+
+              const utilColor = (u: number) => {
+                const hue = Math.max(0, 120 - u * 120);
+                return `hsl(${hue}, 85%, 50%)`;
+              };
+
+              // Build member edges: we need start/end node ids per member —
+              // infer from the first/last diagram x position mapping to node positions
+              // Since we don't have explicit connectivity, derive from nodes array:
+              // members already have startNode / endNode in the data if available.
+              // Fall back: pair each member with the two closest nodes by distance = member.length
+
+              return (
+                <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-3 mb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-medium text-zinc-300">Structural Layout — Utilization</span>
+                    <span className="text-[10px] text-zinc-500">{members.length} members, {nodes.length} nodes</span>
+                  </div>
+                  <svg
+                    viewBox={`0 0 ${svgW} ${svgH}`}
+                    className="w-full rounded bg-zinc-900/60"
+                    style={{ maxHeight: '400px' }}
+                  >
+                    {/* Members as colored lines */}
+                    {members.map((m) => {
+                      // Try to find start/end nodes
+                      const sn = nodeCoords.get(m.startNodeId ?? '');
+                      const en = nodeCoords.get(m.endNodeId ?? '');
+                      if (!sn || !en) return null;
+                      const x1 = px(sn.x);
+                      const y1 = py(useZ ? sn.z : sn.y);
+                      const x2 = px(en.x);
+                      const y2 = py(useZ ? en.z : en.y);
+                      const col = utilColor(m.utilization);
+                      return (
+                        <g key={m.id}>
+                          <line
+                            x1={x1} y1={y1} x2={x2} y2={y2}
+                            stroke={col}
+                            strokeWidth={Math.max(3, 6 * m.utilization)}
+                            strokeLinecap="round"
+                            opacity={0.9}
+                          />
+                          <title>M{m.id}: {(m.utilization * 100).toFixed(1)}% — {m.sectionType || 'General'}</title>
+                          {/* Member label */}
+                          <text
+                            x={(x1 + x2) / 2}
+                            y={(y1 + y2) / 2 - 6}
+                            fill="rgba(255,255,255,0.5)"
+                            fontSize="8"
+                            textAnchor="middle"
+                          >
+                            M{m.id}
+                          </text>
+                        </g>
+                      );
+                    })}
+                    {/* Nodes */}
+                    {[...nodeCoords.entries()].map(([id, c]) => {
+                      const cx = px(c.x);
+                      const cy2 = py(useZ ? c.z : c.y);
+                      const n = nodes.find(n2 => n2.id === id);
+                      const isSupport = n?.reaction && (
+                        Math.abs(n.reaction.fx) > 0.01 ||
+                        Math.abs(n.reaction.fy) > 0.01 ||
+                        Math.abs(n.reaction.fz) > 0.01
+                      );
+                      return (
+                        <g key={id}>
+                          {isSupport ? (
+                            <polygon
+                              points={`${cx},${cy2 + 4} ${cx - 6},${cy2 + 12} ${cx + 6},${cy2 + 12}`}
+                              fill="rgba(59,130,246,0.5)"
+                              stroke="#3B82F6"
+                              strokeWidth="1"
+                            />
+                          ) : null}
+                          <circle cx={cx} cy={cy2} r={3.5} fill="#fff" stroke="#3B82F6" strokeWidth="1.5" />
+                          <text
+                            x={cx}
+                            y={cy2 - 7}
+                            fill="rgba(255,255,255,0.4)"
+                            fontSize="7"
+                            textAnchor="middle"
+                          >
+                            {id}
+                          </text>
+                        </g>
+                      );
+                    })}
+                  </svg>
+                </div>
+              );
+            })()}
 
             {/* Section-Type Group Summary */}
             {(() => {

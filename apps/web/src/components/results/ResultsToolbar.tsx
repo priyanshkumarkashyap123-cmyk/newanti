@@ -145,11 +145,14 @@ const convertToAnalysisResultsData = (
       const totalDisp = Math.sqrt(disp.dx ** 2 + disp.dy ** 2 + disp.dz ** 2);
       maxDisp = Math.max(maxDisp, totalDisp);
 
+      // Look up real node coordinates from model
+      const modelNode = modelNodes?.get(nodeId);
+
       nodes.push({
         id: nodeId,
-        x: 0,
-        y: 0,
-        z: 0,
+        x: modelNode?.x ?? 0,
+        y: modelNode?.y ?? 0,
+        z: modelNode?.z ?? 0,
         displacement: {
           dx: disp.dx,
           dy: disp.dy,
