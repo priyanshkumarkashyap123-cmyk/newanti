@@ -105,6 +105,7 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
     // Global store actions
     const storeAddLoad = useModelStore(s => s.addLoad);
     const storeAddMemberLoad = useModelStore(s => s.addMemberLoad);
+    const storeAddFloorLoad = useModelStore(s => s.addFloorLoad);
 
     // Get selected node/member IDs
     const selectedNodeIds = useMemo(() =>
@@ -358,9 +359,20 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
                     storeAddMemberLoad(storeLoad);
                 });
 
-                // Note: Floor/Temp/Prestress not in store actions yet (from model.ts view), or maybe just missed
-                // Assuming they are handled or will be handled. model.ts showed addMemberLoad/addLoad only.
-                // If store doesn't support them, they won't be saved.
+                // Floor/Area Loads → persist to store (distributed to beams at analysis time)
+                currentCase.floorLoads.forEach(load => {
+                    storeAddFloorLoad({
+                        id: load.id,
+                        pressure: load.pressure,
+                        yLevel: load.yLevel,
+                        xMin: load.xMin,
+                        xMax: load.xMax,
+                        zMin: load.zMin,
+                        zMax: load.zMax,
+                        distributionOverride: load.distributionOverride,
+                        loadCase: load.loadCase,
+                    });
+                });
             }
 
             // Close dialog on success
@@ -371,7 +383,7 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
         } finally {
             setIsApplying(false);
         }
-    }, [loadCases, selectedLoadCase, storeAddLoad, storeAddMemberLoad, onClose]);
+    }, [loadCases, selectedLoadCase, storeAddLoad, storeAddMemberLoad, storeAddFloorLoad, onClose]);
 
 
     if (!isOpen) return null;

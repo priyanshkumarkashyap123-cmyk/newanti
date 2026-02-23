@@ -26,6 +26,8 @@ import {
     Landmark,
     CheckSquare,
     FileCheck,
+    Layers,
+    SquareStack,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useModelStore } from '../../store/model';
@@ -127,6 +129,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory }) => {
                 <ToolButton icon={Box} label="Node" onClick={() => setTool('node')} isActive={activeTool === 'node'} tooltip="Create Node" shortcut="N" />
                 <ToolButton icon={Spline} label="Beam" onClick={() => setTool('member')} isActive={activeTool === 'member'} tooltip="Create Member" shortcut="M" />
                 <ToolButton icon={Grid} label="Plate" onClick={() => openModal('plateDialog')} tooltip="Create Plate/Shell Element" shortcut="P" />
+                <ToolButton icon={Layers} label="Slab" onClick={() => openModal('floorSlabDialog')} tooltip="Add Floor Slab — auto-detect panels & assign area load" />
             </ToolGroup>
             <ToolGroup label="Selection">
                 <ToolButton icon={MousePointer2} label="Select" onClick={() => setTool('select')} isActive={activeTool === 'select'} shortcut="V" />
@@ -155,6 +158,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory }) => {
             <ToolGroup label="Apply">
                 <ToolButton icon={Download} label="Nodal" onClick={() => setTool('load')} isActive={activeTool === 'load'} />
                 <ToolButton icon={Spline} label="Member" onClick={() => setTool('memberLoad')} isActive={activeTool === 'memberLoad'} />
+                <ToolButton icon={SquareStack} label="Area Load" onClick={() => openModal('loadDialog')} tooltip="Floor / Roof / Area Load" />
             </ToolGroup>
             <ToolGroup label="Generate">
                 <ToolButton icon={Weight} label="Dead Load" onClick={() => openModal('deadLoadGenerator')} tooltip="Dead Load Generator" />

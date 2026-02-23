@@ -151,6 +151,7 @@ interface UIState {
         movingLoadDialog: boolean;
         boundaryConditionsDialog: boolean;
         plateDialog: boolean;
+        floorSlabDialog: boolean;
         // ASCE 7 Load Generation
         asce7SeismicDialog: boolean;
         asce7WindDialog: boolean;
@@ -263,6 +264,7 @@ export const useUIStore = create<UIState>()(
                 movingLoadDialog: false,
                 boundaryConditionsDialog: false,
                 plateDialog: false,
+                floorSlabDialog: false,
                 // ASCE 7 Load Generation
                 asce7SeismicDialog: false,
                 asce7WindDialog: false,
@@ -474,6 +476,7 @@ export const useUIStore = create<UIState>()(
                     movingLoadDialog: false,
                     boundaryConditionsDialog: false,
                     plateDialog: false,
+                    floorSlabDialog: false,
                     asce7SeismicDialog: false,
                     asce7WindDialog: false,
                     loadCombinationsDialog: false,

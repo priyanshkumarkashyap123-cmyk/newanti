@@ -96,6 +96,19 @@ export interface LoadCombination {
   factors: { loadCaseId: string; factor: number }[];
 }
 
+// Floor / Area Load (distributed to beams via yield-line method at analysis time)
+export interface FloorLoad {
+  id: string;
+  pressure: number;              // Load intensity (kN/m²) — negative = downward
+  yLevel: number;                // Floor Y coordinate (m)
+  xMin: number;                  // Bounding box min X (-Infinity for all)
+  xMax: number;
+  zMin: number;
+  zMax: number;
+  distributionOverride?: 'one_way' | 'two_way_triangular' | 'two_way_trapezoidal';
+  loadCase?: string;
+}
+
 export type SectionType =
   | "I-BEAM"
   | "TUBE"
@@ -317,6 +330,7 @@ interface ModelState {
 
   loads: NodeLoad[];
   memberLoads: MemberLoad[]; // NEW: Member loads (UDL, UVL, point)
+  floorLoads: FloorLoad[]; // Floor/area loads (distributed to beams at analysis time)
   loadCases: LoadCase[]; // Load case definitions (DL, LL, WL, etc.)
   loadCombinations: LoadCombination[]; // Factored load combinations (IS 875, ASCE 7, EC)
   activeLoadCaseId: string | null; // Currently active load case for editing
@@ -367,6 +381,9 @@ interface ModelState {
   addMemberLoad: (load: MemberLoad) => void; // NEW
   removeMemberLoad: (id: string) => void; // NEW
   updateMemberLoadById: (id: string, updates: Partial<MemberLoad>) => void; // Performance optimization
+  addFloorLoad: (load: FloorLoad) => void;
+  removeFloorLoad: (id: string) => void;
+  clearFloorLoads: () => void;
   // Load Case Management
   addLoadCase: (lc: LoadCase) => void;
   removeLoadCase: (id: string) => void;
@@ -498,6 +515,7 @@ export const useModelStore = create<ModelState>()(
         civilData: new Map(), // NEW: Phase 2 Civil Persistence
         loads: [],
         memberLoads: [], // NEW: Member distributed/point loads
+        floorLoads: [], // Floor/area loads (converted to beam UDLs at analysis time)
         loadCases: [], // Load case definitions
         loadCombinations: [], // Factored load combinations
         activeLoadCaseId: null, // No active load case initially
@@ -659,6 +677,21 @@ export const useModelStore = create<ModelState>()(
           set((state) => ({
             memberLoads: state.memberLoads.filter((l) => l.id !== id),
           })),
+
+        // Floor/Area load actions
+        addFloorLoad: (load) =>
+          set((state) => {
+            const exists = state.floorLoads.some((l) => l.id === load.id);
+            if (exists) return state;
+            return { floorLoads: [...state.floorLoads, load] };
+          }),
+
+        removeFloorLoad: (id) =>
+          set((state) => ({
+            floorLoads: state.floorLoads.filter((l) => l.id !== id),
+          })),
+
+        clearFloorLoads: () => set({ floorLoads: [] }),
 
         // Load Case Management
         addLoadCase: (lc) =>
@@ -1201,6 +1234,7 @@ export const useModelStore = create<ModelState>()(
             plates: new Map(),
             loads: [],
             memberLoads: [],
+            floorLoads: [],
             loadCases: [],
             loadCombinations: [],
             activeLoadCaseId: null,
@@ -1419,6 +1453,7 @@ export const useModelStore = create<ModelState>()(
               members: membersMap,
               loads: [],
               memberLoads: [],
+              floorLoads: [],
               selectedIds: new Set(),
               analysisResults: null,
               isAnalyzing: false,

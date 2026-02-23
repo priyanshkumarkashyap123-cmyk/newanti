@@ -16,7 +16,7 @@ import * as THREE from 'three';
 import { Line, Html } from '@react-three/drei';
 import { DiagramOverlay, DiagramType, DiagramData } from './DiagramOverlay';
 import { useModelStore } from '../../store/model';
-import StressContourRenderer, { MemberStressData, StressType } from './StressContourRenderer';
+import StressContourRenderer, { MemberStressData, StressType, StressPoint } from './StressContourRenderer';
 
 type DiagramDisplayType = 'SFD' | 'BMD' | 'AFD' | 'DEFLECTION' | 'STRESS';
 
@@ -122,73 +122,95 @@ export const StressColorOverlay: FC<StressColorOverlayProps> = ({
             const forces = analysisResults.memberForces.get(memberId);
             if (!forces) return;
 
-            // Simple stress simplification for demo
-            // In a real app, we would calculate this at multiple points
-            // Here we interpolate linearly between start and end
-            const stressProfile = [];
-            const steps = 10;
-
-            // Calculate approximate stress values (MPa)
-            // Assuming simplified section properties if not available
-            // Improved stress calculation
-            // Calculate approximate Section Modulus (S) assuming I-beam shape
-            // radius of gyration r = sqrt(I/A)
-            // Depth d approx 2.5 * r (empirical for wide flange)
-            // c = d/2 = 1.25 * r
-            // S = I / c
-
-            const area = member.A || 0.01; // m²
-            const I = member.I || 1e-4;   // m⁴
-
-            // Avoid division by zero
+            const area = member.A || 0.01;    // m²
+            const I = member.I || 1e-4;       // m⁴
             const safeArea = area > 0 ? area : 0.01;
             const safeI = I > 0 ? I : 1e-4;
 
-            const r = Math.sqrt(safeI / safeArea);
-            const c = 1.25 * r;
-            const S = c > 0 ? safeI / c : safeI / 0.1; // m³
+            // Estimate extreme-fibre distance c from section properties
+            // r = √(I/A), empirical c ≈ 1.25 r for wide-flange sections
+            const r_gyration = Math.sqrt(safeI / safeArea);
+            const c = 1.25 * r_gyration;
+            const S = c > 0 ? safeI / c : safeI / 0.1; // section modulus, m³
 
-            // Calculate stresses (MPa)
-            // Axial Stress: P/A (kN/m² = kPa) -> /1000 = MPa
-            const axialStress = (forces.axial / safeArea) / 1000;
+            // Yield capacity (steel S250 default)
+            const fy = 250; // MPa
 
-            // Bending Stress: M/S (kNm/m³ = kPa) -> /1000 = MPa
-            const momentMag = Math.sqrt(forces.momentY ** 2 + forces.momentZ ** 2);
-            const bendingStress = (momentMag / S) / 1000;
+            // ─── Use diagram data when available for varying stress along length ───
+            const diagram = forces.diagramData;
+            const steps = 20;
+            const stressProfile: StressPoint[] = [];
+            let peakStress = 0;
+            let peakLocation = 0.5;
 
-            const totalStress = Math.abs(axialStress) + bendingStress;
-
-            // Generate profile
             for (let i = 0; i <= steps; i++) {
-                const position = i / steps;
+                const t = i / steps;
 
-                // Interpolate forces if needed (here we assume max for simplicity or linear if we had start/end)
-                // For a more accurate profile, we should interpolate M over the member length
-                // But simplified: assume parabolic max at center for beams, or linear for columns
-                // Using max moment for conservative display
+                let axialVal = forces.axial;    // kN
+                let shearVal = forces.shearY;   // kN
+                let momentVal = forces.momentZ;  // kN·m
+
+                if (diagram && diagram.x_values && diagram.x_values.length > 1) {
+                    // Interpolate from diagram data at fractional position t
+                    const maxX = diagram.x_values[diagram.x_values.length - 1] || 1;
+                    const xTarget = t * maxX;
+                    // Binary-search-like linear scan for bracket
+                    let lo = 0;
+                    for (let j = 0; j < diagram.x_values.length - 1; j++) {
+                        if (diagram.x_values[j + 1]! >= xTarget) { lo = j; break; }
+                        lo = j;
+                    }
+                    const hi = Math.min(lo + 1, diagram.x_values.length - 1);
+                    const span = (diagram.x_values[hi]! - diagram.x_values[lo]!) || 1;
+                    const frac = (xTarget - diagram.x_values[lo]!) / span;
+
+                    const lerpVal = (arr: number[] | undefined) => {
+                        if (!arr || arr.length === 0) return 0;
+                        const a = arr[lo] ?? 0;
+                        const b = arr[hi] ?? 0;
+                        return a + frac * (b - a);
+                    };
+
+                    axialVal  = lerpVal(diagram.axial);
+                    shearVal  = lerpVal(diagram.shear_y);
+                    momentVal = lerpVal(diagram.moment_z);
+                }
+
+                // Stresses in MPa (force in kN, dimension in m → kN/m² → /1000 = MPa)
+                const sigmaAxial   = (axialVal / safeArea) / 1000;
+                const sigmaBending = S > 0 ? (Math.abs(momentVal) / S) / 1000 : 0;
+                const tauShear     = (Math.abs(shearVal) / safeArea) / 1000; // average shear
+                const combined     = Math.abs(sigmaAxial) + sigmaBending;
+                // Von Mises (simplified plane stress: σ_vm = √(σ² + 3τ²))
+                const sigma_total  = sigmaAxial + (momentVal >= 0 ? sigmaBending : -sigmaBending);
+                const vonMises     = Math.sqrt(sigma_total * sigma_total + 3 * tauShear * tauShear);
+
+                if (vonMises > peakStress) { peakStress = vonMises; peakLocation = t; }
 
                 stressProfile.push({
-                    position,
-                    vonMises: totalStress, // Simplified Von Mises equivalent
-                    principal1: totalStress,
+                    position: t,
+                    vonMises,
+                    principal1: combined,
                     principal2: 0,
                     principal3: 0,
-                    axial: axialStress,
-                    bending: bendingStress,
-                    shear: (forces.shearY / 1000) // Very rough shear stress in MPa (V/A approx)
+                    axial: sigmaAxial,
+                    bending: sigmaBending,
+                    shear: tauShear,
                 });
             }
+
+            const util = peakStress / fy;
 
             memberStressList.push({
                 id: memberId,
                 startNodeId: member.startNodeId,
                 endNodeId: member.endNodeId,
                 stressProfile,
-                maxStress: totalStress,
+                maxStress: peakStress,
                 minStress: 0,
-                criticalLocation: 0.5,
-                capacity: 250, // MPa yield (Steel S275 approx)
-                utilization: totalStress / 250
+                criticalLocation: peakLocation,
+                capacity: fy,
+                utilization: util,
             });
         });
 

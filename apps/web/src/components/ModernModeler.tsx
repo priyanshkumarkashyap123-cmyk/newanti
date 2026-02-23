@@ -56,6 +56,7 @@ import { AutonomousAIAgent } from "./ai";
 import { LoadInputDialog } from "./ui/LoadInputDialog";
 // TutorialOverlay deferred to Phase 2
 import { validateStructure } from "../utils/structuralValidation";
+import { distributeFloorLoads } from "../services/floorLoadDistributor";
 
 // ---- Lazy-loaded dialogs & panels (only fetched when opened) ----
 const StructureWizard = lazy(() =>
@@ -149,6 +150,11 @@ const StructureGallery = lazy(() =>
 const PlateCreationDialog = lazy(() =>
   import("./dialogs/PlateCreationDialog").then((m) => ({
     default: m.PlateCreationDialog,
+  })),
+);
+const FloorSlabDialog = lazy(() =>
+  import("./dialogs/FloorSlabDialog").then((m) => ({
+    default: m.FloorSlabDialog,
   })),
 );
 const BoundaryConditionsDialog = lazy(() =>
@@ -538,6 +544,7 @@ export const ModernModeler: FC = () => {
   const members = useModelStore((state) => state.members);
   const loads = useModelStore((state) => state.loads);
   const memberLoads = useModelStore((state) => state.memberLoads);
+  const floorLoads = useModelStore((state) => state.floorLoads);
   const analysisResults = useModelStore((state) => state.analysisResults);
   const setAnalysisResults = useModelStore((state) => state.setAnalysisResults);
   const setIsAnalyzing = useModelStore((state) => state.setIsAnalyzing);
@@ -1006,6 +1013,37 @@ export const ModernModeler: FC = () => {
             end_pos: ml.endPos ?? 1,
             is_projected: false, // Default to false, could be extended later
           }));
+
+        // ── Floor Load → Member UDL Distribution ──────────────────────────
+        // Convert area/floor loads to equivalent beam UDLs using yield-line method
+        if (floorLoads && floorLoads.length > 0) {
+          const floorResult = distributeFloorLoads(
+            floorLoads,
+            nodesArray.map((n) => ({ id: n.id, x: n.x, y: n.y, z: n.z ?? 0 })),
+            membersArray.map((m) => ({ id: m.id, startNodeId: m.startNodeId, endNodeId: m.endNodeId })),
+          );
+          if (floorResult.loads.length > 0) {
+            modelerLogger.log(
+              `[Analysis] Floor loads: ${floorLoads.length} area loads → ${floorResult.panels.length} panels → ${floorResult.loads.length} beam UDLs`,
+            );
+            // Merge floor-generated UDLs into wasmMemberLoads
+            for (const fl of floorResult.loads) {
+              wasmMemberLoads.push({
+                element_id: fl.element_id,
+                w1: fl.w1,
+                w2: fl.w2,
+                direction: fl.direction,
+                start_pos: fl.start_pos,
+                end_pos: fl.end_pos,
+                is_projected: fl.is_projected,
+              });
+            }
+          } else {
+            modelerLogger.log(
+              `[Analysis] Floor loads: ${floorLoads.length} defined but no panels detected — check beam geometry at Y levels`,
+            );
+          }
+        }
 
         // Convert member point loads and moments to equivalent nodal loads
         // (Rust solver only supports distributed loads, not concentrated member loads)
@@ -2464,6 +2502,12 @@ export const ModernModeler: FC = () => {
           <PlateCreationDialog
             isOpen={modals.plateDialog}
             onClose={() => closeModal("plateDialog")}
+          />
+
+          {/* Floor Slab Dialog — auto-detect panels & create slabs */}
+          <FloorSlabDialog
+            isOpen={modals.floorSlabDialog}
+            onClose={() => closeModal("floorSlabDialog")}
           />
 
           {/* Comprehensive Loading Manager */}

@@ -538,6 +538,149 @@ export const StressContourRenderer: FC<StressContourProps> = ({
                     />
                 );
             })}
+
+            {/* ─── FLOATING LEGEND & CONTROLS (Html overlay inside R3F) ─── */}
+            <Html
+                position={[0, 0, 0]}
+                center
+                style={{ pointerEvents: 'none' }}
+                zIndexRange={[100, 0]}
+            >
+                {/* Right-side color legend */}
+                <div style={{
+                    position: 'fixed',
+                    right: 16,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    pointerEvents: 'auto',
+                    zIndex: 99,
+                }}>
+                    <div className="bg-slate-900/95 backdrop-blur-md rounded-xl border border-slate-700/60 shadow-2xl p-3 w-[200px]">
+                        {/* Stress type selector */}
+                        <div className="mb-3">
+                            <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1.5">Stress Type</div>
+                            <select
+                                value={stressType}
+                                onChange={(e) => onStressTypeChange(e.target.value as StressType)}
+                                className="w-full text-xs bg-slate-800 border border-slate-600 text-slate-200 rounded-md px-2 py-1.5 cursor-pointer focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500"
+                            >
+                                {STRESS_TYPES.map(st => (
+                                    <option key={st.id} value={st.id}>{st.label} — {st.description}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Color bar + scale */}
+                        <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1.5">
+                            {STRESS_TYPES.find(s => s.id === stressType)?.label || 'Stress'} Scale
+                        </div>
+                        <div className="flex gap-2 items-stretch">
+                            <div
+                                className="w-5 rounded-sm overflow-hidden flex-shrink-0"
+                                style={{
+                                    background: `linear-gradient(to bottom, ${
+                                        Array.from({ length: 11 }, (_, i) => {
+                                            const t = 1 - i / 10;
+                                            return `#${getContourColor(t).getHexString()}`;
+                                        }).join(', ')
+                                    })`,
+                                    minHeight: 120,
+                                }}
+                            />
+                            <div className="flex flex-col justify-between text-right flex-1">
+                                {Array.from({ length: 6 }, (_, i) => {
+                                    const t = 1 - i / 5;
+                                    const val = stressType === 'utilization'
+                                        ? t * 100
+                                        : globalMin + t * (globalMax - globalMin);
+                                    const unit = stressType === 'utilization' ? '%' : 'MPa';
+                                    return (
+                                        <div key={i} className="text-[10px] font-mono text-slate-300 leading-tight">
+                                            {val.toFixed(stressType === 'utilization' ? 0 : 1)} {unit}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Summary statistics */}
+                        <div className="mt-3 pt-2 border-t border-slate-700/60 space-y-1">
+                            <div className="flex justify-between text-[10px]">
+                                <span className="text-slate-400">Members</span>
+                                <span className="text-slate-200 font-mono">{memberStress.length}</span>
+                            </div>
+                            <div className="flex justify-between text-[10px]">
+                                <span className="text-slate-400">Max Stress</span>
+                                <span className="text-red-400 font-mono font-semibold">{globalMax.toFixed(1)} MPa</span>
+                            </div>
+                            <div className="flex justify-between text-[10px]">
+                                <span className="text-slate-400">Critical ({'>'} 100%)</span>
+                                <span className={`font-mono font-semibold ${criticalMembers.length > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                                    {criticalMembers.length}
+                                </span>
+                            </div>
+                            {allowableStress > 0 && (
+                                <div className="flex justify-between text-[10px]">
+                                    <span className="text-slate-400">f_y (yield)</span>
+                                    <span className="text-cyan-400 font-mono">{allowableStress} MPa</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Bottom-center: peak-value badges for top 5 most stressed members */}
+                {/* (kept small so viewport isn't cluttered) */}
+            </Html>
+
+            {/* ─── Peak-value labels at midpoint of each member ─── */}
+            {memberStress.map((member) => {
+                const startPos = nodeMap.get(member.startNodeId);
+                const endPos = nodeMap.get(member.endNodeId);
+                if (!startPos || !endPos) return null;
+
+                const labelPos = startPos.clone().lerp(endPos, member.criticalLocation);
+                // Offset upward slightly so label doesn't overlap the tube
+                labelPos.y += 0.12;
+
+                const stressVal = member.maxStress;
+                const util = member.utilization;
+                // Show labels only for non-trivial members (stress > 0.5 MPa)
+                if (stressVal < 0.5) return null;
+
+                // Color logic: green < 60%, yellow 60-90%, red > 90%
+                const labelColor = util > 0.9 ? '#ef4444' : util > 0.6 ? '#eab308' : '#22c55e';
+                const bgColor = util > 0.9 ? 'rgba(239,68,68,0.15)' : util > 0.6 ? 'rgba(234,179,8,0.12)' : 'rgba(34,197,94,0.12)';
+
+                return (
+                    <Html
+                        key={`label-${member.id}`}
+                        position={labelPos.toArray()}
+                        center
+                        style={{ pointerEvents: 'none' }}
+                    >
+                        <div style={{
+                            background: bgColor,
+                            border: `1px solid ${labelColor}`,
+                            borderRadius: 4,
+                            padding: '1px 5px',
+                            color: labelColor,
+                            fontSize: 10,
+                            fontFamily: 'ui-monospace, monospace',
+                            fontWeight: 600,
+                            whiteSpace: 'nowrap',
+                            backdropFilter: 'blur(4px)',
+                            lineHeight: 1.6,
+                            textAlign: 'center',
+                        }}>
+                            {stressVal.toFixed(1)} MPa
+                            <span style={{ opacity: 0.7, marginLeft: 4 }}>
+                                ({(util * 100).toFixed(0)}%)
+                            </span>
+                        </div>
+                    </Html>
+                );
+            })}
         </group>
     );
 };
