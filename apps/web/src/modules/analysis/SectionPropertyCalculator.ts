@@ -199,7 +199,14 @@ export class SectionPropertyCalculator {
     const A = b * h;
     const Ix = (b * h ** 3) / 12;
     const Iy = (h * b ** 3) / 12;
-    const J = (b * h ** 3) / 3 * (1 - 0.63 * (h / b) * (1 - (h ** 4) / (12 * b ** 4))); // Approx for rectangle
+
+    // Torsional constant — Timoshenko formula for solid rectangle:
+    // J = a·t³/3 × (1 − 0.63·t/a + 0.052·t⁵/a⁵)
+    // where t = min(b,h), a = max(b,h)
+    const t_rect = Math.min(b, h);
+    const a_rect = Math.max(b, h);
+    const ratio = t_rect / a_rect;
+    const J = (a_rect * t_rect ** 3) / 3 * (1 - 0.63 * ratio + 0.052 * ratio ** 5);
 
     return {
       A,
@@ -220,7 +227,7 @@ export class SectionPropertyCalculator {
       Iu: Math.max(Ix, Iy),
       Iv: Math.min(Ix, Iy),
       theta: 0,
-      J: J > 0 ? J : (b * h ** 3) / 3,
+      J,
       Cw: 0, // Solid rectangle has negligible warping
       ex: cx,
       ey: cy
@@ -411,8 +418,33 @@ export class SectionPropertyCalculator {
     // Torsional constant
     const J = (bf * tf ** 3 + hs * tw ** 3) / 3;
 
-    // Plastic section modulus (approximate)
-    const Zpx = A * Cy / 2 + A * (h - Cy) / 2;
+    // Plastic section modulus about x-axis:
+    // Find the Plastic Neutral Axis (PNA) that divides area into two equal halves.
+    // For T-section, PNA may be in flange or stem.
+    const halfA = A / 2;
+    const A_flangePNA = bf * tf;
+    let Zpx: number;
+    if (halfA <= A_flangePNA) {
+      // PNA is within the flange (measured from top of flange)
+      const yPNA_from_top = halfA / bf; // depth of PNA into flange
+      // Area above PNA: bf * yPNA_from_top, centroid at yPNA_from_top/2 from PNA
+      // Area below PNA: rest of flange + stem
+      const y_bar_top = yPNA_from_top / 2;
+      const A_flange_below = bf * (tf - yPNA_from_top);
+      const y_bar_flange_below = (tf - yPNA_from_top) / 2;
+      const y_bar_stem = (tf - yPNA_from_top) + hs / 2;
+      Zpx = halfA * y_bar_top + A_flange_below * y_bar_flange_below + A_stem * y_bar_stem;
+    } else {
+      // PNA is within the stem (measured from top of stem)
+      const stem_area_above = halfA - A_flangePNA;
+      const y_stem_PNA = stem_area_above / tw; // depth into stem from top of stem
+      // Distances from PNA:
+      const y_bar_flange = y_stem_PNA + tf / 2; // flange centroid above PNA
+      const y_bar_stem_above = y_stem_PNA / 2;
+      const stem_below = hs - y_stem_PNA;
+      const y_bar_stem_below = stem_below / 2;
+      Zpx = A_flangePNA * y_bar_flange + stem_area_above * y_bar_stem_above + (tw * stem_below) * y_bar_stem_below;
+    }
 
     return {
       A,

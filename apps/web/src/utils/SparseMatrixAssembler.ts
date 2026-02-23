@@ -276,11 +276,13 @@ export class SparseMatrixAssembler {
 
             // Material & Section Properties (with defaults)
             const E = member.E || 200e9; // 200 GPa
-            const G = 77e9; // Shear modulus
+            const nu = 0.3; // Poisson's ratio (steel default)
+            const G = E / (2 * (1 + nu)); // G = E/(2(1+ν))
             const A = member.A || 0.01;
             const Iy = member.Iy || member.I || 0.0001;
             const Iz = member.Iz || member.I || 0.0001;
-            const J = member.J || (Iy + Iz);
+            // J = Iy+Iz only for circular sections. Conservative fallback for open sections:
+            const J = member.J || Math.max(Math.min(Iy, Iz) / 500, (Iy + Iz) * 1e-4);
 
             const dx = endNode.x - startNode.x;
             const dy = endNode.y - startNode.y;

@@ -730,7 +730,12 @@ export class AdvancedStructuralAnalysisEngine {
   private calculate3DFrameStiffness(member: Member, L: number): number[][] {
     // 12x12 stiffness matrix for 3D frame element
     const k = MatrixOps.create(12, 12, 0);
-    const { E, A, I, Iz = I, J = I, G = E / 2.6 } = member;
+    const { E, A, I, Iz = I } = member;
+    // J = I is only valid for circular sections. For open sections J << I.
+    // Conservative fallback: J ≈ min(I, Iz)/500, clamped above zero
+    const J = member.J ?? Math.max(Math.min(I, Iz) / 500, (I + Iz) * 1e-4);
+    // G = E/(2(1+ν)); default ν=0.3 for steel → G = E/2.6
+    const G = member.G ?? E / (2 * (1 + 0.3));
 
     const EA_L = (E * A) / L;
     const EIy_L = (E * I) / L;

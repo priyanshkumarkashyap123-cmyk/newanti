@@ -977,8 +977,8 @@ function computeFrameStiffness(
  * @param A  Cross-section area
  * @param Iy Iy (moment of inertia about LOCAL y — bending in local xz)
  * @param Iz Iz (moment of inertia about LOCAL z — bending in local xy)
- * @param J  Torsion constant (Saint-Venant). If 0 use Iy+Iz approx.
- * @param G  Shear modulus. If 0 use E / 2.6
+ * @param J  Torsion constant (Saint-Venant). If 0, approximate as Σbt³/3-like fraction.
+ * @param G  Shear modulus. If 0 use E / (2(1+ν)), ν=0.3 for steel.
  * @param L  Element length
  * @param cx, cy, cz  Direction cosines of the member
  */
@@ -995,8 +995,13 @@ function computeFrame3DStiffness(
   cz: number,
 ): number[][] {
   // Fallbacks
-  if (!J || J === 0) J = Iy + Iz; // Approximate torsion constant
-  if (!G || G === 0) G = E / (2 * (1 + 0.3)); // Steel Poisson = 0.3
+  // J = Iy + Iz is only valid for CIRCULAR sections (polar MOI).
+  // For open sections (I-beams, channels) J ≈ Σbt³/3 which is 100–1000× smaller.
+  // Use conservative lower-bound: J ≈ min(Iy, Iz) / 500, then clamp to avoid zero.
+  if (!J || J === 0) {
+    J = Math.max(Math.min(Iy, Iz) / 500, (Iy + Iz) * 1e-4);
+  }
+  if (!G || G === 0) G = E / (2 * (1 + 0.3)); // Steel Poisson ν=0.3
 
   const EA_L = (E * A) / L;
   const EIz = E * Iz;
@@ -1264,7 +1269,8 @@ function computeMemberEndForces(
       const Iz = member.Iz || member.I || 1e-6;
       let Jval = member.J || 0;
       let Gval = member.G || 0;
-      if (!Jval) Jval = Iy + Iz;
+      // J = Iy+Iz only for circular sections. Conservative fallback for open sections:
+      if (!Jval) Jval = Math.max(Math.min(Iy, Iz) / 500, (Iy + Iz) * 1e-4);
       if (!Gval) Gval = (member.E || 0) / (2 * (1 + 0.3));
 
       // Extract 12 DOF displacements
@@ -1411,7 +1417,9 @@ function computeMemberEndForces(
       setKL12(10, 8, b2);
       setKL12(10, 10, b3);
 
-      // f_local = kL * uL
+      // f_local = kL * uL + fFE  (fixed-end forces from member loads)
+      // fFE is the fixed-end force vector due to distributed loads.
+      // Without this correction, member forces under UDL/PL are wrong.
       const fLocal12 = new Float64Array(12);
       for (let r = 0; r < 12; r++) {
         let s = 0;
@@ -1422,6 +1430,23 @@ function computeMemberEndForces(
           }
         }
         fLocal12[r] = s;
+      }
+
+      // Add fixed-end forces for any member loads (UDL in local Y)
+      const modelML = model as ModelDataWithMemberLoads;
+      if (modelML.memberLoads) {
+        for (const ml of modelML.memberLoads) {
+          if (ml.memberId === member.id && ml.type === "UDL") {
+            const w = ml.w1 ?? 0;
+            // FEF for UDL w in local Y direction on both-fixed beam:
+            //   V1 = +wL/2,   V2 = +wL/2
+            //   M1 = +wL²/12, M2 = -wL²/12
+            fLocal12[1] += w * L / 2;
+            fLocal12[5] += w * L * L / 12;
+            fLocal12[7] += w * L / 2;
+            fLocal12[11] += -w * L * L / 12;
+          }
+        }
       }
 
       results.push({
@@ -1502,6 +1527,7 @@ function computeMemberEndForces(
         [0, (6 * EI) / L2, (2 * EI) / L, 0, (-6 * EI) / L2, (4 * EI) / L],
       ];
 
+      // f_local = k_local * u_local + fFE (fixed-end forces from member loads)
       const fLocal = new Float64Array(6);
       for (let r = 0; r < 6; r++) {
         let sum = 0;
@@ -1512,6 +1538,23 @@ function computeMemberEndForces(
           }
         }
         fLocal[r] = sum;
+      }
+
+      // Add fixed-end forces for any member loads (UDL in local Y)
+      const modelML2D = model as ModelDataWithMemberLoads;
+      if (modelML2D.memberLoads) {
+        for (const ml of modelML2D.memberLoads) {
+          if (ml.memberId === member.id && ml.type === "UDL") {
+            const w = ml.w1 ?? 0;
+            // FEF for UDL w in local Y on both-fixed beam:
+            //   V1 = +wL/2,   M1 = +wL²/12
+            //   V2 = +wL/2,   M2 = -wL²/12
+            fLocal[1] += w * L / 2;
+            fLocal[2] += w * L * L / 12;
+            fLocal[4] += w * L / 2;
+            fLocal[5] += -w * L * L / 12;
+          }
+        }
       }
 
       results.push({

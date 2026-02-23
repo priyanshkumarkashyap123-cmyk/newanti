@@ -289,8 +289,9 @@ export async function runLocalAnalysis(): Promise<{
       const A = member.A ?? 1000; // mm²
       const Ix = member.I ?? 1e6; // mm⁴ (using I for primary axis)
       const Iy = member.I ?? 1e6; // mm⁴ (simplified: same as Ix)
-      const J = (member.I ?? 1e6) * 0.1; // mm⁴ (approximate torsional constant)
-      const G = E / 2.6; // Shear modulus (steel)
+      // J for open sections ≈ Σbt³/3, typically 1–5% of I. Use conservative 1%.
+      const J = (member.I ?? 1e6) * 0.01; // mm⁴ (conservative for open sections)
+      const G = E / (2 * (1 + 0.3)); // Shear modulus G = E/(2(1+ν)), ν=0.3 for steel
 
       // Direction cosines
       const cx = dx / L,

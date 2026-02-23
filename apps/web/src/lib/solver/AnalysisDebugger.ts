@@ -616,8 +616,9 @@ export class AnalysisDebugger {
     const A = element.A;
     const Iy = element.Iy;
     const Iz = element.Iz;
-    const G = element.G ?? E / 2.6;
-    const J = element.J ?? (Iy + Iz);
+    const G = element.G ?? E / (2 * (1 + 0.3)); // G = E/(2(1+ν)), ν=0.3 for steel
+    // J = Iy+Iz only for circular sections; conservative fallback for open sections:
+    const J = element.J ?? Math.max(Math.min(Iy, Iz) / 500, (Iy + Iz) * 1e-4);
     
     // Initialize 12x12 matrix
     const k: number[][] = Array(12).fill(null).map(() => Array(12).fill(0));

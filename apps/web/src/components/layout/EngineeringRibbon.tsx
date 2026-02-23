@@ -18,7 +18,14 @@ import {
     Activity,
     Cpu,
     Anchor,
-    Weight
+    Weight,
+    Ruler,
+    Building2,
+    Columns,
+    Link2,
+    Landmark,
+    CheckSquare,
+    FileCheck,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useModelStore } from '../../store/model';
@@ -208,9 +215,30 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory }) => {
                 {activeCategory === 'PROPERTIES' && renderPropertiesTab()}
                 {activeCategory === 'LOADING' && renderLoadingTab()}
                 {activeCategory === 'ANALYSIS' && renderAnalysisTab()}
-                {['DESIGN', 'CIVIL'].includes(activeCategory) && (
+                {activeCategory === 'DESIGN' && (
+                    <>
+                        <ToolGroup label="Code Check">
+                            <ToolButton icon={FileCheck} label="Design Codes" onClick={() => openModal('designCodes')} tooltip="Open Design Code Compliance Dialog" />
+                            <ToolButton icon={CheckSquare} label="D/C Ratios" onClick={() => document.dispatchEvent(new CustomEvent('trigger-analysis'))} tooltip="Run Analysis & View D/C Ratios" />
+                        </ToolGroup>
+                        <ToolGroup label="Steel">
+                            <ToolButton icon={Building2} label="IS 800" onClick={() => openModal('designCodes')} tooltip="Steel Design — IS 800:2007" />
+                            <ToolButton icon={Ruler} label="AISC 360" onClick={() => openModal('designCodes')} tooltip="Steel Design — AISC 360-16" />
+                        </ToolGroup>
+                        <ToolGroup label="Concrete">
+                            <ToolButton icon={Columns} label="IS 456" onClick={() => openModal('designCodes')} tooltip="RC Design — IS 456:2000" />
+                        </ToolGroup>
+                        <ToolGroup label="Connection">
+                            <ToolButton icon={Link2} label="Connections" onClick={() => openModal('connectionDesign')} tooltip="Connection Design — Bolted/Welded" />
+                        </ToolGroup>
+                        <ToolGroup label="Foundation">
+                            <ToolButton icon={Landmark} label="Foundation" onClick={() => openModal('foundationDesign')} tooltip="Foundation Design — IS 456 / IS 1904" />
+                        </ToolGroup>
+                    </>
+                )}
+                {activeCategory === 'CIVIL' && (
                     <div className="flex items-center justify-center h-full w-full text-slate-500 text-xs">
-                        {activeCategory} tools coming soon
+                        CIVIL tools coming soon
                     </div>
                 )}
             </div>

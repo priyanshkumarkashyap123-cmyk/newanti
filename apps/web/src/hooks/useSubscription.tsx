@@ -15,6 +15,20 @@ import { API_CONFIG } from "@/config/env";
 import { createLogger } from "../utils/logger";
 
 // ============================================
+// MASTER USER EMAILS (client-side mirror of backend)
+// Users listed here get full enterprise access regardless
+// of API response or subscription state.
+// ============================================
+const MASTER_EMAILS: ReadonlyArray<string> = [
+  'rakshittiwari048@gmail.com',
+];
+
+function isMasterEmail(email: string | null | undefined): boolean {
+  if (!email) return false;
+  return MASTER_EMAILS.includes(email.toLowerCase().trim());
+}
+
+// ============================================
 // SUBSCRIPTION TYPES
 // ============================================
 
@@ -99,7 +113,7 @@ export const SubscriptionProvider = ({
   });
 
   // Use unified auth hook
-  const { isSignedIn, userId, getToken } = useAuth();
+  const { isSignedIn, userId, getToken, user } = useAuth();
 
   const fetchSubscription = async () => {
     if (!isSignedIn || !userId) {
@@ -108,6 +122,20 @@ export const SubscriptionProvider = ({
         isLoading: false,
         expiresAt: null,
         features: TIER_FEATURES.free,
+      });
+      return;
+    }
+
+    // Client-side master user override — grants enterprise immediately
+    const userEmail = user?.email || '';
+    if (isMasterEmail(userEmail)) {
+      subscriptionLogger.info('Master user detected, granting enterprise access', { email: userEmail });
+      localStorage.setItem('beamlab_subscription_tier', 'enterprise');
+      setSubscription({
+        tier: 'enterprise',
+        isLoading: false,
+        expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        features: TIER_FEATURES.enterprise,
       });
       return;
     }

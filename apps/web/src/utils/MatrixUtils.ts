@@ -176,10 +176,12 @@ export class MatrixUtils {
         G?: number,
         J?: number
     ): math.Matrix {
-        // Default shear modulus for steel (G ≈ E/2.6)
+        // Default shear modulus for steel (G ≈ E/2.6, ν=0.3)
         const shearModulus = G ?? E / 2.6;
-        // Default torsional constant
-        const torsionalJ = J ?? (Iy + Iz);
+        // Default torsional constant — conservative for open sections (I-beams/channels)
+        // J = Iy + Iz is ONLY valid for circular sections.
+        // For open sections, J ≈ Σbt³/3 which is 100–1000× smaller.
+        const torsionalJ = J ?? Math.max(Math.min(Iy, Iz) / 500, (Iy + Iz) * 1e-4);
 
         // Precompute common terms
         const L2 = L * L;

@@ -626,6 +626,10 @@ export class AdvancedMatrixAnalysisEngine {
     k[3][9] = k[9][3] = -GJ_L;
     
     // Bending about local y-axis (in x-z plane)
+    // Bending about local y-axis (in x-z plane)
+    // Standard convention: w-θy coupling has OPPOSITE sign to v-θz coupling
+    // w1↔θy1: -6EIy/L², w1↔θy2: -6EIy/L²
+    // w2↔θy1: +6EIy/L², w2↔θy2: +6EIy/L²
     const EIy = E * Iy;
     const L2 = L * L;
     const L3 = L2 * L;
@@ -633,23 +637,26 @@ export class AdvancedMatrixAnalysisEngine {
     
     k[2][2] = k[8][8] = 12 * EIy / L3 * factorY;
     k[2][8] = k[8][2] = -12 * EIy / L3 * factorY;
-    k[2][4] = k[4][2] = 6 * EIy / L2 * factorY;
-    k[2][10] = k[10][2] = 6 * EIy / L2 * factorY;
-    k[8][4] = k[4][8] = -6 * EIy / L2 * factorY;
-    k[8][10] = k[10][8] = -6 * EIy / L2 * factorY;
+    k[2][4] = k[4][2] = -6 * EIy / L2 * factorY;
+    k[2][10] = k[10][2] = -6 * EIy / L2 * factorY;
+    k[8][4] = k[4][8] = 6 * EIy / L2 * factorY;
+    k[8][10] = k[10][8] = 6 * EIy / L2 * factorY;
     k[4][4] = k[10][10] = (4 + phiY) * EIy / L * factorY;
     k[4][10] = k[10][4] = (2 - phiY) * EIy / L * factorY;
     
     // Bending about local z-axis (in x-y plane)
+    // Standard Przemieniecki convention: DOFs [u,v,w,θx,θy,θz]
+    // v1↔θz1: +6EIz/L², v1↔θz2: +6EIz/L² (same sign)
+    // v2↔θz1: -6EIz/L², v2↔θz2: -6EIz/L² (opposite to diagonal shear)
     const EIz = E * Iz;
     const factorZ = 1 / (1 + phiZ);
     
     k[1][1] = k[7][7] = 12 * EIz / L3 * factorZ;
     k[1][7] = k[7][1] = -12 * EIz / L3 * factorZ;
-    k[1][5] = k[5][1] = -6 * EIz / L2 * factorZ;
-    k[1][11] = k[11][1] = -6 * EIz / L2 * factorZ;
-    k[7][5] = k[5][7] = 6 * EIz / L2 * factorZ;
-    k[7][11] = k[11][7] = 6 * EIz / L2 * factorZ;
+    k[1][5] = k[5][1] = 6 * EIz / L2 * factorZ;
+    k[1][11] = k[11][1] = 6 * EIz / L2 * factorZ;
+    k[7][5] = k[5][7] = -6 * EIz / L2 * factorZ;
+    k[7][11] = k[11][7] = -6 * EIz / L2 * factorZ;
     k[5][5] = k[11][11] = (4 + phiZ) * EIz / L * factorZ;
     k[5][11] = k[11][5] = (2 - phiZ) * EIz / L * factorZ;
     
@@ -745,39 +752,71 @@ export class AdvancedMatrixAnalysisEngine {
   }
 
   private applyMemberReleases(k: number[][], releases: Element['releases'], L: number, EIy: number, EIz: number): void {
-    // Modify stiffness matrix for moment releases (hinges)
-    // Using condensation approach
+    // Proper static condensation for moment releases (hinges).
+    // When a moment DOF is released, we condense it out of the stiffness matrix.
+    // This modifies ALL terms in the corresponding bending sub-matrix, not just diagonals.
+    //
+    // For a beam element with start-pin in z-bending (DOFs 1,5,7,11):
+    //   Shear:  12EIz/L³ → 3EIz/L³
+    //   v↔θz:   6EIz/L²  → 3EIz/L²  (only far-end coupling survives)
+    //   θ diag: 4EIz/L   → 3EIz/L   (far end only; released end → 0)
+    //   θ cross: 2EIz/L   → 0
     
     if (releases?.startMomentZ) {
-      // Release My at start (rotation about z)
-      const factor = 3 / 4;
-      k[5][5] *= factor;
-      k[11][11] *= factor;
+      // Release Mz at start — DOF 5 is released
+      // Condensed xy-plane stiffness (propped cantilever from end):
+      const c = EIz / L;
+      k[1][1] = k[7][7] = 3 * EIz / (L * L * L);
+      k[1][7] = k[7][1] = -3 * EIz / (L * L * L);
+      k[1][5] = k[5][1] = 0;                    // released end has zero coupling
+      k[1][11] = k[11][1] = 3 * EIz / (L * L);  // far-end coupling
+      k[7][5] = k[5][7] = 0;
+      k[7][11] = k[11][7] = -3 * EIz / (L * L);
+      k[5][5] = 0;                              // released DOF
       k[5][11] = k[11][5] = 0;
+      k[11][11] = 3 * c;                        // far-end moment
     }
     
     if (releases?.endMomentZ) {
-      // Release My at end
-      const factor = 3 / 4;
-      k[5][5] *= factor;
-      k[11][11] *= factor;
+      // Release Mz at end — DOF 11 is released
+      const c = EIz / L;
+      k[1][1] = k[7][7] = 3 * EIz / (L * L * L);
+      k[1][7] = k[7][1] = -3 * EIz / (L * L * L);
+      k[1][5] = k[5][1] = 3 * EIz / (L * L);   // near-end coupling
+      k[1][11] = k[11][1] = 0;
+      k[7][5] = k[5][7] = -3 * EIz / (L * L);
+      k[7][11] = k[11][7] = 0;                  // released end has zero coupling
+      k[5][5] = 3 * c;                          // near-end moment
       k[5][11] = k[11][5] = 0;
+      k[11][11] = 0;                            // released DOF
     }
     
     if (releases?.startMomentY) {
-      // Release Mz at start
-      const factor = 3 / 4;
-      k[4][4] *= factor;
-      k[10][10] *= factor;
+      // Release My at start — DOF 4 is released
+      const c = EIy / L;
+      k[2][2] = k[8][8] = 3 * EIy / (L * L * L);
+      k[2][8] = k[8][2] = -3 * EIy / (L * L * L);
+      k[2][4] = k[4][2] = 0;
+      k[2][10] = k[10][2] = -3 * EIy / (L * L);
+      k[8][4] = k[4][8] = 0;
+      k[8][10] = k[10][8] = 3 * EIy / (L * L);
+      k[4][4] = 0;
       k[4][10] = k[10][4] = 0;
+      k[10][10] = 3 * c;
     }
     
     if (releases?.endMomentY) {
-      // Release Mz at end
-      const factor = 3 / 4;
-      k[4][4] *= factor;
-      k[10][10] *= factor;
+      // Release My at end — DOF 10 is released
+      const c = EIy / L;
+      k[2][2] = k[8][8] = 3 * EIy / (L * L * L);
+      k[2][8] = k[8][2] = -3 * EIy / (L * L * L);
+      k[2][4] = k[4][2] = -3 * EIy / (L * L);
+      k[2][10] = k[10][2] = 0;
+      k[8][4] = k[4][8] = 3 * EIy / (L * L);
+      k[8][10] = k[10][8] = 0;
+      k[4][4] = 3 * c;
       k[4][10] = k[10][4] = 0;
+      k[10][10] = 0;
     }
   }
 
@@ -843,12 +882,14 @@ export class AdvancedMatrixAnalysisEngine {
     kg[1][1] = kg[2][2] = kg[7][7] = kg[8][8] = coeff;
     kg[1][7] = kg[7][1] = kg[2][8] = kg[8][2] = -coeff;
     
-    // Coupling terms
+    // Coupling terms (McGuire eq. 10.57, consistent with elastic stiffness signs)
+    // v-θz coupling: same sign pattern as elastic [v1↔θz1]=+, [v2↔θz1]=-
+    // w-θy coupling: same sign pattern as elastic [w1↔θy1]=-, [w2↔θy1]=+
     const coeff2 = P_L * L / 10;
-    kg[1][5] = kg[5][1] = kg[1][11] = kg[11][1] = -coeff2;
-    kg[7][5] = kg[5][7] = kg[7][11] = kg[11][7] = coeff2;
-    kg[2][4] = kg[4][2] = kg[2][10] = kg[10][2] = coeff2;
-    kg[8][4] = kg[4][8] = kg[8][10] = kg[10][8] = -coeff2;
+    kg[1][5] = kg[5][1] = kg[1][11] = kg[11][1] = coeff2;     // v↔θz: positive
+    kg[7][5] = kg[5][7] = kg[7][11] = kg[11][7] = -coeff2;    // v2↔θz: negative
+    kg[2][4] = kg[4][2] = kg[2][10] = kg[10][2] = -coeff2;    // w↔θy: negative
+    kg[8][4] = kg[4][8] = kg[8][10] = kg[10][8] = coeff2;     // w2↔θy: positive
     
     // Rotational terms
     const coeff3 = P_L * L * L / 30;

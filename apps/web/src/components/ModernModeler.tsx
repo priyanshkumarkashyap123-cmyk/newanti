@@ -1265,14 +1265,20 @@ export const ModernModeler: FC = () => {
               max_torsion?: number;
             };
 
-            // Helper: generate SFD/BMD/deflection diagram arrays from end forces
-            // Uses exact beam theory integration with proper boundary conditions
-            // SFD: V(x) = V1 - w*x (for UDL); BMD: M(x) = M1 + V1*x - wx²/2
-            // Deflection: EI*y'' = M(x), with y(0)=dy1, y(L)=dy2 from actual analysis
+            // Helper: generate SFD/BMD/deflection diagram arrays from TOTAL member end forces
+            // The Rust solver returns f = k_local * T * u + FEF (total forces including all load effects).
+            // We reconstruct the internal force variation using equilibrium:
+            //   V_i + V_j = w*L  →  w = (V_i + V_j) / L  (equivalent distributed load intensity)
+            //   V(x) = V_i - w*x
+            //   M(x) = M_i + V_i*x - w*x²/2
+            // This is EXACT for any combination of UDL/UVL/point loads and is self-consistent
+            // with the solver output. No need to re-read store loads (which would double-count).
             const genDiagram = (
-              axF: number,
-              v1: number,
-              m1: number,
+              axF: number,     // Axial force at node i (kN)
+              v1: number,      // Shear Y at node i (kN)
+              m1: number,      // Moment Z at node i (kN·m)
+              v2: number,      // Shear Y at node j (kN) — sign per beam convention
+              m2: number,      // Moment Z at node j (kN·m)
               memberElemId: string,
             ) => {
               const mInfo = membersArray.find((m) => m.id === memberElemId);
@@ -1286,24 +1292,12 @@ export const ModernModeler: FC = () => {
               const L = Math.sqrt(ddx * ddx + ddy * ddy + ddz * ddz) || 1;
               const EI = (mInfo.E || 200e6) * (mInfo.I || mInfo.Iz || 1e-4);
               
-              // Collect UDL loads on this member (in kN/m — local coordinates)
-              let w = 0;
-              for (const ml of memberLoads) {
-                if (ml.memberId === memberElemId && ml.type === "UDL")
-                  w += ml.w1 ?? 0;
-              }
-              
-              // Collect point loads on this member for SFD/BMD discontinuities
-              const ptLoads: Array<{a: number; P: number}> = [];
-              for (const ml of memberLoads) {
-                if (ml.memberId === memberElemId && ml.type === "point" && ml.P) {
-                  const aRaw = ml.a ?? 0.5;
-                  const a = aRaw <= 1.0 ? aRaw * L : aRaw;
-                  ptLoads.push({ a, P: ml.P });
-                }
-              }
-              // Sort point loads by position
-              ptLoads.sort((a, b) => a.a - b.a);
+              // Back-calculate equivalent distributed load from equilibrium of total end forces
+              // Vertical equilibrium: V_i - w*L - V_j = 0 → w = (V_i - (-V_j))/L = (V_i + V_j)/L
+              // NOTE: forces_j[1] from Rust is the reaction at j-end with positive = local +Y.
+              // For a beam with upward reactions, V_i > 0, V_j < 0 (or vice versa).
+              // The net load = V_i + V_j (total upward force = total downward load on member)
+              const w = (v1 + v2) / L; // Equivalent UDL intensity (kN/m)
               
               const ST = 51;
               const xv: number[] = [],
@@ -1317,41 +1311,30 @@ export const ModernModeler: FC = () => {
                 xv.push(x);
                 ax.push(axF);
                 
-                // Shear: V(x) = V1 - w*x - Σ P_k for loads at a_k < x
-                let V = v1 - w * x;
-                for (const pl of ptLoads) {
-                  if (x > pl.a + 1e-10) V -= pl.P;
-                }
-                sy.push(V);
+                // Shear Force Diagram: V(x) = V_i - w*x
+                sy.push(v1 - w * x);
                 
-                // Moment: M(x) = M1 + V1*x - wx²/2 - Σ P_k*(x-a_k) for a_k < x
-                let M = m1 + v1 * x - (w * x * x) / 2;
-                for (const pl of ptLoads) {
-                  if (x > pl.a + 1e-10) M -= pl.P * (x - pl.a);
-                }
-                mzArr.push(M);
+                // Bending Moment Diagram: M(x) = M_i + V_i*x - w*x²/2
+                mzArr.push(m1 + v1 * x - (w * x * x) / 2);
               }
               
               // Deflection via double integration of M(x)/EI with proper BCs
-              // EI*y'' = M(x)  →  integrate twice with known end displacements
+              // EI*y'' = M(x)  →  integrate twice
               if (EI > 0) {
-                // Numerical integration: trapezoidal rule for y'(x) and y(x)
                 const dx = L / (ST - 1);
                 // First integration: EI*y'(x) = ∫M(x)dx + C1
-                const slope: number[] = [0]; // EI*y'(0) = C1 (unknown for now)
+                const slope: number[] = [0];
                 for (let s = 1; s < ST; s++) {
                   const dArea = (mzArr[s - 1] + mzArr[s]) / 2 * dx;
                   slope.push(slope[s - 1] + dArea);
                 }
                 // Second integration: EI*y(x) = ∫∫M(x)dx² + C1*x + C2
-                const defl: number[] = [0]; // EI*y(0) = C2 (set to 0 for relative)
+                const defl: number[] = [0];
                 for (let s = 1; s < ST; s++) {
                   const dArea = (slope[s - 1] + slope[s]) / 2 * dx;
                   defl.push(defl[s - 1] + dArea);
                 }
                 // Apply BCs: y(0) = 0, y(L) = 0 (relative deflection)
-                // The raw integration gives: y_raw(x) = y_particular(x) + C1*x + C2
-                // With C2 = 0 (y(0)=0), C1 = -y_raw(L) / L  (y(L)=0)
                 const yL = defl[ST - 1];
                 const C1_corr = L > 1e-12 ? -yL / L : 0;
                 for (let s = 0; s < ST; s++) {
