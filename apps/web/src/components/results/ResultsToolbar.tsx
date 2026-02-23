@@ -396,8 +396,16 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
   const [showMemberDetail, setShowMemberDetail] = useState(false);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
-  // Store doesn't have these - we'll use local state
-  const [_showReactions, _setShowReactions] = useState(true);
+  // Stable user identifier for consent tracking (persisted across renders)
+  const consentUserId = useMemo(() => {
+    const key = 'beamlab_consent_uid';
+    let uid = typeof window !== 'undefined' ? localStorage.getItem(key) : null;
+    if (!uid) {
+      uid = `user-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      try { localStorage.setItem(key, uid); } catch { /* noop */ }
+    }
+    return uid;
+  }, []);
 
   // Get member IDs for navigation
   const memberIds = useMemo(() => {
@@ -471,8 +479,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
 
   const handleExportPDF = async () => {
     // Check if user has accepted PDF export terms
-    const userId = `user-${Date.now()}`; // In real app, use actual user ID
-    if (!consentService.hasUserAccepted(userId, "pdf_export")) {
+    if (!consentService.hasUserAccepted(consentUserId, "pdf_export")) {
       setShowPDFConsentModal(true);
       return;
     }
@@ -537,9 +544,9 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
           sectionId: m.sectionId || "Default",
           E: m.E || 200000000, // Default steel E in kN/m²
           A: m.A,
-          Iy: m.I, // Use I as Iy
-          Iz: m.I,
-          J: m.I, // Approximate J as I for simple cases
+          Iy: (m as any).Iy ?? m.I,
+          Iz: (m as any).Iz ?? m.I,
+          J: (m as any).J ?? Math.max(Math.min(((m as any).Iy ?? m.I), ((m as any).Iz ?? m.I)) / 500, (((m as any).Iy ?? m.I) + ((m as any).Iz ?? m.I)) * 1e-4),
           length,
         };
       });
@@ -888,72 +895,41 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
     setIsAnimating(false);
   };
 
-  // Calculate max values safely
-  const getMaxDisplacement = (): string => {
-    if (
-      !analysisResults.displacements ||
-      analysisResults.displacements.size === 0
-    )
-      return "-";
-    const values = Array.from(analysisResults.displacements.values());
-    const max = Math.max(...values.map((d) => Math.abs(d.dy)));
+  // Memoized max values — avoid recomputing on every render
+  const maxDisplacementStr = useMemo((): string => {
+    if (!analysisResults.displacements || analysisResults.displacements.size === 0) return "-";
+    let max = 0;
+    for (const d of analysisResults.displacements.values()) {
+      const abs = Math.abs(d.dy);
+      if (abs > max) max = abs;
+    }
     return `${max.toFixed(4)} m`;
-  };
+  }, [analysisResults.displacements]);
 
-  const getMaxReaction = (): string => {
-    if (!analysisResults.reactions || analysisResults.reactions.size === 0)
-      return "-";
-    const values = Array.from(analysisResults.reactions.values());
-    const max = Math.max(...values.map((r) => Math.abs(r.fy)));
+  const maxReactionStr = useMemo((): string => {
+    if (!analysisResults.reactions || analysisResults.reactions.size === 0) return "-";
+    let max = 0;
+    for (const r of analysisResults.reactions.values()) {
+      const abs = Math.abs(r.fy);
+      if (abs > max) max = abs;
+    }
     if (max < 0.001) return "-";
     return `${max.toFixed(2)} kN`;
-  };
+  }, [analysisResults.reactions]);
 
-  // Get support reactions (only nodes with non-negligible reactions)
-  const getSupportReactions = (): {
-    nodeId: string;
-    fx: number;
-    fy: number;
-    fz: number;
-    mx: number;
-    my: number;
-    mz: number;
-  }[] => {
-    if (!analysisResults.reactions || analysisResults.reactions.size === 0)
-      return [];
-    const supports: {
-      nodeId: string;
-      fx: number;
-      fy: number;
-      fz: number;
-      mx: number;
-      my: number;
-      mz: number;
-    }[] = [];
+  // Support reactions — memoized, only nodes with non-negligible reactions
+  const supportReactions = useMemo(() => {
+    if (!analysisResults.reactions || analysisResults.reactions.size === 0) return [];
+    const supports: { nodeId: string; fx: number; fy: number; fz: number; mx: number; my: number; mz: number }[] = [];
     analysisResults.reactions.forEach((r, nodeId) => {
-      const total =
-        Math.abs(r.fx) +
-        Math.abs(r.fy) +
-        Math.abs(r.fz) +
-        Math.abs(r.mx) +
-        Math.abs(r.my) +
-        Math.abs(r.mz);
+      const total = Math.abs(r.fx) + Math.abs(r.fy) + Math.abs(r.fz)
+                  + Math.abs(r.mx) + Math.abs(r.my) + Math.abs(r.mz);
       if (total > 0.001) {
-        supports.push({
-          nodeId,
-          fx: r.fx,
-          fy: r.fy,
-          fz: r.fz,
-          mx: r.mx,
-          my: r.my,
-          mz: r.mz,
-        });
+        supports.push({ nodeId, fx: r.fx, fy: r.fy, fz: r.fz, mx: r.mx, my: r.my, mz: r.mz });
       }
     });
     return supports;
-  };
-
-  const supportReactions = getSupportReactions();
+  }, [analysisResults.reactions]);
 
   if (!isExpanded) {
     return (
@@ -1191,7 +1167,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                 Max Displacement
               </div>
               <div className="text-sm font-bold text-blue-700 dark:text-blue-300">
-                {getMaxDisplacement()}
+                {maxDisplacementStr}
               </div>
             </div>
             <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
@@ -1199,7 +1175,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                 Max Reaction
               </div>
               <div className="text-sm font-bold text-purple-700 dark:text-purple-300">
-                {getMaxReaction()}
+                {maxReactionStr}
               </div>
             </div>
           </div>
@@ -1226,7 +1202,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                       <div className="text-zinc-500 dark:text-zinc-400">
                         Fx:{" "}
                         <span className="font-mono text-white">
-                          {sr.fx.toFixed(2)}
+                          {sr.fx.toFixed(2)} kN
                         </span>
                       </div>
                     )}
@@ -1234,7 +1210,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                       <div className="text-zinc-500 dark:text-zinc-400">
                         Fy:{" "}
                         <span className="font-mono text-white">
-                          {sr.fy.toFixed(2)}
+                          {sr.fy.toFixed(2)} kN
                         </span>
                       </div>
                     )}
@@ -1242,7 +1218,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                       <div className="text-zinc-500 dark:text-zinc-400">
                         Fz:{" "}
                         <span className="font-mono text-white">
-                          {sr.fz.toFixed(2)}
+                          {sr.fz.toFixed(2)} kN
                         </span>
                       </div>
                     )}
@@ -1250,7 +1226,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                       <div className="text-zinc-500 dark:text-zinc-400">
                         Mx:{" "}
                         <span className="font-mono text-white">
-                          {sr.mx.toFixed(2)}
+                          {sr.mx.toFixed(2)} kN·m
                         </span>
                       </div>
                     )}
@@ -1258,7 +1234,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                       <div className="text-zinc-500 dark:text-zinc-400">
                         My:{" "}
                         <span className="font-mono text-white">
-                          {sr.my.toFixed(2)}
+                          {sr.my.toFixed(2)} kN·m
                         </span>
                       </div>
                     )}
@@ -1266,7 +1242,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                       <div className="text-zinc-500 dark:text-zinc-400">
                         Mz:{" "}
                         <span className="font-mono text-white">
-                          {sr.mz.toFixed(2)}
+                          {sr.mz.toFixed(2)} kN·m
                         </span>
                       </div>
                     )}
@@ -1277,7 +1253,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
           </div>
         )}
 
-        {/* Advanced Tools - Quick Access */}
+        {/* Export Results */}
         <div className="px-4 py-3 border-t border-zinc-200 dark:border-zinc-800">
           <h4 className="text-xs font-medium text-zinc-400 dark:text-zinc-400 mb-2 uppercase tracking-wider">
             Export Results
@@ -1310,7 +1286,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
           </div>
         </div>
 
-        {/* Advanced Tools - Quick Access */}
+        {/* Next Steps — Advanced Tools */}
         <div className="px-4 py-3">
           <h4 className="text-xs font-medium text-zinc-400 dark:text-zinc-400 mb-2 uppercase tracking-wider">
             Next Steps
@@ -1400,8 +1376,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
           checkpointType="pdf_export"
           onAccept={() => {
             setShowPDFConsentModal(false);
-            const userId = `user-${Date.now()}`;
-            consentService.recordConsent(userId, "pdf_export");
+            consentService.recordConsent(consentUserId, "pdf_export");
             executePDFExport();
           }}
           onDecline={() => {

@@ -1738,18 +1738,24 @@ function generateDiagramData(
     const maxAbs = (arr: number[]) =>
       arr.reduce((mx, v) => Math.max(mx, Math.abs(v)), 0);
 
+    // NOTE on naming convention:
+    //   moment_y (local array) = M1 + V1*x - w*x²/2 = bending moment about Z-axis (Mz)  
+    //   moment_z (local array) = My1 + Vz1*x = bending moment about Y-axis (My)
+    // Consumers (ResultsToolbar etc.) expect:
+    //   diagramData.moment_z = primary BMD (about Z-axis) — so swap in output
+    //   diagramData.moment_y = weak-axis BMD (about Y-axis)
     enriched.push({
       ...mf,
       maxShearY: maxAbs(shear_y),
-      maxMomentY: maxAbs(moment_y),
+      maxMomentY: maxAbs(moment_z), // moment_z local = My (about Y-axis)
       maxAxial: maxAbs(axial),
       maxDeflectionY: maxAbs(deflection_y),
       diagramData: {
         x_values,
         shear_y,
         shear_z,
-        moment_y,
-        moment_z,
+        moment_y: moment_z, // My (about Y-axis) from shear-Z path
+        moment_z: moment_y, // Mz (about Z-axis) from shear-Y path — primary BMD
         axial,
         torsion,
         deflection_y,

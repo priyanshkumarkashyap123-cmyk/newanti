@@ -361,8 +361,8 @@ function generateWasmDiagramData(
     x_values,
     shear_y,
     shear_z: new Array(DIAGRAM_STATIONS).fill(0),
-    moment_y,
-    moment_z: new Array(DIAGRAM_STATIONS).fill(0),
+    moment_y: new Array(DIAGRAM_STATIONS).fill(0), // weak-axis moment (none computed here)
+    moment_z: moment_y, // Primary BMD (Mz about Z-axis) — consumers read moment_z
     axial: axial_arr,
     torsion: new Array(DIAGRAM_STATIONS).fill(0),
     deflection_y,
