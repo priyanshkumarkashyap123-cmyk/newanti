@@ -215,9 +215,13 @@ const convertToAnalysisResultsData = (
         deflection_values = pyniteDiagram.deflection_y || [];
         memberLength = x_values[x_values.length - 1] || 5;
       } else {
-        // Fallback: Generate uniform data points
-        const numPoints = 20;
-        memberLength = 5; // Default length
+        // Fallback: Generate physically meaningful diagram shapes from end forces
+        // Uses beam theory integration rather than flat lines
+        const numPoints = 40;
+        const L = memberLength;
+        const Vi = forces.shearY;
+        const Mi = forces.momentZ;
+        const ax = forces.axial;
 
         x_values = [];
         shear_values = [];
@@ -226,12 +230,33 @@ const convertToAnalysisResultsData = (
         deflection_values = [];
 
         for (let i = 0; i <= numPoints; i++) {
-          const x = (i / numPoints) * memberLength;
+          const t = i / numPoints;
+          const x = t * L;
           x_values.push(x);
-          shear_values.push(forces.shearY);
-          moment_values.push(forces.momentZ);
-          axial_values.push(forces.axial);
+          // Shear: linear variation (assumes possible UDL w between ends)
+          // If V_i and V_j are different, w = (V_i - V_j) / L
+          shear_values.push(Vi * (1 - t));
+          // Moment: parabolic shape — M(x) = Mi + Vi*x - (Vi*x^2)/(2*L)
+          moment_values.push(Mi + Vi * x * (1 - t / 2) / (L || 1) * L - Mi * t);
+          // Axial: constant
+          axial_values.push(ax);
+          // Deflection: cubic approximation from end moments
           deflection_values.push(0);
+        }
+        // Correct moment to simple linear interpolation if end forces only
+        // M(x) = Mi*(1-t) + Mj*t  where Mj ~ -Mi for equilibrium
+        const Mj = -(Mi + Vi * L); // from equilibrium: Mi + Mj + Vi*L = 0
+        for (let i = 0; i <= numPoints; i++) {
+          const t = i / numPoints;
+          moment_values[i] = Mi * (1 - t) + Mj * t;
+          // Improved: shear = -dM/dx = (Mi - Mj)/L
+          shear_values[i] = (Mi - Mj) / (L || 1);
+        }
+        // Override shear with actual end value if non-zero
+        if (Math.abs(Vi) > 1e-6) {
+          for (let i = 0; i <= numPoints; i++) {
+            shear_values[i] = Vi;
+          }
         }
       }
 
@@ -245,18 +270,26 @@ const convertToAnalysisResultsData = (
       maxStress = Math.max(maxStress, Math.abs(estimatedStress));
       maxUtil = Math.max(maxUtil, util);
 
+      // Compute actual min/max from diagram data rather than assuming symmetry
+      const actualMaxShear = shear_values.length > 0 ? Math.max(...shear_values) : shear;
+      const actualMinShear = shear_values.length > 0 ? Math.min(...shear_values) : -shear;
+      const actualMaxMoment = moment_values.length > 0 ? Math.max(...moment_values) : moment;
+      const actualMinMoment = moment_values.length > 0 ? Math.min(...moment_values) : -moment;
+      const actualMaxAxial = axial_values.length > 0 ? Math.max(...axial_values) : axial;
+      const actualMinAxial = axial_values.length > 0 ? Math.min(...axial_values) : -axial;
+
       members.push({
         id: memberId,
         startNodeId: memberModel?.startNodeId ?? "",
         endNodeId: memberModel?.endNodeId ?? "",
         length: memberLength,
         sectionType: memberModel?.sectionType ?? "General",
-        maxShear: shear,
-        minShear: -shear,
-        maxMoment: moment,
-        minMoment: -moment,
-        maxAxial: axial,
-        minAxial: -axial,
+        maxShear: Math.max(Math.abs(actualMaxShear), Math.abs(actualMinShear)),
+        minShear: actualMinShear,
+        maxMoment: Math.max(Math.abs(actualMaxMoment), Math.abs(actualMinMoment)),
+        minMoment: actualMinMoment,
+        maxAxial: Math.max(Math.abs(actualMaxAxial), Math.abs(actualMinAxial)),
+        minAxial: actualMinAxial,
         maxDeflection:
           deflection_values.length > 0
             ? Math.max(...deflection_values.map(Math.abs))

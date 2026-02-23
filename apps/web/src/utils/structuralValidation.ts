@@ -162,27 +162,42 @@ export function validateStructure(
     });
   }
 
-  // 4. Check for mechanisms (simplified)
+  // 4. Check for mechanisms (simplified pre-check)
+  // The comprehensive determinacy analysis (section 8) does the full check;
+  // this is a quick necessary-condition screen.
+  //
+  // CORRECT FORMULAS (necessary conditions for stability):
+  //   2D Truss:  m + r ≥ 2j
+  //   3D Truss:  m + r ≥ 3j
+  //   2D Frame:  3m + r ≥ 3j  (each member carries N, V, M → 3 unknowns)
+  //   3D Frame:  6m + r ≥ 6j  (each member carries N,Vy,Vz,T,My,Mz → 6 unknowns)
+  //
+  // Previously this used the truss formula for everything, which wrongly
+  // flagged large 3D frames as unstable.  Now we use the frame formula
+  // (conservative: if a member is really a truss link, the comprehensive
+  //  determinacy analysis in section 8 will catch it).
+
   const numMembers = members.size;
   const numNodes = nodes.size;
   const numReactions = supportedDOFs;
 
-  // Use correct formula based on dimensionality:
-  //   2D Truss: m + r >= 2n
-  //   2D Frame: 3m + r >= 3n (accounting for per-member DOFs)
-  //   3D:       m + r >= 3n  (simplified 3D truss), 6m + r >= 6n for frames
-  // Using simple check for now:
-  const dofFactor = is3DGeometry ? 3 : 2;
-  const staticDeterminacy = numMembers + numReactions - dofFactor * numNodes;
+  // Frame formula: unknowns = dofPerMember * m + r,  equations = dofPerNode * n
+  const dofPerMember = is3DGeometry ? 6 : 3; // internal unknowns per frame member
+  const dofPerNode = is3DGeometry ? 6 : 3;   // equilibrium equations per node
+  const staticDeterminacy =
+    dofPerMember * numMembers + numReactions - dofPerNode * numNodes;
 
   if (staticDeterminacy < 0) {
+    const formula = is3DGeometry
+      ? `6m + r ≥ 6n → ${dofPerMember * numMembers} + ${numReactions} = ${dofPerMember * numMembers + numReactions} < ${dofPerNode * numNodes}`
+      : `3m + r ≥ 3n → ${dofPerMember * numMembers} + ${numReactions} = ${dofPerMember * numMembers + numReactions} < ${dofPerNode * numNodes}`;
     errors.push({
       type: "critical",
       message: "UNSTABLE - Mechanism detected",
       details:
         `Structure lacks sufficient members or supports.\n` +
-        `Members: ${numMembers}, Supports: ${numReactions}, Nodes: ${numNodes}\n` +
-        `Need: m + r ≥ 2n for planar structures`,
+        `Members: ${numMembers}, Reactions: ${numReactions}, Nodes: ${numNodes}\n` +
+        `Need: ${formula}`,
     });
   } else if (staticDeterminacy === 0) {
     warnings.push({
