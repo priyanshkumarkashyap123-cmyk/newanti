@@ -186,7 +186,10 @@ test.describe('Network Performance', () => {
     expect(requests.length).toBeLessThan(100);
   });
 
-  test('should handle slow network gracefully', async ({ page }) => {
+  test('should handle slow network gracefully', async ({ page, browserName }) => {
+    // CDP session is only available in Chromium
+    test.skip(browserName !== 'chromium', 'CDP required for network throttling');
+
     // Simulate slow 3G
     const client = await page.context().newCDPSession(page);
     await client.send('Network.emulateNetworkConditions', {
