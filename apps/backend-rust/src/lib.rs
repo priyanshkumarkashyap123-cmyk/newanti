@@ -694,15 +694,36 @@ pub fn solve_p_delta_extended(
     }
 }
 
-/// Buckling analysis (stub for backward compatibility)
+/// Linearized buckling analysis — eigenvalue problem [Ke]{φ} = λ[-Kg]{φ}
+/// Returns critical load factors where P_cr = λ × P_applied
 #[wasm_bindgen]
 pub fn analyze_buckling(
-    _nodes_val: JsValue,
-    _elements_val: JsValue,
-    _point_loads_val: JsValue,
-    _num_modes: usize
+    nodes_val: JsValue,
+    elements_val: JsValue,
+    point_loads_val: JsValue,
+    num_modes: usize
 ) -> JsValue {
-    JsValue::from_str(r#"{"success": false, "error": "Buckling analysis not yet implemented in backend-rust"}"#)
+    let nodes: Vec<solver_3d::Node3D> = match serde_wasm_bindgen::from_value(nodes_val) {
+        Ok(v) => v,
+        Err(e) => return JsValue::from_str(&format!(r#"{{"success":false,"error":"Node parse error: {}"}}"#, e)),
+    };
+    let elements: Vec<solver_3d::Element3D> = match serde_wasm_bindgen::from_value(elements_val) {
+        Ok(v) => v,
+        Err(e) => return JsValue::from_str(&format!(r#"{{"success":false,"error":"Element parse error: {}"}}"#, e)),
+    };
+    let nodal_loads: Vec<solver_3d::NodalLoad> = serde_wasm_bindgen::from_value(point_loads_val)
+        .unwrap_or_default();
+
+    match solver_3d::linearized_buckling_analysis(
+        nodes, elements, nodal_loads, vec![],
+        if num_modes == 0 { 5 } else { num_modes },
+    ) {
+        Ok(result) => {
+            serde_wasm_bindgen::to_value(&result)
+                .unwrap_or_else(|e| JsValue::from_str(&format!(r#"{{"success":false,"error":"Serialize: {}"}}"#, e)))
+        },
+        Err(e) => JsValue::from_str(&format!(r#"{{"success":false,"buckling_loads":[],"error":"{}"}}"#, e)),
+    }
 }
 
 /// Get solver version and capabilities

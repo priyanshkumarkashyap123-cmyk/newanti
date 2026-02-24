@@ -15,7 +15,7 @@
  * - Theory of Matrix Structural Analysis (Przemieniecki)
  */
 
-use nalgebra::{DMatrix, DVector, Matrix6, Vector6};
+use nalgebra::{DMatrix, DVector, Matrix6, Vector6, SymmetricEigen};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use crate::plate_element::PlateElement;
@@ -2450,8 +2450,8 @@ pub fn linearized_buckling_analysis(
 
         // Get axial force from linear solution
         let axial_force = if let Some(forces) = member_forces.get(&element.id) {
-            // forces is MemberForces3D — axial_i is the axial at start node
-            forces.axial_i
+            // forces_i[0] is Fx (axial force) at start node in local coords
+            forces.forces_i.first().copied().unwrap_or(0.0)
         } else {
             0.0
         };
