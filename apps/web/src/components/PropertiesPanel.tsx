@@ -1,0 +1,1577 @@
+import { FC, useState, useEffect, useCallback, useRef } from 'react';
+import { useModelStore, type Restraints, type MemberLoad as StoreMemberLoad } from '../store/model';
+import { STEEL_SECTIONS, MATERIALS_DATABASE, type SectionProperties, type Material } from '../data/SectionDatabase';
+
+// ============================================
+// SECTION CATEGORIES & FILTERING
+// ============================================
+
+type SectionCategory = 'ISMB' | 'ISMC' | 'ISLB' | 'ISHB' | 'W' | 'RCC-BEAM' | 'RCC-COLUMN';
+
+const SECTION_CATEGORIES: { id: SectionCategory; label: string }[] = [
+    { id: 'ISMB', label: 'Steel - ISMB' },
+    { id: 'ISMC', label: 'Steel - ISMC' },
+    { id: 'ISLB', label: 'Steel - ISLB' },
+    { id: 'ISHB', label: 'Steel - ISHB' },
+    { id: 'W', label: 'Steel - W Shapes (AISC)' },
+    { id: 'RCC-BEAM', label: 'RCC - Beams' },
+    { id: 'RCC-COLUMN', label: 'RCC - Columns' },
+];
+
+// Filter sections by category
+function getSectionsByCategory(category: SectionCategory): SectionProperties[] {
+    switch (category) {
+        case 'ISMB':
+            return STEEL_SECTIONS.filter(s => s.type === 'ISMB');
+        case 'ISMC':
+            return STEEL_SECTIONS.filter(s => s.type === 'ISMC');
+        case 'ISLB':
+            return STEEL_SECTIONS.filter(s => s.type === 'ISLB');
+        case 'ISHB':
+            return STEEL_SECTIONS.filter(s => s.type === 'ISHB');
+        case 'W':
+            return STEEL_SECTIONS.filter(s => s.type === 'W');
+        case 'RCC-BEAM':
+            return STEEL_SECTIONS.filter(s => s.id.startsWith('RCC-') && !s.id.includes('COL'));
+        case 'RCC-COLUMN':
+            return STEEL_SECTIONS.filter(s => s.id.includes('RCC-COL'));
+        default:
+            return [];
+    }
+}
+
+// Convert section properties from mm to m for analysis
+function convertSectionToMeters(section: SectionProperties): { A: number; I: number } {
+    return {
+        A: section.A / 1e6,      // mm² to m²
+        I: section.Ix / 1e12     // mm⁴ to m⁴ (using Ix as major axis)
+    };
+}
+
+// ============================================
+// MATERIAL OPTIONS (from database)
+// ============================================
+const MATERIAL_OPTIONS = MATERIALS_DATABASE.map(m => ({
+    id: m.id,
+    label: m.name,
+    E: m.E * 1e3,  // Convert MPa to kN/m² (1 MPa = 1000 kN/m²)
+    fy: m.fy || m.fck || 0
+}));
+
+// ============================================
+// DEBOUNCE HOOK
+// ============================================
+function useDebouncedCallback<T extends (...args: any[]) => void>(
+    callback: T,
+    delay: number
+): T {
+    const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
+    return useCallback((...args: Parameters<T>) => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(() => callback(...args), delay);
+    }, [callback, delay]) as T;
+}
+
+// ============================================
+// NUMBER INPUT WITH DEBOUNCE
+// ============================================
+interface NumberInputProps {
+    value: number;
+    onChange: (value: number) => void;
+    step?: number;
+    disabled?: boolean;
+    style?: React.CSSProperties;
+}
+
+const NumberInput: FC<NumberInputProps> = ({ value, onChange, step = 0.1, disabled, style }) => {
+    const [localValue, setLocalValue] = useState(value.toString());
+
+    // Sync local value when prop changes
+    useEffect(() => {
+        setLocalValue(value.toString());
+    }, [value]);
+
+    // Debounced onChange (100ms)
+    const debouncedChange = useDebouncedCallback((val: string) => {
+        const num = parseFloat(val);
+        if (!isNaN(num)) onChange(num);
+    }, 100);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setLocalValue(e.target.value);
+        debouncedChange(e.target.value);
+    };
+
+    return (
+        <input
+            type="number"
+            step={step}
+            value={localValue}
+            onChange={handleChange}
+            disabled={disabled}
+            style={{ ...inputStyle, ...style }}
+        />
+    );
+};
+
+// ============================================
+// LOAD DIRECTION OPTIONS
+// ============================================
+const LOAD_DIRECTIONS = [
+    { value: 'global_y', label: 'Global Y (Vertical)' },
+    { value: 'global_x', label: 'Global X (Horizontal)' },
+    { value: 'global_z', label: 'Global Z (Out-of-plane)' },
+    { value: 'local_y', label: 'Local Y (Perpendicular)' },
+    { value: 'axial', label: 'Local X (Axial)' },
+] as const;
+
+type LoadDirection = typeof LOAD_DIRECTIONS[number]['value'];
+
+// ============================================
+// PROPERTIES PANEL COMPONENT
+// ============================================
+export const PropertiesPanel: FC = () => {
+    // 1. Subscription: Listen to selectedIds
+    const selectedIds = useModelStore((state) => state.selectedIds);
+    const nodes = useModelStore((state) => state.nodes);
+    const members = useModelStore((state) => state.members);
+    const loads = useModelStore((state) => state.loads);
+    const memberLoads = useModelStore((state) => state.memberLoads);
+    const analysisResults = useModelStore((state) => state.analysisResults);
+    const updateNodePosition = useModelStore((state) => state.updateNodePosition);
+    const updateMember = useModelStore((state) => state.updateMember);
+    const updateMembers = useModelStore((state) => state.updateMembers);
+    const setNodeRestraints = useModelStore((state) => state.setNodeRestraints);
+    const addLoad = useModelStore((state) => state.addLoad);
+    const removeLoad = useModelStore((state) => state.removeLoad);
+    const addMemberLoad = useModelStore((state) => state.addMemberLoad);
+    const removeMemberLoad = useModelStore((state) => state.removeMemberLoad);
+
+    // Local state for new nodal load input (enhanced)
+    const [newLoadFx, setNewLoadFx] = useState(0);
+    const [newLoadFy, setNewLoadFy] = useState(-10);
+    const [newLoadFz, setNewLoadFz] = useState(0);
+    const [newLoadMz, setNewLoadMz] = useState(0);
+    const [showFullLoadInput, setShowFullLoadInput] = useState(false);
+
+    // Local state for new member load input (UDL)
+    const [newUdlW, setNewUdlW] = useState(-10);
+    const [newUdlDirection, setNewUdlDirection] = useState<LoadDirection>('global_y');
+    const [newUdlStartPos, setNewUdlStartPos] = useState(0);
+    const [newUdlEndPos, setNewUdlEndPos] = useState(1);
+    const [showUdlOptions, setShowUdlOptions] = useState(false);
+
+    // Minimize state for the panel
+    const [isMinimized, setIsMinimized] = useState(false);
+
+    // State for section category selection
+    const [sectionCategory, setSectionCategory] = useState<SectionCategory>('ISMB');
+    const [availableSections, setAvailableSections] = useState<SectionProperties[]>([]);
+
+    // State for custom section/material dialogs (must be at top level - React rules of hooks)
+    const [showCustomSection, setShowCustomSection] = useState(false);
+    const [showCustomMaterial, setShowCustomMaterial] = useState(false);
+    const [customA, setCustomA] = useState(100); // Default 100 cm²
+    const [customI, setCustomI] = useState(1000); // Default 1000 cm⁴
+    const [customE, setCustomE] = useState(200);  // Default 200 GPa
+
+    // Update available sections when category changes
+    useEffect(() => {
+        setAvailableSections(getSectionsByCategory(sectionCategory));
+    }, [sectionCategory]);
+
+    // Get current selection for useEffect dependency
+    const selectedId = selectedIds.size === 1 ? Array.from(selectedIds)[0] : null;
+
+    // Sync custom values when member selection changes
+    // Note: Only depend on selectedId to avoid re-runs when members Map reference changes
+    useEffect(() => {
+        if (selectedId) {
+            const member = members.get(selectedId);
+            if (member) {
+                setCustomA((member.A ?? 0.01) * 1e4); // Convert to cm²
+                setCustomI((member.I ?? 1e-4) * 1e8); // Convert to cm⁴
+                setCustomE((member.E ?? 200e6) / 1e6); // Convert to GPa
+            }
+        }
+        // Reset dialogs when selection changes
+        setShowCustomSection(false);
+        setShowCustomMaterial(false);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedId]); // Only re-run when selection changes, not when members Map updates
+
+    // Get selected member for rendering
+    const selectedMember = selectedId ? members.get(selectedId) : null;
+
+    // 2. Conditional Render: Minimized state
+    if (isMinimized) {
+        return (
+            <button
+                onClick={() => setIsMinimized(false)}
+                style={{
+                    width: '100%',
+                    background: 'rgba(20, 20, 20, 0.95)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '8px',
+                    padding: '10px 14px',
+                    color: 'white',
+                    fontFamily: 'Inter, sans-serif',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontSize: '13px',
+                    fontWeight: 500
+                }}
+                title="Expand Properties Panel"
+            >
+                ⚙️ Properties
+                <span style={{ marginLeft: 'auto', fontSize: '10px', color: '#888' }}>▼</span>
+            </button>
+        );
+    }
+
+    // 3. Conditional Render: No selection
+    if (selectedIds.size === 0) {
+        return (
+            <div style={panelStyle}>
+                <div style={headerWithButtonStyle}>
+                    <h3 style={headerStyle}>Properties</h3>
+                    <button onClick={() => setIsMinimized(true)} style={minimizeButtonStyle} title="Minimize">−</button>
+                </div>
+                <p style={{ color: '#888', fontSize: 13 }}>No selection</p>
+                {analysisResults && (
+                    <div style={{ borderTop: '1px solid #333', marginTop: 8, paddingTop: 8 }}>
+                        <span style={{ color: '#4caf50', fontSize: 12 }}>✓ Analysis complete</span>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    // Multi-selection (Bulk Edit)
+    if (selectedIds.size > 1) {
+        // Categorize selection
+        const selectedMembers = Array.from(selectedIds)
+            .map(id => members.get(id))
+            .filter((m): m is NonNullable<typeof m> => !!m);
+
+        const selectedNodes = Array.from(selectedIds)
+            .map(id => nodes.get(id))
+            .filter((n): n is NonNullable<typeof n> => !!n);
+
+        // BULK MEMBER EDITING
+        if (selectedMembers.length > 0 && selectedNodes.length === 0) {
+            const handleBulkSectionChange = (sectionId: string) => {
+                const section = STEEL_SECTIONS.find(s => s.id === sectionId);
+                if (section) {
+                    const { A, I } = convertSectionToMeters(section);
+                    // Use batch update for performance - single state update for all members
+                    const updates = new Map<string, Partial<typeof selectedMembers[0]>>();
+                    selectedMembers.forEach(m => {
+                        updates.set(m.id, { sectionId, A, I });
+                    });
+                    updateMembers(updates);
+                } else if (sectionId) {
+                    const updates = new Map<string, Partial<typeof selectedMembers[0]>>();
+                    selectedMembers.forEach(m => {
+                        updates.set(m.id, { sectionId });
+                    });
+                    updateMembers(updates);
+                }
+            };
+
+            const handleBulkMaterialChange = (materialId: string) => {
+                const material = MATERIAL_OPTIONS.find(m => m.id === materialId);
+                if (material && material.E > 0) {
+                    // Use batch update for performance
+                    const updates = new Map<string, Partial<typeof selectedMembers[0]>>();
+                    selectedMembers.forEach(m => {
+                        updates.set(m.id, { E: material.E });
+                    });
+                    updateMembers(updates);
+                }
+            };
+
+            const handleBulkReleaseChange = (key: 'startMoment' | 'endMoment', value: boolean) => {
+                // Use batch update for performance
+                const updates = new Map<string, Partial<typeof selectedMembers[0]>>();
+                selectedMembers.forEach(m => {
+                    const currentReleases = m.releases ?? { startMoment: false, endMoment: false };
+                    updates.set(m.id, { releases: { ...currentReleases, [key]: value } });
+                });
+                updateMembers(updates);
+            };
+
+            return (
+                <div style={panelStyle}>
+                    <div style={headerWithButtonStyle}>
+                        <h3 style={headerStyle}>Bulk Edit ({selectedMembers.length} Members)</h3>
+                        <button onClick={() => setIsMinimized(true)} style={minimizeButtonStyle} title="Minimize">−</button>
+                    </div>
+
+                    {/* Common Actions */}
+                    <div style={sectionStyle}>
+                        <label style={labelStyle}>📐 Section Category</label>
+                        <select
+                            value={sectionCategory}
+                            onChange={(e) => setSectionCategory(e.target.value as SectionCategory)}
+                            style={selectStyle}
+                        >
+                            {SECTION_CATEGORIES.map(cat => (
+                                <option key={cat.id} value={cat.id}>{cat.label}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div style={{ ...sectionStyle, marginTop: 8 }}>
+                        <label style={labelStyle}>📏 Set Section</label>
+                        <select
+                            onChange={(e) => handleBulkSectionChange(e.target.value)}
+                            style={selectStyle}
+                            defaultValue=""
+                        >
+                            <option value="" disabled>Select to apply to all...</option>
+                            {availableSections.map(section => (
+                                <option key={section.id} value={section.id}>{section.name}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <hr style={dividerStyle} />
+
+                    <div style={sectionStyle}>
+                        <label style={labelStyle}>🧱 Set Material</label>
+                        <select
+                            onChange={(e) => handleBulkMaterialChange(e.target.value)}
+                            style={selectStyle}
+                            defaultValue=""
+                        >
+                            <option value="" disabled>Select to apply to all...</option>
+                            {MATERIAL_OPTIONS.map(opt => (
+                                <option key={opt.id} value={opt.id}>{opt.label}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <hr style={dividerStyle} />
+
+                    <div style={sectionStyle}>
+                        <label style={labelStyle}>🔓 Bulk Releases</label>
+                        <div style={{ display: 'flex', gap: 12, marginTop: 6 }}>
+                            <label style={checkboxLabelStyle}>
+                                <input type="checkbox" onChange={(e) => handleBulkReleaseChange('startMoment', e.target.checked)} /> Start
+                            </label>
+                            <label style={checkboxLabelStyle}>
+                                <input type="checkbox" onChange={(e) => handleBulkReleaseChange('endMoment', e.target.checked)} /> End
+                            </label>
+                        </div>
+                        <span style={{ fontSize: 10, color: '#888', marginTop: 4 }}>(Check to apply release to all)</span>
+                    </div>
+
+                    <hr style={dividerStyle} />
+
+                    <div style={{ marginTop: 8 }}>
+                        <button
+                            onClick={() => selectedMembers.forEach(m => useModelStore.getState().removeMember(m.id))}
+                            style={{ ...deleteButtonStyle, border: '1px solid #f44', borderRadius: 4, width: '100%', padding: '6px' }}
+                        >
+                            Delete All Selected
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // Mixed or Node selection
+        return (
+            <div style={panelStyle}>
+                <div style={headerWithButtonStyle}>
+                    <h3 style={headerStyle}>Multiple Selection</h3>
+                    <button onClick={() => setIsMinimized(true)} style={minimizeButtonStyle} title="Minimize">−</button>
+                </div>
+                <div style={{ fontSize: 13, marginBottom: 8 }}>
+                    {selectedNodes.length > 0 && <div>• {selectedNodes.length} Nodes</div>}
+                    {selectedMembers.length > 0 && <div>• {selectedMembers.length} Members</div>}
+                </div>
+                <button
+                    onClick={() => useModelStore.getState().deleteSelection()}
+                    style={{ ...deleteButtonStyle, border: '1px solid #f44', borderRadius: 4, width: '100%', padding: '6px' }}
+                >
+                    Delete Selection
+                </button>
+            </div>
+        );
+    }
+
+    const id = Array.from(selectedIds)[0]!;
+    const node = nodes.get(id);
+    const member = members.get(id);
+
+    // ========================================
+    // RENDER NODE PROPERTIES
+    // ========================================
+    if (node) {
+        const restraints = node.restraints ?? { fx: false, fy: false, fz: false, mx: false, my: false, mz: false };
+        const nodeLoads = loads.filter(l => l.nodeId === id);
+        const disp = analysisResults?.displacements.get(id);
+        const reaction = analysisResults?.reactions.get(id);
+
+        const handleRestraintChange = (key: keyof Restraints, value: boolean) => {
+            setNodeRestraints(id, { ...restraints, [key]: value });
+        };
+
+        const handleAddLoad = () => {
+            // Use full load vector if in full mode, otherwise just Fy
+            const loadData = showFullLoadInput ? {
+                id: crypto.randomUUID(),
+                nodeId: id,
+                fx: newLoadFx,
+                fy: newLoadFy,
+                fz: newLoadFz,
+                mz: newLoadMz
+            } : {
+                id: crypto.randomUUID(),
+                nodeId: id,
+                fx: 0,
+                fy: newLoadFy,
+                fz: 0,
+                mz: 0
+            };
+            addLoad(loadData);
+            // Reset inputs
+            setNewLoadFx(0);
+            setNewLoadFy(-10);
+            setNewLoadFz(0);
+            setNewLoadMz(0);
+        };
+
+        return (
+            <div style={panelStyle}>
+                <div style={headerWithButtonStyle}>
+                    <h3 style={headerStyle}>Node Properties</h3>
+                    <button onClick={() => setIsMinimized(true)} style={minimizeButtonStyle} title="Minimize">−</button>
+                </div>
+
+                {/* Node Label & ID - STAAD Pro Style */}
+                <div style={{ 
+                    background: 'linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%)',
+                    padding: '10px 12px',
+                    borderRadius: 6,
+                    marginBottom: 12,
+                    border: '1px solid #334155'
+                }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: '#60a5fa' }}>
+                            🔵 NODE
+                        </span>
+                        <span style={{ 
+                            fontSize: 12, 
+                            color: '#94a3b8', 
+                            fontFamily: 'monospace',
+                            background: 'rgba(0,0,0,0.3)',
+                            padding: '2px 6px',
+                            borderRadius: 3
+                        }}>
+                            #{id.slice(0, 8)}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Coordinates - Industry Style Grid */}
+                <div style={sectionStyle}>
+                    <label style={labelStyle}>📍 Coordinates (m)</label>
+                    <div style={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: 'repeat(3, 1fr)', 
+                        gap: 6, 
+                        marginTop: 6,
+                        background: 'rgba(0,0,0,0.2)',
+                        padding: 8,
+                        borderRadius: 6
+                    }}>
+                        <div style={{ textAlign: 'center' }}>
+                            <span style={{ fontSize: 10, color: '#ef4444', display: 'block', marginBottom: 2 }}>X</span>
+                            <NumberInput
+                                value={node.x}
+                                onChange={(val) => updateNodePosition(id, { x: val })}
+                                style={{ width: '100%', textAlign: 'center' }}
+                            />
+                        </div>
+                        <div style={{ textAlign: 'center' }}>
+                            <span style={{ fontSize: 10, color: '#22c55e', display: 'block', marginBottom: 2 }}>Y</span>
+                            <NumberInput
+                                value={node.y}
+                                onChange={(val) => updateNodePosition(id, { y: val })}
+                                style={{ width: '100%', textAlign: 'center' }}
+                            />
+                        </div>
+                        <div style={{ textAlign: 'center' }}>
+                            <span style={{ fontSize: 10, color: '#3b82f6', display: 'block', marginBottom: 2 }}>Z</span>
+                            <NumberInput
+                                value={node.z}
+                                onChange={(val) => updateNodePosition(id, { z: val })}
+                                style={{ width: '100%', textAlign: 'center' }}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <hr style={dividerStyle} />
+
+                {/* Supports - STAAD Pro Style with DOF indicators */}
+                <div style={sectionStyle}>
+                    <label style={labelStyle}>📌 Boundary Conditions</label>
+                    
+                    {/* Quick presets */}
+                    <div style={{ display: 'flex', gap: 4, marginTop: 6, marginBottom: 8 }}>
+                        <button 
+                            onClick={() => {
+                                handleRestraintChange('fx', true);
+                                handleRestraintChange('fy', true);
+                                handleRestraintChange('fz', true);
+                                handleRestraintChange('mz', true);
+                            }}
+                            style={{ ...presetButtonStyle, background: restraints.fx && restraints.fy && restraints.mz ? '#4caf50' : '#334155' }}
+                            title="Fixed Support"
+                        >
+                            Fixed
+                        </button>
+                        <button 
+                            onClick={() => {
+                                handleRestraintChange('fx', true);
+                                handleRestraintChange('fy', true);
+                                handleRestraintChange('fz', true);
+                                handleRestraintChange('mz', false);
+                            }}
+                            style={{ ...presetButtonStyle, background: restraints.fx && restraints.fy && !restraints.mz ? '#ff9800' : '#334155' }}
+                            title="Pinned Support"
+                        >
+                            Pinned
+                        </button>
+                        <button 
+                            onClick={() => {
+                                handleRestraintChange('fx', false);
+                                handleRestraintChange('fy', true);
+                                handleRestraintChange('fz', false);
+                                handleRestraintChange('mz', false);
+                            }}
+                            style={{ ...presetButtonStyle, background: !restraints.fx && restraints.fy && !restraints.mz ? '#2196f3' : '#334155' }}
+                            title="Roller Support"
+                        >
+                            Roller
+                        </button>
+                        <button 
+                            onClick={() => {
+                                handleRestraintChange('fx', false);
+                                handleRestraintChange('fy', false);
+                                handleRestraintChange('fz', false);
+                                handleRestraintChange('mz', false);
+                            }}
+                            style={{ ...presetButtonStyle, background: !restraints.fx && !restraints.fy && !restraints.mz ? '#666' : '#334155' }}
+                            title="Free (No support)"
+                        >
+                            Free
+                        </button>
+                    </div>
+
+                    {/* DOF Grid - Industry Standard */}
+                    <div style={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: 'repeat(3, 1fr)',
+                        gap: 4,
+                        background: 'rgba(0,0,0,0.2)',
+                        padding: 8,
+                        borderRadius: 6
+                    }}>
+                        <label style={{ ...dofLabelStyle, borderColor: restraints.fx ? '#4caf50' : '#555' }}>
+                            <input type="checkbox" checked={restraints.fx} onChange={(e) => handleRestraintChange('fx', e.target.checked)} style={{ display: 'none' }} />
+                            <span style={{ fontSize: 10, color: restraints.fx ? '#4caf50' : '#888' }}>Tx</span>
+                            <span style={{ fontSize: 8, color: '#666' }}>X-trans</span>
+                        </label>
+                        <label style={{ ...dofLabelStyle, borderColor: restraints.fy ? '#4caf50' : '#555' }}>
+                            <input type="checkbox" checked={restraints.fy} onChange={(e) => handleRestraintChange('fy', e.target.checked)} style={{ display: 'none' }} />
+                            <span style={{ fontSize: 10, color: restraints.fy ? '#4caf50' : '#888' }}>Ty</span>
+                            <span style={{ fontSize: 8, color: '#666' }}>Y-trans</span>
+                        </label>
+                        <label style={{ ...dofLabelStyle, borderColor: restraints.fz ? '#4caf50' : '#555' }}>
+                            <input type="checkbox" checked={restraints.fz} onChange={(e) => handleRestraintChange('fz', e.target.checked)} style={{ display: 'none' }} />
+                            <span style={{ fontSize: 10, color: restraints.fz ? '#4caf50' : '#888' }}>Tz</span>
+                            <span style={{ fontSize: 8, color: '#666' }}>Z-trans</span>
+                        </label>
+                        <label style={{ ...dofLabelStyle, borderColor: restraints.mx ? '#4caf50' : '#555' }}>
+                            <input type="checkbox" checked={restraints.mx ?? false} onChange={(e) => handleRestraintChange('mx', e.target.checked)} style={{ display: 'none' }} />
+                            <span style={{ fontSize: 10, color: restraints.mx ? '#4caf50' : '#888' }}>Rx</span>
+                            <span style={{ fontSize: 8, color: '#666' }}>X-rot</span>
+                        </label>
+                        <label style={{ ...dofLabelStyle, borderColor: restraints.my ? '#4caf50' : '#555' }}>
+                            <input type="checkbox" checked={restraints.my ?? false} onChange={(e) => handleRestraintChange('my', e.target.checked)} style={{ display: 'none' }} />
+                            <span style={{ fontSize: 10, color: restraints.my ? '#4caf50' : '#888' }}>Ry</span>
+                            <span style={{ fontSize: 8, color: '#666' }}>Y-rot</span>
+                        </label>
+                        <label style={{ ...dofLabelStyle, borderColor: restraints.mz ? '#4caf50' : '#555' }}>
+                            <input type="checkbox" checked={restraints.mz} onChange={(e) => handleRestraintChange('mz', e.target.checked)} style={{ display: 'none' }} />
+                            <span style={{ fontSize: 10, color: restraints.mz ? '#4caf50' : '#888' }}>Rz</span>
+                            <span style={{ fontSize: 8, color: '#666' }}>Z-rot</span>
+                        </label>
+                    </div>
+                    
+                    {/* Support Type Indicator */}
+                    <div style={{ 
+                        marginTop: 6, 
+                        padding: '4px 8px', 
+                        background: 'rgba(76, 175, 80, 0.1)', 
+                        borderRadius: 4,
+                        textAlign: 'center'
+                    }}>
+                        <span style={{ fontSize: 11, color: '#4caf50', fontWeight: 500 }}>
+                            {Object.values(restraints).every(v => v) ? '🔒 Fixed Support' :
+                             restraints.fx && restraints.fy && restraints.fz && !restraints.mz ? '📍 Pinned Support' :
+                             restraints.fy && !restraints.fx && !restraints.mz ? '🔄 Roller Support' :
+                             Object.values(restraints).some(v => v) ? '⚡ Partial Restraint' :
+                             '⭕ Free Node'}
+                        </span>
+                    </div>
+                </div>
+
+                <hr style={dividerStyle} />
+
+                {/* Enhanced Loads Section */}
+                <div style={sectionStyle}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <label style={labelStyle}>⬇️ Nodal Loads</label>
+                        <button 
+                            onClick={() => setShowFullLoadInput(!showFullLoadInput)} 
+                            style={{ ...minimizeButtonStyle, fontSize: 10 }}
+                            title="Toggle detailed input"
+                        >
+                            {showFullLoadInput ? '▼ Simple' : '▶ Full'}
+                        </button>
+                    </div>
+                    
+                    {/* Existing loads display with full info */}
+                    {nodeLoads.length === 0 && <p style={{ fontSize: 11, color: '#666', marginTop: 4 }}>No loads applied</p>}
+                    {nodeLoads.map(load => (
+                        <div key={load.id} style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            fontSize: 11, 
+                            marginTop: 6, 
+                            alignItems: 'center',
+                            background: 'rgba(59, 130, 246, 0.1)',
+                            padding: '6px 8px',
+                            borderRadius: 4,
+                            border: '1px solid rgba(59, 130, 246, 0.3)'
+                        }}>
+                            <div style={{ fontFamily: 'monospace' }}>
+                                {load.fx ? `Fx: ${load.fx} ` : ''}
+                                {load.fy ? `Fy: ${load.fy} ` : ''}
+                                {load.fz ? `Fz: ${load.fz} ` : ''}
+                                {load.mz ? `Mz: ${load.mz}` : ''}
+                                {!load.fx && !load.fy && !load.fz && !load.mz && 'Zero load'}
+                                <span style={{ color: '#888' }}> kN</span>
+                            </div>
+                            <button onClick={() => removeLoad(load.id)} style={deleteButtonStyle}>✕</button>
+                        </div>
+                    ))}
+                    
+                    {/* Add Load Form */}
+                    <div style={{ marginTop: 10, padding: 8, background: 'rgba(0,0,0,0.2)', borderRadius: 6 }}>
+                        {showFullLoadInput ? (
+                            // Full load input with all components
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                    <span style={{ fontSize: 10, width: 24, color: '#888' }}>Fx</span>
+                                    <NumberInput value={newLoadFx} onChange={setNewLoadFx} style={{ flex: 1 }} />
+                                    <span style={{ fontSize: 10, color: '#666' }}>kN</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                    <span style={{ fontSize: 10, width: 24, color: '#888' }}>Fy</span>
+                                    <NumberInput value={newLoadFy} onChange={setNewLoadFy} style={{ flex: 1 }} />
+                                    <span style={{ fontSize: 10, color: '#666' }}>kN</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                    <span style={{ fontSize: 10, width: 24, color: '#888' }}>Fz</span>
+                                    <NumberInput value={newLoadFz} onChange={setNewLoadFz} style={{ flex: 1 }} />
+                                    <span style={{ fontSize: 10, color: '#666' }}>kN</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                    <span style={{ fontSize: 10, width: 24, color: '#888' }}>Mz</span>
+                                    <NumberInput value={newLoadMz} onChange={setNewLoadMz} style={{ flex: 1 }} />
+                                    <span style={{ fontSize: 10, color: '#666' }}>kN·m</span>
+                                </div>
+                            </div>
+                        ) : (
+                            // Simple vertical load input
+                            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                <span style={{ fontSize: 11, color: '#888' }}>Fy:</span>
+                                <NumberInput value={newLoadFy} onChange={setNewLoadFy} style={{ width: 70 }} />
+                                <span style={{ fontSize: 10, color: '#666' }}>kN</span>
+                            </div>
+                        )}
+                        <button 
+                            onClick={handleAddLoad} 
+                            style={{ ...addButtonStyle, width: '100%', marginTop: 8, background: '#3b82f6' }}
+                        >
+                            + Add Load
+                        </button>
+                        <p style={{ fontSize: 9, color: '#666', marginTop: 4, textAlign: 'center' }}>
+                            Negative = downward/leftward
+                        </p>
+                    </div>
+                </div>
+
+                {/* Analysis Results - Enhanced Industry Style */}
+                {(disp || reaction) && (
+                    <>
+                        <hr style={dividerStyle} />
+                        <div style={{ 
+                            background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(0,0,0,0.2) 100%)',
+                            padding: 10,
+                            borderRadius: 6,
+                            border: '1px solid rgba(76, 175, 80, 0.3)'
+                        }}>
+                            <label style={{ ...labelStyle, color: '#4caf50', marginBottom: 8, display: 'block' }}>
+                                📊 Analysis Results
+                            </label>
+                            
+                            {/* Displacements */}
+                            {disp && (
+                                <div style={{ marginBottom: 8 }}>
+                                    <span style={{ fontSize: 10, color: '#888', display: 'block', marginBottom: 4 }}>
+                                        DISPLACEMENTS
+                                    </span>
+                                    <div style={infoGridStyle}>
+                                        <div style={infoItemStyle}>
+                                            <span style={{ color: '#ef4444' }}>δx</span>
+                                            <span>{(disp.dx * 1000).toFixed(3)} mm</span>
+                                        </div>
+                                        <div style={infoItemStyle}>
+                                            <span style={{ color: '#22c55e' }}>δy</span>
+                                            <span>{(disp.dy * 1000).toFixed(3)} mm</span>
+                                        </div>
+                                        <div style={infoItemStyle}>
+                                            <span style={{ color: '#3b82f6' }}>δz</span>
+                                            <span>{(disp.dz * 1000).toFixed(3)} mm</span>
+                                        </div>
+                                        <div style={infoItemStyle}>
+                                            <span style={{ color: '#a855f7' }}>θz</span>
+                                            <span>{(disp.rz * 1000).toFixed(4)} rad</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            
+                            {/* Reactions */}
+                            {reaction && (reaction.fx !== 0 || reaction.fy !== 0 || reaction.fz !== 0 || reaction.mz !== 0) && (
+                                <div>
+                                    <span style={{ fontSize: 10, color: '#888', display: 'block', marginBottom: 4 }}>
+                                        SUPPORT REACTIONS
+                                    </span>
+                                    <div style={infoGridStyle}>
+                                        <div style={{ ...infoItemStyle, borderLeft: '2px solid #ef4444' }}>
+                                            <span style={{ color: '#ef4444' }}>Rx</span>
+                                            <span style={{ fontWeight: 600 }}>{reaction.fx.toFixed(2)} kN</span>
+                                        </div>
+                                        <div style={{ ...infoItemStyle, borderLeft: '2px solid #22c55e' }}>
+                                            <span style={{ color: '#22c55e' }}>Ry</span>
+                                            <span style={{ fontWeight: 600 }}>{reaction.fy.toFixed(2)} kN</span>
+                                        </div>
+                                        <div style={{ ...infoItemStyle, borderLeft: '2px solid #3b82f6' }}>
+                                            <span style={{ color: '#3b82f6' }}>Rz</span>
+                                            <span style={{ fontWeight: 600 }}>{reaction.fz.toFixed(2)} kN</span>
+                                        </div>
+                                        <div style={{ ...infoItemStyle, borderLeft: '2px solid #a855f7' }}>
+                                            <span style={{ color: '#a855f7' }}>Mz</span>
+                                            <span style={{ fontWeight: 600 }}>{reaction.mz.toFixed(2)} kN·m</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </>
+                )}
+            </div>
+        );
+    }
+
+    // ========================================
+    // RENDER MEMBER PROPERTIES
+    // ========================================
+    if (member) {
+        const startNode = nodes.get(member.startNodeId);
+        const endNode = nodes.get(member.endNodeId);
+        let length = 0;
+        if (startNode && endNode) {
+            const dx = endNode.x - startNode.x;
+            const dy = endNode.y - startNode.y;
+            const dz = endNode.z - startNode.z;
+            length = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        }
+        const forces = analysisResults?.memberForces.get(id);
+        const releases = member.releases ?? { startMoment: false, endMoment: false };
+
+        const handleSectionChange = (sectionId: string) => {
+            if (sectionId === 'custom') {
+                setShowCustomSection(true);
+                return;
+            }
+            // Find section in database
+            const section = STEEL_SECTIONS.find(s => s.id === sectionId);
+            if (section) {
+                const { A, I } = convertSectionToMeters(section);
+                updateMember(id, {
+                    sectionId,
+                    A,  // Already in m²
+                    I   // Already in m⁴
+                });
+            } else {
+                // Fallback: just update the ID
+                updateMember(id, { sectionId });
+            }
+        };
+
+        const handleMaterialChange = (materialId: string) => {
+            if (materialId === 'custom') {
+                setShowCustomMaterial(true);
+                return;
+            }
+            const material = MATERIAL_OPTIONS.find(m => m.id === materialId);
+            if (material && material.E > 0) {
+                updateMember(id, { E: material.E });
+            }
+        };
+
+        const handleApplyCustomSection = () => {
+            updateMember(id, {
+                sectionId: 'custom',
+                A: customA / 1e4,  // Convert cm² to m²
+                I: customI / 1e8  // Convert cm⁴ to m⁴
+            });
+            setShowCustomSection(false);
+        };
+
+        const handleApplyCustomMaterial = () => {
+            updateMember(id, { E: customE * 1e6 }); // Convert GPa to kN/m²
+            setShowCustomMaterial(false);
+        };
+
+        const handleReleaseChange = (key: 'startMoment' | 'endMoment', value: boolean) => {
+            updateMember(id, { releases: { ...releases, [key]: value } });
+        };
+
+        // Calculate member angle/orientation
+        const memberAngle = startNode && endNode ? 
+            Math.atan2(endNode.y - startNode.y, endNode.x - startNode.x) * 180 / Math.PI : 0;
+        const isHorizontal = Math.abs(memberAngle) < 15 || Math.abs(memberAngle) > 165;
+        const isVertical = Math.abs(memberAngle - 90) < 15 || Math.abs(memberAngle + 90) < 15;
+        const memberType = isVertical ? 'Column' : isHorizontal ? 'Beam' : 'Inclined';
+
+        return (
+            <div style={panelStyle}>
+                <div style={headerWithButtonStyle}>
+                    <h3 style={headerStyle}>Member Properties</h3>
+                    <button onClick={() => setIsMinimized(true)} style={minimizeButtonStyle} title="Minimize">−</button>
+                </div>
+
+                {/* Member Header - STAAD Pro Style */}
+                <div style={{ 
+                    background: 'linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%)',
+                    padding: '10px 12px',
+                    borderRadius: 6,
+                    marginBottom: 12,
+                    border: '1px solid #334155'
+                }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: '#f97316' }}>
+                            🔶 MEMBER
+                        </span>
+                        <span style={{ 
+                            ...memberTypeBadgeStyle,
+                            background: isVertical ? 'rgba(139, 92, 246, 0.3)' : 
+                                       isHorizontal ? 'rgba(34, 197, 94, 0.3)' : 
+                                       'rgba(251, 191, 36, 0.3)',
+                            color: isVertical ? '#a78bfa' : 
+                                  isHorizontal ? '#4ade80' : 
+                                  '#fcd34d'
+                        }}>
+                            {memberType}
+                        </span>
+                    </div>
+                    <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4, fontFamily: 'monospace' }}>
+                        #{id.slice(0, 8)}
+                    </div>
+                </div>
+
+                {/* Connectivity Info - Industry Standard */}
+                <div style={sectionStyle}>
+                    <label style={labelStyle}>🔗 Connectivity</label>
+                    <div style={{ 
+                        display: 'grid',
+                        gridTemplateColumns: '1fr auto 1fr',
+                        alignItems: 'center',
+                        gap: 8,
+                        marginTop: 6,
+                        background: 'rgba(0,0,0,0.2)',
+                        padding: 8,
+                        borderRadius: 6
+                    }}>
+                        <div style={{ textAlign: 'center' }}>
+                            <span style={{ fontSize: 9, color: '#888', display: 'block' }}>START (I)</span>
+                            <span style={{ fontSize: 11, color: '#60a5fa', fontFamily: 'monospace' }}>
+                                {member.startNodeId.slice(0, 6)}
+                            </span>
+                            {startNode && (
+                                <span style={{ fontSize: 9, color: '#666', display: 'block' }}>
+                                    ({startNode.x.toFixed(1)}, {startNode.y.toFixed(1)})
+                                </span>
+                            )}
+                        </div>
+                        <span style={{ fontSize: 16, color: '#f97316' }}>→</span>
+                        <div style={{ textAlign: 'center' }}>
+                            <span style={{ fontSize: 9, color: '#888', display: 'block' }}>END (J)</span>
+                            <span style={{ fontSize: 11, color: '#60a5fa', fontFamily: 'monospace' }}>
+                                {member.endNodeId.slice(0, 6)}
+                            </span>
+                            {endNode && (
+                                <span style={{ fontSize: 9, color: '#666', display: 'block' }}>
+                                    ({endNode.x.toFixed(1)}, {endNode.y.toFixed(1)})
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                <hr style={dividerStyle} />
+
+                {/* Geometry Info - Enhanced */}
+                <div style={sectionStyle}>
+                    <label style={labelStyle}>📐 Geometry</label>
+                    <div style={infoGridStyle}>
+                        <div style={infoItemStyle}>
+                            <span style={{ color: '#888' }}>Length</span>
+                            <span style={{ color: '#4ade80' }}>{length.toFixed(3)} m</span>
+                        </div>
+                        <div style={infoItemStyle}>
+                            <span style={{ color: '#888' }}>Angle</span>
+                            <span style={{ color: '#60a5fa' }}>{memberAngle.toFixed(1)}°</span>
+                        </div>
+                    </div>
+                </div>
+
+                <hr style={dividerStyle} />
+
+                {/* Section Category Dropdown */}
+                <div style={sectionStyle}>
+                    <label style={labelStyle}>📐 Section Category</label>
+                    <select
+                        value={sectionCategory}
+                        onChange={(e) => setSectionCategory(e.target.value as SectionCategory)}
+                        style={selectStyle}
+                    >
+                        {SECTION_CATEGORIES.map(cat => (
+                            <option key={cat.id} value={cat.id}>{cat.label}</option>
+                        ))}
+                    </select>
+                </div>
+
+                <hr style={dividerStyle} />
+
+                {/* Section Dropdown (filtered by category) */}
+                <div style={sectionStyle}>
+                    <label style={labelStyle}>📏 Section</label>
+                    <select
+                        value={member.sectionId || ''}
+                        onChange={(e) => handleSectionChange(e.target.value)}
+                        style={selectStyle}
+                    >
+                        <option value="">Select section...</option>
+                        {availableSections.map(section => (
+                            <option key={section.id} value={section.id}>{section.name}</option>
+                        ))}
+                        <option value="custom">+ Custom Section...</option>
+                    </select>
+
+                    {/* Show current section properties */}
+                    {member.sectionId && member.sectionId !== 'custom' && (
+                        <div style={{ fontSize: 10, color: '#888', marginTop: 4 }}>
+                            A = {((member.A ?? 0.01) * 1e4).toFixed(1)} cm² | I = {((member.I ?? 1e-4) * 1e8).toFixed(1)} cm⁴
+                        </div>
+                    )}
+
+                    {/* Custom Section Dialog */}
+                    {showCustomSection && (
+                        <div style={{ background: 'rgba(0,0,0,0.8)', padding: 12, borderRadius: 8, marginTop: 8, border: '1px solid #555' }}>
+                            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 8, color: '#4caf50' }}>✏️ Custom Section Properties</div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <label style={{ fontSize: 11, width: 80 }}>Width (m)</label>
+                                    <NumberInput 
+                                        value={member.dimensions?.rectWidth ?? member.dimensions?.width ?? 0.3} 
+                                        onChange={(v) => updateMember(id, { 
+                                            dimensions: { ...member.dimensions, rectWidth: v, width: v } 
+                                        })} 
+                                        style={{ flex: 1 }} 
+                                    />
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <label style={{ fontSize: 11, width: 80 }}>Depth (m)</label>
+                                    <NumberInput 
+                                        value={member.dimensions?.rectHeight ?? member.dimensions?.height ?? 0.5} 
+                                        onChange={(v) => updateMember(id, { 
+                                            dimensions: { ...member.dimensions, rectHeight: v, height: v } 
+                                        })} 
+                                        style={{ flex: 1 }} 
+                                    />
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <label style={{ fontSize: 11, width: 80 }}>Area (cm²)</label>
+                                    <NumberInput value={customA} onChange={setCustomA} style={{ flex: 1 }} />
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <label style={{ fontSize: 11, width: 80 }}>Iy (cm⁴)</label>
+                                    <NumberInput value={customI} onChange={setCustomI} style={{ flex: 1 }} />
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                                <button onClick={handleApplyCustomSection} style={{ ...addButtonStyle, background: '#4caf50', flex: 1 }}>Apply</button>
+                                <button onClick={() => setShowCustomSection(false)} style={{ ...addButtonStyle, flex: 1 }}>Cancel</button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                <hr style={dividerStyle} />
+
+                {/* Beta Angle */}
+                <div style={sectionStyle}>
+                    <label style={labelStyle}>🔄 Beta Angle (deg)</label>
+                    <NumberInput
+                        value={member.betaAngle ?? 0}
+                        onChange={(val) => updateMember(id, { betaAngle: val })}
+                        style={{ width: '100%', marginTop: 4 }}
+                    />
+                </div>
+
+                <hr style={dividerStyle} />
+
+                {/* Material Dropdown */}
+                <div style={sectionStyle}>
+                    <label style={labelStyle}>🧱 Material</label>
+                    <select
+                        onChange={(e) => handleMaterialChange(e.target.value)}
+                        style={selectStyle}
+                    >
+                        {MATERIAL_OPTIONS.map(opt => (
+                            <option key={opt.id} value={opt.id}>{opt.label}</option>
+                        ))}
+                    </select>
+
+                    {/* Custom Material Dialog */}
+                    {showCustomMaterial && (
+                        <div style={{ background: 'rgba(0,0,0,0.8)', padding: 12, borderRadius: 8, marginTop: 8, border: '1px solid #555' }}>
+                            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 8, color: '#2196f3' }}>✏️ Custom Material Properties</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <label style={{ fontSize: 11, width: 80 }}>E (GPa)</label>
+                                <NumberInput value={customE} onChange={setCustomE} style={{ flex: 1 }} />
+                            </div>
+                            <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                                <button onClick={handleApplyCustomMaterial} style={{ ...addButtonStyle, background: '#2196f3', flex: 1 }}>Apply</button>
+                                <button onClick={() => setShowCustomMaterial(false)} style={{ ...addButtonStyle, flex: 1 }}>Cancel</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Show current E value */}
+                    <div style={{ fontSize: 10, color: '#888', marginTop: 4 }}>
+                        E = {((member.E ?? 200e6) / 1e6).toFixed(0)} GPa
+                    </div>
+                </div>
+
+                <hr style={dividerStyle} />
+
+                {/* Member End Releases - Enhanced Industry Style */}
+                <div style={sectionStyle}>
+                    <label style={labelStyle}>🔓 Member End Releases</label>
+                    <div style={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: 8,
+                        marginTop: 8,
+                        background: 'rgba(0,0,0,0.2)',
+                        padding: 10,
+                        borderRadius: 6
+                    }}>
+                        {/* Start End (I-end) */}
+                        <div style={{ textAlign: 'center' }}>
+                            <span style={{ fontSize: 10, color: '#60a5fa', fontWeight: 600, display: 'block', marginBottom: 6 }}>
+                                START (I)
+                            </span>
+                            <label style={{ 
+                                ...dofLabelStyle, 
+                                marginBottom: 4,
+                                borderColor: releases.startMoment ? '#f97316' : '#555'
+                            }}>
+                                <input
+                                    type="checkbox"
+                                    checked={releases.startMoment}
+                                    onChange={(e) => handleReleaseChange('startMoment', e.target.checked)}
+                                    style={{ display: 'none' }}
+                                />
+                                <span style={{ fontSize: 11, color: releases.startMoment ? '#f97316' : '#888' }}>
+                                    {releases.startMoment ? '🔓 Hinged' : '🔒 Fixed'}
+                                </span>
+                                <span style={{ fontSize: 8, color: '#666' }}>Moment Release</span>
+                            </label>
+                        </div>
+                        
+                        {/* End End (J-end) */}
+                        <div style={{ textAlign: 'center' }}>
+                            <span style={{ fontSize: 10, color: '#60a5fa', fontWeight: 600, display: 'block', marginBottom: 6 }}>
+                                END (J)
+                            </span>
+                            <label style={{ 
+                                ...dofLabelStyle, 
+                                marginBottom: 4,
+                                borderColor: releases.endMoment ? '#f97316' : '#555'
+                            }}>
+                                <input
+                                    type="checkbox"
+                                    checked={releases.endMoment}
+                                    onChange={(e) => handleReleaseChange('endMoment', e.target.checked)}
+                                    style={{ display: 'none' }}
+                                />
+                                <span style={{ fontSize: 11, color: releases.endMoment ? '#f97316' : '#888' }}>
+                                    {releases.endMoment ? '🔓 Hinged' : '🔒 Fixed'}
+                                </span>
+                                <span style={{ fontSize: 8, color: '#666' }}>Moment Release</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    {/* Release Configuration Indicator */}
+                    <div style={{ 
+                        marginTop: 6, 
+                        padding: '4px 8px', 
+                        background: 'rgba(249, 115, 22, 0.1)', 
+                        borderRadius: 4,
+                        textAlign: 'center'
+                    }}>
+                        <span style={{ fontSize: 10, color: '#f97316' }}>
+                            {releases.startMoment && releases.endMoment ? '⚡ Truss Member (Both ends released)' :
+                             releases.startMoment ? '↱ Start Pinned Connection' :
+                             releases.endMoment ? '↳ End Pinned Connection' :
+                             '🔗 Rigid Frame Member'}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Member Forces - Enhanced Industry Style */}
+                {forces && (
+                    <>
+                        <hr style={dividerStyle} />
+                        <div style={{ 
+                            background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(0,0,0,0.2) 100%)',
+                            padding: 10,
+                            borderRadius: 6,
+                            border: '1px solid rgba(76, 175, 80, 0.3)'
+                        }}>
+                            <label style={{ ...labelStyle, color: '#4caf50', marginBottom: 8, display: 'block' }}>
+                                📊 Member End Forces
+                            </label>
+                            
+                            {/* Force Grid - STAAD Pro Style */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                                {/* Axial Force */}
+                                <div style={{ 
+                                    ...infoItemStyle, 
+                                    borderLeft: forces.axial > 0 ? '3px solid #ef4444' : forces.axial < 0 ? '3px solid #3b82f6' : '3px solid #666'
+                                }}>
+                                    <span style={{ color: '#888' }}>Axial</span>
+                                    <span style={{ 
+                                        fontWeight: 600,
+                                        color: forces.axial > 0 ? '#ef4444' : forces.axial < 0 ? '#3b82f6' : '#888'
+                                    }}>
+                                        {forces.axial.toFixed(2)} kN
+                                        <span style={{ fontSize: 8, marginLeft: 2 }}>
+                                            {forces.axial > 0 ? '(T)' : forces.axial < 0 ? '(C)' : ''}
+                                        </span>
+                                    </span>
+                                </div>
+                                
+                                {/* Shear Y */}
+                                <div style={{ ...infoItemStyle, borderLeft: '3px solid #22c55e' }}>
+                                    <span style={{ color: '#888' }}>Shear Y</span>
+                                    <span style={{ fontWeight: 600 }}>{forces.shearY.toFixed(2)} kN</span>
+                                </div>
+                                
+                                {/* Shear Z */}
+                                <div style={{ ...infoItemStyle, borderLeft: '3px solid #06b6d4' }}>
+                                    <span style={{ color: '#888' }}>Shear Z</span>
+                                    <span style={{ fontWeight: 600 }}>{(forces.shearZ ?? 0).toFixed(2)} kN</span>
+                                </div>
+                                
+                                {/* Moment Z */}
+                                <div style={{ ...infoItemStyle, borderLeft: '3px solid #a855f7' }}>
+                                    <span style={{ color: '#888' }}>Moment</span>
+                                    <span style={{ fontWeight: 600, color: '#a855f7' }}>{forces.momentZ.toFixed(2)} kN·m</span>
+                                </div>
+                            </div>
+                            
+                            {/* Force Summary */}
+                            <div style={{ 
+                                marginTop: 8, 
+                                padding: '4px 8px', 
+                                background: 'rgba(0,0,0,0.2)', 
+                                borderRadius: 4,
+                                textAlign: 'center',
+                                fontSize: 9,
+                                color: '#888'
+                            }}>
+                                {Math.abs(forces.axial) > Math.abs(forces.shearY) && Math.abs(forces.axial) > Math.abs(forces.momentZ) ?
+                                    '⚡ Axial-dominant member' :
+                                    Math.abs(forces.momentZ) > Math.abs(forces.shearY) ?
+                                    '↩️ Bending-dominant member' :
+                                    '↕️ Shear-dominant member'
+                                }
+                            </div>
+                        </div>
+                    </>
+                )}
+
+                <hr style={dividerStyle} />
+
+                {/* Member Loads (UDL) */}
+                <div style={sectionStyle}>
+                    <label style={labelStyle}>⬇️ Member Loads (UDL)</label>
+                    
+                    {/* Existing member loads */}
+                    {memberLoads.filter(ml => ml.memberId === id).length > 0 ? (
+                        <div style={{ marginTop: 8 }}>
+                            {memberLoads.filter(ml => ml.memberId === id).map((ml, idx) => (
+                                <div key={ml.id} style={{ 
+                                    background: 'rgba(156, 39, 176, 0.15)', 
+                                    padding: 8, 
+                                    borderRadius: 6, 
+                                    marginBottom: 6,
+                                    border: '1px solid rgba(156, 39, 176, 0.3)'
+                                }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: 11, fontWeight: 600, color: '#ce93d8' }}>
+                                            {ml.type || 'UDL'} #{idx + 1}
+                                        </span>
+                                        <button
+                                            onClick={() => removeMemberLoad(ml.id)}
+                                            style={{ 
+                                                background: 'rgba(255,68,68,0.3)', 
+                                                border: 'none', 
+                                                color: '#f88', 
+                                                cursor: 'pointer',
+                                                borderRadius: 4,
+                                                padding: '2px 6px',
+                                                fontSize: 10
+                                            }}
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                    <div style={{ fontSize: 11, marginTop: 4, fontFamily: 'monospace' }}>
+                                        w = {ml.w1?.toFixed(2) ?? '0.00'} kN/m ({ml.direction || 'global_y'})<br/>
+                                        Range: {((ml.startPos ?? 0) * 100).toFixed(0)}% - {((ml.endPos ?? 1) * 100).toFixed(0)}%
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div style={{ fontSize: 11, color: '#666', marginTop: 4 }}>No member loads</div>
+                    )}
+
+                    {/* Add new UDL */}
+                    <div style={{ marginTop: 10 }}>
+                        <button 
+                            onClick={() => setShowUdlOptions(!showUdlOptions)}
+                            style={{ 
+                                ...addButtonStyle, 
+                                width: '100%',
+                                background: showUdlOptions ? '#7b1fa2' : '#9c27b0'
+                            }}
+                        >
+                            {showUdlOptions ? '− Hide UDL Form' : '+ Add UDL'}
+                        </button>
+                        
+                        {showUdlOptions && (
+                            <div style={{ 
+                                background: 'rgba(156, 39, 176, 0.1)', 
+                                padding: 10, 
+                                borderRadius: 8, 
+                                marginTop: 8,
+                                border: '1px solid rgba(156, 39, 176, 0.3)'
+                            }}>
+                                {/* Load magnitude */}
+                                <div style={{ marginBottom: 8 }}>
+                                    <label style={{ fontSize: 11, color: '#ce93d8' }}>Load (w) in kN/m</label>
+                                    <NumberInput 
+                                        value={newUdlW} 
+                                        onChange={setNewUdlW} 
+                                        style={{ width: '100%', marginTop: 4 }}
+                                    />
+                                    <span style={{ fontSize: 9, color: '#888' }}>Negative = downward</span>
+                                </div>
+
+                                {/* Direction dropdown */}
+                                <div style={{ marginBottom: 8 }}>
+                                    <label style={{ fontSize: 11, color: '#ce93d8' }}>Direction</label>
+                                    <select
+                                        value={newUdlDirection}
+                                        onChange={(e) => setNewUdlDirection(e.target.value as typeof newUdlDirection)}
+                                        style={{ ...selectStyle, marginTop: 4 }}
+                                    >
+                                        {LOAD_DIRECTIONS.map(dir => (
+                                            <option key={dir.value} value={dir.value}>{dir.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Position range */}
+                                <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                                    <div style={{ flex: 1 }}>
+                                        <label style={{ fontSize: 11, color: '#ce93d8' }}>Start %</label>
+                                        <NumberInput 
+                                            value={newUdlStartPos * 100} 
+                                            onChange={(v) => setNewUdlStartPos(Math.min(Math.max(v / 100, 0), 1))} 
+                                            style={{ width: '100%', marginTop: 4 }}
+                                        />
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <label style={{ fontSize: 11, color: '#ce93d8' }}>End %</label>
+                                        <NumberInput 
+                                            value={newUdlEndPos * 100} 
+                                            onChange={(v) => setNewUdlEndPos(Math.min(Math.max(v / 100, 0), 1))} 
+                                            style={{ width: '100%', marginTop: 4 }}
+                                        />
+                                    </div>
+                                </div>
+                                <div style={{ fontSize: 9, color: '#888', marginBottom: 8 }}>
+                                    0% = start of member, 100% = end of member
+                                </div>
+
+                                {/* Apply button */}
+                                <button
+                                    onClick={() => {
+                                        addMemberLoad({
+                                            id: crypto.randomUUID(),
+                                            memberId: id,
+                                            type: 'UDL',
+                                            w1: newUdlW,
+                                            w2: newUdlW, // For UDL, w1 = w2
+                                            direction: newUdlDirection,
+                                            startPos: newUdlStartPos,
+                                            endPos: newUdlEndPos
+                                        });
+                                        // Reset
+                                        setNewUdlW(-10);
+                                        setNewUdlDirection('global_y');
+                                        setNewUdlStartPos(0);
+                                        setNewUdlEndPos(1);
+                                        setShowUdlOptions(false);
+                                    }}
+                                    style={{ 
+                                        ...addButtonStyle, 
+                                        width: '100%', 
+                                        background: '#4caf50',
+                                        marginTop: 4
+                                    }}
+                                >
+                                    ✓ Apply UDL
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    return null;
+};
+
+// ============================================
+// STYLES
+// ============================================
+const panelStyle: React.CSSProperties = {
+    position: 'relative',
+    width: '100%',
+    background: '#0f172a', // Navy background
+    border: '1px solid #334155', // Slate-700
+    borderRadius: '8px',
+    padding: '14px',
+    color: '#f1f5f9', // Slate-100
+    fontFamily: 'Inter, sans-serif',
+    zIndex: 50,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    maxHeight: '60vh',
+    overflowY: 'auto',
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+};
+
+const headerWithButtonStyle: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderBottom: '1px solid #334155',
+    paddingBottom: 8,
+    marginBottom: 4
+};
+
+const headerStyle: React.CSSProperties = {
+    margin: 0,
+    fontSize: 14,
+    fontWeight: 600
+};
+
+const minimizeButtonStyle: React.CSSProperties = {
+    background: 'none',
+    border: 'none',
+    color: '#94a3b8', // Slate-400
+    cursor: 'pointer',
+    fontSize: '16px',
+    padding: '2px 6px',
+    borderRadius: '4px',
+    lineHeight: 1
+};
+
+const rowStyle: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    fontSize: 12
+};
+
+const sectionStyle: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column'
+};
+
+const labelStyle: React.CSSProperties = {
+    fontWeight: 500,
+    fontSize: 12,
+    color: '#cbd5e1' // Slate-300
+};
+
+const axisLabelStyle: React.CSSProperties = {
+    fontSize: 10,
+    color: '#888',
+    marginBottom: 2
+};
+
+const inputGroupStyle: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center'
+};
+
+const inputStyle: React.CSSProperties = {
+    background: '#1e293b', // Slate-800
+    border: '1px solid #475569', // Slate-600
+    color: '#f8fafc', // Slate-50
+    padding: '6px 8px',
+    borderRadius: '4px',
+    fontSize: 12,
+    width: '100%'
+};
+
+const selectStyle: React.CSSProperties = {
+    ...inputStyle,
+    marginTop: 6,
+    cursor: 'pointer'
+};
+
+const checkboxLabelStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    fontSize: 12,
+    cursor: 'pointer'
+};
+
+const dividerStyle: React.CSSProperties = {
+    borderColor: '#334155', // Slate-700
+    margin: '6px 0'
+};
+
+const addButtonStyle: React.CSSProperties = {
+    background: '#334155',
+    color: '#f1f5f9',
+    border: '1px solid #475569',
+    borderRadius: 4,
+    padding: '6px 10px',
+    cursor: 'pointer',
+    fontSize: 12
+};
+
+const deleteButtonStyle: React.CSSProperties = {
+    background: 'none',
+    border: 'none',
+    color: '#f44',
+    cursor: 'pointer',
+    fontSize: 14,
+    padding: '2px 6px'
+};
+
+// Industry-level preset button style
+const presetButtonStyle: React.CSSProperties = {
+    background: '#334155',
+    color: '#f1f5f9',
+    border: 'none',
+    borderRadius: 4,
+    padding: '4px 8px',
+    cursor: 'pointer',
+    fontSize: 10,
+    flex: 1,
+    transition: 'all 0.15s ease'
+};
+
+// DOF checkbox label style (industry grid style)
+const dofLabelStyle: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: '6px 4px',
+    background: 'rgba(0,0,0,0.3)',
+    borderRadius: 4,
+    cursor: 'pointer',
+    border: '2px solid #555',
+    transition: 'all 0.15s ease'
+};
+
+// Member type badge style
+const memberTypeBadgeStyle: React.CSSProperties = {
+    display: 'inline-block',
+    padding: '2px 8px',
+    borderRadius: 4,
+    fontSize: 10,
+    fontWeight: 600,
+    textTransform: 'uppercase'
+};
+
+// Info grid style for displaying values
+const infoGridStyle: React.CSSProperties = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    gap: 4,
+    marginTop: 6,
+    fontSize: 11,
+    fontFamily: 'monospace'
+};
+
+const infoItemStyle: React.CSSProperties = {
+    background: 'rgba(0,0,0,0.2)',
+    padding: '4px 6px',
+    borderRadius: 4,
+    display: 'flex',
+    justifyContent: 'space-between'
+};

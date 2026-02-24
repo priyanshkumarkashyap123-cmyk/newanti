@@ -1,0 +1,303 @@
+// Prisma Schema for AI Architect
+// Database models for audit trail, feedback, and AI sessions
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER & PROJECT MODELS
+// ============================================
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+  
+  // Relations
+  auditEntries    AuditEntry[]
+  aiSessions      AISession[]
+  designChecks    DesignCheck[]
+  feedbackEntries Feedback[]
+  
+  @@index([userId])
+}
+
+// ============================================
+// AUDIT TRAIL MODELS
+// ============================================
+
+model AuditEntry {
+  id          String   @id @default(cuid())
+  projectId   String
+  sessionId   String
+  
+  timestamp   DateTime @default(now())
+  type        AuditType
+  action      String
+  details     String
+  
+  // AI-specific
+  aiGenerated Boolean  @default(false)
+  confidence  Float?
+  modelUsed   String?
+  
+  // Metadata (JSON)
+  metadata    Json?
+  
+  // PE Signability
+  signedBy    String?
+  signedAt    DateTime?
+  licenseNo   String?
+  
+  // Relations
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@index([projectId])
+  @@index([sessionId])
+  @@index([type])
+  @@index([timestamp])
+}
+
+enum AuditType {
+  MODEL_CREATION
+  ANALYSIS
+  DESIGN_CHECK
+  OPTIMIZATION
+  AI_RECOMMENDATION
+  USER_OVERRIDE
+  EXPORT
+  VALIDATION
+  CONNECTION_DESIGN
+}
+
+// ============================================
+// AI SESSION MODELS
+// ============================================
+
+model AISession {
+  id          String   @id @default(cuid())
+  projectId   String
+  userId      String?
+  
+  startedAt   DateTime @default(now())
+  endedAt     DateTime?
+  
+  // Conversation
+  messages    AIMessage[]
+  
+  // Metrics
+  totalTokens Int      @default(0)
+  totalCost   Float    @default(0)
+  
+  // Relations
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@index([projectId])
+  @@index([userId])
+}
+
+model AIMessage {
+  id          String   @id @default(cuid())
+  sessionId   String
+  
+  role        MessageRole
+  content     String
+  timestamp   DateTime @default(now())
+  
+  // Tokens used
+  tokens      Int?
+  
+  // If AI generated a model/action
+  actionType  String?
+  actionData  Json?
+  
+  // Relations
+  session     AISession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  @@index([sessionId])
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+// ============================================
+// DESIGN CHECK MODELS
+// ============================================
+
+model DesignCheck {
+  id          String   @id @default(cuid())
+  projectId   String
+  
+  createdAt   DateTime @default(now())
+  
+  // Code used
+  designCode  DesignCodeType
+  
+  // Member info
+  memberName  String
+  sectionName String
+  material    String
+  length      Float
+  
+  // Forces
+  axialForce  Float
+  momentMajor Float
+  momentMinor Float?
+  shear       Float
+  
+  // Results
+  passed      Boolean
+  maxRatio    Float
+  critical    String
+  
+  // Full check results (JSON)
+  checks      Json
+  
+  // Relations
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@index([projectId])
+  @@index([designCode])
+}
+
+enum DesignCodeType {
+  IS_800
+  IS_456
+  IS_1893
+  AISC_360
+  ACI_318
+  EC3
+}
+
+// ============================================
+// FEEDBACK MODELS
+// ============================================
+
+model Feedback {
+  id          String   @id @default(cuid())
+  projectId   String?
+  userId      String?
+  sessionId   String
+  
+  createdAt   DateTime @default(now())
+  
+  type        FeedbackType
+  feature     String
+  
+  // Original AI output
+  originalInput  String
+  originalOutput Json?
+  
+  // User correction/rating
+  correctedOutput Json?
+  rating          Int?    @default(0) // 1-5
+  comment         String?
+  
+  // For ML pipeline
+  processed       Boolean @default(false)
+  usedForTraining Boolean @default(false)
+  exportedAt      DateTime?
+  
+  // Relations
+  project     Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  
+  @@index([projectId])
+  @@index([feature])
+  @@index([type])
+  @@index([processed])
+}
+
+enum FeedbackType {
+  CORRECTION
+  RATING
+  SUGGESTION
+  ERROR_REPORT
+}
+
+// ============================================
+// VALIDATION RESULTS
+// ============================================
+
+model ValidationResult {
+  id          String   @id @default(cuid())
+  projectId   String?
+  
+  createdAt   DateTime @default(now())
+  
+  // Test info
+  testCase    String
+  description String?
+  
+  // Values
+  computed    Float
+  expected    Float
+  
+  // Accuracy
+  percentage  Float
+  absError    Float
+  relError    Float
+  
+  passed      Boolean
+  
+  // Formula used
+  formula     String?
+  
+  @@index([projectId])
+  @@index([testCase])
+}
+
+// ============================================
+// TOPOLOGY OPTIMIZATION
+// ============================================
+
+model OptimizationJob {
+  id          String   @id @default(cuid())
+  projectId   String?
+  userId      String?
+  
+  createdAt   DateTime @default(now())
+  completedAt DateTime?
+  
+  // Configuration
+  nelx        Int
+  nely        Int
+  volumeFrac  Float
+  method      String   @default("SIMP")
+  
+  // Boundary conditions (JSON)
+  supports    Json
+  loads       Json
+  
+  // Result
+  status      JobStatus @default(PENDING)
+  iterations  Int?
+  compliance  Float?
+  
+  // Density field (stored as array)
+  densities   Json?
+  
+  // Alternatives generated
+  alternatives Json?
+  
+  @@index([projectId])
+  @@index([status])
+}
+
+enum JobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}

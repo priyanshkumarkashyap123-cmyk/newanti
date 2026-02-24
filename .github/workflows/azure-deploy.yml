@@ -1,0 +1,133 @@
+name: Deploy to Azure
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  AZURE_WEBAPP_NAME_API: beamlab-backend-node
+  AZURE_WEBAPP_NAME_PYTHON: beamlab-backend-python
+  NODE_VERSION: '20.x'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # Build and deploy Node.js API
+  deploy-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build API
+        working-directory: apps/api
+        run: pnpm run build
+
+      - name: Prepare deployment package
+        run: |
+          mkdir -p deploy-api
+          cp -r apps/api/dist deploy-api/
+          # Create a deployment-specific package.json without build script
+          node -e "
+            const pkg = require('./apps/api/package.json');
+            delete pkg.scripts.build;
+            delete pkg.devDependencies;
+            pkg.scripts.start = 'node dist/index.js';
+            pkg.main = 'dist/index.js';
+            console.log(JSON.stringify(pkg, null, 2));
+          " > deploy-api/package.json
+          cd deploy-api && npm install --omit=dev --ignore-scripts
+          zip -r ../api-app.zip .
+
+      - name: Create environment file
+        env:
+          RAZORPAY_KEY_ID: ${{ secrets.RAZORPAY_KEY_ID }}
+          RAZORPAY_KEY_SECRET: ${{ secrets.RAZORPAY_KEY_SECRET }}
+          RAZORPAY_WEBHOOK_SECRET: ${{ secrets.RAZORPAY_WEBHOOK_SECRET }}
+        run: |
+          cat > deploy-api/.env << EOF
+          RAZORPAY_KEY_ID="${{ secrets.RAZORPAY_KEY_ID }}"
+          RAZORPAY_KEY_SECRET="${{ secrets.RAZORPAY_KEY_SECRET }}"
+          RAZORPAY_WEBHOOK_SECRET="${{ secrets.RAZORPAY_WEBHOOK_SECRET }}"
+          NODE_ENV=production
+          PORT=8080
+          EOF
+          cd deploy-api && zip -r ../api-app.zip .
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME_API }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_API }}
+          package: api-app.zip
+
+  # Python deployment - Re-enabled for Advanced Analysis & Templates
+  deploy-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: apps/backend-python/requirements.txt
+      - name: Install dependencies
+        working-directory: apps/backend-python
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Create zip package
+        working-directory: apps/backend-python
+        run: zip -r ../../python-app.zip .
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME_PYTHON }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON }}
+          package: python-app.zip
+
+  # Frontend is deployed via the separate Azure Static Web Apps CI/CD workflow
+  # (azure-static-web-apps-brave-mushroom-0eae8ec00.yml) which includes
+  # Rust WASM build steps. No need to duplicate it here.
+
+  # Build and deploy Rust API (Container)
+  deploy-rust:
+    runs-on: ubuntu-latest
+    # Removed dependency on deploy-api/deploy-python so rust deploys independently
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Log in to Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: beamlabregistry.azurecr.io
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+          
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/rust-api
+          push: true
+          tags: |
+            beamlabregistry.azurecr.io/beamlab-rust:latest
+            beamlabregistry.azurecr.io/beamlab-rust:${{ github.sha }}
+            
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: beamlab-rust-api
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_RUST }}
+          images: 'beamlabregistry.azurecr.io/beamlab-rust:latest'
+

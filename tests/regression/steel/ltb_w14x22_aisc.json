@@ -1,0 +1,29 @@
+{
+  "id": "steel_ltb_aisc360_w14x22",
+  "name": "Lateral-Torsional Buckling W14x22 per AISC 360",
+  "module": "steel",
+  "function": "calculateLTB",
+  "designCode": "AISC360-22",
+  "inputs": {
+    "section": "W14x22",
+    "Lb": 3.0,
+    "Fy": 345,
+    "E": 200000,
+    "Zx": 392000,
+    "Sx": 352000,
+    "ry": 38.1,
+    "rts": 44.5,
+    "J": 98000,
+    "ho": 343
+  },
+  "expected": {
+    "Lp": { "value": 1.45, "tolerance": 0.05 },
+    "Lr": { "value": 4.22, "tolerance": 0.10 },
+    "Mn": { "value": 127.5, "tolerance": 5.0, "unit": "kN·m" },
+    "phiMn": { "value": 114.75, "tolerance": 5.0, "unit": "kN·m" },
+    "governingMode": "inelastic LTB"
+  },
+  "source": "AISC Steel Construction Manual 15th Ed, Example F.1",
+  "createdBy": "BeamLab QA",
+  "createdAt": "2025-01-15"
+}

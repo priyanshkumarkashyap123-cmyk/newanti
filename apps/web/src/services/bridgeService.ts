@@ -1,0 +1,439 @@
+/**
+ * bridgeService.ts - Bridge between TypeScript and Python Backend
+ * 
+ * Provides a unified interface for communicating with the Python structural engine.
+ */
+
+// ============================================
+// CONFIGURATION
+// ============================================
+
+import { API_CONFIG } from '../config/env';
+
+// Use Rust API for templates (100x faster than Python)
+const RUST_API = API_CONFIG.baseUrl;
+// Fallback to Python for AI features (Gemini)
+const PYTHON_API = API_CONFIG.pythonUrl;
+
+// ============================================
+// TYPES
+// ============================================
+
+export interface BridgeNode {
+    id: string;
+    x: number;
+    y: number;
+    z: number;
+    support?: 'PINNED' | 'FIXED' | 'ROLLER' | 'NONE';
+}
+
+export interface BridgeMember {
+    id: string;
+    start_node: string;
+    end_node: string;
+    section_profile: string;
+    member_type?: string;
+}
+
+export interface StructuralModel {
+    nodes: BridgeNode[];
+    members: BridgeMember[];
+    metadata?: Record<string, string>;
+}
+
+export interface BridgeResponse {
+    success: boolean;
+    model?: StructuralModel;
+    error?: string;
+}
+
+export type TemplateType = 'beam' | 'continuous_beam' | 'truss' | 'frame' | 'portal';
+
+export interface BeamParams {
+    span?: number;
+    spans?: string;  // Comma-separated for continuous beam
+    support_type?: 'simple' | 'fixed' | 'cantilever';
+}
+
+export interface TrussParams {
+    span?: number;
+    height?: number;
+    bays?: number;
+}
+
+export interface FrameParams {
+    width?: number;
+    length?: number;
+    height?: number;
+    stories?: number;
+    bays_x?: number;
+    bays_z?: number;
+}
+
+export interface PortalParams {
+    width?: number;
+    height?: number;
+    roof_angle?: number;
+}
+
+export type TemplateParams = BeamParams | TrussParams | FrameParams | PortalParams;
+
+// ============================================
+// BRIDGE SERVICE
+// ============================================
+
+export const Bridge = {
+    /**
+     * Check if Python server is online
+     */
+    async checkConnection(): Promise<boolean> {
+        try {
+            const response = await fetch(`${PYTHON_API}/health`, {
+                method: 'GET',
+                signal: AbortSignal.timeout(3000)
+            });
+            return response.ok;
+        } catch (e) {
+            console.warn('[Bridge] Python server offline');
+            return false;
+        }
+    },
+
+    /**
+     * Spawn a structural template from the Rust API
+     * 
+     * @param type - Template type: beam, truss, frame, portal
+     * @param params - Parameters for the template
+     * @returns Structural model or null if server offline
+     * 
+     * @example
+     * const model = await Bridge.spawnTemplate('truss', { span: 12, height: 3, bays: 6 });
+     */
+    async spawnTemplate(
+        type: TemplateType,
+        params: TemplateParams = {}
+    ): Promise<BridgeResponse | null> {
+        try {
+            // Build query string from params
+            const queryParams = new URLSearchParams();
+            Object.entries(params).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    queryParams.append(key, String(value));
+                }
+            });
+
+            // Use Rust API for templates (100x faster)
+            const templateTypeMap: Record<TemplateType, string> = {
+                'beam': 'beam',
+                'continuous_beam': 'continuous-beam',
+                'truss': 'truss',
+                'frame': 'frame',
+                'portal': 'portal'
+            };
+
+            const url = `${RUST_API}/api/templates/${templateTypeMap[type]}?${queryParams.toString()}`;
+
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                console.error('[Bridge] Template fetch failed:', errorData);
+                return {
+                    success: false,
+                    error: errorData.detail || `HTTP ${response.status}`
+                };
+            }
+
+            const data = await response.json();
+
+            // Convert Rust response to Bridge format
+            const bridgeResponse: BridgeResponse = {
+                success: data.success,
+                model: {
+                    nodes: data.nodes.map((n: any) => ({
+                        id: n.id,
+                        x: n.x,
+                        y: n.y,
+                        z: n.z,
+                        support: 'NONE'
+                    })),
+                    members: data.members.map((m: any) => ({
+                        id: m.id,
+                        start_node: m.startNodeId || m.start_node_id,
+                        end_node: m.endNodeId || m.end_node_id,
+                        section_profile: 'ISMB300'
+                    })),
+                    metadata: data.metadata
+                }
+            };
+
+            console.log(`[Bridge] Template '${type}' loaded from Rust API:`,
+                `${bridgeResponse.model?.nodes.length} nodes, ${bridgeResponse.model?.members.length} members`);
+
+            return bridgeResponse;
+
+        } catch (e) {
+            console.error("[Bridge] Rust Template Server Offline", e);
+            return null;
+        }
+    },
+
+    /**
+     * Generate structure from natural language prompt (AI)
+     * 
+     * @param userText - Natural language description
+     * @returns Structural model or null
+     * 
+     * @example
+     * const model = await Bridge.generateFromPrompt('Create a 15m bridge truss');
+     */
+    async generateFromPrompt(userText: string): Promise<BridgeResponse | null> {
+        try {
+            const response = await fetch(`${PYTHON_API}/generate/ai`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ prompt: userText })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                return {
+                    success: false,
+                    error: errorData.detail || `HTTP ${response.status}`
+                };
+            }
+
+            const data: BridgeResponse = await response.json();
+
+            console.log(`[Bridge] AI generated:`,
+                `${data.model?.nodes.length} nodes, ${data.model?.members.length} members`);
+
+            return data;
+
+        } catch (e) {
+            console.error("[Bridge] AI generation failed", e);
+            return null;
+        }
+    },
+
+    /**
+     * Validate a structural model
+     * 
+     * @param model - Model to validate
+     * @returns Validation result
+     */
+    async validateModel(model: StructuralModel): Promise<{
+        valid: boolean;
+        issues: string[];
+        node_count: number;
+        member_count: number;
+        support_count: number;
+    } | null> {
+        try {
+            const response = await fetch(`${PYTHON_API}/validate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(model)
+            });
+
+            if (!response.ok) {
+                return null;
+            }
+
+            return await response.json();
+
+        } catch (e) {
+            console.error("[Bridge] Validation failed", e);
+            return null;
+        }
+    },
+
+    /**
+     * Generate continuous beam with multiple spans
+     * 
+     * @param spans - Array of span lengths
+     * @returns Structural model
+     */
+    async spawnContinuousBeam(spans: number[]): Promise<BridgeResponse | null> {
+        return this.spawnTemplate('continuous_beam', {
+            spans: spans.join(',')
+        });
+    },
+
+    /**
+     * Generate Pratt truss
+     * 
+     * @param span - Total span
+     * @param height - Truss height  
+     * @param bays - Number of bays
+     */
+    async spawnTruss(span: number, height: number, bays: number): Promise<BridgeResponse | null> {
+        return this.spawnTemplate('truss', { span, height, bays });
+    },
+
+    /**
+     * Generate 3D building frame
+     * 
+     * @param width - Width in X
+     * @param length - Length in Z
+     * @param height - Story height
+     * @param stories - Number of stories
+     */
+    async spawnFrame(
+        width: number,
+        length: number,
+        height: number,
+        stories: number
+    ): Promise<BridgeResponse | null> {
+        return this.spawnTemplate('frame', { width, length, height, stories });
+    },
+
+    /**
+     * Generate portal frame with pitched roof
+     * 
+     * @param width - Frame width
+     * @param height - Eave height
+     * @param roofAngle - Roof pitch angle
+     */
+    async spawnPortal(
+        width: number,
+        height: number,
+        roofAngle: number = 15
+    ): Promise<BridgeResponse | null> {
+        return this.spawnTemplate('portal', {
+            width,
+            height,
+            roof_angle: roofAngle
+        });
+    },
+
+    // ============================================
+    // PROJECT PERSISTENCE (Phase 3)
+    // ============================================
+
+    /**
+     * List all saved projects
+     */
+    async listProjects(): Promise<any[]> {
+        try {
+            const response = await fetch(`${PYTHON_API}/projects/`, {
+                method: 'GET'
+            });
+            if (!response.ok) return [];
+            return await response.json();
+        } catch (e) {
+            console.error('[Bridge] Failed to list projects', e);
+            return [];
+        }
+    },
+
+    /**
+     * Save project to backend
+     */
+    async saveProject(data: any): Promise<{ id: string, status: string } | null> {
+        try {
+            const response = await fetch(`${PYTHON_API}/projects/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return await response.json();
+        } catch (e) {
+            console.error('[Bridge] Failed to save project', e);
+            return null;
+        }
+    },
+
+    /**
+     * Load project from backend
+     */
+    async loadProject(id: string): Promise<any | null> {
+        try {
+            const response = await fetch(`${PYTHON_API}/projects/${id}`, {
+                method: 'GET'
+            });
+            if (!response.ok) return null;
+            return await response.json();
+        } catch (e) {
+            console.error('[Bridge] Failed to load project', e);
+            return null;
+        }
+    },
+
+    /**
+     * Delete project
+     */
+    async deleteProject(id: string): Promise<boolean> {
+        try {
+            const response = await fetch(`${PYTHON_API}/projects/${id}`, {
+                method: 'DELETE'
+            });
+            return response.ok;
+        } catch (e) {
+            return false;
+        }
+    },
+
+    // ============================================
+    // PINN AI PHYSICS (Phase 4)
+    // ============================================
+
+    /**
+     * Train a Physics-Informed Neural Network
+     */
+    async trainPINN(config: any): Promise<any> {
+        try {
+            const response = await fetch(`${PYTHON_API}/pinn/train`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(config)
+            });
+            return await response.json();
+        } catch (e) {
+            console.error('[Bridge] PINN Training failed', e);
+            return null;
+        }
+    },
+
+    /**
+     * Get PINN Training Status
+     */
+    async getPINNStatus(jobId: string): Promise<any> {
+        try {
+            const response = await fetch(`${PYTHON_API}/pinn/status/${jobId}`, {
+                method: 'GET'
+            });
+            return await response.json();
+        } catch (e) {
+            return null;
+        }
+    },
+
+    /**
+     * Predict using trained PINN
+     */
+    async predictPINN(modelId: string, points = 100): Promise<any> {
+        try {
+            const response = await fetch(`${PYTHON_API}/pinn/predict`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ model_id: modelId, num_points: points })
+            });
+            return await response.json();
+        } catch (e) {
+            return null;
+        }
+    }
+};
+
+export default Bridge;

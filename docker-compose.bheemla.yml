@@ -1,0 +1,167 @@
+version: '3.9'
+
+# ============================================
+# BeamLab Ultimate - Local Development
+# ============================================
+# Production: https://beamlabultimate.tech
+# Local dev: app.beamlabultimate.local
+# Access: app.beamlabultimate.local, api.beamlabultimate.local
+
+services:
+  # ============================================
+  # Frontend - React + Vite
+  # ============================================
+  frontend:
+    container_name: beamlab-frontend
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://api.beamlabultimate.local:3001
+      - VITE_PYTHON_API_URL=http://api.beamlabultimate.local:3002
+      - VITE_WEBSOCKET_URL=ws://api.beamlabultimate.local:3001
+      - VITE_APP_NAME=BeamLab Ultimate
+      - VITE_FRONTEND_URL=http://app.beamlabultimate.local:5173
+    volumes:
+      - ./apps/web/src:/app/src
+      - ./apps/web/public:/app/public
+    depends_on:
+      - api
+    networks:
+      - beamlab-network
+    labels:
+      - "com.example.description=BeamLab Frontend App"
+
+  # ============================================
+  # Node.js API
+  # ============================================
+  api:
+    container_name: beamlab-api
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - HOST=0.0.0.0
+      - NODE_ENV=development
+      - APP_NAME=BeamLab Ultimate API
+      - FRONTEND_URL=http://app.beamlabultimate.local:5173
+      - ALLOWED_ORIGINS=http://app.beamlabultimate.local:5173,https://beamlabultimate.tech,https://www.beamlabultimate.tech,http://localhost:5173
+      - MONGODB_URI=mongodb://mongo:27017/beamlab-ultimate
+      - PYTHON_API_URL=http://python-api:3002
+    depends_on:
+      - mongo
+    volumes:
+      - ./apps/api/src:/app/src
+    networks:
+      - beamlab-network
+    labels:
+      - "com.example.description=BeamLab Node.js API"
+
+  # ============================================
+  # Python API (FastAPI)
+  # ============================================
+  python-api:
+    container_name: beamlab-python-api
+    build:
+      context: ./apps/backend-python
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3002
+      - APP_NAME=BeamLab Ultimate Python API
+      - FRONTEND_URL=http://app.beamlabultimate.local:5173
+      - ALLOWED_ORIGINS=http://app.beamlabultimate.local:5173,https://beamlabultimate.tech,https://www.beamlabultimate.tech,http://localhost:5173
+      - USE_MOCK_AI=true
+      - DEBUG=true
+    volumes:
+      - ./apps/backend-python/app:/app/app
+    networks:
+      - beamlab-network
+    labels:
+      - "com.example.description=BeamLab Python API"
+
+  # ============================================
+  # MongoDB Database
+  # ============================================
+  mongo:
+    container_name: beamlab-mongo
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=beamlab-dev-pass
+      - MONGO_INITDB_DATABASE=beamlab-ultimate
+    volumes:
+      - mongo_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - beamlab-network
+    healthcheck:
+      test: echo 'db.adminCommand("ping")' | mongosh --eval "show dbs"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+      - "com.example.description=BeamLab MongoDB Database"
+
+  # ============================================
+  # Redis Cache (Optional)
+  # ============================================
+  redis:
+    container_name: beamlab-redis
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass beamlab-dev-pass
+    volumes:
+      - redis_data:/data
+    networks:
+      - beamlab-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+      - "com.example.description=BeamLab Redis Cache"
+
+  # ============================================
+  # Adminer - Database Admin UI
+  # ============================================
+  adminer:
+    container_name: beamlab-adminer
+    image: adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+    networks:
+      - beamlab-network
+    environment:
+      - ADMINER_DEFAULT_SERVER=mongo
+    labels:
+      - "com.example.description=BeamLab Database Admin"
+
+# ============================================
+# Volumes
+# ============================================
+volumes:
+  mongo_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# ============================================
+# Networks
+# ============================================
+networks:
+  beamlab-network:
+    driver: bridge

@@ -1,0 +1,17 @@
+==========================================
+VERIFYING 3D SOLVER (solver3d.ts)
+==========================================
+
+Test Case 1: Cantilever Bending (Fy = -10 kN)
+Length: 2 m, E: 200 GPa, Iz: 0.0001 m4
+Tip Disp Actual: -1.3333e-3 m
+Tip Disp Theory: -1.3333e-3 m
+Error: 0.0000%
+✅ Bending Verification Passed
+
+Test Case 2: Cantilever Torsion (Mx = 5 kNm)
+Torque: 5 kNm, G: 80 GPa, J: 0.0001 m4
+Rotation Actual: 1.2500e-3 rad
+Rotation Theory: 1.2500e-3 rad
+Error: 0.0000%
+✅ Torsion Verification Passed

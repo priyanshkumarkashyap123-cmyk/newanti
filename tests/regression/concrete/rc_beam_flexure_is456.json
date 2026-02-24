@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "domain": "concrete",
+    "name": "rc_beam_flexure_is456",
+    "code": "IS456",
+    "clause": "Limit state flexure (IS 456:2000)",
+    "units": "SI"
+  },
+  "input": {
+    "b_mm": 300,
+    "d_mm": 500,
+    "Mu_kNm": 150,
+    "fck_MPa": 25,
+    "fy_MPa": 500,
+    "cover_mm": 40
+  },
+  "expected": {
+    "requiredSteel_mm2": 1130,
+    "steelRatio": 0.0075,
+    "status": "PASS"
+  },
+  "tolerance": {
+    "rel": { "requiredSteel_mm2": 0.02, "steelRatio": 0.02 }
+  }
+}

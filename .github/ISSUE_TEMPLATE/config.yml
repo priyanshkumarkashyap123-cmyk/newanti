@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Documentation
+    url: https://docs.structura.ai
+    about: Check our documentation for answers to common questions
+  - name: 💬 Discord Community
+    url: https://discord.gg/structura
+    about: Ask questions and get help from the community
+  - name: 🐦 Twitter
+    url: https://twitter.com/structura_ai
+    about: Follow us for updates and announcements

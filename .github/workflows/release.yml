@@ -1,0 +1,183 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+
+permissions:
+  contents: write
+  pull-requests: write
+  packages: write
+
+jobs:
+  # ============================================================================
+  # Semantic Release
+  # ============================================================================
+  release:
+    name: Semantic Release
+    runs-on: ubuntu-latest
+    
+    outputs:
+      new_release: ${{ steps.semantic.outputs.new_release_published }}
+      version: ${{ steps.semantic.outputs.new_release_version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        run: pnpm test:run
+
+      - name: Build
+        run: pnpm build
+
+      - name: Semantic Release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          extra_plugins: |
+            @semantic-release/changelog
+            @semantic-release/git
+            conventional-changelog-conventionalcommits
+
+  # ============================================================================
+  # Generate Release Notes
+  # ============================================================================
+  release-notes:
+    name: Generate Release Notes
+    needs: release
+    if: needs.release.outputs.new_release == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: changelog
+        uses: TriPSs/conventional-changelog-action@v5
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          skip-version-file: true
+          output-file: false
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.release.outputs.version }}
+          body: ${{ steps.changelog.outputs.clean_changelog }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============================================================================
+  # Deploy to Production
+  # ============================================================================
+  deploy:
+    name: Deploy to Production
+    needs: [release]
+    if: needs.release.outputs.new_release == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build for production
+        run: pnpm build
+        env:
+          NODE_ENV: production
+
+      # Deploy frontend to Azure Static Web Apps
+      - name: Deploy Frontend to Azure
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "apps/web"
+          output_location: "dist"
+        env:
+          NODE_VERSION: 20
+
+      # Trigger backend deployment
+      - name: Deploy Backend APIs
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Deploy to Azure
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: main
+
+      # Post-deploy smoke test
+      - name: Smoke Test
+        run: |
+          echo "Waiting 60s for deployment to propagate..."
+          sleep 60
+          FRONTEND_URL="${{ vars.PRODUCTION_URL || 'https://beamlabultimate.tech' }}"
+          API_URL="${{ vars.PRODUCTION_API_URL || 'https://beamlab-backend-node.azurewebsites.net' }}"
+          
+          echo "Testing frontend health..."
+          curl -fsS --retry 3 --retry-delay 10 "$FRONTEND_URL" > /dev/null || { echo "❌ Frontend unreachable"; exit 1; }
+          echo "✅ Frontend OK"
+          
+          echo "Testing API health..."
+          curl -fsS --retry 3 --retry-delay 10 "$API_URL/health" > /dev/null || { echo "❌ API unreachable"; exit 1; }
+          echo "✅ API OK"
+
+      - name: Notify on success
+        run: |
+          echo "🚀 Successfully deployed v${{ needs.release.outputs.version }} to production!" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ needs.release.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** production" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================================================
+  # Notify on Failure
+  # ============================================================================
+  notify-failure:
+    name: Notify on Failure
+    needs: [release, deploy]
+    if: failure()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send notification
+        run: |
+          echo "❌ Release pipeline failed!" >> $GITHUB_STEP_SUMMARY
+          echo "Check the workflow logs for details." >> $GITHUB_STEP_SUMMARY

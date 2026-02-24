@@ -1,0 +1,762 @@
+/**
+ * ToolGroups.ts - Comprehensive Tool Definitions
+ * 
+ * Organized tool metadata for the modeling toolbar including:
+ * - Icons (Lucide React)
+ * - Labels and tooltips
+ * - Keyboard shortcuts
+ * - Tool groups for dropdown menus
+ */
+
+import {
+    MousePointer, Square, Move, Circle, Triangle,
+    Minus, Plus, Copy, Trash2, FlipHorizontal2,
+    Grid, RotateCw, Maximize2, ArrowRight, Split,
+    Merge, AlignLeft, Columns, Cable, Spline,
+    Link2, Box, Building, Layers, Ruler,
+    CornerUpRight, CircleDot, Hexagon, Milestone,
+    ArrowDown, Wind, Zap, Thermometer, Waves,
+    Weight, Play, Eye, FileText, Settings,
+    Wrench, Hammer, ChevronDown, LucideIcon
+} from 'lucide-react';
+
+// ============================================
+// TYPES
+// ============================================
+
+export interface ToolDefinition {
+    id: string;
+    label: string;
+    tooltip: string;
+    icon: LucideIcon;
+    shortcut?: string;
+    category: 'MODELING' | 'PROPERTIES' | 'LOADING' | 'ANALYSIS' | 'DESIGN';
+    group?: string;
+    isGenerator?: boolean;
+}
+
+export interface ToolGroup {
+    id: string;
+    label: string;
+    icon: LucideIcon;
+    tools: string[];  // Tool IDs
+}
+
+// ============================================
+// TOOL GROUPS FOR MODELING CATEGORY
+// ============================================
+
+export const MODELING_TOOL_GROUPS: ToolGroup[] = [
+    {
+        id: 'selection',
+        label: 'Select',
+        icon: MousePointer,
+        tools: ['SELECT', 'SELECT_RANGE', 'PAN', 'ZOOM_WINDOW']
+    },
+    {
+        id: 'draw',
+        label: 'Draw',
+        icon: Plus,
+        tools: ['DRAW_NODE', 'DRAW_BEAM', 'DRAW_COLUMN', 'DRAW_CABLE', 'DRAW_ARCH', 'DRAW_RIGID_LINK', 'DRAW_PLATE']
+    },
+    {
+        id: 'edit',
+        label: 'Edit',
+        icon: Wrench,
+        tools: ['COPY', 'MIRROR', 'DELETE', 'DIVIDE_MEMBER', 'MERGE_NODES', 'ALIGN_NODES', 'SPLIT_MEMBER']
+    },
+    {
+        id: 'array',
+        label: 'Array',
+        icon: Grid,
+        tools: ['ARRAY_LINEAR', 'ARRAY_POLAR', 'ARRAY_3D']
+    },
+    {
+        id: 'transform',
+        label: 'Transform',
+        icon: Move,
+        tools: ['MOVE', 'ROTATE', 'SCALE', 'OFFSET_MEMBER', 'EXTRUDE']
+    },
+    {
+        id: 'generate',
+        label: 'Generate',
+        icon: Building,
+        tools: [
+            'GRID_GENERATE', 'GRID_3D', 'CIRCULAR_GRID',
+            'TRUSS_GENERATOR', 'ARCH_GENERATOR', 'PIER_GENERATOR',
+            'TOWER_GENERATOR', 'DECK_GENERATOR', 'CABLE_PATTERN',
+            'FRAME_GENERATOR', 'STAIRCASE_GENERATOR'
+        ]
+    },
+    {
+        id: 'measure',
+        label: 'Measure',
+        icon: Ruler,
+        tools: ['MEASURE_DISTANCE', 'MEASURE_ANGLE', 'MEASURE_AREA']
+    }
+];
+
+// ============================================
+// ALL TOOL DEFINITIONS
+// ============================================
+
+export const TOOL_DEFINITIONS: Record<string, ToolDefinition> = {
+    // ========== SELECTION TOOLS ==========
+    SELECT: {
+        id: 'SELECT',
+        label: 'Select',
+        tooltip: 'Select elements (Esc)',
+        icon: MousePointer,
+        shortcut: 'Escape',
+        category: 'MODELING',
+        group: 'selection'
+    },
+    SELECT_RANGE: {
+        id: 'SELECT_RANGE',
+        label: 'Box Select',
+        tooltip: 'Select by rectangle',
+        icon: Square,
+        shortcut: 'Shift+S',
+        category: 'MODELING',
+        group: 'selection'
+    },
+    PAN: {
+        id: 'PAN',
+        label: 'Pan',
+        tooltip: 'Pan view (Hold middle mouse)',
+        icon: Move,
+        category: 'MODELING',
+        group: 'selection'
+    },
+    ZOOM_WINDOW: {
+        id: 'ZOOM_WINDOW',
+        label: 'Zoom Window',
+        tooltip: 'Zoom to selected area',
+        icon: Maximize2,
+        shortcut: 'Z',
+        category: 'MODELING',
+        group: 'selection'
+    },
+
+    // ========== DRAW TOOLS ==========
+    DRAW_NODE: {
+        id: 'DRAW_NODE',
+        label: 'Node',
+        tooltip: 'Place node at point (N)',
+        icon: CircleDot,
+        shortcut: 'N',
+        category: 'MODELING',
+        group: 'draw'
+    },
+    DRAW_BEAM: {
+        id: 'DRAW_BEAM',
+        label: 'Beam',
+        tooltip: 'Draw beam between nodes (B)',
+        icon: Minus,
+        shortcut: 'B',
+        category: 'MODELING',
+        group: 'draw'
+    },
+    DRAW_COLUMN: {
+        id: 'DRAW_COLUMN',
+        label: 'Column',
+        tooltip: 'Draw vertical column (V)',
+        icon: ArrowDown,
+        shortcut: 'V',
+        category: 'MODELING',
+        group: 'draw'
+    },
+    DRAW_CABLE: {
+        id: 'DRAW_CABLE',
+        label: 'Cable',
+        tooltip: 'Draw cable/tension element (C)',
+        icon: Cable,
+        shortcut: 'C',
+        category: 'MODELING',
+        group: 'draw'
+    },
+    DRAW_ARCH: {
+        id: 'DRAW_ARCH',
+        label: 'Arch',
+        tooltip: 'Draw parabolic/circular arch',
+        icon: Spline,
+        shortcut: 'A',
+        category: 'MODELING',
+        group: 'draw'
+    },
+    DRAW_RIGID_LINK: {
+        id: 'DRAW_RIGID_LINK',
+        label: 'Rigid Link',
+        tooltip: 'Create rigid link between nodes',
+        icon: Link2,
+        category: 'MODELING',
+        group: 'draw'
+    },
+    DRAW_PLATE: {
+        id: 'DRAW_PLATE',
+        label: 'Plate/Shell',
+        tooltip: 'Draw plate or shell element',
+        icon: Square,
+        shortcut: 'P',
+        category: 'MODELING',
+        group: 'draw'
+    },
+
+    // ========== EDIT TOOLS ==========
+    COPY: {
+        id: 'COPY',
+        label: 'Copy',
+        tooltip: 'Copy selected elements (Ctrl+C)',
+        icon: Copy,
+        shortcut: 'Ctrl+C',
+        category: 'MODELING',
+        group: 'edit'
+    },
+    MIRROR: {
+        id: 'MIRROR',
+        label: 'Mirror',
+        tooltip: 'Mirror selected elements',
+        icon: FlipHorizontal2,
+        category: 'MODELING',
+        group: 'edit'
+    },
+    DELETE: {
+        id: 'DELETE',
+        label: 'Delete',
+        tooltip: 'Delete selected elements (D or Del)',
+        icon: Trash2,
+        shortcut: 'Delete',
+        category: 'MODELING',
+        group: 'edit'
+    },
+    DIVIDE_MEMBER: {
+        id: 'DIVIDE_MEMBER',
+        label: 'Divide',
+        tooltip: 'Divide member into segments',
+        icon: Split,
+        category: 'MODELING',
+        group: 'edit'
+    },
+    SPLIT_MEMBER: {
+        id: 'SPLIT_MEMBER',
+        label: 'Split at Point',
+        tooltip: 'Split member at intersection',
+        icon: Split,
+        category: 'MODELING',
+        group: 'edit'
+    },
+    MERGE_NODES: {
+        id: 'MERGE_NODES',
+        label: 'Merge Nodes',
+        tooltip: 'Merge coincident nodes',
+        icon: Merge,
+        category: 'MODELING',
+        group: 'edit'
+    },
+    ALIGN_NODES: {
+        id: 'ALIGN_NODES',
+        label: 'Align',
+        tooltip: 'Align nodes to line/plane',
+        icon: AlignLeft,
+        category: 'MODELING',
+        group: 'edit'
+    },
+
+    // ========== ARRAY TOOLS ==========
+    ARRAY_LINEAR: {
+        id: 'ARRAY_LINEAR',
+        label: 'Linear Array',
+        tooltip: 'Create linear copies',
+        icon: ArrowRight,
+        category: 'MODELING',
+        group: 'array'
+    },
+    ARRAY_POLAR: {
+        id: 'ARRAY_POLAR',
+        label: 'Polar Array',
+        tooltip: 'Create rotational copies',
+        icon: Circle,
+        category: 'MODELING',
+        group: 'array'
+    },
+    ARRAY_3D: {
+        id: 'ARRAY_3D',
+        label: '3D Array',
+        tooltip: 'Create 3D grid copies',
+        icon: Box,
+        category: 'MODELING',
+        group: 'array'
+    },
+
+    // ========== TRANSFORM TOOLS ==========
+    MOVE: {
+        id: 'MOVE',
+        label: 'Move',
+        tooltip: 'Move selected elements (M)',
+        icon: Move,
+        shortcut: 'M',
+        category: 'MODELING',
+        group: 'transform'
+    },
+    ROTATE: {
+        id: 'ROTATE',
+        label: 'Rotate',
+        tooltip: 'Rotate selected elements (R)',
+        icon: RotateCw,
+        shortcut: 'R',
+        category: 'MODELING',
+        group: 'transform'
+    },
+    SCALE: {
+        id: 'SCALE',
+        label: 'Scale',
+        tooltip: 'Scale selected elements (S)',
+        icon: Maximize2,
+        shortcut: 'S',
+        category: 'MODELING',
+        group: 'transform'
+    },
+    OFFSET_MEMBER: {
+        id: 'OFFSET_MEMBER',
+        label: 'Offset',
+        tooltip: 'Create parallel offset',
+        icon: Columns,
+        shortcut: 'O',
+        category: 'MODELING',
+        group: 'transform'
+    },
+    EXTRUDE: {
+        id: 'EXTRUDE',
+        label: 'Extrude',
+        tooltip: 'Extrude nodes/edges',
+        icon: CornerUpRight,
+        shortcut: 'E',
+        category: 'MODELING',
+        group: 'transform'
+    },
+
+    // ========== GENERATOR TOOLS ==========
+    GRID_GENERATE: {
+        id: 'GRID_GENERATE',
+        label: '2D Grid',
+        tooltip: 'Generate 2D structural grid',
+        icon: Grid,
+        category: 'MODELING',
+        group: 'generate',
+        isGenerator: true
+    },
+    GRID_3D: {
+        id: 'GRID_3D',
+        label: '3D Grid',
+        tooltip: 'Generate 3D structural frame',
+        icon: Box,
+        category: 'MODELING',
+        group: 'generate',
+        isGenerator: true
+    },
+    CIRCULAR_GRID: {
+        id: 'CIRCULAR_GRID',
+        label: 'Circular Grid',
+        tooltip: 'Generate radial/circular grid',
+        icon: Circle,
+        category: 'MODELING',
+        group: 'generate',
+        isGenerator: true
+    },
+    TRUSS_GENERATOR: {
+        id: 'TRUSS_GENERATOR',
+        label: 'Truss',
+        tooltip: 'Generate Warren/Pratt/Howe truss',
+        icon: Triangle,
+        category: 'MODELING',
+        group: 'generate',
+        isGenerator: true
+    },
+    ARCH_GENERATOR: {
+        id: 'ARCH_GENERATOR',
+        label: 'Arch',
+        tooltip: 'Generate parabolic/circular arch',
+        icon: Spline,
+        category: 'MODELING',
+        group: 'generate',
+        isGenerator: true
+    },
+    PIER_GENERATOR: {
+        id: 'PIER_GENERATOR',
+        label: 'Pier',
+        tooltip: 'Generate bridge pier with cap beam',
+        icon: Milestone,
+        category: 'MODELING',
+        group: 'generate',
+        isGenerator: true
+    },
+    TOWER_GENERATOR: {
+        id: 'TOWER_GENERATOR',
+        label: 'Tower',
+        tooltip: 'Generate tower structure',
+        icon: Building,
+        category: 'MODELING',
+        group: 'generate',
+        isGenerator: true
+    },
+    DECK_GENERATOR: {
+        id: 'DECK_GENERATOR',
+        label: 'Deck',
+        tooltip: 'Generate bridge deck with stringers',
+        icon: Layers,
+        category: 'MODELING',
+        group: 'generate',
+        isGenerator: true
+    },
+    CABLE_PATTERN: {
+        id: 'CABLE_PATTERN',
+        label: 'Cable Pattern',
+        tooltip: 'Generate fan/harp cable arrangement',
+        icon: Cable,
+        category: 'MODELING',
+        group: 'generate',
+        isGenerator: true
+    },
+    FRAME_GENERATOR: {
+        id: 'FRAME_GENERATOR',
+        label: 'Frame',
+        tooltip: 'Generate portal/multi-story frame',
+        icon: Building,
+        category: 'MODELING',
+        group: 'generate',
+        isGenerator: true
+    },
+    STAIRCASE_GENERATOR: {
+        id: 'STAIRCASE_GENERATOR',
+        label: 'Staircase',
+        tooltip: 'Generate staircase structure',
+        icon: ArrowDown,
+        category: 'MODELING',
+        group: 'generate',
+        isGenerator: true
+    },
+
+    // ========== MEASURE TOOLS ==========
+    MEASURE_DISTANCE: {
+        id: 'MEASURE_DISTANCE',
+        label: 'Distance',
+        tooltip: 'Measure distance between points',
+        icon: Ruler,
+        category: 'MODELING',
+        group: 'measure'
+    },
+    MEASURE_ANGLE: {
+        id: 'MEASURE_ANGLE',
+        label: 'Angle',
+        tooltip: 'Measure angle between lines',
+        icon: CornerUpRight,
+        category: 'MODELING',
+        group: 'measure'
+    },
+    MEASURE_AREA: {
+        id: 'MEASURE_AREA',
+        label: 'Area',
+        tooltip: 'Measure enclosed area',
+        icon: Square,
+        category: 'MODELING',
+        group: 'measure'
+    },
+
+    // ========== PROPERTIES TOOLS ==========
+    ASSIGN_SECTION: {
+        id: 'ASSIGN_SECTION',
+        label: 'Section',
+        tooltip: 'Assign cross-section to members',
+        icon: Hexagon,
+        category: 'PROPERTIES'
+    },
+    ASSIGN_MATERIAL: {
+        id: 'ASSIGN_MATERIAL',
+        label: 'Material',
+        tooltip: 'Assign material properties',
+        icon: Box,
+        category: 'PROPERTIES'
+    },
+    ASSIGN_RELEASE: {
+        id: 'ASSIGN_RELEASE',
+        label: 'Releases',
+        tooltip: 'Define member end releases (hinges)',
+        icon: Link2,
+        category: 'PROPERTIES'
+    },
+    ASSIGN_OFFSET: {
+        id: 'ASSIGN_OFFSET',
+        label: 'Offset',
+        tooltip: 'Define member rigid offsets',
+        icon: Columns,
+        category: 'PROPERTIES'
+    },
+    ASSIGN_CABLE_PROPS: {
+        id: 'ASSIGN_CABLE_PROPS',
+        label: 'Cable Props',
+        tooltip: 'Assign cable properties (pretension, area)',
+        icon: Cable,
+        category: 'PROPERTIES'
+    },
+    ASSIGN_SPRING: {
+        id: 'ASSIGN_SPRING',
+        label: 'Spring',
+        tooltip: 'Assign spring stiffness',
+        icon: Zap,
+        category: 'PROPERTIES'
+    },
+    ASSIGN_MASS: {
+        id: 'ASSIGN_MASS',
+        label: 'Mass',
+        tooltip: 'Assign lumped mass for dynamics',
+        icon: Weight,
+        category: 'PROPERTIES'
+    },
+    MEMBER_ORIENTATION: {
+        id: 'MEMBER_ORIENTATION',
+        label: 'Orientation',
+        tooltip: 'Set member beta angle',
+        icon: RotateCw,
+        category: 'PROPERTIES'
+    },
+    ASSIGN_SUPPORT: {
+        id: 'ASSIGN_SUPPORT',
+        label: 'Support',
+        tooltip: 'Define nodal restraints',
+        icon: ArrowDown,
+        category: 'PROPERTIES'
+    },
+    SECTION_BUILDER: {
+        id: 'SECTION_BUILDER',
+        label: 'Section Builder',
+        tooltip: 'Create custom cross-section',
+        icon: Settings,
+        category: 'PROPERTIES'
+    },
+
+    // ========== LOADING TOOLS ==========
+    ADD_POINT_LOAD: {
+        id: 'ADD_POINT_LOAD',
+        label: 'Point Load',
+        tooltip: 'Apply concentrated force',
+        icon: ArrowDown,
+        shortcut: 'F',
+        category: 'LOADING'
+    },
+    ADD_MOMENT: {
+        id: 'ADD_MOMENT',
+        label: 'Moment',
+        tooltip: 'Apply concentrated moment',
+        icon: RotateCw,
+        category: 'LOADING'
+    },
+    ADD_UDL: {
+        id: 'ADD_UDL',
+        label: 'UDL',
+        tooltip: 'Apply uniform distributed load',
+        icon: Minus,
+        shortcut: 'U',
+        category: 'LOADING'
+    },
+    ADD_TRAPEZOID: {
+        id: 'ADD_TRAPEZOID',
+        label: 'Varying Load',
+        tooltip: 'Apply trapezoidal/varying load',
+        icon: Triangle,
+        category: 'LOADING'
+    },
+    ADD_WIND: {
+        id: 'ADD_WIND',
+        label: 'Wind Load',
+        tooltip: 'Generate wind loads (IS 875-3)',
+        icon: Wind,
+        shortcut: 'W',
+        category: 'LOADING'
+    },
+    ADD_SEISMIC: {
+        id: 'ADD_SEISMIC',
+        label: 'Seismic',
+        tooltip: 'Generate seismic loads (IS 1893)',
+        icon: Zap,
+        category: 'LOADING'
+    },
+    ADD_PRETENSION: {
+        id: 'ADD_PRETENSION',
+        label: 'Pretension',
+        tooltip: 'Apply cable pretension force',
+        icon: Cable,
+        category: 'LOADING'
+    },
+    ADD_TEMPERATURE: {
+        id: 'ADD_TEMPERATURE',
+        label: 'Temperature',
+        tooltip: 'Apply temperature change (ΔT)',
+        icon: Thermometer,
+        shortcut: 'T',
+        category: 'LOADING'
+    },
+    ADD_MOVING_LOAD: {
+        id: 'ADD_MOVING_LOAD',
+        label: 'Moving Load',
+        tooltip: 'Apply IRC/AASHTO vehicle loads',
+        icon: Milestone,
+        category: 'LOADING'
+    },
+    ADD_HYDROSTATIC: {
+        id: 'ADD_HYDROSTATIC',
+        label: 'Hydrostatic',
+        tooltip: 'Apply water pressure',
+        icon: Waves,
+        category: 'LOADING'
+    },
+    ADD_SELF_WEIGHT: {
+        id: 'ADD_SELF_WEIGHT',
+        label: 'Self Weight',
+        tooltip: 'Apply automatic self-weight',
+        icon: Weight,
+        shortcut: 'G',
+        category: 'LOADING'
+    },
+    LOAD_COMBINATIONS: {
+        id: 'LOAD_COMBINATIONS',
+        label: 'Combinations',
+        tooltip: 'Define load combinations',
+        icon: Layers,
+        category: 'LOADING'
+    },
+
+    // ========== ANALYSIS TOOLS ==========
+    RUN_ANALYSIS: {
+        id: 'RUN_ANALYSIS',
+        label: 'Run Analysis',
+        tooltip: 'Execute structural analysis (F5)',
+        icon: Play,
+        shortcut: 'F5',
+        category: 'ANALYSIS'
+    },
+    VIEW_DEFORMED: {
+        id: 'VIEW_DEFORMED',
+        label: 'Deformed Shape',
+        tooltip: 'View displaced structure',
+        icon: Eye,
+        category: 'ANALYSIS'
+    },
+    VIEW_REACTIONS: {
+        id: 'VIEW_REACTIONS',
+        label: 'Reactions',
+        tooltip: 'View support reactions',
+        icon: ArrowDown,
+        category: 'ANALYSIS'
+    },
+    VIEW_SFD: {
+        id: 'VIEW_SFD',
+        label: 'Shear Diagram',
+        tooltip: 'View shear force diagram',
+        icon: CornerUpRight,
+        category: 'ANALYSIS'
+    },
+    VIEW_BMD: {
+        id: 'VIEW_BMD',
+        label: 'Bending Diagram',
+        tooltip: 'View bending moment diagram',
+        icon: Spline,
+        category: 'ANALYSIS'
+    },
+    MODAL_ANALYSIS: {
+        id: 'MODAL_ANALYSIS',
+        label: 'Modal Analysis',
+        tooltip: 'Calculate natural frequencies',
+        icon: Zap,
+        category: 'ANALYSIS'
+    },
+
+    // ========== DESIGN TOOLS ==========
+    STEEL_CHECK: {
+        id: 'STEEL_CHECK',
+        label: 'Steel Design',
+        tooltip: 'Check steel members (IS 800)',
+        icon: Hammer,
+        category: 'DESIGN'
+    },
+    CONCRETE_DESIGN: {
+        id: 'CONCRETE_DESIGN',
+        label: 'Concrete Design',
+        tooltip: 'Design RCC sections (IS 456)',
+        icon: Box,
+        category: 'DESIGN'
+    },
+    GENERATE_REPORT: {
+        id: 'GENERATE_REPORT',
+        label: 'Generate Report',
+        tooltip: 'Create PDF calculation report',
+        icon: FileText,
+        category: 'DESIGN'
+    }
+};
+
+// ============================================
+// KEYBOARD SHORTCUTS MAP
+// ============================================
+
+export const KEYBOARD_SHORTCUTS: Record<string, string> = {
+    'Escape': 'SELECT',
+    'n': 'DRAW_NODE',
+    'b': 'DRAW_BEAM',
+    'c': 'DRAW_CABLE',
+    'v': 'DRAW_COLUMN',
+    'a': 'DRAW_ARCH',
+    'p': 'DRAW_PLATE',
+    'm': 'MOVE',
+    'r': 'ROTATE',
+    's': 'SCALE',
+    'o': 'OFFSET_MEMBER',
+    'e': 'EXTRUDE',
+    'd': 'DELETE',
+    'z': 'ZOOM_WINDOW',
+    'f': 'ADD_POINT_LOAD',
+    'u': 'ADD_UDL',
+    'w': 'ADD_WIND',
+    't': 'ADD_TEMPERATURE',
+    'g': 'ADD_SELF_WEIGHT',
+    'F5': 'RUN_ANALYSIS',
+    'Delete': 'DELETE',
+    'Backspace': 'DELETE'
+};
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+/**
+ * Get tool definition by ID
+ */
+export function getToolDefinition(toolId: string): ToolDefinition | undefined {
+    return TOOL_DEFINITIONS[toolId];
+}
+
+/**
+ * Get tools for a specific group
+ */
+export function getGroupTools(groupId: string): ToolDefinition[] {
+    const group = MODELING_TOOL_GROUPS.find(g => g.id === groupId);
+    if (!group) return [];
+    return group.tools
+        .map(id => TOOL_DEFINITIONS[id])
+        .filter((t): t is ToolDefinition => t !== undefined);
+}
+
+/**
+ * Get tool by keyboard shortcut
+ */
+export function getToolByShortcut(key: string): string | undefined {
+    return KEYBOARD_SHORTCUTS[key];
+}
+
+/**
+ * Get all generator tools
+ */
+export function getGeneratorTools(): ToolDefinition[] {
+    return Object.values(TOOL_DEFINITIONS).filter(t => t.isGenerator);
+}
+
+export default TOOL_DEFINITIONS;

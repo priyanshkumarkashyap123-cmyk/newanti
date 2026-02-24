@@ -1,0 +1,27 @@
+{
+  "id": "geotech_liquefaction_spt",
+  "name": "Liquefaction Assessment SPT-Based",
+  "module": "geotech",
+  "function": "assessLiquefaction",
+  "designCode": "Idriss-Boulanger (2014)",
+  "inputs": {
+    "N_SPT": 15,
+    "depth": 8.0,
+    "sigma_v": 150,
+    "sigma_v_eff": 85,
+    "amax": 0.25,
+    "Mw": 7.5,
+    "finesContent": 15,
+    "D50": 0.3
+  },
+  "expected": {
+    "N1_60cs": { "value": 18.5, "tolerance": 1.0 },
+    "CSR": { "value": 0.21, "tolerance": 0.02 },
+    "CRR": { "value": 0.19, "tolerance": 0.02 },
+    "FS": { "value": 0.90, "tolerance": 0.05 },
+    "status": "LIQUEFACTION_LIKELY"
+  },
+  "source": "Idriss & Boulanger (2014) SPT-Based Liquefaction Triggering Procedure",
+  "createdBy": "BeamLab QA",
+  "createdAt": "2025-01-15"
+}

@@ -1,0 +1,38 @@
+name: Deploy Rust API (Self-Hosted)
+
+# This workflow uses a self-hosted runner to avoid using GitHub Actions minutes
+# Setup instructions: See GITHUB_ACTIONS_ALTERNATE_ACCOUNT_SETUP.md
+
+on:
+
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted  # ← Uses your own machine instead of GitHub runners
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Log in to Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: beamlabregistry.azurecr.io
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./apps/rust-api
+          push: true
+          tags: |
+            beamlabregistry.azurecr.io/beamlab-rust:latest
+            beamlabregistry.azurecr.io/beamlab-rust:${{ github.sha }}
+      
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: beamlab-rust-api
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_RUST }}
+          images: 'beamlabregistry.azurecr.io/beamlab-rust:latest'

@@ -1,0 +1,24 @@
+{
+  "length": 10.0,
+  "loads": [
+    {
+      "type": "udl",
+      "magnitude": 5.0,
+      "position": 0.0,
+      "end_position": 10.0,
+      "end_magnitude": null
+    }
+  ],
+  "supports": [
+    {
+      "position": 0.0,
+      "type": "pinned"
+    },
+    {
+      "position": 10.0,
+      "type": "roller"
+    }
+  ],
+  "e": 200000000.0,
+  "i": 0.0001
+}

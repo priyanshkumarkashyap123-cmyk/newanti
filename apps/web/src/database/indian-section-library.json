@@ -1,0 +1,1000 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "date": "2026-01-06",
+    "standard": "IS 808, IS 1161, IS 4923",
+    "units": {
+      "dimensions": "meters (m)",
+      "area": "square meters (m²)",
+      "inertia": "m⁴",
+      "mass": "kg/m",
+      "stress": "Pascal (Pa)"
+    },
+    "material_defaults": {
+      "steel": {
+        "E": 200e9,
+        "G": 77e9,
+        "density": 7850,
+        "poisson": 0.3,
+        "yield_strength": 250e6,
+        "ultimate_strength": 410e6
+      }
+    }
+  },
+  "sections": {
+    "I_SECTIONS_ISMC": [
+      {
+        "designation": "ISMC 75",
+        "type": "Channel",
+        "standard": "IS 808",
+        "dimensions": {
+          "depth": 0.075,
+          "width": 0.04,
+          "web_thickness": 0.0038,
+          "flange_thickness": 0.0052,
+          "root_radius": 0.0038
+        },
+        "properties": {
+          "area": 8.34e-4,
+          "Iyy": 74.6e-8,
+          "Izz": 5.89e-8,
+          "Iw": 1.28e-12,
+          "J": 0.145e-8,
+          "ry": 0.0299,
+          "rz": 0.0084,
+          "Zy": 19.9e-6,
+          "Zz": 2.77e-6
+        },
+        "mass_per_meter": 6.55,
+        "application": "Light frames, purlins, girts"
+      },
+      {
+        "designation": "ISMC 100",
+        "type": "Channel",
+        "standard": "IS 808",
+        "dimensions": {
+          "depth": 0.1,
+          "width": 0.05,
+          "web_thickness": 0.0048,
+          "flange_thickness": 0.0064,
+          "root_radius": 0.0048
+        },
+        "properties": {
+          "area": 1.26e-3,
+          "Iyy": 183e-8,
+          "Izz": 14.6e-8,
+          "Iw": 4.18e-12,
+          "J": 0.371e-8,
+          "ry": 0.0382,
+          "rz": 0.0108,
+          "Zy": 36.6e-6,
+          "Zz": 5.45e-6
+        },
+        "mass_per_meter": 9.86,
+        "application": "Medium frames, columns"
+      },
+      {
+        "designation": "ISMC 125",
+        "type": "Channel",
+        "standard": "IS 808",
+        "dimensions": {
+          "depth": 0.125,
+          "width": 0.065,
+          "web_thickness": 0.0052,
+          "flange_thickness": 0.0075,
+          "root_radius": 0.0052
+        },
+        "properties": {
+          "area": 1.88e-3,
+          "Iyy": 385e-8,
+          "Izz": 37.4e-8,
+          "Iw": 13.9e-12,
+          "J": 0.759e-8,
+          "ry": 0.0453,
+          "rz": 0.0141,
+          "Zy": 61.6e-6,
+          "Zz": 10.9e-6
+        },
+        "mass_per_meter": 14.8,
+        "application": "Medium to heavy frames"
+      },
+      {
+        "designation": "ISMC 150",
+        "type": "Channel",
+        "standard": "IS 808",
+        "dimensions": {
+          "depth": 0.15,
+          "width": 0.075,
+          "web_thickness": 0.0056,
+          "flange_thickness": 0.0083,
+          "root_radius": 0.0056
+        },
+        "properties": {
+          "area": 2.4e-3,
+          "Iyy": 680e-8,
+          "Izz": 63.5e-8,
+          "Iw": 29.7e-12,
+          "J": 1.21e-8,
+          "ry": 0.0532,
+          "rz": 0.0163,
+          "Zy": 90.7e-6,
+          "Zz": 16.1e-6
+        },
+        "mass_per_meter": 18.8,
+        "application": "Heavy frames, beams"
+      },
+      {
+        "designation": "ISMC 200",
+        "type": "Channel",
+        "standard": "IS 808",
+        "dimensions": {
+          "depth": 0.2,
+          "width": 0.075,
+          "web_thickness": 0.0064,
+          "flange_thickness": 0.0107,
+          "root_radius": 0.0064
+        },
+        "properties": {
+          "area": 3.36e-3,
+          "Iyy": 1530e-8,
+          "Izz": 85.4e-8,
+          "Iw": 71.5e-12,
+          "J": 2.66e-8,
+          "ry": 0.0675,
+          "rz": 0.016,
+          "Zy": 153e-6,
+          "Zz": 21.6e-6
+        },
+        "mass_per_meter": 26.4,
+        "application": "Heavy beams, columns"
+      },
+      {
+        "designation": "ISMC 250",
+        "type": "Channel",
+        "standard": "IS 808",
+        "dimensions": {
+          "depth": 0.25,
+          "width": 0.08,
+          "web_thickness": 0.0074,
+          "flange_thickness": 0.0128,
+          "root_radius": 0.0074
+        },
+        "properties": {
+          "area": 4.48e-3,
+          "Iyy": 3070e-8,
+          "Izz": 121e-8,
+          "Iw": 157e-12,
+          "J": 5.08e-8,
+          "ry": 0.0829,
+          "rz": 0.0164,
+          "Zy": 245e-6,
+          "Zz": 28.7e-6
+        },
+        "mass_per_meter": 35.2,
+        "application": "Heavy structures, industrial buildings"
+      },
+      {
+        "designation": "ISMC 300",
+        "type": "Channel",
+        "standard": "IS 808",
+        "dimensions": {
+          "depth": 0.3,
+          "width": 0.09,
+          "web_thickness": 0.0079,
+          "flange_thickness": 0.0136,
+          "root_radius": 0.0079
+        },
+        "properties": {
+          "area": 5.39e-3,
+          "Iyy": 5410e-8,
+          "Izz": 197e-8,
+          "Iw": 315e-12,
+          "J": 7.32e-8,
+          "ry": 0.1002,
+          "rz": 0.0191,
+          "Zy": 361e-6,
+          "Zz": 41.6e-6
+        },
+        "mass_per_meter": 42.3,
+        "application": "Heavy industrial structures"
+      },
+      {
+        "designation": "ISMC 400",
+        "type": "Channel",
+        "standard": "IS 808",
+        "dimensions": {
+          "depth": 0.4,
+          "width": 0.1,
+          "web_thickness": 0.0087,
+          "flange_thickness": 0.0156,
+          "root_radius": 0.0087
+        },
+        "properties": {
+          "area": 7.24e-3,
+          "Iyy": 12540e-8,
+          "Izz": 362e-8,
+          "Iw": 846e-12,
+          "J": 14.8e-8,
+          "ry": 0.1317,
+          "rz": 0.0224,
+          "Zy": 627e-6,
+          "Zz": 68.9e-6
+        },
+        "mass_per_meter": 56.8,
+        "application": "Major structural members"
+      }
+    ],
+    "ANGLES_ISA": [
+      {
+        "designation": "ISA 25×25×3",
+        "type": "Equal Angle",
+        "standard": "IS 808",
+        "dimensions": {
+          "leg_a": 0.025,
+          "leg_b": 0.025,
+          "thickness": 0.003,
+          "root_radius": 0.0035,
+          "toe_radius": 0.0018
+        },
+        "properties": {
+          "area": 1.42e-4,
+          "Iuu": 1.13e-8,
+          "Ivv": 0.46e-8,
+          "Iw": 0,
+          "J": 0.024e-8,
+          "ruu": 0.0089,
+          "rvv": 0.0057,
+          "Zuu": 0.679e-6,
+          "Zvv": 0.445e-6
+        },
+        "mass_per_meter": 1.11,
+        "application": "Light trusses, bracings"
+      },
+      {
+        "designation": "ISA 40×40×5",
+        "type": "Equal Angle",
+        "standard": "IS 808",
+        "dimensions": {
+          "leg_a": 0.04,
+          "leg_b": 0.04,
+          "thickness": 0.005,
+          "root_radius": 0.006,
+          "toe_radius": 0.003
+        },
+        "properties": {
+          "area": 3.79e-4,
+          "Iuu": 5.48e-8,
+          "Ivv": 2.08e-8,
+          "Iw": 0,
+          "J": 0.192e-8,
+          "ruu": 0.012,
+          "rvv": 0.0074,
+          "Zuu": 1.95e-6,
+          "Zvv": 1.24e-6
+        },
+        "mass_per_meter": 2.97,
+        "application": "Light to medium trusses"
+      },
+      {
+        "designation": "ISA 50×50×6",
+        "type": "Equal Angle",
+        "standard": "IS 808",
+        "dimensions": {
+          "leg_a": 0.05,
+          "leg_b": 0.05,
+          "thickness": 0.006,
+          "root_radius": 0.007,
+          "toe_radius": 0.0035
+        },
+        "properties": {
+          "area": 5.77e-4,
+          "Iuu": 11.1e-8,
+          "Ivv": 4.18e-8,
+          "Iw": 0,
+          "J": 0.386e-8,
+          "ruu": 0.0139,
+          "rvv": 0.0085,
+          "Zuu": 3.17e-6,
+          "Zvv": 1.99e-6
+        },
+        "mass_per_meter": 4.53,
+        "application": "Medium trusses, bracings"
+      },
+      {
+        "designation": "ISA 65×65×6",
+        "type": "Equal Angle",
+        "standard": "IS 808",
+        "dimensions": {
+          "leg_a": 0.065,
+          "leg_b": 0.065,
+          "thickness": 0.006,
+          "root_radius": 0.008,
+          "toe_radius": 0.004
+        },
+        "properties": {
+          "area": 7.6e-4,
+          "Iuu": 21.6e-8,
+          "Ivv": 8.06e-8,
+          "Iw": 0,
+          "J": 0.677e-8,
+          "ruu": 0.0168,
+          "rvv": 0.0103,
+          "Zuu": 4.75e-6,
+          "Zvv": 2.96e-6
+        },
+        "mass_per_meter": 5.96,
+        "application": "Medium to heavy trusses"
+      },
+      {
+        "designation": "ISA 75×75×8",
+        "type": "Equal Angle",
+        "standard": "IS 808",
+        "dimensions": {
+          "leg_a": 0.075,
+          "leg_b": 0.075,
+          "thickness": 0.008,
+          "root_radius": 0.009,
+          "toe_radius": 0.0045
+        },
+        "properties": {
+          "area": 1.15e-3,
+          "Iuu": 41.0e-8,
+          "Ivv": 15.1e-8,
+          "Iw": 0,
+          "J": 1.61e-8,
+          "ruu": 0.0189,
+          "rvv": 0.0115,
+          "Zuu": 7.83e-6,
+          "Zvv": 4.84e-6
+        },
+        "mass_per_meter": 9.03,
+        "application": "Heavy trusses, transmission towers"
+      },
+      {
+        "designation": "ISA 100×100×10",
+        "type": "Equal Angle",
+        "standard": "IS 808",
+        "dimensions": {
+          "leg_a": 0.1,
+          "leg_b": 0.1,
+          "thickness": 0.01,
+          "root_radius": 0.012,
+          "toe_radius": 0.006
+        },
+        "properties": {
+          "area": 1.93e-3,
+          "Iuu": 106e-8,
+          "Ivv": 38.8e-8,
+          "Iw": 0,
+          "J": 4.26e-8,
+          "ruu": 0.0234,
+          "rvv": 0.0142,
+          "Zuu": 15.2e-6,
+          "Zvv": 9.33e-6
+        },
+        "mass_per_meter": 15.1,
+        "application": "Heavy structural members"
+      },
+      {
+        "designation": "ISA 125×125×10",
+        "type": "Equal Angle",
+        "standard": "IS 808",
+        "dimensions": {
+          "leg_a": 0.125,
+          "leg_b": 0.125,
+          "thickness": 0.01,
+          "root_radius": 0.015,
+          "toe_radius": 0.0075
+        },
+        "properties": {
+          "area": 2.42e-3,
+          "Iuu": 211e-8,
+          "Ivv": 76.8e-8,
+          "Iw": 0,
+          "J": 6.72e-8,
+          "ruu": 0.0295,
+          "rvv": 0.0178,
+          "Zuu": 24.2e-6,
+          "Zvv": 14.8e-6
+        },
+        "mass_per_meter": 19.0,
+        "application": "Heavy trusses, transmission towers"
+      },
+      {
+        "designation": "ISA 150×150×12",
+        "type": "Equal Angle",
+        "standard": "IS 808",
+        "dimensions": {
+          "leg_a": 0.15,
+          "leg_b": 0.15,
+          "thickness": 0.012,
+          "root_radius": 0.018,
+          "toe_radius": 0.009
+        },
+        "properties": {
+          "area": 3.48e-3,
+          "Iuu": 449e-8,
+          "Ivv": 163e-8,
+          "Iw": 0,
+          "J": 13.5e-8,
+          "ruu": 0.0359,
+          "rvv": 0.0217,
+          "Zuu": 42.8e-6,
+          "Zvv": 26.1e-6
+        },
+        "mass_per_meter": 27.3,
+        "application": "Major structural members, heavy trusses"
+      },
+      {
+        "designation": "ISA 60×40×5",
+        "type": "Unequal Angle",
+        "standard": "IS 808",
+        "dimensions": {
+          "leg_a": 0.06,
+          "leg_b": 0.04,
+          "thickness": 0.005,
+          "root_radius": 0.007,
+          "toe_radius": 0.0035
+        },
+        "properties": {
+          "area": 4.8e-4,
+          "Iuu": 9.36e-8,
+          "Ivv": 3.02e-8,
+          "Iw": 0,
+          "J": 0.27e-8,
+          "ruu": 0.014,
+          "rvv": 0.0079,
+          "Zuu": 2.25e-6,
+          "Zvv": 1.35e-6
+        },
+        "mass_per_meter": 3.77,
+        "application": "Asymmetric loading conditions"
+      },
+      {
+        "designation": "ISA 75×50×6",
+        "type": "Unequal Angle",
+        "standard": "IS 808",
+        "dimensions": {
+          "leg_a": 0.075,
+          "leg_b": 0.05,
+          "thickness": 0.006,
+          "root_radius": 0.008,
+          "toe_radius": 0.004
+        },
+        "properties": {
+          "area": 7.21e-4,
+          "Iuu": 20.4e-8,
+          "Ivv": 6.96e-8,
+          "Iw": 0,
+          "J": 0.587e-8,
+          "ruu": 0.0168,
+          "rvv": 0.0098,
+          "Zuu": 3.89e-6,
+          "Zvv": 2.09e-6
+        },
+        "mass_per_meter": 5.66,
+        "application": "Beams with offset loading"
+      }
+    ],
+    "HOLLOW_SECTIONS_CHS": [
+      {
+        "designation": "CHS 33.7×2.6",
+        "type": "Circular Hollow",
+        "standard": "IS 1161",
+        "dimensions": {
+          "outer_diameter": 0.0337,
+          "wall_thickness": 0.0026
+        },
+        "properties": {
+          "area": 2.55e-4,
+          "I": 1.74e-8,
+          "Z": 1.03e-6,
+          "r": 0.0083,
+          "J": 3.48e-8
+        },
+        "mass_per_meter": 2.0,
+        "application": "Light structures, handrails"
+      },
+      {
+        "designation": "CHS 48.3×3.2",
+        "type": "Circular Hollow",
+        "standard": "IS 1161",
+        "dimensions": {
+          "outer_diameter": 0.0483,
+          "wall_thickness": 0.0032
+        },
+        "properties": {
+          "area": 4.49e-4,
+          "I": 5.43e-8,
+          "Z": 2.25e-6,
+          "r": 0.011,
+          "J": 10.9e-8
+        },
+        "mass_per_meter": 3.52,
+        "application": "Light to medium structures"
+      },
+      {
+        "designation": "CHS 60.3×3.6",
+        "type": "Circular Hollow",
+        "standard": "IS 1161",
+        "dimensions": {
+          "outer_diameter": 0.0603,
+          "wall_thickness": 0.0036
+        },
+        "properties": {
+          "area": 6.36e-4,
+          "I": 12.2e-8,
+          "Z": 4.05e-6,
+          "r": 0.0138,
+          "J": 24.4e-8
+        },
+        "mass_per_meter": 4.99,
+        "application": "Medium structures, columns"
+      },
+      {
+        "designation": "CHS 76.1×3.6",
+        "type": "Circular Hollow",
+        "standard": "IS 1161",
+        "dimensions": {
+          "outer_diameter": 0.0761,
+          "wall_thickness": 0.0036
+        },
+        "properties": {
+          "area": 8.17e-4,
+          "I": 24.6e-8,
+          "Z": 6.47e-6,
+          "r": 0.0173,
+          "J": 49.2e-8
+        },
+        "mass_per_meter": 6.41,
+        "application": "Medium to heavy columns"
+      },
+      {
+        "designation": "CHS 88.9×4.0",
+        "type": "Circular Hollow",
+        "standard": "IS 1161",
+        "dimensions": {
+          "outer_diameter": 0.0889,
+          "wall_thickness": 0.004
+        },
+        "properties": {
+          "area": 1.06e-3,
+          "I": 42.4e-8,
+          "Z": 9.54e-6,
+          "r": 0.02,
+          "J": 84.8e-8
+        },
+        "mass_per_meter": 8.36,
+        "application": "Heavy columns, structural members"
+      },
+      {
+        "designation": "CHS 114.3×4.5",
+        "type": "Circular Hollow",
+        "standard": "IS 1161",
+        "dimensions": {
+          "outer_diameter": 0.1143,
+          "wall_thickness": 0.0045
+        },
+        "properties": {
+          "area": 1.55e-3,
+          "I": 93.4e-8,
+          "Z": 16.3e-6,
+          "r": 0.0245,
+          "J": 187e-8
+        },
+        "mass_per_meter": 12.2,
+        "application": "Heavy structural columns"
+      },
+      {
+        "designation": "CHS 139.7×5.0",
+        "type": "Circular Hollow",
+        "standard": "IS 1161",
+        "dimensions": {
+          "outer_diameter": 0.1397,
+          "wall_thickness": 0.005
+        },
+        "properties": {
+          "area": 2.12e-3,
+          "I": 187e-8,
+          "Z": 26.8e-6,
+          "r": 0.0297,
+          "J": 374e-8
+        },
+        "mass_per_meter": 16.7,
+        "application": "Major structural columns"
+      }
+    ],
+    "HOLLOW_SECTIONS_SHS": [
+      {
+        "designation": "SHS 40×40×2.5",
+        "type": "Square Hollow",
+        "standard": "IS 4923",
+        "dimensions": {
+          "width": 0.04,
+          "height": 0.04,
+          "wall_thickness": 0.0025,
+          "corner_radius": 0.004
+        },
+        "properties": {
+          "area": 3.64e-4,
+          "Iyy": 4.2e-8,
+          "Izz": 4.2e-8,
+          "Iw": 0,
+          "J": 6.72e-8,
+          "ry": 0.0107,
+          "rz": 0.0107,
+          "Zy": 2.1e-6,
+          "Zz": 2.1e-6
+        },
+        "mass_per_meter": 2.86,
+        "application": "Light frames, supports"
+      },
+      {
+        "designation": "SHS 50×50×3.0",
+        "type": "Square Hollow",
+        "standard": "IS 4923",
+        "dimensions": {
+          "width": 0.05,
+          "height": 0.05,
+          "wall_thickness": 0.003,
+          "corner_radius": 0.005
+        },
+        "properties": {
+          "area": 5.48e-4,
+          "Iyy": 8.88e-8,
+          "Izz": 8.88e-8,
+          "Iw": 0,
+          "J": 14.2e-8,
+          "ry": 0.0127,
+          "rz": 0.0127,
+          "Zy": 3.55e-6,
+          "Zz": 3.55e-6
+        },
+        "mass_per_meter": 4.3,
+        "application": "Medium frames, bracings"
+      },
+      {
+        "designation": "SHS 60×60×3.6",
+        "type": "Square Hollow",
+        "standard": "IS 4923",
+        "dimensions": {
+          "width": 0.06,
+          "height": 0.06,
+          "wall_thickness": 0.0036,
+          "corner_radius": 0.006
+        },
+        "properties": {
+          "area": 7.99e-4,
+          "Iyy": 16.5e-8,
+          "Izz": 16.5e-8,
+          "Iw": 0,
+          "J": 26.4e-8,
+          "ry": 0.0144,
+          "rz": 0.0144,
+          "Zy": 5.5e-6,
+          "Zz": 5.5e-6
+        },
+        "mass_per_meter": 6.27,
+        "application": "Medium to heavy frames"
+      },
+      {
+        "designation": "SHS 80×80×4.0",
+        "type": "Square Hollow",
+        "standard": "IS 4923",
+        "dimensions": {
+          "width": 0.08,
+          "height": 0.08,
+          "wall_thickness": 0.004,
+          "corner_radius": 0.008
+        },
+        "properties": {
+          "area": 1.19e-3,
+          "Iyy": 36.9e-8,
+          "Izz": 36.9e-8,
+          "Iw": 0,
+          "J": 59.0e-8,
+          "ry": 0.0176,
+          "rz": 0.0176,
+          "Zy": 9.23e-6,
+          "Zz": 9.23e-6
+        },
+        "mass_per_meter": 9.35,
+        "application": "Heavy columns, beams"
+      },
+      {
+        "designation": "SHS 100×100×5.0",
+        "type": "Square Hollow",
+        "standard": "IS 4923",
+        "dimensions": {
+          "width": 0.1,
+          "height": 0.1,
+          "wall_thickness": 0.005,
+          "corner_radius": 0.01
+        },
+        "properties": {
+          "area": 1.86e-3,
+          "Iyy": 76.2e-8,
+          "Izz": 76.2e-8,
+          "Iw": 0,
+          "J": 122e-8,
+          "ry": 0.0202,
+          "rz": 0.0202,
+          "Zy": 15.2e-6,
+          "Zz": 15.2e-6
+        },
+        "mass_per_meter": 14.6,
+        "application": "Major structural members"
+      },
+      {
+        "designation": "SHS 120×120×6.0",
+        "type": "Square Hollow",
+        "standard": "IS 4923",
+        "dimensions": {
+          "width": 0.12,
+          "height": 0.12,
+          "wall_thickness": 0.006,
+          "corner_radius": 0.012
+        },
+        "properties": {
+          "area": 2.7e-3,
+          "Iyy": 137e-8,
+          "Izz": 137e-8,
+          "Iw": 0,
+          "J": 219e-8,
+          "ry": 0.0225,
+          "rz": 0.0225,
+          "Zy": 22.8e-6,
+          "Zz": 22.8e-6
+        },
+        "mass_per_meter": 21.2,
+        "application": "Heavy structural members"
+      }
+    ],
+    "RECTANGULAR_HOLLOW_RHS": [
+      {
+        "designation": "RHS 60×40×3.0",
+        "type": "Rectangular Hollow",
+        "standard": "IS 4923",
+        "dimensions": {
+          "width": 0.06,
+          "height": 0.04,
+          "wall_thickness": 0.003,
+          "corner_radius": 0.005
+        },
+        "properties": {
+          "area": 5.48e-4,
+          "Iyy": 10.1e-8,
+          "Izz": 5.2e-8,
+          "Iw": 8.45e-12,
+          "J": 12.3e-8,
+          "ry": 0.0136,
+          "rz": 0.0097,
+          "Zy": 3.37e-6,
+          "Zz": 2.6e-6
+        },
+        "mass_per_meter": 4.3,
+        "application": "Beams, columns with directional loading"
+      },
+      {
+        "designation": "RHS 100×50×4.0",
+        "type": "Rectangular Hollow",
+        "standard": "IS 4923",
+        "dimensions": {
+          "width": 0.1,
+          "height": 0.05,
+          "wall_thickness": 0.004,
+          "corner_radius": 0.008
+        },
+        "properties": {
+          "area": 1.11e-3,
+          "Iyy": 35.6e-8,
+          "Izz": 12.4e-8,
+          "Iw": 34.2e-12,
+          "J": 38.4e-8,
+          "ry": 0.0179,
+          "rz": 0.0106,
+          "Zy": 7.12e-6,
+          "Zz": 4.96e-6
+        },
+        "mass_per_meter": 8.72,
+        "application": "Beams with major/minor axis loading"
+      },
+      {
+        "designation": "RHS 120×80×5.0",
+        "type": "Rectangular Hollow",
+        "standard": "IS 4923",
+        "dimensions": {
+          "width": 0.12,
+          "height": 0.08,
+          "wall_thickness": 0.005,
+          "corner_radius": 0.01
+        },
+        "properties": {
+          "area": 1.86e-3,
+          "Iyy": 92.4e-8,
+          "Izz": 48.6e-8,
+          "Iw": 125e-12,
+          "J": 113e-8,
+          "ry": 0.0223,
+          "rz": 0.0162,
+          "Zy": 15.4e-6,
+          "Zz": 12.2e-6
+        },
+        "mass_per_meter": 14.6,
+        "application": "Heavy beams, columns"
+      }
+    ],
+    "I_BEAMS_ISMB": [
+      {
+        "designation": "ISMB 100",
+        "type": "I-Beam",
+        "standard": "IS 808",
+        "dimensions": {
+          "depth": 0.1,
+          "width": 0.075,
+          "web_thickness": 0.004,
+          "flange_thickness": 0.007,
+          "root_radius": 0.008
+        },
+        "properties": {
+          "area": 1.13e-3,
+          "Iyy": 206e-8,
+          "Izz": 45.6e-8,
+          "Iw": 18.7e-12,
+          "J": 0.539e-8,
+          "ry": 0.0427,
+          "rz": 0.0201,
+          "Zy": 41.2e-6,
+          "Zz": 12.2e-6
+        },
+        "mass_per_meter": 8.9,
+        "application": "Light beams"
+      },
+      {
+        "designation": "ISMB 150",
+        "type": "I-Beam",
+        "standard": "IS 808",
+        "dimensions": {
+          "depth": 0.15,
+          "width": 0.08,
+          "web_thickness": 0.005,
+          "flange_thickness": 0.008,
+          "root_radius": 0.009
+        },
+        "properties": {
+          "area": 1.76e-3,
+          "Iyy": 726e-8,
+          "Izz": 72.8e-8,
+          "Iw": 52.3e-12,
+          "J": 1.36e-8,
+          "ry": 0.0642,
+          "rz": 0.0203,
+          "Zy": 96.8e-6,
+          "Zz": 18.2e-6
+        },
+        "mass_per_meter": 13.8,
+        "application": "Light to medium beams"
+      },
+      {
+        "designation": "ISMB 200",
+        "type": "I-Beam",
+        "standard": "IS 808",
+        "dimensions": {
+          "depth": 0.2,
+          "width": 0.1,
+          "web_thickness": 0.0056,
+          "flange_thickness": 0.0107,
+          "root_radius": 0.012
+        },
+        "properties": {
+          "area": 2.66e-3,
+          "Iyy": 2230e-8,
+          "Izz": 177e-8,
+          "Iw": 176e-12,
+          "J": 3.6e-8,
+          "ry": 0.0916,
+          "rz": 0.0258,
+          "Zy": 223e-6,
+          "Zz": 35.4e-6
+        },
+        "mass_per_meter": 20.9,
+        "application": "Medium beams"
+      },
+      {
+        "designation": "ISMB 300",
+        "type": "I-Beam",
+        "standard": "IS 808",
+        "dimensions": {
+          "depth": 0.3,
+          "width": 0.14,
+          "web_thickness": 0.0067,
+          "flange_thickness": 0.0129,
+          "root_radius": 0.016
+        },
+        "properties": {
+          "area": 4.66e-3,
+          "Iyy": 8603e-8,
+          "Izz": 473e-8,
+          "Iw": 863e-12,
+          "J": 9.84e-8,
+          "ry": 0.1359,
+          "rz": 0.0319,
+          "Zy": 574e-6,
+          "Zz": 67.6e-6
+        },
+        "mass_per_meter": 36.6,
+        "application": "Heavy beams, industrial structures"
+      },
+      {
+        "designation": "ISMB 450",
+        "type": "I-Beam",
+        "standard": "IS 808",
+        "dimensions": {
+          "depth": 0.45,
+          "width": 0.15,
+          "web_thickness": 0.0092,
+          "flange_thickness": 0.0174,
+          "root_radius": 0.02
+        },
+        "properties": {
+          "area": 7.24e-3,
+          "Iyy": 27360e-8,
+          "Izz": 676e-8,
+          "Iw": 2940e-12,
+          "J": 28.5e-8,
+          "ry": 0.1945,
+          "rz": 0.0306,
+          "Zy": 1216e-6,
+          "Zz": 90.1e-6
+        },
+        "mass_per_meter": 56.8,
+        "application": "Major structural beams"
+      },
+      {
+        "designation": "ISMB 600",
+        "type": "I-Beam",
+        "standard": "IS 808",
+        "dimensions": {
+          "depth": 0.6,
+          "width": 0.21,
+          "web_thickness": 0.0121,
+          "flange_thickness": 0.0202,
+          "root_radius": 0.025
+        },
+        "properties": {
+          "area": 12.6e-3,
+          "Iyy": 91800e-8,
+          "Izz": 2680e-8,
+          "Iw": 12600e-12,
+          "J": 78.9e-8,
+          "ry": 0.27,
+          "rz": 0.0461,
+          "Zy": 3060e-6,
+          "Zz": 255e-6
+        },
+        "mass_per_meter": 99.0,
+        "application": "Heavy industrial beams"
+      }
+    ]
+  },
+  "design_guides": {
+    "selection_criteria": {
+      "compression_members": "Use I-sections or hollow sections for maximum r_min",
+      "flexural_members": "Use I-beams or channels based on moment capacity",
+      "tension_members": "Use angles or channels for connections",
+      "trusses": "Prefer angles for members, check gusset plate connections",
+      "bracing": "Use angles or hollow sections for lateral stability"
+    },
+    "capacity_formulas": {
+      "compression": "P_allow = (π² × E × I) / (k × L)²",
+      "tension": "T_allow = A × f_y / γ_m0",
+      "bending": "M_allow = Z × f_y / γ_m0",
+      "shear": "V_allow = 0.6 × A_w × f_y / γ_m1"
+    },
+    "safety_factors": {
+      "gamma_m0": 1.1,
+      "gamma_m1": 1.25,
+      "partial_safety_factor_load": 1.5
+    }
+  }
+}

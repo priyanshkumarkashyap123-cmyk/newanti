@@ -1,0 +1,12 @@
+//! API request handlers
+
+pub mod health;
+pub mod analysis;
+pub mod advanced;
+pub mod structures;
+pub mod sections;
+pub mod design;
+pub mod metrics;
+pub mod openapi;
+pub mod templates;
+pub mod jobs;

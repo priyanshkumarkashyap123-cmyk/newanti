@@ -1,0 +1,24 @@
+{
+  "meta": {
+    "domain": "structural",
+    "name": "beam_point_load_midspan",
+    "code": "closed_form",
+    "clause": "Elastic beam theory",
+    "units": "SI"
+  },
+  "input": {
+    "span_m": 6.0,
+    "load_kN": 30.0,
+    "section": { "E_MPa": 200000, "I_mm4": 8.0e8 },
+    "support": "simply_supported"
+  },
+  "expected": {
+    "moment_kNm_max": 45.0,
+    "shear_kN_max": 30.0,
+    "deflection_mm_midspan": 6.0
+  },
+  "tolerance": {
+    "abs": { "deflection_mm_midspan": 0.05 },
+    "rel": { "moment_kNm_max": 0.001, "shear_kN_max": 0.001 }
+  }
+}

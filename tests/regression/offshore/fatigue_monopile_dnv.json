@@ -1,0 +1,26 @@
+{
+  "id": "offshore_fatigue_monopile",
+  "name": "Fatigue Damage Assessment for Monopile",
+  "module": "offshore",
+  "function": "calculateFatigueDamage",
+  "designCode": "DNV-GL RP-C203",
+  "inputs": {
+    "stressRanges": [
+      { "range": 80, "cycles": 1e5 },
+      { "range": 60, "cycles": 5e5 },
+      { "range": 40, "cycles": 2e6 },
+      { "range": 20, "cycles": 1e7 }
+    ],
+    "snCurve": "D",
+    "designLife": 25,
+    "DFF": 3.0
+  },
+  "expected": {
+    "damage": { "value": 0.75, "tolerance": 0.1 },
+    "status": "PASS",
+    "fatigueLife": { "value": 33, "tolerance": 5, "unit": "years" }
+  },
+  "source": "DNV-GL RP-C203 (2019) Section 2",
+  "createdBy": "BeamLab QA",
+  "createdAt": "2025-01-15"
+}

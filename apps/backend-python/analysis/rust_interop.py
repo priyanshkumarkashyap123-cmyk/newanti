@@ -1,0 +1,428 @@
+"""
+Rust Backend Interop Client
+
+High-performance bridge between Python API and Rust solver engine.
+Delegates compute-intensive structural analysis to the Rust backend
+for 10-100x speedup on large models (>1000 nodes).
+
+Architecture:
+    Python (FastAPI) -> HTTP -> Rust (Axum) -> Result
+    
+    - Small models (<500 nodes): solved locally in Python
+    - Large models (>500 nodes): delegated to Rust backend
+    - Fallback: if Rust backend is unavailable, solve locally
+"""
+
+import asyncio
+import hashlib
+import json
+import os
+import time
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any, Dict, List, Optional
+
+import httpx
+import numpy as np
+
+# ============================================
+# Configuration
+# ============================================
+
+RUST_API_URL = os.getenv("RUST_API_URL", "http://localhost:3002")
+RUST_API_TIMEOUT = int(os.getenv("RUST_API_TIMEOUT", "120"))
+NODE_THRESHOLD_FOR_RUST = int(os.getenv("RUST_NODE_THRESHOLD", "500"))
+ENABLE_RUST_BACKEND = os.getenv("ENABLE_RUST_BACKEND", "true").lower() == "true"
+
+
+class SolverBackend(str, Enum):
+    """Which backend to use for solving"""
+    PYTHON = "python"
+    RUST = "rust"
+    AUTO = "auto"  # Auto-select based on model size
+
+
+@dataclass
+class RustSolverResult:
+    """Result from Rust backend solver"""
+    success: bool
+    backend_used: str
+    solve_time_ms: float
+    displacements: Optional[Dict[str, List[float]]] = None
+    reactions: Optional[Dict[str, List[float]]] = None
+    member_forces: Optional[List[Dict]] = None
+    modes: Optional[List[Dict]] = None
+    error: Optional[str] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+class RustInteropClient:
+    """
+    HTTP client for Rust structural analysis backend.
+    
+    Provides automatic failover: if Rust backend is unavailable,
+    falls back to Python solver transparently.
+    
+    Usage:
+        client = RustInteropClient()
+        result = await client.analyze(model_data, analysis_type="static")
+    """
+    
+    def __init__(
+        self,
+        base_url: str = RUST_API_URL,
+        timeout: int = RUST_API_TIMEOUT,
+        enable_rust: bool = ENABLE_RUST_BACKEND,
+    ):
+        self.base_url = base_url.rstrip("/")
+        self.timeout = timeout
+        self.enable_rust = enable_rust
+        self._client: Optional[httpx.AsyncClient] = None
+        self._rust_available: Optional[bool] = None
+        self._last_health_check = 0.0
+        self._health_check_interval = 30.0  # seconds
+        
+    async def _get_client(self) -> httpx.AsyncClient:
+        """Lazy-init HTTP client with connection pooling"""
+        if self._client is None or self._client.is_closed:
+            self._client = httpx.AsyncClient(
+                base_url=self.base_url,
+                timeout=httpx.Timeout(
+                    connect=5.0,
+                    read=self.timeout,
+                    write=30.0,
+                    pool=10.0,
+                ),
+                limits=httpx.Limits(
+                    max_connections=20,
+                    max_keepalive_connections=10,
+                ),
+                headers={"Content-Type": "application/json"},
+            )
+        return self._client
+    
+    async def check_health(self) -> bool:
+        """Check if Rust backend is alive and responding"""
+        now = time.time()
+        if (
+            self._rust_available is not None 
+            and now - self._last_health_check < self._health_check_interval
+        ):
+            return self._rust_available
+        
+        try:
+            client = await self._get_client()
+            resp = await client.get("/api/health", timeout=3.0)
+            self._rust_available = resp.status_code == 200
+        except Exception:
+            self._rust_available = False
+        
+        self._last_health_check = now
+        return self._rust_available
+    
+    def should_use_rust(self, model: Dict, backend: SolverBackend = SolverBackend.AUTO) -> bool:
+        """Decide whether to use Rust backend based on model size"""
+        if backend == SolverBackend.PYTHON:
+            return False
+        if backend == SolverBackend.RUST:
+            return True
+        
+        # AUTO mode: use Rust for large models
+        n_nodes = len(model.get("nodes", []))
+        n_members = len(model.get("members", []))
+        n_dof = n_nodes * 6  # 6 DOF per node
+        
+        # Use Rust if model has >500 nodes or >1000 DOFs
+        return n_nodes >= NODE_THRESHOLD_FOR_RUST or n_dof > 3000
+    
+    async def analyze(
+        self,
+        model: Dict,
+        analysis_type: str = "static",
+        backend: SolverBackend = SolverBackend.AUTO,
+        options: Optional[Dict] = None,
+    ) -> RustSolverResult:
+        """
+        Run structural analysis, auto-selecting backend.
+        
+        Args:
+            model: Full structural model dict with nodes, members, supports, loads
+            analysis_type: "static", "modal", "pdelta", "buckling", "spectrum"
+            backend: Force specific backend or auto-select
+            options: Additional solver options
+            
+        Returns:
+            RustSolverResult with displacements, reactions, member forces
+        """
+        use_rust = self.enable_rust and self.should_use_rust(model, backend)
+        
+        if use_rust:
+            is_available = await self.check_health()
+            if is_available:
+                try:
+                    return await self._solve_via_rust(model, analysis_type, options)
+                except Exception as e:
+                    print(f"[RUST_INTEROP] Rust backend failed, falling back to Python: {e}")
+                    # Fall through to Python solver
+        
+        # Python fallback
+        return await self._solve_via_python(model, analysis_type, options)
+    
+    async def _solve_via_rust(
+        self,
+        model: Dict,
+        analysis_type: str,
+        options: Optional[Dict] = None,
+    ) -> RustSolverResult:
+        """Send analysis request to Rust backend"""
+        client = await self._get_client()
+        start = time.time()
+        
+        # Map analysis type to Rust endpoint
+        endpoints = {
+            "static": "/api/analyze",
+            "modal": "/api/analyze/modal",
+            "pdelta": "/api/analyze/pdelta",
+            "buckling": "/api/analyze/buckling",
+            "spectrum": "/api/analyze/spectrum",
+        }
+        
+        endpoint = endpoints.get(analysis_type, "/api/analyze")
+        
+        payload = {
+            "nodes": model.get("nodes", []),
+            "members": model.get("members", []),
+            "supports": model.get("supports", []),
+            "loads": model.get("loads", []),
+            "material": model.get("material", {
+                "e": 200e9,
+                "g": 77e9,
+                "density": 7850.0,
+                "poisson": 0.3,
+            }),
+            "sections": model.get("sections", {}),
+        }
+        
+        if options:
+            payload["options"] = options
+        
+        resp = await client.post(endpoint, json=payload)
+        elapsed = (time.time() - start) * 1000
+        
+        if resp.status_code != 200:
+            return RustSolverResult(
+                success=False,
+                backend_used="rust",
+                solve_time_ms=elapsed,
+                error=f"Rust backend returned {resp.status_code}: {resp.text[:500]}",
+            )
+        
+        data = resp.json()
+        
+        return RustSolverResult(
+            success=True,
+            backend_used="rust",
+            solve_time_ms=elapsed,
+            displacements=data.get("displacements"),
+            reactions=data.get("reactions"),
+            member_forces=data.get("member_forces"),
+            modes=data.get("modes"),
+            metadata={
+                "rust_solve_time_ms": data.get("solve_time_ms"),
+                "n_dof": data.get("n_dof"),
+                "condition_number": data.get("condition_number"),
+            },
+        )
+    
+    async def _solve_via_python(
+        self,
+        model: Dict,
+        analysis_type: str,
+        options: Optional[Dict] = None,
+    ) -> RustSolverResult:
+        """Fallback: solve using Python sparse solver"""
+        start = time.time()
+        
+        try:
+            # Import local solvers
+            from analysis.sparse_solver import SparseSolver
+            
+            solver = SparseSolver()
+            
+            if analysis_type == "static":
+                result = await asyncio.to_thread(
+                    solver.solve_static, model
+                )
+            elif analysis_type == "modal":
+                n_modes = (options or {}).get("n_modes", 10)
+                result = await asyncio.to_thread(
+                    solver.solve_modal, model, n_modes
+                )
+            else:
+                result = await asyncio.to_thread(
+                    solver.solve_static, model
+                )
+            
+            elapsed = (time.time() - start) * 1000
+            
+            return RustSolverResult(
+                success=True,
+                backend_used="python",
+                solve_time_ms=elapsed,
+                displacements=result.get("displacements"),
+                reactions=result.get("reactions"),
+                member_forces=result.get("member_forces"),
+                modes=result.get("modes"),
+            )
+        except Exception as e:
+            elapsed = (time.time() - start) * 1000
+            return RustSolverResult(
+                success=False,
+                backend_used="python",
+                solve_time_ms=elapsed,
+                error=str(e),
+            )
+    
+    # ============================================
+    # Specialized Analysis Methods
+    # ============================================
+    
+    async def run_pdelta(
+        self,
+        model: Dict,
+        max_iterations: int = 10,
+        tolerance: float = 1e-4,
+    ) -> RustSolverResult:
+        """P-Delta analysis with geometric nonlinearity"""
+        return await self.analyze(
+            model,
+            analysis_type="pdelta",
+            options={
+                "max_iterations": max_iterations,
+                "tolerance": tolerance,
+            },
+        )
+    
+    async def run_modal(
+        self,
+        model: Dict,
+        n_modes: int = 12,
+    ) -> RustSolverResult:
+        """Modal (eigenvalue) analysis"""
+        return await self.analyze(
+            model,
+            analysis_type="modal",
+            options={"n_modes": n_modes},
+        )
+    
+    async def run_response_spectrum(
+        self,
+        model: Dict,
+        spectrum_data: List[Dict],
+        zone_factor: float = 0.16,
+        importance_factor: float = 1.0,
+        response_reduction: float = 5.0,
+        soil_type: str = "medium",
+        combination_method: str = "CQC",
+    ) -> RustSolverResult:
+        """Response spectrum analysis per IS 1893 / ASCE 7"""
+        return await self.analyze(
+            model,
+            analysis_type="spectrum",
+            options={
+                "spectrum": spectrum_data,
+                "zone_factor": zone_factor,
+                "importance_factor": importance_factor,
+                "response_reduction": response_reduction,
+                "soil_type": soil_type,
+                "combination_method": combination_method,
+            },
+        )
+    
+    async def get_rust_sections(self, standard: str = "IS") -> Optional[List[Dict]]:
+        """Fetch steel section database from Rust backend"""
+        try:
+            client = await self._get_client()
+            resp = await client.get(f"/api/sections/{standard.lower()}")
+            if resp.status_code == 200:
+                return resp.json().get("sections", [])
+        except Exception:
+            pass
+        return None
+    
+    async def submit_batch_job(
+        self,
+        models: List[Dict],
+        analysis_type: str = "static",
+    ) -> Optional[str]:
+        """Submit batch analysis job to Rust job queue"""
+        try:
+            client = await self._get_client()
+            resp = await client.post("/api/jobs", json={
+                "job_type": f"batch_{analysis_type}",
+                "priority": "normal",
+                "input": {"models": models, "analysis_type": analysis_type},
+            })
+            if resp.status_code == 200:
+                return resp.json().get("job_id")
+        except Exception:
+            pass
+        return None
+    
+    async def get_job_status(self, job_id: str) -> Optional[Dict]:
+        """Check job status from Rust backend"""
+        try:
+            client = await self._get_client()
+            resp = await client.get(f"/api/jobs/{job_id}")
+            if resp.status_code == 200:
+                return resp.json()
+        except Exception:
+            pass
+        return None
+    
+    async def close(self):
+        """Cleanup HTTP client"""
+        if self._client and not self._client.is_closed:
+            await self._client.aclose()
+
+
+# Global singleton
+_client: Optional[RustInteropClient] = None
+
+
+def get_rust_client() -> RustInteropClient:
+    """Get or create the global Rust interop client"""
+    global _client
+    if _client is None:
+        _client = RustInteropClient()
+    return _client
+
+
+# ============================================
+# Convenience functions
+# ============================================
+
+async def analyze_with_best_backend(
+    model: Dict,
+    analysis_type: str = "static",
+    force_backend: Optional[str] = None,
+    **kwargs,
+) -> RustSolverResult:
+    """
+    One-call analysis with automatic backend selection.
+    
+    Small models -> Python (avoid HTTP overhead)
+    Large models -> Rust (10-100x faster for >1000 nodes)
+    Rust unavailable -> Python fallback
+    """
+    client = get_rust_client()
+    backend = SolverBackend.AUTO
+    if force_backend:
+        backend = SolverBackend(force_backend)
+    return await client.analyze(model, analysis_type, backend, kwargs or None)
+
+
+def compute_model_hash(model: Dict) -> str:
+    """Deterministic hash of a structural model for caching"""
+    canonical = json.dumps(model, sort_keys=True, default=str)
+    return hashlib.sha256(canonical.encode()).hexdigest()[:16]

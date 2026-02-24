@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BeamLab Structural Analysis Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+        }
+        .test-case {
+            background: #ecf0f1;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .result {
+            background: #d5f4e6;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .error {
+            background: #fde8e8;
+            border-left: 4px solid #e74c3c;
+        }
+        .success {
+            background: #d5f4e6;
+            border-left: 4px solid #27ae60;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        .diagram {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border: 2px solid #ddd;
+            font-family: monospace;
+            white-space: pre;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        .value {
+            color: #27ae60;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏗️ BeamLab Structural Analysis - WASM Solver Test</h1>
+        <p><strong>Testing complete load support implementation</strong></p>
+        
+        <div class="test-case">
+            <h2>Test 1: Cantilever Beam with Point Load</h2>
+            <div class="diagram">
+[Fixed]============================●
+Node 1                        Node 2
+(0,0)                         (4,0)
+                          20 kN ↓</div>
+            <p><strong>Material:</strong> E = 200 GPa, I = 0.00002 m⁴, A = 0.006 m²</p>
+            <button onclick="testCantilever()">Run Test 1</button>
+            <div id="result1" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-case">
+            <h2>Test 2: Simply Supported Beam with UDL</h2>
+            <div class="diagram">
+[Pinned]=======(10 kN/m)========[Roller]
+Node 1                         Node 2
+(0,0)                          (4,0)</div>
+            <p><strong>Distributed Load:</strong> 10 kN/m downward</p>
+            <button onclick="testSimplySupported()">Run Test 2</button>
+            <div id="result2" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-case">
+            <h2>Test 3: Cantilever with Point + UDL</h2>
+            <div class="diagram">
+[Fixed]=====(UDL 10 kN/m)========●
+Node 1                      Node 2
+(0,0)                       (4,0)
+                       20 kN ↓</div>
+            <p><strong>Combined Loading</strong></p>
+            <button onclick="testCombined()">Run Test 3</button>
+            <div id="result3" class="result" style="display:none;"></div>
+        </div>
+
+        <button onclick="runAllTests()">🚀 Run All Tests</button>
+    </div>
+
+    <script type="module">
+        import init, { solve_structure_wasm } from '../packages/solver-wasm/pkg/solver_wasm.js';
+
+        // Initialize WASM
+        let wasmReady = false;
+        init().then(() => {
+            wasmReady = true;
+            console.log('✅ WASM Solver initialized');
+        }).catch(err => {
+            console.error('❌ WASM initialization failed:', err);
+        });
+
+        // Test 1: Cantilever with point load
+        window.testCantilever = async function() {
+            if (!wasmReady) {
+                alert('WASM not ready yet, please wait...');
+                return;
+            }
+
+            const nodes = [
+                { id: 1, x: 0, y: 0, fixed: [true, true, true] },
+                { id: 2, x: 4, y: 0, fixed: [false, false, false] }
+            ];
+
+            const elements = [{
+                id: 1,
+                node_start: 1,
+                node_end: 2,
+                e: 200e9,
+                i: 0.00002,
+                a: 0.006
+            }];
+
+            const pointLoads = [{
+                node_id: 2,
+                fx: 0,
+                fy: -20000,  // 20 kN down
+                mz: 0
+            }];
+
+            const memberLoads = [];
+
+            try {
+                const result = solve_structure_wasm(nodes, elements, pointLoads, memberLoads);
+                displayResult('result1', result, {
+                    expectedDisp: -0.0267,
+                    expectedReaction: 20000,
+                    expectedMoment: 80000
+                });
+            } catch (error) {
+                displayError('result1', error);
+            }
+        };
+
+        // Test 2: Simply supported with UDL
+        window.testSimplySupported = async function() {
+            if (!wasmReady) {
+                alert('WASM not ready yet, please wait...');
+                return;
+            }
+
+            const nodes = [
+                { id: 1, x: 0, y: 0, fixed: [true, true, false] },  // Pinned
+                { id: 2, x: 4, y: 0, fixed: [false, true, false] }  // Roller
+            ];
+
+            const elements = [{
+                id: 1,
+                node_start: 1,
+                node_end: 2,
+                e: 200e9,
+                i: 0.00002,
+                a: 0.006
+            }];
+
+            const pointLoads = [];
+
+            const memberLoads = [{
+                element_id: 1,
+                wx: 0,
+                wy: -10000,  // 10 kN/m down
+                start_pos: 0,
+                end_pos: 1
+            }];
+
+            try {
+                const result = solve_structure_wasm(nodes, elements, pointLoads, memberLoads);
+                displayResult('result2', result, {
+                    expectedReaction: 20000,
+                    testType: 'simply_supported'
+                });
+            } catch (error) {
+                displayError('result2', error);
+            }
+        };
+
+        // Test 3: Combined loading
+        window.testCombined = async function() {
+            if (!wasmReady) {
+                alert('WASM not ready yet, please wait...');
+                return;
+            }
+
+            const nodes = [
+                { id: 1, x: 0, y: 0, fixed: [true, true, true] },
+                { id: 2, x: 4, y: 0, fixed: [false, false, false] }
+            ];
+
+            const elements = [{
+                id: 1,
+                node_start: 1,
+                node_end: 2,
+                e: 200e9,
+                i: 0.00002,
+                a: 0.006
+            }];
+
+            const pointLoads = [{
+                node_id: 2,
+                fx: 0,
+                fy: -20000,
+                mz: 0
+            }];
+
+            const memberLoads = [{
+                element_id: 1,
+                wx: 0,
+                wy: -10000,
+                start_pos: 0,
+                end_pos: 1
+            }];
+
+            try {
+                const result = solve_structure_wasm(nodes, elements, pointLoads, memberLoads);
+                displayResult('result3', result, {
+                    expectedDisp: -0.0427,
+                    expectedReaction: 60000,
+                    expectedMoment: 120000
+                });
+            } catch (error) {
+                displayError('result3', error);
+            }
+        };
+
+        window.runAllTests = function() {
+            testCantilever();
+            setTimeout(() => testSimplySupported(), 100);
+            setTimeout(() => testCombined(), 200);
+        };
+
+        function displayResult(elementId, result, expected) {
+            const div = document.getElementById(elementId);
+            div.style.display = 'block';
+            
+            if (!result.success) {
+                div.className = 'result error';
+                div.innerHTML = `<strong>❌ Analysis Failed:</strong><br>${result.error}`;
+                return;
+            }
+
+            div.className = 'result success';
+            
+            let html = '<strong>✅ Analysis Success!</strong><br><br>';
+            
+            html += '<table>';
+            html += '<tr><th>Node ID</th><th>dx (m)</th><th>dy (m)</th><th>θz (rad)</th></tr>';
+            for (const [nodeId, disp] of Object.entries(result.displacements)) {
+                html += `<tr>
+                    <td>${nodeId}</td>
+                    <td class="value">${disp[0].toExponential(4)}</td>
+                    <td class="value">${disp[1].toExponential(4)}</td>
+                    <td class="value">${disp[2].toExponential(4)}</td>
+                </tr>`;
+            }
+            html += '</table>';
+
+            if (result.reactions && Object.keys(result.reactions).length > 0) {
+                html += '<br><strong>Reactions:</strong><br>';
+                html += '<table>';
+                html += '<tr><th>Node ID</th><th>Fx (N)</th><th>Fy (N)</th><th>Mz (N·m)</th></tr>';
+                for (const [nodeId, reaction] of Object.entries(result.reactions)) {
+                    html += `<tr>
+                        <td>${nodeId}</td>
+                        <td class="value">${reaction[0].toFixed(2)}</td>
+                        <td class="value">${reaction[1].toFixed(2)}</td>
+                        <td class="value">${reaction[2].toFixed(2)}</td>
+                    </tr>`;
+                }
+                html += '</table>';
+            }
+
+            if (result.member_forces && Object.keys(result.member_forces).length > 0) {
+                html += '<br><strong>Member Forces:</strong><br>';
+                html += '<table>';
+                html += '<tr><th>Member ID</th><th>Axial (N)</th><th>Shear Start (N)</th><th>Moment Start (N·m)</th></tr>';
+                for (const [memberId, forces] of Object.entries(result.member_forces)) {
+                    html += `<tr>
+                        <td>${memberId}</td>
+                        <td class="value">${forces.axial.toFixed(2)}</td>
+                        <td class="value">${forces.shear_start.toFixed(2)}</td>
+                        <td class="value">${forces.moment_start.toFixed(2)}</td>
+                    </tr>`;
+                }
+                html += '</table>';
+            }
+
+            if (expected) {
+                html += '<br><strong>Validation:</strong><br>';
+                if (expected.expectedDisp) {
+                    const actualDisp = result.displacements[2][1];
+                    const error = Math.abs((actualDisp - expected.expectedDisp) / expected.expectedDisp * 100);
+                    html += `Expected displacement: ${expected.expectedDisp.toFixed(4)} m<br>`;
+                    html += `Actual displacement: ${actualDisp.toFixed(4)} m<br>`;
+                    html += `Error: <span class="value">${error.toFixed(2)}%</span><br>`;
+                }
+            }
+
+            div.innerHTML = html;
+        }
+
+        function displayError(elementId, error) {
+            const div = document.getElementById(elementId);
+            div.style.display = 'block';
+            div.className = 'result error';
+            div.innerHTML = `<strong>❌ Error:</strong><br>${error.message || error}`;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+name: Azure Static Web Apps CI/CD (Self-Hosted)
+
+# This workflow uses a self-hosted runner to avoid using GitHub Actions minutes
+# Setup instructions: See GITHUB_ACTIONS_ALTERNATE_ACCOUNT_SETUP.md
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build_and_deploy_job:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    runs-on: self-hosted  # ← Uses your own machine
+    name: Build and Deploy Job
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: false
+      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+      
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build Backend Rust WASM
+        working-directory: apps/backend-rust
+        run: |
+          wasm-pack build --target web --out-dir ./pkg --release
+          ls -la pkg/
+      
+      - name: Verify WASM packages exist
+        run: |
+          if [ ! -f "apps/backend-rust/pkg/backend_rust.js" ]; then
+            echo "Error: WASM build failed - backend_rust.js not found"
+            exit 1
+          fi
+          if [ ! -f "apps/backend-rust/pkg/backend_rust_bg.wasm" ]; then
+            echo "Error: WASM build failed - backend_rust_bg.wasm not found"
+            exit 1
+          fi
+          echo "✅ WASM packages verified"
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+      
+      - name: Build web application
+        working-directory: apps/web
+        run: |
+          pnpm run build
+        env:
+          NODE_ENV: production
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'https://beamlab-backend-node.azurewebsites.net' }}
+          NEXT_PUBLIC_PYTHON_API_URL: ${{ secrets.NEXT_PUBLIC_PYTHON_API_URL || 'https://beamlab-backend-python.azurewebsites.net' }}
+
+      - name: Build And Deploy
+        id: builddeploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BRAVE_MUSHROOM_0EAE8EC00 }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "apps/web"
+          api_location: ""
+          output_location: "out"
+        env:
+          NODE_VERSION: '20'
+          SKIP_DEPLOY_ON_MISSING_SECRETS: true
+
+  close_pull_request_job:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: self-hosted  # ← Uses your own machine
+    name: Close Pull Request Job
+    steps:
+      - name: Close Pull Request
+        id: closepullrequest
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BRAVE_MUSHROOM_0EAE8EC00 }}
+          action: "close"
