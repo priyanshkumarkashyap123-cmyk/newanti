@@ -3,12 +3,11 @@
  * Routes between Landing, Dashboard, and Workspace
  */
 
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import {
   Component,
   ReactNode,
   ErrorInfo,
-  useState,
   Suspense,
   lazy,
 } from "react";
@@ -18,10 +17,6 @@ import { LandingPage } from "./pages/LandingPage";
 import { SignInPage } from "./pages/SignInPage";
 import { SignUpPage } from "./pages/SignUpPage";
 import { RequireAuth } from "./components/layout/RequireAuth";
-import {
-  LegalConsentModal,
-  useCheckLegalConsent,
-} from "./components/LegalConsentModal";
 import "./App.css";
 import "./utils/generateTestGrid";
 
@@ -333,52 +328,7 @@ function App() {
   // Ensure user is registered in MongoDB upon login/load
   useUserRegistration();
 
-  // Legal consent state
-  const { hasConsent } = useCheckLegalConsent();
-  const [consentAccepted, setConsentAccepted] = useState(false);
 
-  const location = useLocation();
-
-  // Define public paths where consent modal should NOT appear
-  // This fixes the scroll issue on landing pages as the modal locks body scroll
-  const publicPaths = [
-    "/",
-    "/pricing",
-    "/capabilities",
-    "/about",
-    "/contact",
-    "/help",
-    "/privacy",
-    "/terms",
-    "/terms-and-conditions",
-    "/refund-cancellation",
-    "/sign-in",
-    "/sign-up",
-    "/forgot-password",
-    "/reset-password",
-    "/workspace-demo",
-    "/rust-wasm-demo",
-    "/demo",
-    "/worker-test",
-    "/ai-dashboard",
-    "/ai-power",
-  ];
-
-  // Check if current path is public (exact match or starts with for sub-routes)
-  const isPublicPath = publicPaths.some(
-    (path) =>
-      location.pathname === path ||
-      (path !== "/" && location.pathname.startsWith(path + "/")),
-  );
-
-  // Show legal consent modal if user hasn't agreed yet (hasConsent === null means still loading)
-  // AND we are NOT on a public page
-  const showConsentModal =
-    hasConsent === false && !consentAccepted && !isPublicPath;
-
-  const handleAcceptConsent = () => {
-    setConsentAccepted(true);
-  };
 
   return (
     <ErrorBoundary>
@@ -830,12 +780,6 @@ function App() {
           </Routes>
         </Suspense>
 
-        {/* Legal Consent Modal - shows on first use */}
-        <LegalConsentModal
-          open={showConsentModal}
-          onAccept={handleAcceptConsent}
-          canClose={false}
-        />
       </ToastProvider>
     </ErrorBoundary>
   );

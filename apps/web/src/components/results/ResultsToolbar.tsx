@@ -41,8 +41,7 @@ import {
   type AnalysisResultsData,
 } from "./AnalysisResultsDashboard";
 import { MemberDetailPanel, type MemberForceData } from "./MemberDetailPanel";
-import { CheckpointLegalModal } from "../CheckpointLegalModal";
-import consentService from "../../services/ConsentService";
+
 
 // ============================================
 // TYPES
@@ -496,21 +495,6 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
   const [showMemberDetail, setShowMemberDetail] = useState(false);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
-  // Stable user identifier for consent tracking (persisted across renders)
-  const consentUserId = useMemo(() => {
-    const key = "beamlab_consent_uid";
-    let uid = typeof window !== "undefined" ? localStorage.getItem(key) : null;
-    if (!uid) {
-      uid = `user-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-      try {
-        localStorage.setItem(key, uid);
-      } catch {
-        /* noop */
-      }
-    }
-    return uid;
-  }, []);
-
   // Get member IDs for navigation
   const memberIds = useMemo(() => {
     if (!analysisResults?.memberForces) return [];
@@ -583,16 +567,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
   };
 
   // Handle PDF export
-  const [showPDFConsentModal, setShowPDFConsentModal] = useState(false);
-
   const handleExportPDF = async () => {
-    // Check if user has accepted PDF export terms
-    if (!consentService.hasUserAccepted(consentUserId, "pdf_export")) {
-      setShowPDFConsentModal(true);
-      return;
-    }
-
-    // Proceed with PDF export
+    // Proceed with PDF export directly
     executePDFExport();
   };
 
@@ -1509,23 +1485,6 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
             />
           </div>
         </div>
-      )}
-
-      {/* PDF Export Legal Consent Modal */}
-      {showPDFConsentModal && (
-        <CheckpointLegalModal
-          open={showPDFConsentModal}
-          checkpointType="pdf_export"
-          onAccept={() => {
-            setShowPDFConsentModal(false);
-            consentService.recordConsent(consentUserId, "pdf_export");
-            executePDFExport();
-          }}
-          onDecline={() => {
-            setShowPDFConsentModal(false);
-          }}
-          canClose={true}
-        />
       )}
 
       {/* Member Detail Panel Modal */}
