@@ -99,13 +99,16 @@ export interface LoadCombination {
 // Floor / Area Load (distributed to beams via yield-line method at analysis time)
 export interface FloorLoad {
   id: string;
-  pressure: number;              // Load intensity (kN/m²) — negative = downward
-  yLevel: number;                // Floor Y coordinate (m)
-  xMin: number;                  // Bounding box min X (-Infinity for all)
+  pressure: number; // Load intensity (kN/m²) — negative = downward
+  yLevel: number; // Floor Y coordinate (m)
+  xMin: number; // Bounding box min X (-Infinity for all)
   xMax: number;
   zMin: number;
   zMax: number;
-  distributionOverride?: 'one_way' | 'two_way_triangular' | 'two_way_trapezoidal';
+  distributionOverride?:
+    | "one_way"
+    | "two_way_triangular"
+    | "two_way_trapezoidal";
   loadCase?: string;
 }
 
@@ -269,10 +272,10 @@ export interface AnalysisResults {
   >;
   // Industry-standard equilibrium verification
   equilibriumCheck?: {
-    applied_forces: number[];   // [Fx, Fy, Fz, Mx, My, Mz] in N/N·m
-    reaction_forces: number[];  // [Fx, Fy, Fz, Mx, My, Mz] in N/N·m
-    residual: number[];         // should be ~0
-    error_percent: number;      // < 0.1% is acceptable
+    applied_forces: number[]; // [Fx, Fy, Fz, Mx, My, Mz] in N/N·m
+    reaction_forces: number[]; // [Fx, Fy, Fz, Mx, My, Mz] in N/N·m
+    residual: number[]; // should be ~0
+    error_percent: number; // < 0.1% is acceptable
     pass: boolean;
   };
   // Condition number estimate for numerical quality
@@ -403,6 +406,7 @@ interface ModelState {
   updateNode: (id: string, updates: Partial<Node>) => void;
   clearSelection: () => void;
   selectAll: () => void; // Select all nodes and members
+  invertSelection: () => void; // Invert current selection
   selectMultiple: (ids: string[]) => void; // Select multiple elements
   boxSelect: (minX: number, minZ: number, maxX: number, maxZ: number) => void; // Box selection
   selectByCoordinate: (
@@ -874,6 +878,19 @@ export const useModelStore = create<ModelState>()(
             state.members.forEach((_, id) => allIds.add(id));
             state.plates.forEach((_, id) => allIds.add(id));
             return { selectedIds: allIds };
+          }),
+
+        invertSelection: () =>
+          set((state) => {
+            const allIds = new Set<string>();
+            state.nodes.forEach((_, id) => allIds.add(id));
+            state.members.forEach((_, id) => allIds.add(id));
+            state.plates.forEach((_, id) => allIds.add(id));
+            const inverted = new Set<string>();
+            allIds.forEach((id) => {
+              if (!state.selectedIds.has(id)) inverted.add(id);
+            });
+            return { selectedIds: inverted };
           }),
 
         selectMultiple: (ids) =>
