@@ -38,6 +38,7 @@ interface MemberForceResult {
   id: string;
   start: LocalForceState;
   end: LocalForceState;
+  localDisplacements?: Float64Array;
   [key: string]: unknown;
 }
 
@@ -1456,6 +1457,7 @@ function computeMemberEndForces(
 
       results.push({
         id: member.id,
+        localDisplacements: uLocal12,
         start: {
           axial: fLocal12[0] || 0,
           shear: fLocal12[1] || 0,
@@ -1564,6 +1566,7 @@ function computeMemberEndForces(
 
       results.push({
         id: member.id,
+        localDisplacements: uLocal,
         start: {
           axial: fLocal[0] || 0,
           shear: fLocal[1] || 0,
@@ -1591,9 +1594,9 @@ function computeMemberEndForces(
  *
  * For a member with end forces [N1, V1, M1, N2, V2, M2]:
  *   V(x) = V1                              (constant for no span load)
- *   M(x) = M1 + V1*x                       (linear for no span load)
- *   For UDL w: V(x) = V1 - w*x, M(x) = M1 + V1*x - w*x²/2
- *   Default: assume fixed-end forces (FEM) if memberLoads present.
+ *   M_internal(x) = -M1 + V1*x             (linear for no span load)
+ *   For UDL w: V(x) = V1 - w*x, M_internal(x) = -M1 + V1*x - w*x²/2
+ *   (FEM Mz is CCW+; internal bending moment is sagging+ → negate M1)
  *
  * Generates NUM_STATIONS equally-spaced points along each member.
  */
@@ -1658,6 +1661,35 @@ function generateDiagramData(
     // Vertical equilibrium: V1 - w*L + V2 = 0 → w = (V1 + V2) / L
     const w = L > 1e-12 ? (V1 + V2) / L : 0;
 
+    // ─── Extract actual local nodal displacements for Hermite interpolation ───
+    const ld = mf.localDisplacements;
+    let vy1 = 0,
+      thz1 = 0,
+      vy2 = 0,
+      thz2 = 0; // Y-deflection: vy and θz
+    let vz1 = 0,
+      thy1 = 0,
+      vz2 = 0,
+      thy2 = 0; // Z-deflection: vz and θy
+
+    if (ld && ld.length === 12) {
+      // 3D frame: [u1,vy1,vz1,θx1,θy1,θz1, u2,vy2,vz2,θx2,θy2,θz2]
+      vy1 = ld[1] || 0;
+      thz1 = ld[5] || 0;
+      vy2 = ld[7] || 0;
+      thz2 = ld[11] || 0;
+      vz1 = ld[2] || 0;
+      thy1 = ld[4] || 0;
+      vz2 = ld[8] || 0;
+      thy2 = ld[10] || 0;
+    } else if (ld && ld.length === 6) {
+      // 2D frame: [u1,v1,θ1, u2,v2,θ2]
+      vy1 = ld[1] || 0;
+      thz1 = ld[2] || 0;
+      vy2 = ld[4] || 0;
+      thz2 = ld[5] || 0;
+    }
+
     // Generate stations
     const x_values: number[] = [];
     const shear_y: number[] = [];
@@ -1689,31 +1721,25 @@ function generateDiagramData(
       const Mx = -M1 + V1 * x - (w * x * x) / 2;
       moment_y.push(Mx);
 
-      // ─── Deflection Y (double integration of M/EI) ───
-      //   For beam with end forces and optional UDL:
-      //   Use cubic Hermite: v(x) = a*x³ + b*x² + c*x + d
-      //   With: v(0)=0, v(L)=0 (supports), v''(0)=-M1/EI, v''(L)=-M2/EI
-      //   But for general case, use exact beam equation:
-      //   EI·v(x) = M1·x²/2 + V1·x³/6 - w·x⁴/24 + C1·x + C2
-      //   BC: v(0)=0 → C2=0; v needs end condition.
-      //   Since we have actual end displacements from the solver, use cubic interpolation:
+      // ─── Deflection Y ───
+      //   Hermite cubic interpolation with actual local nodal displacements.
+      //   For UDL, add quartic bubble: w·x²·(L-x)²/(24·EI).
+      // ─── Hermite cubic shape functions (common to Y and Z deflection) ───
+      const xi2 = xi * xi;
+      const xi3 = xi2 * xi;
+      const N1h = 1 - 3 * xi2 + 2 * xi3;
+      const N2h = L * (xi - 2 * xi2 + xi3);
+      const N3h = 3 * xi2 - 2 * xi3;
+      const N4h = L * (-xi2 + xi3);
+
       if (EIz > 0) {
-        // Use exact beam-column deflection formula:
-        // EI·y'' = M_internal(x) = -M1 + V1·x - w·x²/2
-        // EI·y' = -M1·x + V1·x²/2 - w·x³/6 + C1
-        // EI·y = -M1·x²/2 + V1·x³/6 - w·x⁴/24 + C1·x + C2
-        // y(0) = 0 → C2 = 0
-        // y(L) = 0: C1 = -(-M1·L/2 + V1·L²/6 - w·L³/24) = (M1·L/2 - V1·L²/6 + w·L³/24)
-        const C2 = 0;
-        const C1 = (M1 * L) / 2 - (V1 * L * L) / 6 + (w * L * L * L) / 24;
-        const y =
-          ((-M1 * x * x) / 2 +
-            (V1 * x * x * x) / 6 -
-            (w * x * x * x * x) / 24 +
-            C1 * x +
-            C2) /
-          EIz;
-        deflection_y.push(y * 1000); // convert to mm
+        // Hermite cubic interpolation with ACTUAL local nodal displacements.
+        // vy(x) = N1·vy1 + N2·θz1 + N3·vy2 + N4·θz2  (exact for cubic v(x))
+        // + UDL quartic bubble: w·x²·(L-x)²/(24·EI) recovers the quartic term.
+        const yHermite = N1h * vy1 + N2h * thz1 + N3h * vy2 + N4h * thz2;
+        const Lmx = L - x;
+        const yBubble = (w * x * x * Lmx * Lmx) / (24 * EIz);
+        deflection_y.push((yHermite + yBubble) * 1000); // mm
       } else {
         deflection_y.push(0);
       }
@@ -1728,12 +1754,12 @@ function generateDiagramData(
       // Torsion: linear interpolation between ends
       torsion.push(Tx1 + (Tx2 - Tx1) * xi);
 
-      // Deflection Z (bending about Y axis)
+      // Deflection Z (bending about Y axis) — Hermite cubic interpolation
+      // XZ-plane coupling convention: k[vz,θy] has opposite sign from k[vy,θz],
+      // so the rotation terms enter with flipped sign:
+      // vz(x) = N1·vz1 − N2·θy1 + N3·vz2 − N4·θy2
       if (EIy > 0) {
-        const C2z = 0;
-        const C1z = -((My1 * L) / 2 + (Vz1 * L * L) / 6);
-        const z =
-          ((My1 * x * x) / 2 + (Vz1 * x * x * x) / 6 + C1z * x + C2z) / EIy;
+        const z = N1h * vz1 - N2h * thy1 + N3h * vz2 - N4h * thy2;
         deflection_z.push(z * 1000); // mm
       } else {
         deflection_z.push(0);
@@ -1745,7 +1771,7 @@ function generateDiagramData(
       arr.reduce((mx, v) => Math.max(mx, Math.abs(v)), 0);
 
     // NOTE on naming convention:
-    //   moment_y (local array) = M1 + V1*x - w*x²/2 = bending moment about Z-axis (Mz)
+    //   moment_y (local array) = -M1 + V1*x - w*x²/2 = internal bending moment about Z-axis (Mz)
     //   moment_z (local array) = My1 + Vz1*x = bending moment about Y-axis (My)
     // Consumers (ResultsToolbar etc.) expect:
     //   diagramData.moment_z = primary BMD (about Z-axis) — so swap in output
