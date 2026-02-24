@@ -277,7 +277,7 @@ const PagePreview: React.FC<PagePreviewProps> = ({
                                 Table of Contents
                             </div>
                             <div className="space-y-1">
-                                {['Executive Summary', 'Design Basis', 'Model Overview', 'Analysis Results', 'Design Checks', 'Appendices']
+                                {['Executive Summary', 'Design Basis', 'Structural Model', 'Analysis Results', 'Design Verification', 'Conclusions & Recommendations']
                                     .map((label, i) => (
                                         <div key={label} className="flex items-center gap-2">
                                             <span className="text-slate-700" style={{ fontSize: 9 * scale }}>{i + 1}. {label}</span>

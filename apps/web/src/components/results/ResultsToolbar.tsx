@@ -31,6 +31,8 @@ import {
   FileSpreadsheet,
   Loader,
   Eye,
+  BarChart3,
+  Waves,
 } from "lucide-react";
 import { useModelStore, type AnalysisResults } from "../../store/model";
 import { useUIStore } from "../../store/uiStore";
@@ -54,6 +56,8 @@ type DiagramType =
   | "deflection"
   | "bmd"
   | "sfd"
+  | "bmd_my"
+  | "sfd_vz"
   | "reactions"
   | "axial"
   | "heatmap";
@@ -387,6 +391,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
   const setShowSFD = useModelStore((s) => s.setShowSFD);
   const setShowBMD = useModelStore((s) => s.setShowBMD);
   const setShowAFD = useModelStore((s) => s.setShowAFD);
+  const setShowBMDMy = useModelStore((s) => s.setShowBMDMy);
+  const setShowShearZ = useModelStore((s) => s.setShowShearZ);
   const setShowStressOverlay = useModelStore((s) => s.setShowStressOverlay);
   const setShowDeflectedShape = useModelStore((s) => s.setShowDeflectedShape);
   const setDisplacementScale = useModelStore((s) => s.setDisplacementScale);
@@ -476,6 +482,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
     setShowSFD(activeDiagram === "sfd");
     setShowBMD(activeDiagram === "bmd");
     setShowAFD(activeDiagram === "axial");
+    setShowBMDMy(activeDiagram === "bmd_my");
+    setShowShearZ(activeDiagram === "sfd_vz");
     setShowStressOverlay(activeDiagram === "heatmap");
   }, []); // Run once on mount
 
@@ -488,6 +496,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
     setShowSFD(newActive === "sfd");
     setShowBMD(newActive === "bmd");
     setShowAFD(newActive === "axial");
+    setShowBMDMy(newActive === "bmd_my");
+    setShowShearZ(newActive === "sfd_vz");
     setShowStressOverlay(newActive === "heatmap");
     setShowDeflectedShape(newActive === "deflection");
   };
@@ -886,8 +896,10 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
       icon: TrendingDown,
       color: "text-blue-500",
     },
-    { id: "bmd", label: "BMD", icon: BarChart2, color: "text-green-500" },
-    { id: "sfd", label: "SFD", icon: Activity, color: "text-orange-500" },
+    { id: "bmd", label: "BMD (Mz)", icon: BarChart2, color: "text-green-500" },
+    { id: "sfd", label: "SFD (Vy)", icon: Activity, color: "text-orange-500" },
+    { id: "bmd_my", label: "BMD (My)", icon: BarChart3, color: "text-teal-500" },
+    { id: "sfd_vz", label: "SFD (Vz)", icon: Waves, color: "text-cyan-500" },
     {
       id: "reactions",
       label: "Reactions",

@@ -15,6 +15,7 @@ import React, { FC, useState, useCallback, useMemo } from 'react';
 import { useModelStore } from '../../store/model';
 import {
     BarChart3,
+    BarChart2,
     Activity,
     TrendingDown,
     Move,
@@ -37,14 +38,15 @@ import {
     Layers,
     ZoomIn,
     ZoomOut,
-    RefreshCw
+    RefreshCw,
+    Waves,
 } from 'lucide-react';
 
 // ============================================
 // TYPES
 // ============================================
 
-type DiagramType = 'none' | 'SFD' | 'BMD' | 'AFD' | 'TORSION' | 'DEFLECTION';
+type DiagramType = 'none' | 'SFD' | 'BMD' | 'AFD' | 'TORSION' | 'DEFLECTION' | 'BMD_MY' | 'SFD_VZ';
 type ColorMode = 'default' | 'stress' | 'utilization' | 'force';
 
 interface DiagramOption {

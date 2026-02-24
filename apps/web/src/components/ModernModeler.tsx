@@ -1448,6 +1448,11 @@ export const ModernModeler: FC = () => {
               v2: number, // Shear Y at node j (kN) — sign per beam convention
               m2: number, // Moment Z at node j (kN·m)
               memberElemId: string,
+              // Z-direction forces for 3D (optional)
+              vz1 = 0, // Shear Z at node i (kN)
+              my1 = 0, // Moment Y at node i (kN·m)
+              vz2 = 0, // Shear Z at node j (kN)
+              my2 = 0, // Moment Y at node j (kN·m)
             ) => {
               const mInfo = membersArray.find((m) => m.id === memberElemId);
               if (!mInfo) return undefined;
@@ -1458,69 +1463,98 @@ export const ModernModeler: FC = () => {
                 ddy = nd2.y - nd1.y;
               const ddz = (nd2.z ?? 0) - (nd1.z ?? 0);
               const L = Math.sqrt(ddx * ddx + ddy * ddy + ddz * ddz) || 1;
-              const EI = (mInfo.E || 200e6) * (mInfo.I || mInfo.Iz || 1e-4);
+              const EIz = (mInfo.E || 200e6) * (mInfo.I || mInfo.Iz || 1e-4);
+              const EIy = (mInfo.E || 200e6) * (mInfo.Iy || mInfo.I || 1e-4);
 
-              // Back-calculate equivalent distributed load from equilibrium of total end forces
-              // Vertical equilibrium: V_i - w*L - V_j = 0 → w = (V_i - (-V_j))/L = (V_i + V_j)/L
-              // NOTE: forces_j[1] from Rust is the reaction at j-end with positive = local +Y.
-              // For a beam with upward reactions, V_i > 0, V_j < 0 (or vice versa).
-              // The net load = V_i + V_j (total upward force = total downward load on member)
-              const w = (v1 + v2) / L; // Equivalent UDL intensity (kN/m)
+              // Back-calculate equivalent distributed loads from equilibrium
+              const wy = (v1 + v2) / L; // Y-direction UDL (kN/m)
+              const wz = (vz1 + vz2) / L; // Z-direction UDL (kN/m)
 
               const ST = 51;
               const xv: number[] = [],
                 sy: number[] = [],
-                mzArr: number[] = [];
+                sz: number[] = [],
+                mzArr: number[] = [],
+                myArr: number[] = [];
               const ax: number[] = [],
-                dy: number[] = [];
+                dy: number[] = [],
+                dz: number[] = [];
 
               for (let s = 0; s < ST; s++) {
                 const x = (s / (ST - 1)) * L;
                 xv.push(x);
                 ax.push(axF);
 
-                // Shear Force Diagram: V(x) = V_i - w*x
-                sy.push(v1 - w * x);
+                // Shear Y: V(x) = V1 - wy·x
+                sy.push(v1 - wy * x);
 
-                // Bending Moment Diagram: M_internal(x) = -M_i + V_i*x - w*x²/2
-                // Sign: FEM Mz_i (CCW+) → negate for internal moment (sagging+)
-                mzArr.push(-m1 + v1 * x - (w * x * x) / 2);
+                // Moment about Z (primary BMD): Mz_internal(x) = -M1 + V1·x - wy·x²/2
+                mzArr.push(-m1 + v1 * x - (wy * x * x) / 2);
+
+                // Shear Z: Vz(x) = Vz1 - wz·x
+                sz.push(vz1 - wz * x);
+
+                // Moment about Y (weak-axis BMD): My_internal(x) = My1 + Vz1·x - wz·x²/2
+                myArr.push(my1 + vz1 * x - (wz * x * x) / 2);
               }
 
-              // Deflection via double integration of M(x)/EI with proper BCs
-              // EI*y'' = M(x)  →  integrate twice
-              if (EI > 0) {
+              // Deflection Y via double integration of Mz(x)/EIz
+              if (EIz > 0) {
                 const dx = L / (ST - 1);
-                // First integration: EI*y'(x) = ∫M(x)dx + C1
                 const slope: number[] = [0];
                 for (let s = 1; s < ST; s++) {
                   const dArea = ((mzArr[s - 1] + mzArr[s]) / 2) * dx;
                   slope.push(slope[s - 1] + dArea);
                 }
-                // Second integration: EI*y(x) = ∫∫M(x)dx² + C1*x + C2
                 const defl: number[] = [0];
                 for (let s = 1; s < ST; s++) {
                   const dArea = ((slope[s - 1] + slope[s]) / 2) * dx;
                   defl.push(defl[s - 1] + dArea);
                 }
-                // Apply BCs: y(0) = 0, y(L) = 0 (relative deflection)
                 const yL = defl[ST - 1];
                 const C1_corr = L > 1e-12 ? -yL / L : 0;
                 for (let s = 0; s < ST; s++) {
                   const x = (s / (ST - 1)) * L;
-                  const yy = (defl[s] + C1_corr * x) / EI;
+                  const yy = (defl[s] + C1_corr * x) / EIz;
                   dy.push(yy * 1000); // m → mm
                 }
               } else {
                 for (let s = 0; s < ST; s++) dy.push(0);
               }
 
+              // Deflection Z via double integration of My(x)/EIy
+              if (EIy > 0) {
+                const dx = L / (ST - 1);
+                const slope: number[] = [0];
+                for (let s = 1; s < ST; s++) {
+                  const dArea = ((myArr[s - 1] + myArr[s]) / 2) * dx;
+                  slope.push(slope[s - 1] + dArea);
+                }
+                const defl: number[] = [0];
+                for (let s = 1; s < ST; s++) {
+                  const dArea = ((slope[s - 1] + slope[s]) / 2) * dx;
+                  defl.push(defl[s - 1] + dArea);
+                }
+                const zL = defl[ST - 1];
+                const C1_corr = L > 1e-12 ? -zL / L : 0;
+                for (let s = 0; s < ST; s++) {
+                  const x = (s / (ST - 1)) * L;
+                  const zz = (defl[s] + C1_corr * x) / EIy;
+                  dz.push(zz * 1000); // m → mm
+                }
+              } else {
+                for (let s = 0; s < ST; s++) dz.push(0);
+              }
+
               return {
                 x_values: xv,
                 shear_y: sy,
-                moment_z: mzArr,
+                shear_z: sz,
+                moment_z: mzArr, // Mz — primary BMD (about Z-axis)
+                moment_y: myArr, // My — weak-axis BMD (about Y-axis)
                 axial: ax,
                 deflection_y: dy,
+                deflection_z: dz,
               };
             };
 
@@ -1534,6 +1568,8 @@ export const ModernModeler: FC = () => {
               const myV = (mf.forces_i[4] ?? 0) / 1000;
               const mzV = (mf.forces_i[5] ?? 0) / 1000;
               const syE = (mf.forces_j[1] ?? 0) / 1000;
+              const szE = (mf.forces_j[2] ?? 0) / 1000;
+              const myE = (mf.forces_j[4] ?? 0) / 1000;
               const mzE = (mf.forces_j[5] ?? 0) / 1000;
 
               // Diagnostic: Log member end forces to help debug zero-BMD issues
@@ -1552,7 +1588,7 @@ export const ModernModeler: FC = () => {
                 mf.max_moment_z != null
                   ? mf.max_moment_z / 1000
                   : Math.max(Math.abs(mzV), Math.abs(mzE));
-              const diag3D = genDiagram(axV, syV, mzV, syE, mzE, elemId);
+              const diag3D = genDiagram(axV, syV, mzV, syE, mzE, elemId, szV, myV, szE, myE);
 
               // Diagnostic: Log first member's BMD sample values
               if (Object.keys(membersDict).length === 0 && diag3D) {
@@ -1585,12 +1621,12 @@ export const ModernModeler: FC = () => {
                 // diagram arrays
                 x_values: diag3D?.x_values,
                 shear_y: diag3D?.shear_y,
-                shear_z: [] as number[],
-                moment_y: [] as number[],
-                moment_z: diag3D?.moment_z,
+                shear_z: diag3D?.shear_z || [],
+                moment_y: diag3D?.moment_y || [], // My (about Y-axis, weak-axis BMD)
+                moment_z: diag3D?.moment_z, // Mz (about Z-axis, primary BMD)
                 torsion_arr: [] as number[],
                 deflection_y: diag3D?.deflection_y,
-                deflection_z: [] as number[],
+                deflection_z: diag3D?.deflection_z || [],
               };
             } else {
               // 2D format: map from Rust field names + generate diagram data
@@ -1611,9 +1647,9 @@ export const ModernModeler: FC = () => {
                 // diagram arrays
                 x_values: diag2D?.x_values,
                 shear_y: diag2D?.shear_y,
-                shear_z: [] as number[],
-                moment_y: [] as number[],
-                moment_z: diag2D?.moment_z,
+                shear_z: diag2D?.shear_z || [],
+                moment_y: diag2D?.moment_y || [], // My (zeros for 2D)
+                moment_z: diag2D?.moment_z, // Mz (primary BMD)
                 torsion: [] as number[],
                 deflection_y: diag2D?.deflection_y,
                 deflection_z: [] as number[],

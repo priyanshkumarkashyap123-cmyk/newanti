@@ -1731,19 +1731,48 @@ function computeMemberEndForces(
         fLocal12[r] = s;
       }
 
-      // Add fixed-end forces for any member loads (UDL in local Y)
+      // Add fixed-end forces for any member loads
       const modelML = model as ModelDataWithMemberLoads;
       if (modelML.memberLoads) {
         for (const ml of modelML.memberLoads) {
-          if (ml.memberId === member.id && ml.type === "UDL") {
+          if (ml.memberId !== member.id) continue;
+
+          const dir = ml.direction ?? "local_y";
+
+          if (ml.type === "UDL") {
             const w = ml.w1 ?? 0;
-            // FEF for UDL w in local Y direction on both-fixed beam:
-            //   V1 = +wL/2,   V2 = +wL/2
-            //   M1 = +wL²/12, M2 = -wL²/12
-            fLocal12[1] += (w * L) / 2;
-            fLocal12[5] += (w * L * L) / 12;
-            fLocal12[7] += (w * L) / 2;
-            fLocal12[11] += (-w * L * L) / 12;
+            if (dir === "local_y" || dir === "global_y") {
+              // FEF for UDL w in local Y direction on both-fixed beam:
+              //   Vy1 = +wL/2,   Vy2 = +wL/2
+              //   Mz1 = +wL²/12, Mz2 = -wL²/12
+              fLocal12[1] += (w * L) / 2;
+              fLocal12[5] += (w * L * L) / 12;
+              fLocal12[7] += (w * L) / 2;
+              fLocal12[11] += (-w * L * L) / 12;
+            } else if (dir === "local_z" || dir === "global_z") {
+              // FEF for UDL w in local Z direction on both-fixed beam:
+              //   Vz1 = +wL/2,   Vz2 = +wL/2
+              //   My1 = -wL²/12,  My2 = +wL²/12  (opposite sign to Mz due to stiffness coupling)
+              fLocal12[2] += (w * L) / 2;
+              fLocal12[4] += (-w * L * L) / 12;
+              fLocal12[8] += (w * L) / 2;
+              fLocal12[10] += (w * L * L) / 12;
+            }
+          } else if (ml.type === "point") {
+            const P = ml.P ?? 0;
+            const a = ml.a ?? L / 2;
+            const b = L - a;
+            if (dir === "local_y" || dir === "global_y") {
+              fLocal12[1] += (P * b * b * (3 * a + b)) / (L * L * L);
+              fLocal12[5] += (P * a * b * b) / (L * L);
+              fLocal12[7] += (P * a * a * (a + 3 * b)) / (L * L * L);
+              fLocal12[11] += (-P * a * a * b) / (L * L);
+            } else if (dir === "local_z" || dir === "global_z") {
+              fLocal12[2] += (P * b * b * (3 * a + b)) / (L * L * L);
+              fLocal12[4] += (-P * a * b * b) / (L * L);
+              fLocal12[8] += (P * a * a * (a + 3 * b)) / (L * L * L);
+              fLocal12[10] += (P * a * a * b) / (L * L);
+            }
           }
         }
       }
@@ -1840,11 +1869,12 @@ function computeMemberEndForces(
         fLocal[r] = sum;
       }
 
-      // Add fixed-end forces for any member loads (UDL in local Y)
+      // Add fixed-end forces for any member loads
       const modelML2D = model as ModelDataWithMemberLoads;
       if (modelML2D.memberLoads) {
         for (const ml of modelML2D.memberLoads) {
-          if (ml.memberId === member.id && ml.type === "UDL") {
+          if (ml.memberId !== member.id) continue;
+          if (ml.type === "UDL") {
             const w = ml.w1 ?? 0;
             // FEF for UDL w in local Y on both-fixed beam:
             //   V1 = +wL/2,   M1 = +wL²/12
@@ -1853,6 +1883,14 @@ function computeMemberEndForces(
             fLocal[2] += (w * L * L) / 12;
             fLocal[4] += (w * L) / 2;
             fLocal[5] += (-w * L * L) / 12;
+          } else if (ml.type === "point") {
+            const P = ml.P ?? 0;
+            const a = ml.a ?? L / 2;
+            const b = L - a;
+            fLocal[1] += (P * b * b * (3 * a + b)) / (L * L * L);
+            fLocal[2] += (P * a * b * b) / (L * L);
+            fLocal[4] += (P * a * a * (a + 3 * b)) / (L * L * L);
+            fLocal[5] += (-P * a * a * b) / (L * L);
           }
         }
       }
@@ -1951,8 +1989,10 @@ function generateDiagramData(
 
     // Back-calculate equivalent distributed load from equilibrium of TOTAL end forces.
     // This avoids double-counting: V1 already includes UDL effect via FEF.
-    // Vertical equilibrium: V1 - w*L + V2 = 0 → w = (V1 + V2) / L
-    const w = L > 1e-12 ? (V1 + V2) / L : 0;
+    // Y-direction: V1 + V2 = wy*L → wy = (V1 + V2) / L
+    const wy = L > 1e-12 ? (V1 + V2) / L : 0;
+    // Z-direction: Vz1 + Vz2 = wz*L → wz = (Vz1 + Vz2) / L
+    const wz = L > 1e-12 ? (Vz1 + Vz2) / L : 0;
 
     // ─── Extract actual local nodal displacements for Hermite interpolation ───
     const ld = mf.localDisplacements;
@@ -1984,13 +2024,15 @@ function generateDiagramData(
     }
 
     // Generate stations
+    // Naming convention: Mz_arr = internal bending moment about Z-axis (primary, XY plane)
+    //                    My_arr = internal bending moment about Y-axis (weak-axis, XZ plane)
     const x_values: number[] = [];
     const shear_y: number[] = [];
-    const moment_y: number[] = [];
+    const Mz_arr: number[] = []; // Internal moment about Z (primary BMD)
     const axial: number[] = [];
     const deflection_y: number[] = [];
     const shear_z: number[] = [];
-    const moment_z: number[] = [];
+    const My_arr: number[] = []; // Internal moment about Y (weak-axis BMD)
     const torsion: number[] = [];
     const deflection_z: number[] = [];
 
@@ -2003,21 +2045,19 @@ function generateDiagramData(
       // ─── Axial: constant along member (no intermediate axial loads) ───
       axial.push(N1);
 
-      // ─── Shear Y ───
-      //   V(x) = V1 - w·x  (positive w = downward load in local Y)
-      const Vx = V1 - w * x;
+      // ─── Shear Y: V(x) = V1 - wy·x ───
+      const Vx = V1 - wy * x;
       shear_y.push(Vx);
 
-      // ─── Moment Z (internal bending moment) ───
-      //   M_internal(x) = -M1 + V1·x - w·x²/2
+      // ─── Moment about Z (internal bending moment — PRIMARY BMD) ───
+      //   Mz_internal(x) = -M1 + V1·x - wy·x²/2
       //   (Negate FEM end moment: FEM Mz [CCW+] → internal moment [sagging+])
-      const Mx = -M1 + V1 * x - (w * x * x) / 2;
-      moment_y.push(Mx);
+      //   This is the moment that causes bending stress σ = Mz·y/Iz
+      const Mz_x = -M1 + V1 * x - (wy * x * x) / 2;
+      Mz_arr.push(Mz_x);
 
       // ─── Deflection Y ───
-      //   Hermite cubic interpolation with actual local nodal displacements.
-      //   For UDL, add quartic bubble: w·x²·(L-x)²/(24·EI).
-      // ─── Hermite cubic shape functions (common to Y and Z deflection) ───
+      // Hermite cubic shape functions (common to Y and Z deflection)
       const xi2 = xi * xi;
       const xi3 = xi2 * xi;
       const N1h = 1 - 3 * xi2 + 2 * xi3;
@@ -2026,34 +2066,40 @@ function generateDiagramData(
       const N4h = L * (-xi2 + xi3);
 
       if (EIz > 0) {
-        // Hermite cubic interpolation with ACTUAL local nodal displacements.
-        // vy(x) = N1·vy1 + N2·θz1 + N3·vy2 + N4·θz2  (exact for cubic v(x))
-        // + UDL quartic bubble: w·x²·(L-x)²/(24·EI) recovers the quartic term.
+        // Hermite cubic with ACTUAL local nodal displacements + UDL quartic bubble
         const yHermite = N1h * vy1 + N2h * thz1 + N3h * vy2 + N4h * thz2;
         const Lmx = L - x;
-        const yBubble = (w * x * x * Lmx * Lmx) / (24 * EIz);
+        const yBubble = (wy * x * x * Lmx * Lmx) / (24 * EIz);
         deflection_y.push((yHermite + yBubble) * 1000); // mm
       } else {
         deflection_y.push(0);
       }
 
-      // ─── Z-direction: Shear Z, Moment about Y, Torsion, Deflection Z ───
-      // Shear Z: linear interpolation (no distributed load in Z assumed)
-      shear_z.push(Vz1 + (Vz2 - Vz1) * xi);
+      // ─── Shear Z: Vz(x) = Vz1 - wz·x ───
+      //   (Same equilibrium approach as Y-direction)
+      const Vzx = Vz1 - wz * x;
+      shear_z.push(Vzx);
 
-      // Moment about Y: My(x) = My1 + Vz1·x (linear for no span load)
-      moment_z.push(My1 + Vz1 * x);
+      // ─── Moment about Y (weak-axis BMD — XZ plane bending) ───
+      //   My_internal(x) = My1 + Vz1·x - wz·x²/2
+      //   (NO negation of My1: XZ-plane stiffness has opposite coupling sign,
+      //    so My_FEF already has the correct sign for direct use.)
+      //   This is the moment that causes bending stress σ = My·z/Iy
+      const My_x = My1 + Vz1 * x - (wz * x * x) / 2;
+      My_arr.push(My_x);
 
-      // Torsion: linear interpolation between ends
+      // ─── Torsion: linear interpolation between ends ───
       torsion.push(Tx1 + (Tx2 - Tx1) * xi);
 
-      // Deflection Z (bending about Y axis) — Hermite cubic interpolation
-      // XZ-plane coupling convention: k[vz,θy] has opposite sign from k[vy,θz],
-      // so the rotation terms enter with flipped sign:
-      // vz(x) = N1·vz1 − N2·θy1 + N3·vz2 − N4·θy2
+      // ─── Deflection Z (bending about Y axis) — Hermite cubic + UDL bubble ───
+      // XZ-plane coupling: k[vz,θy] has opposite sign from k[vy,θz],
+      // so rotation terms enter with flipped sign:
+      //   vz(x) = N1·vz1 − N2·θy1 + N3·vz2 − N4·θy2
       if (EIy > 0) {
-        const z = N1h * vz1 - N2h * thy1 + N3h * vz2 - N4h * thy2;
-        deflection_z.push(z * 1000); // mm
+        const zHermite = N1h * vz1 - N2h * thy1 + N3h * vz2 - N4h * thy2;
+        const Lmx = L - x;
+        const zBubble = (wz * x * x * Lmx * Lmx) / (24 * EIy);
+        deflection_z.push((zHermite + zBubble) * 1000); // mm
       } else {
         deflection_z.push(0);
       }
@@ -2063,24 +2109,21 @@ function generateDiagramData(
     const maxAbs = (arr: number[]) =>
       arr.reduce((mx, v) => Math.max(mx, Math.abs(v)), 0);
 
-    // NOTE on naming convention:
-    //   moment_y (local array) = -M1 + V1*x - w*x²/2 = internal bending moment about Z-axis (Mz)
-    //   moment_z (local array) = My1 + Vz1*x = bending moment about Y-axis (My)
-    // Consumers (ResultsToolbar etc.) expect:
-    //   diagramData.moment_z = primary BMD (about Z-axis) — so swap in output
-    //   diagramData.moment_y = weak-axis BMD (about Y-axis)
     enriched.push({
       ...mf,
       maxShearY: maxAbs(shear_y),
-      maxMomentY: maxAbs(moment_z), // moment_z local = My (about Y-axis)
+      maxShearZ: maxAbs(shear_z),
+      maxMomentZ: maxAbs(Mz_arr), // Primary BMD (about Z-axis)
+      maxMomentY: maxAbs(My_arr), // Weak-axis BMD (about Y-axis)
       maxAxial: maxAbs(axial),
       maxDeflectionY: maxAbs(deflection_y),
+      maxDeflectionZ: maxAbs(deflection_z),
       diagramData: {
         x_values,
         shear_y,
         shear_z,
-        moment_y: moment_z, // My (about Y-axis) from shear-Z path
-        moment_z: moment_y, // Mz (about Z-axis) from shear-Y path — primary BMD
+        moment_y: My_arr, // My(x) — bending about Y-axis (weak-axis, XZ plane)
+        moment_z: Mz_arr, // Mz(x) — bending about Z-axis (primary, XY plane)
         axial,
         torsion,
         deflection_y,

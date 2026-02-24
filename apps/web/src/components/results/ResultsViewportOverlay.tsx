@@ -18,13 +18,15 @@ import { DiagramOverlay, DiagramType, DiagramData } from './DiagramOverlay';
 import { useModelStore } from '../../store/model';
 import StressContourRenderer, { MemberStressData, StressType, StressPoint } from './StressContourRenderer';
 
-type DiagramDisplayType = 'SFD' | 'BMD' | 'AFD' | 'DEFLECTION' | 'STRESS';
+type DiagramDisplayType = 'SFD' | 'BMD' | 'BMD_MY' | 'SFD_VZ' | 'AFD' | 'DEFLECTION' | 'STRESS';
 
 // Utility to map display type to specific diagram type
 const mapDiagramType = (type: DiagramDisplayType): DiagramType => {
     switch (type) {
         case 'SFD': return 'SFD';
         case 'BMD': return 'BMD';
+        case 'BMD_MY': return 'MomentY';
+        case 'SFD_VZ': return 'ShearZ';
         case 'AFD': return 'Axial';
         case 'DEFLECTION': return 'deflection';
         default: return 'BMD';
@@ -277,6 +279,14 @@ export const SectionScanner: FC<SectionScannerProps> = ({
             case 'BMD':
                 // Parabolic for UDL
                 value = forces.momentZ * 4 * position * (1 - position);
+                unit = 'kNm';
+                break;
+            case 'SFD_VZ':
+                value = (forces.shearZ ?? 0) * (1 - 2 * position);
+                unit = 'kN';
+                break;
+            case 'BMD_MY':
+                value = (forces.momentY ?? 0) * 4 * position * (1 - position);
                 unit = 'kNm';
                 break;
             case 'AFD':

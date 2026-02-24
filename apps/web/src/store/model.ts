@@ -355,9 +355,11 @@ interface ModelState {
   getNextMemberId: () => string;
 
   // Diagram visibility
-  showSFD: boolean; // Shear Force Diagram
-  showBMD: boolean; // Bending Moment Diagram
+  showSFD: boolean; // Shear Force Diagram (Vy — XY plane)
+  showBMD: boolean; // Bending Moment Diagram (Mz — XY plane)
   showAFD: boolean; // Axial Force Diagram
+  showBMDMy: boolean; // Weak-axis Bending Moment (My — XZ plane)
+  showShearZ: boolean; // Weak-axis Shear Force (Vz — XZ plane)
   showStressOverlay: boolean; // Stress color overlay on members
   showDeflectedShape: boolean; // Deflected shape
   diagramScale: number; // Scale factor for diagrams
@@ -456,6 +458,8 @@ interface ModelState {
   setShowSFD: (show: boolean) => void;
   setShowBMD: (show: boolean) => void;
   setShowAFD: (show: boolean) => void;
+  setShowBMDMy: (show: boolean) => void;
+  setShowShearZ: (show: boolean) => void;
   setShowStressOverlay: (show: boolean) => void;
   setShowDeflectedShape: (show: boolean) => void;
   setDiagramScale: (scale: number) => void;
@@ -560,6 +564,8 @@ export const useModelStore = create<ModelState>()(
         showSFD: false,
         showBMD: false,
         showAFD: false,
+        showBMDMy: false,
+        showShearZ: false,
         showStressOverlay: false,
         showDeflectedShape: false,
         diagramScale: 0.05, // Professional diagram scale
@@ -1233,6 +1239,8 @@ export const useModelStore = create<ModelState>()(
         setShowSFD: (show) => set({ showSFD: show }),
         setShowBMD: (show) => set({ showBMD: show }),
         setShowAFD: (show) => set({ showAFD: show }),
+        setShowBMDMy: (show) => set({ showBMDMy: show }),
+        setShowShearZ: (show) => set({ showShearZ: show }),
         setShowStressOverlay: (show) => set({ showStressOverlay: show }),
         setShowDeflectedShape: (show) => set({ showDeflectedShape: show }),
         setDiagramScale: (scale) => set({ diagramScale: scale }),
@@ -1262,6 +1270,8 @@ export const useModelStore = create<ModelState>()(
             showSFD: false,
             showBMD: false,
             showAFD: false,
+            showBMDMy: false,
+            showShearZ: false,
             showStressOverlay: false,
             showDeflectedShape: false,
             diagramScale: 0.05,
@@ -1478,6 +1488,8 @@ export const useModelStore = create<ModelState>()(
               showSFD: false,
               showBMD: false,
               showAFD: false,
+              showBMDMy: false,
+              showShearZ: false,
               showStressOverlay: false,
               showDeflectedShape: false,
               nextNodeNumber: maxNodeNum + 1,

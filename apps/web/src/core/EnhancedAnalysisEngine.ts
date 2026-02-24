@@ -16,7 +16,7 @@
  * - IS 1893:2016 response spectrum with SRSS combination
  */
 
-import { Node, Member } from '../store/model';
+import { Node, Member, MemberLoad } from '../store/model';
 import { CSRMatrixBuilder, CSRSparseMatrix, solve, solvePCG } from './CSRSparseMatrix';
 
 // ============================================
@@ -66,6 +66,8 @@ export interface LoadCase {
   type: 'dead' | 'live' | 'wind' | 'seismic' | 'temperature' | 'snow' | 'special';
   factor: number;
   loads: Load[];
+  /** Member loads (UDL, UVL, point, moment) — converted to fixed-end forces */
+  memberLoads?: MemberLoad[];
 }
 
 export interface Load {
@@ -98,6 +100,8 @@ export interface AnalysisResults {
   summary: AnalysisSummary;
   warnings: string[];
   errors: string[];
+  /** Per-member local fixed-end force vectors (12 elements each), needed for correct internal forces */
+  memberFEF?: Map<string, Float64Array>;
 }
 
 export interface NodalDisplacement {
@@ -190,6 +194,300 @@ const DEFAULT_SECTION = {
   Sy: 5.735e-4, // m³ (573.5 cm³) elastic section modulus
   Sz: 4.539e-5, // m³ (45.39 cm³) weak axis section modulus
 };
+
+// ============================================
+// FIXED-END FORCE CALCULATIONS
+// ============================================
+
+/**
+ * Direction mapping: convert member load direction string to local-axis index.
+ * Returns: 0 = local-x (axial), 1 = local-y, 2 = local-z
+ * plus a flag indicating whether the direction is in global coordinates.
+ */
+function parseLoadDirection(direction: string): { localAxis: number; isGlobal: boolean } {
+  const dir = direction.toLowerCase();
+  if (dir === 'local_y' || dir === 'local-y') return { localAxis: 1, isGlobal: false };
+  if (dir === 'local_z' || dir === 'local-z') return { localAxis: 2, isGlobal: false };
+  if (dir === 'axial' || dir === 'local_x' || dir === 'local-x') return { localAxis: 0, isGlobal: false };
+  if (dir === 'global_x') return { localAxis: 0, isGlobal: true };
+  if (dir === 'global_y') return { localAxis: 1, isGlobal: true };
+  if (dir === 'global_z') return { localAxis: 2, isGlobal: true };
+  // Default: global Y (gravity)
+  return { localAxis: 1, isGlobal: true };
+}
+
+/**
+ * Project a unit global-direction load onto local member axes.
+ *
+ * Given a 3x3 rotation matrix R (rows = local axes in global coords),
+ * returns the components of a unit global-axis vector in local coords.
+ *
+ * E.g., for global-Y load: globalVec = [0,1,0]
+ *   localComponents = R * globalVec  →  [cx, cy, cz] in local frame
+ */
+function projectGlobalToLocal(globalAxis: number, R: number[][]): [number, number, number] {
+  // R[i][j] = component of local axis i in global direction j
+  // To project global-axis 'g' onto local frame:  local_i = R[i][g]
+  return [R[0][globalAxis], R[1][globalAxis], R[2][globalAxis]];
+}
+
+/**
+ * Compute the 12-element LOCAL fixed-end force (FEF) vector for a single member load.
+ *
+ * Convention: positive FEF values are the forces/moments the fixed ends exert
+ * ON the beam (reactions). They are ADDED to the global force vector with
+ * appropriate sign to ensure equilibrium.
+ *
+ * Local DOF order: [u1, v1, w1, θx1, θy1, θz1, u2, v2, w2, θx2, θy2, θz2]
+ *
+ * References:
+ *   - Przemieniecki, "Theory of Matrix Structural Analysis", Ch. 5
+ *   - McGuire, Gallagher & Ziemian, "Matrix Structural Analysis", 2nd Ed.
+ *   - Hibbeler, "Structural Analysis", Table 12-1
+ */
+function computeFixedEndForces(
+  load: MemberLoad,
+  L: number,
+  R: number[][],
+): Float64Array {
+  const fef = new Float64Array(12); // local FEF vector
+  if (L < 1e-10) return fef;
+
+  const { localAxis, isGlobal } = parseLoadDirection(load.direction);
+
+  // Helper: add FEF for a load applied in a given LOCAL transverse direction
+  // perpAxis: 1 (local-y) or 2 (local-z)
+  // scale: signed magnitude multiplier
+  const addTransverseFEF = (perpAxis: number, scale: number, fefOut: Float64Array) => {
+    if (Math.abs(scale) < 1e-15) return;
+
+    const startPos = Math.max(0, Math.min(1, load.startPos ?? 0));
+    const endPos = Math.max(0, Math.min(1, load.endPos ?? 1));
+
+    // DOF indices for local v (perpAxis=1) or w (perpAxis=2)
+    const vStart = perpAxis;          // 1 or 2
+    const vEnd = perpAxis + 6;        // 7 or 8
+    // Moment DOF: bending about z (for perpAxis=1) or about y (for perpAxis=2)
+    const mStart = perpAxis === 1 ? 5 : 4;   // θz1 or θy1
+    const mEnd = perpAxis === 1 ? 11 : 10;   // θz2 or θy2
+    // Sign convention: for bending in local-xz plane (perpAxis=2),
+    // the moment coupling has opposite sign to local-xy plane.
+    const mSign = perpAxis === 1 ? 1 : -1;
+
+    if (load.type === 'UDL') {
+      const w = (load.w1 ?? 0) * scale;
+      if (Math.abs(w) < 1e-15) return;
+
+      if (Math.abs(startPos) < 1e-10 && Math.abs(endPos - 1) < 1e-10) {
+        // Full-span UDL: standard formulas
+        // R1 = wL/2, R2 = wL/2  (reactions opposing load)
+        // M1 = wL²/12, M2 = -wL²/12
+        fefOut[vStart] += w * L / 2;
+        fefOut[vEnd]   += w * L / 2;
+        fefOut[mStart] += mSign * w * L * L / 12;
+        fefOut[mEnd]   += mSign * (-w * L * L / 12);
+      } else {
+        // Partial-span UDL from a to b on fixed-fixed beam
+        // Using exact integration of the fixed-fixed beam influence functions
+        const a = startPos * L;
+        const b = endPos * L;
+        const c = b - a;  // loaded length
+        if (c < 1e-10) return;
+        const L2 = L * L;
+        const L3 = L2 * L;
+
+        // Integration of wdx over [a,b] with cubic shape functions:
+        // R1 = w*c - w/(L³) * [  (b⁴-a⁴)/4 - L*(b³-a³)/3  ] ... use standard result:
+        // R1 = w * [ (b-a) - (b²-a²)/(2L) + ... ]
+        // More reliable: use Gauss quadrature or closed-form:
+        // For partial UDL on fixed beam, exact formulas:
+        // R1 = w*c*(1 - (b+a)/(2L) + a*b/(L²))  [..this is approx]
+        // Better: use superposition of point loads via Simpson integration
+        // or the exact Przemieniecki result.
+
+        // Exact result for partial UDL (load w per unit length from a to b):
+        // R1 = w/(2L³) * [ 2L³(b-a) - 3L²(b²-a²) + L*(2(b³-a³)) - 0 ]
+        // ...actually deriving from shape function integration:
+        // Using Hermite interpolation functions N1..N4 for fixed beam:
+        // R1 = w * ∫[a,b] N1(x) dx,  M1 = w * ∫[a,b] N2(x) dx, etc.
+        //
+        // N1(x) = 1 - 3(x/L)² + 2(x/L)³
+        // N2(x) = x(1 - x/L)²
+        // N3(x) = 3(x/L)² - 2(x/L)³
+        // N4(x) = (x²/L)(x/L - 1)
+        //
+        // ∫[a,b] N1 dx = (b-a) - (b³-a³)/L² + (b⁴-a⁴)/(2L³)
+        // ∫[a,b] N2 dx = (b²-a²)/2 - (b³-a³)/L + (b⁴-a⁴)/(2L²)
+        //              = ... let me compute with substitution ξ = x/L:
+        // Actually, let's integrate directly:
+        const da = b - a;
+        const db2 = b*b - a*a;
+        const db3 = b*b*b - a*a*a;
+        const db4 = b*b*b*b - a*a*a*a;
+
+        const intN1 = da - db3/L2 + db4/(2*L3);
+        const intN2 = db2/2 - db3/L + db4/(2*L2);  // This gives ∫N2 dx (units: m²)
+        const intN3 = db3/L2 - db4/(2*L3);
+        const intN4 = -db3/(3*L) + db4/(2*L2) - db2/2 + db3/L;
+        // Let me re-derive N4 integral properly:
+        // N4(x) = (x²/L)(x/L - 1) = x³/L² - x²/L
+        // ∫[a,b] N4 dx = (b⁴-a⁴)/(4L²) - (b³-a³)/(3L)
+        const intN4_correct = db4/(4*L2) - db3/(3*L);
+
+        fefOut[vStart] += w * intN1;
+        fefOut[mStart] += mSign * w * intN2;
+        fefOut[vEnd]   += w * intN3;
+        fefOut[mEnd]   += mSign * w * intN4_correct;
+      }
+    } else if (load.type === 'UVL') {
+      // Linearly varying load from w1 to w2
+      const w1 = (load.w1 ?? 0) * scale;
+      const w2 = (load.w2 ?? load.w1 ?? 0) * scale;
+      if (Math.abs(w1) < 1e-15 && Math.abs(w2) < 1e-15) return;
+
+      // Decompose into uniform (wMin) + triangle (wDelta from 0 to |wDelta|)
+      // Full span only for correct formulas. Partial span uses shape function integration.
+      if (Math.abs(startPos) < 1e-10 && Math.abs(endPos - 1) < 1e-10) {
+        // w(x) = w1 + (w2-w1)*x/L  over full span
+        // Decompose: w(x) = w1 (uniform) + (w2-w1)*x/L (ascending triangle)
+        const wU = w1;              // uniform part
+        const wT = w2 - w1;        // triangular part (0 at start, wT at end)
+
+        // Uniform part FEF
+        if (Math.abs(wU) > 1e-15) {
+          fefOut[vStart] += wU * L / 2;
+          fefOut[vEnd]   += wU * L / 2;
+          fefOut[mStart] += mSign * wU * L * L / 12;
+          fefOut[mEnd]   += mSign * (-wU * L * L / 12);
+        }
+
+        // Ascending triangle FEF (load = wT * x/L)
+        // Standard fixed-fixed beam formulas:
+        //   R1 = 3wT*L/20,  R2 = 7wT*L/20
+        //   M1 = wT*L²/30,  M2 = -wT*L²/20
+        if (Math.abs(wT) > 1e-15) {
+          fefOut[vStart] += 3 * wT * L / 20;
+          fefOut[vEnd]   += 7 * wT * L / 20;
+          fefOut[mStart] += mSign * wT * L * L / 30;
+          fefOut[mEnd]   += mSign * (-wT * L * L / 20);
+        }
+      } else {
+        // Partial span linearly varying: use 3-point Gauss quadrature
+        const a = startPos * L;
+        const bPos = endPos * L;
+        const cLen = bPos - a;
+        if (cLen < 1e-10) return;
+
+        // Gauss points for interval [a, b]
+        const gp = [
+          { xi: -0.7745966692, wi: 0.5555555556 },
+          { xi: 0.0,           wi: 0.8888888889 },
+          { xi: 0.7745966692,  wi: 0.5555555556 },
+        ];
+
+        let fR1 = 0, fR2 = 0, fM1 = 0, fM2 = 0;
+        for (const g of gp) {
+          const x = a + (cLen / 2) * (1 + g.xi);
+          const weight = (cLen / 2) * g.wi;
+          const t = (x - a) / cLen;  // 0..1 within loaded region
+          const w_x = w1 + (w2 - w1) * t;
+
+          const xL = x / L;
+          const N1 = 1 - 3*xL*xL + 2*xL*xL*xL;
+          const N2 = x * (1 - xL) * (1 - xL);
+          const N3 = 3*xL*xL - 2*xL*xL*xL;
+          const N4 = x*x/L * (xL - 1);
+
+          fR1 += w_x * N1 * weight;
+          fM1 += w_x * N2 * weight;
+          fR2 += w_x * N3 * weight;
+          fM2 += w_x * N4 * weight;
+        }
+
+        fefOut[vStart] += fR1;
+        fefOut[mStart] += mSign * fM1;
+        fefOut[vEnd]   += fR2;
+        fefOut[mEnd]   += mSign * fM2;
+      }
+    } else if (load.type === 'point') {
+      // Concentrated load P at position 'a' from start (a = load.a or load.startPos*L)
+      const P = (load.P ?? load.w1 ?? 0) * scale;
+      if (Math.abs(P) < 1e-15) return;
+
+      const aRatio = load.a !== undefined
+        ? (load.a <= 1 ? load.a : load.a / L)  // support both ratio and absolute
+        : (load.startPos ?? 0.5);
+      const a = Math.max(0, Math.min(1, aRatio)) * L;
+      const b = L - a;
+      const L2 = L * L;
+      const L3 = L2 * L;
+
+      // Hermite interpolation: R1, M1, R2, M2
+      fefOut[vStart] += P * b * b * (3 * a + b) / L3;
+      fefOut[mStart] += mSign * P * a * b * b / L2;
+      fefOut[vEnd]   += P * a * a * (a + 3 * b) / L3;
+      fefOut[mEnd]   += mSign * (-P * a * a * b / L2);
+    } else if (load.type === 'moment') {
+      // Concentrated moment M₀ at position 'a'
+      const M0 = (load.M ?? load.w1 ?? 0) * scale;
+      if (Math.abs(M0) < 1e-15) return;
+
+      const aRatio = load.a !== undefined
+        ? (load.a <= 1 ? load.a : load.a / L)
+        : (load.startPos ?? 0.5);
+      const a = Math.max(0, Math.min(1, aRatio)) * L;
+      const b = L - a;
+      const L2 = L * L;
+      const L3 = L2 * L;
+
+      // FEF for concentrated moment on fixed-fixed beam:
+      fefOut[vStart] += mSign * 6 * M0 * a * b / L3;
+      fefOut[mStart] += M0 * b * (2 * a - b) / L2;
+      fefOut[vEnd]   += mSign * (-6 * M0 * a * b / L3);
+      fefOut[mEnd]   += M0 * a * (2 * b - a) / L2;
+    }
+  };
+
+  // Helper: add FEF for axial load
+  const addAxialFEF = (scale: number, fefOut: Float64Array) => {
+    if (Math.abs(scale) < 1e-15) return;
+    if (load.type === 'UDL') {
+      const w = (load.w1 ?? 0) * scale;
+      if (Math.abs(w) < 1e-15) return;
+      // Axial UDL on fixed-fixed bar: R1 = wL/2, R2 = wL/2
+      fefOut[0] += w * L / 2;
+      fefOut[6] += w * L / 2;
+    } else if (load.type === 'point') {
+      const P = (load.P ?? load.w1 ?? 0) * scale;
+      if (Math.abs(P) < 1e-15) return;
+      const aRatio = load.a !== undefined
+        ? (load.a <= 1 ? load.a : load.a / L)
+        : (load.startPos ?? 0.5);
+      const a = Math.max(0, Math.min(1, aRatio)) * L;
+      const b = L - a;
+      fefOut[0] += P * b / L;
+      fefOut[6] += P * a / L;
+    }
+  };
+
+  if (!isGlobal) {
+    // Load is in local coordinates — apply directly
+    if (localAxis === 0)         addAxialFEF(1, fef);
+    else if (localAxis === 1)    addTransverseFEF(1, 1, fef);  // local-y
+    else                         addTransverseFEF(2, 1, fef);  // local-z
+  } else {
+    // Load is in GLOBAL coordinates — project onto local axes
+    const [projX, projY, projZ] = projectGlobalToLocal(localAxis, R);
+
+    // Axial component (local-x)
+    addAxialFEF(projX, fef);
+    // Transverse components (local-y, local-z)
+    addTransverseFEF(1, projY, fef);
+    addTransverseFEF(2, projZ, fef);
+  }
+
+  return fef;
+}
 
 // ============================================
 // COORDINATE TRANSFORMATION
@@ -440,7 +738,7 @@ export class EnhancedAnalysisEngine {
     nodes: Map<string, Node>,
     members: Map<string, Member>,
     config: AnalysisConfig
-  ): { K: CSRSparseMatrix; F: Float64Array; dofMap: Map<string, number> } {
+  ): { K: CSRSparseMatrix; F: Float64Array; dofMap: Map<string, number>; memberFEFLocal: Map<string, Float64Array> } {
     const dofPerNode = 6;
     const totalDof = nodes.size * dofPerNode;
 
@@ -453,6 +751,9 @@ export class EnhancedAnalysisEngine {
 
     const builder = new CSRMatrixBuilder(totalDof);
     const F = new Float64Array(totalDof);
+
+    // Per-member local FEF storage (needed to extract correct internal forces later)
+    const memberFEFLocal = new Map<string, Float64Array>();
 
     // Assemble member stiffnesses
     members.forEach(member => {
@@ -467,7 +768,7 @@ export class EnhancedAnalysisEngine {
       builder.addElementMatrix(ke, dofs);
     });
 
-    // Apply loads
+    // Apply nodal loads
     config.loadCases.forEach(loadCase => {
       loadCase.loads.forEach(load => {
         if (load.targetType === 'node') {
@@ -483,10 +784,65 @@ export class EnhancedAnalysisEngine {
           }
         }
       });
+
+      // ============================================
+      // MEMBER LOADS → FIXED-END FORCES
+      // ============================================
+      if (loadCase.memberLoads && loadCase.memberLoads.length > 0) {
+        for (const mLoad of loadCase.memberLoads) {
+          const member = members.get(mLoad.memberId);
+          if (!member) continue;
+
+          const startNode = nodes.get(member.startNodeId);
+          const endNode = nodes.get(member.endNodeId);
+          if (!startNode || !endNode) continue;
+
+          const dx = endNode.x - startNode.x;
+          const dy = endNode.y - startNode.y;
+          const dz = endNode.z - startNode.z;
+          const L = Math.sqrt(dx * dx + dy * dy + dz * dz);
+          if (L < 1e-10) continue;
+
+          // Get rotation matrix (same one used for stiffness transformation)
+          const r = buildRotationMatrix3x3(startNode, endNode, L, member.betaAngle);
+
+          // Compute local FEF for this load
+          const localFEF = computeFixedEndForces(mLoad, L, r);
+
+          // Scale by load case factor
+          const factor = loadCase.factor;
+          for (let i = 0; i < 12; i++) localFEF[i] *= factor;
+
+          // Accumulate per-member local FEF (may have multiple loads on same member)
+          const existingFEF = memberFEFLocal.get(member.id);
+          if (existingFEF) {
+            for (let i = 0; i < 12; i++) existingFEF[i] += localFEF[i];
+          } else {
+            memberFEFLocal.set(member.id, new Float64Array(localFEF));
+          }
+
+          // Transform local FEF to global: F_global = T^T * F_local
+          const T = buildTransformationMatrix12x12(r);
+          const globalFEF = new Float64Array(12);
+          for (let i = 0; i < 12; i++) {
+            let sum = 0;
+            for (let k = 0; k < 12; k++) sum += T[k][i] * localFEF[k];  // T^T * localFEF
+            globalFEF[i] = sum;
+          }
+
+          // Add global FEF to the global force vector
+          const startDof = dofMap.get(member.startNodeId)!;
+          const endDof = dofMap.get(member.endNodeId)!;
+          for (let i = 0; i < 6; i++) {
+            F[startDof + i] += globalFEF[i];
+            F[endDof + i]   += globalFEF[i + 6];
+          }
+        }
+      }
     });
 
     const K = builder.build();
-    return { K, F, dofMap };
+    return { K, F, dofMap, memberFEFLocal };
   }
 
   // ============================================
@@ -506,9 +862,9 @@ export class EnhancedAnalysisEngine {
     const E = member.E ?? DEFAULT_STEEL.E;
     const A = member.A ?? DEFAULT_SECTION.A;
     const Iy = member.I ?? DEFAULT_SECTION.Iy;
-    const Iz = DEFAULT_SECTION.Iz;
-    const G = DEFAULT_STEEL.G;
-    const J = DEFAULT_SECTION.J;
+    const Iz = member.Iz ?? DEFAULT_SECTION.Iz;  // BUG FIX: was hardcoded to DEFAULT_SECTION.Iz
+    const G = member.G ?? DEFAULT_STEEL.G;
+    const J = member.J ?? DEFAULT_SECTION.J;
 
     // Build 12×12 local stiffness matrix
     const ke: number[][] = Array(12).fill(null).map(() => Array(12).fill(0));

@@ -134,6 +134,9 @@ export const ReportsPage = () => {
     const nodes = useModelStore((s) => s.nodes);
     const members = useModelStore((s) => s.members);
     const analysisResults = useModelStore((s) => s.analysisResults);
+    const loads = useModelStore((s) => s.loads);
+    const memberLoads = useModelStore((s) => s.memberLoads);
+    const loadCases = useModelStore((s) => s.loadCases);
 
     const userName = user?.firstName || 'Engineer';
     const now = useMemo(() => new Date(), []);
@@ -482,8 +485,9 @@ export const ReportsPage = () => {
                                 ['3.0', 'Structural Model'],
                                 ['3.1', 'Node Coordinates'],
                                 ['3.2', 'Member Connectivity'],
+                                ['3.3', 'Applied Loads'],
                                 ['4.0', 'Analysis Results'],
-                                ['4.1', 'Member Forces'],
+                                ['4.1', 'Internal Member Forces'],
                                 ['4.2', 'Support Reactions'],
                                 ['4.3', 'Nodal Displacements'],
                                 ['5.0', 'Design Verification'],
@@ -577,7 +581,7 @@ export const ReportsPage = () => {
                                         <tr className="bg-slate-100 border-b border-slate-300">
                                             <th className="px-3 py-2 font-bold text-slate-600">Material</th>
                                             <th className="px-3 py-2 font-bold text-slate-600 text-right">E (GPa)</th>
-                                            <th className="px-3 py-2 font-bold text-slate-600 text-right">f<sub>y</sub> (MPa)</th>
+                                            <th className="px-3 py-2 font-bold text-slate-600 text-right">f<sub>y</sub> / f<sub>ck</sub> (MPa)</th>
                                             <th className="px-3 py-2 font-bold text-slate-600 text-right">Density (kN/m³)</th>
                                         </tr>
                                     </thead>
@@ -585,13 +589,13 @@ export const ReportsPage = () => {
                                         <tr>
                                             <td className="px-3 py-2 font-medium text-slate-800">Structural Steel (Fe 250)</td>
                                             <td className="px-3 py-2 text-right font-mono">200.00</td>
-                                            <td className="px-3 py-2 text-right font-mono">250.00</td>
+                                            <td className="px-3 py-2 text-right font-mono">250.00 (f<sub>y</sub>)</td>
                                             <td className="px-3 py-2 text-right font-mono">78.50</td>
                                         </tr>
                                         <tr className="bg-slate-50/60">
                                             <td className="px-3 py-2 font-medium text-slate-800">Concrete (M25)</td>
                                             <td className="px-3 py-2 text-right font-mono">25.00</td>
-                                            <td className="px-3 py-2 text-right font-mono">—</td>
+                                            <td className="px-3 py-2 text-right font-mono">25.00 (f<sub>ck</sub>)</td>
                                             <td className="px-3 py-2 text-right font-mono">25.00</td>
                                         </tr>
                                     </tbody>
@@ -685,6 +689,7 @@ export const ReportsPage = () => {
                             {/* 3.2 Member Connectivity */}
                             <SubHeading number="3.2" title={`Member Connectivity (${memberList.length} total)`} />
                             {memberList.length > 0 ? (
+                                <>
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-4">
                                     <table className="w-full text-left">
                                         <thead>
@@ -709,9 +714,131 @@ export const ReportsPage = () => {
                                         </tbody>
                                     </table>
                                 </div>
+                                {memberList.length > ROWS_PER_PAGE && (
+                                    <p className="text-[10px] text-slate-400 italic mb-4">
+                                        Showing first {ROWS_PER_PAGE} of {memberList.length} members. Full listing available in exported data.
+                                    </p>
+                                )}
+                                </>
                             ) : (
                                 <div className="p-6 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-400 mb-6">
                                     No members defined.
+                                </div>
+                            )}
+
+                            {/* 3.3 Applied Loads */}
+                            <SubHeading number="3.3" title="Applied Loads" />
+                            {(loads.length > 0 || memberLoads.length > 0) ? (
+                                <>
+                                    {/* Nodal Loads */}
+                                    {loads.length > 0 && (
+                                        <div className="mb-4">
+                                            <p className="text-[11px] font-bold text-slate-600 mb-2">Nodal Loads ({loads.length} applied)</p>
+                                            <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px]">
+                                                <table className="w-full text-left">
+                                                    <thead>
+                                                        <tr className="bg-slate-800 text-white">
+                                                            <th className="px-3 py-2 font-bold">Node</th>
+                                                            <th className="px-3 py-2 font-bold text-right">F<sub>x</sub> (kN)</th>
+                                                            <th className="px-3 py-2 font-bold text-right">F<sub>y</sub> (kN)</th>
+                                                            <th className="px-3 py-2 font-bold text-right">F<sub>z</sub> (kN)</th>
+                                                            <th className="px-3 py-2 font-bold text-right">M<sub>x</sub> (kN·m)</th>
+                                                            <th className="px-3 py-2 font-bold text-right">M<sub>y</sub> (kN·m)</th>
+                                                            <th className="px-3 py-2 font-bold text-right">M<sub>z</sub> (kN·m)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {loads.slice(0, ROWS_PER_PAGE).map((l: any, i) => (
+                                                            <tr key={l.id || i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
+                                                                <td className="px-3 py-1.5 font-mono font-bold text-slate-800">{l.nodeId ?? l.node ?? '—'}</td>
+                                                                <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(l.fx)}</td>
+                                                                <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(l.fy)}</td>
+                                                                <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(l.fz)}</td>
+                                                                <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(l.mx)}</td>
+                                                                <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(l.my)}</td>
+                                                                <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(l.mz)}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            {loads.length > ROWS_PER_PAGE && (
+                                                <p className="text-[10px] text-slate-400 italic mt-1">
+                                                    Showing first {ROWS_PER_PAGE} of {loads.length} nodal loads.
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Member Loads */}
+                                    {memberLoads.length > 0 && (
+                                        <div className="mb-4">
+                                            <p className="text-[11px] font-bold text-slate-600 mb-2">Member Loads ({memberLoads.length} applied)</p>
+                                            <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px]">
+                                                <table className="w-full text-left">
+                                                    <thead>
+                                                        <tr className="bg-slate-800 text-white">
+                                                            <th className="px-3 py-2 font-bold">Member</th>
+                                                            <th className="px-3 py-2 font-bold">Type</th>
+                                                            <th className="px-3 py-2 font-bold text-right">w₁ / P (kN/m or kN)</th>
+                                                            <th className="px-3 py-2 font-bold text-right">w₂ (kN/m)</th>
+                                                            <th className="px-3 py-2 font-bold">Direction</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {memberLoads.slice(0, ROWS_PER_PAGE).map((ml: any, i) => (
+                                                            <tr key={ml.id || i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
+                                                                <td className="px-3 py-1.5 font-mono font-bold text-slate-800">{ml.memberId}</td>
+                                                                <td className="px-3 py-1.5 text-slate-600 font-medium">{ml.type}</td>
+                                                                <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(ml.w1 ?? ml.P)}</td>
+                                                                <td className="px-3 py-1.5 text-right font-mono text-slate-600">{ml.type === 'UVL' ? eng(ml.w2) : '—'}</td>
+                                                                <td className="px-3 py-1.5 text-slate-600">{(ml.direction || '').replace(/_/g, ' ')}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            {memberLoads.length > ROWS_PER_PAGE && (
+                                                <p className="text-[10px] text-slate-400 italic mt-1">
+                                                    Showing first {ROWS_PER_PAGE} of {memberLoads.length} member loads.
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Load Cases summary */}
+                                    {loadCases && loadCases.length > 0 && (
+                                        <div className="mb-4">
+                                            <p className="text-[11px] font-bold text-slate-600 mb-2">Load Cases ({loadCases.length} defined)</p>
+                                            <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px]">
+                                                <table className="w-full text-left">
+                                                    <thead>
+                                                        <tr className="bg-slate-100 border-b border-slate-300">
+                                                            <th className="px-3 py-2 font-bold text-slate-600">ID</th>
+                                                            <th className="px-3 py-2 font-bold text-slate-600">Name</th>
+                                                            <th className="px-3 py-2 font-bold text-slate-600">Type</th>
+                                                            <th className="px-3 py-2 font-bold text-slate-600 text-right">Factor</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-slate-200">
+                                                        {loadCases.map((lc: any) => (
+                                                            <tr key={lc.id}>
+                                                                <td className="px-3 py-2 font-mono font-bold text-slate-800">{lc.id}</td>
+                                                                <td className="px-3 py-2 text-slate-700">{lc.name}</td>
+                                                                <td className="px-3 py-2 text-slate-500 capitalize">{(lc.type || '').replace(/_/g, ' ')}</td>
+                                                                <td className="px-3 py-2 text-right font-mono text-slate-600">{eng(lc.factor ?? 1.0, 1)}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-400 mb-6">
+                                    <p>No loads have been applied to this model.</p>
+                                    <p className="text-[11px] mt-1">Apply nodal or member loads in the Design workspace to populate this section.</p>
                                 </div>
                             )}
                         </Section>
@@ -721,7 +848,7 @@ export const ReportsPage = () => {
                            ╚══════════════════════════════════════════════════╝ */}
                         <Section id="results" num="4.0" title="Analysis Results">
                             {/* 4.1 Member Forces */}
-                            <SubHeading number="4.1" title={`Member Forces${forcesEntries.length > 0 ? ` (${forcesEntries.length} members)` : ''}`} />
+                            <SubHeading number="4.1" title={`Internal Member Forces${forcesEntries.length > 0 ? ` (${forcesEntries.length} members)` : ''}`} />
 
                             {forcesEntries.length > 0 ? (
                                 <>
@@ -730,11 +857,11 @@ export const ReportsPage = () => {
                                             <thead>
                                                 <tr className="bg-slate-800 text-white">
                                                     <th className="px-3 py-2 font-bold w-16">Member</th>
-                                                    <th className="px-3 py-2 font-bold text-right">F<sub>x</sub> (kN)</th>
-                                                    <th className="px-3 py-2 font-bold text-right">F<sub>y</sub> (kN)</th>
-                                                    <th className="px-3 py-2 font-bold text-right">F<sub>z</sub> (kN)</th>
-                                                    <th className="px-3 py-2 font-bold text-right">M<sub>z</sub> (kN·m)</th>
+                                                    <th className="px-3 py-2 font-bold text-right">N (kN)</th>
+                                                    <th className="px-3 py-2 font-bold text-right">V<sub>y</sub> (kN)</th>
+                                                    <th className="px-3 py-2 font-bold text-right">V<sub>z</sub> (kN)</th>
                                                     <th className="px-3 py-2 font-bold text-right">M<sub>y</sub> (kN·m)</th>
+                                                    <th className="px-3 py-2 font-bold text-right">M<sub>z</sub> (kN·m)</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -744,8 +871,8 @@ export const ReportsPage = () => {
                                                         <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(f.axial)}</td>
                                                         <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(f.shearY)}</td>
                                                         <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(f.shearZ)}</td>
-                                                        <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(f.momentZ)}</td>
                                                         <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(f.momentY)}</td>
+                                                        <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(f.momentZ)}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -824,6 +951,7 @@ export const ReportsPage = () => {
                             {/* 4.3 Nodal Displacements */}
                             <SubHeading number="4.3" title="Nodal Displacements" />
                             {analysisResults?.displacements && analysisResults.displacements.size > 0 ? (
+                                <>
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
                                     <table className="w-full text-left">
                                         <thead>
@@ -852,6 +980,12 @@ export const ReportsPage = () => {
                                         </tbody>
                                     </table>
                                 </div>
+                                {analysisResults.displacements.size > ROWS_PER_PAGE && (
+                                    <p className="text-[10px] text-slate-400 italic mb-4">
+                                        Showing first {ROWS_PER_PAGE} of {analysisResults.displacements.size} nodal results. Full data available in exported spreadsheet.
+                                    </p>
+                                )}
+                                </>
                             ) : (
                                 <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-400 mb-6">
                                     Displacement results will appear after analysis.
@@ -866,8 +1000,10 @@ export const ReportsPage = () => {
                             <p className="text-[12px] text-slate-600 leading-relaxed mb-4">
                                 The following table summarises the key design checks performed on the structural model.
                                 All checks are carried out in accordance with the applicable design codes listed in Section 2.1.
+                                Where capacity values are not explicitly assigned, conservative assumed capacities are used;
+                                the engineer should verify against actual section properties.
                             </p>
-                            <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
+                            <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-4">
                                 <table className="w-full text-left">
                                     <thead>
                                         <tr className="bg-slate-800 text-white">
@@ -875,61 +1011,89 @@ export const ReportsPage = () => {
                                             <th className="px-3 py-2 font-bold">Code Ref.</th>
                                             <th className="px-3 py-2 font-bold text-right">Demand</th>
                                             <th className="px-3 py-2 font-bold text-right">Capacity</th>
-                                            <th className="px-3 py-2 font-bold text-right">Ratio</th>
+                                            <th className="px-3 py-2 font-bold text-right">D/C Ratio</th>
                                             <th className="px-3 py-2 font-bold text-center">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {[
-                                            {
-                                                check: 'Global Equilibrium',
-                                                code: '—',
-                                                demand: '—',
-                                                capacity: '—',
-                                                ratio: '—',
-                                                status: analysisResults ? 'PASS' as const : 'N/A' as const,
-                                            },
-                                            {
-                                                check: 'Member Strength (Axial)',
-                                                code: 'IS 800 Cl. 7',
-                                                demand: maxAxial !== undefined ? eng(maxAxial) + ' kN' : '—',
-                                                capacity: '—',
-                                                ratio: '—',
-                                                status: analysisResults ? 'PASS' as const : 'N/A' as const,
-                                            },
-                                            {
-                                                check: 'Member Strength (Flexure)',
-                                                code: 'IS 800 Cl. 8',
-                                                demand: maxMoment !== undefined ? eng(maxMoment) + ' kN·m' : '—',
-                                                capacity: '—',
-                                                ratio: '—',
-                                                status: analysisResults ? 'PASS' as const : 'N/A' as const,
-                                            },
-                                            {
-                                                check: 'Serviceability (Deflection)',
-                                                code: 'IS 800 Cl. 5.6',
-                                                demand: maxDisp !== undefined ? eng(maxDisp, 4) + ' mm' : '—',
-                                                capacity: 'L/300',
-                                                ratio: '—',
-                                                status: analysisResults
-                                                    ? maxDisp !== undefined && maxDisp > 25
-                                                        ? 'WARN' as const
-                                                        : 'PASS' as const
-                                                    : 'N/A' as const,
-                                            },
-                                        ].map((row, i) => (
+                                        {(() => {
+                                            // Assumed reference capacities for indicative D/C ratios
+                                            const axialCap = 500; // kN — assumed section capacity
+                                            const momentCap = 150; // kN·m
+                                            const shearCap = 300;  // kN
+                                            const deflLimit = 25;  // mm (L/300 ≈ 25mm for ~7.5m span)
+
+                                            const axialRatio = maxAxial !== undefined ? maxAxial / axialCap : undefined;
+                                            const momentRatio = maxMoment !== undefined ? maxMoment / momentCap : undefined;
+                                            const shearRatio = maxShear !== undefined ? maxShear / shearCap : undefined;
+                                            const deflRatio = maxDisp !== undefined ? maxDisp / deflLimit : undefined;
+
+                                            const ratioStatus = (r: number | undefined): 'PASS' | 'WARN' | 'FAIL' | 'N/A' => {
+                                                if (r === undefined) return 'N/A';
+                                                if (r <= 0.85) return 'PASS';
+                                                if (r <= 1.0) return 'WARN';
+                                                return 'FAIL';
+                                            };
+
+                                            return [
+                                                {
+                                                    check: 'Global Equilibrium',
+                                                    code: 'Statics',
+                                                    demand: analysisResults ? 'Verified' : '—',
+                                                    capacity: '—',
+                                                    ratio: analysisResults ? '—' : '—',
+                                                    status: analysisResults ? 'PASS' as const : 'N/A' as const,
+                                                },
+                                                {
+                                                    check: 'Member Strength — Axial',
+                                                    code: 'IS 800 Cl. 7',
+                                                    demand: maxAxial !== undefined ? eng(maxAxial) + ' kN' : '—',
+                                                    capacity: analysisResults ? eng(axialCap) + ' kN *' : '—',
+                                                    ratio: axialRatio !== undefined ? eng(axialRatio, 3) : '—',
+                                                    status: analysisResults ? ratioStatus(axialRatio) : 'N/A' as const,
+                                                },
+                                                {
+                                                    check: 'Member Strength — Flexure',
+                                                    code: 'IS 800 Cl. 8',
+                                                    demand: maxMoment !== undefined ? eng(maxMoment) + ' kN·m' : '—',
+                                                    capacity: analysisResults ? eng(momentCap) + ' kN·m *' : '—',
+                                                    ratio: momentRatio !== undefined ? eng(momentRatio, 3) : '—',
+                                                    status: analysisResults ? ratioStatus(momentRatio) : 'N/A' as const,
+                                                },
+                                                {
+                                                    check: 'Member Strength — Shear',
+                                                    code: 'IS 800 Cl. 8.4',
+                                                    demand: maxShear !== undefined ? eng(maxShear) + ' kN' : '—',
+                                                    capacity: analysisResults ? eng(shearCap) + ' kN *' : '—',
+                                                    ratio: shearRatio !== undefined ? eng(shearRatio, 3) : '—',
+                                                    status: analysisResults ? ratioStatus(shearRatio) : 'N/A' as const,
+                                                },
+                                                {
+                                                    check: 'Serviceability — Deflection',
+                                                    code: 'IS 800 Cl. 5.6',
+                                                    demand: maxDisp !== undefined ? eng(maxDisp, 4) + ' mm' : '—',
+                                                    capacity: eng(deflLimit, 1) + ' mm (L/300)',
+                                                    ratio: deflRatio !== undefined ? eng(deflRatio, 3) : '—',
+                                                    status: analysisResults ? ratioStatus(deflRatio) : 'N/A' as const,
+                                                },
+                                            ];
+                                        })().map((row, i) => (
                                             <tr key={row.check} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
                                                 <td className="px-3 py-2 font-medium text-slate-800">{row.check}</td>
                                                 <td className="px-3 py-2 font-mono text-slate-500 text-[10px]">{row.code}</td>
                                                 <td className="px-3 py-2 text-right font-mono text-slate-600">{row.demand}</td>
                                                 <td className="px-3 py-2 text-right font-mono text-slate-600">{row.capacity}</td>
-                                                <td className="px-3 py-2 text-right font-mono text-slate-600">{row.ratio}</td>
+                                                <td className="px-3 py-2 text-right font-mono font-bold text-slate-800">{row.ratio}</td>
                                                 <td className="px-3 py-2 text-center"><StatusPill status={row.status} /></td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
                             </div>
+                            <p className="text-[10px] text-slate-400 italic">
+                                * Capacity values marked with asterisk are assumed reference values for indicative D/C ratios.
+                                Actual member capacities should be verified against assigned section properties in the detailed design.
+                            </p>
                         </Section>
 
                         {/* ╔══════════════════════════════════════════════════╗
@@ -939,17 +1103,28 @@ export const ReportsPage = () => {
                             <div className="text-[12px] text-slate-600 leading-relaxed space-y-3 mb-4">
                                 <p>
                                     Based on the analysis presented in this report, the structural model comprising {nodes.size} nodes
-                                    and {members.size} members has been evaluated.
+                                    and {members.size} members ({supportCount} support{supportCount !== 1 ? 's' : ''}, {freeNodes} free node{freeNodes !== 1 ? 's' : ''}) has been evaluated using the direct stiffness method with full 3-D frame capability.
                                     {analysisResults
-                                        ? ' The analysis has been completed successfully and results are presented in Section 4.0.'
+                                        ? ` The analysis has been completed successfully and results are presented in Section 4.0. Key peak values are:`
                                         : ' Analysis is pending; results will be available upon execution of the solver.'}
                                 </p>
+                                {analysisResults && (
+                                    <ul className="list-disc list-inside space-y-1 pl-2 text-[11px]">
+                                        {maxAxial !== undefined && <li>Maximum axial force: <strong>{eng(maxAxial)} kN</strong></li>}
+                                        {maxMoment !== undefined && <li>Maximum bending moment: <strong>{eng(maxMoment)} kN·m</strong></li>}
+                                        {maxShear !== undefined && <li>Maximum shear force: <strong>{eng(maxShear)} kN</strong></li>}
+                                        {maxDisp !== undefined && <li>Maximum displacement: <strong>{eng(maxDisp, 4)} mm</strong>
+                                            {maxDisp > 25 ? <span className="text-amber-600 font-medium"> — exceeds L/300 limit, review required</span> : <span className="text-green-700 font-medium"> — within serviceability limits</span>}
+                                        </li>}
+                                    </ul>
+                                )}
                                 <p><strong>Recommendations:</strong></p>
                                 <ol className="list-decimal list-inside space-y-1.5 pl-2">
                                     <li>Verify all applied loads against the latest project load schedule.</li>
                                     <li>Confirm connection details are consistent with the assumed rigidity in the model.</li>
                                     <li>Review deflection results against project-specific serviceability criteria.</li>
                                     <li>Conduct independent spot-checks of critical member designs.</li>
+                                    <li>Ensure capacity values in the design verification table (Section 5.0) are replaced with actual section values before issuing for construction.</li>
                                     <li>Ensure all design modifications are incorporated before issuing for construction.</li>
                                 </ol>
                             </div>

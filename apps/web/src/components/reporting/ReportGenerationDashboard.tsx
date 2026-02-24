@@ -463,8 +463,8 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
 
                         {/* Output Format */}
                         <div>
-                            <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                                <File className="w-4 h-4 mr-2" />
+                            <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center">
+                                <File className="w-3.5 h-3.5 mr-2" />
                                 Output Format
                             </h3>
                             <div className="flex space-x-3">
@@ -474,15 +474,15 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                                         onClick={() => handleFormatChange(format as OutputFormat)}
                                         className={`flex items-center space-x-2 px-4 py-2 rounded-lg border-2 transition-all ${
                                             selectedFormat === format
-                                                ? 'border-blue-500 bg-blue-50'
-                                                : 'border-gray-200 hover:border-gray-300'
+                                                ? 'border-blue-500 bg-blue-50 shadow-lg shadow-blue-100'
+                                                : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                                         }`}
                                     >
                                         <info.icon className={`w-5 h-5 ${
-                                            selectedFormat === format ? 'text-blue-600' : 'text-gray-400'
+                                            selectedFormat === format ? 'text-blue-600' : 'text-slate-400'
                                         }`} />
-                                        <span className={`text-sm font-medium ${
-                                            selectedFormat === format ? 'text-blue-700' : 'text-gray-600'
+                                        <span className={`text-[11px] font-bold ${
+                                            selectedFormat === format ? 'text-blue-700' : 'text-slate-600'
                                         }`}>
                                             {info.name}
                                         </span>
@@ -493,8 +493,8 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
 
                         {/* Template Selection */}
                         <div>
-                            <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                                <Palette className="w-4 h-4 mr-2" />
+                            <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center">
+                                <Palette className="w-3.5 h-3.5 mr-2" />
                                 Template
                             </h3>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -507,16 +507,16 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                                         }}
                                         className={`p-4 rounded-lg border-2 text-left transition-all ${
                                             selectedTemplate === template.id
-                                                ? 'border-blue-500 bg-blue-50'
-                                                : 'border-gray-200 hover:border-gray-300'
+                                                ? 'border-blue-500 bg-blue-50 shadow-lg shadow-blue-100'
+                                                : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                                         }`}
                                     >
-                                        <p className={`font-medium ${
-                                            selectedTemplate === template.id ? 'text-blue-700' : 'text-gray-700'
+                                        <p className={`text-[11px] font-bold ${
+                                            selectedTemplate === template.id ? 'text-blue-700' : 'text-slate-700'
                                         }`}>
                                             {template.name}
                                         </p>
-                                        <p className="text-xs text-gray-500 mt-1">
+                                        <p className="text-[10px] text-slate-500 mt-1">
                                             {template.description}
                                         </p>
                                     </button>
@@ -527,30 +527,30 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                         {/* Report Details */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-slate-700 mb-1">
                                     Report Title
                                 </label>
                                 <input
                                     type="text"
                                     value={config.title}
                                     onChange={e => setConfig(prev => ({ ...prev, title: e.target.value }))}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">
                                         Revision
                                     </label>
                                     <input
                                         type="text"
                                         value={config.revision}
                                         onChange={e => setConfig(prev => ({ ...prev, revision: e.target.value }))}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">
                                         Confidential
                                     </label>
                                     <button
@@ -558,7 +558,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                                         className={`w-full flex items-center justify-center space-x-2 px-4 py-2 rounded-lg border-2 transition-all ${
                                             config.confidential
                                                 ? 'border-red-500 bg-red-50 text-red-700'
-                                                : 'border-gray-300 bg-white text-gray-600'
+                                                : 'border-slate-300 bg-white text-slate-600'
                                         }`}
                                     >
                                         {config.confidential ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
@@ -569,30 +569,30 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                         </div>
 
                         {/* Advanced Options */}
-                        <div className="border border-gray-200 rounded-lg">
+                        <div className="border border-slate-200 rounded-lg">
                             <button
                                 onClick={() => setShowAdvanced(!showAdvanced)}
-                                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
+                                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-50"
                             >
                                 <span className="flex items-center space-x-2">
-                                    <Settings className="w-5 h-5 text-gray-400" />
-                                    <span className="font-medium text-gray-700">Advanced Options</span>
+                                    <Settings className="w-5 h-5 text-slate-400" />
+                                    <span className="font-medium text-slate-700">Advanced Options</span>
                                 </span>
                                 {showAdvanced ? (
-                                    <ChevronDown className="w-5 h-5 text-gray-400" />
+                                    <ChevronDown className="w-5 h-5 text-slate-400" />
                                 ) : (
-                                    <ChevronRight className="w-5 h-5 text-gray-400" />
+                                    <ChevronRight className="w-5 h-5 text-slate-400" />
                                 )}
                             </button>
                             
                             {showAdvanced && (
-                                <div className="p-4 border-t border-gray-200 space-y-4">
+                                <div className="p-4 border-t border-slate-200 space-y-4">
                                     {/* Branding */}
                                     <div>
-                                        <h4 className="text-sm font-semibold text-gray-700 mb-2">Branding</h4>
+                                        <h4 className="text-sm font-semibold text-slate-700 mb-2">Branding</h4>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                             <div>
-                                                <label className="block text-xs text-gray-500 mb-1">Company Name</label>
+                                                <label className="block text-xs text-slate-500 mb-1">Company Name</label>
                                                 <input
                                                     type="text"
                                                     value={config.branding.companyName}
@@ -600,11 +600,11 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                                                         ...prev,
                                                         branding: { ...prev.branding, companyName: e.target.value }
                                                     }))}
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-xs text-gray-500 mb-1">Primary Color</label>
+                                                <label className="block text-xs text-slate-500 mb-1">Primary Color</label>
                                                 <div className="flex space-x-2">
                                                     <input
                                                         type="color"
@@ -629,7 +629,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                                                                 }));
                                                             }
                                                         }}
-                                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                                        className="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm"
                                                     >
                                                         <option value="">Preset Colors</option>
                                                         {COLOR_PRESETS.map(p => (
@@ -639,7 +639,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                                                 </div>
                                             </div>
                                             <div>
-                                                <label className="block text-xs text-gray-500 mb-1">Company Logo</label>
+                                                <label className="block text-xs text-slate-500 mb-1">Company Logo</label>
                                                 <input
                                                     ref={fileInputRef}
                                                     type="file"
@@ -649,7 +649,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                                                 />
                                                 <button
                                                     onClick={() => fileInputRef.current?.click()}
-                                                    className="w-full flex items-center justify-center space-x-2 px-3 py-2 border border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-blue-500 hover:text-blue-600 transition-colors"
+                                                    className="w-full flex items-center justify-center space-x-2 px-3 py-2 border border-dashed border-slate-300 rounded-lg text-sm text-slate-600 hover:border-blue-500 hover:text-blue-600 transition-colors"
                                                 >
                                                     <Upload className="w-4 h-4" />
                                                     <span>{config.branding.companyLogo ? 'Change Logo' : 'Upload Logo'}</span>
@@ -660,7 +660,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
 
                                     {/* Sections */}
                                     <div>
-                                        <h4 className="text-sm font-semibold text-gray-700 mb-2">Sections to Include</h4>
+                                        <h4 className="text-sm font-semibold text-slate-700 mb-2">Sections to Include</h4>
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                                             {config.sections.map(section => (
                                                 <label
@@ -668,7 +668,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                                                     className={`flex items-center space-x-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors ${
                                                         section.enabled
                                                             ? 'bg-blue-50 border-blue-200'
-                                                            : 'bg-gray-50 border-gray-200'
+                                                            : 'bg-slate-50 border-slate-200'
                                                     }`}
                                                 >
                                                     <input
@@ -685,13 +685,13 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
 
                                     {/* Watermark */}
                                     <div>
-                                        <label className="block text-xs text-gray-500 mb-1">Watermark Text (Optional)</label>
+                                        <label className="block text-xs text-slate-500 mb-1">Watermark Text (Optional)</label>
                                         <input
                                             type="text"
                                             value={config.watermark || ''}
                                             onChange={e => setConfig(prev => ({ ...prev, watermark: e.target.value }))}
                                             placeholder="e.g., DRAFT, FOR REVIEW ONLY"
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
                                         />
                                     </div>
                                 </div>
@@ -745,13 +745,13 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                 {activeTab === 'history' && (
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-lg font-semibold text-gray-800">Generated Reports</h3>
-                            <span className="text-sm text-gray-500">{generatedReports.length} reports</span>
+                            <h3 className="text-lg font-semibold text-slate-800">Generated Reports</h3>
+                            <span className="text-sm text-slate-500">{generatedReports.length} reports</span>
                         </div>
                         
                         {generatedReports.length === 0 ? (
-                            <div className="text-center py-12 text-gray-500">
-                                <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                            <div className="text-center py-12 text-slate-500">
+                                <FileText className="w-12 h-12 mx-auto mb-3 text-slate-300" />
                                 <p>No reports generated yet</p>
                             </div>
                         ) : (
@@ -759,7 +759,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                                 {generatedReports.map(report => (
                                     <div
                                         key={report.id}
-                                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                                        className="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
                                     >
                                         <div className="flex items-center space-x-4">
                                             {report.status === 'ready' ? (
@@ -770,8 +770,8 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                                                 <XCircle className="w-5 h-5 text-red-500" />
                                             )}
                                             <div>
-                                                <p className="font-medium text-gray-800">{report.name}</p>
-                                                <p className="text-sm text-gray-500">
+                                                <p className="font-medium text-slate-800">{report.name}</p>
+                                                <p className="text-sm text-slate-500">
                                                     {report.generatedAt.toLocaleDateString()} • {report.size}
                                                 </p>
                                             </div>
@@ -779,13 +779,13 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                                         
                                         {report.status === 'ready' && (
                                             <div className="flex items-center space-x-2">
-                                                <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors">
+                                                <button className="p-2 text-slate-400 hover:text-blue-600 transition-colors">
                                                     <Eye className="w-5 h-5" />
                                                 </button>
-                                                <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors">
+                                                <button className="p-2 text-slate-400 hover:text-blue-600 transition-colors">
                                                     <Download className="w-5 h-5" />
                                                 </button>
-                                                <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors">
+                                                <button className="p-2 text-slate-400 hover:text-blue-600 transition-colors">
                                                     <Mail className="w-5 h-5" />
                                                 </button>
                                             </div>
@@ -800,15 +800,15 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                 {activeTab === 'schedule' && (
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-lg font-semibold text-gray-800">Scheduled Reports</h3>
+                            <h3 className="text-lg font-semibold text-slate-800">Scheduled Reports</h3>
                             <button className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                                 <Calendar className="w-4 h-4" />
                                 <span>New Schedule</span>
                             </button>
                         </div>
                         
-                        <div className="text-center py-12 text-gray-500">
-                            <Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                        <div className="text-center py-12 text-slate-500">
+                            <Calendar className="w-12 h-12 mx-auto mb-3 text-slate-300" />
                             <p>No scheduled reports</p>
                             <p className="text-sm mt-1">Set up automatic report generation</p>
                         </div>
@@ -820,26 +820,26 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
             {showPreview && previewUrl && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
                             <h3 className="text-lg font-semibold">Report Preview</h3>
                             <button
                                 onClick={() => setShowPreview(false)}
-                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
                             >
-                                <XCircle className="w-5 h-5 text-gray-500" />
+                                <XCircle className="w-5 h-5 text-slate-500" />
                             </button>
                         </div>
                         <div className="p-4 h-[70vh] overflow-auto">
                             <iframe
                                 src={previewUrl}
-                                className="w-full h-full border border-gray-200 rounded-lg"
+                                className="w-full h-full border border-slate-200 rounded-lg"
                                 title="Report Preview"
                             />
                         </div>
-                        <div className="flex justify-end space-x-3 px-6 py-4 border-t border-gray-200">
+                        <div className="flex justify-end space-x-3 px-6 py-4 border-t border-slate-200">
                             <button
                                 onClick={() => setShowPreview(false)}
-                                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
                             >
                                 Close
                             </button>

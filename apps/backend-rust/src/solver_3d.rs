@@ -626,8 +626,9 @@ pub fn analyze_3d_frame(
         }
     }
     
-    // Total force = applied loads - fixed end forces
-    let f_total = f_global.clone() - fef_global.clone();
+    // Total force = applied nodal loads + equivalent distributed-load forces
+    // FEF are the equivalent nodal loads (same direction as the load), so ADD them.
+    let f_total = f_global.clone() + fef_global.clone();
     
     // Identify free and fixed DOFs
     let mut free_dofs = Vec::new();
@@ -686,8 +687,9 @@ pub fn analyze_3d_frame(
         u_global[dof_idx] = u_reduced[i];
     }
     
-    // Calculate reactions: R = K * u - F_applied + FEF
-    let r_global = &k_global * &u_global - &f_global + &fef_global;
+    // Calculate reactions: R = K * u - F_applied - FEF
+    // (FEF are load equivalents, so subtract them from K*u to get the support reactions)
+    let r_global = &k_global * &u_global - &f_global - &fef_global;
     
     // Extract results
     let mut displacements = HashMap::new();
@@ -1303,8 +1305,9 @@ fn calculate_member_forces(
             }
         }
         
-        // Total member forces = displacement forces + FEF
-        let f_total = &f_local + &fef_local;
+        // Total member forces = stiffness forces - FEF
+        // FEF are the equivalent nodal loads; subtracting gives internal member forces.
+        let f_total = &f_local - &fef_local;
         
         // Extract forces at each end
         let forces_i: Vec<f64> = (0..6).map(|k| f_total[k]).collect();
@@ -1658,7 +1661,7 @@ pub fn p_delta_analysis(
         for i in 0..fef.len() { fef_global[i] += fef[i]; }
     }
     
-    let f_total = &f_global - &fef_global;
+    let f_total = &f_global + &fef_global;
     
     // Identify free / fixed DOFs
     let mut free_dofs = Vec::new();
@@ -1792,7 +1795,7 @@ pub fn p_delta_analysis(
     }
     
     // Build result from final displacements
-    let r_global = &k_elastic * &u_global - &f_global + &fef_global;
+    let r_global = &k_elastic * &u_global - &f_global - &fef_global;
     
     let mut displacements = HashMap::new();
     let mut reactions = HashMap::new();
@@ -1828,4 +1831,174 @@ pub fn p_delta_analysis(
         equilibrium_check: None,
         condition_number: None,
     })
+}
+
+// ============================================
+// UNIT TESTS
+// ============================================
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn make_node(id: &str, x: f64, y: f64, restraints: [bool; 6]) -> Node3D {
+        Node3D { id: id.to_string(), x, y, z: 0.0, restraints, mass: None }
+    }
+
+    fn make_element(id: &str, ni: &str, nj: &str, e: f64, a: f64, iy: f64, iz: f64) -> Element3D {
+        Element3D {
+            id: id.to_string(),
+            node_i: ni.to_string(),
+            node_j: nj.to_string(),
+            E: e,
+            nu: None,
+            G: e / 2.6,
+            density: 7850.0,
+            A: a,
+            Iy: iy,
+            Iz: iz,
+            J: iy + iz,
+            Asy: 0.0,
+            Asz: 0.0,
+            beta: 0.0,
+            releases_i: [false; 6],
+            releases_j: [false; 6],
+            thickness: None,
+            node_k: None,
+            node_l: None,
+            element_type: ElementType::Frame,
+        }
+    }
+
+    /// Simply-supported beam with uniform distributed load
+    /// L = 5 m, w = -10 kN/m (downward in global Y), E = 200 GPa, I = 1e-4 m⁴
+    /// Expected:
+    ///   Reaction at each support: R = wL/2 = -(-10000)*5/2 = +25000 N (upward)
+    ///   Midspan moment: M = wL²/8 = |w|*L²/8 = 10000*25/8 = 31250 N·m (sagging)
+    ///   Shear at i-end: V_i = +25000 N (upward reaction)
+    ///   Shear at j-end: V_j = -25000 N (downward reaction, opposite direction)
+    #[test]
+    fn test_ss_beam_udl_member_forces() {
+        // Pin at node A (restrain x, y; free z-rotation)
+        let node_a = make_node("A", 0.0, 0.0, [true, true, true, true, true, false]);
+        // Roller at node B (restrain y only; free x and z-rotation)
+        let node_b = make_node("B", 5.0, 0.0, [false, true, true, true, true, false]);
+
+        // Steel beam properties
+        let e = 200e9_f64; // Pa
+        let a = 0.01_f64;  // m²
+        let iz = 1e-4_f64; // m⁴ (bending about Z for XY-plane bending)
+        let iy = 1e-4_f64;
+        let elem = make_element("M1", "A", "B", e, a, iy, iz);
+
+        // UDL: w = -10000 N/m (downward in global Y direction)
+        let udl = DistributedLoad {
+            element_id: "M1".to_string(),
+            w_start: -10000.0,
+            w_end: -10000.0,
+            direction: LoadDirection::GlobalY,
+            is_projected: false,
+        };
+
+        let result = analyze_3d_frame(
+            vec![node_a, node_b],
+            vec![elem],
+            vec![],
+            vec![udl],
+            vec![],
+        ).expect("analysis should succeed");
+
+        assert!(result.success, "analysis should succeed");
+
+        // Check reactions
+        let rxn_a = result.reactions.get("A").expect("reaction at A");
+        let fy_a = rxn_a[1]; // Fy reaction
+        let rxn_b = result.reactions.get("B").expect("reaction at B");
+        let fy_b = rxn_b[1];
+
+        let tol = 1.0; // 1 N tolerance
+        assert!((fy_a - 25000.0).abs() < tol,
+            "Expected reaction at A = +25000 N (upward), got {}", fy_a);
+        assert!((fy_b - 25000.0).abs() < tol,
+            "Expected reaction at B = +25000 N (upward), got {}", fy_b);
+
+        // Check member end forces
+        let mf = result.member_forces.get("M1").expect("member forces for M1");
+        let vy_i = mf.forces_i[1]; // Shear at i-end
+        let mz_i = mf.forces_i[5]; // Moment at i-end (should be ~0 for pin)
+        let vy_j = mf.forces_j[1]; // Shear at j-end
+
+        println!("Vy_i = {:.1} N (expected +25000)", vy_i);
+        println!("Mz_i = {:.1} N·m (expected 0)", mz_i);
+        println!("Vy_j = {:.1} N (expected +25000)", vy_j);
+        println!("Fy_A = {:.1} N (expected +25000)", fy_a);
+        println!("Fy_B = {:.1} N (expected +25000)", fy_b);
+
+        // Shear at i-end should be +25000 N (upward acting on element = same sign as reaction)
+        assert!((vy_i - 25000.0).abs() < tol,
+            "Expected Vy_i = +25000 N, got {}", vy_i);
+        // Moment at pin end should be ~0
+        assert!(mz_i.abs() < tol,
+            "Expected Mz_i ≈ 0, got {}", mz_i);
+        // Shear at j-end should also be +25000 N (upward, same convention as i)
+        // The genDiagram formula: w = (v1 + v2)/L = (25 + 25)/5 = 10 → M_mid = +31.25 kN·m ✓
+        assert!((vy_j - 25000.0).abs() < tol,
+            "Expected Vy_j = +25000 N, got {}", vy_j);
+
+        // Also verify forces_j sign convention
+        let mz_j = mf.forces_j[5];
+        println!("Mz_j = {:.1} N·m (expected ~0 for pin)", mz_j);
+        assert!(mz_j.abs() < tol, "Expected Mz_j ≈ 0 for SS beam, got {}", mz_j);
+    }
+
+    /// Cantilever beam (fixed at A, free at B) with tip point load P = -30000 N (downward)
+    /// L = 4 m
+    /// Expected: R_A_fy = +30000 N (upward), M_A = P*L = +120000 N·m 
+    #[test]
+    fn test_cantilever_point_load_reactions() {
+        // Fixed at A (all 6 DOFs restrained), free at B
+        let node_a = make_node("A", 0.0, 0.0, [true, true, true, true, true, true]);
+        let node_b = make_node("B", 4.0, 0.0, [false, false, true, true, true, false]);
+
+        let e = 200e9_f64;
+        let elem = make_element("M1", "A", "B", e, 0.01, 1e-4, 1e-4);
+
+        // Tip point load P = -30000 N (downward)
+        let load = NodalLoad {
+            node_id: "B".to_string(),
+            fx: 0.0, fy: -30000.0, fz: 0.0,
+            mx: 0.0, my: 0.0, mz: 0.0,
+        };
+
+        let result = analyze_3d_frame(
+            vec![node_a, node_b],
+            vec![elem],
+            vec![load],
+            vec![],
+            vec![],
+        ).expect("cantilever analysis should succeed");
+
+        let rxn_a = result.reactions.get("A").expect("reaction at A");
+        let fy_a = rxn_a[1];
+        let mz_a = rxn_a[5];
+
+        println!("Cantilever: Fy_A = {:.1} (expected +30000)", fy_a);
+        println!("Cantilever: Mz_A = {:.1} (expected +120000)", mz_a);
+
+        let tol = 1.0;
+        assert!((fy_a - 30000.0).abs() < tol,
+            "Expected Fy_A = +30000 N, got {}", fy_a);
+        assert!((mz_a.abs() - 120000.0).abs() < tol,
+            "Expected |Mz_A| = 120000 N·m, got {}", mz_a);
+
+        // Check member end forces for diagram generation compatibility
+        let mf = result.member_forces.get("M1").expect("member forces for M1");
+        println!("Cantilever MF: forces_i = {:?}", mf.forces_i);
+        println!("Cantilever MF: forces_j = {:?}", mf.forces_j);
+        // For cantilever: internal shear V = -P = +30000 N throughout
+        // forces_i[1] should be the shear at i-end
+        let vy_i = mf.forces_i[1];
+        let mz_i = mf.forces_i[5];
+        println!("Cantilever: Vy_i = {:.1} (internal shear at clamped end)", vy_i);
+        println!("Cantilever: Mz_i = {:.1} (moment at clamped end)", mz_i);
+    }
 }

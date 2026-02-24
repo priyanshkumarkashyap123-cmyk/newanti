@@ -378,11 +378,15 @@ export const CalculationReport: React.FC<CalculationReportProps> = ({
           <div className="grid grid-cols-3 gap-4 pt-4 border-t border-slate-300/60">
             <div className="text-center">
               <p className="text-2xl font-black text-slate-900">{eng(result.capacity, 1)}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Capacity (kN·m)</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
+                Capacity ({calculationType.includes('axial') || calculationType.includes('column') ? 'kN' : calculationType.includes('shear') ? 'kN' : 'kN·m'})
+              </p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-black text-slate-900">{eng(result.demand, 1)}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Demand (kN·m)</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
+                Demand ({calculationType.includes('axial') || calculationType.includes('column') ? 'kN' : calculationType.includes('shear') ? 'kN' : 'kN·m'})
+              </p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-black" style={{ color: utilizationColor }}>
@@ -445,6 +449,24 @@ export const CalculationReport: React.FC<CalculationReportProps> = ({
             title="Design Options"
           />
         </div>
+
+        {/* Catch-all for any inputs not captured by the above categories */}
+        {(() => {
+          const categorizedKeys = new Set([
+            'width', 'depth', 'effective_depth', 'span', 'clear_cover', 'length', 'height', 'diameter',
+            'fck', 'fy', 'steel_grade', 'concrete_grade', 'Es', 'Ec',
+            'design_type', 'exposure', 'end_condition', 'bracing', 'sway', 'fire_rating',
+          ]);
+          const loadPatterns = ['Mu', 'Vu', 'Pu', 'Mux', 'Muy', 'Tu', 'w', 'P', 'load'];
+          const uncategorized = Object.fromEntries(
+            Object.entries(inputs).filter(([k]) =>
+              !categorizedKeys.has(k) && !loadPatterns.some((p) => k.includes(p))
+            )
+          );
+          return Object.keys(uncategorized).length > 0 ? (
+            <InputTable inputs={uncategorized} title="Other Parameters" />
+          ) : null;
+        })()}
 
         {/* ═══════════════════════════════════════════════════
             SECTION 3 — DETAILED CALCULATIONS

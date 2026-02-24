@@ -20,6 +20,8 @@ export const SharedScene: FC<{ remoteUsers?: RemoteUser[] }> = ({ remoteUsers = 
     const showSFD = useModelStore((state) => state.showSFD);
     const showBMD = useModelStore((state) => state.showBMD);
     const showAFD = useModelStore((state) => state.showAFD);
+    const showBMDMy = useModelStore((state) => state.showBMDMy);
+    const showShearZ = useModelStore((state) => state.showShearZ);
     const showStressOverlay = useModelStore((state) => state.showStressOverlay);
     const diagramScale = useModelStore((state) => state.diagramScale);
     const displacementScale = useModelStore((state) => state.displacementScale);
@@ -136,6 +138,8 @@ export const SharedScene: FC<{ remoteUsers?: RemoteUser[] }> = ({ remoteUsers = 
             {showSFD && <AllMemberDiagrams type="FY" scale={legacyDiagramScale} />}
             {showBMD && <AllMemberDiagrams type="MZ" scale={legacyDiagramScale} />}
             {showAFD && <AllMemberDiagrams type="FX" scale={legacyDiagramScale} />}
+            {showBMDMy && <AllMemberDiagrams type="MY" scale={legacyDiagramScale} />}
+            {showShearZ && <AllMemberDiagrams type="FZ" scale={legacyDiagramScale} />}
 
             {/* Professional STAAD-like Stress Overlay */}
             {showStressOverlay && analysisResults && <StressColorOverlay />}
