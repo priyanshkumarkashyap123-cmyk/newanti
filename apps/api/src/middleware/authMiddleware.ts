@@ -54,7 +54,6 @@ interface ClerkAuthResult {
  * Single cast boundary — Clerk SDK v5 ships Express v4 types whereas we use
  * Express v5.  This cast is intentional and confined to one spot.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const safeGetAuth = (req: Request): ClerkAuthResult => {
     const auth = clerkGetAuth(req as any);
     return {

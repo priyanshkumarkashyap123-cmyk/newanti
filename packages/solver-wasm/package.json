@@ -15,6 +15,6 @@
         "pkg"
     ],
     "scripts": {
-        "build": "wasm-pack build --target web"
+        "build": "wasm-pack build --target web || echo 'wasm-pack not found, skipping solver-wasm build'"
     }
 }

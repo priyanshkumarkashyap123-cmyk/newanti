@@ -2278,6 +2278,267 @@ pub fn modal_analysis(
 }
 
 // ============================================
+// LINEARIZED BUCKLING ANALYSIS
+// ============================================
+
+/// Result of linearized buckling analysis
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct LinearBucklingResult {
+    pub success: bool,
+    pub error: Option<String>,
+    pub buckling_loads: Vec<f64>,       // Critical load factors λ (P_cr = λ × P_applied)
+    pub mode_shapes: Vec<Vec<f64>>,     // Eigenvectors (one per mode, full DOF length)
+    pub num_modes: usize,
+}
+
+/// Linearized buckling: solves [K_e]{φ} = λ[-K_g]{φ}
+///
+/// 1. Assemble elastic stiffness K_e and force vector
+/// 2. Perform linear analysis to get axial forces in each member
+/// 3. Build geometric stiffness K_g from those axial forces
+/// 4. Partition to free DOFs and solve generalized eigenvalue problem
+/// 5. The smallest positive eigenvalues λ are the critical load factors
+///
+/// P_critical = λ × P_applied
+///
+/// Reference: Cook, Malkus, Plesha — "Concepts and Applications of FEA"
+pub fn linearized_buckling_analysis(
+    nodes: Vec<Node3D>,
+    elements: Vec<Element3D>,
+    nodal_loads: Vec<NodalLoad>,
+    distributed_loads: Vec<DistributedLoad>,
+    num_modes: usize,
+) -> Result<LinearBucklingResult, String> {
+    if nodes.is_empty() { return Err("No nodes for buckling analysis".into()); }
+    if elements.is_empty() { return Err("No elements for buckling analysis".into()); }
+
+    let num_nodes = nodes.len();
+    let num_dof = num_nodes * 6;
+
+    // Build node map
+    let mut node_map: HashMap<String, usize> = HashMap::new();
+    for (idx, node) in nodes.iter().enumerate() {
+        node_map.insert(node.id.clone(), idx);
+    }
+
+    // Step 1: Assemble elastic stiffness K_e (same as analyze_3d_frame)
+    let mut k_elastic = DMatrix::zeros(num_dof, num_dof);
+    let mut f_global = DVector::zeros(num_dof);
+
+    // Element stiffness assembly
+    for element in &elements {
+        let i_idx = match node_map.get(&element.node_i) {
+            Some(&idx) => idx,
+            None => continue,
+        };
+        let j_idx = match node_map.get(&element.node_j) {
+            Some(&idx) => idx,
+            None => continue,
+        };
+
+        let node_i = &nodes[i_idx];
+        let node_j = &nodes[j_idx];
+        let dx = node_j.x - node_i.x;
+        let dy = node_j.y - node_i.y;
+        let dz = node_j.z - node_i.z;
+        let length = (dx*dx + dy*dy + dz*dz).sqrt();
+        if length < 1e-10 { continue; }
+
+        let k_local = match element.element_type {
+            ElementType::Frame => frame_element_stiffness(element, length),
+            ElementType::Truss => truss_element_stiffness(element, length),
+            _ => continue,
+        };
+        let t_matrix = transformation_matrix_3d(dx, dy, dz, length, element.beta);
+        let k_global_elem = t_matrix.transpose() * &k_local * &t_matrix;
+
+        let dof_i = i_idx * 6;
+        let dof_j = j_idx * 6;
+        for r in 0..6 {
+            for c in 0..6 {
+                k_elastic[(dof_i+r, dof_i+c)] += k_global_elem[(r, c)];
+                k_elastic[(dof_i+r, dof_j+c)] += k_global_elem[(r, 6+c)];
+                k_elastic[(dof_j+r, dof_i+c)] += k_global_elem[(6+r, c)];
+                k_elastic[(dof_j+r, dof_j+c)] += k_global_elem[(6+r, 6+c)];
+            }
+        }
+    }
+
+    // Spring supports
+    for (idx, node) in nodes.iter().enumerate() {
+        if let Some(ref springs) = node.spring_stiffness {
+            let dof = idx * 6;
+            for (d, &ks) in springs.iter().enumerate() {
+                if d < 6 && ks > 0.0 {
+                    k_elastic[(dof+d, dof+d)] += ks;
+                }
+            }
+        }
+    }
+
+    // Nodal loads
+    for load in &nodal_loads {
+        if let Some(&idx) = node_map.get(&load.node_id) {
+            let dof = idx * 6;
+            f_global[dof]   += load.fx;
+            f_global[dof+1] += load.fy;
+            f_global[dof+2] += load.fz;
+            f_global[dof+3] += load.mx;
+            f_global[dof+4] += load.my;
+            f_global[dof+5] += load.mz;
+        }
+    }
+
+    // Fixed-end forces from distributed loads
+    let mut fef_global = DVector::zeros(num_dof);
+    for dl in &distributed_loads {
+        if let Ok(fef) = compute_fixed_end_forces(&elements, &nodes, &node_map, dl) {
+            fef_global += fef;
+        }
+    }
+    let f_total = &f_global + &fef_global;
+
+    // Partition to free DOFs
+    let mut free_dofs = Vec::new();
+    for (i, node) in nodes.iter().enumerate() {
+        for d in 0..6 {
+            if !node.restraints[d] { free_dofs.push(i*6 + d); }
+        }
+    }
+    let n_free = free_dofs.len();
+    if n_free == 0 { return Err("No free DOFs for buckling analysis".into()); }
+
+    let mut k_ff = DMatrix::zeros(n_free, n_free);
+    let mut f_f = DVector::zeros(n_free);
+    for (i, &ri) in free_dofs.iter().enumerate() {
+        f_f[i] = f_total[ri];
+        for (j, &cj) in free_dofs.iter().enumerate() {
+            k_ff[(i,j)] = k_elastic[(ri, cj)];
+        }
+    }
+
+    // Step 2: Linear solve to get displacements → member axial forces
+    let u_f = match k_ff.clone().lu().solve(&f_f) {
+        Some(u) => u,
+        None => return Err("Singular stiffness matrix — structure is a mechanism".into()),
+    };
+
+    let mut u_global = DVector::zeros(num_dof);
+    for (i, &dof_idx) in free_dofs.iter().enumerate() {
+        u_global[dof_idx] = u_f[i];
+    }
+
+    // Calculate member axial forces
+    let member_forces = calculate_member_forces(
+        &elements, &nodes, &node_map, &u_global, &distributed_loads, &[],
+    )?;
+
+    // Step 3: Build K_g from axial forces
+    let mut k_geometric = DMatrix::zeros(num_dof, num_dof);
+    for element in &elements {
+        if !matches!(element.element_type, ElementType::Frame | ElementType::Truss) { continue; }
+
+        let i_idx = match node_map.get(&element.node_i) { Some(&i) => i, None => continue };
+        let j_idx = match node_map.get(&element.node_j) { Some(&j) => j, None => continue };
+        let node_i = &nodes[i_idx];
+        let node_j = &nodes[j_idx];
+        let dx = node_j.x - node_i.x;
+        let dy = node_j.y - node_i.y;
+        let dz = node_j.z - node_i.z;
+        let length = (dx*dx + dy*dy + dz*dz).sqrt();
+        if length < 1e-10 { continue; }
+
+        // Get axial force from linear solution
+        let axial_force = if let Some(forces) = member_forces.get(&element.id) {
+            // forces is MemberForces3D — axial_i is the axial at start node
+            forces.axial_i
+        } else {
+            0.0
+        };
+
+        let kg_local = geometric_stiffness_matrix(axial_force, length);
+        let t_matrix = transformation_matrix_3d(dx, dy, dz, length, element.beta);
+        let kg_global_elem = t_matrix.transpose() * &kg_local * &t_matrix;
+
+        let dof_i = i_idx * 6;
+        let dof_j = j_idx * 6;
+        for r in 0..6 {
+            for c in 0..6 {
+                k_geometric[(dof_i+r, dof_i+c)] += kg_global_elem[(r, c)];
+                k_geometric[(dof_i+r, dof_j+c)] += kg_global_elem[(r, 6+c)];
+                k_geometric[(dof_j+r, dof_i+c)] += kg_global_elem[(6+r, c)];
+                k_geometric[(dof_j+r, dof_j+c)] += kg_global_elem[(6+r, 6+c)];
+            }
+        }
+    }
+
+    // Step 4: Partition K_g to free DOFs
+    let mut kg_ff = DMatrix::zeros(n_free, n_free);
+    for (i, &ri) in free_dofs.iter().enumerate() {
+        for (j, &cj) in free_dofs.iter().enumerate() {
+            kg_ff[(i,j)] = k_geometric[(ri, cj)];
+        }
+    }
+
+    // Step 5: Solve generalized eigenvalue: K_e · φ = λ · (-K_g) · φ
+    // Rearranged: K_e^{-1} · (-K_g) · φ = (1/λ) · φ
+    // Use inverse iteration: solve K_e · y = K_g · φ, then λ = φᵀ K_e φ / φᵀ K_g φ
+    // For proper extraction we use: A = K_e^{-1} * (-K_g), find eigenvalues of A
+    // The eigenvalues μ = -1/λ, so λ = -1/μ
+    
+    let lu = k_ff.clone().lu();
+    let neg_kg = -&kg_ff;
+    
+    // Build A = K_e^{-1} * (-K_g) column by column
+    let mut a_matrix = DMatrix::zeros(n_free, n_free);
+    for j in 0..n_free {
+        let col = neg_kg.column(j).clone_owned();
+        if let Some(x) = lu.solve(&col) {
+            a_matrix.set_column(j, &x);
+        }
+    }
+
+    // Eigenvalue decomposition of A (real symmetric after symmetrization)
+    // A might not be symmetric, use Schur decomposition approximation via SymmetricEigen
+    // Symmetrize: A_sym = (A + A^T)/2  (valid when K_e and K_g are both symmetric)
+    let a_sym = (&a_matrix + a_matrix.transpose()) * 0.5;
+    let eigen = nalgebra::SymmetricEigen::new(a_sym);
+
+    // eigenvalues of A are 1/λ (where λ is the buckling load factor)
+    // We want λ = 1/eigenvalue, keeping only positive finite values
+    let mut load_factors: Vec<(f64, usize)> = eigen.eigenvalues.iter()
+        .enumerate()
+        .filter_map(|(idx, &ev)| {
+            if ev.abs() > 1e-12 {
+                let lambda = 1.0 / ev;
+                if lambda > 0.0 && lambda.is_finite() { Some((lambda, idx)) } else { None }
+            } else { None }
+        })
+        .collect();
+    load_factors.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
+
+    let actual_modes = load_factors.len().min(num_modes);
+    let buckling_loads: Vec<f64> = load_factors.iter().take(actual_modes).map(|&(l,_)| l).collect();
+    let mode_shapes: Vec<Vec<f64>> = load_factors.iter().take(actual_modes).map(|&(_,idx)| {
+        // Expand eigenvector back to full DOF space
+        let evec = eigen.eigenvectors.column(idx);
+        let mut full = vec![0.0; num_dof];
+        for (i, &dof_idx) in free_dofs.iter().enumerate() {
+            full[dof_idx] = evec[i];
+        }
+        full
+    }).collect();
+
+    Ok(LinearBucklingResult {
+        success: true,
+        error: None,
+        buckling_loads,
+        mode_shapes,
+        num_modes: actual_modes,
+    })
+}
+
+// ============================================
 // P-DELTA ANALYSIS
 // ============================================
 
@@ -2744,6 +3005,72 @@ pub fn p_delta_analysis(
     // Compute plate/slab stress results for P-Delta
     let plate_results = compute_plate_results(&elements, &nodes, &node_map, &u_global);
 
+    // ---- Equilibrium check for P-Delta ----
+    let mut sum_applied = vec![0.0f64; 6]; // [Fx,Fy,Fz, Mx_o,My_o,Mz_o]
+    let mut sum_reactions = vec![0.0f64; 6];
+
+    // Sum applied nodal loads (forces + moments about origin)
+    for load in &nodal_loads {
+        if let Some(&idx) = node_map.get(&load.node_id) {
+            let n = &nodes[idx];
+            sum_applied[0] += load.fx;
+            sum_applied[1] += load.fy;
+            sum_applied[2] += load.fz;
+            sum_applied[3] += load.mx + (n.y * load.fz - n.z * load.fy);
+            sum_applied[4] += load.my + (n.z * load.fx - n.x * load.fz);
+            sum_applied[5] += load.mz + (n.x * load.fy - n.y * load.fx);
+        }
+    }
+
+    // Sum reaction forces (including moment about origin)
+    for (idx, node) in nodes.iter().enumerate() {
+        if node.restraints.iter().any(|&r| r) {
+            let dof = idx * 6;
+            let rx = r_global[dof]; let ry = r_global[dof+1]; let rz = r_global[dof+2];
+            sum_reactions[0] += rx;
+            sum_reactions[1] += ry;
+            sum_reactions[2] += rz;
+            sum_reactions[3] += r_global[dof+3] + (node.y * rz - node.z * ry);
+            sum_reactions[4] += r_global[dof+4] + (node.z * rx - node.x * rz);
+            sum_reactions[5] += r_global[dof+5] + (node.x * ry - node.y * rx);
+        }
+        // Spring reactions
+        if let Some(ref springs) = node.spring_stiffness {
+            let dof = idx * 6;
+            for (d, &ks) in springs.iter().enumerate() {
+                if d < 6 && ks > 0.0 {
+                    let fs = -ks * u_global[dof + d];
+                    sum_reactions[d % 3] += if d < 3 { fs } else { 0.0 };
+                    if d < 3 {
+                        sum_reactions[3] += node.y * if d==2 { fs } else { 0.0 } - node.z * if d==1 { fs } else { 0.0 };
+                        sum_reactions[4] += node.z * if d==0 { fs } else { 0.0 } - node.x * if d==2 { fs } else { 0.0 };
+                        sum_reactions[5] += node.x * if d==1 { fs } else { 0.0 } - node.y * if d==0 { fs } else { 0.0 };
+                    } else {
+                        sum_reactions[d] += fs;
+                    }
+                }
+            }
+        }
+    }
+
+    let mut residual = vec![0.0f64; 6];
+    let mut max_applied = 0.0f64;
+    let mut max_residual = 0.0f64;
+    for i in 0..6 {
+        residual[i] = sum_applied[i] + sum_reactions[i];
+        max_applied = max_applied.max(sum_applied[i].abs()).max(sum_reactions[i].abs());
+        max_residual = max_residual.max(residual[i].abs());
+    }
+    let error_pct = if max_applied > 1e-10 { max_residual / max_applied * 100.0 } else { 0.0 };
+
+    let equilibrium_check = EquilibriumCheck {
+        applied_forces: sum_applied,
+        reaction_forces: sum_reactions,
+        residual,
+        error_percent: error_pct,
+        pass: error_pct < 1.0, // P-Delta allows slightly larger tolerance than linear
+    };
+
     Ok(AnalysisResult3D {
         success: true,
         error: if converged { None } else { 
@@ -2753,7 +3080,7 @@ pub fn p_delta_analysis(
         reactions,
         member_forces,
         plate_results,
-        equilibrium_check: None,
+        equilibrium_check: Some(equilibrium_check),
         condition_number: None,
     })
 }
@@ -3578,7 +3905,7 @@ mod tests {
             NodalLoad { node_id: "B".into(), fx: 10000.0, fy: 0.0, fz: 0.0, mx: 0.0, my: 0.0, mz: 5000.0 },
         ];
         let dist_loads = vec![
-            DistributedLoad { element_id: "M1".into(), w1: -10000.0, w2: -10000.0, direction: LoadDirection::GlobalY, start_pos: 0.0, end_pos: 1.0 },
+            DistributedLoad { element_id: "M1".into(), w_start: -10000.0, w_end: -10000.0, direction: LoadDirection::GlobalY, is_projected: false, start_pos: 0.0, end_pos: 1.0 },
         ];
         let temp_loads = vec![
             TemperatureLoad { element_id: "M1".into(), delta_t: 30.0, alpha: 12e-6, gradient_y: 10.0, gradient_z: 0.0 },

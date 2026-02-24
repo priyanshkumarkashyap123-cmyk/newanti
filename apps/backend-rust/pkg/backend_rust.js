@@ -849,6 +849,46 @@ export function solve_3d_frame(nodes_val, elements_val, nodal_loads_val, distrib
 }
 
 /**
+ * Extended 3D Frame analysis with temperature loads, point loads, and config
+ */
+export function solve_3d_frame_extended(nodes_val, elements_val, nodal_loads_val, distributed_loads_val, temperature_loads_val, point_loads_val, config_val) {
+    const ret = wasm.solve_3d_frame_extended(addHeapObject(nodes_val), addHeapObject(elements_val), addHeapObject(nodal_loads_val), addHeapObject(distributed_loads_val), addHeapObject(temperature_loads_val), addHeapObject(point_loads_val), addHeapObject(config_val));
+    return takeObject(ret);
+}
+
+/**
+ * Combine multiple load case results using factored superposition
+ */
+export function combine_load_cases(cases_val, combinations_val) {
+    const ret = wasm.combine_load_cases(addHeapObject(cases_val), addHeapObject(combinations_val));
+    return takeObject(ret);
+}
+
+/**
+ * Get standard IS 800 load combinations
+ */
+export function get_standard_combinations_is800() {
+    const ret = wasm.get_standard_combinations_is800();
+    return takeObject(ret);
+}
+
+/**
+ * Get standard Eurocode load combinations
+ */
+export function get_standard_combinations_eurocode() {
+    const ret = wasm.get_standard_combinations_eurocode();
+    return takeObject(ret);
+}
+
+/**
+ * Get standard AISC LRFD load combinations
+ */
+export function get_standard_combinations_aisc_lrfd() {
+    const ret = wasm.get_standard_combinations_aisc_lrfd();
+    return takeObject(ret);
+}
+
+/**
  * P-Delta analysis - iterative geometric nonlinear analysis
  * Accounts for secondary moments from axial loads (P) acting on lateral displacements (Δ)
  * @param {any} nodes_val
@@ -861,6 +901,14 @@ export function solve_3d_frame(nodes_val, elements_val, nodal_loads_val, distrib
  */
 export function solve_p_delta(nodes_val, elements_val, point_loads_val, member_loads_val, max_iterations, tolerance) {
     const ret = wasm.solve_p_delta(addHeapObject(nodes_val), addHeapObject(elements_val), addHeapObject(point_loads_val), addHeapObject(member_loads_val), max_iterations, tolerance);
+    return takeObject(ret);
+}
+
+/**
+ * Extended P-Delta analysis with temperature loads, point loads on members, and config
+ */
+export function solve_p_delta_extended(nodes_val, elements_val, point_loads_val, member_loads_val, temperature_loads_val, point_loads_on_members_val, config_val, max_iterations, tolerance) {
+    const ret = wasm.solve_p_delta_extended(addHeapObject(nodes_val), addHeapObject(elements_val), addHeapObject(point_loads_val), addHeapObject(member_loads_val), addHeapObject(temperature_loads_val), addHeapObject(point_loads_on_members_val), addHeapObject(config_val), max_iterations, tolerance);
     return takeObject(ret);
 }
 

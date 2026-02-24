@@ -127,10 +127,40 @@ export function solve_2d_frame_with_loads(nodes_val: any, elements_val: any, loa
 export function solve_3d_frame(nodes_val: any, elements_val: any, nodal_loads_val: any, distributed_loads_val: any): any;
 
 /**
+ * Extended 3D Frame analysis with temperature loads, point loads, and config
+ */
+export function solve_3d_frame_extended(nodes_val: any, elements_val: any, nodal_loads_val: any, distributed_loads_val: any, temperature_loads_val: any, point_loads_val: any, config_val: any): any;
+
+/**
+ * Combine multiple load case results using factored superposition
+ */
+export function combine_load_cases(cases_val: any, combinations_val: any): any;
+
+/**
+ * Get standard IS 800 load combinations
+ */
+export function get_standard_combinations_is800(): any;
+
+/**
+ * Get standard Eurocode load combinations
+ */
+export function get_standard_combinations_eurocode(): any;
+
+/**
+ * Get standard AISC LRFD load combinations
+ */
+export function get_standard_combinations_aisc_lrfd(): any;
+
+/**
  * P-Delta analysis - iterative geometric nonlinear analysis
  * Accounts for secondary moments from axial loads (P) acting on lateral displacements (Δ)
  */
 export function solve_p_delta(nodes_val: any, elements_val: any, point_loads_val: any, member_loads_val: any, max_iterations: number, tolerance: number): any;
+
+/**
+ * Extended P-Delta analysis with temperature loads, point loads on members, and config
+ */
+export function solve_p_delta_extended(nodes_val: any, elements_val: any, point_loads_val: any, member_loads_val: any, temperature_loads_val: any, point_loads_on_members_val: any, config_val: any, max_iterations: number, tolerance: number): any;
 
 /**
  * Response Spectrum Analysis (Seismic)

@@ -10,8 +10,8 @@
  */
 
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, screen, cleanup } from '@testing-library/react';
 
 // Mock react-router-dom to avoid ESM/CJS resolution issues in vmForks pool
 vi.mock('react-router-dom', () => ({
@@ -37,6 +37,9 @@ function renderWithRouter() {
 }
 
 describe('NotFoundPage', () => {
+    afterEach(() => {
+        cleanup();
+    });
     it('should render 404 heading', () => {
         renderWithRouter();
         expect(screen.getByText('404')).toBeDefined();
