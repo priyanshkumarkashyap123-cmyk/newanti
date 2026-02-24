@@ -498,6 +498,7 @@ class AnalysisService {
             nodes: model.nodes,
             members: model.members,
             loads: allLoads,
+            memberLoads: modelWithMemberLoads.memberLoads, // Pass original member loads to worker for FEF
             dofPerNode:
               model.dofPerNode ??
               getOptimalDofPerNode(model.nodes, model.members, model.loads),

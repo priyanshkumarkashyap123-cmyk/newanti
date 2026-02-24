@@ -167,6 +167,7 @@ export interface Member {
   Iz?: number; // Moment of inertia about local z-axis (m⁴)
   J?: number; // Torsion constant (m⁴)
   G?: number; // Shear Modulus (kN/m²)
+  rho?: number; // Material density (kg/m³), default 7850 for steel
   // Member releases (hinges) - full 3D releases for all 6 DOFs at each end
   releases?: {
     startMoment?: boolean; // Legacy: Release moment at start

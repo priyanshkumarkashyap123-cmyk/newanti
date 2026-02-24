@@ -545,6 +545,7 @@ export const ModernModeler: FC = () => {
   const loads = useModelStore((state) => state.loads);
   const memberLoads = useModelStore((state) => state.memberLoads);
   const floorLoads = useModelStore((state) => state.floorLoads);
+  const modelSettings = useModelStore((state) => state.settings);
   const analysisResults = useModelStore((state) => state.analysisResults);
   const setAnalysisResults = useModelStore((state) => state.setAnalysisResults);
   const setIsAnalyzing = useModelStore((state) => state.setIsAnalyzing);
@@ -947,6 +948,7 @@ export const ModernModeler: FC = () => {
           J,
           I, // keep legacy I for diagram generation
           betaAngle: m.betaAngle ?? 0, // degrees
+          rho: m.rho ?? 7850, // Material density (kg/m³), default steel
           releases: m.releases,
         };
       });
@@ -1329,6 +1331,34 @@ export const ModernModeler: FC = () => {
           }
 
           modelerLogger.log("[Analysis] WASM Result received");
+
+          // ──── Diagnostic: dump raw WASM result structure ────
+          {
+            const mfRaw = wasmResult.member_forces;
+            const mfType = mfRaw instanceof Map ? "Map" : typeof mfRaw;
+            const mfKeys =
+              mfRaw instanceof Map
+                ? Array.from(mfRaw.keys()).slice(0, 3)
+                : mfRaw
+                  ? Object.keys(mfRaw).slice(0, 3)
+                  : [];
+            modelerLogger.log(
+              `[Analysis][Debug] member_forces type=${mfType}, keys(first 3)=${JSON.stringify(mfKeys)}`,
+            );
+            if (mfKeys.length > 0) {
+              const firstKey = mfKeys[0];
+              const firstVal =
+                mfRaw instanceof Map
+                  ? mfRaw.get(firstKey)
+                  : mfRaw?.[firstKey as any];
+              modelerLogger.log(
+                `[Analysis][Debug] First member force entry:`,
+                JSON.stringify(firstVal, (_, v) =>
+                  ArrayBuffer.isView(v) ? Array.from(v as any) : v,
+                ),
+              );
+            }
+          }
 
           // Convert WASM result to expected format
           // WASM 3D solver returns HashMaps serialized by serde-wasm-bindgen v0.6
@@ -1716,6 +1746,7 @@ export const ModernModeler: FC = () => {
               members: membersArray,
               loads: allLoads,
               memberLoads: [] as any[],
+              settings: { selfWeight: modelSettings?.selfWeight ?? false },
               // dofPerNode omitted — AnalysisService auto-detects 2D/3D
             };
 
@@ -1957,6 +1988,21 @@ export const ModernModeler: FC = () => {
                 : {}),
               diagramData,
             });
+
+            // Diagnostic: log first member's diagramData shape
+            if (memberForces.size === 1) {
+              const dd = diagramData;
+              if (dd) {
+                const mzSample = dd.moment_z;
+                modelerLogger.log(
+                  `[Analysis][Store] First member ${memberId}: diagramData present, moment_z.length=${mzSample?.length}, moment_z[0]=${mzSample?.[0]?.toFixed?.(4)}, moment_z[mid]=${mzSample?.[Math.floor((mzSample?.length || 0) / 2)]?.toFixed?.(4)}`,
+                );
+              } else {
+                modelerLogger.warn(
+                  `[Analysis][Store] First member ${memberId}: diagramData=undefined! x_values=${!!f.x_values}, shear_y=${!!f.shear_y}`,
+                );
+              }
+            }
           });
         }
 

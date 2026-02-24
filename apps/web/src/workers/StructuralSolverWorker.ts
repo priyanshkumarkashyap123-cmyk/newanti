@@ -44,8 +44,15 @@ interface MemberForceResult {
 
 interface MemberLoadItem {
   memberId: string;
-  type?: string;
-  w1?: number;
+  type?: string; // 'UDL' | 'point' | 'UVL' | 'moment'
+  w1?: number; // Distributed load intensity at start (kN/m)
+  w2?: number; // Distributed load intensity at end (kN/m) — for UVL/trapezoidal
+  P?: number; // Point load magnitude (kN)
+  M?: number; // Point moment magnitude (kN·m)
+  a?: number; // Distance of point load from start (m)
+  startPos?: number; // Partial load start position (0-1 ratio)
+  endPos?: number; // Partial load end position (0-1 ratio)
+  direction?: string; // 'local_y' | 'local_z' | 'global_y' | 'global_x' | 'global_z' | 'axial'
 }
 
 interface ModelDataWithMemberLoads extends ModelData {
@@ -117,8 +124,10 @@ export interface ModelData {
   nodes: NodeData[];
   members: MemberData[];
   loads: LoadData[];
+  memberLoads?: MemberLoadItem[]; // Member loads (UDL, point, etc.)
   dofPerNode: 2 | 3 | 6;
   options?: SolverConfig;
+  settings?: { selfWeight?: boolean }; // Alternative path from AnalysisService
 }
 
 export interface NodeData {
@@ -192,6 +201,7 @@ export interface SolverConfig {
   timeStep?: number; // For dynamic analysis
   duration?: number; // For dynamic analysis
   targetVolume?: number; // For topology optimization (0-1 fraction)
+  selfWeight?: boolean; // Auto-apply member self-weight (-Y direction)
 }
 
 /** Output: Progress events */
@@ -547,6 +557,8 @@ function assembleStiffnessMatrixAndForces(
   loads: LoadData[],
   memberAxialForces?: Record<string, number>,
   elementDensities?: Record<string, number>,
+  selfWeight?: boolean,
+  memberLoads?: MemberLoadItem[],
 ): {
   cooRows: Uint32Array;
   cooCols: Uint32Array;
@@ -717,6 +729,7 @@ function assembleStiffnessMatrixAndForces(
           cx,
           cy,
           cz,
+          member.betaAngle ?? 0,
         );
       }
     } else {
@@ -811,6 +824,244 @@ function assembleStiffnessMatrixAndForces(
         F[baseDof + 4] = (F[baseDof + 4] || 0) + load.my;
       if (load.mz !== undefined && dofPerNode >= 6)
         F[baseDof + 5] = (F[baseDof + 5] || 0) + load.mz;
+    }
+  }
+
+  // ─── SELF-WEIGHT: Distribute member weight as equivalent nodal loads ───
+  // Industry standard: w_sw = ρ·A·g, applied as UDL in global -Y direction.
+  // Equivalent nodal loads: Fy = -ρ·A·g·L/2 at each end, Mz = ∓ρ·A·g·L²/12.
+  if (selfWeight) {
+    const g = 9.80665; // m/s² (standard gravity)
+    for (const member of members) {
+      const startIdx = nodeIndexMap.get(member.startNodeId);
+      const endIdx = nodeIndexMap.get(member.endNodeId);
+      if (startIdx === undefined || endIdx === undefined) continue;
+
+      const n1 = nodes[startIdx];
+      const n2 = nodes[endIdx];
+      if (!n1 || !n2) continue;
+
+      const dx = n2.x - n1.x;
+      const dy = n2.y - n1.y;
+      const dz = (n2.z || 0) - (n1.z || 0);
+      const L = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      if (L < 1e-10) continue;
+
+      const rho = member.rho ?? 7850; // kg/m³ (steel default)
+      const A = member.A || 0;
+      const w_sw = (rho * A * g) / 1000; // kN/m (convert N to kN)
+      const totalWeight = w_sw * L; // kN
+
+      // Self-weight acts in global -Y direction.
+      // For lumped equivalent: each node gets half the total weight.
+      const baseDofI = startIdx * dofPerNode;
+      const baseDofJ = endIdx * dofPerNode;
+      const fy_dofOffset = 1; // Y-translation is DOF index 1 for all frame types
+
+      F[baseDofI + fy_dofOffset] =
+        (F[baseDofI + fy_dofOffset] || 0) - totalWeight / 2;
+      F[baseDofJ + fy_dofOffset] =
+        (F[baseDofJ + fy_dofOffset] || 0) - totalWeight / 2;
+
+      // For frame elements, also add fixed-end moments from distributed self-weight.
+      // FEM for UDL w on fixed-fixed beam: M_start = +wL²/12, M_end = -wL²/12
+      // But self-weight is in GLOBAL Y, for inclined members we need the component
+      // perpendicular to the member in local coords. For simplicity (and industry
+      // standard practice), apply as global -Y nodal loads with consistent FEF in global Y.
+      if ((member.type || "frame") === "frame" && dofPerNode >= 3) {
+        const FEM = (w_sw * L * L) / 12; // Fixed-end moment magnitude
+        if (dofPerNode === 3) {
+          // 2D frame: rotation DOF is index 2
+          // FEM from gravity UDL: need to account for member orientation.
+          // For a horizontal member, M_start = +wL²/12, M_end = -wL²/12 in global.
+          // For inclined members, the transverse component of gravity is w·cos(α)
+          // where α = angle from horizontal. This is correct for the perpendicular component.
+          const cosAlpha = Math.abs(dx) / L; // Simplification: horizontal component ratio
+          const FEM_corrected = (w_sw * cosAlpha * L * L) / 12;
+          F[baseDofI + 2] = (F[baseDofI + 2] || 0) + FEM_corrected;
+          F[baseDofJ + 2] = (F[baseDofJ + 2] || 0) - FEM_corrected;
+        } else if (dofPerNode === 6) {
+          // 3D frame: Need to transform global -Y UDL to local transverse components
+          // For now, apply FEM in global Mz (DOF 5) for horizontal members
+          const cx_m = dx / L;
+          const cy_m = dy / L;
+          // Transverse component in local y = component of gravity perpendicular to member
+          // For a member at angle: transverse_gravity = w_sw * sqrt(1 - cy²) ≈ w_sw for near-horizontal
+          const transverseRatio = Math.sqrt(1 - cy_m * cy_m);
+          if (transverseRatio > 1e-6) {
+            const FEM_3d = (w_sw * transverseRatio * L * L) / 12;
+            // Apply as Mz moment (DOF 5) — correct for members in XY plane
+            F[baseDofI + 5] = (F[baseDofI + 5] || 0) + FEM_3d * cx_m;
+            F[baseDofJ + 5] = (F[baseDofJ + 5] || 0) - FEM_3d * cx_m;
+          }
+        }
+      }
+    }
+  }
+
+  // ─── MEMBER LOAD FEF: Apply fixed-end forces/moments to force vector ───
+  // This converts distributed and point loads to equivalent nodal loads.
+  if (memberLoads && memberLoads.length > 0) {
+    for (const ml of memberLoads) {
+      const member = members.find((m) => m.id === ml.memberId);
+      if (!member) continue;
+
+      const startIdx = nodeIndexMap.get(member.startNodeId);
+      const endIdx = nodeIndexMap.get(member.endNodeId);
+      if (startIdx === undefined || endIdx === undefined) continue;
+
+      const n1 = nodes[startIdx];
+      const n2 = nodes[endIdx];
+      if (!n1 || !n2) continue;
+
+      const dx = n2.x - n1.x;
+      const dy = n2.y - n1.y;
+      const dz = (n2.z || 0) - (n1.z || 0);
+      const L = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      if (L < 1e-10) continue;
+
+      const baseDofI = startIdx * dofPerNode;
+      const baseDofJ = endIdx * dofPerNode;
+      const type = ml.type || "UDL";
+
+      if (type === "UDL" || type === "UVL") {
+        const w1 = ml.w1 ?? 0;
+        const w2 = ml.w2 ?? w1; // UDL: w2 = w1
+        const s0 = (ml.startPos ?? 0) * L;
+        const s1 = (ml.endPos ?? 1) * L;
+        const loadLength = s1 - s0;
+        if (
+          loadLength < 1e-10 ||
+          (Math.abs(w1) < 1e-12 && Math.abs(w2) < 1e-12)
+        )
+          continue;
+
+        // For full-span UDL (most common case): simple FEF formulas
+        if (
+          Math.abs(s0) < 1e-10 &&
+          Math.abs(s1 - L) < 1e-10 &&
+          Math.abs(w1 - w2) < 1e-10
+        ) {
+          // Full-span uniform load
+          const w = w1;
+          if (dofPerNode === 3) {
+            // 2D frame: [u1,v1,θ1, u2,v2,θ2]
+            F[baseDofI + 1] = (F[baseDofI + 1] || 0) + (w * L) / 2;
+            F[baseDofI + 2] = (F[baseDofI + 2] || 0) + (w * L * L) / 12;
+            F[baseDofJ + 1] = (F[baseDofJ + 1] || 0) + (w * L) / 2;
+            F[baseDofJ + 2] = (F[baseDofJ + 2] || 0) - (w * L * L) / 12;
+          } else if (dofPerNode === 6) {
+            // 3D frame: apply in local Y → DOF 1 (shear), DOF 5 (Mz)
+            F[baseDofI + 1] = (F[baseDofI + 1] || 0) + (w * L) / 2;
+            F[baseDofI + 5] = (F[baseDofI + 5] || 0) + (w * L * L) / 12;
+            F[baseDofJ + 1] = (F[baseDofJ + 1] || 0) + (w * L) / 2;
+            F[baseDofJ + 5] = (F[baseDofJ + 5] || 0) - (w * L * L) / 12;
+          }
+        } else {
+          // Partial or trapezoidal load — use numerical integration (Simpson's rule)
+          // FEF: integrate w(x) against Hermite shape functions
+          const nSeg = 20;
+          let R1 = 0,
+            M1_fef = 0,
+            R2 = 0,
+            M2_fef = 0;
+          for (let k = 0; k <= nSeg; k++) {
+            const x = s0 + (k / nSeg) * loadLength;
+            const xi = x / L;
+            const t = k / nSeg;
+            const w_x = w1 + (w2 - w1) * t; // Linear interpolation of load intensity
+            const dxStep = loadLength / nSeg;
+
+            // Simpson weight
+            let sw = 1;
+            if (k === 0 || k === nSeg) sw = 1;
+            else if (k % 2 === 1) sw = 4;
+            else sw = 2;
+
+            // Hermite shape functions for transverse displacement
+            const N1 = 1 - 3 * xi * xi + 2 * xi * xi * xi;
+            const N2 = L * (xi - 2 * xi * xi + xi * xi * xi);
+            const N3 = 3 * xi * xi - 2 * xi * xi * xi;
+            const N4 = L * (-xi * xi + xi * xi * xi);
+
+            const factor = (w_x * dxStep * sw) / 3;
+            R1 += factor * N1;
+            M1_fef += factor * N2;
+            R2 += factor * N3;
+            M2_fef += factor * N4;
+          }
+
+          if (dofPerNode === 3) {
+            F[baseDofI + 1] = (F[baseDofI + 1] || 0) + R1;
+            F[baseDofI + 2] = (F[baseDofI + 2] || 0) + M1_fef;
+            F[baseDofJ + 1] = (F[baseDofJ + 1] || 0) + R2;
+            F[baseDofJ + 2] = (F[baseDofJ + 2] || 0) + M2_fef;
+          } else if (dofPerNode === 6) {
+            F[baseDofI + 1] = (F[baseDofI + 1] || 0) + R1;
+            F[baseDofI + 5] = (F[baseDofI + 5] || 0) + M1_fef;
+            F[baseDofJ + 1] = (F[baseDofJ + 1] || 0) + R2;
+            F[baseDofJ + 5] = (F[baseDofJ + 5] || 0) + M2_fef;
+          }
+        }
+      } else if (type === "point") {
+        // Point load at distance a from start
+        const P = ml.P ?? 0;
+        if (Math.abs(P) < 1e-12) continue;
+
+        const a = ml.a ?? L / 2;
+        const b = L - a;
+        if (a < 0 || a > L) continue;
+
+        // Fixed-end reactions for point load P at distance a from start:
+        //   R1 = P·b²·(3a+b)/L³,  R2 = P·a²·(a+3b)/L³
+        //   M1 = P·a·b²/L²,       M2 = -P·a²·b/L²
+        const L2 = L * L;
+        const L3 = L2 * L;
+        const R1 = (P * b * b * (3 * a + b)) / L3;
+        const R2 = (P * a * a * (a + 3 * b)) / L3;
+        const M1_pt = (P * a * b * b) / L2;
+        const M2_pt = (-P * a * a * b) / L2;
+
+        if (dofPerNode === 3) {
+          F[baseDofI + 1] = (F[baseDofI + 1] || 0) + R1;
+          F[baseDofI + 2] = (F[baseDofI + 2] || 0) + M1_pt;
+          F[baseDofJ + 1] = (F[baseDofJ + 1] || 0) + R2;
+          F[baseDofJ + 2] = (F[baseDofJ + 2] || 0) + M2_pt;
+        } else if (dofPerNode === 6) {
+          F[baseDofI + 1] = (F[baseDofI + 1] || 0) + R1;
+          F[baseDofI + 5] = (F[baseDofI + 5] || 0) + M1_pt;
+          F[baseDofJ + 1] = (F[baseDofJ + 1] || 0) + R2;
+          F[baseDofJ + 5] = (F[baseDofJ + 5] || 0) + M2_pt;
+        }
+      } else if (type === "moment") {
+        // Applied moment at distance a from start
+        const M_app = ml.M ?? 0;
+        if (Math.abs(M_app) < 1e-12) continue;
+
+        const a = ml.a ?? L / 2;
+        const b = L - a;
+
+        // FER for concentrated moment M at distance a:
+        //   R1 = 6M·a·b/L³,  R2 = -6M·a·b/L³
+        //   M1 = M·b·(2a-b)/L²,  M2 = M·a·(2b-a)/L²
+        const L2 = L * L;
+        const L3 = L2 * L;
+        const R1 = (6 * M_app * a * b) / L3;
+        const M1_mom = (M_app * b * (2 * a - b)) / L2;
+        const M2_mom = (M_app * a * (2 * b - a)) / L2;
+
+        if (dofPerNode === 3) {
+          F[baseDofI + 1] = (F[baseDofI + 1] || 0) + R1;
+          F[baseDofI + 2] = (F[baseDofI + 2] || 0) + M1_mom;
+          F[baseDofJ + 1] = (F[baseDofJ + 1] || 0) - R1;
+          F[baseDofJ + 2] = (F[baseDofJ + 2] || 0) + M2_mom;
+        } else if (dofPerNode === 6) {
+          F[baseDofI + 1] = (F[baseDofI + 1] || 0) + R1;
+          F[baseDofI + 5] = (F[baseDofI + 5] || 0) + M1_mom;
+          F[baseDofJ + 1] = (F[baseDofJ + 1] || 0) - R1;
+          F[baseDofJ + 5] = (F[baseDofJ + 5] || 0) + M2_mom;
+        }
+      }
     }
   }
 
@@ -995,6 +1246,7 @@ function computeFrame3DStiffness(
   cx: number,
   cy: number,
   cz: number,
+  betaAngle: number = 0,
 ): number[][] {
   // Fallbacks
   // J = Iy + Iz is only valid for CIRCULAR sections (polar MOI).
@@ -1117,6 +1369,28 @@ function computeFrame3DStiffness(
       (lz[2] || 0) * (lx[0] || 0) - (lz[0] || 0) * (lx[2] || 0),
       (lz[0] || 0) * (lx[1] || 0) - (lz[1] || 0) * (lx[0] || 0),
     ];
+  }
+
+  // ─── Apply betaAngle: rotate ly and lz about lx (member axis) ───
+  // betaAngle is the member roll angle (degrees), standard in SAP2000/STAAD.
+  // This rotates the local y-z plane about the local x-axis.
+  if (betaAngle !== 0) {
+    const betaRad = (betaAngle * Math.PI) / 180;
+    const cb = Math.cos(betaRad);
+    const sb = Math.sin(betaRad);
+    // ly_new = cos(β)·ly + sin(β)·lz_before
+    // We need lz_before first. Since ly is computed, lz_before = lx × ly
+    const lz_before = [
+      (lx[1] || 0) * (ly[2] || 0) - (lx[2] || 0) * (ly[1] || 0),
+      (lx[2] || 0) * (ly[0] || 0) - (lx[0] || 0) * (ly[2] || 0),
+      (lx[0] || 0) * (ly[1] || 0) - (lx[1] || 0) * (ly[0] || 0),
+    ];
+    const ly_new = [
+      cb * (ly[0] || 0) + sb * (lz_before[0] || 0),
+      cb * (ly[1] || 0) + sb * (lz_before[1] || 0),
+      cb * (ly[2] || 0) + sb * (lz_before[2] || 0),
+    ];
+    ly = ly_new;
   }
 
   // Recompute lz = lx × ly (ensure right-hand system)
@@ -1311,6 +1585,25 @@ function computeMemberEndForces(
           (lz3[0] || 0) * (lx[1] || 0) - (lz3[1] || 0) * (lx[0] || 0),
         ];
       }
+
+      // Apply betaAngle rotation about member axis (same as in stiffness)
+      const betaDeg = member.betaAngle ?? 0;
+      if (betaDeg !== 0) {
+        const betaRad = (betaDeg * Math.PI) / 180;
+        const cb = Math.cos(betaRad);
+        const sb = Math.sin(betaRad);
+        const lz_pre = [
+          (lx[1] || 0) * (ly3d[2] || 0) - (lx[2] || 0) * (ly3d[1] || 0),
+          (lx[2] || 0) * (ly3d[0] || 0) - (lx[0] || 0) * (ly3d[2] || 0),
+          (lx[0] || 0) * (ly3d[1] || 0) - (lx[1] || 0) * (ly3d[0] || 0),
+        ];
+        ly3d = [
+          cb * (ly3d[0] || 0) + sb * (lz_pre[0] || 0),
+          cb * (ly3d[1] || 0) + sb * (lz_pre[1] || 0),
+          cb * (ly3d[2] || 0) + sb * (lz_pre[2] || 0),
+        ];
+      }
+
       const lz3d = [
         (lx[1] || 0) * (ly3d[2] || 0) - (lx[2] || 0) * (ly3d[1] || 0),
         (lx[2] || 0) * (ly3d[0] || 0) - (lx[0] || 0) * (ly3d[2] || 0),
@@ -2218,6 +2511,10 @@ async function analyze(model: ModelData): Promise<ResultData> {
   }
 
   const config = model.options || {};
+  // Bridge selfWeight from AnalysisService's settings path
+  if (model.settings?.selfWeight && !config.selfWeight) {
+    config.selfWeight = true;
+  }
   const analysisType = config.analysisType || "linear";
 
   // Model size validation - Use tiered limits based on solver capability
@@ -2293,6 +2590,10 @@ async function analyze(model: ModelData): Promise<ResultData> {
         model.members,
         model.dofPerNode,
         model.loads,
+        undefined,
+        undefined,
+        config.selfWeight,
+        model.memberLoads,
       );
       const F_static = kResult.F;
       const fixedDofs = kResult.fixedDofs;
@@ -2468,6 +2769,9 @@ async function analyze(model: ModelData): Promise<ResultData> {
           dofPerNode,
           model.loads,
           memberAxialForces,
+          undefined,
+          config.selfWeight,
+          model.memberLoads,
         );
         const F = pdResult.F;
         const fixedDofs = pdResult.fixedDofs;
@@ -2528,31 +2832,12 @@ async function analyze(model: ModelData): Promise<ResultData> {
         model.dofPerNode,
         model.loads,
         memberAxialForces,
+        undefined,
+        config.selfWeight,
+        model.memberLoads,
       );
-      const pdF_orig = new Float64Array(model.nodes.length * model.dofPerNode);
-      // Re-assemble original F (before penalty)
-      for (const load of model.loads) {
-        const ni = nodeIndexMap.get(load.nodeId);
-        if (ni === undefined) continue;
-        const base = ni * model.dofPerNode;
-        if (load.fx !== undefined)
-          pdF_orig[base] = (pdF_orig[base] ?? 0) + load.fx;
-        if (load.fy !== undefined)
-          pdF_orig[base + 1] = (pdF_orig[base + 1] ?? 0) + load.fy;
-        if (model.dofPerNode === 3) {
-          if (load.mz !== undefined)
-            pdF_orig[base + 2] = (pdF_orig[base + 2] ?? 0) + load.mz;
-        } else {
-          if (load.fz !== undefined && model.dofPerNode >= 3)
-            pdF_orig[base + 2] = (pdF_orig[base + 2] ?? 0) + load.fz;
-          if (load.mx !== undefined && model.dofPerNode >= 4)
-            pdF_orig[base + 3] = (pdF_orig[base + 3] ?? 0) + load.mx;
-          if (load.my !== undefined && model.dofPerNode >= 5)
-            pdF_orig[base + 4] = (pdF_orig[base + 4] ?? 0) + load.my;
-          if (load.mz !== undefined && model.dofPerNode >= 6)
-            pdF_orig[base + 5] = (pdF_orig[base + 5] ?? 0) + load.mz;
-        }
-      }
+      // Use the full force vector from assembly (includes self-weight + member loads)
+      const pdF_orig = pdFinal.F.slice(); // before penalty BC modifies it
       const pdReactions = computeReactions(
         pdFinal.cooRows,
         pdFinal.cooCols,
@@ -2841,6 +3126,10 @@ async function analyze(model: ModelData): Promise<ResultData> {
         model.members,
         model.dofPerNode,
         model.loads,
+        undefined,
+        undefined,
+        config.selfWeight,
+        model.memberLoads,
       );
       const F = linResult.F;
       const F_orig = F.slice(); // Save before penalty BC zeros out fixed DOFs
