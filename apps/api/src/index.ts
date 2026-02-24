@@ -185,7 +185,7 @@ app.use(
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Request-ID"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Request-ID", "Cache-Control", "sentry-trace", "baggage"],
     exposedHeaders: ["X-Request-ID"],
     optionsSuccessStatus: 204,
   }),

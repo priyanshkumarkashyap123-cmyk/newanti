@@ -117,8 +117,12 @@ async fn main() -> anyhow::Result<()> {
             http::header::AUTHORIZATION,
             http::header::ACCEPT,
             http::header::ORIGIN,
+            http::header::CACHE_CONTROL,
             http::header::HeaderName::from_static("x-api-key"),
             http::header::HeaderName::from_static("x-requested-with"),
+            http::header::HeaderName::from_static("x-request-id"),
+            http::header::HeaderName::from_static("sentry-trace"),
+            http::header::HeaderName::from_static("baggage"),
         ])
         .allow_credentials(true);
 
