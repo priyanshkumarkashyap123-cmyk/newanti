@@ -294,7 +294,7 @@ export const pDeltaSchema = z.object({
     options: z.object({
         maxIterations: z.number().int().positive().optional().default(10),
         tolerance: z.number().positive().optional().default(1e-4),
-    }).optional(),
+    }).optional().default({}),
 });
 
 export const modalSchema = z.object({

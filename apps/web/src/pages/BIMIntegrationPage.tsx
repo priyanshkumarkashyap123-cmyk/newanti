@@ -66,7 +66,7 @@ export default function BIMIntegrationPage() {
     setTimeout(() => {
       try {
         const detector = new ClashDetector();
-        const realClashes = detector.detect(parsedMembers);
+        const realClashes = detector.detectClashes(parsedMembers);
         setClashResults(Array.isArray(realClashes) ? realClashes : []);
       } catch {
         // If clash detector fails, show empty results (no clashes)
@@ -82,7 +82,7 @@ export default function BIMIntegrationPage() {
     setTimeout(() => {
       try {
         const writer = new IFCWriter();
-        const ifcContent = writer.write(parsedMembers);
+        const ifcContent = writer.generate(parsedMembers as any);
         const blob = new Blob([ifcContent || 'ISO-10303-21;\nHEADER;\nENDSEC;\nDATA;\nENDSEC;\nEND-ISO-10303-21;'], { type: 'application/x-step' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');

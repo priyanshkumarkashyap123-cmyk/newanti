@@ -134,9 +134,29 @@ export interface ModelData {
   loads: LoadData[];
   memberLoads?: MemberLoadItem[]; // Member loads (UDL, point, etc.) — used for FEF assembly
   memberLoadsForRecovery?: MemberLoadItem[]; // Member loads used ONLY for force recovery (f = k*u − FEF)
+  temperatureLoads?: TemperatureLoadData[]; // Temperature loads on elements
+  pointLoadsOnMembers?: PointLoadOnMemberData[]; // Concentrated loads along members
   dofPerNode: 2 | 3 | 6;
   options?: SolverConfig;
   settings?: { selfWeight?: boolean }; // Alternative path from AnalysisService
+}
+
+/** Temperature load on an element */
+export interface TemperatureLoadData {
+  elementId: string;
+  deltaT: number;       // Uniform temperature change [°C]
+  gradientY?: number;   // Temperature gradient in Y [°C/m]
+  gradientZ?: number;   // Temperature gradient in Z [°C/m]
+  alpha: number;        // Thermal expansion coefficient [1/°C] (e.g. 12e-6 for steel)
+}
+
+/** Concentrated load at a specific position along a member */
+export interface PointLoadOnMemberData {
+  elementId: string;
+  magnitude: number;     // Load value [N] or [N·m]
+  position: number;      // Ratio along member (0=start, 1=end)
+  direction: 'GlobalX' | 'GlobalY' | 'GlobalZ' | 'LocalX' | 'LocalY' | 'LocalZ';
+  isMoment?: boolean;    // true for moment load, false for force (default)
 }
 
 export interface NodeData {
@@ -211,6 +231,12 @@ export interface SolverConfig {
   duration?: number; // For dynamic analysis
   targetVolume?: number; // For topology optimization (0-1 fraction)
   selfWeight?: boolean; // Auto-apply member self-weight (-Y direction)
+}
+
+/** Load Combination request (processed via WASM) */
+export interface LoadCombinationConfig {
+  name: string;
+  factors: Record<string, number>; // Load case label -> factor
 }
 
 /** Output: Progress events */
@@ -568,6 +594,7 @@ function assembleStiffnessMatrixAndForces(
   elementDensities?: Record<string, number>,
   selfWeight?: boolean,
   memberLoads?: MemberLoadItem[],
+  temperatureLoads?: TemperatureLoadData[],
 ): {
   cooRows: Uint32Array;
   cooCols: Uint32Array;
@@ -1073,6 +1100,74 @@ function assembleStiffnessMatrixAndForces(
           F[baseDofI + 5] = (F[baseDofI + 5] || 0) + M1_mom;
           F[baseDofJ + 1] = (F[baseDofJ + 1] || 0) - R1;
           F[baseDofJ + 5] = (F[baseDofJ + 5] || 0) + M2_mom;
+        }
+      }
+    }
+  }
+
+  // ─── TEMPERATURE LOADS: Compute equivalent thermal forces ───
+  // Temperature loads create axial forces (F = E·A·α·ΔT) and bending moments
+  // (from thermal gradients). Applied as equivalent nodal forces.
+  if (temperatureLoads && temperatureLoads.length > 0) {
+    for (const tl of temperatureLoads) {
+      const member = members.find((m) => m.id === tl.elementId);
+      if (!member) continue;
+
+      const startIdx = nodeIndexMap.get(member.startNodeId);
+      const endIdx = nodeIndexMap.get(member.endNodeId);
+      if (startIdx === undefined || endIdx === undefined) continue;
+
+      const n1 = nodes[startIdx];
+      const n2 = nodes[endIdx];
+      if (!n1 || !n2) continue;
+
+      const dx = n2.x - n1.x;
+      const dy = n2.y - n1.y;
+      const dz = (n2.z || 0) - (n1.z || 0);
+      const L = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      if (L < 1e-10) continue;
+
+      const E = member.E;
+      const A = member.A;
+      const alpha = tl.alpha;
+      const deltaT = tl.deltaT;
+
+      // Uniform temperature: axial thermal force F_t = E·A·α·ΔT
+      const Ft = E * A * alpha * deltaT;
+
+      // Direction cosines
+      const cx = dx / L;
+      const cy = dy / L;
+      const cz = dz / L;
+
+      // Equivalent nodal forces in global coords:
+      // Node i gets -F_t·{cx, cy, cz}, Node j gets +F_t·{cx, cy, cz}
+      const baseDofI = startIdx * dofPerNode;
+      const baseDofJ = endIdx * dofPerNode;
+
+      if (dofPerNode >= 2) {
+        F[baseDofI]     = (F[baseDofI]     || 0) - Ft * cx;
+        F[baseDofI + 1] = (F[baseDofI + 1] || 0) - Ft * cy;
+        F[baseDofJ]     = (F[baseDofJ]     || 0) + Ft * cx;
+        F[baseDofJ + 1] = (F[baseDofJ + 1] || 0) + Ft * cy;
+      }
+      if (dofPerNode >= 3 && dofPerNode !== 3) {
+        // 3D: also Z direction
+        F[baseDofI + 2] = (F[baseDofI + 2] || 0) - Ft * cz;
+        F[baseDofJ + 2] = (F[baseDofJ + 2] || 0) + Ft * cz;
+      }
+
+      // Thermal gradient (bending): M_t = E·I·α·(gradientY)
+      const gradY = tl.gradientY ?? 0;
+      if (Math.abs(gradY) > 1e-12) {
+        const I = member.I || member.Iy || 0;
+        const Mt = E * I * alpha * gradY;
+        if (dofPerNode === 3) {
+          F[baseDofI + 2] = (F[baseDofI + 2] || 0) + Mt;
+          F[baseDofJ + 2] = (F[baseDofJ + 2] || 0) - Mt;
+        } else if (dofPerNode === 6) {
+          F[baseDofI + 5] = (F[baseDofI + 5] || 0) + Mt;
+          F[baseDofJ + 5] = (F[baseDofJ + 5] || 0) - Mt;
         }
       }
     }
@@ -2787,6 +2882,7 @@ async function analyze(model: ModelData): Promise<ResultData> {
         undefined,
         config.selfWeight,
         model.memberLoads,
+        model.temperatureLoads,
       );
       const F_static = kResult.F;
       const fixedDofs = kResult.fixedDofs;
@@ -2965,6 +3061,7 @@ async function analyze(model: ModelData): Promise<ResultData> {
           undefined,
           config.selfWeight,
           model.memberLoads,
+          model.temperatureLoads,
         );
         const F = pdResult.F;
         const fixedDofs = pdResult.fixedDofs;
@@ -3028,8 +3125,9 @@ async function analyze(model: ModelData): Promise<ResultData> {
         undefined,
         config.selfWeight,
         model.memberLoads,
+        model.temperatureLoads,
       );
-      // Use the full force vector from assembly (includes self-weight + member loads)
+      // Use the full force vector from assembly (includes self-weight + member loads + temperature)
       const pdF_orig = pdFinal.F.slice(); // before penalty BC modifies it
       const pdReactions = computeReactions(
         pdFinal.cooRows,
@@ -3323,6 +3421,7 @@ async function analyze(model: ModelData): Promise<ResultData> {
         undefined,
         config.selfWeight,
         model.memberLoads,
+        model.temperatureLoads,
       );
       const F = linResult.F;
       const F_orig = F.slice(); // Save before penalty BC zeros out fixed DOFs

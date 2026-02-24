@@ -617,13 +617,34 @@ pub fn solve_response_spectrum(
 }
 
 /// P-Delta analysis - iterative geometric nonlinear analysis
-/// Accounts for secondary moments from axial loads (P) acting on lateral displacements (Δ)
+/// Accounts for secondary moments from axial loads (P) acting on lateral displacements (Δ).
+/// Backward-compatible wrapper — delegates to solve_p_delta_extended with empty optional loads.
 #[wasm_bindgen]
 pub fn solve_p_delta(
     nodes_val: JsValue,
     elements_val: JsValue,
     point_loads_val: JsValue,
     member_loads_val: JsValue,
+    max_iterations: usize,
+    tolerance: f64
+) -> JsValue {
+    solve_p_delta_extended(
+        nodes_val, elements_val, point_loads_val, member_loads_val,
+        JsValue::NULL, JsValue::NULL, JsValue::NULL,
+        max_iterations, tolerance,
+    )
+}
+
+/// Extended P-Delta analysis with temperature loads, point loads on members, and config.
+#[wasm_bindgen]
+pub fn solve_p_delta_extended(
+    nodes_val: JsValue,
+    elements_val: JsValue,
+    point_loads_val: JsValue,
+    member_loads_val: JsValue,
+    temperature_loads_val: JsValue,
+    point_loads_on_members_val: JsValue,
+    config_val: JsValue,
     max_iterations: usize,
     tolerance: f64
 ) -> JsValue {
@@ -644,12 +665,24 @@ pub fn solve_p_delta(
     let distributed_loads: Vec<solver_3d::DistributedLoad> = serde_wasm_bindgen::from_value(member_loads_val)
         .unwrap_or_default();
     
-    // Perform P-Delta analysis
+    let temperature_loads: Vec<solver_3d::TemperatureLoad> = serde_wasm_bindgen::from_value(temperature_loads_val)
+        .unwrap_or_default();
+    
+    let point_loads_on_members: Vec<solver_3d::PointLoadOnMember> = serde_wasm_bindgen::from_value(point_loads_on_members_val)
+        .unwrap_or_default();
+    
+    let config: solver_3d::AnalysisConfig = serde_wasm_bindgen::from_value(config_val)
+        .unwrap_or_default();
+    
+    // Perform P-Delta analysis with full feature set
     match solver_3d::p_delta_analysis(
         nodes, 
         elements, 
         nodal_loads, 
         distributed_loads,
+        temperature_loads,
+        point_loads_on_members,
+        config,
         if max_iterations == 0 { 10 } else { max_iterations },
         if tolerance == 0.0 { 1e-4 } else { tolerance }
     ) {

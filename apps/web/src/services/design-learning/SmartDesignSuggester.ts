@@ -129,12 +129,12 @@ export function useSmartDesign(): UseSmartDesignReturn {
 
         // Get max moment and shear from analysis results
         const maxMoment = Math.max(
-          Math.abs(forces.momentZ ?? forces.moment_z ?? 0),
-          Math.abs(forces.momentY ?? forces.moment_y ?? 0),
+          Math.abs(forces.momentZ ?? 0),
+          Math.abs(forces.momentY ?? 0),
         );
         const maxShear = Math.max(
-          Math.abs(forces.shearY ?? forces.shear_y ?? 0),
-          Math.abs(forces.shearZ ?? forces.shear_z ?? 0),
+          Math.abs(forces.shearY ?? 0),
+          Math.abs(forces.shearZ ?? 0),
         );
 
         // Back-calculate equivalent UDL from moment: w = 8M/L² (for SS beam)

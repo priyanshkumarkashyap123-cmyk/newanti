@@ -8,15 +8,21 @@ info:
     All error responses follow the envelope:
       { success: false, error: { code: string, message: string }, requestId: string, ts: string }
   version: 2.1.0
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
   contact:
     name: BeamLab Team
     url: https://beamlabultimate.tech
 
 servers:
-  - url: http://localhost:3001
-    description: Local development
   - url: https://api.beamlabultimate.tech
     description: Production
+  - url: http://localhost:3001
+    description: Local development
+
+security:
+  - BearerAuth: []
 
 tags:
   - name: health
@@ -229,6 +235,7 @@ paths:
       description: Returns service status, uptime, and MongoDB connectivity
       operationId: getHealth
       tags: [health]
+      security: []
       responses:
         '200':
           description: Service is healthy
@@ -259,6 +266,7 @@ paths:
       summary: Create a new account
       operationId: authSignup
       tags: [auth]
+      security: []
       requestBody:
         required: true
         content:
@@ -310,6 +318,7 @@ paths:
       summary: Sign in with email and password
       operationId: authSignin
       tags: [auth]
+      security: []
       requestBody:
         required: true
         content:
@@ -543,6 +552,8 @@ paths:
       summary: Get active collaborators on a project (WebSocket presence)
       operationId: getProjectUsers
       tags: [projects]
+      security:
+        - BearerAuth: []
       parameters:
         - name: id
           in: path

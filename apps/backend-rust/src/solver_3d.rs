@@ -2473,6 +2473,18 @@ pub fn p_delta_analysis(
         }
     }
     
+    // ===== Spring supports (H1) =====
+    for (idx, node) in nodes.iter().enumerate() {
+        if let Some(ref springs) = node.spring_stiffness {
+            let dof = idx * 6;
+            for (d, &ks) in springs.iter().enumerate() {
+                if d < 6 && ks > 0.0 {
+                    k_elastic[(dof + d, dof + d)] += ks;
+                }
+            }
+        }
+    }
+    
     // Apply nodal loads
     for load in &nodal_loads {
         let idx = *node_map.get(&load.node_id)
@@ -2487,12 +2499,66 @@ pub fn p_delta_analysis(
     }
     
     // Add FEF from distributed loads
-    for dl in &distributed_loads {
+    for dl in &all_distributed_loads {
         let fef = compute_fixed_end_forces(&elements, &nodes, &node_map, dl)?;
         for i in 0..fef.len() { fef_global[i] += fef[i]; }
     }
     
-    let f_total = &f_global + &fef_global;
+    // Point load FEF assembly
+    for pl in &point_loads_on_members {
+        let element = elements.iter().find(|e| e.id == pl.element_id);
+        if let Some(element) = element {
+            let ii = node_map.get(&element.node_i);
+            let ji = node_map.get(&element.node_j);
+            if let (Some(&i_idx), Some(&j_idx)) = (ii, ji) {
+                let ni = &nodes[i_idx]; let nj = &nodes[j_idx];
+                let dx = nj.x - ni.x; let dy = nj.y - ni.y; let dz = nj.z - ni.z;
+                let length = (dx*dx + dy*dy + dz*dz).sqrt();
+                if length < 1e-10 { continue; }
+                let t_matrix = transformation_matrix_3d(dx, dy, dz, length, element.beta);
+                let (lx, ly, lz) = decompose_load_direction(&pl.direction, &t_matrix);
+                let mut fef_local = DVector::zeros(12);
+                let pos = pl.position.max(0.0).min(1.0);
+                let (v1y, v2y, m1y, m2y) = compute_point_load_fef(pl.magnitude * ly, pos, length, pl.is_moment);
+                fef_local[1] += v1y; fef_local[7] += v2y; fef_local[5] += m1y; fef_local[11] += m2y;
+                let (v1z, v2z, m1z, m2z) = compute_point_load_fef(pl.magnitude * lz, pos, length, pl.is_moment);
+                fef_local[2] += v1z; fef_local[8] += v2z; fef_local[4] -= m1z; fef_local[10] -= m2z;
+                let fef_global_elem = t_matrix.transpose() * fef_local;
+                let dof_i = i_idx * 6; let dof_j = j_idx * 6;
+                for k in 0..6 { fef_global[dof_i + k] += fef_global_elem[k]; fef_global[dof_j + k] += fef_global_elem[6 + k]; }
+            }
+        }
+    }
+    
+    // Temperature load equivalent forces
+    for tl in &temperature_loads {
+        let element = elements.iter().find(|e| e.id == tl.element_id)
+            .ok_or(format!("P-Delta: Element {} not found for temperature load", tl.element_id))?;
+        let i_idx = *node_map.get(&element.node_i).ok_or(format!("Node {} not found", element.node_i))?;
+        let j_idx = *node_map.get(&element.node_j).ok_or(format!("Node {} not found", element.node_j))?;
+        let ni = &nodes[i_idx]; let nj = &nodes[j_idx];
+        let dx = nj.x - ni.x; let dy = nj.y - ni.y; let dz = nj.z - ni.z;
+        let length = (dx*dx + dy*dy + dz*dz).sqrt();
+        if length < 1e-10 { continue; }
+        let t_matrix = transformation_matrix_3d(dx, dy, dz, length, element.beta);
+        let mut f_thermal_local = DVector::zeros(12);
+        let f_axial = element.E * element.A * tl.alpha * tl.delta_t;
+        f_thermal_local[0] = -f_axial; f_thermal_local[6] = f_axial;
+        let iz_val = if element.Iz > 0.0 { element.Iz } else { element.Iy };
+        if tl.gradient_y.abs() > 1e-15 {
+            let m_bend_z = element.E * iz_val * tl.alpha * tl.gradient_y;
+            f_thermal_local[5] += m_bend_z; f_thermal_local[11] += -m_bend_z;
+        }
+        if tl.gradient_z.abs() > 1e-15 {
+            let m_bend_y = element.E * element.Iy * tl.alpha * tl.gradient_z;
+            f_thermal_local[4] += -m_bend_y; f_thermal_local[10] += m_bend_y;
+        }
+        let f_thermal_global = t_matrix.transpose() * f_thermal_local;
+        let dof_i = i_idx * 6; let dof_j = j_idx * 6;
+        for k in 0..6 { f_global[dof_i + k] += f_thermal_global[k]; f_global[dof_j + k] += f_thermal_global[6 + k]; }
+    }
+    
+    let f_total = f_global.clone() + fef_global.clone();
     
     // Identify free / fixed DOFs
     let mut free_dofs = Vec::new();
@@ -2506,7 +2572,24 @@ pub fn p_delta_analysis(
     }
     let n_free = free_dofs.len();
     if n_free == 0 {
-        return Ok(zero_displacement_result(&nodes, &elements));
+        // All fixed — compute reactions from K*0 - F (thermal/self-weight only)
+        let r_global = -&f_global - &fef_global;
+        let mut displacements = HashMap::new();
+        let mut reactions = HashMap::new();
+        for (idx, node) in nodes.iter().enumerate() {
+            let d = idx * 6;
+            displacements.insert(node.id.clone(), vec![0.0; 6]);
+            if node.restraints.iter().any(|&r| r) {
+                reactions.insert(node.id.clone(), vec![r_global[d], r_global[d+1], r_global[d+2], r_global[d+3], r_global[d+4], r_global[d+5]]);
+            }
+        }
+        let member_forces_map = calculate_member_forces(&elements, &nodes, &node_map, &DVector::zeros(num_dof), &all_distributed_loads, &point_loads_on_members)?;
+        return Ok(AnalysisResult3D {
+            success: true, error: None, displacements, reactions,
+            member_forces: member_forces_map, plate_results: HashMap::new(),
+            equilibrium_check: Some(EquilibriumCheck { applied_forces: vec![0.0;6], reaction_forces: vec![0.0;6], residual: vec![0.0;6], error_percent: 0.0, pass: true }),
+            condition_number: Some(1.0),
+        });
     }
     
     // ===== Step 2: Initial linear solve =====
@@ -2610,7 +2693,7 @@ pub fn p_delta_analysis(
         
         // Update member forces
         member_forces = calculate_member_forces(
-            &elements, &nodes, &node_map, &u_global, &distributed_loads, &empty_point_loads
+            &elements, &nodes, &node_map, &u_global, &all_distributed_loads, &point_loads_on_members
         )?;
         
         // Check convergence: relative change in displacement norm
@@ -3309,5 +3392,228 @@ mod tests {
                 assert!(*factor > 0.0, "Factor must be positive in '{}'", combo.name);
             }
         }
+    }
+    
+    // =================== P-DELTA INTEGRATION TESTS ===================
+    
+    fn pdelta_portal_frame() -> (Vec<Node3D>, Vec<Element3D>, Vec<NodalLoad>, Vec<DistributedLoad>) {
+        let nodes = vec![
+            make_node("N1", 0.0, 0.0, [true; 6]),
+            make_node("N2", 5.0, 0.0, [true; 6]),
+            make_node("N3", 0.0, 4.0, [false; 6]),
+            make_node("N4", 5.0, 4.0, [false; 6]),
+        ];
+        let elements = vec![
+            make_element("C1", "N1", "N3", 2e11, 0.01, 1.7e-4, 6e-5),
+            make_element("C2", "N2", "N4", 2e11, 0.01, 1.7e-4, 6e-5),
+            make_element("B1", "N3", "N4", 2e11, 0.01, 1.7e-4, 6e-5),
+        ];
+        let nodal_loads = vec![
+            NodalLoad { node_id: "N3".into(), fx: 20000.0, fy: -500000.0, fz: 0.0, mx: 0.0, my: 0.0, mz: 0.0 },
+            NodalLoad { node_id: "N4".into(), fx: 0.0, fy: -500000.0, fz: 0.0, mx: 0.0, my: 0.0, mz: 0.0 },
+        ];
+        (nodes, elements, nodal_loads, vec![])
+    }
+    
+    #[test]
+    fn test_pdelta_differs_from_linear() {
+        let (nodes, elements, nodal_loads, dist) = pdelta_portal_frame();
+        let linear = analyze_3d_frame(
+            nodes.clone(), elements.clone(), nodal_loads.clone(), dist.clone(),
+            vec![], vec![], AnalysisConfig::default(),
+        ).unwrap();
+        let pdelta = p_delta_analysis(
+            nodes, elements, nodal_loads, dist,
+            vec![], vec![], AnalysisConfig::default(), 20, 1e-6,
+        ).unwrap();
+        assert!(pdelta.success);
+        let lin_dx = linear.displacements["N3"][0];
+        let pd_dx = pdelta.displacements["N3"][0];
+        let diff_pct = ((pd_dx - lin_dx) / lin_dx).abs() * 100.0;
+        assert!(diff_pct > 0.01, "P-Delta should differ from linear by >0.01%; got {:.4}%", diff_pct);
+        assert!(!pd_dx.is_nan());
+    }
+    
+    #[test]
+    fn test_pdelta_equilibrium_check() {
+        let (nodes, elements, nodal_loads, dist) = pdelta_portal_frame();
+        let result = p_delta_analysis(
+            nodes, elements, nodal_loads, dist,
+            vec![], vec![], AnalysisConfig::default(), 20, 1e-5,
+        ).unwrap();
+        assert!(result.success);
+        let eq = result.equilibrium_check.expect("P-Delta must have equilibrium check");
+        assert!(eq.pass, "Equilibrium error = {:.4}%", eq.error_percent);
+    }
+    
+    #[test]
+    fn test_pdelta_with_temperature() {
+        let nodes = vec![
+            make_node("base", 0.0, 0.0, [true; 6]),
+            make_node("top", 0.0, 3.0, [false; 6]),
+        ];
+        let elements = vec![make_element("col", "base", "top", 2e11, 0.01, 8.33e-6, 8.33e-6)];
+        let nodal_loads = vec![
+            NodalLoad { node_id: "top".into(), fx: 5000.0, fy: -200000.0, fz: 0.0, mx: 0.0, my: 0.0, mz: 0.0 },
+        ];
+        let temp_loads = vec![
+            TemperatureLoad { element_id: "col".into(), delta_t: 50.0, alpha: 12e-6, gradient_y: 0.0, gradient_z: 0.0 },
+        ];
+        let result = p_delta_analysis(
+            nodes, elements, nodal_loads, vec![],
+            temp_loads, vec![], AnalysisConfig::default(), 20, 1e-6,
+        ).unwrap();
+        assert!(result.success);
+        assert!(result.displacements["top"][0].abs() > 0.0);
+    }
+    
+    #[test]
+    fn test_pdelta_self_weight_effect() {
+        let (nodes, elements, nodal_loads, dist) = pdelta_portal_frame();
+        let no_sw = p_delta_analysis(
+            nodes.clone(), elements.clone(), nodal_loads.clone(), dist.clone(),
+            vec![], vec![], AnalysisConfig { include_self_weight: false, ..Default::default() }, 20, 1e-6,
+        ).unwrap();
+        let sw = p_delta_analysis(
+            nodes, elements, nodal_loads, dist,
+            vec![], vec![], AnalysisConfig { include_self_weight: true, ..Default::default() }, 20, 1e-6,
+        ).unwrap();
+        assert!(sw.displacements["N3"][1].abs() > no_sw.displacements["N3"][1].abs());
+    }
+    
+    #[test]
+    fn test_pdelta_with_springs() {
+        let mut n2 = make_node("N2", 5.0, 0.0, [true, true, true, false, false, false]);
+        n2.spring_stiffness = Some(vec![0.0, 0.0, 0.0, 1e6, 1e6, 1e6]);
+        let nodes = vec![
+            make_node("N1", 0.0, 0.0, [true; 6]), n2,
+            make_node("N3", 0.0, 4.0, [false; 6]),
+            make_node("N4", 5.0, 4.0, [false; 6]),
+        ];
+        let elements = vec![
+            make_element("C1", "N1", "N3", 2e11, 0.01, 1.7e-4, 6e-5),
+            make_element("C2", "N2", "N4", 2e11, 0.01, 1.7e-4, 6e-5),
+            make_element("B1", "N3", "N4", 2e11, 0.01, 1.7e-4, 6e-5),
+        ];
+        let nodal_loads = vec![
+            NodalLoad { node_id: "N3".into(), fx: 10000.0, fy: -300000.0, fz: 0.0, mx: 0.0, my: 0.0, mz: 0.0 },
+            NodalLoad { node_id: "N4".into(), fx: 0.0, fy: -300000.0, fz: 0.0, mx: 0.0, my: 0.0, mz: 0.0 },
+        ];
+        let result = p_delta_analysis(
+            nodes, elements, nodal_loads, vec![], vec![], vec![], AnalysisConfig::default(), 20, 1e-6,
+        ).unwrap();
+        assert!(result.success);
+        let rot_sum: f64 = result.displacements["N2"][3..6].iter().map(|x| x.abs()).sum();
+        assert!(rot_sum > 0.0, "Spring node should rotate");
+    }
+    
+    #[test]
+    fn test_pdelta_input_validation() {
+        let err = p_delta_analysis(vec![], vec![], vec![], vec![], vec![], vec![], AnalysisConfig::default(), 10, 1e-4);
+        assert!(err.is_err() && err.unwrap_err().contains("No nodes"));
+        let nodes = vec![make_node("N1", 0.0, 0.0, [true; 6])];
+        let err = p_delta_analysis(nodes, vec![], vec![], vec![], vec![], vec![], AnalysisConfig::default(), 10, 1e-4);
+        assert!(err.is_err() && err.unwrap_err().contains("No elements"));
+    }
+    
+    #[test]
+    fn test_pdelta_convergence_small_load() {
+        let nodes = vec![make_node("A", 0.0, 0.0, [true; 6]), make_node("B", 0.0, 3.0, [false; 6])];
+        let elements = vec![make_element("E1", "A", "B", 2e11, 0.01, 8.33e-6, 8.33e-6)];
+        let loads = vec![NodalLoad { node_id: "B".into(), fx: 100.0, fy: -1000.0, fz: 0.0, mx: 0.0, my: 0.0, mz: 0.0 }];
+        let result = p_delta_analysis(nodes, elements, loads, vec![], vec![], vec![], AnalysisConfig::default(), 3, 1e-8).unwrap();
+        assert!(result.success && result.error.is_none(), "Small load should converge easily");
+    }
+    
+    #[test]
+    fn test_pdelta_point_loads_on_members() {
+        let (nodes, elements, nodal_loads, _) = pdelta_portal_frame();
+        let point_loads = vec![
+            PointLoadOnMember { element_id: "B1".into(), position: 0.5, magnitude: -50000.0, direction: LoadDirection::GlobalY, is_moment: false },
+        ];
+        let no_pl = p_delta_analysis(nodes.clone(), elements.clone(), nodal_loads.clone(), vec![], vec![], vec![], AnalysisConfig::default(), 20, 1e-6).unwrap();
+        let pl = p_delta_analysis(nodes, elements, nodal_loads, vec![], vec![], point_loads, AnalysisConfig::default(), 20, 1e-6).unwrap();
+        assert!(pl.displacements["N3"][1].abs() > no_pl.displacements["N3"][1].abs());
+    }
+    
+    // =================== EDGE CASE TESTS ===================
+    
+    #[test]
+    fn test_10_storey_frame() {
+        let mut nodes = Vec::new();
+        let mut elements = Vec::new();
+        let storey_h = 3.0;
+        let bay_w = 6.0;
+        for i in 0..=10u32 {
+            let y = i as f64 * storey_h;
+            let fix = if i == 0 { [true; 6] } else { [false; 6] };
+            nodes.push(make_node(&format!("L{}", i), 0.0, y, fix));
+            nodes.push(make_node(&format!("R{}", i), bay_w, y, fix));
+        }
+        for i in 0..10u32 {
+            elements.push(make_element(&format!("CL{}", i), &format!("L{}", i), &format!("L{}", i+1), 2e11, 0.015, 3e-4, 1e-4));
+            elements.push(make_element(&format!("CR{}", i), &format!("R{}", i), &format!("R{}", i+1), 2e11, 0.015, 3e-4, 1e-4));
+        }
+        for i in 1..=10u32 {
+            elements.push(make_element(&format!("B{}", i), &format!("L{}", i), &format!("R{}", i), 2e11, 0.012, 2e-4, 8e-5));
+        }
+        let loads = vec![
+            NodalLoad { node_id: "L10".into(), fx: 50000.0, fy: -100000.0, fz: 0.0, mx: 0.0, my: 0.0, mz: 0.0 },
+        ];
+        let result = analyze_3d_frame(nodes, elements, loads, vec![], vec![], vec![], AnalysisConfig::default()).unwrap();
+        assert!(result.success);
+        assert!(result.displacements["L10"][0].abs() > 1e-6, "10-storey should deflect");
+        let eq = result.equilibrium_check.unwrap();
+        assert!(eq.pass, "10-storey equilibrium error = {:.4}%", eq.error_percent);
+    }
+    
+    #[test]
+    fn test_combined_loads_all_types() {
+        let nodes = vec![
+            make_node("A", 0.0, 0.0, [true; 6]),
+            make_node("B", 5.0, 0.0, [false, true, true, true, true, false]),
+        ];
+        let elements = vec![make_element("M1", "A", "B", 200e9, 0.01, 1e-4, 1e-4)];
+        let nodal_loads = vec![
+            NodalLoad { node_id: "B".into(), fx: 10000.0, fy: 0.0, fz: 0.0, mx: 0.0, my: 0.0, mz: 5000.0 },
+        ];
+        let dist_loads = vec![
+            DistributedLoad { element_id: "M1".into(), w1: -10000.0, w2: -10000.0, direction: LoadDirection::GlobalY, start_pos: 0.0, end_pos: 1.0 },
+        ];
+        let temp_loads = vec![
+            TemperatureLoad { element_id: "M1".into(), delta_t: 30.0, alpha: 12e-6, gradient_y: 10.0, gradient_z: 0.0 },
+        ];
+        let point_loads = vec![
+            PointLoadOnMember { element_id: "M1".into(), position: 0.5, magnitude: -20000.0, direction: LoadDirection::GlobalY, is_moment: false },
+        ];
+        let result = analyze_3d_frame(
+            nodes, elements, nodal_loads, dist_loads, temp_loads, point_loads,
+            AnalysisConfig { include_self_weight: true, ..Default::default() },
+        ).unwrap();
+        assert!(result.success, "Combined loads: {:?}", result.error);
+        let eq = result.equilibrium_check.unwrap();
+        assert!(eq.pass, "Combined equilibrium error = {:.4}%", eq.error_percent);
+    }
+    
+    #[test]
+    fn test_3d_space_frame() {
+        let nodes = vec![
+            make_node("A", 0.0, 0.0, [true; 6]),
+            make_node("B", 4.0, 0.0, [true; 6]),
+            Node3D { id: "C".into(), x: 2.0, y: 3.0, z: 2.0, restraints: [false; 6], mass: None, spring_stiffness: None },
+        ];
+        let elements = vec![
+            make_element("E1", "A", "C", 2e11, 0.008, 1e-4, 1e-4),
+            make_element("E2", "B", "C", 2e11, 0.008, 1e-4, 1e-4),
+        ];
+        let loads = vec![
+            NodalLoad { node_id: "C".into(), fx: 5000.0, fy: -100000.0, fz: 3000.0, mx: 0.0, my: 0.0, mz: 0.0 },
+        ];
+        let result = analyze_3d_frame(nodes, elements, loads, vec![], vec![], vec![], AnalysisConfig::default()).unwrap();
+        assert!(result.success);
+        let c_disp = &result.displacements["C"];
+        assert!(c_disp[0].abs() > 1e-10, "X displacement should be non-zero");
+        assert!(c_disp[1].abs() > 1e-10, "Y displacement should be non-zero");
+        assert!(c_disp[2].abs() > 1e-10, "Z displacement should be non-zero");
     }
 }

@@ -14,7 +14,7 @@
         "test:e2e": "playwright test",
         "test:e2e:ui": "playwright test --ui",
         "test:e2e:headed": "playwright test --headed",
-        "test:regression": "node ./tests/regression/run.js",
+        "test:regression": "node ./tests/regression/run.cjs",
         "test:ui": "vitest --ui",
         "test:run": "vitest run",
         "analyze": "node ../../scripts/analyze-bundle.js",

@@ -13,6 +13,7 @@ import init, {
   solve_3d_frame,
   solve_3d_frame_extended,
   solve_p_delta,
+  solve_p_delta_extended,
   analyze_buckling,
   get_solver_info,
   combine_load_cases as wasm_combine_load_cases,
@@ -434,6 +435,81 @@ export async function analyzePDelta(
     };
   } catch (error) {
     wasmLogger.error("P-Delta analysis failed:", error);
+    return {
+      displacements: {},
+      reactions: {},
+      member_forces: {},
+      success: false,
+      converged: false,
+      error: String(error),
+    };
+  }
+}
+
+/**
+ * Extended P-Delta analysis with temperature loads, point loads on members, and self-weight config.
+ * Uses solve_p_delta_extended WASM binding.
+ */
+export async function analyzePDeltaExtended(
+  nodes: Node[],
+  elements: Element[],
+  pointLoads: PointLoad[],
+  memberLoads: MemberLoad[] = [],
+  temperatureLoads: TemperatureLoad[] = [],
+  pointLoadsOnMembers: PointLoadOnMember[] = [],
+  config: AnalysisConfig | null = null,
+  maxIterations: number = 20,
+  tolerance: number = 1e-4,
+): Promise<PDeltaResult> {
+  if (!wasmInitialized) {
+    await initSolver();
+  }
+
+  try {
+    wasmLogger.info("Running Extended P-Delta analysis...");
+    const startTime = performance.now();
+
+    const result = solve_p_delta_extended(
+      nodes,
+      elements,
+      pointLoads,
+      memberLoads,
+      temperatureLoads,
+      pointLoadsOnMembers,
+      config,
+      maxIterations,
+      tolerance,
+    );
+
+    const solveTime = performance.now() - startTime;
+    wasmLogger.success("Extended P-Delta completed in", solveTime.toFixed(2), "ms");
+
+    if (result.error) {
+      return {
+        displacements: {},
+        reactions: {},
+        member_forces: {},
+        success: false,
+        converged: false,
+        error: result.error,
+      };
+    }
+
+    return {
+      displacements: jsMapToPlainObject(result.displacements),
+      reactions: jsMapToPlainObject(result.reactions),
+      member_forces: jsMapToPlainObject(result.member_forces),
+      success: true,
+      converged: result.converged || false,
+      iterations: result.iterations,
+      equilibrium_check: result.equilibrium_check,
+      stats: {
+        solveTimeMs: solveTime,
+        method: "P-Delta Extended (Temperature+Springs+Self-Weight)",
+      },
+    };
+  } catch (error) {
+    wasmLogger.error("Extended P-Delta analysis failed:", error);
     return {
       displacements: {},
       reactions: {},
@@ -894,6 +970,7 @@ export const wasmSolver = {
   initialize: initSolver,
   analyze: analyzeStructure,
   analyzePDelta,
+  analyzePDeltaExtended,
   analyzeBuckling,
   isSolverReady,
   getSolverInfo,
