@@ -211,14 +211,34 @@ export async function runAnalysis(): Promise<{
       Object.entries(memberForcesData as Record<string, MemberForces>).forEach(
         ([id, forces]) => {
           // BUG FIX: Map from Rust field names (shear_start, moment_start, etc.)
-          const axial = forces?.axial ?? 0;
-          const shearStart = forces?.shear_start ?? 0;
-          const momentStart = forces?.moment_start ?? 0;
-          const shearEnd = forces?.shear_end ?? 0;
-          const momentEnd = forces?.moment_end ?? 0;
+          let axial = forces?.axial ?? 0;
+          let shearStart = forces?.shear_start ?? 0;
+          let momentStart = forces?.moment_start ?? 0;
+          let shearEnd = forces?.shear_end ?? 0;
+          let momentEnd = forces?.moment_end ?? 0;
 
           // Find the member to generate diagram data
           const member = members.find((m) => m.id === id);
+
+          // Zero released DOFs — a released DOF carries no internal force
+          if (member?.releases) {
+            const rel = member.releases;
+            if (rel.mzStart || (rel as Record<string, unknown>).startMoment) momentStart = 0;
+            if (rel.mzEnd || (rel as Record<string, unknown>).endMoment) momentEnd = 0;
+            if (rel.fyStart) shearStart = 0;
+            if (rel.fyEnd) shearEnd = 0;
+            if (rel.fxStart || rel.fxEnd) axial = 0;
+          }
+          // Clean numerical noise
+          const peak = Math.max(Math.abs(axial), Math.abs(shearStart), Math.abs(momentStart), Math.abs(shearEnd), Math.abs(momentEnd));
+          if (peak > 1e-15) {
+            const tol = peak * 1e-6;
+            if (Math.abs(axial) < tol) axial = 0;
+            if (Math.abs(shearStart) < tol) shearStart = 0;
+            if (Math.abs(momentStart) < tol) momentStart = 0;
+            if (Math.abs(shearEnd) < tol) shearEnd = 0;
+            if (Math.abs(momentEnd) < tol) momentEnd = 0;
+          }
           let diagramData: MemberForceData["diagramData"] | undefined;
 
           if (member) {

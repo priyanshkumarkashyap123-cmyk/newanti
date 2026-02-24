@@ -231,6 +231,10 @@ export interface SolverConfig {
   duration?: number; // For dynamic analysis
   targetVolume?: number; // For topology optimization (0-1 fraction)
   selfWeight?: boolean; // Auto-apply member self-weight (-Y direction)
+  // M8: Rayleigh damping parameters for dynamic analysis
+  dampingRatio?: number;   // Damping ratio ζ (default 0.05 = 5%)
+  firstModeFreq?: number;  // First mode frequency in Hz (default 1.0)
+  thirdModeFreq?: number;  // Third mode frequency in Hz (default 5.0)
 }
 
 /** Load Combination request (processed via WASM) */
@@ -255,6 +259,13 @@ export interface ResultData {
   reactions?: Float64Array; // Transferable (per DOF)
   memberForces?: MemberForceResult[]; // Small payload; object array for clarity
   densities?: Record<string, number>; // Topology optimization densities
+  equilibrium_check?: {
+    applied_forces: number[];
+    reaction_forces: number[];
+    residual: number[];
+    error_percent: number;
+    pass: boolean;
+  };
   stats: {
     assemblyTimeMs: number;
     solveTimeMs: number;
@@ -656,6 +667,8 @@ function assembleStiffnessMatrixAndForces(
       );
     }
 
+    try { // H6: Catch bad-element errors — skip with warning instead of crashing
+
     const startIdx = nodeIndexMap.get(member.startNodeId);
     const endIdx = nodeIndexMap.get(member.endNodeId);
     if (startIdx === undefined || endIdx === undefined) continue;
@@ -834,6 +847,11 @@ function assembleStiffnessMatrixAndForces(
           }
         }
       }
+    }
+
+    } catch (memberErr) {
+      // H6: Skip bad member with warning — don't crash entire analysis
+      console.warn(`Warning: Skipping member ${member.id} (index ${m}) due to error:`, memberErr);
     }
   }
 
@@ -1976,6 +1994,39 @@ function computeMemberEndForces(
         }
       }
 
+      // ─── Zero released DOFs in force recovery ───
+      // The uncondensed stiffness k*u − FEF may produce non-zero forces at
+      // member-released DOFs (e.g. pin connections, moment releases).
+      // By definition, a released DOF carries zero force.
+      // Also clean tiny numerical residuals (< 1e-6 × peak force).
+      if (member.releases) {
+        const rel = member.releases;
+        if (rel.fxStart) fLocal12[0] = 0;
+        if (rel.fyStart) fLocal12[1] = 0;
+        if (rel.fzStart) fLocal12[2] = 0;
+        if (rel.mxStart) fLocal12[3] = 0;
+        if (rel.myStart) fLocal12[4] = 0;
+        if (rel.mzStart) fLocal12[5] = 0;
+        if (rel.fxEnd) fLocal12[6] = 0;
+        if (rel.fyEnd) fLocal12[7] = 0;
+        if (rel.fzEnd) fLocal12[8] = 0;
+        if (rel.mxEnd) fLocal12[9] = 0;
+        if (rel.myEnd) fLocal12[10] = 0;
+        if (rel.mzEnd) fLocal12[11] = 0;
+      }
+      // Clean numerical noise: zero values below 1e-6 of peak force
+      let peakF12 = 0;
+      for (let k = 0; k < 12; k++) {
+        const absV = Math.abs(fLocal12[k]);
+        if (absV > peakF12) peakF12 = absV;
+      }
+      if (peakF12 > 1e-15) {
+        const tol12 = peakF12 * 1e-6;
+        for (let k = 0; k < 12; k++) {
+          if (Math.abs(fLocal12[k]) < tol12) fLocal12[k] = 0;
+        }
+      }
+
       results.push({
         id: member.id,
         localDisplacements: uLocal12,
@@ -2155,6 +2206,29 @@ function computeMemberEndForces(
             fLocal[4] -= -R1;
             fLocal[5] -= M2;
           }
+        }
+      }
+
+      // Zero released DOFs for 2D frame (DOFs: [axial1, shear1, moment1, axial2, shear2, moment2])
+      if (member.releases) {
+        const rel = member.releases;
+        if (rel.fxStart) fLocal[0] = 0;
+        if (rel.fyStart) fLocal[1] = 0;
+        if (rel.mzStart) fLocal[2] = 0;
+        if (rel.fxEnd) fLocal[3] = 0;
+        if (rel.fyEnd) fLocal[4] = 0;
+        if (rel.mzEnd) fLocal[5] = 0;
+      }
+      // Clean numerical noise
+      let peakF6 = 0;
+      for (let k = 0; k < 6; k++) {
+        const absV = Math.abs(fLocal[k]);
+        if (absV > peakF6) peakF6 = absV;
+      }
+      if (peakF6 > 1e-15) {
+        const tol6 = peakF6 * 1e-6;
+        for (let k = 0; k < 6; k++) {
+          if (Math.abs(fLocal[k]) < tol6) fLocal[k] = 0;
         }
       }
 
@@ -2680,6 +2754,108 @@ function computeReactions(
 }
 
 /**
+ * Equilibrium check: ΣReactions ≈ ΣApplied for force/moment balance.
+ * Returns an object matching the Rust EquilibriumCheck format.
+ *
+ * For 2D (dofPerNode=3): checks Fx, Fy, Mz
+ * For 3D (dofPerNode=6): checks all 6 components
+ */
+interface EquilibriumCheckResult {
+  applied_forces: number[];
+  reaction_forces: number[];
+  residual: number[];
+  error_percent: number;
+  pass: boolean;
+}
+
+function computeEquilibriumCheck(
+  nodes: NodeData[],
+  loads: LoadData[],
+  reactions: Float64Array,
+  fixedDofs: Set<number>,
+  dofPerNode: number,
+): EquilibriumCheckResult {
+  const nComp = dofPerNode <= 3 ? 3 : 6; // [Fx,Fy,Mz] or [Fx,Fy,Fz,Mx,My,Mz]
+  const sumApplied = new Array(nComp).fill(0);
+  const sumReactions = new Array(nComp).fill(0);
+
+  // Sum applied nodal loads
+  const nodeIndexMap = new Map<string, number>();
+  nodes.forEach((n, i) => nodeIndexMap.set(n.id, i));
+
+  for (const load of loads) {
+    const idx = nodeIndexMap.get(load.nodeId);
+    if (idx === undefined) continue;
+    const n = nodes[idx];
+    if (!n) continue;
+    if (dofPerNode <= 3) {
+      sumApplied[0] += load.fx || 0;
+      sumApplied[1] += load.fy || 0;
+      // Moment about origin: Mz += mz + x*Fy - y*Fx
+      sumApplied[2] += (load.mz || 0) + (n.x * (load.fy || 0)) - (n.y * (load.fx || 0));
+    } else {
+      sumApplied[0] += load.fx || 0;
+      sumApplied[1] += load.fy || 0;
+      sumApplied[2] += load.fz || 0;
+      const nx = n.x, ny = n.y, nz = n.z || 0;
+      sumApplied[3] += (load.mx || 0) + ny * (load.fz || 0) - nz * (load.fy || 0);
+      sumApplied[4] += (load.my || 0) + nz * (load.fx || 0) - nx * (load.fz || 0);
+      sumApplied[5] += (load.mz || 0) + nx * (load.fy || 0) - ny * (load.fx || 0);
+    }
+  }
+
+  // Sum reaction forces at fixed DOFs
+  for (let i = 0; i < nodes.length; i++) {
+    const n = nodes[i];
+    if (!n) continue;
+    const baseDof = i * dofPerNode;
+    // Check if this node has any restrained DOFs
+    let hasRestraint = false;
+    for (let d = 0; d < dofPerNode; d++) {
+      if (fixedDofs.has(baseDof + d)) { hasRestraint = true; break; }
+    }
+    if (!hasRestraint) continue;
+
+    if (dofPerNode <= 3) {
+      const rx = reactions[baseDof] ?? 0;
+      const ry = reactions[baseDof + 1] ?? 0;
+      const rmz = reactions[baseDof + 2] ?? 0;
+      sumReactions[0] += rx;
+      sumReactions[1] += ry;
+      sumReactions[2] += rmz + (n.x * ry) - (n.y * rx);
+    } else {
+      const rx = reactions[baseDof] ?? 0;
+      const ry = reactions[baseDof + 1] ?? 0;
+      const rz = reactions[baseDof + 2] ?? 0;
+      sumReactions[0] += rx;
+      sumReactions[1] += ry;
+      sumReactions[2] += rz;
+      const nx = n.x, ny = n.y, nz = n.z || 0;
+      sumReactions[3] += (reactions[baseDof + 3] ?? 0) + ny * rz - nz * ry;
+      sumReactions[4] += (reactions[baseDof + 4] ?? 0) + nz * rx - nx * rz;
+      sumReactions[5] += (reactions[baseDof + 5] ?? 0) + nx * ry - ny * rx;
+    }
+  }
+
+  const residual = sumApplied.map((ap, i) => ap + (sumReactions[i] ?? 0));
+  let maxMag = 0;
+  let maxRes = 0;
+  for (let i = 0; i < nComp; i++) {
+    maxMag = Math.max(maxMag, Math.abs(sumApplied[i]), Math.abs(sumReactions[i] ?? 0));
+    maxRes = Math.max(maxRes, Math.abs(residual[i] ?? 0));
+  }
+  const errorPct = maxMag > 1e-10 ? (maxRes / maxMag) * 100 : 0;
+
+  return {
+    applied_forces: sumApplied,
+    reaction_forces: sumReactions,
+    residual,
+    error_percent: errorPct,
+    pass: errorPct < 0.1,
+  };
+}
+
+/**
  * Apply static condensation for member releases (hinges).
  * For each released DOF r in the element local stiffness matrix:
  *   k_condensed[i][j] = k[i][j] - k[i][r]*k[r][j] / k[r][r]
@@ -2903,23 +3079,38 @@ async function analyze(model: ModelData): Promise<ResultData> {
       const gamma = 0.5;
       const beta = 0.25;
 
+      // M8: Rayleigh damping — C = α_M * M + β_K * K
+      // Default: 5% damping at 1st & 3rd mode approximation
+      // α_M & β_K from config or estimated from typical structural damping
+      const dampingRatio = config.dampingRatio ?? 0.05; // 5% of critical (typical steel/concrete)
+      // Approximate: for ω1~2π & ω2~6π → α_M ≈ 2ζω1ω2/(ω1+ω2), β_K ≈ 2ζ/(ω1+ω2)
+      // Simplified Rayleigh coefficients for typical building (f1≈1Hz, f3≈5Hz)
+      const omega1 = 2 * Math.PI * (config.firstModeFreq ?? 1.0); // rad/s
+      const omega2 = 2 * Math.PI * (config.thirdModeFreq ?? 5.0);
+      const alpha_M = 2 * dampingRatio * omega1 * omega2 / (omega1 + omega2);
+      const beta_K = 2 * dampingRatio / (omega1 + omega2);
+
       // Effective Stiffness K_hat = K + (1/(beta*dt^2))*M + (gamma/(beta*dt))*C
-      // Assuming C = 0 for now (Undamped)
+      // C = α_M * M + β_K * K  →  K_hat = (1 + β_K*γ/(β*dt))*K + (1/(β*dt²) + α_M*γ/(β*dt))*M
       const a0 = 1 / (beta * dt * dt);
-      void (gamma / (beta * dt));
+      const a1_coeff = gamma / (beta * dt);
+
+      // K_hat coefficients
+      const kScale = 1.0 + beta_K * a1_coeff;   // multiplier for K entries
+      const mScale = a0 + alpha_M * a1_coeff;    // multiplier for M entries
 
       // Combine K and M into K_hat entries (object array for legacy solveSystemWasm)
-      // Convert K TypedArrays to object entries for merging with M
+      // K_hat = kScale * K + mScale * M
       const entriesK_hat: SparseEntry[] = [];
       for (let i = 0; i < kResult.nnz; i++) {
         entriesK_hat.push({
           row: kResult.cooRows[i] ?? 0,
           col: kResult.cooCols[i] ?? 0,
-          value: kResult.cooVals[i] ?? 0,
+          value: (kResult.cooVals[i] ?? 0) * kScale,
         });
       }
       for (const em of entriesM) {
-        entriesK_hat.push({ row: em.row, col: em.col, value: em.value * a0 });
+        entriesK_hat.push({ row: em.row, col: em.col, value: em.value * mScale });
       }
 
       // Apply BCs to K_hat (Penalty)
@@ -2958,13 +3149,23 @@ async function analyze(model: ModelData): Promise<ResultData> {
         for (let i = 0; i < dof; i++) F_eff[i] = F_static[i] ?? 0;
 
         // Add Inertial terms M * (p_u*u + p_v*v + p_a*a)
+        // + Damping terms C * (c_u*u + c_v*v + c_a*a)
+        // C = α_M * M + β_K * K → for lumped M: C_diag_mass = α_M * M_diag
+        // K contribution handled via β_K already baked into K_hat
+        const c_u = a1_coeff;         // γ/(β·dt)
+        const c_v = gamma / beta - 1;
+        const c_a = dt * (gamma / (2 * beta) - 1);
+
         // Since M is diagonal (Lumped), easy loop
         if (M_diag) {
           for (let i = 0; i < dof; i++) {
             const m_val = M_diag[i] ?? 0;
-            const acc_pred =
+            const inertia_pred =
               p_u * (u[i] ?? 0) + p_v * (v[i] ?? 0) + p_a * (a[i] ?? 0);
-            F_eff[i] = (F_eff[i] ?? 0) + m_val * acc_pred;
+            // Rayleigh mass-proportional damping predictor
+            const damp_pred =
+              alpha_M * (c_u * (u[i] ?? 0) + c_v * (v[i] ?? 0) + c_a * (a[i] ?? 0));
+            F_eff[i] = (F_eff[i] ?? 0) + m_val * (inertia_pred + damp_pred);
           }
         }
 
@@ -3471,12 +3672,23 @@ async function analyze(model: ModelData): Promise<ResultData> {
         model,
         nodeIndexMap,
       );
+
+      // C4: Equilibrium check — verify ΣReactions ≈ ΣApplied
+      const equilibriumCheck = computeEquilibriumCheck(
+        model.nodes,
+        model.loads,
+        reactions,
+        linResult.fixedDofs,
+        model.dofPerNode,
+      );
+
       return {
         type: "result",
         success: true,
         displacements,
         reactions,
         memberForces: enrichedForces,
+        equilibrium_check: equilibriumCheck,
         stats: {
           assemblyTimeMs,
           solveTimeMs,

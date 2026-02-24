@@ -155,12 +155,15 @@ pub async fn api_key_middleware(
 }
 
 /// CORS preflight handler
+/// Note: The CorsLayer in main.rs handles OPTIONS automatically.
+/// This handler is kept as a fallback with matching allowed headers.
 pub async fn cors_preflight() -> impl IntoResponse {
     Response::builder()
         .status(StatusCode::NO_CONTENT)
-        .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*")
-        .header(header::ACCESS_CONTROL_ALLOW_METHODS, "GET, POST, PUT, DELETE, OPTIONS")
-        .header(header::ACCESS_CONTROL_ALLOW_HEADERS, "Content-Type, Authorization, X-API-Key")
+        .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "https://beamlabultimate.tech")
+        .header(header::ACCESS_CONTROL_ALLOW_METHODS, "GET, POST, PUT, DELETE, OPTIONS, PATCH")
+        .header(header::ACCESS_CONTROL_ALLOW_HEADERS, "Content-Type, Authorization, Accept, Origin, Cache-Control, X-API-Key, X-Requested-With, X-Request-ID, sentry-trace, baggage")
+        .header(header::ACCESS_CONTROL_ALLOW_CREDENTIALS, "true")
         .header(header::ACCESS_CONTROL_MAX_AGE, "86400")
         .body(Body::empty())
         .unwrap()

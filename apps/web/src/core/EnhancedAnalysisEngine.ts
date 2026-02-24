@@ -1669,6 +1669,33 @@ export class EnhancedAnalysisEngine {
         for (let i = 0; i < 12; i++) f[i] -= storedFEF[i];
       }
 
+      // ---- Step 4b: Zero released DOFs in force recovery ----
+      // The uncondensed stiffness k*u − FEF can give non-zero forces at
+      // member-released DOFs (e.g., pin connections). By definition, a
+      // released DOF carries zero internal force.
+      if (member.releases) {
+        const rel = member.releases;
+        if (rel.fxStart) f[0] = 0;
+        if (rel.fyStart) f[1] = 0;
+        if (rel.fzStart) f[2] = 0;
+        if (rel.mxStart) f[3] = 0;
+        if (rel.myStart) f[4] = 0;
+        if (rel.mzStart) f[5] = 0;
+        if (rel.fxEnd) f[6] = 0;
+        if (rel.fyEnd) f[7] = 0;
+        if (rel.fzEnd) f[8] = 0;
+        if (rel.mxEnd) f[9] = 0;
+        if (rel.myEnd) f[10] = 0;
+        if (rel.mzEnd) f[11] = 0;
+      }
+      // Clean numerical noise: zero values below 1e-6 of peak force
+      let peakAbs = 0;
+      for (let i = 0; i < 12; i++) { const a = Math.abs(f[i]); if (a > peakAbs) peakAbs = a; }
+      if (peakAbs > 1e-15) {
+        const tol = peakAbs * 1e-6;
+        for (let i = 0; i < 12; i++) { if (Math.abs(f[i]) < tol) f[i] = 0; }
+      }
+
       // ---- Step 5: Internal forces at stations via left free-body equilibrium ----
       //
       // Effective distributed loads back-computed from end force imbalance:

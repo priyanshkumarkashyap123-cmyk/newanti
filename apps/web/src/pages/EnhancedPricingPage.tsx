@@ -52,8 +52,8 @@ interface PricingPlan {
 const INDIA_MARKET = {
   country: "India",
   currencyCode: "INR",
-  usdToInr: 83,
-  maxPppDiscount: 0.6,
+  usdToInr: 1, // Prices are now natively in INR
+  maxPppDiscount: 0,
 };
 
 type MarketMode = "india" | "global";
@@ -83,8 +83,8 @@ const PLANS: PricingPlan[] = [
     id: "pro",
     name: "Professional",
     description: "For independent practicing structural engineers",
-    monthlyPrice: 99,
-    yearlyPrice: 79,
+    monthlyPrice: 999,
+    yearlyPrice: 799,
     icon: <Zap className="w-6 h-6" />,
     features: [
       "Unlimited projects & storage",
@@ -106,8 +106,8 @@ const PLANS: PricingPlan[] = [
     id: "team",
     name: "Business",
     description: "For growing engineering firms and consultancies",
-    monthlyPrice: 249,
-    yearlyPrice: 199,
+    monthlyPrice: 1999,
+    yearlyPrice: 1599,
     icon: <Users className="w-6 h-6" />,
     features: [
       "Everything in Professional, plus:",
@@ -391,7 +391,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Do you provide India-specific pricing?",
-    a: "Yes. We support India-focused commercial terms with PPP-based discounts (up to 60%), INR-oriented quoting, and flexible billing options for freelancers, firms, and institutions.",
+    a: "Yes. All our prices are in Indian Rupees (₹). We offer UPI-friendly checkout via Razorpay, GST-ready invoicing, and flexible billing options for freelancers, firms, and institutions.",
   },
   {
     q: "Can you provide GST-compliant invoices for Indian teams?",
@@ -464,18 +464,22 @@ export const EnhancedPricingPage: FC = () => {
 
   const formatPrice = (plan: PricingPlan) => {
     if (plan.monthlyPrice === null) return "Custom";
-    if (plan.monthlyPrice === 0) return "$0";
+    if (plan.monthlyPrice === 0) return "₹0";
     const price =
       billingPeriod === "yearly" ? plan.yearlyPrice : plan.monthlyPrice;
-    return `$${price}`;
-  };
-
-  const formatInr = (usdPrice: number) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
-      currency: INDIA_MARKET.currencyCode,
+      currency: "INR",
       maximumFractionDigits: 0,
-    }).format(usdPrice * INDIA_MARKET.usdToInr);
+    }).format(price!);
+  };
+
+  const formatInr = (inrPrice: number) => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(inrPrice);
   };
 
   const getIndiaPPPPrice = (plan: PricingPlan) => {
@@ -573,9 +577,7 @@ export const EnhancedPricingPage: FC = () => {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-6"
           >
             <Sparkles className="w-4 h-4" />
-            {marketMode === "india"
-              ? "India-ready pricing, UPI-friendly checkout, and 14-day free trial."
-              : "14-day free trial with flexible global pricing options."}
+            All prices in Indian Rupees (₹). 14-day free trial included.
           </motion.div>
 
           <motion.h1
@@ -601,26 +603,9 @@ export const EnhancedPricingPage: FC = () => {
           </motion.p>
 
           <div className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/70 p-1 mb-10">
-            <button
-              onClick={() => applyMarketMode("india")}
-              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                marketMode === "india"
-                  ? "bg-blue-500 text-white"
-                  : "text-slate-300 hover:text-white"
-              }`}
-            >
-              India View
-            </button>
-            <button
-              onClick={() => applyMarketMode("global")}
-              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                marketMode === "global"
-                  ? "bg-blue-500 text-white"
-                  : "text-slate-300 hover:text-white"
-              }`}
-            >
-              Global View
-            </button>
+            <span className="px-4 py-1.5 rounded-full text-xs font-semibold bg-blue-500 text-white">
+              🇮🇳 All prices in ₹ (INR)
+            </span>
           </div>
 
           {/* Billing Toggle */}
@@ -700,25 +685,10 @@ export const EnhancedPricingPage: FC = () => {
                     /month {billingPeriod === "yearly" && "(billed yearly)"}
                   </span>
                 )}
-                {marketMode === "india" &&
-                  plan.monthlyPrice !== null &&
+                {plan.monthlyPrice !== null &&
                   plan.monthlyPrice > 0 && (
                     <p className="text-xs text-emerald-400 mt-2">
-                      India PPP eligible: as low as {getIndiaPPPPrice(plan)}
-                      /month*
-                    </p>
-                  )}
-                {marketMode === "india" &&
-                  plan.monthlyPrice !== null &&
-                  plan.monthlyPrice > 0 && (
-                    <p className="text-xs text-slate-500 mt-1">
-                      Approx. India list:{" "}
-                      {formatInr(
-                        billingPeriod === "yearly"
-                          ? (plan.yearlyPrice ?? plan.monthlyPrice)
-                          : plan.monthlyPrice,
-                      )}
-                      /month
+                      GST-ready invoicing &amp; UPI checkout available
                     </p>
                   )}
               </div>
@@ -1010,11 +980,11 @@ export const EnhancedPricingPage: FC = () => {
                 <ul className="space-y-4">
                   <li className="flex items-start gap-3 text-slate-500">
                     <span className="mt-1 text-red-400/50">✕</span>
-                    $3,000+ upfront license fee
+                    ₹2,50,000+ upfront license fee
                   </li>
                   <li className="flex items-start gap-3 text-slate-500">
                     <span className="mt-1 text-red-400/50">✕</span>
-                    $800/year mandatory maintenance
+                    ₹65,000/year mandatory maintenance
                   </li>
                   <li className="flex items-start gap-3 text-slate-500">
                     <span className="mt-1 text-red-400/50">✕</span>

@@ -59,9 +59,9 @@ export async function performHealthCheck(
     const response = await fetch(url, {
       method: 'GET',
       signal: controller.signal,
-      headers: {
-        'Cache-Control': 'no-cache',
-      },
+      // Note: Avoid sending Cache-Control header as it triggers CORS preflight
+      // which Azure platform-level CORS may block. Use cache: 'no-store' instead.
+      cache: 'no-store',
     });
 
     clearTimeout(timeoutId);

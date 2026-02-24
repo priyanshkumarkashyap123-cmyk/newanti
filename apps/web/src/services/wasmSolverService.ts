@@ -9,12 +9,16 @@
 
 import { wasmLogger } from "../utils/logger";
 import init, {
-  solve_structure_wasm,
+  set_panic_hook,
   solve_3d_frame,
   solve_3d_frame_extended,
   solve_p_delta,
   solve_p_delta_extended,
   analyze_buckling,
+  modal_analysis as wasm_modal_analysis,
+  solve_response_spectrum as wasm_response_spectrum,
+  solve_ultra_fast as wasm_solve_ultra_fast,
+  benchmark_ultra_fast as wasm_benchmark_ultra_fast,
   get_solver_info,
   combine_load_cases as wasm_combine_load_cases,
   get_standard_combinations_is800,
@@ -184,6 +188,50 @@ export interface BucklingResult {
   error?: string;
 }
 
+export interface ModalAnalysisResult {
+  success: boolean;
+  error?: string;
+  frequencies: number[];    // Natural frequencies (Hz)
+  periods: number[];        // Natural periods (s)
+  mode_shapes: Record<string, number[]>[];  // Mode shapes per node
+  mass_participation: Record<string, number>[];  // Mass participation factors
+}
+
+export interface ResponseSpectrumInput {
+  zoneFactor: number;         // IS 1893 zone factor (or PGA)
+  importanceFactor: number;   // Building importance factor
+  responseReduction: number;  // Response reduction factor R
+  soilType: number;           // 1=Rock, 2=Medium, 3=Soft
+}
+
+export interface ResponseSpectrumResult {
+  success: boolean;
+  error?: string;
+  base_shear?: number;
+  storey_forces?: number[];
+  storey_displacements?: number[];
+  modal_contributions?: any[];
+}
+
+export interface UltraFastResult {
+  success: boolean;
+  error?: string;
+  displacements?: Record<string, number[]>;
+  reactions?: Record<string, number[]>;
+  member_forces?: Record<string, any>;
+  solve_time_us?: number;
+}
+
+export interface BenchmarkResult {
+  num_nodes: number;
+  num_elements: number;
+  iterations: number;
+  mean_us: number;
+  median_us: number;
+  min_us: number;
+  target_met: boolean;
+}
+
 export interface SolverInfo {
   version: string;
   capabilities: string[];
@@ -207,6 +255,8 @@ export async function initSolver(): Promise<void> {
 
   try {
     await init();
+    // Enable readable Rust panic stack traces in browser console
+    try { set_panic_hook(); } catch (_) { /* older builds may lack this export */ }
     wasmInitialized = true;
     wasmLogger.success("WASM Solver initialized successfully");
 
@@ -597,6 +647,204 @@ export async function analyzeBuckling(
 }
 
 // ============================================
+// MODAL ANALYSIS (C1: Frequency extraction)
+// ============================================
+
+/**
+ * Perform modal (eigenvalue) analysis to extract natural frequencies and mode shapes.
+ *
+ * Solves the generalized eigenvalue problem: [K]{φ} = ω²[M]{φ}
+ *
+ * @param nodes - Structure nodes
+ * @param elements - Structure elements (must have density for mass)
+ * @param numModes - Number of modes to extract (default: 6)
+ * @returns Modal result with frequencies, periods, mode shapes, participation
+ */
+export async function analyzeModal(
+  nodes: Node[],
+  elements: Element[],
+  numModes: number = 6,
+): Promise<ModalAnalysisResult> {
+  if (!wasmInitialized) await initSolver();
+
+  try {
+    wasmLogger.info("Running modal analysis for", numModes, "modes...");
+    const startTime = performance.now();
+
+    let result = wasm_modal_analysis(nodes, elements, numModes);
+
+    // Handle JSON string return
+    if (typeof result === "string") {
+      try { result = JSON.parse(result); } catch (_) {
+        return { success: false, frequencies: [], periods: [], mode_shapes: [], mass_participation: [], error: result };
+      }
+    }
+
+    const solveTime = performance.now() - startTime;
+    wasmLogger.success("Modal analysis completed in", solveTime.toFixed(2), "ms");
+
+    if (result.error) {
+      return { success: false, frequencies: [], periods: [], mode_shapes: [], mass_participation: [], error: result.error };
+    }
+
+    return {
+      success: true,
+      frequencies: result.frequencies || [],
+      periods: result.periods || [],
+      mode_shapes: (result.mode_shapes || []).map((ms: any) => ms instanceof Map ? jsMapToPlainObject(ms) : ms),
+      mass_participation: (result.mass_participation || []).map((mp: any) => mp instanceof Map ? jsMapToPlainObject(mp) : mp),
+    };
+  } catch (error) {
+    wasmLogger.error("Modal analysis failed:", error);
+    return { success: false, frequencies: [], periods: [], mode_shapes: [], mass_participation: [], error: String(error) };
+  }
+}
+
+// ============================================
+// RESPONSE SPECTRUM ANALYSIS (C2: Seismic)
+// ============================================
+
+/**
+ * Response Spectrum Analysis per IS 1893 / equivalent.
+ *
+ * Workflow: First run analyzeModal() to get mode shapes,
+ * then pass the modal result here with seismic parameters.
+ *
+ * @param modalResult - Output from analyzeModal()
+ * @param params - Seismic parameters (zone, importance, R, soil type)
+ */
+export async function analyzeResponseSpectrum(
+  modalResult: ModalAnalysisResult,
+  params: ResponseSpectrumInput,
+): Promise<ResponseSpectrumResult> {
+  if (!wasmInitialized) await initSolver();
+
+  try {
+    wasmLogger.info("Running response spectrum analysis...");
+    const startTime = performance.now();
+
+    let result = wasm_response_spectrum(
+      modalResult,
+      params.zoneFactor,
+      params.importanceFactor,
+      params.responseReduction,
+      params.soilType,
+    );
+
+    if (typeof result === "string") {
+      try { result = JSON.parse(result); } catch (_) {
+        return { success: false, error: result };
+      }
+    }
+
+    const solveTime = performance.now() - startTime;
+    wasmLogger.success("Response spectrum completed in", solveTime.toFixed(2), "ms");
+
+    if (result.error) return { success: false, error: result.error };
+
+    return {
+      success: true,
+      base_shear: result.base_shear,
+      storey_forces: result.storey_forces,
+      storey_displacements: result.storey_displacements,
+      modal_contributions: result.modal_contributions,
+    };
+  } catch (error) {
+    wasmLogger.error("Response spectrum failed:", error);
+    return { success: false, error: String(error) };
+  }
+}
+
+// ============================================
+// ULTRA-FAST SOLVER (H1: Interactive perf)
+// ============================================
+
+/**
+ * Ultra-fast solver for interactive editing — microsecond-level analysis.
+ * Optimized for small-to-medium structures (≤ 100 nodes).
+ *
+ * Use this for real-time feedback while the user drags/edits a structure.
+ */
+export function analyzeUltraFast(
+  nodes: any[],
+  elements: any[],
+  loads: any[],
+): UltraFastResult {
+  if (!wasmInitialized) {
+    return { success: false, error: "Solver not initialized" };
+  }
+
+  try {
+    let result = wasm_solve_ultra_fast(nodes, elements, loads);
+    if (typeof result === "string") {
+      try { result = JSON.parse(result); } catch (_) {
+        return { success: false, error: result };
+      }
+    }
+    if (result.error) return { success: false, error: result.error };
+
+    return {
+      success: true,
+      displacements: result.displacements instanceof Map ? jsMapToPlainObject(result.displacements) : result.displacements,
+      reactions: result.reactions instanceof Map ? jsMapToPlainObject(result.reactions) : result.reactions,
+      member_forces: result.member_forces instanceof Map ? jsMapToPlainObject(result.member_forces) : result.member_forces,
+      solve_time_us: result.solve_time_us,
+    };
+  } catch (error) {
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Benchmark the ultra-fast solver for a given problem size.
+ * Returns timing statistics (mean, median, min in μs).
+ */
+export function benchmarkUltraFast(
+  numNodes: number,
+  numElements: number,
+  iterations: number = 10,
+): BenchmarkResult | null {
+  if (!wasmInitialized) return null;
+  try {
+    let result = wasm_benchmark_ultra_fast(numNodes, numElements, iterations);
+    if (typeof result === "string") result = JSON.parse(result);
+    return result as BenchmarkResult;
+  } catch (error) {
+    wasmLogger.error("Benchmark failed:", error);
+    return null;
+  }
+}
+
+// ============================================
+// M5: PER-SOLVE TIMEOUT WRAPPER
+// ============================================
+
+/** Default analysis timeout — 30 seconds prevents pathological hangs */
+const DEFAULT_SOLVE_TIMEOUT_MS = 30_000;
+
+/**
+ * Wrap a synchronous WASM call in a timeout.
+ * Because WASM runs on the main thread, we can't truly abort it,
+ * but we can reject the promise if it takes too long using a
+ * microtask break.
+ */
+function withSolveTimeout<T>(fn: () => T, timeoutMs: number = DEFAULT_SOLVE_TIMEOUT_MS): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`Solver timeout: analysis exceeded ${timeoutMs}ms. Consider using the Worker solver for large models.`));
+    }, timeoutMs);
+    try {
+      const result = fn();
+      clearTimeout(timer);
+      resolve(result);
+    } catch (err) {
+      clearTimeout(timer);
+      reject(err);
+    }
+  });
+}
+
+// ============================================
 // CIVIL ENGINEERING ANALYSIS (Phase 2)
 // ============================================
 
@@ -698,11 +946,11 @@ export const SOLVER_FEATURE_MATRIX = {
     buckling: false,
     modalAnalysis: false,
     selfWeight: true,
-    temperatureLoads: false,
+    temperatureLoads: true,        // Added in Worker Newmark integration
     loadCombinations: false,
     springSupports: true,         // Spring elements
     pointLoadsOnMembers: true,    // Via FEF
-    equilibriumMomentCheck: false,
+    equilibriumMomentCheck: true, // C4: computeEquilibriumCheck in Worker
     timoshenkoBeam: false,
     inputValidation: false,
     plateElements: false,
@@ -972,6 +1220,10 @@ export const wasmSolver = {
   analyzePDelta,
   analyzePDeltaExtended,
   analyzeBuckling,
+  analyzeModal,
+  analyzeResponseSpectrum,
+  analyzeUltraFast,
+  benchmarkUltraFast,
   isSolverReady,
   getSolverInfo,
   createUniformLoad,
@@ -980,5 +1232,6 @@ export const wasmSolver = {
   combineLoadCases,
   getStandardCombinations,
   validateSolverConsistency,
+  withSolveTimeout,
   SOLVER_FEATURE_MATRIX,
 } as const;

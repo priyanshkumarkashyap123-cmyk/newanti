@@ -141,11 +141,9 @@ app.use(requestLoggerWithId);
 // Attach res.ok() / res.fail() unified envelope helpers
 app.use(attachResponseHelpers);
 
-// General rate limiting
-app.use(generalRateLimit);
-
 // ============================================
-// CORS & PARSING
+// CORS & PARSING  (BEFORE rate-limiting so preflight
+// OPTIONS and rate-limit responses always carry CORS headers)
 // ============================================
 
 // Allowed origins for CORS
@@ -165,32 +163,38 @@ const ALLOWED_ORIGINS = Array.from(
   ]),
 ).concat(configuredOrigins);
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // In production, require origin header. In dev, allow server-to-server.
-      if (!origin) {
-        if (process.env.NODE_ENV === "production") {
-          return callback(new Error("Origin header required"));
-        }
-        return callback(null, true);
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    // In production, require origin header. In dev, allow server-to-server.
+    if (!origin) {
+      if (process.env.NODE_ENV === "production") {
+        return callback(new Error("Origin header required"));
       }
-      // Check if origin is in allowed list
-      if (ALLOWED_ORIGINS.includes(origin)) {
-        return callback(null, true);
-      }
-      // Log blocked origins for debugging
-      console.warn(`CORS blocked origin: ${origin}`);
-      return callback(new Error("Not allowed by CORS"));
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Request-ID", "Cache-Control", "sentry-trace", "baggage"],
-    exposedHeaders: ["X-Request-ID"],
-    optionsSuccessStatus: 204,
-  }),
-);
+      return callback(null, true);
+    }
+    // Check if origin is in allowed list
+    if (ALLOWED_ORIGINS.includes(origin)) {
+      return callback(null, true);
+    }
+    // Log blocked origins for debugging
+    console.warn(`CORS blocked origin: ${origin}`);
+    return callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Request-ID", "Cache-Control", "sentry-trace", "baggage"],
+  exposedHeaders: ["X-Request-ID"],
+  optionsSuccessStatus: 204,
+};
+
+// Handle preflight OPTIONS requests explicitly before any other middleware
+app.options("*", cors(corsOptions));
+app.use(cors(corsOptions));
+
 app.use(express.json({ limit: "10mb" })); // Limit payload size
+
+// General rate limiting (after CORS so rate-limited responses still have CORS headers)
+app.use(generalRateLimit);
 
 // Initialize authentication middleware based on provider
 // USE_CLERK=true -> Clerk, otherwise -> in-house JWT

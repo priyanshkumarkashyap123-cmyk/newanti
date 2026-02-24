@@ -2106,8 +2106,28 @@ fn calculate_member_forces(
         
         let f_total = &f_local - &fef_local;
         
-        let forces_i: Vec<f64> = (0..6).map(|k| f_total[k]).collect();
-        let forces_j: Vec<f64> = (6..12).map(|k| f_total[k]).collect();
+        let mut forces_i: Vec<f64> = (0..6).map(|k| f_total[k]).collect();
+        let mut forces_j: Vec<f64> = (6..12).map(|k| f_total[k]).collect();
+        
+        // Zero released DOFs in force recovery.
+        // The force recovery uses the uncondensed stiffness (k*u - FEF), which
+        // can produce non-zero forces at member-released DOFs (e.g., pin joints).
+        // By definition, a released DOF carries zero internal force.
+        for k in 0..6 {
+            if elem.releases_i[k] { forces_i[k] = 0.0; }
+            if elem.releases_j[k] { forces_j[k] = 0.0; }
+        }
+        
+        // Clean numerical noise: zero values below 1e-6 of peak force
+        let peak_force = forces_i.iter().chain(forces_j.iter())
+            .map(|v| v.abs())
+            .fold(0.0f64, f64::max);
+        if peak_force > 1e-15 {
+            let tol = peak_force * 1e-6;
+            for v in forces_i.iter_mut().chain(forces_j.iter_mut()) {
+                if v.abs() < tol { *v = 0.0; }
+            }
+        }
         
         let max_shear_y = forces_i[1].abs().max(forces_j[1].abs());
         let max_shear_z = forces_i[2].abs().max(forces_j[2].abs());
@@ -2449,9 +2469,11 @@ pub fn linearized_buckling_analysis(
         if length < 1e-10 { continue; }
 
         // Get axial force from linear solution
+        // forces_i[0] is the element END force at node i (from f = K*u)
+        // For compression: f_i[0] > 0 (element pushes node outward)
+        // Internal axial force N (positive=tension): N = -forces_i[0]
         let axial_force = if let Some(forces) = member_forces.get(&element.id) {
-            // forces_i[0] is Fx (axial force) at start node in local coords
-            forces.forces_i.first().copied().unwrap_or(0.0)
+            -forces.forces_i.first().copied().unwrap_or(0.0)
         } else {
             0.0
         };
@@ -2480,29 +2502,26 @@ pub fn linearized_buckling_analysis(
         }
     }
 
-    // Step 5: Solve generalized eigenvalue: K_e · φ = λ · (-K_g) · φ
-    // Rearranged: K_e^{-1} · (-K_g) · φ = (1/λ) · φ
-    // Use inverse iteration: solve K_e · y = K_g · φ, then λ = φᵀ K_e φ / φᵀ K_g φ
-    // For proper extraction we use: A = K_e^{-1} * (-K_g), find eigenvalues of A
-    // The eigenvalues μ = -1/λ, so λ = -1/μ
+    // Step 5: Solve generalized eigenvalue problem: (K_e + λ·K_g)·φ = 0
+    // Rearranged to standard form via Cholesky: K_e = L·L^T
+    // B = L^{-1}·(-K_g)·L^{-T} (symmetric!)
+    // Eigenvalues of B are μ = 1/λ, so λ = 1/μ
+    // This avoids the inaccuracy of symmetrizing K_e^{-1}·(-K_g)
     
-    let lu = k_ff.clone().lu();
+    let cholesky = match k_ff.clone().cholesky() {
+        Some(c) => c,
+        None => return Err("K_e is not positive definite — check boundary conditions".into()),
+    };
+    let l_lower = cholesky.l();
+    let l_inv = match l_lower.clone().try_inverse() {
+        Some(inv) => inv,
+        None => return Err("Cholesky factor L is singular".into()),
+    };
+    let l_inv_t = l_inv.transpose();
     let neg_kg = -&kg_ff;
+    let b_matrix = &l_inv * &neg_kg * &l_inv_t; // symmetric by construction
     
-    // Build A = K_e^{-1} * (-K_g) column by column
-    let mut a_matrix = DMatrix::zeros(n_free, n_free);
-    for j in 0..n_free {
-        let col = neg_kg.column(j).clone_owned();
-        if let Some(x) = lu.solve(&col) {
-            a_matrix.set_column(j, &x);
-        }
-    }
-
-    // Eigenvalue decomposition of A (real symmetric after symmetrization)
-    // A might not be symmetric, use Schur decomposition approximation via SymmetricEigen
-    // Symmetrize: A_sym = (A + A^T)/2  (valid when K_e and K_g are both symmetric)
-    let a_sym = (&a_matrix + a_matrix.transpose()) * 0.5;
-    let eigen = nalgebra::SymmetricEigen::new(a_sym);
+    let eigen = nalgebra::SymmetricEigen::new(b_matrix);
 
     // eigenvalues of A are 1/λ (where λ is the buckling load factor)
     // We want λ = 1/eigenvalue, keeping only positive finite values
@@ -2520,11 +2539,13 @@ pub fn linearized_buckling_analysis(
     let actual_modes = load_factors.len().min(num_modes);
     let buckling_loads: Vec<f64> = load_factors.iter().take(actual_modes).map(|&(l,_)| l).collect();
     let mode_shapes: Vec<Vec<f64>> = load_factors.iter().take(actual_modes).map(|&(_,idx)| {
-        // Expand eigenvector back to full DOF space
+        // Transform eigenvector back: φ = L^{-T} * y (from Cholesky transformation)
         let evec = eigen.eigenvectors.column(idx);
+        let phi = &l_inv_t * evec;
+        // Expand to full DOF space
         let mut full = vec![0.0; num_dof];
         for (i, &dof_idx) in free_dofs.iter().enumerate() {
-            full[dof_idx] = evec[i];
+            full[dof_idx] = phi[i];
         }
         full
     }).collect();
@@ -3942,5 +3963,363 @@ mod tests {
         assert!(c_disp[0].abs() > 1e-10, "X displacement should be non-zero");
         assert!(c_disp[1].abs() > 1e-10, "Y displacement should be non-zero");
         assert!(c_disp[2].abs() > 1e-10, "Z displacement should be non-zero");
+    }
+
+    // ======================================================================
+    // LINEARIZED BUCKLING ANALYSIS TESTS
+    // ======================================================================
+
+    /// Helper to create a steel column element for buckling tests
+    fn make_buckling_element(id: &str, node_i: &str, node_j: &str, e: f64, a: f64, iy: f64, iz: f64) -> Element3D {
+        Element3D {
+            id: id.into(),
+            node_i: node_i.into(),
+            node_j: node_j.into(),
+            E: e,
+            A: a,
+            Iy: iy,
+            Iz: iz,
+            J: iy + iz, // circular section approximation
+            G: e / (2.0 * 1.3), // G = E / 2(1+ν)
+            Asy: 0.0,
+            Asz: 0.0,
+            beta: 0.0,
+            density: 7850.0,
+            nu: Some(0.3),
+            releases_i: [false; 6],
+            releases_j: [false; 6],
+            element_type: ElementType::Frame,
+            thickness: None,
+            node_k: None,
+            node_l: None,
+        }
+    }
+
+    #[test]
+    fn test_buckling_euler_pin_pin_column() {
+        // Classic Euler buckling: pin-ended column (K=1.0)
+        // P_cr = π²EI / L²
+        // Horizontal column along X-axis for clean transformation
+        // Steel: E = 200 GPa, L = 5m, Iy = Iz = 1.0e-5 m⁴, A = 0.01 m²
+        let e: f64 = 2.0e11;
+        let a: f64 = 0.01;
+        let iy: f64 = 1.0e-5;
+        let iz: f64 = 1.0e-5;
+        let length: f64 = 5.0;
+
+        // Theoretical: P_cr = π²×2e11×1e-5 / 25 = 789568.35 N
+        let p_cr_theoretical = std::f64::consts::PI.powi(2) * e * iy.min(iz) / (length * length);
+
+        // 4 elements along X-axis for mesh refinement
+        let seg = length / 4.0;
+        // DOF order: [Ux, Uy, Uz, Rx, Ry, Rz]
+        // For X-axis column: Ux=axial, Uy/Uz=lateral, Rx=torsion
+        let nodes = vec![
+            Node3D { id: "1".into(), x: 0.0, y: 0.0, z: 0.0,
+                     // Pin: fix all translations + torsion Rx to prevent rigid body spin
+                     restraints: [true, true, true, true, false, false],
+                     mass: None, spring_stiffness: None },
+            Node3D { id: "2".into(), x: seg, y: 0.0, z: 0.0,
+                     restraints: [false; 6], mass: None, spring_stiffness: None },
+            Node3D { id: "3".into(), x: 2.0*seg, y: 0.0, z: 0.0,
+                     restraints: [false; 6], mass: None, spring_stiffness: None },
+            Node3D { id: "4".into(), x: 3.0*seg, y: 0.0, z: 0.0,
+                     restraints: [false; 6], mass: None, spring_stiffness: None },
+            Node3D { id: "5".into(), x: length, y: 0.0, z: 0.0,
+                     // Roller: fix lateral (Y,Z) only, free axial (X) for compression
+                     restraints: [false, true, true, false, false, false],
+                     mass: None, spring_stiffness: None },
+        ];
+        let elements = vec![
+            make_buckling_element("E1", "1", "2", e, a, iy, iz),
+            make_buckling_element("E2", "2", "3", e, a, iy, iz),
+            make_buckling_element("E3", "3", "4", e, a, iy, iz),
+            make_buckling_element("E4", "4", "5", e, a, iy, iz),
+        ];
+        // Apply unit compressive load (negative X at far end)
+        let loads = vec![
+            NodalLoad { node_id: "5".into(), fx: -1.0, fy: 0.0, fz: 0.0, mx: 0.0, my: 0.0, mz: 0.0 },
+        ];
+
+        let result = linearized_buckling_analysis(nodes, elements, loads, vec![], 3).unwrap();
+        assert!(result.success, "Buckling analysis should succeed");
+        assert!(result.num_modes >= 1, "Should find at least 1 buckling mode");
+
+        let lambda1 = result.buckling_loads[0];
+        // λ₁ × applied load = P_cr, so λ₁ ≈ P_cr (since applied = 1N)
+        let error_pct = ((lambda1 - p_cr_theoretical) / p_cr_theoretical).abs() * 100.0;
+        assert!(error_pct < 5.0,
+            "Euler buckling load should be within 5% of theory. Got λ={:.1}, expected P_cr={:.1}, error={:.2}%",
+            lambda1, p_cr_theoretical, error_pct);
+    }
+
+    #[test]
+    fn test_buckling_fixed_free_cantilever() {
+        // Cantilever column: fixed base, free top. Effective length factor K=2.0
+        // P_cr = π²EI / (KL)² = π²EI / (4L²)
+        // Horizontal column along X-axis
+        let e: f64 = 2.0e11;
+        let a: f64 = 0.01;
+        let iy: f64 = 1.0e-5;
+        let iz: f64 = 1.0e-5;
+        let length: f64 = 3.0;
+
+        let p_cr_theoretical = std::f64::consts::PI.powi(2) * e * iy.min(iz) / (4.0 * length * length);
+
+        // 4 elements along X-axis for mesh refinement
+        let seg = length / 4.0;
+        let nodes = vec![
+            Node3D { id: "1".into(), x: 0.0, y: 0.0, z: 0.0,
+                     restraints: [true, true, true, true, true, true], // fixed base
+                     mass: None, spring_stiffness: None },
+            Node3D { id: "2".into(), x: seg, y: 0.0, z: 0.0,
+                     restraints: [false; 6], mass: None, spring_stiffness: None },
+            Node3D { id: "3".into(), x: 2.0*seg, y: 0.0, z: 0.0,
+                     restraints: [false; 6], mass: None, spring_stiffness: None },
+            Node3D { id: "4".into(), x: 3.0*seg, y: 0.0, z: 0.0,
+                     restraints: [false; 6], mass: None, spring_stiffness: None },
+            Node3D { id: "5".into(), x: length, y: 0.0, z: 0.0,
+                     restraints: [false; 6], // free top
+                     mass: None, spring_stiffness: None },
+        ];
+        let elements = vec![
+            make_buckling_element("E1", "1", "2", e, a, iy, iz),
+            make_buckling_element("E2", "2", "3", e, a, iy, iz),
+            make_buckling_element("E3", "3", "4", e, a, iy, iz),
+            make_buckling_element("E4", "4", "5", e, a, iy, iz),
+        ];
+        let loads = vec![
+            NodalLoad { node_id: "5".into(), fx: -1.0, fy: 0.0, fz: 0.0, mx: 0.0, my: 0.0, mz: 0.0 },
+        ];
+
+        let result = linearized_buckling_analysis(nodes, elements, loads, vec![], 3).unwrap();
+        assert!(result.success);
+        assert!(result.num_modes >= 1, "Should find at least 1 mode, got {}", result.num_modes);
+
+        let lambda1 = result.buckling_loads[0];
+        let error_pct = ((lambda1 - p_cr_theoretical) / p_cr_theoretical).abs() * 100.0;
+        // 4-element cantilever — allow up to 10% discretization error
+        assert!(error_pct < 10.0,
+            "Cantilever buckling should be within 10% of theory. Got λ={:.1}, expected P_cr={:.1}, error={:.2}%",
+            lambda1, p_cr_theoretical, error_pct);
+    }
+
+    #[test]
+    fn test_buckling_returns_sorted_load_factors() {
+        // Verify buckling loads are returned in ascending order
+        // Cantilever along X-axis
+        let e = 2.0e11;
+        let a = 0.01;
+        let length = 4.0;
+
+        let nodes = vec![
+            Node3D { id: "1".into(), x: 0.0, y: 0.0, z: 0.0,
+                     restraints: [true, true, true, true, true, true],
+                     mass: None, spring_stiffness: None },
+            Node3D { id: "2".into(), x: length, y: 0.0, z: 0.0,
+                     restraints: [false, false, false, false, false, false],
+                     mass: None, spring_stiffness: None },
+        ];
+        let elements = vec![
+            make_buckling_element("E1", "1", "2", e, a, 1.0e-5, 2.0e-5), // different Iy, Iz
+        ];
+        let loads = vec![
+            NodalLoad { node_id: "2".into(), fx: -1.0, fy: 0.0, fz: 0.0, mx: 0.0, my: 0.0, mz: 0.0 },
+        ];
+
+        let result = linearized_buckling_analysis(nodes, elements, loads, vec![], 5).unwrap();
+        assert!(result.success);
+
+        // Verify ascending order
+        for i in 1..result.buckling_loads.len() {
+            assert!(result.buckling_loads[i] >= result.buckling_loads[i-1],
+                "Buckling loads should be sorted ascending: λ[{}]={} < λ[{}]={}",
+                i, result.buckling_loads[i], i-1, result.buckling_loads[i-1]);
+        }
+    }
+
+    #[test]
+    fn test_buckling_mode_shapes_have_correct_length() {
+        // Mode shapes should have num_nodes * 6 entries
+        let e = 2.0e11;
+        let nodes = vec![
+            Node3D { id: "1".into(), x: 0.0, y: 0.0, z: 0.0,
+                     restraints: [true, true, true, true, true, true],
+                     mass: None, spring_stiffness: None },
+            Node3D { id: "2".into(), x: 3.0, y: 0.0, z: 0.0,
+                     restraints: [false; 6],
+                     mass: None, spring_stiffness: None },
+        ];
+        let elements = vec![
+            make_buckling_element("E1", "1", "2", e, 0.01, 1e-5, 1e-5),
+        ];
+        let loads = vec![
+            NodalLoad { node_id: "2".into(), fx: -1.0, fy: 0.0, fz: 0.0, mx: 0.0, my: 0.0, mz: 0.0 },
+        ];
+
+        let result = linearized_buckling_analysis(nodes, elements, loads, vec![], 3).unwrap();
+        let expected_len = 2 * 6; // 2 nodes × 6 DOF
+        for (i, shape) in result.mode_shapes.iter().enumerate() {
+            assert_eq!(shape.len(), expected_len,
+                "Mode shape {} should have {} entries, got {}", i, expected_len, shape.len());
+        }
+    }
+
+    #[test]
+    fn test_buckling_restrained_dofs_are_zero_in_mode_shapes() {
+        // Fixed-base DOFs should have zero displacement in mode shapes
+        let nodes = vec![
+            Node3D { id: "1".into(), x: 0.0, y: 0.0, z: 0.0,
+                     restraints: [true, true, true, true, true, true],
+                     mass: None, spring_stiffness: None },
+            Node3D { id: "2".into(), x: 5.0, y: 0.0, z: 0.0,
+                     restraints: [false; 6],
+                     mass: None, spring_stiffness: None },
+        ];
+        let elements = vec![
+            make_buckling_element("E1", "1", "2", 2e11, 0.01, 1e-5, 1e-5),
+        ];
+        let loads = vec![
+            NodalLoad { node_id: "2".into(), fx: -1.0, fy: 0.0, fz: 0.0, mx: 0.0, my: 0.0, mz: 0.0 },
+        ];
+
+        let result = linearized_buckling_analysis(nodes, elements, loads, vec![], 3).unwrap();
+        for (mode_idx, shape) in result.mode_shapes.iter().enumerate() {
+            // First 6 entries correspond to node "1" which is fully fixed
+            for d in 0..6 {
+                assert!((shape[d]).abs() < 1e-15,
+                    "Mode {} DOF {} at fixed node should be zero, got {}", mode_idx, d, shape[d]);
+            }
+        }
+    }
+
+    #[test]
+    fn test_buckling_empty_nodes_returns_error() {
+        let result = linearized_buckling_analysis(vec![], vec![], vec![], vec![], 3);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("No nodes"));
+    }
+
+    #[test]
+    fn test_buckling_empty_elements_returns_error() {
+        let nodes = vec![
+            Node3D { id: "1".into(), x: 0.0, y: 0.0, z: 0.0,
+                     restraints: [true; 6], mass: None, spring_stiffness: None },
+        ];
+        let result = linearized_buckling_analysis(nodes, vec![], vec![], vec![], 3);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("No elements"));
+    }
+
+    #[test]
+    fn test_buckling_all_fixed_returns_error() {
+        // Both nodes fully fixed → no free DOFs
+        let nodes = vec![
+            Node3D { id: "1".into(), x: 0.0, y: 0.0, z: 0.0,
+                     restraints: [true; 6], mass: None, spring_stiffness: None },
+            Node3D { id: "2".into(), x: 0.0, y: 5.0, z: 0.0,
+                     restraints: [true; 6], mass: None, spring_stiffness: None },
+        ];
+        let elements = vec![
+            make_buckling_element("E1", "1", "2", 2e11, 0.01, 1e-5, 1e-5),
+        ];
+        let loads = vec![
+            NodalLoad { node_id: "2".into(), fx: 0.0, fy: -1.0, fz: 0.0, mx: 0.0, my: 0.0, mz: 0.0 },
+        ];
+        let result = linearized_buckling_analysis(nodes, elements, loads, vec![], 3);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("No free DOFs"));
+    }
+
+    #[test]
+    fn test_buckling_multi_element_column() {
+        // 3-element column along X-axis for better accuracy (mesh refinement)
+        // Pin-pin: P_cr = π²EI / L²
+        let e: f64 = 2.0e11;
+        let a: f64 = 0.01;
+        let iy: f64 = 1.0e-5;
+        let iz: f64 = 1.0e-5;
+        let total_length: f64 = 6.0;
+        let seg = total_length / 3.0;
+
+        let p_cr_theoretical = std::f64::consts::PI.powi(2) * e * iy / (total_length * total_length);
+
+        // DOF order: [Ux, Uy, Uz, Rx, Ry, Rz]
+        // X-axis column: Ux=axial, Rx=torsion
+        let nodes = vec![
+            Node3D { id: "1".into(), x: 0.0, y: 0.0, z: 0.0,
+                     // Pin: fix translations + torsion
+                     restraints: [true, true, true, true, false, false],
+                     mass: None, spring_stiffness: None },
+            Node3D { id: "2".into(), x: seg, y: 0.0, z: 0.0,
+                     restraints: [false; 6],
+                     mass: None, spring_stiffness: None },
+            Node3D { id: "3".into(), x: 2.0*seg, y: 0.0, z: 0.0,
+                     restraints: [false; 6],
+                     mass: None, spring_stiffness: None },
+            Node3D { id: "4".into(), x: total_length, y: 0.0, z: 0.0,
+                     // Roller: fix lateral (Y,Z) only
+                     restraints: [false, true, true, false, false, false],
+                     mass: None, spring_stiffness: None },
+        ];
+        let elements = vec![
+            make_buckling_element("E1", "1", "2", e, a, iy, iz),
+            make_buckling_element("E2", "2", "3", e, a, iy, iz),
+            make_buckling_element("E3", "3", "4", e, a, iy, iz),
+        ];
+        let loads = vec![
+            NodalLoad { node_id: "4".into(), fx: -1.0, fy: 0.0, fz: 0.0, mx: 0.0, my: 0.0, mz: 0.0 },
+        ];
+
+        let result = linearized_buckling_analysis(nodes, elements, loads, vec![], 5).unwrap();
+        assert!(result.success);
+
+        let lambda1 = result.buckling_loads[0];
+        let error_pct = ((lambda1 - p_cr_theoretical) / p_cr_theoretical).abs() * 100.0;
+        // Multi-element should be more accurate than single element
+        assert!(error_pct < 2.0,
+            "3-element Euler buckling should be within 2% of theory. Got λ={:.1}, expected P_cr={:.1}, error={:.2}%",
+            lambda1, p_cr_theoretical, error_pct);
+    }
+
+    #[test]
+    fn test_buckling_higher_modes_larger_than_first() {
+        // Higher buckling modes should have larger critical loads
+        // Cantilever along X-axis, 3 elements
+        let e = 2.0e11;
+        let total_length = 6.0;
+        let seg = total_length / 3.0;
+
+        let nodes = vec![
+            Node3D { id: "1".into(), x: 0.0, y: 0.0, z: 0.0,
+                     restraints: [true, true, true, true, true, true],
+                     mass: None, spring_stiffness: None },
+            Node3D { id: "2".into(), x: seg, y: 0.0, z: 0.0,
+                     restraints: [false; 6],
+                     mass: None, spring_stiffness: None },
+            Node3D { id: "3".into(), x: 2.0*seg, y: 0.0, z: 0.0,
+                     restraints: [false; 6],
+                     mass: None, spring_stiffness: None },
+            Node3D { id: "4".into(), x: total_length, y: 0.0, z: 0.0,
+                     restraints: [false; 6],
+                     mass: None, spring_stiffness: None },
+        ];
+        let elements = vec![
+            make_buckling_element("E1", "1", "2", e, 0.01, 1e-5, 1e-5),
+            make_buckling_element("E2", "2", "3", e, 0.01, 1e-5, 1e-5),
+            make_buckling_element("E3", "3", "4", e, 0.01, 1e-5, 1e-5),
+        ];
+        let loads = vec![
+            NodalLoad { node_id: "4".into(), fx: -1.0, fy: 0.0, fz: 0.0, mx: 0.0, my: 0.0, mz: 0.0 },
+        ];
+
+        let result = linearized_buckling_analysis(nodes, elements, loads, vec![], 5).unwrap();
+        assert!(result.num_modes >= 2, "Should find at least 2 modes");
+
+        for i in 1..result.buckling_loads.len() {
+            assert!(result.buckling_loads[i] >= result.buckling_loads[i-1] * 0.99,
+                "Mode {} (λ={:.1}) should be >= mode {} (λ={:.1})",
+                i+1, result.buckling_loads[i], i, result.buckling_loads[i-1]);
+        }
     }
 }

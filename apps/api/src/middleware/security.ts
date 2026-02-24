@@ -78,7 +78,7 @@ export const generalRateLimit: RequestHandler = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => req.path === "/health",
+  skip: (req) => req.path === "/health" || req.method === "OPTIONS",
 }) as unknown as RequestHandler;
 
 // Analysis API rate limit: 10 requests per minute

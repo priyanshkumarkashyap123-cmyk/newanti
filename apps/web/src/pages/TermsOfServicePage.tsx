@@ -329,7 +329,7 @@ export const TermsOfServicePage = () => {
 
                                     <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4">
                                         <strong>In no event shall our total liability exceed the amount you paid us in the 12 months 
-                                        preceding the event giving rise to liability, or $100 USD, whichever is greater.</strong>
+                                        preceding the event giving rise to liability, or ₹5,000, whichever is greater.</strong>
                                     </p>
 
                                     <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">

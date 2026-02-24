@@ -21,9 +21,10 @@ test.describe('Authentication', () => {
   });
 
   test('should have sign in button', async ({ page }) => {
-    // Look for sign in CTA
-    const signInButton = page.getByRole('button', { name: /sign in|get started|login/i });
-    await expect(signInButton).toBeVisible();
+    // Look for sign in / auth CTA — may be a link or button
+    const signInLink = page.getByRole('link', { name: /sign in|get started|log in|start analyzing/i }).first()
+      .or(page.getByRole('button', { name: /sign in|get started|log in/i }).first());
+    await expect(signInLink).toBeVisible();
   });
 
   test('should navigate to dashboard when authenticated', async ({ page }) => {

@@ -178,7 +178,6 @@ const DeadLoadGenerator = lazy(() =>
 import { useToast } from "./ui/ToastSystem";
 import { ModelingToolbar } from "./toolbar/ModelingToolbar";
 import type { Node, Member } from "../store/model";
-// ConsentService — consumed via useCheckLegalConsent hook
 import { useAuth } from "../providers/AuthProvider";
 import { useSubscription } from "../hooks/useSubscription";
 
@@ -1657,6 +1656,45 @@ export const ModernModeler: FC = () => {
               const fj0 = (mf.forces_j as number[]).map((v, k) =>
                 (v ?? 0) - (ptFEF ? ptFEF.forces_j[k] : 0),
               );
+
+              // ─── Zero out released DOFs ───
+              // The Rust solver does not zero forces at released DOFs after
+              // force recovery (f = k*u − FEF). For members with end releases
+              // (e.g., pin connections), the force at the released DOF must be
+              // exactly zero. This also catches numerical residuals for simply
+              // supported beams where the moment at pin supports should be 0.
+              const mElem = membersArray.find((mm) => mm.id === elemId);
+              if (mElem?.releases) {
+                const relI = mElem.releases;
+                if (relI.fxStart) fi0[0] = 0;
+                if (relI.fyStart) fi0[1] = 0;
+                if (relI.fzStart) fi0[2] = 0;
+                if (relI.mxStart) fi0[3] = 0;
+                if (relI.myStart) fi0[4] = 0;
+                if (relI.mzStart || relI.startMoment) fi0[5] = 0;
+                if (relI.fxEnd) fj0[0] = 0;
+                if (relI.fyEnd) fj0[1] = 0;
+                if (relI.fzEnd) fj0[2] = 0;
+                if (relI.mxEnd) fj0[3] = 0;
+                if (relI.myEnd) fj0[4] = 0;
+                if (relI.mzEnd || relI.endMoment) fj0[5] = 0;
+              }
+
+              // ─── Clean numerical noise ───
+              // For simply supported beams (pin supports, no member releases),
+              // moments at supports should be exactly zero. The penalty method
+              // and floating-point arithmetic can leave tiny residuals (e.g. 1e-10).
+              // Zero out any force component smaller than 1e-6 of the member's
+              // peak force magnitude to prevent displaying noise as real values.
+              const peakForce = Math.max(
+                ...fi0.map(Math.abs), ...fj0.map(Math.abs), 1e-12,
+              );
+              const noiseTol = peakForce * 1e-6;
+              for (let k = 0; k < 6; k++) {
+                if (Math.abs(fi0[k]) < noiseTol) fi0[k] = 0;
+                if (Math.abs(fj0[k]) < noiseTol) fj0[k] = 0;
+              }
+
               const axV = fi0[0] / 1000;
               const syV = fi0[1] / 1000;
               const szV = fi0[2] / 1000;
@@ -1730,11 +1768,26 @@ export const ModernModeler: FC = () => {
               };
             } else {
               // 2D format: map from Rust field names + generate diagram data
-              const axF = (mf.axial ?? 0) / 1000;
-              const v1 = (mf.shear_start ?? 0) / 1000;
-              const v2 = (mf.shear_end ?? 0) / 1000;
-              const m1 = (mf.moment_start ?? 0) / 1000;
-              const m2 = (mf.moment_end ?? 0) / 1000;
+              let axF = (mf.axial ?? 0) / 1000;
+              let v1 = (mf.shear_start ?? 0) / 1000;
+              let v2 = (mf.shear_end ?? 0) / 1000;
+              let m1 = (mf.moment_start ?? 0) / 1000;
+              let m2 = (mf.moment_end ?? 0) / 1000;
+
+              // Zero out released DOFs for 2D format too
+              const mElem2D = membersArray.find((mm) => mm.id === elemId);
+              if (mElem2D?.releases) {
+                if (mElem2D.releases.mzStart || mElem2D.releases.startMoment) m1 = 0;
+                if (mElem2D.releases.mzEnd || mElem2D.releases.endMoment) m2 = 0;
+              }
+              // Clean numerical noise (same logic as 3D path)
+              const peak2D = Math.max(Math.abs(axF), Math.abs(v1), Math.abs(v2), Math.abs(m1), Math.abs(m2), 1e-12);
+              const tol2D = peak2D * 1e-6;
+              if (Math.abs(m1) < tol2D) m1 = 0;
+              if (Math.abs(m2) < tol2D) m2 = 0;
+              if (Math.abs(v1) < tol2D) v1 = 0;
+              if (Math.abs(v2) < tol2D) v2 = 0;
+
               const diag2D = genDiagram(axF, v1, m1, v2, m2, elemId);
               membersDict[elemId] = {
                 memberId: elemId,
@@ -2319,10 +2372,6 @@ export const ModernModeler: FC = () => {
   // const [showQuickStart, setShowQuickStart] = useState(false); // Moved to top
 
   // Tutorial overlay deferred to Phase 2
-
-  // Legal consent state
-  // const { hasConsent } = useCheckLegalConsent(); // Moved to top
-  // const [showLegalConsent, setShowLegalConsent] = useState(false); // Moved to top
 
   // Modal states from uiStore (for cross-component access)
   // const modals = useUIStore((s) => s.modals); // Moved to top

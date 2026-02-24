@@ -1131,7 +1131,7 @@ const PRICING_TIERS = [
   {
     name: "Academic & Hobbyist",
     description: "Perfect for students and learning the fundamentals",
-    price: "$0",
+    price: "₹0",
     period: "forever",
     features: [
       "Up to 3 active projects",
@@ -1146,7 +1146,7 @@ const PRICING_TIERS = [
   {
     name: "Professional",
     description: "For independent practicing structural engineers",
-    price: "$99",
+    price: "₹999",
     period: "month",
     features: [
       "Unlimited projects & storage",
@@ -1162,7 +1162,7 @@ const PRICING_TIERS = [
   {
     name: "Business",
     description: "For growing engineering firms and consultancies",
-    price: "$249",
+    price: "₹1,999",
     period: "month",
     features: [
       "Everything in Professional",

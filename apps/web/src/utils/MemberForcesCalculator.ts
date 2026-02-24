@@ -79,7 +79,7 @@ export class MemberForcesCalculator {
      * 
      * For a beam element with end forces only (no intermediate loads):
      * - Shear V(x) = V1 (constant for no distributed load)
-     * - Moment M(x) = M1 + V1 * x
+     * - Moment M(x) = -M1 + V1 * x
      * 
      * @param L Member length
      * @param endForces End forces in local coordinates
@@ -117,19 +117,19 @@ export class MemberForcesCalculator {
                 // Positive moment causes compression on top fiber
 
                 // Shear in Y direction (constant for point loads only)
-                // V(x) = -Vy1 (reaction at start, sign convention)
-                Fy = -endForces.Vy1;
+                // V(x) = V1 (matches diagramUtils: V_y(x) = V1 − dVy)
+                Fy = endForces.Vy1;
 
                 // Moment about Z axis
-                // M(x) = -Mz1 + Vy1 * x
-                // Using equilibrium from left side
-                Mz = -endForces.Mz1 - endForces.Vy1 * x;
+                // M(x) = -M1 + V1·x (matches diagramUtils: M_z(x) = −M1 + V1·x − dMz)
+                Mz = -endForces.Mz1 + endForces.Vy1 * x;
 
                 // Shear in Z direction (for 3D frames)
-                Fz = -endForces.Vz1;
+                Fz = endForces.Vz1;
 
                 // Moment about Y axis
-                My = -endForces.My1 - endForces.Vz1 * x;
+                // My(x) = My1 + Vz1·x (matches diagramUtils: M_y(x) = My1 + Vz1·x − dMy)
+                My = endForces.My1 + endForces.Vz1 * x;
             }
 
             // Axial force (constant along length for no intermediate axial loads)
@@ -170,40 +170,40 @@ export class MemberForcesCalculator {
         if (load.direction === 'y') {
             if (load.type === 'uniform') {
                 const w = load.w1;
-                // V(x) = -Vy1 + w*x
-                Fy = -endForces.Vy1 + w * x;
-                // M(x) = -Mz1 - Vy1*x + w*x²/2
-                Mz = -endForces.Mz1 - endForces.Vy1 * x + (w * x * x) / 2;
+                // V(x) = V1 - w*x  (matches diagramUtils: V_y = V1 − dVy)
+                Fy = endForces.Vy1 - w * x;
+                // M(x) = -M1 + V1*x - w*x²/2  (matches diagramUtils: Mz = −M1 + V1·x − dMz)
+                Mz = -endForces.Mz1 + endForces.Vy1 * x - (w * x * x) / 2;
             } else if (load.type === 'linear') {
                 // Linearly varying load: w(x) = w1 + (w2-w1)*x/L
                 const w1 = load.w1;
                 const w2 = load.w2 ?? load.w1;
                 const slope = (w2 - w1) / L;
 
-                // V(x) = -Vy1 + w1*x + slope*x²/2
-                Fy = -endForces.Vy1 + w1 * x + (slope * x * x) / 2;
-                // M(x) = -Mz1 - Vy1*x + w1*x²/2 + slope*x³/6
-                Mz = -endForces.Mz1 - endForces.Vy1 * x +
-                    (w1 * x * x) / 2 + (slope * x * x * x) / 6;
+                // V(x) = V1 - w1*x - slope*x²/2
+                Fy = endForces.Vy1 - w1 * x - (slope * x * x) / 2;
+                // M(x) = -M1 + V1*x - w1*x²/2 - slope*x³/6
+                Mz = -endForces.Mz1 + endForces.Vy1 * x -
+                    (w1 * x * x) / 2 - (slope * x * x * x) / 6;
             }
-            Fz = -endForces.Vz1;
-            My = -endForces.My1 - endForces.Vz1 * x;
+            Fz = endForces.Vz1;
+            My = endForces.My1 + endForces.Vz1 * x;
         } else if (load.direction === 'z') {
             // Load in Z direction
-            Fy = -endForces.Vy1;
-            Mz = -endForces.Mz1 - endForces.Vy1 * x;
+            Fy = endForces.Vy1;
+            Mz = -endForces.Mz1 + endForces.Vy1 * x;
 
             if (load.type === 'uniform') {
                 const w = load.w1;
-                Fz = -endForces.Vz1 + w * x;
-                My = -endForces.My1 - endForces.Vz1 * x + (w * x * x) / 2;
+                Fz = endForces.Vz1 - w * x;
+                My = endForces.My1 + endForces.Vz1 * x - (w * x * x) / 2;
             } else if (load.type === 'linear') {
                 const w1 = load.w1;
                 const w2 = load.w2 ?? load.w1;
                 const slope = (w2 - w1) / L;
-                Fz = -endForces.Vz1 + w1 * x + (slope * x * x) / 2;
-                My = -endForces.My1 - endForces.Vz1 * x +
-                    (w1 * x * x) / 2 + (slope * x * x * x) / 6;
+                Fz = endForces.Vz1 - w1 * x - (slope * x * x) / 2;
+                My = endForces.My1 + endForces.Vz1 * x -
+                    (w1 * x * x) / 2 - (slope * x * x * x) / 6;
             }
         }
 
