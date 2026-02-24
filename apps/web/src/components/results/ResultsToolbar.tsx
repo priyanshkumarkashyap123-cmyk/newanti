@@ -219,7 +219,8 @@ const convertToAnalysisResultsData = (
         memberLength = x_values[x_values.length - 1] || 5;
       } else {
         // Fallback: Generate diagrams from end forces using equilibrium
-        // w = (Vi + Vj)/L,  V(x) = Vi - w*x,  M(x) = Mi + Vi*x - w*x²/2
+        // w = (Vi + Vj)/L,  V(x) = Vi - w*x,  M_internal(x) = -Mi + Vi*x - w*x²/2
+        // (negate FEM moment for internal bending moment convention: sagging positive)
         const numPoints = 40;
         const L = memberLength;
         const Vi = forces.startForces?.shearY ?? forces.shearY;
@@ -242,8 +243,8 @@ const convertToAnalysisResultsData = (
           x_values.push(x);
           // Shear: V(x) = Vi - w*x
           shear_values.push(Vi - w * x);
-          // Moment: M(x) = Mi + Vi*x - w*x²/2
-          moment_values.push(Mi + Vi * x - (w * x * x) / 2);
+          // Moment: M_internal(x) = -Mi + Vi*x - w*x²/2 (negate FEM moment)
+          moment_values.push(-Mi + Vi * x - (w * x * x) / 2);
           // Axial: constant
           axial_values.push(ax);
           // Deflection: zero (no EI info in fallback)
@@ -262,12 +263,18 @@ const convertToAnalysisResultsData = (
       maxUtil = Math.max(maxUtil, util);
 
       // Compute actual min/max from diagram data rather than assuming symmetry
-      const actualMaxShear = shear_values.length > 0 ? Math.max(...shear_values) : shear;
-      const actualMinShear = shear_values.length > 0 ? Math.min(...shear_values) : -shear;
-      const actualMaxMoment = moment_values.length > 0 ? Math.max(...moment_values) : moment;
-      const actualMinMoment = moment_values.length > 0 ? Math.min(...moment_values) : -moment;
-      const actualMaxAxial = axial_values.length > 0 ? Math.max(...axial_values) : axial;
-      const actualMinAxial = axial_values.length > 0 ? Math.min(...axial_values) : -axial;
+      const actualMaxShear =
+        shear_values.length > 0 ? Math.max(...shear_values) : shear;
+      const actualMinShear =
+        shear_values.length > 0 ? Math.min(...shear_values) : -shear;
+      const actualMaxMoment =
+        moment_values.length > 0 ? Math.max(...moment_values) : moment;
+      const actualMinMoment =
+        moment_values.length > 0 ? Math.min(...moment_values) : -moment;
+      const actualMaxAxial =
+        axial_values.length > 0 ? Math.max(...axial_values) : axial;
+      const actualMinAxial =
+        axial_values.length > 0 ? Math.min(...axial_values) : -axial;
 
       members.push({
         id: memberId,
@@ -277,7 +284,10 @@ const convertToAnalysisResultsData = (
         sectionType: memberModel?.sectionType ?? "General",
         maxShear: Math.max(Math.abs(actualMaxShear), Math.abs(actualMinShear)),
         minShear: actualMinShear,
-        maxMoment: Math.max(Math.abs(actualMaxMoment), Math.abs(actualMinMoment)),
+        maxMoment: Math.max(
+          Math.abs(actualMaxMoment),
+          Math.abs(actualMinMoment),
+        ),
         minMoment: actualMinMoment,
         maxAxial: Math.max(Math.abs(actualMaxAxial), Math.abs(actualMinAxial)),
         minAxial: actualMinAxial,
@@ -312,10 +322,14 @@ const convertToAnalysisResultsData = (
   const serviceabilityLimits = [
     { limit: "Floor beams (L/240)", code: "IS 800 / ASCE 7", ratio: 240 },
     { limit: "Roof beams (L/180)", code: "IS 800 / ASCE 7", ratio: 180 },
-    { limit: "Sensitive finishes (L/360)", code: "ACI 318 / IS 456", ratio: 360 },
+    {
+      limit: "Sensitive finishes (L/360)",
+      code: "ACI 318 / IS 456",
+      ratio: 360,
+    },
     { limit: "Cantilevers (L/120)", code: "General", ratio: 120 },
   ];
-  
+
   const serviceabilityChecks = members.map((m) => {
     const L_mm = m.length * 1000; // m → mm
     const maxDefl = m.maxDeflection; // already in mm
@@ -398,11 +412,15 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
 
   // Stable user identifier for consent tracking (persisted across renders)
   const consentUserId = useMemo(() => {
-    const key = 'beamlab_consent_uid';
-    let uid = typeof window !== 'undefined' ? localStorage.getItem(key) : null;
+    const key = "beamlab_consent_uid";
+    let uid = typeof window !== "undefined" ? localStorage.getItem(key) : null;
     if (!uid) {
       uid = `user-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-      try { localStorage.setItem(key, uid); } catch { /* noop */ }
+      try {
+        localStorage.setItem(key, uid);
+      } catch {
+        /* noop */
+      }
     }
     return uid;
   }, []);
@@ -546,7 +564,12 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
           A: m.A,
           Iy: (m as any).Iy ?? m.I,
           Iz: (m as any).Iz ?? m.I,
-          J: (m as any).J ?? Math.max(Math.min(((m as any).Iy ?? m.I), ((m as any).Iz ?? m.I)) / 500, (((m as any).Iy ?? m.I) + ((m as any).Iz ?? m.I)) * 1e-4),
+          J:
+            (m as any).J ??
+            Math.max(
+              Math.min((m as any).Iy ?? m.I, (m as any).Iz ?? m.I) / 500,
+              (((m as any).Iy ?? m.I) + ((m as any).Iz ?? m.I)) * 1e-4,
+            ),
           length,
         };
       });
@@ -897,7 +920,11 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
 
   // Memoized max values — avoid recomputing on every render
   const maxDisplacementStr = useMemo((): string => {
-    if (!analysisResults.displacements || analysisResults.displacements.size === 0) return "-";
+    if (
+      !analysisResults.displacements ||
+      analysisResults.displacements.size === 0
+    )
+      return "-";
     let max = 0;
     for (const d of analysisResults.displacements.values()) {
       const abs = Math.abs(d.dy);
@@ -907,7 +934,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
   }, [analysisResults.displacements]);
 
   const maxReactionStr = useMemo((): string => {
-    if (!analysisResults.reactions || analysisResults.reactions.size === 0) return "-";
+    if (!analysisResults.reactions || analysisResults.reactions.size === 0)
+      return "-";
     let max = 0;
     for (const r of analysisResults.reactions.values()) {
       const abs = Math.abs(r.fy);
@@ -919,13 +947,35 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
 
   // Support reactions — memoized, only nodes with non-negligible reactions
   const supportReactions = useMemo(() => {
-    if (!analysisResults.reactions || analysisResults.reactions.size === 0) return [];
-    const supports: { nodeId: string; fx: number; fy: number; fz: number; mx: number; my: number; mz: number }[] = [];
+    if (!analysisResults.reactions || analysisResults.reactions.size === 0)
+      return [];
+    const supports: {
+      nodeId: string;
+      fx: number;
+      fy: number;
+      fz: number;
+      mx: number;
+      my: number;
+      mz: number;
+    }[] = [];
     analysisResults.reactions.forEach((r, nodeId) => {
-      const total = Math.abs(r.fx) + Math.abs(r.fy) + Math.abs(r.fz)
-                  + Math.abs(r.mx) + Math.abs(r.my) + Math.abs(r.mz);
+      const total =
+        Math.abs(r.fx) +
+        Math.abs(r.fy) +
+        Math.abs(r.fz) +
+        Math.abs(r.mx) +
+        Math.abs(r.my) +
+        Math.abs(r.mz);
       if (total > 0.001) {
-        supports.push({ nodeId, fx: r.fx, fy: r.fy, fz: r.fz, mx: r.mx, my: r.my, mz: r.mz });
+        supports.push({
+          nodeId,
+          fx: r.fx,
+          fy: r.fy,
+          fz: r.fz,
+          mx: r.mx,
+          my: r.my,
+          mz: r.mz,
+        });
       }
     });
     return supports;

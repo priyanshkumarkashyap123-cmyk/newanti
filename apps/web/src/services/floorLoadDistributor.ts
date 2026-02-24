@@ -5,7 +5,7 @@
  * floor area loads to supporting beams.
  *
  * Implements IS 456:2000 / ACI 318 / EC2 panel distribution:
- *   - One-way slab: Lz/Lx > 2 → load goes to short-span beams only
+ *   - One-way slab: Lz/Lx > 2 → load goes to long beams (at ends of short span)
  *   - Two-way slab: Yield-line 45° cuts → triangular on short sides,
  *     trapezoidal on long sides
  *
@@ -13,15 +13,15 @@
  * Output: WASM convention — N, m, N/m
  */
 
-import type { DistributionType } from '../types/loads';
+import type { DistributionType } from "../types/loads";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 /** Minimal floor load input — compatible with both store and types/loads FloorLoad */
 export interface FloorLoadInput {
   id: string;
-  pressure: number;               // kN/m²
-  yLevel: number;                 // Floor Y coordinate
+  pressure: number; // kN/m²
+  yLevel: number; // Floor Y coordinate
   xMin: number;
   xMax: number;
   zMin: number;
@@ -49,34 +49,34 @@ export interface DetectedPanel {
   xMax: number;
   zMin: number;
   zMax: number;
-  Lx: number;           // Span in X direction (m)
-  Lz: number;           // Span in Z direction (m)
-  aspectRatio: number;   // max/min
+  Lx: number; // Span in X direction (m)
+  Lz: number; // Span in Z direction (m)
+  aspectRatio: number; // max/min
   distribution: DistributionType;
   /** IDs of beams bounding this panel */
   beamIds: {
-    xMinBeam?: string;   // Beam at z = zMin, running along X
-    xMaxBeam?: string;   // Beam at z = zMax, running along X
-    zMinBeam?: string;   // Beam at x = xMin, running along Z
-    zMaxBeam?: string;   // Beam at x = xMax, running along Z
+    xMinBeam?: string; // Beam at z = zMin, running along X
+    xMaxBeam?: string; // Beam at z = zMax, running along X
+    zMinBeam?: string; // Beam at x = xMin, running along Z
+    zMaxBeam?: string; // Beam at x = xMax, running along Z
   };
 }
 
 /** Generated WASM-format member load (N/m) */
 export interface GeneratedMemberLoad {
   element_id: string;
-  w1: number;       // Intensity at start_pos (N/m)
-  w2: number;       // Intensity at end_pos (N/m)
+  w1: number; // Intensity at start_pos (N/m)
+  w2: number; // Intensity at end_pos (N/m)
   direction: string;
   start_pos: number; // 0–1 ratio
-  end_pos: number;   // 0–1 ratio
+  end_pos: number; // 0–1 ratio
   is_projected: boolean;
-  _source: 'floor_load'; // Tag for debugging
+  _source: "floor_load"; // Tag for debugging
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const Y_TOLERANCE = 0.05;  // 50 mm tolerance for "same Y level"
+const Y_TOLERANCE = 0.05; // 50 mm tolerance for "same Y level"
 const COLLINEAR_TOL = 0.02; // 20 mm off-axis tolerance
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -100,9 +100,9 @@ function resolveDistribution(
 ): DistributionType {
   if (override) return override;
   const ratio = Math.max(Lx, Lz) / Math.min(Lx, Lz);
-  if (ratio > 2) return 'one_way';
-  if (ratio < 1.05) return 'two_way_triangular'; // Nearly square
-  return 'two_way_trapezoidal';
+  if (ratio > 2) return "one_way";
+  if (ratio < 1.05) return "two_way_triangular"; // Nearly square
+  return "two_way_trapezoidal";
 }
 
 // ─── Panel Detection ──────────────────────────────────────────────────────────
@@ -131,7 +131,7 @@ function getBeamsAtLevel(
 function classifyBeam(
   beam: MemberInfo,
   nodeMap: Map<string, NodeInfo>,
-): { axis: 'X' | 'Z' | null; coord: number; min: number; max: number } {
+): { axis: "X" | "Z" | null; coord: number; min: number; max: number } {
   const n1 = nodeMap.get(beam.startNodeId)!;
   const n2 = nodeMap.get(beam.endNodeId)!;
   const dx = Math.abs(n2.x - n1.x);
@@ -140,8 +140,8 @@ function classifyBeam(
   if (dx > COLLINEAR_TOL && dz < COLLINEAR_TOL) {
     // Runs along X — constant Z
     return {
-      axis: 'X',
-      coord: (n1.z ?? 0),
+      axis: "X",
+      coord: n1.z ?? 0,
       min: Math.min(n1.x, n2.x),
       max: Math.max(n1.x, n2.x),
     };
@@ -149,7 +149,7 @@ function classifyBeam(
   if (dz > COLLINEAR_TOL && dx < COLLINEAR_TOL) {
     // Runs along Z — constant X
     return {
-      axis: 'Z',
+      axis: "Z",
       coord: n1.x,
       min: Math.min(n1.z ?? 0, n2.z ?? 0),
       max: Math.max(n1.z ?? 0, n2.z ?? 0),
@@ -178,25 +178,27 @@ export function detectPanels(
   if (beams.length < 4) return []; // Need at least 4 beams for a panel
 
   // Classify beams
-  const xBeams: Array<{ id: string; z: number; xMin: number; xMax: number }> = [];
-  const zBeams: Array<{ id: string; x: number; zMin: number; zMax: number }> = [];
+  const xBeams: Array<{ id: string; z: number; xMin: number; xMax: number }> =
+    [];
+  const zBeams: Array<{ id: string; x: number; zMin: number; zMax: number }> =
+    [];
 
   for (const b of beams) {
     const cls = classifyBeam(b, nodeMap);
-    if (cls.axis === 'X') {
+    if (cls.axis === "X") {
       xBeams.push({ id: b.id, z: cls.coord, xMin: cls.min, xMax: cls.max });
-    } else if (cls.axis === 'Z') {
+    } else if (cls.axis === "Z") {
       zBeams.push({ id: b.id, x: cls.coord, zMin: cls.min, zMax: cls.max });
     }
   }
 
   // Deduplicate by coordinate (merge overlapping beams at same coordinate)
-  const uniqueZCoords = [...new Set(xBeams.map((b) => Math.round(b.z * 1000) / 1000))].sort(
-    (a, b) => a - b,
-  );
-  const uniqueXCoords = [...new Set(zBeams.map((b) => Math.round(b.x * 1000) / 1000))].sort(
-    (a, b) => a - b,
-  );
+  const uniqueZCoords = [
+    ...new Set(xBeams.map((b) => Math.round(b.z * 1000) / 1000)),
+  ].sort((a, b) => a - b);
+  const uniqueXCoords = [
+    ...new Set(zBeams.map((b) => Math.round(b.x * 1000) / 1000)),
+  ].sort((a, b) => a - b);
 
   const panels: DetectedPanel[] = [];
 
@@ -221,16 +223,28 @@ export function detectPanels(
 
       // Find the 4 bounding beams
       const bottomBeam = xBeams.find(
-        (b) => approxEqual(b.z, z1, COLLINEAR_TOL) && b.xMin <= x1 + COLLINEAR_TOL && b.xMax >= x2 - COLLINEAR_TOL,
+        (b) =>
+          approxEqual(b.z, z1, COLLINEAR_TOL) &&
+          b.xMin <= x1 + COLLINEAR_TOL &&
+          b.xMax >= x2 - COLLINEAR_TOL,
       );
       const topBeam = xBeams.find(
-        (b) => approxEqual(b.z, z2, COLLINEAR_TOL) && b.xMin <= x1 + COLLINEAR_TOL && b.xMax >= x2 - COLLINEAR_TOL,
+        (b) =>
+          approxEqual(b.z, z2, COLLINEAR_TOL) &&
+          b.xMin <= x1 + COLLINEAR_TOL &&
+          b.xMax >= x2 - COLLINEAR_TOL,
       );
       const leftBeam = zBeams.find(
-        (b) => approxEqual(b.x, x1, COLLINEAR_TOL) && b.zMin <= z1 + COLLINEAR_TOL && b.zMax >= z2 - COLLINEAR_TOL,
+        (b) =>
+          approxEqual(b.x, x1, COLLINEAR_TOL) &&
+          b.zMin <= z1 + COLLINEAR_TOL &&
+          b.zMax >= z2 - COLLINEAR_TOL,
       );
       const rightBeam = zBeams.find(
-        (b) => approxEqual(b.x, x2, COLLINEAR_TOL) && b.zMin <= z1 + COLLINEAR_TOL && b.zMax >= z2 - COLLINEAR_TOL,
+        (b) =>
+          approxEqual(b.x, x2, COLLINEAR_TOL) &&
+          b.zMin <= z1 + COLLINEAR_TOL &&
+          b.zMax >= z2 - COLLINEAR_TOL,
       );
 
       if (!bottomBeam || !topBeam || !leftBeam || !rightBeam) continue;
@@ -247,7 +261,11 @@ export function detectPanels(
         Lx,
         Lz,
         aspectRatio: Math.max(Lx, Lz) / Math.min(Lx, Lz),
-        distribution: resolveDistribution(Lx, Lz, floorLoad.distributionOverride),
+        distribution: resolveDistribution(
+          Lx,
+          Lz,
+          floorLoad.distributionOverride,
+        ),
         beamIds: {
           xMinBeam: bottomBeam.id,
           xMaxBeam: topBeam.id,
@@ -292,7 +310,7 @@ function distributePanel(
     beamId: string,
     panelMin: number,
     panelMax: number,
-    axis: 'X' | 'Z',
+    axis: "X" | "Z",
   ): { startRatio: number; endRatio: number; beamLength: number } | null => {
     const member = memberMap.get(beamId);
     if (!member) return null;
@@ -300,8 +318,8 @@ function distributePanel(
     const n2 = nodeMap.get(member.endNodeId);
     if (!n1 || !n2) return null;
 
-    const coord1 = axis === 'X' ? n1.x : (n1.z ?? 0);
-    const coord2 = axis === 'X' ? n2.x : (n2.z ?? 0);
+    const coord1 = axis === "X" ? n1.x : (n1.z ?? 0);
+    const coord2 = axis === "X" ? n2.x : (n2.z ?? 0);
     const beamMin = Math.min(coord1, coord2);
     const beamMax = Math.max(coord1, coord2);
     const beamLength = beamMax - beamMin;
@@ -334,35 +352,36 @@ function distributePanel(
     element_id,
     w1: w1_kNm * 1000, // kN/m → N/m for WASM
     w2: w2_kNm * 1000,
-    direction: 'global_y',
+    direction: "global_y",
     start_pos,
     end_pos,
     is_projected: false,
-    _source: 'floor_load',
+    _source: "floor_load",
   });
 
   const Lshort = Math.min(Lx, Lz);
   const Llong = Math.max(Lx, Lz);
 
   // ─── ONE-WAY SLAB ──────────────────────────────────────────────────────
-  if (distribution === 'one_way') {
-    // All load goes to the two short-span beams (UDL)
-    // w = p × Llong / 2  on each short beam
-    const w = p * Llong / 2; // kN/m
+  // IS 456 Cl. 24.4: slab spans the SHORT direction; load transfers to the
+  // two beams at the ends of the short span (i.e. the LONG beams).
+  // Intensity per unit length on each long beam = p × Lshort / 2.
+  if (distribution === "one_way") {
+    const w = (p * Lshort) / 2; // kN/m on each long beam
 
     if (Lx <= Lz) {
-      // Short span is X → load on X-direction beams (bottom & top)
-      for (const beamId of [beamIds.xMinBeam, beamIds.xMaxBeam]) {
+      // Short span is X → slab spans left↔right → load on Z-direction beams (long beams)
+      for (const beamId of [beamIds.zMinBeam, beamIds.zMaxBeam]) {
         if (!beamId) continue;
-        const ratios = getBeamRatios(beamId, panel.xMin, panel.xMax, 'X');
+        const ratios = getBeamRatios(beamId, panel.zMin, panel.zMax, "Z");
         if (!ratios) continue;
         loads.push(mkLoad(beamId, w, w, ratios.startRatio, ratios.endRatio));
       }
     } else {
-      // Short span is Z → load on Z-direction beams (left & right)
-      for (const beamId of [beamIds.zMinBeam, beamIds.zMaxBeam]) {
+      // Short span is Z → slab spans bottom↔top → load on X-direction beams (long beams)
+      for (const beamId of [beamIds.xMinBeam, beamIds.xMaxBeam]) {
         if (!beamId) continue;
-        const ratios = getBeamRatios(beamId, panel.zMin, panel.zMax, 'Z');
+        const ratios = getBeamRatios(beamId, panel.xMin, panel.xMax, "X");
         if (!ratios) continue;
         loads.push(mkLoad(beamId, w, w, ratios.startRatio, ratios.endRatio));
       }
@@ -371,15 +390,15 @@ function distributePanel(
   }
 
   // ─── TWO-WAY TRIANGULAR (square slab) ──────────────────────────────────
-  if (distribution === 'two_way_triangular') {
+  if (distribution === "two_way_triangular") {
     // All 4 beams get triangular loads: 0 at ends → peak at midspan
     // Peak = p × L_perpendicular / 2, but for square L_perp = L, so peak = p*L/2
 
     // X-direction beams (bottom & top): triangle along X, tributary width = Lz/2
-    const peakX = p * Lz / 2; // kN/m at midspan of X-beam
+    const peakX = (p * Lz) / 2; // kN/m at midspan of X-beam
     for (const beamId of [beamIds.xMinBeam, beamIds.xMaxBeam]) {
       if (!beamId) continue;
-      const ratios = getBeamRatios(beamId, panel.xMin, panel.xMax, 'X');
+      const ratios = getBeamRatios(beamId, panel.xMin, panel.xMax, "X");
       if (!ratios) continue;
       const mid = (ratios.startRatio + ratios.endRatio) / 2;
       // First half: 0 → peak
@@ -389,10 +408,10 @@ function distributePanel(
     }
 
     // Z-direction beams (left & right): triangle along Z, tributary width = Lx/2
-    const peakZ = p * Lx / 2; // kN/m at midspan of Z-beam
+    const peakZ = (p * Lx) / 2; // kN/m at midspan of Z-beam
     for (const beamId of [beamIds.zMinBeam, beamIds.zMaxBeam]) {
       if (!beamId) continue;
-      const ratios = getBeamRatios(beamId, panel.zMin, panel.zMax, 'Z');
+      const ratios = getBeamRatios(beamId, panel.zMin, panel.zMax, "Z");
       if (!ratios) continue;
       const mid = (ratios.startRatio + ratios.endRatio) / 2;
       loads.push(mkLoad(beamId, 0, peakZ, ratios.startRatio, mid));
@@ -407,7 +426,7 @@ function distributePanel(
   // Long-side beams: trapezoidal (0 → peak — flat — peak → 0)
   // Peak intensity = p × Lshort / 2
 
-  const peak = p * Lshort / 2; // kN/m
+  const peak = (p * Lshort) / 2; // kN/m
   const halfShort = Lshort / 2; // Distance from corner to yield line
 
   if (Lx <= Lz) {
@@ -415,7 +434,7 @@ function distributePanel(
     // X-direction beams (bottom & top): SHORT SIDE → triangular
     for (const beamId of [beamIds.xMinBeam, beamIds.xMaxBeam]) {
       if (!beamId) continue;
-      const ratios = getBeamRatios(beamId, panel.xMin, panel.xMax, 'X');
+      const ratios = getBeamRatios(beamId, panel.xMin, panel.xMax, "X");
       if (!ratios) continue;
       const mid = (ratios.startRatio + ratios.endRatio) / 2;
       loads.push(mkLoad(beamId, 0, peak, ratios.startRatio, mid));
@@ -425,7 +444,7 @@ function distributePanel(
     // Z-direction beams (left & right): LONG SIDE → trapezoidal
     for (const beamId of [beamIds.zMinBeam, beamIds.zMaxBeam]) {
       if (!beamId) continue;
-      const ratios = getBeamRatios(beamId, panel.zMin, panel.zMax, 'Z');
+      const ratios = getBeamRatios(beamId, panel.zMin, panel.zMax, "Z");
       if (!ratios) continue;
       const panelSpan = ratios.endRatio - ratios.startRatio;
       const riseRatio = (halfShort / Lz) * panelSpan;
@@ -446,7 +465,7 @@ function distributePanel(
     // Z-direction beams (left & right): SHORT SIDE → triangular
     for (const beamId of [beamIds.zMinBeam, beamIds.zMaxBeam]) {
       if (!beamId) continue;
-      const ratios = getBeamRatios(beamId, panel.zMin, panel.zMax, 'Z');
+      const ratios = getBeamRatios(beamId, panel.zMin, panel.zMax, "Z");
       if (!ratios) continue;
       const mid = (ratios.startRatio + ratios.endRatio) / 2;
       loads.push(mkLoad(beamId, 0, peak, ratios.startRatio, mid));
@@ -456,7 +475,7 @@ function distributePanel(
     // X-direction beams (bottom & top): LONG SIDE → trapezoidal
     for (const beamId of [beamIds.xMinBeam, beamIds.xMaxBeam]) {
       if (!beamId) continue;
-      const ratios = getBeamRatios(beamId, panel.xMin, panel.xMax, 'X');
+      const ratios = getBeamRatios(beamId, panel.xMin, panel.xMax, "X");
       if (!ratios) continue;
       const panelSpan = ratios.endRatio - ratios.startRatio;
       const riseRatio = (halfShort / Lx) * panelSpan;
@@ -506,7 +525,12 @@ export function distributeFloorLoads(
     allPanels.push(...panels);
 
     for (const panel of panels) {
-      const panelLoads = distributePanel(panel, fl.pressure, nodeMap, memberMap);
+      const panelLoads = distributePanel(
+        panel,
+        fl.pressure,
+        nodeMap,
+        memberMap,
+      );
       allLoads.push(...panelLoads);
     }
 
@@ -517,7 +541,7 @@ export function distributeFloorLoads(
       if (beamsAtLevel.length > 0) {
         console.warn(
           `[FloorLoadDistributor] No rectangular panels detected at Y=${fl.yLevel}. ` +
-          `Fallback: applying UDL with 1m tributary width to ${beamsAtLevel.length} beams.`,
+            `Fallback: applying UDL with 1m tributary width to ${beamsAtLevel.length} beams.`,
         );
         const w = fl.pressure * 1.0; // kN/m (1m assumed tributary width)
         for (const beam of beamsAtLevel) {
@@ -525,11 +549,11 @@ export function distributeFloorLoads(
             element_id: beam.id,
             w1: w * 1000, // N/m
             w2: w * 1000,
-            direction: 'global_y',
+            direction: "global_y",
             start_pos: 0,
             end_pos: 1,
             is_projected: false,
-            _source: 'floor_load',
+            _source: "floor_load",
           });
         }
       }

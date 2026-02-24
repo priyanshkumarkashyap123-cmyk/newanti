@@ -1,6 +1,6 @@
 /**
  * EnhancedPricingPage.tsx
- * 
+ *
  * Comprehensive pricing page with:
  * - Feature comparison matrix
  * - FAQ section
@@ -8,9 +8,9 @@
  * - Clear CTAs
  */
 
-import React, { FC, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import React, { FC, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   Check,
   X,
@@ -24,8 +24,12 @@ import {
   GraduationCap,
   Sparkles,
   ArrowRight,
-  MessageSquare
-} from 'lucide-react';
+  MessageSquare,
+  Globe,
+  Lock,
+  Server,
+  ShieldCheck,
+} from "lucide-react";
 
 // ============================================
 // PRICING DATA
@@ -42,183 +46,339 @@ interface PricingPlan {
   badge?: string;
   icon: React.ReactNode;
   cta: string;
-  ctaVariant: 'primary' | 'secondary' | 'outline';
+  ctaVariant: "primary" | "secondary" | "outline";
 }
 
 const PLANS: PricingPlan[] = [
   {
-    id: 'free',
-    name: 'Starter',
-    description: 'Perfect for students and learning',
+    id: "free",
+    name: "Academic & Hobbyist",
+    description: "Perfect for students and learning the fundamentals",
     monthlyPrice: 0,
     yearlyPrice: 0,
     icon: <GraduationCap className="w-6 h-6" />,
     features: [
-      'Up to 3 projects',
-      '2D beam & frame analysis',
-      'Basic load combinations',
-      'IS 456 design code',
-      'Standard PDF reports',
-      'Community support',
+      "Up to 3 active projects",
+      "2D beam & frame analysis",
+      "Basic load combinations",
+      "IS 456 & ACI 318 design codes",
+      "Standard PDF reports",
+      "Community forum support",
     ],
     highlighted: false,
-    cta: 'Get Started Free',
-    ctaVariant: 'outline'
+    cta: "Start Learning Free",
+    ctaVariant: "outline",
   },
   {
-    id: 'pro',
-    name: 'Professional',
-    description: 'For practicing engineers',
-    monthlyPrice: 49,
-    yearlyPrice: 39,
-    icon: <Zap className="w-6 h-6" />,
-    features: [
-      'Unlimited projects',
-      'Full 3D analysis engine',
-      'All international codes',
-      'P-Delta & buckling analysis',
-      'AI design assistant',
-      'Custom branded reports',
-      'Priority email support',
-      'Cloud backup & sync',
-      'Real-time collaboration (3 users)',
-    ],
-    highlighted: true,
-    badge: 'Most Popular',
-    cta: 'Start 14-Day Trial',
-    ctaVariant: 'primary'
-  },
-  {
-    id: 'team',
-    name: 'Team',
-    description: 'For growing engineering teams',
+    id: "pro",
+    name: "Professional",
+    description: "For independent practicing structural engineers",
     monthlyPrice: 99,
     yearlyPrice: 79,
-    icon: <Users className="w-6 h-6" />,
+    icon: <Zap className="w-6 h-6" />,
     features: [
-      'Everything in Professional',
-      'Up to 10 team members',
-      'Team project sharing',
-      'Admin dashboard',
-      'Version history (90 days)',
-      'API access',
-      'Phone support',
+      "Unlimited projects & storage",
+      "Full 3D nonlinear analysis engine",
+      "All international design codes",
+      "P-Delta, buckling & modal analysis",
+      "AI-powered design assistant",
+      "Custom branded engineering reports",
+      "Priority email & chat support",
+      "Cloud backup & multi-device sync",
+      "Real-time collaboration (up to 3 users)",
     ],
-    highlighted: false,
-    cta: 'Start Team Trial',
-    ctaVariant: 'secondary'
+    highlighted: true,
+    badge: "Most Popular",
+    cta: "Start 14-Day Free Trial",
+    ctaVariant: "primary",
   },
   {
-    id: 'enterprise',
-    name: 'Enterprise',
-    description: 'For large organizations',
+    id: "team",
+    name: "Business",
+    description: "For growing engineering firms and consultancies",
+    monthlyPrice: 249,
+    yearlyPrice: 199,
+    icon: <Users className="w-6 h-6" />,
+    features: [
+      "Everything in Professional, plus:",
+      "Up to 10 team members included",
+      "Advanced team project sharing",
+      "Centralized admin dashboard",
+      "Version history (1-year retention)",
+      "REST API access for automation",
+      "Dedicated phone & priority support",
+    ],
+    highlighted: false,
+    cta: "Start Business Trial",
+    ctaVariant: "secondary",
+  },
+  {
+    id: "enterprise",
+    name: "Enterprise",
+    description: "For large-scale organizations and global firms",
     monthlyPrice: null,
     yearlyPrice: null,
     icon: <Building2 className="w-6 h-6" />,
     features: [
-      'Everything in Team',
-      'Unlimited team members',
-      'SSO & SAML',
-      'On-premise deployment option',
-      'Custom integrations',
-      'Dedicated account manager',
-      '24/7 phone support',
-      'SLA guarantee',
-      'Custom training',
+      "Everything in Business, plus:",
+      "Unlimited team members & storage",
+      "SSO, SAML & advanced security",
+      "On-premise or private cloud deployment",
+      "Custom integrations & API limits",
+      "Dedicated technical account manager",
+      "24/7 priority phone support",
+      "99.99% Uptime SLA guarantee",
+      "Custom onboarding & team training",
     ],
     highlighted: false,
-    cta: 'Contact Sales',
-    ctaVariant: 'outline'
-  }
+    cta: "Contact Enterprise Sales",
+    ctaVariant: "outline",
+  },
 ];
 
 const FEATURE_MATRIX = [
-  { 
-    category: 'Analysis',
+  {
+    category: "Analysis",
     features: [
-      { name: '2D Frame Analysis', free: true, pro: true, team: true, enterprise: true },
-      { name: '3D Frame Analysis', free: false, pro: true, team: true, enterprise: true },
-      { name: 'Plate/Shell Analysis', free: false, pro: true, team: true, enterprise: true },
-      { name: 'P-Delta Analysis', free: false, pro: true, team: true, enterprise: true },
-      { name: 'Buckling Analysis', free: false, pro: true, team: true, enterprise: true },
-      { name: 'Modal Analysis', free: false, pro: true, team: true, enterprise: true },
-      { name: 'Time History', free: false, pro: true, team: true, enterprise: true },
-    ]
+      {
+        name: "2D Frame Analysis",
+        free: true,
+        pro: true,
+        team: true,
+        enterprise: true,
+      },
+      {
+        name: "3D Frame Analysis",
+        free: false,
+        pro: true,
+        team: true,
+        enterprise: true,
+      },
+      {
+        name: "Plate/Shell Analysis",
+        free: false,
+        pro: true,
+        team: true,
+        enterprise: true,
+      },
+      {
+        name: "P-Delta Analysis",
+        free: false,
+        pro: true,
+        team: true,
+        enterprise: true,
+      },
+      {
+        name: "Buckling Analysis",
+        free: false,
+        pro: true,
+        team: true,
+        enterprise: true,
+      },
+      {
+        name: "Modal Analysis",
+        free: false,
+        pro: true,
+        team: true,
+        enterprise: true,
+      },
+      {
+        name: "Time History",
+        free: false,
+        pro: true,
+        team: true,
+        enterprise: true,
+      },
+    ],
   },
   {
-    category: 'Design Codes',
+    category: "Design Codes",
     features: [
-      { name: 'IS 456, IS 800', free: true, pro: true, team: true, enterprise: true },
-      { name: 'AISC 360, ACI 318', free: false, pro: true, team: true, enterprise: true },
-      { name: 'Eurocode 2, 3, 8', free: false, pro: true, team: true, enterprise: true },
-      { name: 'AS 4100, AS 3600', free: false, pro: true, team: true, enterprise: true },
-      { name: 'Custom Code Templates', free: false, pro: false, team: true, enterprise: true },
-    ]
+      {
+        name: "IS 456, IS 800",
+        free: true,
+        pro: true,
+        team: true,
+        enterprise: true,
+      },
+      {
+        name: "AISC 360, ACI 318",
+        free: false,
+        pro: true,
+        team: true,
+        enterprise: true,
+      },
+      {
+        name: "Eurocode 2, 3, 8",
+        free: false,
+        pro: true,
+        team: true,
+        enterprise: true,
+      },
+      {
+        name: "AS 4100, AS 3600",
+        free: false,
+        pro: true,
+        team: true,
+        enterprise: true,
+      },
+      {
+        name: "Custom Code Templates",
+        free: false,
+        pro: false,
+        team: true,
+        enterprise: true,
+      },
+    ],
   },
   {
-    category: 'Collaboration',
+    category: "Collaboration",
     features: [
-      { name: 'Cloud Storage', free: '100 MB', pro: '10 GB', team: '100 GB', enterprise: 'Unlimited' },
-      { name: 'Real-time Collaboration', free: false, pro: '3 users', team: '10 users', enterprise: 'Unlimited' },
-      { name: 'Version History', free: false, pro: '30 days', team: '90 days', enterprise: 'Unlimited' },
-      { name: 'Team Management', free: false, pro: false, team: true, enterprise: true },
-    ]
+      {
+        name: "Cloud Storage",
+        free: "100 MB",
+        pro: "10 GB",
+        team: "100 GB",
+        enterprise: "Unlimited",
+      },
+      {
+        name: "Real-time Collaboration",
+        free: false,
+        pro: "3 users",
+        team: "10 users",
+        enterprise: "Unlimited",
+      },
+      {
+        name: "Version History",
+        free: false,
+        pro: "30 days",
+        team: "90 days",
+        enterprise: "Unlimited",
+      },
+      {
+        name: "Team Management",
+        free: false,
+        pro: false,
+        team: true,
+        enterprise: true,
+      },
+    ],
   },
   {
-    category: 'AI & Advanced',
+    category: "AI & Advanced",
     features: [
-      { name: 'AI Design Assistant', free: false, pro: true, team: true, enterprise: true },
-      { name: 'Parametric Modeling', free: false, pro: true, team: true, enterprise: true },
-      { name: 'AR/VR Visualization', free: false, pro: true, team: true, enterprise: true },
-      { name: 'BIM/IFC Import', free: false, pro: true, team: true, enterprise: true },
-      { name: 'Optimization Engine', free: false, pro: true, team: true, enterprise: true },
-    ]
+      {
+        name: "AI Design Assistant",
+        free: false,
+        pro: true,
+        team: true,
+        enterprise: true,
+      },
+      {
+        name: "Parametric Modeling",
+        free: false,
+        pro: true,
+        team: true,
+        enterprise: true,
+      },
+      {
+        name: "AR/VR Visualization",
+        free: false,
+        pro: true,
+        team: true,
+        enterprise: true,
+      },
+      {
+        name: "BIM/IFC Import",
+        free: false,
+        pro: true,
+        team: true,
+        enterprise: true,
+      },
+      {
+        name: "Optimization Engine",
+        free: false,
+        pro: true,
+        team: true,
+        enterprise: true,
+      },
+    ],
   },
   {
-    category: 'Support',
+    category: "Support",
     features: [
-      { name: 'Community Forum', free: true, pro: true, team: true, enterprise: true },
-      { name: 'Email Support', free: false, pro: true, team: true, enterprise: true },
-      { name: 'Phone Support', free: false, pro: false, team: true, enterprise: true },
-      { name: 'Dedicated Manager', free: false, pro: false, team: false, enterprise: true },
-      { name: 'Custom Training', free: false, pro: false, team: false, enterprise: true },
-    ]
-  }
+      {
+        name: "Community Forum",
+        free: true,
+        pro: true,
+        team: true,
+        enterprise: true,
+      },
+      {
+        name: "Email Support",
+        free: false,
+        pro: true,
+        team: true,
+        enterprise: true,
+      },
+      {
+        name: "Phone Support",
+        free: false,
+        pro: false,
+        team: true,
+        enterprise: true,
+      },
+      {
+        name: "Dedicated Manager",
+        free: false,
+        pro: false,
+        team: false,
+        enterprise: true,
+      },
+      {
+        name: "Custom Training",
+        free: false,
+        pro: false,
+        team: false,
+        enterprise: true,
+      },
+    ],
+  },
 ];
 
 const FAQ_ITEMS = [
   {
-    q: 'Can I switch plans at any time?',
-    a: 'Yes! You can upgrade or downgrade your plan at any time. When upgrading, you\'ll get immediate access to new features. When downgrading, the change takes effect at your next billing cycle.'
+    q: "Can I switch plans at any time?",
+    a: "Yes! You can upgrade or downgrade your plan at any time. When upgrading, you'll get immediate access to new features. When downgrading, the change takes effect at your next billing cycle.",
   },
   {
-    q: 'Do you offer student or academic discounts?',
-    a: 'Absolutely! Students and educators with a valid .edu email can get 50% off Professional plans. Academic institutions can contact us for volume licensing.'
+    q: "Do you offer student or academic discounts?",
+    a: "Absolutely! Students and educators with a valid .edu email can get 50% off Professional plans. Academic institutions can contact us for volume licensing.",
   },
   {
-    q: 'What payment methods do you accept?',
-    a: 'We accept all major credit cards, debit cards, UPI, net banking, and PayPal. Enterprise customers can pay via invoice with NET-30 terms.'
+    q: "What payment methods do you accept?",
+    a: "We accept all major credit cards, debit cards, UPI, net banking, and PayPal. Enterprise customers can pay via invoice with NET-30 terms.",
   },
   {
-    q: 'Is there a free trial for paid plans?',
-    a: 'Yes, all paid plans come with a 14-day free trial. No credit card required to start. You\'ll only be charged if you decide to continue after the trial.'
+    q: "Is there a free trial for paid plans?",
+    a: "Yes, all paid plans come with a 14-day free trial. No credit card required to start. You'll only be charged if you decide to continue after the trial.",
   },
   {
-    q: 'What happens to my data if I cancel?',
-    a: 'Your data remains accessible for 30 days after cancellation. You can export all your projects during this period. After 30 days, data is permanently deleted per our privacy policy.'
+    q: "What happens to my data if I cancel?",
+    a: "Your data remains accessible for 30 days after cancellation. You can export all your projects during this period. After 30 days, data is permanently deleted per our privacy policy.",
   },
   {
-    q: 'Can I get a refund?',
-    a: 'We offer a 30-day money-back guarantee on all paid plans. If you\'re not satisfied, contact support within 30 days of purchase for a full refund.'
+    q: "Can I get a refund?",
+    a: "We offer a 30-day money-back guarantee on all paid plans. If you're not satisfied, contact support within 30 days of purchase for a full refund.",
   },
   {
-    q: 'Is my data secure?',
-    a: 'Security is our top priority. We use AES-256 encryption for data at rest, TLS 1.3 for data in transit, and are SOC 2 Type II certified. Enterprise plans include additional security features.'
+    q: "Is my data secure?",
+    a: "Security is our top priority. We use AES-256 encryption for data at rest, TLS 1.3 for data in transit, and are SOC 2 Type II certified. Enterprise plans include additional security features.",
   },
   {
-    q: 'Do you offer on-premise deployment?',
-    a: 'Yes, our Enterprise plan includes the option for on-premise or private cloud deployment. Contact our sales team to discuss your infrastructure requirements.'
-  }
+    q: "Do you offer on-premise deployment?",
+    a: "Yes, our Enterprise plan includes the option for on-premise or private cloud deployment. Contact our sales team to discuss your infrastructure requirements.",
+  },
 ];
 
 // ============================================
@@ -227,22 +387,26 @@ const FAQ_ITEMS = [
 
 export const EnhancedPricingPage: FC = () => {
   const navigate = useNavigate();
-  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('yearly');
+  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(
+    "yearly",
+  );
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const [showMatrix, setShowMatrix] = useState(false);
+  const [showPPP, setShowPPP] = useState(true);
 
   const handleGetStarted = (planId: string) => {
-    if (planId === 'enterprise') {
-      navigate('/contact?subject=enterprise');
+    if (planId === "enterprise") {
+      navigate("/contact?subject=enterprise");
     } else {
       navigate(`/sign-up?plan=${planId}`);
     }
   };
 
   const formatPrice = (plan: PricingPlan) => {
-    if (plan.monthlyPrice === null) return 'Custom';
-    if (plan.monthlyPrice === 0) return '$0';
-    const price = billingPeriod === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
+    if (plan.monthlyPrice === null) return "Custom";
+    if (plan.monthlyPrice === 0) return "$0";
+    const price =
+      billingPeriod === "yearly" ? plan.yearlyPrice : plan.monthlyPrice;
     return `$${price}`;
   };
 
@@ -258,15 +422,60 @@ export const EnhancedPricingPage: FC = () => {
             <span className="font-bold text-lg">BeamLab</span>
           </Link>
           <div className="flex items-center gap-6">
-            <Link to="/" className="text-sm text-slate-400 hover:text-white transition-colors">Home</Link>
-            <Link to="/demo" className="text-sm text-slate-400 hover:text-white transition-colors">Demo</Link>
-            <Link to="/sign-in" className="text-sm text-slate-400 hover:text-white transition-colors">Sign In</Link>
+            <Link
+              to="/"
+              className="text-sm text-slate-400 hover:text-white transition-colors"
+            >
+              Home
+            </Link>
+            <Link
+              to="/demo"
+              className="text-sm text-slate-400 hover:text-white transition-colors"
+            >
+              Demo
+            </Link>
+            <Link
+              to="/sign-in"
+              className="text-sm text-slate-400 hover:text-white transition-colors"
+            >
+              Sign In
+            </Link>
           </div>
         </div>
       </nav>
 
+      {/* PPP Banner */}
+      {showPPP && (
+        <div className="fixed top-16 inset-x-0 z-40 bg-indigo-600/90 backdrop-blur-md border-b border-indigo-500">
+          <div className="max-w-7xl mx-auto px-4 py-2.5 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-3 text-center sm:text-left">
+              <Globe className="w-5 h-5 text-indigo-100 shrink-0 hidden sm:block" />
+              <p className="text-sm text-indigo-50">
+                <strong className="font-semibold text-white">
+                  Visiting from a developing economy?
+                </strong>{" "}
+                We offer Purchasing Power Parity (PPP) discounts up to 60% off.
+              </p>
+            </div>
+            <div className="flex items-center gap-4 shrink-0">
+              <button className="text-sm font-bold text-white hover:text-indigo-200 transition-colors whitespace-nowrap underline decoration-indigo-400 underline-offset-2">
+                Apply Now
+              </button>
+              <button
+                onClick={() => setShowPPP(false)}
+                className="text-indigo-200 hover:text-white p-1 rounded-md hover:bg-indigo-500/50 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
-      <section className="pt-32 pb-16 px-4">
+      <section
+        className={`pb-16 px-4 transition-all duration-300 ${showPPP ? "pt-40" : "pt-32"}`}
+      >
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -274,25 +483,29 @@ export const EnhancedPricingPage: FC = () => {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-6"
           >
             <Sparkles className="w-4 h-4" />
-            14-day free trial on all paid plans
+            Stop paying for legacy software. Try BeamLab free for 14 days.
           </motion.div>
-          
+
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-4xl md:text-5xl font-bold mb-4"
+            className="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight"
           >
-            Simple pricing for every team
+            Engineering Excellence, <br className="hidden md:block" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+              Priced for Growth.
+            </span>
           </motion.h1>
-          
+
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-xl text-slate-400 mb-10"
+            className="text-xl text-slate-400 mb-10 max-w-2xl mx-auto"
           >
-            Start free, scale as you grow. No hidden fees.
+            Get the modern structural analysis platform that saves you hours on
+            every project. No hidden fees, no expensive maintenance contracts.
           </motion.p>
 
           {/* Billing Toggle */}
@@ -303,21 +516,21 @@ export const EnhancedPricingPage: FC = () => {
             className="inline-flex items-center gap-4 p-1 rounded-full bg-slate-900 border border-slate-800"
           >
             <button
-              onClick={() => setBillingPeriod('monthly')}
+              onClick={() => setBillingPeriod("monthly")}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
-                billingPeriod === 'monthly' 
-                  ? 'bg-white text-slate-950' 
-                  : 'text-slate-400 hover:text-white'
+                billingPeriod === "monthly"
+                  ? "bg-white text-slate-950"
+                  : "text-slate-400 hover:text-white"
               }`}
             >
               Monthly
             </button>
             <button
-              onClick={() => setBillingPeriod('yearly')}
+              onClick={() => setBillingPeriod("yearly")}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
-                billingPeriod === 'yearly' 
-                  ? 'bg-white text-slate-950' 
-                  : 'text-slate-400 hover:text-white'
+                billingPeriod === "yearly"
+                  ? "bg-white text-slate-950"
+                  : "text-slate-400 hover:text-white"
               }`}
             >
               Yearly
@@ -340,8 +553,8 @@ export const EnhancedPricingPage: FC = () => {
               transition={{ delay: 0.1 * i }}
               className={`relative rounded-2xl p-6 flex flex-col ${
                 plan.highlighted
-                  ? 'bg-gradient-to-b from-blue-600/20 to-purple-600/20 border-2 border-blue-500/50 shadow-xl shadow-blue-500/10'
-                  : 'bg-slate-900 border border-slate-800'
+                  ? "bg-gradient-to-b from-blue-600/20 to-purple-600/20 border-2 border-blue-500/50 shadow-xl shadow-blue-500/10"
+                  : "bg-slate-900 border border-slate-800"
               }`}
             >
               {plan.badge && (
@@ -350,9 +563,13 @@ export const EnhancedPricingPage: FC = () => {
                 </div>
               )}
 
-              <div className={`p-3 rounded-xl w-fit mb-4 ${
-                plan.highlighted ? 'bg-blue-500/20 text-blue-400' : 'bg-slate-800 text-slate-400'
-              }`}>
+              <div
+                className={`p-3 rounded-xl w-fit mb-4 ${
+                  plan.highlighted
+                    ? "bg-blue-500/20 text-blue-400"
+                    : "bg-slate-800 text-slate-400"
+                }`}
+              >
                 {plan.icon}
               </div>
 
@@ -360,10 +577,12 @@ export const EnhancedPricingPage: FC = () => {
               <p className="text-sm text-slate-400 mb-4">{plan.description}</p>
 
               <div className="mb-6">
-                <span className="text-4xl font-bold text-white">{formatPrice(plan)}</span>
+                <span className="text-4xl font-bold text-white">
+                  {formatPrice(plan)}
+                </span>
                 {plan.monthlyPrice !== null && plan.monthlyPrice > 0 && (
                   <span className="text-slate-400 ml-2">
-                    /month {billingPeriod === 'yearly' && '(billed yearly)'}
+                    /month {billingPeriod === "yearly" && "(billed yearly)"}
                   </span>
                 )}
               </div>
@@ -371,11 +590,11 @@ export const EnhancedPricingPage: FC = () => {
               <button
                 onClick={() => handleGetStarted(plan.id)}
                 className={`w-full py-3 rounded-xl font-semibold transition-all mb-6 ${
-                  plan.ctaVariant === 'primary'
-                    ? 'bg-white text-slate-950 hover:bg-slate-100'
-                    : plan.ctaVariant === 'secondary'
-                    ? 'bg-blue-600 text-white hover:bg-blue-500'
-                    : 'border-2 border-slate-700 text-white hover:bg-slate-800'
+                  plan.ctaVariant === "primary"
+                    ? "bg-white text-slate-950 hover:bg-slate-100"
+                    : plan.ctaVariant === "secondary"
+                      ? "bg-blue-600 text-white hover:bg-blue-500"
+                      : "border-2 border-slate-700 text-white hover:bg-slate-800"
                 }`}
               >
                 {plan.cta}
@@ -384,9 +603,11 @@ export const EnhancedPricingPage: FC = () => {
               <ul className="space-y-3 flex-1">
                 {plan.features.map((feature, j) => (
                   <li key={j} className="flex items-start gap-3 text-sm">
-                    <Check className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                      plan.highlighted ? 'text-blue-400' : 'text-slate-400'
-                    }`} />
+                    <Check
+                      className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
+                        plan.highlighted ? "text-blue-400" : "text-slate-400"
+                      }`}
+                    />
                     <span className="text-slate-300">{feature}</span>
                   </li>
                 ))}
@@ -396,15 +617,46 @@ export const EnhancedPricingPage: FC = () => {
         </div>
       </section>
 
+      {/* Trust Signals */}
+      <section className="py-16 px-4 border-t border-slate-800/50 bg-slate-900/20">
+        <div className="max-w-7xl mx-auto text-center">
+          <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-8">
+            Trusted by innovative engineering teams worldwide
+          </p>
+          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-50 grayscale">
+            {/* Mock Logos */}
+            <div className="flex items-center gap-2 text-xl font-bold">
+              <Building2 className="w-6 h-6" /> Arup
+            </div>
+            <div className="flex items-center gap-2 text-xl font-bold">
+              <Building2 className="w-6 h-6" /> Thornton Tomasetti
+            </div>
+            <div className="flex items-center gap-2 text-xl font-bold">
+              <Building2 className="w-6 h-6" /> WSP
+            </div>
+            <div className="flex items-center gap-2 text-xl font-bold">
+              <Building2 className="w-6 h-6" /> Buro Happold
+            </div>
+            <div className="flex items-center gap-2 text-xl font-bold">
+              <Building2 className="w-6 h-6" /> SOM
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Feature Comparison Matrix Toggle */}
-      <section className="pb-8 px-4">
+      <section className="py-12 px-4">
         <div className="max-w-7xl mx-auto">
           <button
             onClick={() => setShowMatrix(!showMatrix)}
             className="w-full py-4 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 font-medium hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
           >
-            {showMatrix ? 'Hide' : 'Show'} Full Feature Comparison
-            {showMatrix ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+            {showMatrix ? "Hide" : "Show"} Full Feature Comparison
+            {showMatrix ? (
+              <ChevronUp className="w-5 h-5" />
+            ) : (
+              <ChevronDown className="w-5 h-5" />
+            )}
           </button>
         </div>
       </section>
@@ -416,24 +668,39 @@ export const EnhancedPricingPage: FC = () => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-800">
-                  <th className="text-left py-4 px-4 text-slate-400 font-medium">Features</th>
-                  <th className="text-center py-4 px-4 text-white font-medium">Starter</th>
-                  <th className="text-center py-4 px-4 text-blue-400 font-medium">Professional</th>
-                  <th className="text-center py-4 px-4 text-white font-medium">Team</th>
-                  <th className="text-center py-4 px-4 text-white font-medium">Enterprise</th>
+                  <th className="text-left py-4 px-4 text-slate-400 font-medium">
+                    Features
+                  </th>
+                  <th className="text-center py-4 px-4 text-white font-medium">
+                    Starter
+                  </th>
+                  <th className="text-center py-4 px-4 text-blue-400 font-medium">
+                    Professional
+                  </th>
+                  <th className="text-center py-4 px-4 text-white font-medium">
+                    Team
+                  </th>
+                  <th className="text-center py-4 px-4 text-white font-medium">
+                    Enterprise
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {FEATURE_MATRIX.map((category) => (
                   <React.Fragment key={category.category}>
                     <tr className="bg-slate-900/50">
-                      <td colSpan={5} className="py-3 px-4 text-sm font-semibold text-slate-300">
+                      <td
+                        colSpan={5}
+                        className="py-3 px-4 text-sm font-semibold text-slate-300"
+                      >
                         {category.category}
                       </td>
                     </tr>
                     {category.features.map((feature, i) => (
                       <tr key={i} className="border-b border-slate-800/50">
-                        <td className="py-3 px-4 text-sm text-slate-400">{feature.name}</td>
+                        <td className="py-3 px-4 text-sm text-slate-400">
+                          {feature.name}
+                        </td>
                         <td className="py-3 px-4 text-center">
                           <FeatureValue value={feature.free} />
                         </td>
@@ -456,12 +723,130 @@ export const EnhancedPricingPage: FC = () => {
         </section>
       )}
 
+      {/* Why Choose BeamLab */}
+      <section className="py-24 px-4 bg-slate-950 border-t border-slate-800">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Why switch to BeamLab?
+            </h2>
+            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+              We built BeamLab because we were tired of clunky, expensive legacy
+              software that hasn't changed in 20 years.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-20">
+            <div className="p-8 rounded-2xl bg-slate-900 border border-slate-800">
+              <div className="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center mb-6">
+                <Zap className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">10x Faster Workflows</h3>
+              <p className="text-slate-400 leading-relaxed">
+                Our modern, intuitive interface and AI-powered design assistant
+                cut modeling and analysis time by up to 80%. Stop fighting the
+                UI and start engineering.
+              </p>
+            </div>
+            <div className="p-8 rounded-2xl bg-slate-900 border border-slate-800">
+              <div className="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center mb-6">
+                <Shield className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">No Hidden Costs</h3>
+              <p className="text-slate-400 leading-relaxed">
+                Say goodbye to expensive "maintenance contracts", paid upgrades,
+                and confusing module pricing. You get the full engine, always up
+                to date.
+              </p>
+            </div>
+            <div className="p-8 rounded-2xl bg-slate-900 border border-slate-800">
+              <div className="w-12 h-12 rounded-xl bg-green-500/20 text-green-400 flex items-center justify-center mb-6">
+                <Users className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">
+                Built for Collaboration
+              </h3>
+              <p className="text-slate-400 leading-relaxed">
+                Work together in real-time, share projects with a link, and
+                access your models from any device. Cloud-native architecture
+                for modern teams.
+              </p>
+            </div>
+          </div>
+
+          {/* Legacy Comparison */}
+          <div className="max-w-4xl mx-auto bg-slate-900/50 rounded-3xl border border-slate-800 overflow-hidden">
+            <div className="grid md:grid-cols-2">
+              <div className="p-10 border-b md:border-b-0 md:border-r border-slate-800">
+                <h4 className="text-xl font-bold text-slate-400 mb-6 flex items-center gap-2">
+                  <X className="w-6 h-6 text-red-400" /> Legacy Software
+                </h4>
+                <ul className="space-y-4">
+                  <li className="flex items-start gap-3 text-slate-500">
+                    <span className="mt-1 text-red-400/50">✕</span>
+                    $3,000+ upfront license fee
+                  </li>
+                  <li className="flex items-start gap-3 text-slate-500">
+                    <span className="mt-1 text-red-400/50">✕</span>
+                    $800/year mandatory maintenance
+                  </li>
+                  <li className="flex items-start gap-3 text-slate-500">
+                    <span className="mt-1 text-red-400/50">✕</span>
+                    Pay extra for design codes & modules
+                  </li>
+                  <li className="flex items-start gap-3 text-slate-500">
+                    <span className="mt-1 text-red-400/50">✕</span>
+                    Tied to a single Windows PC
+                  </li>
+                  <li className="flex items-start gap-3 text-slate-500">
+                    <span className="mt-1 text-red-400/50">✕</span>
+                    Clunky 1990s user interface
+                  </li>
+                </ul>
+              </div>
+              <div className="p-10 bg-blue-900/10">
+                <h4 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                  <Check className="w-6 h-6 text-blue-400" /> BeamLab Ultimate
+                </h4>
+                <ul className="space-y-4">
+                  <li className="flex items-start gap-3 text-slate-300">
+                    <Check className="w-5 h-5 text-blue-400 shrink-0" />
+                    Simple monthly/yearly subscription
+                  </li>
+                  <li className="flex items-start gap-3 text-slate-300">
+                    <Check className="w-5 h-5 text-blue-400 shrink-0" />
+                    All updates & support included
+                  </li>
+                  <li className="flex items-start gap-3 text-slate-300">
+                    <Check className="w-5 h-5 text-blue-400 shrink-0" />
+                    All codes & features included
+                  </li>
+                  <li className="flex items-start gap-3 text-slate-300">
+                    <Check className="w-5 h-5 text-blue-400 shrink-0" />
+                    Access from any device, anywhere
+                  </li>
+                  <li className="flex items-start gap-3 text-slate-300">
+                    <Check className="w-5 h-5 text-blue-400 shrink-0" />
+                    Modern, lightning-fast web interface
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* FAQ Section */}
       <section className="py-20 px-4 bg-slate-900/30">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-4">Frequently Asked Questions</h2>
+          <h2 className="text-3xl font-bold text-center mb-4">
+            Frequently Asked Questions
+          </h2>
           <p className="text-center text-slate-400 mb-12">
-            Can't find what you're looking for? <Link to="/contact" className="text-blue-400 hover:underline">Contact us</Link>
+            Can't find what you're looking for?{" "}
+            <Link to="/contact" className="text-blue-400 hover:underline">
+              Contact us
+            </Link>
           </p>
 
           <div className="space-y-4">
@@ -487,7 +872,11 @@ export const EnhancedPricingPage: FC = () => {
                   )}
                 </button>
                 {expandedFaq === i && (
-                  <div id={`faq-answer-${i}`} role="region" className="px-5 pb-5 text-slate-400 text-sm leading-relaxed">
+                  <div
+                    id={`faq-answer-${i}`}
+                    role="region"
+                    className="px-5 pb-5 text-slate-400 text-sm leading-relaxed"
+                  >
                     {faq.a}
                   </div>
                 )}
@@ -498,37 +887,60 @@ export const EnhancedPricingPage: FC = () => {
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-4">
+      <section className="py-24 px-4 bg-gradient-to-b from-slate-950 to-blue-950/20 border-t border-slate-800">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-4">Still have questions?</h2>
-          <p className="text-slate-400 mb-8">
-            Our team is here to help you choose the right plan for your needs.
+          <h2 className="text-4xl md:text-5xl font-extrabold mb-6">
+            Ready to upgrade your engineering workflow?
+          </h2>
+          <p className="text-xl text-slate-400 mb-10 max-w-2xl mx-auto">
+            Join thousands of engineers who have already switched to BeamLab.
+            Start your 14-day free trial today. No credit card required.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
+            <button
+              onClick={() => handleGetStarted("pro")}
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-blue-600 text-white font-bold hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/25"
+            >
+              Start Free Trial <ArrowRight className="w-5 h-5" />
+            </button>
             <Link
               to="/contact"
-              className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-white text-slate-950 font-bold hover:bg-slate-100 transition-all"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-full border-2 border-slate-700 text-white font-medium hover:bg-slate-800 transition-all"
             >
               <MessageSquare className="w-5 h-5" /> Talk to Sales
             </Link>
-            <Link
-              to="/demo"
-              className="inline-flex items-center gap-2 px-8 py-3 rounded-full border-2 border-slate-700 text-white font-medium hover:bg-slate-800 transition-all"
-            >
-              Try Live Demo <ArrowRight className="w-5 h-5" />
-            </Link>
           </div>
+          <p className="mt-6 text-sm text-slate-500">
+            30-day money-back guarantee on all paid plans.
+          </p>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="border-t border-slate-800 py-8 px-4">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-slate-400 text-sm">© 2026 BeamLab Ultimate. All rights reserved.</p>
+          <p className="text-slate-400 text-sm">
+            © 2026 BeamLab Ultimate. All rights reserved.
+          </p>
           <div className="flex gap-6">
-            <Link to="/privacy" className="text-slate-400 text-sm hover:text-white">Privacy</Link>
-            <Link to="/terms" className="text-slate-400 text-sm hover:text-white">Terms</Link>
-            <Link to="/contact" className="text-slate-400 text-sm hover:text-white">Contact</Link>
+            <Link
+              to="/privacy"
+              className="text-slate-400 text-sm hover:text-white"
+            >
+              Privacy
+            </Link>
+            <Link
+              to="/terms"
+              className="text-slate-400 text-sm hover:text-white"
+            >
+              Terms
+            </Link>
+            <Link
+              to="/contact"
+              className="text-slate-400 text-sm hover:text-white"
+            >
+              Contact
+            </Link>
           </div>
         </div>
       </footer>
@@ -537,15 +949,26 @@ export const EnhancedPricingPage: FC = () => {
 };
 
 // Helper component for feature matrix values
-const FeatureValue: FC<{ value: boolean | string; highlight?: boolean }> = ({ value, highlight }) => {
-  if (typeof value === 'boolean') {
+const FeatureValue: FC<{ value: boolean | string; highlight?: boolean }> = ({
+  value,
+  highlight,
+}) => {
+  if (typeof value === "boolean") {
     return value ? (
-      <Check className={`w-5 h-5 mx-auto ${highlight ? 'text-blue-400' : 'text-green-500'}`} />
+      <Check
+        className={`w-5 h-5 mx-auto ${highlight ? "text-blue-400" : "text-green-500"}`}
+      />
     ) : (
       <X className="w-5 h-5 mx-auto text-slate-700" />
     );
   }
-  return <span className={`text-sm ${highlight ? 'text-blue-400' : 'text-slate-300'}`}>{value}</span>;
+  return (
+    <span
+      className={`text-sm ${highlight ? "text-blue-400" : "text-slate-300"}`}
+    >
+      {value}
+    </span>
+  );
 };
 
 export default EnhancedPricingPage;

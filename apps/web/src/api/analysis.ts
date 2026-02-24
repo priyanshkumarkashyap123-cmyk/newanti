@@ -333,20 +333,18 @@ function generateWasmDiagramData(
     // Shear: V(x) = V1 - w·x
     shear_y.push(shearStart - w * x);
 
-    // Moment: M(x) = M1 + V1·x - w·x²/2
-    moment_y.push(momentStart + shearStart * x - (w * x * x) / 2);
+    // Moment: M_internal(x) = -M1 + V1·x - w·x²/2 (negate FEM moment for internal BMD)
+    moment_y.push(-momentStart + shearStart * x - (w * x * x) / 2);
 
-    // Deflection via double integration of M(x)/EI
-    // EI·y  = M1·x²/2 + V1·x³/6 − w·x⁴/24 + C1·x + C2
-    // BC: y(0)=0 → C2=0;  y(L)=0 → C1 = −(M1·L/2 + V1·L²/6 − w·L³/24)
+    // Deflection via double integration of M_internal(x)/EI
+    // EI·y'' = -M1 + V1·x − w·x²/2
+    // EI·y  = -M1·x²/2 + V1·x³/6 − w·x⁴/24 + C1·x + C2
+    // BC: y(0)=0 → C2=0;  y(L)=0 → C1 = M1·L/2 − V1·L²/6 + w·L³/24
     if (EI > 0) {
-      const C1 = -(
-        (momentStart * L) / 2 +
-        (shearStart * L * L) / 6 -
-        (w * L * L * L) / 24
-      );
+      const C1 =
+        (momentStart * L) / 2 - (shearStart * L * L) / 6 + (w * L * L * L) / 24;
       const y =
-        ((momentStart * x * x) / 2 +
+        ((-momentStart * x * x) / 2 +
           (shearStart * x * x * x) / 6 -
           (w * x * x * x * x) / 24 +
           C1 * x) /

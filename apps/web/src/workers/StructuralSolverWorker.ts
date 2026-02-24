@@ -577,7 +577,8 @@ function assembleStiffnessMatrixAndForces(
         // DOF 2: rotation about Z (accept both fz and mz for backward compat)
         if (node.restraints.fx) fixedDofs.add(baseDof);
         if (node.restraints.fy) fixedDofs.add(baseDof + 1);
-        if (node.restraints.fz || node.restraints.mz) fixedDofs.add(baseDof + 2);
+        if (node.restraints.fz || node.restraints.mz)
+          fixedDofs.add(baseDof + 2);
       } else {
         // 2D truss (2 DOF) or 3D frame (6 DOF) — standard mapping
         if (node.restraints.fx) fixedDofs.add(baseDof);
@@ -1219,11 +1220,13 @@ function computeMemberEndForces(
       const baseI = i * dofPerNode;
       const baseJ = j * dofPerNode;
       const du_x = (displacements[baseJ] || 0) - (displacements[baseI] || 0);
-      const du_y = (displacements[baseJ + 1] || 0) - (displacements[baseI + 1] || 0);
-      const du_z = dofPerNode >= 3 && dofPerNode !== 3
-        ? (displacements[baseJ + 2] || 0) - (displacements[baseI + 2] || 0)
-        : 0; // dofPerNode=3 means 2D frame [u,v,θ] — DOF 2 is rotation, not Z
-      
+      const du_y =
+        (displacements[baseJ + 1] || 0) - (displacements[baseI + 1] || 0);
+      const du_z =
+        dofPerNode >= 3 && dofPerNode !== 3
+          ? (displacements[baseJ + 2] || 0) - (displacements[baseI + 2] || 0)
+          : 0; // dofPerNode=3 means 2D frame [u,v,θ] — DOF 2 is rotation, not Z
+
       // For dofPerNode=6, use translational DOFs only (indices 0,1,2)
       let deltaAxial: number;
       if (dofPerNode === 6) {
@@ -1235,7 +1238,7 @@ function computeMemberEndForces(
 
       const E = member.E || 0;
       const A = member.A || 0;
-      const axialForce = (E * A / L) * deltaAxial;
+      const axialForce = ((E * A) / L) * deltaAxial;
 
       results.push({
         id: member.id,
@@ -1248,12 +1251,14 @@ function computeMemberEndForces(
       const baseI = i * dofPerNode;
       const baseJ = j * dofPerNode;
       const du_x = (displacements[baseJ] || 0) - (displacements[baseI] || 0);
-      const du_y = (displacements[baseJ + 1] || 0) - (displacements[baseI + 1] || 0);
+      const du_y =
+        (displacements[baseJ + 1] || 0) - (displacements[baseI + 1] || 0);
       let du_z = 0;
       if (dofPerNode === 6) {
-        du_z = (displacements[baseJ + 2] || 0) - (displacements[baseI + 2] || 0);
+        du_z =
+          (displacements[baseJ + 2] || 0) - (displacements[baseI + 2] || 0);
       }
-      
+
       const kSpring = member.springStiffness || member.E || 1.0;
       const deltaAxial = du_x * cx + du_y * cy + du_z * cz;
       const springForce = kSpring * deltaAxial;
@@ -1441,10 +1446,10 @@ function computeMemberEndForces(
             // FEF for UDL w in local Y direction on both-fixed beam:
             //   V1 = +wL/2,   V2 = +wL/2
             //   M1 = +wL²/12, M2 = -wL²/12
-            fLocal12[1] += w * L / 2;
-            fLocal12[5] += w * L * L / 12;
-            fLocal12[7] += w * L / 2;
-            fLocal12[11] += -w * L * L / 12;
+            fLocal12[1] += (w * L) / 2;
+            fLocal12[5] += (w * L * L) / 12;
+            fLocal12[7] += (w * L) / 2;
+            fLocal12[11] += (-w * L * L) / 12;
           }
         }
       }
@@ -1549,10 +1554,10 @@ function computeMemberEndForces(
             // FEF for UDL w in local Y on both-fixed beam:
             //   V1 = +wL/2,   M1 = +wL²/12
             //   V2 = +wL/2,   M2 = -wL²/12
-            fLocal[1] += w * L / 2;
-            fLocal[2] += w * L * L / 12;
-            fLocal[4] += w * L / 2;
-            fLocal[5] += -w * L * L / 12;
+            fLocal[1] += (w * L) / 2;
+            fLocal[2] += (w * L * L) / 12;
+            fLocal[4] += (w * L) / 2;
+            fLocal[5] += (-w * L * L) / 12;
           }
         }
       }
@@ -1678,9 +1683,10 @@ function generateDiagramData(
       const Vx = V1 - w * x;
       shear_y.push(Vx);
 
-      // ─── Moment Y ───
-      //   M(x) = M1 + V1·x - w·x²/2
-      const Mx = M1 + V1 * x - (w * x * x) / 2;
+      // ─── Moment Z (internal bending moment) ───
+      //   M_internal(x) = -M1 + V1·x - w·x²/2
+      //   (Negate FEM end moment: FEM Mz [CCW+] → internal moment [sagging+])
+      const Mx = -M1 + V1 * x - (w * x * x) / 2;
       moment_y.push(Mx);
 
       // ─── Deflection Y (double integration of M/EI) ───
@@ -1693,15 +1699,15 @@ function generateDiagramData(
       //   Since we have actual end displacements from the solver, use cubic interpolation:
       if (EIz > 0) {
         // Use exact beam-column deflection formula:
-        // EI·y'' = M(x) = M1 + V1·x - w·x²/2
-        // EI·y' = M1·x + V1·x²/2 - w·x³/6 + C1
-        // EI·y = M1·x²/2 + V1·x³/6 - w·x⁴/24 + C1·x + C2
+        // EI·y'' = M_internal(x) = -M1 + V1·x - w·x²/2
+        // EI·y' = -M1·x + V1·x²/2 - w·x³/6 + C1
+        // EI·y = -M1·x²/2 + V1·x³/6 - w·x⁴/24 + C1·x + C2
         // y(0) = 0 → C2 = 0
-        // y(L) = 0 (approx for supported beams): C1 = -(M1·L/2 + V1·L²/6 - w·L³/24)/(1)
+        // y(L) = 0: C1 = -(-M1·L/2 + V1·L²/6 - w·L³/24) = (M1·L/2 - V1·L²/6 + w·L³/24)
         const C2 = 0;
-        const C1 = -((M1 * L) / 2 + (V1 * L * L) / 6 - (w * L * L * L) / 24);
+        const C1 = (M1 * L) / 2 - (V1 * L * L) / 6 + (w * L * L * L) / 24;
         const y =
-          ((M1 * x * x) / 2 +
+          ((-M1 * x * x) / 2 +
             (V1 * x * x * x) / 6 -
             (w * x * x * x * x) / 24 +
             C1 * x +
@@ -1739,7 +1745,7 @@ function generateDiagramData(
       arr.reduce((mx, v) => Math.max(mx, Math.abs(v)), 0);
 
     // NOTE on naming convention:
-    //   moment_y (local array) = M1 + V1*x - w*x²/2 = bending moment about Z-axis (Mz)  
+    //   moment_y (local array) = M1 + V1*x - w*x²/2 = bending moment about Z-axis (Mz)
     //   moment_z (local array) = My1 + Vz1*x = bending moment about Y-axis (My)
     // Consumers (ResultsToolbar etc.) expect:
     //   diagramData.moment_z = primary BMD (about Z-axis) — so swap in output

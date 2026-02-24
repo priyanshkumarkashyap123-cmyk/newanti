@@ -934,12 +934,17 @@ export const ModernModeler: FC = () => {
         const I = m.I ?? 1e-4; // Legacy single I (m⁴)
         const Iy = m.Iy ?? I; // Use store Iy, fallback to legacy I
         const Iz = m.Iz ?? I; // Use store Iz, fallback to legacy I
-        const J = m.J ?? (Iy + Iz); // Use store J, fallback to Iy+Iz (exact for circular)
+        const J = m.J ?? Iy + Iz; // Use store J, fallback to Iy+Iz (exact for circular)
         return {
           id: m.id,
           startNodeId: m.startNodeId,
           endNodeId: m.endNodeId,
-          E, G, A: m.A ?? 0.01, Iy, Iz, J,
+          E,
+          G,
+          A: m.A ?? 0.01,
+          Iy,
+          Iz,
+          J,
           I, // keep legacy I for diagram generation
           betaAngle: m.betaAngle ?? 0, // degrees
           releases: m.releases,
@@ -1020,7 +1025,11 @@ export const ModernModeler: FC = () => {
           const floorResult = distributeFloorLoads(
             floorLoads,
             nodesArray.map((n) => ({ id: n.id, x: n.x, y: n.y, z: n.z ?? 0 })),
-            membersArray.map((m) => ({ id: m.id, startNodeId: m.startNodeId, endNodeId: m.endNodeId })),
+            membersArray.map((m) => ({
+              id: m.id,
+              startNodeId: m.startNodeId,
+              endNodeId: m.endNodeId,
+            })),
           );
           if (floorResult.loads.length > 0) {
             modelerLogger.log(
@@ -1051,8 +1060,13 @@ export const ModernModeler: FC = () => {
           (ml) => ml.type === "point" || ml.type === "moment",
         );
         const equivalentNodalFromMemberPt: Array<{
-          node_id: string; fx: number; fy: number; fz: number;
-          mx: number; my: number; mz: number;
+          node_id: string;
+          fx: number;
+          fy: number;
+          fz: number;
+          mx: number;
+          my: number;
+          mz: number;
         }> = [];
         for (const mpl of memberPointLoads) {
           const mInfo = membersArray.find((m) => m.id === mpl.memberId);
@@ -1060,7 +1074,8 @@ export const ModernModeler: FC = () => {
           const nd1 = nodesArray.find((n) => n.id === mInfo.startNodeId);
           const nd2 = nodesArray.find((n) => n.id === mInfo.endNodeId);
           if (!nd1 || !nd2) continue;
-          const dx = nd2.x - nd1.x, dy = nd2.y - nd1.y;
+          const dx = nd2.x - nd1.x,
+            dy = nd2.y - nd1.y;
           const dz = (nd2.z ?? 0) - (nd1.z ?? 0);
           const L = Math.sqrt(dx * dx + dy * dy + dz * dz);
           if (L < 1e-12) continue;
@@ -1073,29 +1088,77 @@ export const ModernModeler: FC = () => {
             // R1 = Pb²(3a+b)/L³, R2 = Pa²(a+3b)/L³
             // M1 = Pab²/L², M2 = -Pa²b/L²
             const P = mpl.P * 1000; // kN → N
-            const R1 = P * b * b * (3 * a + b) / (L * L * L);
-            const R2 = P * a * a * (a + 3 * b) / (L * L * L);
-            const M1 = P * a * b * b / (L * L);
-            const M2 = -P * a * a * b / (L * L);
+            const R1 = (P * b * b * (3 * a + b)) / (L * L * L);
+            const R2 = (P * a * a * (a + 3 * b)) / (L * L * L);
+            const M1 = (P * a * b * b) / (L * L);
+            const M2 = (-P * a * a * b) / (L * L);
             // Determine load direction in global coordinates
             const dir = mpl.direction || "global_y";
             if (dir === "local_y" || dir === "global_y") {
               equivalentNodalFromMemberPt.push(
-                { node_id: mInfo.startNodeId, fx: 0, fy: R1, fz: 0, mx: 0, my: 0, mz: M1 },
-                { node_id: mInfo.endNodeId, fx: 0, fy: R2, fz: 0, mx: 0, my: 0, mz: M2 },
+                {
+                  node_id: mInfo.startNodeId,
+                  fx: 0,
+                  fy: R1,
+                  fz: 0,
+                  mx: 0,
+                  my: 0,
+                  mz: M1,
+                },
+                {
+                  node_id: mInfo.endNodeId,
+                  fx: 0,
+                  fy: R2,
+                  fz: 0,
+                  mx: 0,
+                  my: 0,
+                  mz: M2,
+                },
               );
             } else if (dir === "local_z" || dir === "global_z") {
               equivalentNodalFromMemberPt.push(
-                { node_id: mInfo.startNodeId, fx: 0, fy: 0, fz: R1, mx: 0, my: -M1, mz: 0 },
-                { node_id: mInfo.endNodeId, fx: 0, fy: 0, fz: R2, mx: 0, my: -M2, mz: 0 },
+                {
+                  node_id: mInfo.startNodeId,
+                  fx: 0,
+                  fy: 0,
+                  fz: R1,
+                  mx: 0,
+                  my: -M1,
+                  mz: 0,
+                },
+                {
+                  node_id: mInfo.endNodeId,
+                  fx: 0,
+                  fy: 0,
+                  fz: R2,
+                  mx: 0,
+                  my: -M2,
+                  mz: 0,
+                },
               );
             } else if (dir === "global_x" || dir === "axial") {
               // Axial point load
-              const R1x = P * b / L;
-              const R2x = P * a / L;
+              const R1x = (P * b) / L;
+              const R2x = (P * a) / L;
               equivalentNodalFromMemberPt.push(
-                { node_id: mInfo.startNodeId, fx: R1x, fy: 0, fz: 0, mx: 0, my: 0, mz: 0 },
-                { node_id: mInfo.endNodeId, fx: R2x, fy: 0, fz: 0, mx: 0, my: 0, mz: 0 },
+                {
+                  node_id: mInfo.startNodeId,
+                  fx: R1x,
+                  fy: 0,
+                  fz: 0,
+                  mx: 0,
+                  my: 0,
+                  mz: 0,
+                },
+                {
+                  node_id: mInfo.endNodeId,
+                  fx: R2x,
+                  fy: 0,
+                  fz: 0,
+                  mx: 0,
+                  my: 0,
+                  mz: 0,
+                },
               );
             }
           } else if (mpl.type === "moment" && mpl.M) {
@@ -1103,14 +1166,30 @@ export const ModernModeler: FC = () => {
             // R1 = 6M·a·b / L³ (upward), R2 = -6M·a·b / L³ (downward)
             // M1 = M·b·(2a - b)/L², M2 = M·a·(2b - a)/L²
             const Mo = mpl.M * 1000; // kN·m → N·m
-            const R1 = 6 * Mo * a * b / (L * L * L);
+            const R1 = (6 * Mo * a * b) / (L * L * L);
             const R2 = -R1;
-            const M1 = Mo * b * (2 * a - b) / (L * L);
-            const M2 = Mo * a * (2 * b - a) / (L * L);
+            const M1 = (Mo * b * (2 * a - b)) / (L * L);
+            const M2 = (Mo * a * (2 * b - a)) / (L * L);
             // Moment loads typically about Z axis
             equivalentNodalFromMemberPt.push(
-              { node_id: mInfo.startNodeId, fx: 0, fy: R1, fz: 0, mx: 0, my: 0, mz: M1 },
-              { node_id: mInfo.endNodeId, fx: 0, fy: R2, fz: 0, mx: 0, my: 0, mz: M2 },
+              {
+                node_id: mInfo.startNodeId,
+                fx: 0,
+                fy: R1,
+                fz: 0,
+                mx: 0,
+                my: 0,
+                mz: M1,
+              },
+              {
+                node_id: mInfo.endNodeId,
+                fx: 0,
+                fy: R2,
+                fz: 0,
+                mx: 0,
+                my: 0,
+                mz: M2,
+              },
             );
           }
         }
@@ -1198,14 +1277,26 @@ export const ModernModeler: FC = () => {
           const wasmElements = membersArray.map((m) => {
             // Convert releases from store format to Rust [bool;6] arrays
             const rel = m.releases;
-            const releases_i = rel ? [
-              rel.fxStart || false, rel.fyStart || false, rel.fzStart || false,
-              rel.mxStart || false, rel.myStart || false, rel.mzStart || (rel.startMoment || false),
-            ] : [false, false, false, false, false, false];
-            const releases_j = rel ? [
-              rel.fxEnd || false, rel.fyEnd || false, rel.fzEnd || false,
-              rel.mxEnd || false, rel.myEnd || false, rel.mzEnd || (rel.endMoment || false),
-            ] : [false, false, false, false, false, false];
+            const releases_i = rel
+              ? [
+                  rel.fxStart || false,
+                  rel.fyStart || false,
+                  rel.fzStart || false,
+                  rel.mxStart || false,
+                  rel.myStart || false,
+                  rel.mzStart || rel.startMoment || false,
+                ]
+              : [false, false, false, false, false, false];
+            const releases_j = rel
+              ? [
+                  rel.fxEnd || false,
+                  rel.fyEnd || false,
+                  rel.fzEnd || false,
+                  rel.mxEnd || false,
+                  rel.myEnd || false,
+                  rel.mzEnd || rel.endMoment || false,
+                ]
+              : [false, false, false, false, false, false];
             return {
               id: m.id,
               node_i: m.startNodeId,
@@ -1216,7 +1307,7 @@ export const ModernModeler: FC = () => {
               Iy: m.Iy || 1e-4, // m⁴
               Iz: m.Iz || 1e-4, // m⁴
               J: m.J || 2e-4, // m⁴
-              beta: (m.betaAngle || 0) * Math.PI / 180, // degrees → radians
+              beta: ((m.betaAngle || 0) * Math.PI) / 180, // degrees → radians
               releases_i,
               releases_j,
             };
@@ -1240,12 +1331,19 @@ export const ModernModeler: FC = () => {
           modelerLogger.log("[Analysis] WASM Result received");
 
           // Convert WASM result to expected format
-          // WASM 3D solver returns HashMaps: { "nodeId": [dx, dy, dz, rx, ry, rz], ... }
+          // WASM 3D solver returns HashMaps serialized by serde-wasm-bindgen v0.6
+          // as JS Map objects (not plain Objects), so we need to handle both types.
+          const mapEntries = (obj: any): [string, any][] => {
+            if (!obj) return [];
+            if (obj instanceof Map) return Array.from(obj.entries());
+            if (typeof obj === "object") return Object.entries(obj);
+            return [];
+          };
 
           // Parse displacements - 6 DOF for 3D analysis
           const nodesDict: Record<string, any> = {};
-          const displacements = wasmResult.displacements || {};
-          for (const [nodeId, disp] of Object.entries(displacements)) {
+          const displacements = wasmResult.displacements;
+          for (const [nodeId, disp] of mapEntries(displacements)) {
             const dispArray = disp as number[];
             // 3D solver always returns 6 DOF: [dx, dy, dz, rx, ry, rz]
             nodesDict[nodeId] = {
@@ -1264,8 +1362,8 @@ export const ModernModeler: FC = () => {
 
           // Parse reactions - 6 DOF for 3D analysis
           const reactionsDict: Record<string, number[]> = {};
-          const reactions = wasmResult.reactions || {};
-          for (const [nodeId, rxn] of Object.entries(reactions)) {
+          const reactions = wasmResult.reactions;
+          for (const [nodeId, rxn] of mapEntries(reactions)) {
             const rxnArray = rxn as number[];
             // 3D solver always returns 6 DOF: [Fx, Fy, Fz, Mx, My, Mz]
             reactionsDict[nodeId] = [
@@ -1283,8 +1381,8 @@ export const ModernModeler: FC = () => {
 
           // Parse member forces - 3D MemberForces with full 6 DOF at each end
           const membersDict: Record<string, any> = {};
-          const memberForcesMap = wasmResult.member_forces || {};
-          for (const [elemId, forces] of Object.entries(memberForcesMap)) {
+          const memberForcesMap = wasmResult.member_forces;
+          for (const [elemId, forces] of mapEntries(memberForcesMap)) {
             const mf = forces as {
               // 2D format (backward compatibility)
               axial?: number;
@@ -1308,15 +1406,17 @@ export const ModernModeler: FC = () => {
             // We reconstruct the internal force variation using equilibrium:
             //   V_i + V_j = w*L  →  w = (V_i + V_j) / L  (equivalent distributed load intensity)
             //   V(x) = V_i - w*x
-            //   M(x) = M_i + V_i*x - w*x²/2
+            //   M_internal(x) = -M_i + V_i*x - w*x²/2
+            //   (Note: FEM returns Mz_i as nodal applied moment [CCW+], but internal
+            //    bending moment convention [sagging+] requires negation of the end moment)
             // This is EXACT for any combination of UDL/UVL/point loads and is self-consistent
             // with the solver output. No need to re-read store loads (which would double-count).
             const genDiagram = (
-              axF: number,     // Axial force at node i (kN)
-              v1: number,      // Shear Y at node i (kN)
-              m1: number,      // Moment Z at node i (kN·m)
-              v2: number,      // Shear Y at node j (kN) — sign per beam convention
-              m2: number,      // Moment Z at node j (kN·m)
+              axF: number, // Axial force at node i (kN)
+              v1: number, // Shear Y at node i (kN)
+              m1: number, // Moment Z at node i (kN·m)
+              v2: number, // Shear Y at node j (kN) — sign per beam convention
+              m2: number, // Moment Z at node j (kN·m)
               memberElemId: string,
             ) => {
               const mInfo = membersArray.find((m) => m.id === memberElemId);
@@ -1329,33 +1429,34 @@ export const ModernModeler: FC = () => {
               const ddz = (nd2.z ?? 0) - (nd1.z ?? 0);
               const L = Math.sqrt(ddx * ddx + ddy * ddy + ddz * ddz) || 1;
               const EI = (mInfo.E || 200e6) * (mInfo.I || mInfo.Iz || 1e-4);
-              
+
               // Back-calculate equivalent distributed load from equilibrium of total end forces
               // Vertical equilibrium: V_i - w*L - V_j = 0 → w = (V_i - (-V_j))/L = (V_i + V_j)/L
               // NOTE: forces_j[1] from Rust is the reaction at j-end with positive = local +Y.
               // For a beam with upward reactions, V_i > 0, V_j < 0 (or vice versa).
               // The net load = V_i + V_j (total upward force = total downward load on member)
               const w = (v1 + v2) / L; // Equivalent UDL intensity (kN/m)
-              
+
               const ST = 51;
               const xv: number[] = [],
                 sy: number[] = [],
                 mzArr: number[] = [];
               const ax: number[] = [],
                 dy: number[] = [];
-              
+
               for (let s = 0; s < ST; s++) {
                 const x = (s / (ST - 1)) * L;
                 xv.push(x);
                 ax.push(axF);
-                
+
                 // Shear Force Diagram: V(x) = V_i - w*x
                 sy.push(v1 - w * x);
-                
-                // Bending Moment Diagram: M(x) = M_i + V_i*x - w*x²/2
-                mzArr.push(m1 + v1 * x - (w * x * x) / 2);
+
+                // Bending Moment Diagram: M_internal(x) = -M_i + V_i*x - w*x²/2
+                // Sign: FEM Mz_i (CCW+) → negate for internal moment (sagging+)
+                mzArr.push(-m1 + v1 * x - (w * x * x) / 2);
               }
-              
+
               // Deflection via double integration of M(x)/EI with proper BCs
               // EI*y'' = M(x)  →  integrate twice
               if (EI > 0) {
@@ -1363,13 +1464,13 @@ export const ModernModeler: FC = () => {
                 // First integration: EI*y'(x) = ∫M(x)dx + C1
                 const slope: number[] = [0];
                 for (let s = 1; s < ST; s++) {
-                  const dArea = (mzArr[s - 1] + mzArr[s]) / 2 * dx;
+                  const dArea = ((mzArr[s - 1] + mzArr[s]) / 2) * dx;
                   slope.push(slope[s - 1] + dArea);
                 }
                 // Second integration: EI*y(x) = ∫∫M(x)dx² + C1*x + C2
                 const defl: number[] = [0];
                 for (let s = 1; s < ST; s++) {
-                  const dArea = (slope[s - 1] + slope[s]) / 2 * dx;
+                  const dArea = ((slope[s - 1] + slope[s]) / 2) * dx;
                   defl.push(defl[s - 1] + dArea);
                 }
                 // Apply BCs: y(0) = 0, y(L) = 0 (relative deflection)
@@ -1383,7 +1484,7 @@ export const ModernModeler: FC = () => {
               } else {
                 for (let s = 0; s < ST; s++) dy.push(0);
               }
-              
+
               return {
                 x_values: xv,
                 shear_y: sy,
@@ -1490,16 +1591,16 @@ export const ModernModeler: FC = () => {
           };
 
           // Extract equilibrium check from WASM result (industry-standard verification)
-          const equilibriumCheck = wasmResult.equilibrium_check 
-            ? (wasmResult.equilibrium_check instanceof Map 
-              ? Object.fromEntries(wasmResult.equilibrium_check) 
-              : wasmResult.equilibrium_check)
+          const equilibriumCheck = wasmResult.equilibrium_check
+            ? wasmResult.equilibrium_check instanceof Map
+              ? Object.fromEntries(wasmResult.equilibrium_check)
+              : wasmResult.equilibrium_check
             : undefined;
           const conditionNumber = wasmResult.condition_number ?? undefined;
-          
+
           if (equilibriumCheck) {
             modelerLogger.log(
-              `[Analysis] Equilibrium check: ${equilibriumCheck.pass ? 'PASS' : 'FAIL'} (error: ${equilibriumCheck.error_percent?.toFixed(6)}%)`,
+              `[Analysis] Equilibrium check: ${equilibriumCheck.pass ? "PASS" : "FAIL"} (error: ${equilibriumCheck.error_percent?.toFixed(6)}%)`,
             );
           }
           if (conditionNumber && conditionNumber > 1e10) {
