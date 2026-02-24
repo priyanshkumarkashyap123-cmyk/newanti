@@ -8,10 +8,13 @@
  */
 
 import { FC, useState, useCallback, useEffect, useRef } from 'react';
-import { Sparkles, Loader2, AlertCircle, CheckCircle, Zap, MessageCircle, Send, Bot, User, Wand2, Edit3, Settings2, Lightbulb } from 'lucide-react';
+import { Sparkles, Loader2, AlertCircle, CheckCircle, Zap, MessageCircle, Send, Bot, User, Wand2, Edit3, Settings2, Lightbulb, Clock, History, Plus, BookOpen } from 'lucide-react';
 import { useModelStore } from '../../store/model';
 import { aiLogger } from '../../utils/logger';
 import { API_CONFIG } from '../../config/env';
+import { useAISessionStore } from '../../store/aiSessionStore';
+import { aiArchitect } from '../../ai/EnhancedAIArchitect';
+import { AISessionHistoryPanel } from './AISessionHistoryPanel';
 
 // ============================================
 // CONFIGURATION
@@ -80,27 +83,35 @@ interface ModifyResponse {
 // ============================================
 
 const EXAMPLE_PROMPTS = [
-    "Create a 12m span bridge truss with 6 panels",
-    "Design a 3-story building frame, 5m bays",
-    "Generate a 20m warehouse portal frame",
-    "Make a simple beam, 8m span with fixed supports"
+    "Create a simply supported beam of 8m span with 20 kN/m UDL",
+    "Design a 3-story building frame, 5m bays, 3.5m height",
+    "Generate a 20m warehouse portal frame with dead load 5 kN/m",
+    "Create a 12m span Pratt truss with 6 panels",
+    "Make a cantilever beam 5m with 10kN point load at free end",
+    "Design a 3-bay portal frame 30m wide, 8m eave height",
+    "Create a continuous beam with 3 spans of 6m each with UDL 15 kN/m",
+    "Generate a Warren truss bridge 30m span 5m depth",
 ];
 
 // Modification examples for smart modify
 const MODIFY_EXAMPLES = [
     "Change columns to ISMB400",
+    "Add UDL of 20 kN/m on beam B1",
     "Add fixed support at N1",
     "Remove member M5",
     "Set span to 15m",
     "Add a new story on top",
-    "Make beams heavier"
+    "Make beams heavier",
+    "Add wind load 1.5 kN/m on all members"
 ];
 
 const CHAT_SUGGESTIONS = [
     "What is a Pratt truss?",
     "Explain moment of inertia",
     "How to reduce deflection?",
-    "IS 800 steel design basics"
+    "IS 800 steel design basics",
+    "How does UDL differ from point load?",
+    "Explain P-Delta analysis"
 ];
 
 // ============================================
@@ -120,22 +131,38 @@ export const AIArchitectPanel: FC = () => {
     const [isChatting, setIsChatting] = useState(false);
     const [aiStatus, setAIStatus] = useState<AIStatus | null>(null);
     const chatEndRef = useRef<HTMLDivElement>(null);
+    
+    // Session history state
+    const [showHistory, setShowHistory] = useState(false);
 
     // Modify state
     const [modifyCommand, setModifyCommand] = useState('');
     const [isModifying, setIsModifying] = useState(false);
     const [modifyHistory, setModifyHistory] = useState<{ command: string; result: string; success: boolean }[]>([]);
 
+    // Session store
+    const { createSession, addMessage, activeSessionId, setActiveSession, getActiveSession, sessions } = useAISessionStore();
+
     // Store actions
     const clearModel = useModelStore((state) => state.clearModel);
     const addNode = useModelStore((state) => state.addNode);
     const addMember = useModelStore((state) => state.addMember);
+    const addMemberLoad = useModelStore((state) => state.addMemberLoad);
+    const addNodeLoad = useModelStore((state) => state.addLoad);
     const updateNode = useModelStore((state) => state.updateNode);
     const updateMember = useModelStore((state) => state.updateMember);
     const removeNode = useModelStore((state) => state.removeNode);
     const removeMember = useModelStore((state) => state.removeMember);
     const nodes = useModelStore((state) => state.nodes);
     const members = useModelStore((state) => state.members);
+
+    // Ensure we have an active session
+    const ensureSession = useCallback(() => {
+        if (!activeSessionId) {
+            return createSession();
+        }
+        return activeSessionId;
+    }, [activeSessionId, createSession]);
 
     // Check AI status on mount
     useEffect(() => {
@@ -206,7 +233,7 @@ export const AIArchitectPanel: FC = () => {
     }, [clearModel, addNode, addMember]);
 
     // ========================================
-    // SMART MODIFY HANDLER
+    // SMART MODIFY HANDLER (with session tracking)
     // ========================================
     const handleSmartModify = useCallback(async () => {
         if (!modifyCommand.trim()) {
@@ -222,6 +249,10 @@ export const AIArchitectPanel: FC = () => {
         setError(null);
         setSuccess(null);
         setIsModifying(true);
+
+        // Track in session
+        const sessionId = ensureSession();
+        addMessage(sessionId, { role: 'user', content: modifyCommand, type: 'modify' });
 
         aiLogger.debug("Smart modify:", modifyCommand);
 
@@ -250,6 +281,7 @@ export const AIArchitectPanel: FC = () => {
                     result: data.message,
                     success: true
                 }]);
+                addMessage(sessionId, { role: 'assistant', content: data.message, type: 'modify' });
                 setModifyCommand('');
             } else {
                 const errorMsg = data.message || 'Modification failed';
@@ -265,18 +297,21 @@ export const AIArchitectPanel: FC = () => {
                     result: errorMsg,
                     success: false
                 }]);
+                addMessage(sessionId, { role: 'assistant', content: errorMsg, type: 'error' });
             }
 
         } catch (err) {
             console.error("[AI Brain] Error:", err);
-            setError(err instanceof Error ? err.message : 'Connection error');
+            const errMsg = err instanceof Error ? err.message : 'Connection error';
+            setError(errMsg);
+            addMessage(sessionId, { role: 'assistant', content: errMsg, type: 'error' });
         } finally {
             setIsModifying(false);
         }
-    }, [modifyCommand, nodes.size, getModelForAPI, applyModelChanges]);
+    }, [modifyCommand, nodes.size, getModelForAPI, applyModelChanges, ensureSession, addMessage]);
 
     // ========================================
-    // GENERATE HANDLER
+    // GENERATE HANDLER (with fallback + session tracking)
     // ========================================
     const handleGenerate = useCallback(async () => {
         if (!prompt.trim()) {
@@ -289,9 +324,16 @@ export const AIArchitectPanel: FC = () => {
         setSuccess(null);
         setIsGenerating(true);
 
+        // Track in session
+        const sessionId = ensureSession();
+        addMessage(sessionId, { role: 'user', content: prompt, type: 'generate' });
+
         console.log("[AIArchitect] Sending prompt:", prompt);
 
+        let generatedViaBackend = false;
+
         try {
+            // Try Python backend first
             const response = await fetch(`${PYTHON_API}/generate/ai`, {
                 method: 'POST',
                 headers: {
@@ -306,7 +348,6 @@ export const AIArchitectPanel: FC = () => {
             console.log("[AIArchitect] Response data:", data);
 
             if (!data.success) {
-                // Handle backend error with details
                 const errorMsg = data.error || 'Generation failed';
                 const details = data.details ? ` - ${data.details}` : '';
                 const hint = data.hint ? ` (${data.hint})` : '';
@@ -320,13 +361,24 @@ export const AIArchitectPanel: FC = () => {
             // Success! Populate the model
             clearModel();
 
-            // Add nodes
+            // Add nodes with support conditions from AI
             for (const node of data.model.nodes) {
+                const restraints: any = {};
+                const support = (node.support || '').toUpperCase();
+                if (support === 'FIXED') {
+                    restraints.fx = true; restraints.fy = true; restraints.fz = true;
+                    restraints.mx = true; restraints.my = true; restraints.mz = true;
+                } else if (support === 'PINNED') {
+                    restraints.fx = true; restraints.fy = true; restraints.fz = true;
+                } else if (support === 'ROLLER') {
+                    restraints.fy = true;
+                }
                 addNode({
                     id: node.id,
                     x: node.x,
                     y: node.y,
-                    z: node.z || 0
+                    z: node.z || 0,
+                    restraints: Object.keys(restraints).length > 0 ? restraints : undefined,
                 });
             }
 
@@ -340,26 +392,134 @@ export const AIArchitectPanel: FC = () => {
                 });
             }
 
+            generatedViaBackend = true;
             const modelName = data.model.metadata?.['name'] || 'AI Generated';
-            setSuccess(`✓ Generated "${modelName}" (${data.model.nodes.length} nodes, ${data.model.members.length} members)`);
+            const successMsg = `✓ Generated "${modelName}" (${data.model.nodes.length} nodes, ${data.model.members.length} members)`;
+            setSuccess(successMsg);
+            
+            addMessage(sessionId, {
+                role: 'assistant',
+                content: successMsg,
+                type: 'generate',
+                metadata: {
+                    structureType: modelName,
+                    nodesGenerated: data.model.nodes.length,
+                    membersGenerated: data.model.members.length
+                }
+            });
             setPrompt('');
 
         } catch (err) {
-            console.error("[AIArchitect] Error:", err);
+            console.warn("[AIArchitect] Backend failed, trying local EnhancedAIArchitect:", err);
 
-            // Check for network/connection errors
-            if (err instanceof TypeError && err.message.includes('fetch')) {
-                setError('Cannot connect to Python Server. Is it running on port 8081?');
-            } else {
-                setError(err instanceof Error ? err.message : 'Unknown error occurred');
+            // FALLBACK: Use local EnhancedAIArchitect
+            try {
+                const localResponse = await aiArchitect.processRequest({ message: prompt });
+                
+                if (localResponse.structureData) {
+                    clearModel();
+                    const sd = localResponse.structureData;
+
+                    for (const node of sd.nodes) {
+                        addNode({
+                            id: node.id,
+                            x: node.x,
+                            y: node.y,
+                            z: node.z || 0,
+                            restraints: node.restraints || undefined,
+                        });
+                    }
+
+                    for (const member of sd.members) {
+                        addMember({
+                            id: member.id,
+                            startNodeId: member.startNodeId,
+                            endNodeId: member.endNodeId,
+                            sectionId: member.section || 'ISMB300'
+                        });
+                    }
+
+                    // Apply supports from structure data
+                    if (sd.supports) {
+                        for (const sup of sd.supports) {
+                            const restraints: any = {};
+                            if (sup.type === 'fixed') {
+                                restraints.fx = true; restraints.fy = true; restraints.fz = true;
+                                restraints.mx = true; restraints.my = true; restraints.mz = true;
+                            } else if (sup.type === 'pinned') {
+                                restraints.fx = true; restraints.fy = true; restraints.fz = true;
+                            } else if (sup.type === 'roller') {
+                                restraints.fy = true;
+                            }
+                            if (Object.keys(restraints).length > 0) {
+                                updateNode(sup.nodeId, { restraints });
+                            }
+                        }
+                    }
+
+                    // Apply loads from structure data
+                    if (sd.loads) {
+                        for (const load of sd.loads) {
+                            if (load.type === 'member_distributed' && load.memberId) {
+                                try {
+                                    addMemberLoad({
+                                        id: load.id || `ML-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+                                        memberId: load.memberId,
+                                        type: 'UDL',
+                                        w1: load.values?.[0] || -10,
+                                        direction: 'global_y',
+                                    });
+                                } catch (e) { console.warn('Failed to add member load:', e); }
+                            } else if (load.type === 'node_force' && load.nodeId) {
+                                try {
+                                    addNodeLoad({
+                                        id: load.id || `NL-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+                                        nodeId: load.nodeId,
+                                        fx: load.values?.[0] || 0,
+                                        fy: load.values?.[1] || 0,
+                                        fz: load.values?.[2] || 0,
+                                    });
+                                } catch (e) { console.warn('Failed to add node load:', e); }
+                            }
+                        }
+                    }
+
+                    generatedViaBackend = true;
+                    const name = sd.metadata?.name || localResponse.type || 'Local AI Generated';
+                    const successMsg = `✓ Generated "${name}" (${sd.nodes.length} nodes, ${sd.members.length} members) [Local AI]`;
+                    setSuccess(successMsg);
+                    addMessage(sessionId, {
+                        role: 'assistant',
+                        content: successMsg,
+                        type: 'generate',
+                        metadata: {
+                            structureType: name,
+                            nodesGenerated: sd.nodes.length,
+                            membersGenerated: sd.members.length,
+                        }
+                    });
+                    setPrompt('');
+                } else {
+                    // Show AI explanation if no structure was generated
+                    const aiMsg = localResponse.message || 'I understood your request but could not generate a structure. Please try being more specific.';
+                    setError(aiMsg);
+                    addMessage(sessionId, { role: 'assistant', content: aiMsg, type: 'error' });
+                }
+            } catch (localErr) {
+                console.error("[AIArchitect] Both backends failed:", localErr);
+                const errorMsg = err instanceof TypeError && (err as TypeError).message.includes('fetch')
+                    ? 'Cannot connect to AI Server. Using local fallback also failed. Please check your connection.'
+                    : (err instanceof Error ? err.message : 'Unknown error occurred');
+                setError(errorMsg);
+                addMessage(sessionId, { role: 'assistant', content: errorMsg, type: 'error' });
             }
         } finally {
             setIsGenerating(false);
         }
-    }, [prompt, clearModel, addNode, addMember]);
+    }, [prompt, clearModel, addNode, addMember, addMemberLoad, addNodeLoad, updateNode, ensureSession, addMessage]);
 
     // ========================================
-    // CHAT HANDLER
+    // CHAT HANDLER (with session tracking + local fallback)
     // ========================================
     const handleChat = useCallback(async () => {
         if (!chatInput.trim()) return;
@@ -371,6 +531,11 @@ export const AIArchitectPanel: FC = () => {
         };
 
         setChatMessages(prev => [...prev, userMessage]);
+
+        // Track in session
+        const sessionId = ensureSession();
+        addMessage(sessionId, { role: 'user', content: chatInput, type: 'chat' });
+
         setChatInput('');
         setIsChatting(true);
 
@@ -396,25 +561,37 @@ export const AIArchitectPanel: FC = () => {
 
             const data = await response.json();
 
+            const responseText = data.success ? data.response : 'Sorry, I encountered an error. Please try again.';
             const assistantMessage: ChatMessage = {
                 role: 'assistant',
-                content: data.success ? data.response : 'Sorry, I encountered an error. Please try again.',
+                content: responseText,
                 timestamp: new Date()
             };
 
             setChatMessages(prev => [...prev, assistantMessage]);
+            addMessage(sessionId, { role: 'assistant', content: responseText, type: 'chat' });
 
         } catch (err) {
+            // Fallback to local AI
+            let fallbackResponse: string;
+            try {
+                const localResponse = await aiArchitect.processRequest({ message: chatInput });
+                fallbackResponse = localResponse.message || 'I can help with structural engineering questions. Please try rephrasing your question.';
+            } catch {
+                fallbackResponse = 'Unable to connect to the AI service. Please check if the backend is running.';
+            }
+
             const errorMessage: ChatMessage = {
                 role: 'assistant',
-                content: 'Unable to connect to the AI service. Please check if the backend is running.',
+                content: fallbackResponse,
                 timestamp: new Date()
             };
             setChatMessages(prev => [...prev, errorMessage]);
+            addMessage(sessionId, { role: 'assistant', content: fallbackResponse, type: 'chat' });
         } finally {
             setIsChatting(false);
         }
-    }, [chatInput, chatMessages, nodes.size, members.size]);
+    }, [chatInput, chatMessages, nodes.size, members.size, ensureSession, addMessage]);
 
     // ========================================
     // HANDLE EXAMPLE CLICK
@@ -428,6 +605,51 @@ export const AIArchitectPanel: FC = () => {
     const handleChatSuggestion = (suggestion: string) => {
         setChatInput(suggestion);
     };
+
+    // Resume a session from history
+    const handleResumeSession = useCallback((sessionId: string) => {
+        setActiveSession(sessionId);
+        const session = sessions.find(s => s.id === sessionId);
+        if (session) {
+            // Restore chat messages from session
+            const restored: ChatMessage[] = session.messages.map(m => ({
+                role: m.role as 'user' | 'assistant',
+                content: m.content,
+                timestamp: new Date(m.timestamp),
+            }));
+            setChatMessages(restored);
+            
+            // Switch to the most relevant tab
+            const hasGenerate = session.messages.some(m => m.type === 'generate');
+            const hasModify = session.messages.some(m => m.type === 'modify');
+            const hasChat = session.messages.some(m => m.type === 'chat');
+            if (hasChat) setActiveTab('chat');
+            else if (hasModify) setActiveTab('modify');
+            else if (hasGenerate) setActiveTab('generate');
+        }
+        setShowHistory(false);
+    }, [sessions, setActiveSession]);
+
+    // Start new session
+    const handleNewSession = useCallback(() => {
+        const id = createSession();
+        setChatMessages([]);
+        setModifyHistory([]);
+        setPrompt('');
+        setModifyCommand('');
+        setError(null);
+        setSuccess(null);
+    }, [createSession]);
+
+    // If showing history, render the history panel
+    if (showHistory) {
+        return (
+            <AISessionHistoryPanel
+                onResumeSession={handleResumeSession}
+                onClose={() => setShowHistory(false)}
+            />
+        );
+    }
 
     return (
         <div className="h-full flex flex-col bg-zinc-900">
@@ -450,6 +672,28 @@ export const AIArchitectPanel: FC = () => {
                                 )}
                             </p>
                         </div>
+                    </div>
+                    {/* Session controls */}
+                    <div className="flex items-center gap-1">
+                        <button
+                            onClick={handleNewSession}
+                            className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-700/50 rounded-lg transition-colors"
+                            title="New Session"
+                        >
+                            <Plus className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                            onClick={() => setShowHistory(true)}
+                            className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-700/50 rounded-lg transition-colors relative"
+                            title="Session History"
+                        >
+                            <History className="w-3.5 h-3.5" />
+                            {sessions.length > 0 && (
+                                <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-blue-500 rounded-full text-[8px] text-white flex items-center justify-center">
+                                    {sessions.length > 9 ? '9+' : sessions.length}
+                                </span>
+                            )}
+                        </button>
                     </div>
                 </div>
 
@@ -518,7 +762,7 @@ export const AIArchitectPanel: FC = () => {
                             Try an example
                         </label>
                         <div className="flex flex-wrap gap-1.5">
-                            {EXAMPLE_PROMPTS.slice(0, 3).map((example, i) => (
+                            {EXAMPLE_PROMPTS.slice(0, 5).map((example, i) => (
                                 <button
                                     key={i}
                                     onClick={() => handleExampleClick(example)}
@@ -532,7 +776,7 @@ export const AIArchitectPanel: FC = () => {
                                         disabled:opacity-50
                                     "
                                 >
-                                    {example.slice(0, 25)}...
+                                    {example.slice(0, 35)}...
                                 </button>
                             ))}
                         </div>

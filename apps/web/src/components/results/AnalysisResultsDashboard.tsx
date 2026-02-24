@@ -1661,7 +1661,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
   );
 
   return (
-    <div className="bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden animate-fadeIn">
+    <div className="bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden animate-fadeIn h-full flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 bg-zinc-800/50 border-b border-zinc-800">
         <div className="flex items-center gap-4">
@@ -1742,7 +1742,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
       </div>
 
       {/* Content Area */}
-      <div className="p-6">
+      <div className="flex-1 overflow-y-auto p-6 min-h-0">
         {/* Overview Mode */}
         {viewMode === "overview" && (
           <div key="overview" className="space-y-6 animate-slideUp">

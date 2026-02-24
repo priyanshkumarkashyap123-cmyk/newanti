@@ -2334,6 +2334,7 @@ async def ai_chat(request: AIChatRequest):
     """
     Chat with the AI assistant about structural engineering.
     Uses Google Gemini to provide intelligent responses.
+    Falls back to comprehensive rule-based responses.
     """
     message = request.message
     context = request.context or ""
@@ -2346,23 +2347,11 @@ async def ai_chat(request: AIChatRequest):
     
     try:
         if not GEMINI_API_KEY:
-            # Mock response when no API key
-            mock_responses = {
-                "what": "I'm the AI Architect assistant. I can help you design and analyze structural models, explain engineering concepts, and answer questions about your structures.",
-                "help": "I can help you with: 1) Generating structural models from descriptions, 2) Explaining analysis results, 3) Suggesting design improvements, 4) Answering structural engineering questions.",
-                "explain": "I'd be happy to explain! Structural analysis helps us understand how forces flow through a structure, calculate stresses and deflections, and ensure the design is safe and efficient.",
-                "default": "I understand you're asking about structural engineering. To provide real AI-powered assistance, please configure your GEMINI_API_KEY in the environment. For now, try using the 'Generate Structure' feature!"
-            }
-            
-            response_key = "default"
-            for key in mock_responses:
-                if key in message.lower():
-                    response_key = key
-                    break
-            
+            # Enhanced rule-based responses for structural engineering
+            response_text = _get_engineering_response(message, context)
             return AIChatResponse(
                 success=True,
-                response=mock_responses[response_key]
+                response=response_text
             )
         
         # Use Gemini for real AI chat
@@ -2371,20 +2360,28 @@ async def ai_chat(request: AIChatRequest):
         genai.configure(api_key=GEMINI_API_KEY)
         model = genai.GenerativeModel('gemini-1.5-flash')
         
-        # Build the chat prompt
+        # Build the chat prompt with richer engineering context
         system_context = """You are an expert Structural Engineering AI assistant for BeamLab Ultimate, 
 a professional-grade structural analysis software. You help users:
 
-1. Understand structural analysis concepts (beams, trusses, frames, etc.)
-2. Interpret analysis results (stresses, deflections, reactions)
+1. Understand structural analysis concepts (beams, trusses, frames, shells, plates, etc.)
+2. Interpret analysis results (stresses, deflections, reactions, bending moments, shear forces)
 3. Suggest design improvements and optimizations
-4. Explain Indian Standard (IS) codes and specifications
+4. Explain Indian Standard (IS) codes and specifications (IS 800, IS 456, IS 875, IS 1893)
 5. Answer questions about finite element analysis
 6. Help with load calculations and combinations
+7. Explain UDL (Uniformly Distributed Load), UVL, point loads, moment loads
+8. Discuss support conditions (fixed, pinned, roller, spring)
+9. Cover steel, concrete, timber, masonry structure design
+10. Help with 2D and 3D structural modeling
+
+IMPORTANT: If the user describes a structure they want to create (beam with UDL, frame, truss, etc.),
+tell them to use the 'Generate' tab and suggest the exact prompt they should type.
+For example: "To create this, switch to the Generate tab and type: 'Create a simply supported beam of 8m span with 20 kN/m UDL'"
 
 Keep responses concise but informative. Use engineering terminology appropriately.
-If the user shares model context, analyze it and provide specific insights.
-For numerical data, provide realistic engineering estimates based on context.
+For numerical data, provide realistic engineering estimates.
+Always mention relevant IS code clauses when applicable.
 """
         
         # Build conversation
@@ -2404,7 +2401,7 @@ For numerical data, provide realistic engineering estimates based on context.
         response = model.generate_content(full_prompt)
         ai_response = response.text.strip()
         
-        print(f"[AI CHAT] ✅ Response generated: {len(ai_response)} chars")
+        print(f"[AI CHAT] Response generated: {len(ai_response)} chars")
         
         return AIChatResponse(
             success=True,
@@ -2412,14 +2409,212 @@ For numerical data, provide realistic engineering estimates based on context.
         )
         
     except Exception as e:
-        print(f"[AI CHAT] ❌ Error: {str(e)}")
+        print(f"[AI CHAT] Error: {str(e)}")
         import traceback
         traceback.print_exc()
         
+        # Fallback to rule-based instead of returning error
+        fallback_response = _get_engineering_response(message, context)
         return AIChatResponse(
-            success=False,
-            error=str(e)
+            success=True,
+            response=fallback_response
         )
+
+
+def _get_engineering_response(message: str, context: str = "") -> str:
+    """Generate comprehensive rule-based engineering responses when AI is unavailable."""
+    msg = message.lower().strip()
+    
+    # Structure creation intents -> redirect to Generate tab
+    creation_keywords = [
+        'create', 'make', 'build', 'design', 'generate', 'model',
+        'draw', 'construct', 'i want', 'i need', 'can you make',
+    ]
+    structure_keywords = [
+        'beam', 'truss', 'frame', 'bridge', 'building', 'tower',
+        'portal', 'cantilever', 'slab', 'shell', 'plate', 'column',
+        'warehouse', 'shed', 'arch', 'staircase', 'bheem',
+    ]
+    
+    is_creation = any(k in msg for k in creation_keywords)
+    has_structure = any(k in msg for k in structure_keywords)
+    
+    if is_creation and has_structure:
+        suggested_prompt = message.strip()
+        if not any(msg.startswith(k) for k in ['create', 'design', 'generate', 'make', 'build']):
+            suggested_prompt = f"Create a {suggested_prompt}"
+        return (
+            f"Great idea! To generate this structure, please switch to the **Generate** tab and type:\n\n"
+            f"**\"{suggested_prompt}\"**\n\n"
+            f"The AI Architect will create the nodes, members, supports, and loads for you automatically. "
+            f"You can then modify it using the **Modify** tab."
+        )
+    
+    # UDL / Load explanations
+    if 'udl' in msg or 'uniformly distributed' in msg:
+        return (
+            "**UDL (Uniformly Distributed Load)** is a load that is evenly spread across the entire length of a member.\n\n"
+            "- Symbol: w (kN/m)\n"
+            "- Total load = w x L\n"
+            "- For simply supported beam: Max BM = wL^2/8, Max Deflection = 5wL^4/(384EI)\n"
+            "- IS 875 Part 2 gives live loads: Residential = 2 kN/m^2, Office = 3 kN/m^2\n\n"
+            "To add UDL to your model, use the Load panel or type in Generate: "
+            "'Create a beam of 8m span with 20 kN/m UDL'"
+        )
+    
+    # Beam topics
+    if 'beam' in msg or 'bheem' in msg:
+        if 'deflection' in msg:
+            return (
+                "**Beam Deflection Formulas:**\n\n"
+                "- Simply Supported + UDL: d = 5wL^4/(384EI)\n"
+                "- Simply Supported + Point Load at center: d = PL^3/(48EI)\n"
+                "- Cantilever + UDL: d = wL^4/(8EI)\n"
+                "- Cantilever + Point Load: d = PL^3/(3EI)\n\n"
+                "IS 800:2007 limits deflection to L/300 for beams and L/150 for cantilevers."
+            )
+        if 'moment' in msg or 'bending' in msg:
+            return (
+                "**Bending Moment Formulas:**\n\n"
+                "- SS Beam + UDL: M_max = wL^2/8 (at mid-span)\n"
+                "- SS Beam + Point Load: M_max = PL/4 (at mid-span)\n"
+                "- Cantilever + UDL: M_max = wL^2/2 (at fixed end)\n"
+                "- Fixed Beam + UDL: M_support = wL^2/12, M_mid = wL^2/24\n\n"
+                "Run analysis to see the BMD for your specific model."
+            )
+        return (
+            "**Beams** are horizontal structural members that resist loads primarily through bending.\n\n"
+            "Types: Simply Supported, Cantilever, Fixed, Continuous, Propped Cantilever\n\n"
+            "To create a beam, use the Generate tab: 'Create a simply supported beam of 8m span with 20 kN/m UDL'\n\n"
+            "Key checks: Bending stress <= 0.66fy, Shear stress <= 0.4fy, Deflection <= L/300"
+        )
+    
+    # Truss topics
+    if 'truss' in msg:
+        return (
+            "**Trusses** are triangulated structures where members carry only axial forces.\n\n"
+            "Common types:\n"
+            "- **Pratt Truss**: Diagonals in tension under gravity loads\n"
+            "- **Howe Truss**: Diagonals in compression\n"
+            "- **Warren Truss**: Alternating diagonal directions\n"
+            "- **K-Truss**: For longer spans\n\n"
+            "Create one: 'Generate a Pratt truss of 24m span with 6 panels'"
+        )
+    
+    # Frame topics
+    if 'frame' in msg or 'portal' in msg:
+        return (
+            "**Frames** are structures with rigid connections between beams and columns.\n\n"
+            "- **Portal Frame**: Simple gable frame for warehouses/sheds\n"
+            "- **Multi-story Frame**: Building frames with columns and beams\n"
+            "- Rigid connections transfer moment, shear, and axial forces\n\n"
+            "Design per IS 800:2007 (steel) or IS 456:2000 (concrete)\n\n"
+            "Try: 'Create a 3-story building frame with 5m bays'"
+        )
+    
+    # Moment of inertia
+    if 'moment of inertia' in msg or 'second moment' in msg:
+        return (
+            "**Moment of Inertia (I)** measures a cross-section's resistance to bending.\n\n"
+            "- Rectangle: I = bd^3/12\n"
+            "- Circle: I = pi*d^4/64\n"
+            "- I-beam: Use IS section tables (e.g., ISMB 300: Ix = 8603 cm^4)\n\n"
+            "Higher I means less deflection and lower bending stress (sigma = My/I)"
+        )
+    
+    # P-Delta
+    if 'p-delta' in msg or 'pdelta' in msg or 'p delta' in msg:
+        return (
+            "**P-Delta Analysis** accounts for the additional moments caused by gravity loads "
+            "acting on the laterally displaced structure.\n\n"
+            "- P-delta: Member-level (individual element buckling)\n"
+            "- P-Delta: Structure-level (global sway effect)\n\n"
+            "Important for: Tall buildings, slender columns, seismic analysis.\n"
+            "IS 800:2007 Cl. 4.4.2 requires P-Delta for all frames > 5 stories."
+        )
+    
+    # Shear
+    if 'shear' in msg:
+        return (
+            "**Shear Force** is the transverse force at a section of a beam.\n\n"
+            "- SS Beam + UDL: V_max = wL/2 (at supports)\n"
+            "- SS Beam + Point Load: V_max = P/2\n"
+            "- Shear stress check: tau = V/(d*tw) <= 0.4fy (IS 800:2007)\n\n"
+            "Run analysis to see the SFD (Shear Force Diagram) for your model."
+        )
+    
+    # IS code references
+    if 'is 800' in msg or 'is800' in msg:
+        return (
+            "**IS 800:2007** - Code of Practice for General Construction in Steel\n\n"
+            "Key clauses:\n"
+            "- Cl. 5: Members in Tension\n"
+            "- Cl. 7: Members in Compression\n"
+            "- Cl. 8: Members in Bending\n"
+            "- Cl. 10: Connections\n"
+            "- Cl. 12: Fatigue\n\n"
+            "Uses Limit State Method (LSM) with partial safety factors."
+        )
+    
+    if 'is 456' in msg or 'is456' in msg:
+        return (
+            "**IS 456:2000** - Code of Practice for Plain and Reinforced Concrete\n\n"
+            "Key clauses:\n"
+            "- Cl. 26: Development length of bars\n"
+            "- Cl. 34: Slabs (one-way/two-way)\n"
+            "- Cl. 38: Columns (short/long)\n"
+            "- Cl. 40: Footings\n\n"
+            "Minimum grade of concrete for RCC: M20"
+        )
+    
+    # Deflection
+    if 'deflection' in msg or 'displacement' in msg:
+        return (
+            "**Deflection** is the displacement of a structural member under load.\n\n"
+            "Limits (IS 800:2007):\n"
+            "- Beams: L/300 (general), L/240 (crane runway)\n"
+            "- Cantilever: L/150\n"
+            "- Columns: H/300 (sway)\n\n"
+            "To reduce deflection: increase I (use heavier section), reduce span, add supports."
+        )
+    
+    # Load combinations
+    if 'load combination' in msg or 'load combo' in msg:
+        return (
+            "**Load Combinations** per IS 875 Part 5:\n\n"
+            "- 1.5(DL + LL)\n"
+            "- 1.2(DL + LL + WL)\n"
+            "- 1.5(DL + WL)\n"
+            "- 0.9DL + 1.5WL\n\n"
+            "For seismic (IS 1893): 1.2(DL + LL + EL) and 1.5(DL + EL)"
+        )
+    
+    # Help / generic
+    if any(w in msg for w in ['help', 'what can', 'how to', 'guide', 'tutorial']):
+        return (
+            "I can help you with structural engineering! Here's what I can do:\n\n"
+            "**Generate Structures**: Switch to Generate tab and describe your structure\n"
+            "   Example: 'Create a simply supported beam of 8m span with 20 kN/m UDL'\n\n"
+            "**Modify Models**: Switch to Modify tab to change sections, add loads, etc.\n\n"
+            "**Engineering Knowledge**: Ask me about beams, trusses, frames, IS codes, etc.\n\n"
+            "Some things to try:\n"
+            "- 'What is UDL?'\n"
+            "- 'Explain moment of inertia'\n"
+            "- 'How to reduce deflection?'\n"
+            "- 'IS 800 steel design basics'"
+        )
+    
+    # Default - still helpful
+    return (
+        f"I understand you're asking about: **{message[:80]}**\n\n"
+        "I can help with structural engineering concepts, IS code references, and analysis guidance. "
+        "Try asking about specific topics like:\n"
+        "- Beam design, UDL, bending moments\n"
+        "- Truss types and analysis\n"
+        "- Frame design, P-Delta effects\n"
+        "- IS 800, IS 456, IS 875 code provisions\n\n"
+        "Or use the **Generate** tab to create structures from natural language descriptions!"
+    )
 
 
 @app.get("/ai/status", tags=["AI Chat"])

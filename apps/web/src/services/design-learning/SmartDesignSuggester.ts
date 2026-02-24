@@ -12,18 +12,18 @@
  * @version 1.0.0
  */
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   optimizeSection,
   quickEstimate,
   type OptimizeRequest,
   type OptimizeResult,
-} from "./IterativeSectionOptimizer";
+} from './IterativeSectionOptimizer';
 import {
   DesignKnowledgeBase,
   type UserDesignPrefs,
-} from "./DesignKnowledgeBase";
-import { useModelStore } from "../../store/model";
+} from './DesignKnowledgeBase';
+import { useModelStore } from '../../store/model';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Hook: useSmartDesign
@@ -33,13 +33,7 @@ export interface UseSmartDesignReturn {
   /** Run the iterative optimizer for a specific member or generic beam */
   optimize: (request: OptimizeRequest) => Promise<OptimizeResult | null>;
   /** Quick estimate (sync, no iteration — uses KB or rule-of-thumb) */
-  estimate: (request: OptimizeRequest) => {
-    b: number;
-    D: number;
-    Ast: number;
-    source: string;
-    confidence: number;
-  };
+  estimate: (request: OptimizeRequest) => { b: number; D: number; Ast: number; source: string; confidence: number };
   /** Auto-design all members after analysis */
   autoDesignAll: () => Promise<OptimizeResult[]>;
   /** Latest optimization result */
@@ -60,9 +54,7 @@ export interface UseSmartDesignReturn {
 
 export function useSmartDesign(): UseSmartDesignReturn {
   const [lastResult, setLastResult] = useState<OptimizeResult | null>(null);
-  const [allResults, setAllResults] = useState<Map<string, OptimizeResult>>(
-    new Map(),
-  );
+  const [allResults, setAllResults] = useState<Map<string, OptimizeResult>>(new Map());
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [userPrefs, setUserPrefsState] = useState<UserDesignPrefs | null>(null);
   const initRef = useRef(false);
@@ -89,7 +81,7 @@ export function useSmartDesign(): UseSmartDesignReturn {
       setLastResult(result);
       return result;
     } catch (err) {
-      console.error("[SmartDesign] Optimization failed:", err);
+      console.error('[SmartDesign] Optimization failed:', err);
       return null;
     } finally {
       setIsOptimizing(false);
@@ -112,7 +104,7 @@ export function useSmartDesign(): UseSmartDesignReturn {
     const newMap = new Map<string, OptimizeResult>();
 
     try {
-      const prefs = userPrefs ?? (await DesignKnowledgeBase.getUserPrefs());
+      const prefs = userPrefs ?? await DesignKnowledgeBase.getUserPrefs();
 
       for (const [id, member] of members.entries()) {
         // Get forces from analysis
@@ -132,8 +124,7 @@ export function useSmartDesign(): UseSmartDesignReturn {
         if (L_mm < 100) continue; // Skip zero-length elements
 
         // Determine if beam or column (simple heuristic: predominantly vertical = column)
-        const isColumn =
-          Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > Math.abs(dz);
+        const isColumn = Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > Math.abs(dz);
         if (isColumn) continue; // Skip columns for beam optimizer (separate flow)
 
         // Get max moment and shear from analysis results
@@ -157,8 +148,8 @@ export function useSmartDesign(): UseSmartDesignReturn {
           loadFactor: 1.0, // Forces are already factored from analysis
           concreteGrade: prefs.preferredConcreteGrade,
           steelGrade: prefs.preferredSteelGrade,
-          code: "IS456",
-          support: "simply-supported", // Conservative default
+          code: 'IS456',
+          support: 'simply-supported', // Conservative default
           cover: 25,
           extraFoS: prefs.extraFoS,
           preferredWidth: width > 100 ? width : undefined,
@@ -180,15 +171,12 @@ export function useSmartDesign(): UseSmartDesignReturn {
     }
   }, [analysisResults, members, nodes, userPrefs]);
 
-  const setUserPrefs = useCallback(
-    async (partial: Partial<UserDesignPrefs>) => {
-      const current = userPrefs ?? (await DesignKnowledgeBase.getUserPrefs());
-      const updated = { ...current, ...partial };
-      await DesignKnowledgeBase.saveUserPrefs(updated);
-      setUserPrefsState(updated);
-    },
-    [userPrefs],
-  );
+  const setUserPrefs = useCallback(async (partial: Partial<UserDesignPrefs>) => {
+    const current = userPrefs ?? await DesignKnowledgeBase.getUserPrefs();
+    const updated = { ...current, ...partial };
+    await DesignKnowledgeBase.saveUserPrefs(updated);
+    setUserPrefsState(updated);
+  }, [userPrefs]);
 
   const clearKB = useCallback(async () => {
     await DesignKnowledgeBase.clear();

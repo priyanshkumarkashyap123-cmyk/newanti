@@ -484,6 +484,88 @@ export const Consent = mongoose.model<IConsent>('Consent', ConsentSchema);
 
 
 // ============================================
+// AI SESSION SCHEMA
+// ============================================
+
+interface IAISessionMessage {
+    role: 'user' | 'assistant';
+    content: string;
+    timestamp: Date;
+    metadata?: Record<string, unknown>;
+}
+
+export interface IAISession extends Document {
+    name: string;
+    type: 'generate' | 'modify' | 'chat';
+    messages: IAISessionMessage[];
+    owner: Types.ObjectId;
+    projectSnapshot?: Record<string, unknown>;
+    isArchived: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const AISessionMessageSchema = new Schema({
+    role: {
+        type: String,
+        enum: ['user', 'assistant'],
+        required: true
+    },
+    content: {
+        type: String,
+        required: true
+    },
+    timestamp: {
+        type: Date,
+        default: Date.now
+    },
+    metadata: {
+        type: Schema.Types.Mixed,
+        default: {}
+    }
+}, { _id: false });
+
+const AISessionSchema = new Schema<IAISession>({
+    name: {
+        type: String,
+        required: true,
+        trim: true,
+        maxlength: 200
+    },
+    type: {
+        type: String,
+        enum: ['generate', 'modify', 'chat'],
+        required: true
+    },
+    messages: {
+        type: [AISessionMessageSchema],
+        default: []
+    },
+    owner: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+        index: true
+    },
+    projectSnapshot: {
+        type: Schema.Types.Mixed,
+        default: null
+    },
+    isArchived: {
+        type: Boolean,
+        default: false
+    }
+}, {
+    timestamps: true
+});
+
+AISessionSchema.index({ owner: 1, updatedAt: -1 });
+AISessionSchema.index({ owner: 1, type: 1 });
+
+export const AISession = mongoose.model<IAISession>('AISession', AISessionSchema);
+
+
+// ============================================
 // DATABASE CONNECTION
 // ============================================
 
@@ -509,4 +591,4 @@ export async function disconnectDB(): Promise<void> {
     console.log('📤 MongoDB disconnected');
 }
 
-export default { User, Project, Subscription, UserModel, RefreshTokenModel, VerificationCodeModel, Consent, connectDB, disconnectDB };
+export default { User, Project, Subscription, UserModel, RefreshTokenModel, VerificationCodeModel, Consent, AISession, connectDB, disconnectDB };

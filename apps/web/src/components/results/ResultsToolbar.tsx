@@ -1089,7 +1089,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
         {/* Full Results Dashboard Modal - accessible even when collapsed */}
         {showDashboard && analysisResults && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-            <div className="w-[95vw] h-[90vh] max-w-[1800px] bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden">
+            <div className="w-[95vw] h-[90vh] max-w-[1800px] bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
               <AnalysisResultsDashboard
                 results={convertToAnalysisResultsData(
                   analysisResults,
@@ -1471,7 +1471,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
       {/* Full Results Dashboard Modal */}
       {showDashboard && analysisResults && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <div className="w-[95vw] h-[90vh] max-w-[1800px] bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden">
+          <div className="w-[95vw] h-[90vh] max-w-[1800px] bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
             <AnalysisResultsDashboard
               results={convertToAnalysisResultsData(
                 analysisResults,
@@ -1539,7 +1539,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
             : 5;
           return (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-              <div className="w-[90vw] h-[85vh] max-w-[900px] bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden">
+              <div className="w-[90vw] h-[85vh] max-w-[900px] bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
                 <MemberDetailPanel
                   memberId={selectedMemberId}
                   memberForces={selectedMemberForces}

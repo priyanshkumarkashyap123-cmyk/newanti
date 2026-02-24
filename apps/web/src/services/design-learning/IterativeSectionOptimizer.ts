@@ -28,21 +28,21 @@ import {
   type BeamLoading,
   type BeamMaterials,
   type BeamDesignResult,
-} from "../../modules/concrete/RCBeamDesignEngine";
+} from '../../modules/concrete/RCBeamDesignEngine';
 import {
   type DesignCode,
   type ConcreteGrade,
   type SteelGrade,
   getConcreteGrades,
   getSteelGrades,
-} from "../../modules/concrete/RCDesignConstants";
+} from '../../modules/concrete/RCDesignConstants';
 import {
   DesignKnowledgeBase,
   type DesignInputKey,
   type CachedDesignResult,
   type DesignCodeKey,
   type SupportType,
-} from "./DesignKnowledgeBase";
+} from './DesignKnowledgeBase';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -82,7 +82,7 @@ export interface OptimizeRequest {
 
 export interface OptimizeResult {
   /** Was this a cache hit, bracket interpolation, or fresh computation? */
-  source: "cache" | "interpolation" | "computed";
+  source: 'cache' | 'interpolation' | 'computed';
   /** Confidence 0-1 (1.0 for cache, variable for interpolation, 1.0 for computed) */
   confidence: number;
   /** Optimal width mm */
@@ -130,18 +130,12 @@ const DEPTH_STEP = 25; // mm — depth increments
 
 function findConcreteGrade(gradeStr: string, code: DesignCode): ConcreteGrade {
   const grades = getConcreteGrades(code);
-  return (
-    grades.find((g) => g.grade === gradeStr) ??
-    grades.find((g) => g.fck === 25)!
-  );
+  return grades.find((g) => g.grade === gradeStr) ?? grades.find((g) => g.fck === 25)!;
 }
 
 function findSteelGrade(gradeStr: string, code: DesignCode): SteelGrade {
   const grades = getSteelGrades(code);
-  return (
-    grades.find((g) => g.grade === gradeStr) ??
-    grades.find((g) => g.fy === 500)!
-  );
+  return grades.find((g) => g.grade === gradeStr) ?? grades.find((g) => g.fy === 500)!;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -154,26 +148,26 @@ function computeDesignForces(
   support: SupportType,
 ): { Mu: number; Vu: number } {
   switch (support) {
-    case "simply-supported":
+    case 'simply-supported':
       return {
-        Mu: (w_factored * L_m * L_m) / 8, // kN·m
-        Vu: (w_factored * L_m) / 2, // kN
+        Mu: (w_factored * L_m * L_m) / 8,   // kN·m
+        Vu: (w_factored * L_m) / 2,          // kN
       };
-    case "cantilever":
+    case 'cantilever':
       return {
         Mu: (w_factored * L_m * L_m) / 2,
         Vu: w_factored * L_m,
       };
-    case "fixed-fixed":
+    case 'fixed-fixed':
       return {
-        Mu: (w_factored * L_m * L_m) / 12, // Mid-span moment (support moment is wL²/12)
+        Mu: (w_factored * L_m * L_m) / 12,  // Mid-span moment (support moment is wL²/12)
         Vu: (w_factored * L_m) / 2,
       };
-    case "continuous":
+    case 'continuous':
       // Conservative: use 0.7 × SS moment for typical interior span
       return {
-        Mu: (0.7 * (w_factored * L_m * L_m)) / 8,
-        Vu: (0.6 * (w_factored * L_m)) / 2,
+        Mu: 0.7 * (w_factored * L_m * L_m) / 8,
+        Vu: 0.6 * (w_factored * L_m) / 2,
       };
     default:
       return {
@@ -187,35 +181,27 @@ function computeDesignForces(
 // Main optimizer
 // ─────────────────────────────────────────────────────────────────────────────
 
-export async function optimizeSection(
-  req: OptimizeRequest,
-): Promise<OptimizeResult> {
+export async function optimizeSection(req: OptimizeRequest): Promise<OptimizeResult> {
   const t0 = performance.now();
   await DesignKnowledgeBase.init();
 
   // ── Defaults ───────────────────────────────────────────────────────────
-  const code: DesignCodeKey = req.code ?? "IS456";
-  const support: SupportType = req.support ?? "simply-supported";
+  const code: DesignCodeKey = req.code ?? 'IS456';
+  const support: SupportType = req.support ?? 'simply-supported';
   const loadFactor = req.loadFactor ?? 1.5;
   const extraFoS = req.extraFoS ?? 1.0;
   const cover = req.cover ?? 25;
-  const targetUtil = req.targetUtilization ?? { min: 0.8, max: 0.95 };
+  const targetUtil = req.targetUtilization ?? { min: 0.80, max: 0.95 };
 
-  const concreteGrade = findConcreteGrade(
-    req.concreteGrade ?? "M25",
-    code as DesignCode,
-  );
-  const steelGrade = findSteelGrade(
-    req.steelGrade ?? "Fe500",
-    code as DesignCode,
-  );
+  const concreteGrade = findConcreteGrade(req.concreteGrade ?? 'M25', code as DesignCode);
+  const steelGrade = findSteelGrade(req.steelGrade ?? 'Fe500', code as DesignCode);
 
   const w_factored = req.w_service * loadFactor * extraFoS; // kN/m
   const L_m = req.L / 1000; // mm → m
   const { Mu, Vu } = computeDesignForces(w_factored, L_m, support);
 
   const inputKey: DesignInputKey = {
-    memberType: "beam",
+    memberType: 'beam',
     code,
     support,
     L: req.L,
@@ -230,7 +216,7 @@ export async function optimizeSection(
   if (cached) {
     const elapsed = performance.now() - t0;
     return {
-      source: "cache",
+      source: 'cache',
       confidence: 1.0,
       b: cached.b,
       D: cached.D,
@@ -246,16 +232,14 @@ export async function optimizeSection(
       fullResult: cached.fullResult,
       iterations: 0,
       timeMs: elapsed,
-      suggestions: [
-        `Instant result from ${DesignKnowledgeBase.cacheSize} cached designs`,
-      ],
+      suggestions: [`Instant result from ${DesignKnowledgeBase.cacheSize} cached designs`],
       similarDesignCount: DesignKnowledgeBase.totalBracketEntries,
     };
   }
 
   // ── 2. Bracket interpolation (use as starting estimate) ────────────────
   let startB = req.preferredWidth ?? req.minWidth ?? 230;
-  let startD = Math.max(300, Math.round((L_m * 1000) / 16)); // Thumb rule: L/16
+  let startD = Math.max(300, Math.round(L_m * 1000 / 16)); // Thumb rule: L/16
 
   const interp = DesignKnowledgeBase.interpolate(inputKey);
   if (interp && interp.confidence >= 0.7) {
@@ -290,7 +274,7 @@ export async function optimizeSection(
       const midD = Math.round((lo + hi) / 2 / DEPTH_STEP) * DEPTH_STEP;
 
       const geometry: BeamGeometry = {
-        type: "rectangular",
+        type: 'rectangular',
         b: width,
         D: midD,
         cover,
@@ -299,7 +283,7 @@ export async function optimizeSection(
       const loading: BeamLoading = {
         Mu,
         Vu,
-        loadType: "UDL",
+        loadType: 'UDL',
         supportCondition: support,
       };
       const materials: BeamMaterials = {
@@ -312,7 +296,7 @@ export async function optimizeSection(
       const result = engine.design();
       const util = result.flexure.utilizationRatio;
 
-      if (util <= 1.0 && result.flexure.status === "safe") {
+      if (util <= 1.0 && result.flexure.status === 'safe') {
         // Section works — try smaller
         if (util >= targetUtil.min && util <= targetUtil.max) {
           // In the sweet spot!
@@ -341,7 +325,7 @@ export async function optimizeSection(
       // Track best feasible
       if (
         util <= 1.0 &&
-        result.flexure.status === "safe" &&
+        result.flexure.status === 'safe' &&
         (!bestResult || Math.abs(util - 0.9) < Math.abs(bestUtil - 0.9))
       ) {
         bestResult = result;
@@ -360,23 +344,14 @@ export async function optimizeSection(
     const bFallback = widths[widths.length - 1] ?? 300;
     const dFallback = req.maxDepth ?? 900;
     const geometry: BeamGeometry = {
-      type: "rectangular",
+      type: 'rectangular',
       b: bFallback,
       D: dFallback,
       cover,
       L: req.L,
     };
-    const loading: BeamLoading = {
-      Mu,
-      Vu,
-      loadType: "UDL",
-      supportCondition: support,
-    };
-    const materials: BeamMaterials = {
-      concreteGrade,
-      steelGrade,
-      code: code as DesignCode,
-    };
+    const loading: BeamLoading = { Mu, Vu, loadType: 'UDL', supportCondition: support };
+    const materials: BeamMaterials = { concreteGrade, steelGrade, code: code as DesignCode };
     const engine = new RCBeamDesignEngine(geometry, loading, materials);
     bestResult = engine.design();
     bestB = bFallback;
@@ -398,9 +373,7 @@ export async function optimizeSection(
     );
   }
   if (extraFoS > 1.0) {
-    suggestions.push(
-      `Extra FoS of ${extraFoS}× applied on top of code requirements.`,
-    );
+    suggestions.push(`Extra FoS of ${extraFoS}× applied on top of code requirements.`);
   }
   if (interp) {
     suggestions.push(
@@ -433,7 +406,7 @@ export async function optimizeSection(
   const elapsed = performance.now() - t0;
 
   return {
-    source: interp && interp.confidence >= 0.7 ? "interpolation" : "computed",
+    source: interp && interp.confidence >= 0.7 ? 'interpolation' : 'computed',
     confidence: interp && interp.confidence >= 0.7 ? interp.confidence : 1.0,
     b: bestB,
     D: bestD,
@@ -463,26 +436,20 @@ export function quickEstimate(req: OptimizeRequest): {
   b: number;
   D: number;
   Ast: number;
-  source: "knowledge-base" | "rule-of-thumb";
+  source: 'knowledge-base' | 'rule-of-thumb';
   confidence: number;
 } {
-  const code: DesignCodeKey = req.code ?? "IS456";
-  const support: SupportType = req.support ?? "simply-supported";
+  const code: DesignCodeKey = req.code ?? 'IS456';
+  const support: SupportType = req.support ?? 'simply-supported';
   const extraFoS = req.extraFoS ?? 1.0;
   const loadFactor = req.loadFactor ?? 1.5;
   const w_factored = req.w_service * loadFactor * extraFoS;
 
-  const concreteGrade = findConcreteGrade(
-    req.concreteGrade ?? "M25",
-    code as DesignCode,
-  );
-  const steelGrade = findSteelGrade(
-    req.steelGrade ?? "Fe500",
-    code as DesignCode,
-  );
+  const concreteGrade = findConcreteGrade(req.concreteGrade ?? 'M25', code as DesignCode);
+  const steelGrade = findSteelGrade(req.steelGrade ?? 'Fe500', code as DesignCode);
 
   const inputKey: DesignInputKey = {
-    memberType: "beam",
+    memberType: 'beam',
     code,
     support,
     L: req.L,
@@ -495,60 +462,33 @@ export function quickEstimate(req: OptimizeRequest): {
   // Try exact
   const exact = DesignKnowledgeBase.getExact(inputKey);
   if (exact) {
-    return {
-      b: exact.b,
-      D: exact.D,
-      Ast: exact.Ast,
-      source: "knowledge-base",
-      confidence: 1.0,
-    };
+    return { b: exact.b, D: exact.D, Ast: exact.Ast, source: 'knowledge-base', confidence: 1.0 };
   }
 
   // Try interpolation
   const interp = DesignKnowledgeBase.interpolate(inputKey);
   if (interp && interp.confidence >= 0.4) {
-    return {
-      b: interp.b,
-      D: interp.D,
-      Ast: interp.Ast,
-      source: "knowledge-base",
-      confidence: interp.confidence,
-    };
+    return { b: interp.b, D: interp.D, Ast: interp.Ast, source: 'knowledge-base', confidence: interp.confidence };
   }
 
   // Rule of thumb: L/span-depth ratio
   const L_m = req.L / 1000;
   let spanDepthRatio: number;
   switch (support) {
-    case "cantilever":
-      spanDepthRatio = 7;
-      break;
-    case "simply-supported":
-      spanDepthRatio = 16;
-      break;
-    case "fixed-fixed":
-      spanDepthRatio = 21;
-      break;
-    case "continuous":
-      spanDepthRatio = 20;
-      break;
-    default:
-      spanDepthRatio = 16;
+    case 'cantilever': spanDepthRatio = 7; break;
+    case 'simply-supported': spanDepthRatio = 16; break;
+    case 'fixed-fixed': spanDepthRatio = 21; break;
+    case 'continuous': spanDepthRatio = 20; break;
+    default: spanDepthRatio = 16;
   }
-  const D_est = Math.ceil((L_m * 1000) / spanDepthRatio / 25) * 25;
+  const D_est = Math.ceil((L_m * 1000 / spanDepthRatio) / 25) * 25;
   const b_est = Math.max(230, Math.ceil(D_est / 2.5 / 50) * 50);
   // Very rough Ast estimate: Mu / (0.87 * fy * 0.9 * d)
   const { Mu } = computeDesignForces(w_factored, L_m, support);
   const d_est = D_est - 50;
   const Ast_est = (Mu * 1e6) / (0.87 * steelGrade.fy * 0.9 * d_est);
 
-  return {
-    b: b_est,
-    D: D_est,
-    Ast: Math.round(Ast_est),
-    source: "rule-of-thumb",
-    confidence: 0.3,
-  };
+  return { b: b_est, D: D_est, Ast: Math.round(Ast_est), source: 'rule-of-thumb', confidence: 0.3 };
 }
 
 export default { optimizeSection, quickEstimate };

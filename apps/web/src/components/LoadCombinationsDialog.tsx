@@ -298,7 +298,7 @@ const LoadCombinationsDialog: React.FC = () => {
                     </TabsContent>
 
                     {/* Custom Tab */}
-                    <TabsContent value="custom" className="flex-1 space-y-4 pt-4">
+                    <TabsContent value="custom" className="flex-1 overflow-y-auto space-y-4 pt-4">
                         <div className="space-y-2">
                             <Label>Combination Name</Label>
                             <Input

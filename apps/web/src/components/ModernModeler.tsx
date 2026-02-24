@@ -1336,17 +1336,12 @@ export const ModernModeler: FC = () => {
               node_j: p.nodeIds[1],
               node_k: p.nodeIds[2],
               node_l: p.nodeIds[3],
-              element_type: "Plate" as const,
-              E: (p.E ?? (p.materialType === "concrete" ? 25e6 : 200e6)) * 1000, // kN/m² → Pa
+              element_type: 'Plate' as const,
+              E: ((p.E ?? (p.materialType === 'concrete' ? 25e6 : 200e6)) * 1000), // kN/m² → Pa
               thickness: p.thickness ?? 0.2, // m
-              nu: p.nu ?? (p.materialType === "concrete" ? 0.2 : 0.3),
+              nu: p.nu ?? (p.materialType === 'concrete' ? 0.2 : 0.3),
               // Frame fields not used for plates but need defaults for Rust serde
-              G: 0,
-              A: 0,
-              Iy: 0,
-              Iz: 0,
-              J: 0,
-              beta: 0,
+              G: 0, A: 0, Iy: 0, Iz: 0, J: 0, beta: 0,
               releases_i: [false, false, false, false, false, false],
               releases_j: [false, false, false, false, false, false],
             };
@@ -1356,17 +1351,11 @@ export const ModernModeler: FC = () => {
           for (const p of platesArray) {
             if (p.pressure && Math.abs(p.pressure) > 1e-12) {
               // Lumped load: total = pressure × area / 4 per node
-              const pNodes = p.nodeIds
-                .map((nid) => nodesArray.find((n) => n.id === nid))
-                .filter(Boolean) as typeof nodesArray;
+              const pNodes = p.nodeIds.map((nid) => nodesArray.find((n) => n.id === nid)).filter(Boolean) as typeof nodesArray;
               if (pNodes.length === 4) {
                 // Approximate area via cross product of diagonals
-                const dx13 = pNodes[2].x - pNodes[0].x,
-                  dy13 = pNodes[2].y - pNodes[0].y,
-                  dz13 = (pNodes[2].z ?? 0) - (pNodes[0].z ?? 0);
-                const dx24 = pNodes[3].x - pNodes[1].x,
-                  dy24 = pNodes[3].y - pNodes[1].y,
-                  dz24 = (pNodes[3].z ?? 0) - (pNodes[1].z ?? 0);
+                const dx13 = pNodes[2].x - pNodes[0].x, dy13 = pNodes[2].y - pNodes[0].y, dz13 = (pNodes[2].z ?? 0) - (pNodes[0].z ?? 0);
+                const dx24 = pNodes[3].x - pNodes[1].x, dy24 = pNodes[3].y - pNodes[1].y, dz24 = (pNodes[3].z ?? 0) - (pNodes[1].z ?? 0);
                 const cx = dy13 * dz24 - dz13 * dy24;
                 const cy = dz13 * dx24 - dx13 * dz24;
                 const cz = dx13 * dy24 - dy13 * dx24;
@@ -1378,9 +1367,7 @@ export const ModernModeler: FC = () => {
                     fx: 0,
                     fy: -forcePerNode, // Pressure positive = downward = negative Y
                     fz: 0,
-                    mx: 0,
-                    my: 0,
-                    mz: 0,
+                    mx: 0, my: 0, mz: 0,
                   });
                 }
               }
@@ -1490,40 +1477,27 @@ export const ModernModeler: FC = () => {
           // Point and moment loads were converted to equivalent nodal loads
           // (lines above), so their FEF is missing from f_total = k*u - FEF.
           // Compute the missing FEF per member and subtract it during parsing.
-          const { computePointMomentFEF } =
-            await import("../utils/memberLoadFEF");
-          const memberFEFMap = new Map<
-            string,
-            { forces_i: number[]; forces_j: number[] }
-          >();
+          const { computePointMomentFEF } = await import("../utils/memberLoadFEF");
+          const memberFEFMap = new Map<string, { forces_i: number[]; forces_j: number[] }>();
           for (const mpl of memberPointLoads) {
             const mInfo = membersArray.find((m) => m.id === mpl.memberId);
             if (!mInfo) continue;
             const nd1 = nodesArray.find((n) => n.id === mInfo.startNodeId);
             const nd2 = nodesArray.find((n) => n.id === mInfo.endNodeId);
             if (!nd1 || !nd2) continue;
-            const ddx = nd2.x - nd1.x,
-              ddy = nd2.y - nd1.y;
+            const ddx = nd2.x - nd1.x, ddy = nd2.y - nd1.y;
             const ddz = (nd2.z ?? 0) - (nd1.z ?? 0);
             const mL = Math.sqrt(ddx * ddx + ddy * ddy + ddz * ddz);
             if (mL < 1e-12) continue;
             const aRaw = mpl.a ?? 0.5;
             const aVal = aRaw <= 1.0 ? aRaw * mL : aRaw;
             let val = 0;
-            if (mpl.type === "point" && mpl.P)
-              val = mpl.P * 1000; // kN→N
+            if (mpl.type === "point" && mpl.P) val = mpl.P * 1000; // kN→N
             else if (mpl.type === "moment" && mpl.M) val = mpl.M * 1000; // kN·m→N·m
             if (Math.abs(val) < 1e-12) continue;
             const beta = ((mInfo.betaAngle || 0) * Math.PI) / 180;
             const fef = computePointMomentFEF(
-              [
-                {
-                  type: mpl.type as "point" | "moment",
-                  value: val,
-                  a: aVal,
-                  direction: mpl.direction || "global_y",
-                },
-              ],
+              [{ type: mpl.type as 'point' | 'moment', value: val, a: aVal, direction: mpl.direction || "global_y" }],
               { x: nd1.x, y: nd1.y, z: nd1.z ?? 0 },
               { x: nd2.x, y: nd2.y, z: nd2.z ?? 0 },
               beta,
@@ -1535,10 +1509,7 @@ export const ModernModeler: FC = () => {
                 existing.forces_j[k] += fef.forces_j[k];
               }
             } else {
-              memberFEFMap.set(mpl.memberId, {
-                forces_i: [...fef.forces_i],
-                forces_j: [...fef.forces_j],
-              });
+              memberFEFMap.set(mpl.memberId, { forces_i: [...fef.forces_i], forces_j: [...fef.forces_j] });
             }
           }
           if (memberFEFMap.size > 0) {
@@ -1605,11 +1576,7 @@ export const ModernModeler: FC = () => {
                 (ml) => ml.memberId === memberElemId,
               );
               const { ly: lyAx, lz: lzAx } = buildLocalAxesForDiagram(
-                ddx,
-                ddy,
-                ddz,
-                L,
-                mInfo.betaAngle ?? 0,
+                ddx, ddy, ddz, L, mInfo.betaAngle ?? 0,
               );
 
               // Build stations (includes discontinuity points for point loads / moments)
@@ -1630,11 +1597,7 @@ export const ModernModeler: FC = () => {
                 ax.push(axF);
 
                 const { dVy, dMz, dVz, dMy } = accumulateLoadEffects(
-                  x,
-                  myMLs,
-                  L,
-                  lyAx,
-                  lzAx,
+                  x, myMLs, L, lyAx, lzAx,
                 );
 
                 // Shear Y: V(x) = V1 − ΔV_y
@@ -1651,48 +1614,24 @@ export const ModernModeler: FC = () => {
               const disp_nd_i = nodesDict[mInfo.startNodeId];
               const disp_nd_j = nodesDict[mInfo.endNodeId];
               const dy_i_loc = disp_nd_i
-                ? lyAx[0] * (disp_nd_i.DX ?? 0) +
-                  lyAx[1] * (disp_nd_i.DY ?? 0) +
-                  lyAx[2] * (disp_nd_i.DZ ?? 0)
+                ? (lyAx[0] * (disp_nd_i.DX ?? 0) + lyAx[1] * (disp_nd_i.DY ?? 0) + lyAx[2] * (disp_nd_i.DZ ?? 0))
                 : 0;
               const dy_j_loc = disp_nd_j
-                ? lyAx[0] * (disp_nd_j.DX ?? 0) +
-                  lyAx[1] * (disp_nd_j.DY ?? 0) +
-                  lyAx[2] * (disp_nd_j.DZ ?? 0)
+                ? (lyAx[0] * (disp_nd_j.DX ?? 0) + lyAx[1] * (disp_nd_j.DY ?? 0) + lyAx[2] * (disp_nd_j.DZ ?? 0))
                 : 0;
               const dz_i_loc = disp_nd_i
-                ? lzAx[0] * (disp_nd_i.DX ?? 0) +
-                  lzAx[1] * (disp_nd_i.DY ?? 0) +
-                  lzAx[2] * (disp_nd_i.DZ ?? 0)
+                ? (lzAx[0] * (disp_nd_i.DX ?? 0) + lzAx[1] * (disp_nd_i.DY ?? 0) + lzAx[2] * (disp_nd_i.DZ ?? 0))
                 : 0;
               const dz_j_loc = disp_nd_j
-                ? lzAx[0] * (disp_nd_j.DX ?? 0) +
-                  lzAx[1] * (disp_nd_j.DY ?? 0) +
-                  lzAx[2] * (disp_nd_j.DZ ?? 0)
+                ? (lzAx[0] * (disp_nd_j.DX ?? 0) + lzAx[1] * (disp_nd_j.DY ?? 0) + lzAx[2] * (disp_nd_j.DZ ?? 0))
                 : 0;
 
               // ─── Deflection Y: EI_z·v″ = M_z (sign = +1) ───
-              const rawDY = integrateDeflection(
-                stations,
-                mzArr,
-                EIz,
-                dy_i_loc,
-                dy_j_loc,
-                L,
-                1,
-              );
+              const rawDY = integrateDeflection(stations, mzArr, EIz, dy_i_loc, dy_j_loc, L, 1);
               for (let s = 0; s < numSt; s++) dy.push(rawDY[s] * 1000); // m → mm
 
               // ─── Deflection Z: EI_y·v″ = −M_y (sign = −1) ───
-              const rawDZ = integrateDeflection(
-                stations,
-                myArr,
-                EIy,
-                dz_i_loc,
-                dz_j_loc,
-                L,
-                -1,
-              );
+              const rawDZ = integrateDeflection(stations, myArr, EIy, dz_i_loc, dz_j_loc, L, -1);
               for (let s = 0; s < numSt; s++) dz.push(rawDZ[s] * 1000); // m → mm
 
               return {
@@ -1712,11 +1651,11 @@ export const ModernModeler: FC = () => {
               // 3D format: Full member end forces [Fx, Fy, Fz, Mx, My, Mz]
               // Apply FEF correction for point/moment loads (subtract in N before /1000)
               const ptFEF = memberFEFMap.get(elemId);
-              const fi0 = (mf.forces_i as number[]).map(
-                (v, k) => (v ?? 0) - (ptFEF ? ptFEF.forces_i[k] : 0),
+              const fi0 = (mf.forces_i as number[]).map((v, k) =>
+                (v ?? 0) - (ptFEF ? ptFEF.forces_i[k] : 0),
               );
-              const fj0 = (mf.forces_j as number[]).map(
-                (v, k) => (v ?? 0) - (ptFEF ? ptFEF.forces_j[k] : 0),
+              const fj0 = (mf.forces_j as number[]).map((v, k) =>
+                (v ?? 0) - (ptFEF ? ptFEF.forces_j[k] : 0),
               );
               const axV = fi0[0] / 1000;
               const syV = fi0[1] / 1000;
@@ -1745,18 +1684,7 @@ export const ModernModeler: FC = () => {
                 mf.max_moment_z != null
                   ? mf.max_moment_z / 1000
                   : Math.max(Math.abs(mzV), Math.abs(mzE));
-              const diag3D = genDiagram(
-                axV,
-                syV,
-                mzV,
-                syE,
-                mzE,
-                elemId,
-                szV,
-                myV,
-                szE,
-                myE,
-              );
+              const diag3D = genDiagram(axV, syV, mzV, syE, mzE, elemId, szV, myV, szE, myE);
 
               // Diagnostic: Log first member's BMD sample values
               if (Object.keys(membersDict).length === 0 && diag3D) {
@@ -1872,14 +1800,14 @@ export const ModernModeler: FC = () => {
             for (const [elemId, pr] of mapEntries(wasmResult.plate_results)) {
               const p = pr as any;
               plateResultsDict[elemId] = {
-                stress_xx: (p.stress_xx ?? 0) / 1e6, // Pa → MPa
+                stress_xx: (p.stress_xx ?? 0) / 1e6,   // Pa → MPa
                 stress_yy: (p.stress_yy ?? 0) / 1e6,
                 stress_xy: (p.stress_xy ?? 0) / 1e6,
-                moment_xx: (p.moment_xx ?? 0) / 1000, // N·m/m → kN·m/m
+                moment_xx: (p.moment_xx ?? 0) / 1000,   // N·m/m → kN·m/m
                 moment_yy: (p.moment_yy ?? 0) / 1000,
                 moment_xy: (p.moment_xy ?? 0) / 1000,
                 displacement: (p.displacement ?? 0) * 1000, // m → mm
-                von_mises: (p.von_mises ?? 0) / 1e6, // Pa → MPa
+                von_mises: (p.von_mises ?? 0) / 1e6,    // Pa → MPa
               };
             }
             modelerLogger.log(
@@ -1922,8 +1850,9 @@ export const ModernModeler: FC = () => {
           setAnalysisProgress(35);
 
           try {
-            const { analyzeWithEnhancedEngine } =
-              await import("../core/engineAdapter");
+            const { analyzeWithEnhancedEngine } = await import(
+              "../core/engineAdapter"
+            );
 
             const engineResult = await analyzeWithEnhancedEngine(
               nodesArray,
@@ -1938,7 +1867,9 @@ export const ModernModeler: FC = () => {
 
             if (engineResult.success) {
               result = engineResult as typeof result;
-              modelerLogger.log("[Analysis] EnhancedAnalysisEngine succeeded");
+              modelerLogger.log(
+                "[Analysis] EnhancedAnalysisEngine succeeded",
+              );
             } else {
               throw new Error(
                 engineResult.error ?? "EnhancedAnalysisEngine failed",
@@ -1951,94 +1882,94 @@ export const ModernModeler: FC = () => {
               engineErr,
             );
 
-            try {
-              const { convertMemberLoadsToNodal, mergeNodalLoads } =
-                await import("../utils/loadConversion");
+          try {
+            const { convertMemberLoadsToNodal, mergeNodalLoads } =
+              await import("../utils/loadConversion");
 
-              // Convert member loads (UDL/UVL) to equivalent nodal loads
-              const conversionResult = convertMemberLoadsToNodal(
-                memberLoads.map((ml) => ({
-                  id: ml.id,
-                  memberId: ml.memberId,
-                  type: ml.type,
-                  w1: ml.w1 ?? 0,
-                  w2: ml.w2 ?? 0,
-                  direction: ml.direction,
-                  startPos: ml.startPos ?? 0,
-                  endPos: ml.endPos ?? 1,
-                })),
-                membersArray.map((m) => ({
-                  id: m.id,
-                  startNodeId: m.startNodeId,
-                  endNodeId: m.endNodeId,
-                  E: m.E,
-                  A: m.A,
-                  I: m.I,
-                })),
-                nodesArray.map((n) => ({
-                  id: n.id,
-                  x: n.x,
-                  y: n.y,
-                  z: n.z,
-                })),
-              );
+            // Convert member loads (UDL/UVL) to equivalent nodal loads
+            const conversionResult = convertMemberLoadsToNodal(
+              memberLoads.map((ml) => ({
+                id: ml.id,
+                memberId: ml.memberId,
+                type: ml.type,
+                w1: ml.w1 ?? 0,
+                w2: ml.w2 ?? 0,
+                direction: ml.direction,
+                startPos: ml.startPos ?? 0,
+                endPos: ml.endPos ?? 1,
+              })),
+              membersArray.map((m) => ({
+                id: m.id,
+                startNodeId: m.startNodeId,
+                endNodeId: m.endNodeId,
+                E: m.E,
+                A: m.A,
+                I: m.I,
+              })),
+              nodesArray.map((n) => ({
+                id: n.id,
+                x: n.x,
+                y: n.y,
+                z: n.z,
+              })),
+            );
 
-              // Merge with existing nodal loads (include moment loads)
-              const existingLoads = loads.map((l) => ({
-                nodeId: l.nodeId,
-                fx: l.fx,
-                fy: l.fy,
-                fz: l.fz,
-                mx: l.mx,
-                my: l.my,
-                mz: l.mz,
-              }));
-              const allLoads = mergeNodalLoads([
-                ...existingLoads,
-                ...conversionResult.nodalLoads,
-              ]);
+            // Merge with existing nodal loads (include moment loads)
+            const existingLoads = loads.map((l) => ({
+              nodeId: l.nodeId,
+              fx: l.fx,
+              fy: l.fy,
+              fz: l.fz,
+              mx: l.mx,
+              my: l.my,
+              mz: l.mz,
+            }));
+            const allLoads = mergeNodalLoads([
+              ...existingLoads,
+              ...conversionResult.nodalLoads,
+            ]);
 
-              modelerLogger.log(
-                `[Analysis] Converted ${memberLoads.length} member loads → ${allLoads.length} nodal loads, using TS solver`,
-              );
+            modelerLogger.log(
+              `[Analysis] Converted ${memberLoads.length} member loads → ${allLoads.length} nodal loads, using TS solver`,
+            );
 
-              const modelData = {
-                nodes: nodesArray,
-                members: membersArray,
-                loads: allLoads,
-                memberLoads: [] as any[],
-                settings: { selfWeight: modelSettings?.selfWeight ?? false },
-                // dofPerNode omitted — AnalysisService auto-detects 2D/3D
-              };
+            const modelData = {
+              nodes: nodesArray,
+              members: membersArray,
+              loads: allLoads,
+              memberLoads: [] as any[],
+              settings: { selfWeight: modelSettings?.selfWeight ?? false },
+              // dofPerNode omitted — AnalysisService auto-detects 2D/3D
+            };
 
-              const token = await getToken();
-              const { analysisService } = await getAnalysisService();
-              result = await analysisService.analyze(
-                modelData,
-                (stage, progress) => {
-                  setAnalysisStage(stage as AnalysisStage);
-                  setAnalysisProgress(progress);
-                },
-                token,
-              );
+            const token = await getToken();
+            const { analysisService } = await getAnalysisService();
+            result = await analysisService.analyze(
+              modelData,
+              (stage, progress) => {
+                setAnalysisStage(stage as AnalysisStage);
+                setAnalysisProgress(progress);
+              },
+              token,
+            );
 
-              if (result.success && result.stats) {
-                result.stats = {
-                  ...result.stats,
-                  solver: "TypeScript (WASM fallback)",
-                  usedPythonApi: false,
-                };
-              }
-            } catch (fallbackErr) {
-              modelerLogger.error(
-                "[Analysis] TypeScript fallback also failed:",
-                fallbackErr,
-              );
-              result = {
-                success: false,
-                error: `WASM solver: ${err instanceof Error ? err.message : String(err)}\nEnhancedEngine: ${engineErr instanceof Error ? engineErr.message : String(engineErr)}\nWorker fallback: ${fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr)}`,
+            if (result.success && result.stats) {
+              result.stats = {
+                ...result.stats,
+                solver: "TypeScript (WASM fallback)",
+                usedPythonApi: false,
               };
             }
+          } catch (fallbackErr) {
+            modelerLogger.error(
+              "[Analysis] TypeScript fallback also failed:",
+              fallbackErr,
+            );
+            result = {
+              success: false,
+              error: `WASM solver: ${err instanceof Error ? err.message : String(err)}\nEnhancedEngine: ${engineErr instanceof Error ? engineErr.message : String(engineErr)}\nWorker fallback: ${fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr)}`,
+            };
+          }
           } // close catch(engineErr)
         }
       }

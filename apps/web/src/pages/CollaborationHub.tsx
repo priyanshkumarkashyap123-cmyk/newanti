@@ -8,7 +8,7 @@
  * and modern cloud engineering workflows.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 
 // Types
@@ -66,8 +66,21 @@ interface SharedProject {
 
 const CollaborationHub: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'team' | 'comments' | 'versions' | 'sharing'>('dashboard');
+  const [commentFilter, setCommentFilter] = useState<'all' | 'open' | 'pending' | 'resolved'>('all');
+  const [newCommentText, setNewCommentText] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<'viewer' | 'engineer' | 'reviewer'>('viewer');
+  const [shareLink] = useState(`https://beamlabultimate.tech/project/${Date.now().toString(36)}`);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [accessSettings, setAccessSettings] = useState<Record<string, boolean>>({
+    publicLink: false,
+    allowComments: true,
+    downloadPermission: true,
+    watermarkExports: true,
+    expiration: false,
+  });
   
-  const [teamMembers] = useState<TeamMember[]>([
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
     { id: '1', name: 'Rakshit Tiwari', role: 'admin', avatar: '👨‍💼', status: 'online', lastActive: 'Now', department: 'Structural Design' },
     { id: '2', name: 'Priya Sharma', role: 'engineer', avatar: '👩‍💻', status: 'online', lastActive: 'Now', department: 'Analysis' },
     { id: '3', name: 'Amit Kumar', role: 'engineer', avatar: '👨‍💻', status: 'away', lastActive: '15m ago', department: 'Detailing' },
@@ -87,7 +100,7 @@ const CollaborationHub: React.FC = () => {
     { id: '8', userId: '4', userName: 'Neha', action: 'flagged issue', target: 'Beam-column joint check', timestamp: 'Yesterday' },
   ]);
 
-  const [comments] = useState<Comment[]>([
+  const [comments, setComments] = useState<Comment[]>([
     {
       id: '1',
       userId: '4',
@@ -208,6 +221,73 @@ const CollaborationHub: React.FC = () => {
     completed: 'text-blue-400 bg-blue-900/30',
     archived: 'text-gray-400 bg-gray-700',
   };
+
+  // ============================================
+  // HANDLER FUNCTIONS
+  // ============================================
+
+  const handleInviteMember = useCallback(() => {
+    if (!inviteEmail.trim()) return;
+    const newMember: TeamMember = {
+      id: String(teamMembers.length + 1),
+      name: inviteEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+      role: inviteRole === 'reviewer' ? 'reviewer' : inviteRole === 'engineer' ? 'engineer' : 'viewer',
+      avatar: ['👨‍💻', '👩‍💻', '👨‍🔧', '👩‍🔬', '👨‍💼', '👩‍💼'][Math.floor(Math.random() * 6)],
+      status: 'offline',
+      lastActive: 'Invited just now',
+      department: 'Invited',
+    };
+    setTeamMembers(prev => [...prev, newMember]);
+    setInviteEmail('');
+    alert(`Invitation sent to ${inviteEmail} as ${inviteRole}`);
+  }, [inviteEmail, inviteRole, teamMembers.length]);
+
+  const handlePostComment = useCallback(() => {
+    if (!newCommentText.trim()) return;
+    const newComment: Comment = {
+      id: String(Date.now()),
+      userId: '1',
+      userName: 'You',
+      avatar: '👤',
+      content: newCommentText.trim(),
+      timestamp: 'Just now',
+      status: 'open',
+      replies: [],
+    };
+    setComments(prev => [newComment, ...prev]);
+    setNewCommentText('');
+  }, [newCommentText]);
+
+  const handleResolveComment = useCallback((commentId: string) => {
+    setComments(prev => prev.map(c => 
+      c.id === commentId ? { ...c, status: 'resolved' as const } : c
+    ));
+  }, []);
+
+  const handleCopyLink = useCallback(() => {
+    navigator.clipboard.writeText(shareLink).then(() => {
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    }).catch(() => {
+      // Fallback for non-HTTPS
+      const textArea = document.createElement('textarea');
+      textArea.value = shareLink;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    });
+  }, [shareLink]);
+
+  const handleToggleAccess = useCallback((key: string) => {
+    setAccessSettings(prev => ({ ...prev, [key]: !prev[key] }));
+  }, []);
+
+  const filteredComments = commentFilter === 'all' 
+    ? comments 
+    : comments.filter(c => c.status === commentFilter);
 
   const renderDashboard = () => (
     <div className="space-y-6">
@@ -333,7 +413,7 @@ const CollaborationHub: React.FC = () => {
             <span className="text-2xl">👥</span>
             Team Members
           </h3>
-          <button className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors flex items-center gap-2">
+          <button onClick={handleInviteMember} className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors flex items-center gap-2">
             <span>➕</span>
             Invite Member
           </button>
@@ -421,10 +501,15 @@ const CollaborationHub: React.FC = () => {
             Design Comments & Issues
           </h3>
           <div className="flex gap-2">
-            {['all', 'open', 'pending', 'resolved'].map((filter) => (
+            {(['all', 'open', 'pending', 'resolved'] as const).map((filter) => (
               <button
                 key={filter}
-                className="px-3 py-1 rounded-lg text-sm capitalize bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
+                onClick={() => setCommentFilter(filter)}
+                className={`px-3 py-1 rounded-lg text-sm capitalize transition-colors ${
+                  commentFilter === filter 
+                    ? 'bg-cyan-600 text-white' 
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
               >
                 {filter}
               </button>
@@ -433,7 +518,7 @@ const CollaborationHub: React.FC = () => {
         </div>
 
         <div className="space-y-4">
-          {comments.map((comment) => (
+          {filteredComments.map((comment) => (
             <div
               key={comment.id}
               className={`p-4 rounded-lg border-l-4 ${
@@ -488,7 +573,7 @@ const CollaborationHub: React.FC = () => {
                   
                   <div className="flex gap-3 mt-4">
                     <button className="text-sm text-gray-400 hover:text-white transition-colors">↩️ Reply</button>
-                    <button className="text-sm text-gray-400 hover:text-white transition-colors">✅ Resolve</button>
+                    <button onClick={() => handleResolveComment(comment.id)} className="text-sm text-gray-400 hover:text-white transition-colors">✅ Resolve</button>
                     <button className="text-sm text-gray-400 hover:text-white transition-colors">📍 Show in Model</button>
                   </div>
                 </div>
@@ -501,6 +586,8 @@ const CollaborationHub: React.FC = () => {
         <div className="mt-6 p-4 bg-gray-700 rounded-lg">
           <textarea
             placeholder="Add a comment or flag an issue..."
+            value={newCommentText}
+            onChange={(e) => setNewCommentText(e.target.value)}
             className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 resize-none"
             rows={3}
           />
@@ -513,7 +600,11 @@ const CollaborationHub: React.FC = () => {
                 📎 Attach File
               </button>
             </div>
-            <button className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors">
+            <button 
+              onClick={handlePostComment}
+              disabled={!newCommentText.trim()}
+              className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
               Post Comment
             </button>
           </div>
@@ -649,12 +740,12 @@ const CollaborationHub: React.FC = () => {
             <div className="flex gap-2">
               <input
                 type="text"
-                value="https://beamlab.io/project/commercial-complex-xyz123"
+                value={shareLink}
                 readOnly
                 className="flex-1 p-3 bg-gray-700 border border-gray-600 rounded-lg text-gray-300"
               />
-              <button className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors">
-                📋 Copy
+              <button onClick={handleCopyLink} className={`px-4 py-2 rounded-lg transition-colors ${linkCopied ? 'bg-green-600 text-white' : 'bg-cyan-600 text-white hover:bg-cyan-500'}`}>
+                {linkCopied ? '✅ Copied!' : '📋 Copy'}
               </button>
             </div>
           </div>
@@ -665,14 +756,20 @@ const CollaborationHub: React.FC = () => {
               <input
                 type="email"
                 placeholder="colleague@company.com"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
                 className="flex-1 p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400"
               />
-              <select className="p-3 bg-gray-700 border border-gray-600 rounded-lg text-white">
+              <select 
+                value={inviteRole}
+                onChange={(e) => setInviteRole(e.target.value as 'viewer' | 'engineer' | 'reviewer')}
+                className="p-3 bg-gray-700 border border-gray-600 rounded-lg text-white"
+              >
                 <option value="viewer">Viewer</option>
                 <option value="engineer">Engineer</option>
                 <option value="reviewer">Reviewer</option>
               </select>
-              <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors">
+              <button onClick={handleInviteMember} disabled={!inviteEmail.trim()} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 disabled:opacity-50 transition-colors">
                 ➕ Invite
               </button>
             </div>
@@ -689,19 +786,19 @@ const CollaborationHub: React.FC = () => {
         
         <div className="space-y-4">
           {[
-            { name: 'Public Link Access', desc: 'Anyone with the link can view', enabled: false },
-            { name: 'Allow Comments', desc: 'Viewers can add comments', enabled: true },
-            { name: 'Download Permission', desc: 'Allow exporting results', enabled: true },
-            { name: 'Watermark Exports', desc: 'Add company watermark to exports', enabled: true },
-            { name: 'Expiration', desc: 'Link expires after 30 days', enabled: false },
+            { key: 'publicLink', name: 'Public Link Access', desc: 'Anyone with the link can view' },
+            { key: 'allowComments', name: 'Allow Comments', desc: 'Viewers can add comments' },
+            { key: 'downloadPermission', name: 'Download Permission', desc: 'Allow exporting results' },
+            { key: 'watermarkExports', name: 'Watermark Exports', desc: 'Add company watermark to exports' },
+            { key: 'expiration', name: 'Expiration', desc: 'Link expires after 30 days' },
           ].map((setting, idx) => (
-            <label key={idx} className="flex items-center justify-between p-4 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors">
+            <label key={idx} onClick={() => handleToggleAccess(setting.key)} className="flex items-center justify-between p-4 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors">
               <div>
                 <p className="text-white font-medium">{setting.name}</p>
                 <p className="text-gray-400 text-sm">{setting.desc}</p>
               </div>
-              <div className={`relative w-12 h-6 rounded-full transition-colors ${setting.enabled ? 'bg-green-600' : 'bg-gray-500'}`}>
-                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${setting.enabled ? 'right-1' : 'left-1'}`} />
+              <div className={`relative w-12 h-6 rounded-full transition-colors ${accessSettings[setting.key] ? 'bg-green-600' : 'bg-gray-500'}`}>
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${accessSettings[setting.key] ? 'right-1' : 'left-1'}`} />
               </div>
             </label>
           ))}

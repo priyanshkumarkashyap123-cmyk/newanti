@@ -22,6 +22,11 @@ class RealtimeService {
     private userId: string;
     private listeners: EventCallback[] = [];
     private remoteUsers: Map<string, RemoteUser> = new Map();
+    private reconnectAttempts = 0;
+    private maxReconnectAttempts = 10;
+    private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    private isIntentionalDisconnect = false;
+    private messageQueue: unknown[] = [];
 
     // Config - derive WS URL from Python API URL (http→ws, https→wss)
     private WS_URL = import.meta.env['VITE_WS_URL'] || API_CONFIG.pythonUrl.replace(/^http/, 'ws') + '/ws';
@@ -35,11 +40,20 @@ class RealtimeService {
             return;
         }
 
+        this.isIntentionalDisconnect = false;
         console.log(`[Realtime] Connecting as ${this.userId}...`);
         this.socket = new WebSocket(`${this.WS_URL}/${this.userId}`);
 
         this.socket.onopen = () => {
             console.log('[Realtime] Connected');
+            this.reconnectAttempts = 0;
+            this.notifyListeners('connection_status', { connected: true });
+            
+            // Flush queued messages
+            while (this.messageQueue.length > 0) {
+                const msg = this.messageQueue.shift();
+                this.send(msg);
+            }
         };
 
         this.socket.onmessage = (event) => {
@@ -53,8 +67,40 @@ class RealtimeService {
 
         this.socket.onclose = () => {
             console.log('[Realtime] Disconnected');
-            // Reconnect logic could go here
+            this.notifyListeners('connection_status', { connected: false });
+            
+            // Auto-reconnect with exponential backoff
+            if (!this.isIntentionalDisconnect && this.reconnectAttempts < this.maxReconnectAttempts) {
+                const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
+                console.log(`[Realtime] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
+                this.reconnectTimer = setTimeout(() => {
+                    this.reconnectAttempts++;
+                    this.connect();
+                }, delay);
+            }
         };
+
+        this.socket.onerror = (error) => {
+            console.error('[Realtime] WebSocket error', error);
+        };
+    }
+
+    public disconnect() {
+        this.isIntentionalDisconnect = true;
+        if (this.reconnectTimer) {
+            clearTimeout(this.reconnectTimer);
+            this.reconnectTimer = null;
+        }
+        if (this.socket) {
+            this.socket.close();
+            this.socket = null;
+        }
+        this.remoteUsers.clear();
+        this.notifyListeners('connection_status', { connected: false });
+    }
+
+    public isConnected(): boolean {
+        return this.socket?.readyState === WebSocket.OPEN;
     }
 
     private handleMessage(message: any) {
@@ -139,6 +185,11 @@ class RealtimeService {
     private send(data: any) {
         if (this.socket && this.socket.readyState === WebSocket.OPEN) {
             this.socket.send(JSON.stringify(data));
+        } else {
+            // Queue message for when connection is restored
+            if (this.messageQueue.length < 50) {
+                this.messageQueue.push(data);
+            }
         }
     }
 

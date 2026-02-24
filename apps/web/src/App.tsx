@@ -116,6 +116,8 @@ const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 const PrivacyPolicyPageNew = lazy(() => import("./pages/PrivacyPolicyPageNew"));
 const TermsOfServicePage = lazy(() => import("./pages/TermsOfServicePage"));
+const TermsAndConditionsPage = lazy(() => import("./pages/TermsAndConditionsPage"));
+const RefundCancellationPage = lazy(() => import("./pages/RefundCancellationPage"));
 const HelpPage = lazy(() => import("./pages/HelpPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const ContactPage = lazy(() => import("./pages/ContactPage"));
@@ -348,6 +350,8 @@ function App() {
     "/help",
     "/privacy",
     "/terms",
+    "/terms-and-conditions",
+    "/refund-cancellation",
     "/sign-in",
     "/sign-up",
     "/forgot-password",
@@ -454,10 +458,14 @@ function App() {
             />
             {/* Terms of Service - New comprehensive page for Clerk */}
             <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+            {/* Terms and Conditions - Comprehensive legal T&C (IT Act 2000, Rewa jurisdiction) */}
+            <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
             <Route
               path="/terms"
-              element={<Navigate to="/terms-of-service" replace />}
+              element={<Navigate to="/terms-and-conditions" replace />}
             />
+            {/* Refund and Cancellation Policy */}
+            <Route path="/refund-cancellation" element={<RefundCancellationPage />} />
             {/* Help & Tutorials */}
             <Route path="/help" element={<HelpPage />} />
             {/* About & Contact */}

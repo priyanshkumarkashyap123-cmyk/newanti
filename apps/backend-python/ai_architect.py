@@ -84,23 +84,53 @@ IS_875_LOADS = {
 class PromptAnalyzer:
     """Analyzes natural language prompts to extract structural parameters"""
     
-    # Keywords for structure type detection (expanded)
+    # Keywords for structure type detection (expanded with more civil engineering terms)
     STRUCTURE_KEYWORDS = {
-        StructureType.SIMPLE_BEAM: ["simple beam", "simply supported", "ss beam", "beam with roller", "rcc beam"],
-        StructureType.CANTILEVER: ["cantilever", "cantilevered", "fixed free", "overhang", "projecting"],
-        StructureType.CONTINUOUS_BEAM: ["continuous", "multi-span", "multispan", "2-span", "3-span", "4-span", "two span", "three span"],
+        StructureType.SIMPLE_BEAM: [
+            "simple beam", "simply supported", "ss beam", "beam with roller", "rcc beam",
+            "beam with udl", "beam with point load", "beam with distributed load",
+            "beam with uniformly distributed", "beam under udl", "bheem", "beam",
+            "girder", "joist", "lintel", "beam with load", "loaded beam",
+            "supported beam", "beam with support", "steel beam", "concrete beam",
+        ],
+        StructureType.CANTILEVER: [
+            "cantilever", "cantilevered", "fixed free", "overhang", "projecting",
+            "fixed beam", "cantilever with udl", "cantilever with load",
+            "balcony beam", "overhanging beam",
+        ],
+        StructureType.CONTINUOUS_BEAM: [
+            "continuous", "multi-span", "multispan", "2-span", "3-span", "4-span",
+            "two span", "three span", "continuous beam",
+        ],
         StructureType.PRATT_TRUSS: ["pratt", "pratt truss"],
         StructureType.HOWE_TRUSS: ["howe", "howe truss"],
         StructureType.WARREN_TRUSS: ["warren", "warren truss", "triangular truss"],
         StructureType.K_TRUSS: ["k-truss", "k truss", "k-bracing"],
-        StructureType.PORTAL_FRAME: ["portal", "portal frame", "rigid frame"],
-        StructureType.MULTI_BAY_PORTAL: ["multi-bay", "multibay", "3 bay", "4 bay", "5 bay", "industrial shed"],
-        StructureType.BUILDING_FRAME: ["building", "frame", "multi-story", "multistory", "storey", "story", "floor", "office", "residential", "g+", "rcc frame", "rcc building"],
-        StructureType.WAREHOUSE: ["warehouse", "factory", "godown", "storage"],
-        StructureType.BRIDGE: ["bridge", "overpass", "flyover", "viaduct"],
+        StructureType.PORTAL_FRAME: [
+            "portal", "portal frame", "rigid frame", "portal structure",
+        ],
+        StructureType.MULTI_BAY_PORTAL: [
+            "multi-bay", "multibay", "3 bay", "4 bay", "5 bay", "industrial shed",
+            "multi bay portal", "multiple bay",
+        ],
+        StructureType.BUILDING_FRAME: [
+            "building", "multi-story", "multistory", "storey", "story",
+            "floor", "office", "residential", "g+", "rcc frame", "rcc building",
+            "apartment", "commercial building", "highrise", "high rise",
+            "multi floor", "multi story building",
+        ],
+        StructureType.WAREHOUSE: [
+            "warehouse", "factory", "godown", "storage", "industrial building",
+        ],
+        StructureType.BRIDGE: [
+            "bridge", "overpass", "flyover", "viaduct", "highway bridge",
+            "railway bridge", "road bridge",
+        ],
         StructureType.FOOTBRIDGE: ["footbridge", "pedestrian bridge", "walkway bridge"],
         StructureType.TOWER: ["tower", "mast"],
-        StructureType.TRANSMISSION_TOWER: ["transmission", "power line", "electricity tower", "lattice tower"],
+        StructureType.TRANSMISSION_TOWER: [
+            "transmission", "power line", "electricity tower", "lattice tower",
+        ],
         StructureType.CRANE: ["crane", "gantry", "overhead crane", "eot crane"],
         StructureType.ARCH: ["arch", "parabolic", "circular arch"],
         StructureType.SPACE_TRUSS: ["space truss", "space frame", "double layer", "flat truss roof"],
@@ -210,22 +240,45 @@ class PromptAnalyzer:
     @classmethod
     def _detect_structure_type(cls, prompt: str) -> StructureType:
         """Detect the type of structure from keywords"""
-        for struct_type, keywords in cls.STRUCTURE_KEYWORDS.items():
+        # Priority: check specific types first (truss, portal, etc.) before generic ones
+        priority_order = [
+            StructureType.PRATT_TRUSS, StructureType.HOWE_TRUSS, StructureType.WARREN_TRUSS,
+            StructureType.K_TRUSS, StructureType.CONTINUOUS_BEAM, StructureType.CANTILEVER,
+            StructureType.MULTI_BAY_PORTAL, StructureType.PORTAL_FRAME,
+            StructureType.FOOTBRIDGE, StructureType.BRIDGE,
+            StructureType.TRANSMISSION_TOWER, StructureType.TOWER,
+            StructureType.WAREHOUSE, StructureType.CRANE,
+            StructureType.ARCH, StructureType.SPACE_TRUSS, StructureType.CANOPY,
+            StructureType.STAIRCASE, StructureType.BUILDING_FRAME,
+            StructureType.SIMPLE_BEAM,
+        ]
+        
+        for struct_type in priority_order:
+            keywords = cls.STRUCTURE_KEYWORDS.get(struct_type, [])
             for keyword in keywords:
                 if keyword in prompt:
                     return struct_type
         
-        # Fallback detection
-        if 'beam' in prompt:
+        # Fallback detection using broader patterns
+        if 'beam' in prompt or 'bheem' in prompt or 'udl' in prompt:
             if 'cantilever' in prompt or 'fixed' in prompt:
                 return StructureType.CANTILEVER
+            if 'continuous' in prompt or 'multi' in prompt:
+                return StructureType.CONTINUOUS_BEAM
             return StructureType.SIMPLE_BEAM
         elif 'truss' in prompt:
             return StructureType.PRATT_TRUSS
         elif 'frame' in prompt:
+            if 'portal' in prompt:
+                return StructureType.PORTAL_FRAME
             return StructureType.BUILDING_FRAME
-        elif 'room' in prompt: # If user mentions rooms, likely a building
-             return StructureType.BUILDING_FRAME
+        elif 'room' in prompt:
+            return StructureType.BUILDING_FRAME
+        elif 'shell' in prompt or 'plate' in prompt or 'slab' in prompt:
+            # Shell/plate → generate as a frame that represents the plate outline
+            return StructureType.SIMPLE_BEAM
+        elif 'column' in prompt or 'pillar' in prompt:
+            return StructureType.CANTILEVER
         
         return StructureType.UNKNOWN
     

@@ -18,6 +18,7 @@ import userRoutes from "./routes/userRoutes.js";
 import projectRoutes from "./routes/projectRoutes.js";
 import consentRoutes from "./routes/consentRoutes.js";
 import auditRoutes from "./routes/audit/index.js";
+import aiSessionRoutes from "./routes/aiSessionRoutes.js";
 import { razorpayRouter } from "./razorpay.js";
 import swaggerUi from "swagger-ui-express";
 import { connectDB } from "./models.js";
@@ -312,6 +313,10 @@ app.use("/api/consent", crudRateLimit, consentRoutes);
 // Audit API
 app.use("/api/v1/audit", crudRateLimit, auditRoutes);
 app.use("/api/audit", crudRateLimit, auditRoutes);
+
+// AI Session API (cloud sync for AI architect history)
+app.use("/api/v1/ai-sessions", crudRateLimit, aiSessionRoutes);
+app.use("/api/ai-sessions", crudRateLimit, aiSessionRoutes);
 
 // Get users in a project (for multiplayer)
 app.get("/api/project/:id/users", (req: Request, res: Response) => {

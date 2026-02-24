@@ -125,7 +125,7 @@ export const CheckpointLegalModal: FC<CheckpointLegalModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/70 backdrop-blur-sm pointer-events-auto">
-            <div className="w-full max-w-3xl max-h-[90vh] bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col pointer-events-auto">
+            <div className="w-full max-w-3xl max-h-[90vh] bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col pointer-events-auto" style={{ maxHeight: 'min(90vh, 100dvh - 2rem)' }}>
                 {/* Header */}
                 <div className={`p-6 pb-4 bg-gradient-to-r ${context.bgColor} border-b`}>
                     <div className="flex items-start gap-3">
@@ -150,7 +150,7 @@ export const CheckpointLegalModal: FC<CheckpointLegalModalProps> = ({
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-hidden flex flex-col">
+                <div className="flex-1 overflow-hidden flex flex-col min-h-0">
                     {checkpointType === 'signup' ? (
                         // Multi-tab view for signup
                         <div className="flex flex-col h-full">

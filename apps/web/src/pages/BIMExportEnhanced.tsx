@@ -10,6 +10,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { IFCParser } from '@/modules/bim/BIMIntegrationEngine';
 
 // Types
 interface ExportSettings {
@@ -211,13 +212,108 @@ const BIMExportEnhanced: React.FC = () => {
   ];
 
   const handleExport = () => {
-    console.log('Starting BIM export with settings:', exportSettings);
-    alert(`Starting ${exportSettings.format} export...\n\nThis will include:\n- Analysis Results: ${exportSettings.includeAnalysisResults ? 'Yes' : 'No'}\n- Design Results: ${exportSettings.includeDesignResults ? 'Yes' : 'No'}\n- Reinforcement: ${exportSettings.includeReinforcement ? 'Yes' : 'No'}\n- Connections: ${exportSettings.includeConnections ? 'Yes' : 'No'}`);
+    const format = exportSettings.format;
+    try {
+      // Build a basic model representation for export
+      const modelData = {
+        projectName: 'BeamLab Structure',
+        format,
+        settings: exportSettings,
+        timestamp: new Date().toISOString(),
+      };
+
+      let content = '';
+      let filename = 'beamlab_export';
+      let mimeType = 'application/octet-stream';
+
+      if (format === 'IFC4' || format === 'IFC4.3' || format === 'IFC2x3') {
+        // Generate IFC content
+        content = [
+          'ISO-10303-21;',
+          'HEADER;',
+          `FILE_DESCRIPTION(('ViewDefinition [CoordinationView_V2.0]'),'2;1');`,
+          `FILE_NAME('${filename}.ifc','${new Date().toISOString()}',('BeamLab'),('BeamLab Ultimate'),'','BeamLab','');`,
+          `FILE_SCHEMA(('${format === 'IFC2x3' ? 'IFC2X3' : 'IFC4'}'));`,
+          'ENDSEC;',
+          'DATA;',
+          `#1=IFCPROJECT('0YvctVUKvCZQ96tFHx',#2,'BeamLab Export',$,$,$,$,(#20),#7);`,
+          `#2=IFCOWNERHISTORY(#3,#6,$,.NOCHANGE.,$,$,$,${Math.floor(Date.now() / 1000)});`,
+          `#3=IFCPERSONANDORGANIZATION(#4,#5,$);`,
+          `#4=IFCPERSON($,'BeamLab','User',$,$,$,$,$);`,
+          `#5=IFCORGANIZATION($,'BeamLab Ultimate','Structural Analysis Software',$,$);`,
+          `#6=IFCAPPLICATION(#5,'1.0','BeamLab Ultimate','BeamLab');`,
+          `#7=IFCUNITASSIGNMENT((#8,#9,#10));`,
+          `#8=IFCSIUNIT(*,.LENGTHUNIT.,$,.METRE.);`,
+          `#9=IFCSIUNIT(*,.FORCEUNIT.,.KILO.,.NEWTON.);`,
+          `#10=IFCSIUNIT(*,.PRESSUREUNIT.,.MEGA.,.PASCAL.);`,
+          'ENDSEC;',
+          'END-ISO-10303-21;',
+        ].join('\n');
+        filename += '.ifc';
+        mimeType = 'application/x-step';
+      } else if (format === 'DXF') {
+        content = [
+          '0', 'SECTION', '2', 'HEADER',
+          '9', '$ACADVER', '1', 'AC1015',
+          '0', 'ENDSEC',
+          '0', 'SECTION', '2', 'ENTITIES',
+          '0', 'ENDSEC',
+          '0', 'EOF',
+        ].join('\n');
+        filename += '.dxf';
+        mimeType = 'application/dxf';
+      } else {
+        content = JSON.stringify(modelData, null, 2);
+        filename += `.${format.toLowerCase()}.json`;
+        mimeType = 'application/json';
+      }
+
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Export error:', err);
+      alert('Export failed. Please check the console for details.');
+    }
   };
 
   const handleImport = () => {
-    console.log('Starting BIM import with settings:', importSettings);
-    alert(`Ready to import ${importSettings.format} file.\n\nImport settings:\n- Analytical Model: ${importSettings.analyticalModelExtraction ? 'Yes' : 'No'}\n- Auto-recognition: ${importSettings.memberAutoRecognition ? 'Yes' : 'No'}\n- Section Mapping: ${importSettings.sectionMapping}`);
+    // Trigger file input click
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = importSettings.format === 'IFC' ? '.ifc' : 
+                   importSettings.format === 'DWG' ? '.dwg,.dxf' :
+                   importSettings.format === 'RVT' ? '.rvt' : '*';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      
+      try {
+        const text = await file.text();
+        
+        if (importSettings.format === 'IFC' || file.name.endsWith('.ifc')) {
+          // Parse IFC file
+          const parser = new IFCParser();
+          const model = parser.parse(text);
+          const members = model?.structuralModel?.members || [];
+          if (members.length > 0) {
+            alert(`Successfully imported ${members.length} structural members from ${file.name}.\n\nMembers found:\n${members.slice(0, 5).map((m) => `- ${m.name} (${m.type})`).join('\n')}${members.length > 5 ? `\n... and ${members.length - 5} more` : ''}`);
+          } else {
+            alert(`File parsed (schema: ${model?.schema || 'unknown'}) but no structural members found. The file may not contain IFC structural elements.`);
+          }
+        } else {
+          alert(`File "${file.name}" loaded (${(file.size / 1024).toFixed(1)} KB). Processing ${importSettings.format} format...`);
+        }
+      } catch (err) {
+        console.error('Import error:', err);
+        alert('Import failed. Please check if the file format is correct.');
+      }
+    };
+    input.click();
   };
 
   const renderExportTab = () => (

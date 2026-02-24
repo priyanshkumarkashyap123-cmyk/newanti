@@ -22,13 +22,9 @@
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type DesignCodeKey = "IS456" | "ACI318" | "EN1992" | "AS3600";
-export type SupportType =
-  | "simply-supported"
-  | "cantilever"
-  | "continuous"
-  | "fixed-fixed";
-export type MemberType = "beam" | "column" | "slab" | "footing";
+export type DesignCodeKey = 'IS456' | 'ACI318' | 'EN1992' | 'AS3600';
+export type SupportType = 'simply-supported' | 'cantilever' | 'continuous' | 'fixed-fixed';
+export type MemberType = 'beam' | 'column' | 'slab' | 'footing';
 
 /** Compact fingerprint of design inputs — used as cache key */
 export interface DesignInputKey {
@@ -98,14 +94,14 @@ export interface BracketTable {
 /** User design preferences */
 export interface UserDesignPrefs {
   userId: string;
-  extraFoS: number; // default additional FoS
+  extraFoS: number;           // default additional FoS
   preferredConcreteGrade: string;
   preferredSteelGrade: string;
-  designStyle: "conservative" | "optimised" | "balanced";
-  prefMinWidth: number; // mm — smallest beam width user likes
-  prefMaxWidth: number; // mm
-  prefMinDepth: number; // mm
-  prefMaxDepth: number; // mm
+  designStyle: 'conservative' | 'optimised' | 'balanced';
+  prefMinWidth: number;       // mm — smallest beam width user likes
+  prefMaxWidth: number;       // mm
+  prefMinDepth: number;       // mm
+  prefMaxDepth: number;       // mm
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -128,11 +124,11 @@ function bracketTableKey(k: DesignInputKey): string {
 // IndexedDB helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-const DB_NAME = "beamlab-design-knowledge";
+const DB_NAME = 'beamlab-design-knowledge';
 const DB_VERSION = 1;
-const STORE_CACHE = "design_cache";
-const STORE_BRACKETS = "brackets";
-const STORE_PREFS = "user_prefs";
+const STORE_CACHE = 'design_cache';
+const STORE_BRACKETS = 'brackets';
+const STORE_PREFS = 'user_prefs';
 
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -142,13 +138,13 @@ function openDB(): Promise<IDBDatabase> {
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;
       if (!db.objectStoreNames.contains(STORE_CACHE)) {
-        db.createObjectStore(STORE_CACHE, { keyPath: "hash" });
+        db.createObjectStore(STORE_CACHE, { keyPath: 'hash' });
       }
       if (!db.objectStoreNames.contains(STORE_BRACKETS)) {
-        db.createObjectStore(STORE_BRACKETS, { keyPath: "key" });
+        db.createObjectStore(STORE_BRACKETS, { keyPath: 'key' });
       }
       if (!db.objectStoreNames.contains(STORE_PREFS)) {
-        db.createObjectStore(STORE_PREFS, { keyPath: "userId" });
+        db.createObjectStore(STORE_PREFS, { keyPath: 'userId' });
       }
     };
   });
@@ -176,7 +172,7 @@ class DesignKnowledgeBaseClass {
     if (!this.db) return;
 
     // Load cache
-    const cacheTx = this.db.transaction(STORE_CACHE, "readonly");
+    const cacheTx = this.db.transaction(STORE_CACHE, 'readonly');
     const cacheStore = cacheTx.objectStore(STORE_CACHE);
     const allCache: CachedDesignResult[] = await new Promise((res, rej) => {
       const req = cacheStore.getAll();
@@ -188,7 +184,7 @@ class DesignKnowledgeBaseClass {
     }
 
     // Load brackets
-    const bracketTx = this.db.transaction(STORE_BRACKETS, "readonly");
+    const bracketTx = this.db.transaction(STORE_BRACKETS, 'readonly');
     const bracketStore = bracketTx.objectStore(STORE_BRACKETS);
     const allBrackets: BracketTable[] = await new Promise((res, rej) => {
       const req = bracketStore.getAll();
@@ -220,28 +216,24 @@ class DesignKnowledgeBaseClass {
    */
   getBracket(
     inputKey: DesignInputKey,
-  ): {
-    lower: BracketEntry | null;
-    upper: BracketEntry | null;
-    confidence: number;
-  } | null {
+  ): { lower: BracketEntry | null; upper: BracketEntry | null; confidence: number } | null {
     const tk = bracketTableKey(inputKey);
     const table = this.memBrackets.get(tk);
     if (!table || table.entries.length === 0) return null;
 
     // Composite metric: normalised load intensity  q = w * L² / 8  (proportional to M)
-    const targetQ = (inputKey.w * inputKey.L * inputKey.L) / 8;
+    const targetQ = inputKey.w * inputKey.L * inputKey.L / 8;
 
     // Sort entries by the same composite metric
     const sorted = [...table.entries].sort(
-      (a, b) => a.w * a.L * a.L - b.w * b.L * b.L,
+      (a, b) => (a.w * a.L * a.L) - (b.w * b.L * b.L),
     );
 
     let lower: BracketEntry | null = null;
     let upper: BracketEntry | null = null;
 
     for (const e of sorted) {
-      const eq = (e.w * e.L * e.L) / 8;
+      const eq = e.w * e.L * e.L / 8;
       if (eq <= targetQ) lower = e;
       if (eq >= targetQ && !upper) upper = e;
     }
@@ -249,8 +241,8 @@ class DesignKnowledgeBaseClass {
     // Confidence: how tight is the bracket?
     let confidence = 0;
     if (lower && upper) {
-      const lq = (lower.w * lower.L * lower.L) / 8;
-      const uq = (upper.w * upper.L * upper.L) / 8;
+      const lq = lower.w * lower.L * lower.L / 8;
+      const uq = upper.w * upper.L * upper.L / 8;
       const span = Math.abs(uq - lq);
       if (span < 1e-6) {
         confidence = 1.0; // Exact or near-exact
@@ -269,18 +261,16 @@ class DesignKnowledgeBaseClass {
    * Interpolate a section from brackets.
    * Returns estimated (b, D, Ast) or null if insufficient data.
    */
-  interpolate(
-    inputKey: DesignInputKey,
-  ): { b: number; D: number; Ast: number; confidence: number } | null {
+  interpolate(inputKey: DesignInputKey): { b: number; D: number; Ast: number; confidence: number } | null {
     const bracket = this.getBracket(inputKey);
     if (!bracket) return null;
     const { lower, upper, confidence } = bracket;
     if (confidence < 0.2) return null; // Too uncertain
 
     if (lower && upper) {
-      const targetQ = (inputKey.w * inputKey.L * inputKey.L) / 8;
-      const lq = (lower.w * lower.L * lower.L) / 8;
-      const uq = (upper.w * upper.L * upper.L) / 8;
+      const targetQ = inputKey.w * inputKey.L * inputKey.L / 8;
+      const lq = lower.w * lower.L * lower.L / 8;
+      const uq = upper.w * upper.L * upper.L / 8;
       const t = uq > lq ? (targetQ - lq) / (uq - lq) : 0.5;
       return {
         b: Math.round(lower.b + t * (upper.b - lower.b)),
@@ -304,7 +294,7 @@ class DesignKnowledgeBaseClass {
     const row = { ...result, hash: h };
     this.memCache.set(h, result);
     if (this.db) {
-      const tx = this.db.transaction(STORE_CACHE, "readwrite");
+      const tx = this.db.transaction(STORE_CACHE, 'readwrite');
       tx.objectStore(STORE_CACHE).put(row);
     }
 
@@ -317,8 +307,7 @@ class DesignKnowledgeBaseClass {
     }
     // Avoid duplicate entries for same (L, w)
     const existing = table.entries.findIndex(
-      (e) =>
-        Math.abs(e.L - result.key.L) < 1 && Math.abs(e.w - result.key.w) < 0.01,
+      (e) => Math.abs(e.L - result.key.L) < 1 && Math.abs(e.w - result.key.w) < 0.01,
     );
     const entry: BracketEntry = {
       L: result.key.L,
@@ -338,19 +327,19 @@ class DesignKnowledgeBaseClass {
     table.entries.sort((a, b) => a.w * a.L * a.L - b.w * b.L * b.L);
 
     if (this.db) {
-      const tx = this.db.transaction(STORE_BRACKETS, "readwrite");
+      const tx = this.db.transaction(STORE_BRACKETS, 'readwrite');
       tx.objectStore(STORE_BRACKETS).put(table);
     }
   }
 
   // ── User preferences ──────────────────────────────────────────────────
 
-  async getUserPrefs(userId = "default"): Promise<UserDesignPrefs> {
+  async getUserPrefs(userId = 'default'): Promise<UserDesignPrefs> {
     await this.init();
     if (!this.db) return defaultPrefs(userId);
 
     return new Promise((resolve) => {
-      const tx = this.db!.transaction(STORE_PREFS, "readonly");
+      const tx = this.db!.transaction(STORE_PREFS, 'readonly');
       const req = tx.objectStore(STORE_PREFS).get(userId);
       req.onsuccess = () => resolve(req.result ?? defaultPrefs(userId));
       req.onerror = () => resolve(defaultPrefs(userId));
@@ -360,7 +349,7 @@ class DesignKnowledgeBaseClass {
   async saveUserPrefs(prefs: UserDesignPrefs): Promise<void> {
     await this.init();
     if (!this.db) return;
-    const tx = this.db.transaction(STORE_PREFS, "readwrite");
+    const tx = this.db.transaction(STORE_PREFS, 'readwrite');
     tx.objectStore(STORE_PREFS).put(prefs);
   }
 
@@ -387,7 +376,7 @@ class DesignKnowledgeBaseClass {
     this.memCache.clear();
     this.memBrackets.clear();
     if (!this.db) return;
-    const tx = this.db.transaction([STORE_CACHE, STORE_BRACKETS], "readwrite");
+    const tx = this.db.transaction([STORE_CACHE, STORE_BRACKETS], 'readwrite');
     tx.objectStore(STORE_CACHE).clear();
     tx.objectStore(STORE_BRACKETS).clear();
   }
@@ -397,9 +386,9 @@ function defaultPrefs(userId: string): UserDesignPrefs {
   return {
     userId,
     extraFoS: 1.0,
-    preferredConcreteGrade: "M25",
-    preferredSteelGrade: "Fe500",
-    designStyle: "balanced",
+    preferredConcreteGrade: 'M25',
+    preferredSteelGrade: 'Fe500',
+    designStyle: 'balanced',
     prefMinWidth: 230,
     prefMaxWidth: 500,
     prefMinDepth: 300,

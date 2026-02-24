@@ -881,14 +881,16 @@ function assembleStiffnessMatrixAndForces(
         const FEM = (w_sw * L * L) / 12; // Fixed-end moment magnitude
         if (dofPerNode === 3) {
           // 2D frame: rotation DOF is index 2
-          // FEM from gravity UDL: need to account for member orientation.
-          // For a horizontal member, M_start = +wL²/12, M_end = -wL²/12 in global.
-          // For inclined members, the transverse component of gravity is w·cos(α)
-          // where α = angle from horizontal. This is correct for the perpendicular component.
-          const cosAlpha = Math.abs(dx) / L; // Simplification: horizontal component ratio
+          // Self-weight acts in global −Y. The local transverse component is
+          //   q = −w_sw · (dx/L)  (signed — negative when dx>0, i.e. gravity
+          //   pushes "down" in local y for a right-going member).
+          // FEF for UDL q on fixed-fixed beam:
+          //   M_start = +q·L²/12, M_end = −q·L²/12
+          // Since q is negative for the common case, M_start < 0 and M_end > 0.
+          const cosAlpha = dx / L; // SIGNED (not |dx|/L)
           const FEM_corrected = (w_sw * cosAlpha * L * L) / 12;
-          F[baseDofI + 2] = (F[baseDofI + 2] || 0) + FEM_corrected;
-          F[baseDofJ + 2] = (F[baseDofJ + 2] || 0) - FEM_corrected;
+          F[baseDofI + 2] = (F[baseDofI + 2] || 0) - FEM_corrected;
+          F[baseDofJ + 2] = (F[baseDofJ + 2] || 0) + FEM_corrected;
         } else if (dofPerNode === 6) {
           // 3D frame: Need to transform global -Y UDL to local transverse components
           // For now, apply FEM in global Mz (DOF 5) for horizontal members
@@ -899,9 +901,11 @@ function assembleStiffnessMatrixAndForces(
           const transverseRatio = Math.sqrt(1 - cy_m * cy_m);
           if (transverseRatio > 1e-6) {
             const FEM_3d = (w_sw * transverseRatio * L * L) / 12;
-            // Apply as Mz moment (DOF 5) — correct for members in XY plane
-            F[baseDofI + 5] = (F[baseDofI + 5] || 0) + FEM_3d * cx_m;
-            F[baseDofJ + 5] = (F[baseDofJ + 5] || 0) - FEM_3d * cx_m;
+            // Apply as Mz moment (DOF 5) — FEF convention:
+            //   M_start = −FEM·(cx/L), M_end = +FEM·(cx/L)
+            // cx_m carries the sign, so gravity-induced moments are correct.
+            F[baseDofI + 5] = (F[baseDofI + 5] || 0) - FEM_3d * cx_m;
+            F[baseDofJ + 5] = (F[baseDofJ + 5] || 0) + FEM_3d * cx_m;
           }
         }
       }
@@ -1351,8 +1355,12 @@ function computeFrame3DStiffness(
   const tol = 1e-6;
   const isVertical = Math.abs(cx) < tol && Math.abs(cz) < tol;
   if (isVertical) {
-    // Member along global Y — use global Z as reference
-    ly = [0, 0, 1];
+    // Member along global Y — match Rust/EnhancedEngine convention:
+    // local x = member axis = (0, sign, 0)
+    // local y = -sign * globalX = (-sign, 0, 0)
+    // local z = (0, 0, 1)
+    const sign = cy > 0 ? 1 : -1;
+    ly = [-sign, 0, 0];
   } else {
     // Cross product with global Y to get z, then y = z × x
     // lz_temp = lx × (0,1,0)

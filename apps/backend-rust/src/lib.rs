@@ -422,12 +422,28 @@ pub fn solve_2d_frame_with_loads(
 }
 
 /// 3D Frame analysis (new advanced solver)
+/// Accepts nodes, elements, nodal loads, distributed loads, and optional extended parameters
 #[wasm_bindgen]
 pub fn solve_3d_frame(
     nodes_val: JsValue, 
     elements_val: JsValue,
     nodal_loads_val: JsValue,
     distributed_loads_val: JsValue,
+) -> JsValue {
+    solve_3d_frame_extended(nodes_val, elements_val, nodal_loads_val, distributed_loads_val,
+        JsValue::NULL, JsValue::NULL, JsValue::NULL)
+}
+
+/// Extended 3D Frame analysis with temperature loads, point loads, and config
+#[wasm_bindgen]
+pub fn solve_3d_frame_extended(
+    nodes_val: JsValue, 
+    elements_val: JsValue,
+    nodal_loads_val: JsValue,
+    distributed_loads_val: JsValue,
+    temperature_loads_val: JsValue,
+    point_loads_val: JsValue,
+    config_val: JsValue,
 ) -> JsValue {
     let nodes: Vec<solver_3d::Node3D> = match serde_wasm_bindgen::from_value(nodes_val) {
         Ok(v) => v,
@@ -455,7 +471,16 @@ pub fn solve_3d_frame(
         }
     };
     
-    match solver_3d::analyze_3d_frame(nodes, elements, nodal_loads, distributed_loads, vec![]) {
+    let temperature_loads: Vec<solver_3d::TemperatureLoad> = serde_wasm_bindgen::from_value(temperature_loads_val)
+        .unwrap_or_default();
+    
+    let point_loads: Vec<solver_3d::PointLoadOnMember> = serde_wasm_bindgen::from_value(point_loads_val)
+        .unwrap_or_default();
+    
+    let config: solver_3d::AnalysisConfig = serde_wasm_bindgen::from_value(config_val)
+        .unwrap_or_default();
+    
+    match solver_3d::analyze_3d_frame(nodes, elements, nodal_loads, distributed_loads, temperature_loads, point_loads, config) {
         Ok(mut result) => {
             // Sanitize NaN values to prevent serialization errors
             for (_, disp) in result.displacements.iter_mut() {
@@ -492,6 +517,52 @@ pub fn solve_3d_frame(
         },
         Err(e) => JsValue::from_str(&format!("Analysis error: {}", e)),
     }
+}
+
+/// Combine multiple load case results using factored superposition.
+/// `cases_val`: JSON map { caseName: AnalysisResult3D }
+/// `combinations_val`: JSON array of LoadCombination objects
+/// Returns an EnvelopeResult with max/min across all combinations.
+#[wasm_bindgen]
+pub fn combine_load_cases(cases_val: JsValue, combinations_val: JsValue) -> JsValue {
+    let cases: std::collections::HashMap<String, solver_3d::AnalysisResult3D> = 
+        match serde_wasm_bindgen::from_value(cases_val) {
+            Ok(v) => v,
+            Err(e) => return JsValue::from_str(&format!("Error parsing load cases: {}", e)),
+        };
+    
+    let combinations: Vec<solver_3d::LoadCombination> = 
+        match serde_wasm_bindgen::from_value(combinations_val) {
+            Ok(v) => v,
+            Err(e) => return JsValue::from_str(&format!("Error parsing combinations: {}", e)),
+        };
+    
+    match solver_3d::compute_envelope(&cases, &combinations) {
+        Ok(result) => serde_wasm_bindgen::to_value(&result)
+            .unwrap_or_else(|e| JsValue::from_str(&format!("Serialization error: {}", e))),
+        Err(e) => JsValue::from_str(&format!("Combination error: {}", e)),
+    }
+}
+
+/// Get standard IS 800 load combinations
+#[wasm_bindgen]
+pub fn get_standard_combinations_is800() -> JsValue {
+    let combos = solver_3d::standard_combinations_is800();
+    serde_wasm_bindgen::to_value(&combos).unwrap_or(JsValue::NULL)
+}
+
+/// Get standard Eurocode load combinations
+#[wasm_bindgen]
+pub fn get_standard_combinations_eurocode() -> JsValue {
+    let combos = solver_3d::standard_combinations_eurocode();
+    serde_wasm_bindgen::to_value(&combos).unwrap_or(JsValue::NULL)
+}
+
+/// Get standard AISC LRFD load combinations
+#[wasm_bindgen]
+pub fn get_standard_combinations_aisc_lrfd() -> JsValue {
+    let combos = solver_3d::standard_combinations_aisc_lrfd();
+    serde_wasm_bindgen::to_value(&combos).unwrap_or(JsValue::NULL)
 }
 
 /// Modal analysis for dynamic properties

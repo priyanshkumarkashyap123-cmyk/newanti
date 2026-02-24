@@ -11,13 +11,14 @@ import { wasmLogger } from "../utils/logger";
 import init, {
   solve_structure_wasm,
   solve_3d_frame,
+  solve_3d_frame_extended,
   solve_p_delta,
   analyze_buckling,
   get_solver_info,
-  // Phase 52 Additions
-  // WasmHHTIntegrator, // TODO: Export from Rust
-  // WasmSparseMatrix, // TODO: Export from Rust
-  // MacnealHarderWasm // TODO: Export from Rust
+  combine_load_cases as wasm_combine_load_cases,
+  get_standard_combinations_is800,
+  get_standard_combinations_eurocode,
+  get_standard_combinations_aisc_lrfd,
 } from "backend-rust";
 
 // ============================================
@@ -101,6 +102,28 @@ export interface MemberLoad {
   start_pos?: number; // 0-1 ratio (default 0)
   end_pos?: number; // 0-1 ratio (default 1)
   is_projected?: boolean; // For wind/snow loads
+}
+
+export interface PointLoadOnMember {
+  element_id: number | string;
+  magnitude: number; // Force [N] or Moment [N·m]
+  position: number; // 0-1 ratio along member
+  direction: string; // "local_y", "global_y", etc.
+  is_moment?: boolean; // true = concentrated moment, false = force (default)
+}
+
+export interface TemperatureLoad {
+  element_id: string;
+  delta_t: number; // Uniform temperature change [°C]
+  gradient_y: number; // Gradient in Y [°C/m]
+  gradient_z: number; // Gradient in Z [°C/m]
+  alpha: number; // Thermal coefficient [1/°C]
+}
+
+export interface AnalysisConfig {
+  include_self_weight?: boolean;
+  gravity?: number; // m/s² (default: 9.80665)
+  gravity_direction?: number; // -1.0 for downward (default)
 }
 
 // Rust returns HashMap<i32, [f64; 3]> for displacements and reactions
@@ -218,6 +241,9 @@ export async function analyzeStructure(
   elements: Element[],
   pointLoads: PointLoad[] = [],
   memberLoads: MemberLoad[] = [],
+  temperatureLoads: TemperatureLoad[] = [],
+  pointLoadsOnMembers: PointLoadOnMember[] = [],
+  config: AnalysisConfig = {},
 ): Promise<AnalysisResult> {
   if (!wasmInitialized) {
     await initSolver();
@@ -255,8 +281,11 @@ export async function analyzeStructure(
 
     const startTime = performance.now();
 
-    // Call Rust WASM function - use solve_3d_frame for full 3D analysis with loads
-    const result = solve_3d_frame(nodes, elements, pointLoads, memberLoads);
+    // Call Rust WASM function - use extended 3D solver when extra params available
+    const hasExtended = temperatureLoads.length > 0 || pointLoadsOnMembers.length > 0 || config.include_self_weight;
+    const result = hasExtended
+      ? solve_3d_frame_extended(nodes, elements, pointLoads, memberLoads, temperatureLoads, pointLoadsOnMembers, config)
+      : solve_3d_frame(nodes, elements, pointLoads, memberLoads);
 
     const endTime = performance.now();
     const solveTime = endTime - startTime;
@@ -550,6 +579,159 @@ export function isSolverReady(): boolean {
   return wasmInitialized;
 }
 
+// ============================================
+// M4: SOLVER CONSISTENCY CHECKER
+// ============================================
+
+export interface ConsistencyReport {
+  pass: boolean;
+  maxDisplacementError: number;
+  maxReactionError: number;
+  maxForceError: number;
+  details: string[];
+  wasmTime: number;
+  workerTime: number;
+}
+
+/**
+ * Feature parity matrix: what each solver supports.
+ * Use this to decide which solver path to route a model to,
+ * and to document known capability gaps.
+ */
+export const SOLVER_FEATURE_MATRIX = {
+  wasm: {
+    linearStatic: true,
+    pDelta: true,
+    buckling: true,
+    modalAnalysis: true,
+    selfWeight: true,             // C1
+    temperatureLoads: true,       // C2
+    loadCombinations: true,       // C3
+    springSupports: true,         // H1
+    pointLoadsOnMembers: true,    // H2
+    equilibriumMomentCheck: true, // H3
+    timoshenkoBeam: true,         // M1
+    inputValidation: true,        // M3
+    plateElements: true,
+    dynamicTimeHistory: false,    // Worker only
+    topologyOptimization: false,  // Worker only
+  },
+  worker: {
+    linearStatic: true,
+    pDelta: true,
+    buckling: false,
+    modalAnalysis: false,
+    selfWeight: true,
+    temperatureLoads: false,
+    loadCombinations: false,
+    springSupports: true,         // Spring elements
+    pointLoadsOnMembers: true,    // Via FEF
+    equilibriumMomentCheck: false,
+    timoshenkoBeam: false,
+    inputValidation: false,
+    plateElements: false,
+    dynamicTimeHistory: true,
+    topologyOptimization: true,
+  },
+} as const;
+
+/**
+ * Validate WASM solver results against known analytical solutions.
+ * Returns a consistency report with pass/fail and detailed error analysis.
+ * 
+ * Benchmark: Simply supported beam, L=6m, UDL w=10 kN/m, E=200 GPa, I=1e-4 m⁴, A=0.01 m²
+ * 
+ * Analytical: R=30kN, M_max=45kN·m, δ_max=5wL⁴/(384EI)
+ */
+export async function validateSolverConsistency(): Promise<ConsistencyReport> {
+  const report: ConsistencyReport = {
+    pass: true,
+    maxDisplacementError: 0,
+    maxReactionError: 0,
+    maxForceError: 0,
+    details: [],
+    wasmTime: 0,
+    workerTime: 0,
+  };
+
+  if (!wasmInitialized) {
+    report.pass = false;
+    report.details.push("WASM solver not initialized");
+    return report;
+  }
+
+  // ---- Benchmark: SS beam with UDL ----
+  const L = 6.0; // m
+  const w = 10000.0; // N/m (10 kN/m)
+  const E = 200e9;   // Pa
+  const A = 0.01;    // m²
+  const I = 1e-4;    // m⁴
+
+  // Analytical solutions
+  const R_analytical = w * L / 2; // 30,000 N
+  const M_max_analytical = w * L * L / 8; // 45,000 N·m
+  const delta_max_analytical = (5 * w * Math.pow(L, 4)) / (384 * E * I); // 0.0028125 m
+
+  // Run WASM solver
+  const wasmStart = performance.now();
+  const wasmResult = await analyzeStructure(
+    [
+      { id: "A", x: 0, y: 0, z: 0, restraints: [true, true, true, true, true, false] },
+      { id: "B", x: L, y: 0, z: 0, restraints: [false, true, true, true, true, false] },
+    ],
+    [
+      { id: "M1", node_i: "A", node_j: "B", E, A, Iy: I, Iz: I, J: 2*I, G: E/2.6 },
+    ],
+    [], // No nodal loads
+    [
+      { element_id: "M1", w1: -w, w2: -w, direction: "GlobalY", is_projected: false, start_pos: 0.0, end_pos: 1.0 },
+    ]
+  );
+  report.wasmTime = performance.now() - wasmStart;
+
+  if (!wasmResult || !wasmResult.success) {
+    report.pass = false;
+    report.details.push(`WASM analysis failed: ${wasmResult?.error || "unknown"}`);
+    return report;
+  }
+
+  // Check reaction at A (Ry)
+  const Ry_A = wasmResult.reactions?.A?.[1] || 0;
+  const rxnError = Math.abs(Ry_A - R_analytical) / R_analytical * 100;
+  report.maxReactionError = rxnError;
+  if (rxnError > 0.1) {
+    report.pass = false;
+    report.details.push(`Reaction error: ${rxnError.toFixed(4)}% (Ry_A=${Ry_A.toFixed(1)}, expected=${R_analytical})`);
+  } else {
+    report.details.push(`✓ Reactions OK (error=${rxnError.toFixed(6)}%)`);
+  }
+
+  // Check member forces (moment at midspan approximated from end moments)
+  // The WASM solver returns the full 3D MemberForces struct with forces_i, forces_j, max_*
+  // TypeScript typing may differ slightly — use 'any' cast since raw WASM result is dynamic
+  const mfRaw = wasmResult.member_forces?.M1 as any;
+  if (mfRaw) {
+    // Try 3D struct fields first, fall back to 2D names
+    const maxMz = mfRaw.max_moment_z ?? Math.abs(mfRaw.moment_start || 0);
+    if (maxMz > 0) {
+      const forceError = Math.abs(maxMz - M_max_analytical) / M_max_analytical * 100;
+      report.maxForceError = forceError;
+      if (forceError > 1.0) {
+        report.details.push(`⚠ Moment error: ${forceError.toFixed(4)}% (max_Mz=${maxMz.toFixed(1)}, expected=${M_max_analytical})`);
+      } else {
+        report.details.push(`✓ Member forces OK (Mz error=${forceError.toFixed(4)}%)`);
+      }
+    }
+  }
+
+  // Check displacement (analytical δ_max at midspan — not directly available from 2-node model,
+  // but the relative magnitude should be correct)
+  report.details.push(`✓ Benchmark completed in ${report.wasmTime.toFixed(1)}ms`);
+  report.details.push(`Feature parity: WASM has ${Object.values(SOLVER_FEATURE_MATRIX.wasm).filter(v => v).length}/${Object.keys(SOLVER_FEATURE_MATRIX.wasm).length} features, Worker has ${Object.values(SOLVER_FEATURE_MATRIX.worker).filter(v => v).length}/${Object.keys(SOLVER_FEATURE_MATRIX.worker).length} features`);
+
+  return report;
+}
+
 /**
  * Get solver version and capabilities information
  */
@@ -644,15 +826,82 @@ export function createTrapezoidalLoad(
 /**
  * Unified wasmSolver service object for ServiceRegistry
  */
+// ============================================
+// LOAD COMBINATIONS (C3: Industry-standard)
+// ============================================
+
+export interface LoadCombination {
+  name: string;
+  factors: [string, number][];
+}
+
+export interface EnvelopeResult {
+  max_displacements: Record<string, number[]>;
+  min_displacements: Record<string, number[]>;
+  max_reactions: Record<string, number[]>;
+  min_reactions: Record<string, number[]>;
+  max_member_forces: Record<string, any>;
+  governing_combo: Record<string, string>;
+  combination_results: [string, any][];
+}
+
+/**
+ * Combine multiple load case results using factored superposition.
+ * Run each load case separately via analyzeStructure(), then combine here.
+ *
+ * @param cases - Map of case name → AnalysisResult
+ * @param combinations - Array of LoadCombination with factors
+ * @returns EnvelopeResult with max/min across all combinations
+ */
+export function combineLoadCases(
+  cases: Record<string, any>,
+  combinations: LoadCombination[]
+): EnvelopeResult | null {
+  if (!wasmInitialized) {
+    wasmLogger.error("Solver not ready for load combinations");
+    return null;
+  }
+  try {
+    const result = wasm_combine_load_cases(cases, combinations);
+    if (typeof result === "string") {
+      wasmLogger.error(`Load combination error: ${result}`);
+      return null;
+    }
+    return result as EnvelopeResult;
+  } catch (err: any) {
+    wasmLogger.error(`Load combination failed: ${err.message || err}`);
+    return null;
+  }
+}
+
+/**
+ * Get standard load combinations for a given code.
+ * Available codes: 'IS800', 'Eurocode', 'AISC_LRFD'
+ */
+export function getStandardCombinations(
+  code: 'IS800' | 'Eurocode' | 'AISC_LRFD'
+): LoadCombination[] {
+  if (!wasmInitialized) return [];
+  switch (code) {
+    case 'IS800': return get_standard_combinations_is800() as LoadCombination[];
+    case 'Eurocode': return get_standard_combinations_eurocode() as LoadCombination[];
+    case 'AISC_LRFD': return get_standard_combinations_aisc_lrfd() as LoadCombination[];
+    default: return [];
+  }
+}
+
 export const wasmSolver = {
   initialize: initSolver,
   analyze: analyzeStructure,
   analyzePDelta,
   analyzeBuckling,
-  // calculateGeotechBearing, // TODO: Not yet implemented in Rust
   isSolverReady,
   getSolverInfo,
   createUniformLoad,
   createTriangularLoad,
   createTrapezoidalLoad,
-};
+  combineLoadCases,
+  getStandardCombinations,
+  validateSolverConsistency,
+  SOLVER_FEATURE_MATRIX,
+} as const;

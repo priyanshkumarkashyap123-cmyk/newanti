@@ -65,7 +65,7 @@ export function LegalConsentModal({ open, onAccept, canClose = false }: LegalCon
 
     return (
         <Dialog open={open} onOpenChange={canClose ? undefined : () => { }}>
-            <DialogContent className="max-w-4xl max-h-[90vh] p-0 gap-0 z-[100]">
+            <DialogContent className="max-w-4xl max-h-[90vh] p-0 gap-0 z-[100] flex flex-col overflow-hidden">
                 <DialogHeader className="p-6 pb-4 bg-gradient-to-r from-red-50 to-orange-50 border-b">
                     <div className="flex items-start gap-3">
                         <AlertTriangle className="w-8 h-8 text-red-600 mt-1 flex-shrink-0" />
@@ -80,7 +80,7 @@ export function LegalConsentModal({ open, onAccept, canClose = false }: LegalCon
                     </div>
                 </DialogHeader>
 
-                <div className="p-6 space-y-6">
+                <div className="flex-1 overflow-y-auto p-6 space-y-6">
                     {/* Legal Documents Tabs */}
                     <Tabs defaultValue="disclaimer" className="w-full">
                         <TabsList className="grid w-full grid-cols-3">
