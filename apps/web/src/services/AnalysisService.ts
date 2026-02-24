@@ -491,6 +491,10 @@ class AnalysisService {
         }
 
         // Send to worker
+        // NOTE: Do NOT pass memberLoads here — loadConversion.ts already converted
+        // them into equivalent nodal loads (merged into allLoads above).
+        // Passing memberLoads would cause the worker to independently re-compute
+        // fixed-end forces, resulting in DOUBLE-COUNTING of member load effects.
         this.worker!.postMessage({
           type: "analyze",
           requestId: `local-${Date.now()}`,
@@ -498,7 +502,11 @@ class AnalysisService {
             nodes: model.nodes,
             members: model.members,
             loads: allLoads,
-            memberLoads: modelWithMemberLoads.memberLoads, // Pass original member loads to worker for FEF
+            memberLoads: [], // Cleared — already converted to nodal loads above
+            // Pass original member loads for force-recovery only.
+            // The worker uses these to subtract FEF from k*u during
+            // member force computation (f = k*u − FEF).
+            memberLoadsForRecovery: modelWithMemberLoads.memberLoads ?? [],
             dofPerNode:
               model.dofPerNode ??
               getOptimalDofPerNode(model.nodes, model.members, model.loads),

@@ -15,7 +15,7 @@
  *   • Print-optimised @media rules
  */
 
-import { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
     Download, Printer, Share2, TableProperties, Check, X,
@@ -30,6 +30,7 @@ import { generateDesignReport } from '../services/PDFReportService';
 import { generateDXF, downloadDXF } from '../services/DXFExportService';
 import { generateIFC, downloadIFC } from '../services/IFCExportService';
 import { exportProjectData } from '../services/ExcelExportService';
+import { STEEL_SECTIONS } from '../data/SectionDatabase';
 
 /* ─────────────────────── helpers ─────────────────────── */
 
@@ -137,6 +138,8 @@ export const ReportsPage = () => {
     const loads = useModelStore((s) => s.loads);
     const memberLoads = useModelStore((s) => s.memberLoads);
     const loadCases = useModelStore((s) => s.loadCases);
+    const loadCombinations = useModelStore((s) => s.loadCombinations);
+    const modalResults = useModelStore((s) => s.modalResults);
 
     const userName = user?.firstName || 'Engineer';
     const now = useMemo(() => new Date(), []);
@@ -191,6 +194,50 @@ export const ReportsPage = () => {
             if (v > mx) mx = v;
         });
         return mx;
+    }, [analysisResults]);
+
+    /* ── Section properties lookup ── */
+    const uniqueSections = useMemo(() => {
+        const seen = new Map<string, { id: string; A?: number; I?: number; Iy?: number; Iz?: number; J?: number; E?: number; count: number; dbMatch?: any }>();
+        memberList.forEach((m: any) => {
+            const sid = m.sectionId || m.section || 'Default';
+            if (!seen.has(sid)) {
+                const db = STEEL_SECTIONS.find((s) => s.id === sid || s.name === sid);
+                seen.set(sid, { id: sid, A: m.A, I: m.I, Iy: m.Iy, Iz: m.Iz, J: m.J, E: m.E, count: 1, dbMatch: db });
+            } else {
+                seen.get(sid)!.count++;
+            }
+        });
+        return Array.from(seen.values());
+    }, [memberList]);
+
+    /* ── Members with releases ── */
+    const membersWithReleases = useMemo(() =>
+        memberList.filter((m: any) => m.releases && Object.values(m.releases).some(Boolean)),
+    [memberList]);
+
+    /* ── Critical members (max for each action) ── */
+    const criticalMembers = useMemo(() => {
+        if (!analysisResults?.memberForces) return null;
+        let maxAxialId = '', maxMomentId = '', maxShearId = '', maxTorsionId = '';
+        let mxA = 0, mxM = 0, mxS = 0, mxT = 0;
+        let mxAval = 0, mxMval = 0, mxSval = 0, mxTval = 0;
+        analysisResults.memberForces.forEach((f, id) => {
+            const a = Math.abs(f.axial ?? 0);
+            const m = Math.max(Math.abs(f.momentY ?? 0), Math.abs(f.momentZ ?? 0));
+            const s = Math.max(Math.abs(f.shearY ?? 0), Math.abs(f.shearZ ?? 0));
+            const t = Math.abs(f.torsion ?? 0);
+            if (a > mxA) { mxA = a; maxAxialId = id; mxAval = f.axial; }
+            if (m > mxM) { mxM = m; maxMomentId = id; mxMval = Math.abs(f.momentY ?? 0) >= Math.abs(f.momentZ ?? 0) ? (f.momentY ?? 0) : (f.momentZ ?? 0); }
+            if (s > mxS) { mxS = s; maxShearId = id; mxSval = Math.abs(f.shearY ?? 0) >= Math.abs(f.shearZ ?? 0) ? (f.shearY ?? 0) : (f.shearZ ?? 0); }
+            if (t > mxT) { mxT = t; maxTorsionId = id; mxTval = f.torsion ?? 0; }
+        });
+        return [
+            { action: 'Maximum Axial Force', id: maxAxialId, value: mxAval, absValue: mxA, unit: 'kN' },
+            { action: 'Maximum Bending Moment', id: maxMomentId, value: mxMval, absValue: mxM, unit: 'kN·m' },
+            { action: 'Maximum Shear Force', id: maxShearId, value: mxSval, absValue: mxS, unit: 'kN' },
+            { action: 'Maximum Torsion', id: maxTorsionId, value: mxTval, absValue: mxT, unit: 'kN·m' },
+        ];
     }, [analysisResults]);
 
     /* ── Pagination ── */
@@ -601,6 +648,124 @@ export const ReportsPage = () => {
                                     </tbody>
                                 </table>
                             </div>
+
+                            {/* 2.4 Units & Sign Convention */}
+                            <SubHeading number="2.4" title="Units & Sign Convention" />
+                            <div className="text-[11px] text-slate-600 leading-relaxed mb-6">
+                                <p className="mb-3">All quantities in this report are expressed in the following consistent unit system unless explicitly noted otherwise:</p>
+                                <div className="border border-slate-300 rounded-sm overflow-hidden mb-4">
+                                    <table className="w-full text-left">
+                                        <thead>
+                                            <tr className="bg-slate-100 border-b border-slate-300">
+                                                <th className="px-3 py-2 font-bold text-slate-600 w-1/3">Quantity</th>
+                                                <th className="px-3 py-2 font-bold text-slate-600">Unit</th>
+                                                <th className="px-3 py-2 font-bold text-slate-600">Symbol</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-200">
+                                            {[
+                                                ['Length', 'metres', 'm'],
+                                                ['Force', 'kilonewtons', 'kN'],
+                                                ['Moment', 'kilonewton-metres', 'kN·m'],
+                                                ['Stress / Pressure', 'megapascals (N/mm²)', 'MPa'],
+                                                ['Displacement', 'millimetres', 'mm'],
+                                                ['Rotation', 'radians', 'rad'],
+                                                ['Temperature', 'degrees Celsius', '°C'],
+                                                ['Density', 'kilonewtons per cubic metre', 'kN/m³'],
+                                            ].map(([q, u, s]) => (
+                                                <tr key={q}>
+                                                    <td className="px-3 py-1.5 font-medium text-slate-800">{q}</td>
+                                                    <td className="px-3 py-1.5 text-slate-600">{u}</td>
+                                                    <td className="px-3 py-1.5 font-mono font-bold text-slate-700">{s}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <p className="mb-2"><strong>Sign Convention (right-hand rule):</strong></p>
+                                <ul className="list-disc list-inside space-y-1 pl-2">
+                                    <li><strong>Axial (N):</strong> Tension is positive (+), compression is negative (−).</li>
+                                    <li><strong>Shear (V):</strong> Positive when acting in the positive local axis direction at the start of the member.</li>
+                                    <li><strong>Moment (M):</strong> Positive sagging (tension on bottom fibre), negative hogging.</li>
+                                    <li><strong>Displacements (δ):</strong> Positive in the direction of the positive global axis.</li>
+                                    <li><strong>Reactions (R):</strong> Reported in the global coordinate system.</li>
+                                    <li><strong>Global axes:</strong> X = horizontal (right), Y = vertical (up), Z = out-of-plane (right-hand rule).</li>
+                                </ul>
+                            </div>
+
+                            {/* 2.5 Load Combinations */}
+                            <SubHeading number="2.5" title="Load Combinations" />
+                            {loadCombinations && loadCombinations.length > 0 ? (
+                                <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
+                                    <table className="w-full text-left">
+                                        <thead>
+                                            <tr className="bg-slate-800 text-white">
+                                                <th className="px-3 py-2 font-bold">ID</th>
+                                                <th className="px-3 py-2 font-bold">Combination Name</th>
+                                                <th className="px-3 py-2 font-bold">Code Ref.</th>
+                                                <th className="px-3 py-2 font-bold">Factors</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-200">
+                                            {loadCombinations.map((combo: any, i: number) => (
+                                                <tr key={combo.id} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
+                                                    <td className="px-3 py-2 font-mono font-bold text-slate-800">{combo.id}</td>
+                                                    <td className="px-3 py-2 text-slate-700 font-medium">{combo.name}</td>
+                                                    <td className="px-3 py-2 font-mono text-slate-500 text-[10px]">{combo.code || '—'}</td>
+                                                    <td className="px-3 py-2 text-slate-600">
+                                                        {combo.factors?.map((f: any, fi: number) => {
+                                                            const lc = loadCases?.find((c: any) => c.id === f.loadCaseId);
+                                                            return (
+                                                                <span key={fi}>
+                                                                    {fi > 0 && ' + '}
+                                                                    <span className="font-mono font-bold">{eng(f.factor, 1)}</span>
+                                                                    <span className="text-slate-500"> × {lc?.name || f.loadCaseId}</span>
+                                                                </span>
+                                                            );
+                                                        }) || '—'}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <div className="mb-6">
+                                    <p className="text-[11px] text-slate-600 mb-3">
+                                        The following standard load combinations per IS 875 (Part 5) Table 4 are applicable for the limit state design of this structure:
+                                    </p>
+                                    <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px]">
+                                        <table className="w-full text-left">
+                                            <thead>
+                                                <tr className="bg-slate-100 border-b border-slate-300">
+                                                    <th className="px-3 py-2 font-bold text-slate-600">Limit State</th>
+                                                    <th className="px-3 py-2 font-bold text-slate-600">Combination</th>
+                                                    <th className="px-3 py-2 font-bold text-slate-600">Clause</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-200">
+                                                {[
+                                                    ['ULS-1', '1.5 DL + 1.5 LL', 'Table 4 (1)'],
+                                                    ['ULS-2', '1.5 DL + 1.5 WL/EQ', 'Table 4 (2)'],
+                                                    ['ULS-3', '1.2 DL + 1.2 LL + 1.2 WL/EQ', 'Table 4 (3)'],
+                                                    ['ULS-4', '0.9 DL + 1.5 WL/EQ', 'Table 4 (4)'],
+                                                    ['SLS-1', '1.0 DL + 1.0 LL', 'Cl. 5.6'],
+                                                    ['SLS-2', '1.0 DL + 1.0 WL', 'Cl. 5.6'],
+                                                ].map(([ls, combo, cl]) => (
+                                                    <tr key={ls}>
+                                                        <td className="px-3 py-2 font-mono font-bold text-slate-800">{ls}</td>
+                                                        <td className="px-3 py-2 text-slate-700">{combo}</td>
+                                                        <td className="px-3 py-2 text-slate-500 text-[10px]">{cl}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <p className="text-[10px] text-slate-400 italic mt-2">
+                                        DL = Dead Load, LL = Live/Imposed Load, WL = Wind Load, EQ = Seismic Load. Define project-specific combinations in the Design workspace for detailed analysis.
+                                    </p>
+                                </div>
+                            )}
                         </Section>
 
                         {/* ╔══════════════════════════════════════════════════╗
@@ -726,8 +891,54 @@ export const ReportsPage = () => {
                                 </div>
                             )}
 
-                            {/* 3.3 Applied Loads */}
-                            <SubHeading number="3.3" title="Applied Loads" />
+                            {/* 3.3 Section Properties */}
+                            <SubHeading number="3.3" title={`Section Properties (${uniqueSections.length} unique section${uniqueSections.length !== 1 ? 's' : ''})`} />
+                            {uniqueSections.length > 0 ? (
+                                <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
+                                    <table className="w-full text-left">
+                                        <thead>
+                                            <tr className="bg-slate-800 text-white">
+                                                <th className="px-3 py-2 font-bold">Section ID</th>
+                                                <th className="px-3 py-2 font-bold text-right">A (mm²)</th>
+                                                <th className="px-3 py-2 font-bold text-right">I<sub>y</sub> (mm⁴)</th>
+                                                <th className="px-3 py-2 font-bold text-right">I<sub>z</sub> (mm⁴)</th>
+                                                <th className="px-3 py-2 font-bold text-right">J (mm⁴)</th>
+                                                <th className="px-3 py-2 font-bold text-right">E (GPa)</th>
+                                                <th className="px-3 py-2 font-bold text-center">Members</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-200">
+                                            {uniqueSections.map((sec, i) => {
+                                                const db = sec.dbMatch;
+                                                // Display from DB if available (mm units), else from member props (m units → convert)
+                                                const area = db ? eng(db.A, 0) : sec.A ? eng(sec.A * 1e6, 0) : '—';
+                                                const iy = db ? eng(db.Ix, 0) : sec.Iy ? eng(sec.Iy * 1e12, 0) : sec.I ? eng(sec.I * 1e12, 0) : '—';
+                                                const iz = db ? eng(db.Iy, 0) : sec.Iz ? eng(sec.Iz * 1e12, 0) : '—';
+                                                const j = db ? eng(db.J, 0) : sec.J ? eng(sec.J * 1e12, 0) : '—';
+                                                const e = sec.E ? eng(sec.E / 1e6, 0) : '200';
+                                                return (
+                                                    <tr key={sec.id} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
+                                                        <td className="px-3 py-2 font-mono font-bold text-slate-800">{sec.id}</td>
+                                                        <td className="px-3 py-2 text-right font-mono text-slate-600">{area}</td>
+                                                        <td className="px-3 py-2 text-right font-mono text-slate-600">{iy}</td>
+                                                        <td className="px-3 py-2 text-right font-mono text-slate-600">{iz}</td>
+                                                        <td className="px-3 py-2 text-right font-mono text-slate-600">{j}</td>
+                                                        <td className="px-3 py-2 text-right font-mono text-slate-600">{e}</td>
+                                                        <td className="px-3 py-2 text-center font-mono">{sec.count}</td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-400 mb-6">
+                                    Assign sections in the Design workspace to populate this table.
+                                </div>
+                            )}
+
+                            {/* 3.4 Applied Loads */}
+                            <SubHeading number="3.4" title="Applied Loads" />
                             {(loads.length > 0 || memberLoads.length > 0) ? (
                                 <>
                                     {/* Nodal Loads */}
@@ -841,43 +1052,260 @@ export const ReportsPage = () => {
                                     <p className="text-[11px] mt-1">Apply nodal or member loads in the Design workspace to populate this section.</p>
                                 </div>
                             )}
+
+                            {/* 3.5 Member End Releases */}
+                            <SubHeading number="3.5" title="Member End Releases" />
+                            {membersWithReleases.length > 0 ? (
+                                <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-4">
+                                    <table className="w-full text-left">
+                                        <thead>
+                                            <tr className="bg-slate-800 text-white">
+                                                <th className="px-3 py-2 font-bold">Member</th>
+                                                <th className="px-3 py-2 font-bold text-center">Start Node</th>
+                                                <th className="px-3 py-2 font-bold text-center">End Node</th>
+                                                <th className="px-3 py-2 font-bold">Released DOFs — Start</th>
+                                                <th className="px-3 py-2 font-bold">Released DOFs — End</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-200">
+                                            {membersWithReleases.map((m: any, i) => {
+                                                const r = m.releases || {};
+                                                const fmtReleases = (end: 'Start' | 'End') => {
+                                                    const prefix = end.toLowerCase();
+                                                    const dofs = ['fx', 'fy', 'fz', 'mx', 'my', 'mz'];
+                                                    const labels = ['Fx', 'Fy', 'Fz', 'Mx', 'My', 'Mz'];
+                                                    const released = dofs
+                                                        .map((d, idx) => r[`${d}${end}`] || (end === 'Start' && d === 'my' && r.startMoment) || (end === 'End' && d === 'my' && r.endMoment) ? labels[idx] : null)
+                                                        .filter(Boolean);
+                                                    return released.length > 0 ? released.join(', ') : 'Fixed';
+                                                };
+                                                return (
+                                                    <tr key={m.id} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
+                                                        <td className="px-3 py-2 font-mono font-bold text-slate-800">{m.id}</td>
+                                                        <td className="px-3 py-2 text-center font-mono text-slate-600">{m.startNodeId}</td>
+                                                        <td className="px-3 py-2 text-center font-mono text-slate-600">{m.endNodeId}</td>
+                                                        <td className="px-3 py-2 text-slate-600">{fmtReleases('Start')}</td>
+                                                        <td className="px-3 py-2 text-slate-600">{fmtReleases('End')}</td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <div className="p-4 border border-slate-200 rounded text-[11px] text-slate-500 mb-4">
+                                    All member ends are fully fixed (rigid connections). No releases defined.
+                                </div>
+                            )}
                         </Section>
 
                         {/* ╔══════════════════════════════════════════════════╗
                            ║         4.0  ANALYSIS RESULTS                    ║
                            ╚══════════════════════════════════════════════════╝ */}
                         <Section id="results" num="4.0" title="Analysis Results">
-                            {/* 4.1 Member Forces */}
-                            <SubHeading number="4.1" title={`Internal Member Forces${forcesEntries.length > 0 ? ` (${forcesEntries.length} members)` : ''}`} />
+                            {/* Solver / method information */}
+                            {analysisResults ? (
+                                <div className="bg-slate-50 border border-slate-200 rounded-sm p-4 text-[11px] text-slate-600 mb-6 leading-relaxed">
+                                    <p>
+                                        <strong>Analysis Method:</strong> {analysisResults.stats?.method || 'Direct Stiffness Method'} (linear elastic, first-order).
+                                        {analysisResults.stats?.solveTimeMs !== undefined && (
+                                            <> Solution time: <span className="font-mono font-bold">{eng(analysisResults.stats.solveTimeMs, 0)} ms</span>.</>
+                                        )}
+                                        {analysisResults.stats?.totalTimeMs !== undefined && (
+                                            <> Total elapsed: <span className="font-mono font-bold">{eng(analysisResults.stats.totalTimeMs, 0)} ms</span>.</>
+                                        )}
+                                        {analysisResults.conditionNumber !== undefined && (
+                                            <> Stiffness matrix condition number: <span className="font-mono font-bold">{eng(analysisResults.conditionNumber, 2)}</span>.</>
+                                        )}
+                                        {analysisResults.stats?.usedCloud && <> Computed via cloud solver.</>}
+                                    </p>
+                                    <p className="mt-1 text-[10px] text-slate-400">
+                                        DOF count: {nodes.size * 6} ({nodes.size} nodes × 6 DOF). Global stiffness matrix assembled and factored using LU decomposition.
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="p-4 border-2 border-dashed border-amber-200 bg-amber-50 rounded text-center text-[12px] text-amber-700 mb-6">
+                                    Analysis has not been executed. Run the solver from the Design workspace to populate all results.
+                                </div>
+                            )}
 
-                            {forcesEntries.length > 0 ? (
-                                <>
-                                    <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-2">
+                            {/* 4.1 Equilibrium Verification */}
+                            <SubHeading number="4.1" title="Equilibrium Verification" />
+                            {analysisResults?.equilibriumCheck ? (
+                                <div className="mb-6">
+                                    <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-3">
                                         <table className="w-full text-left">
                                             <thead>
                                                 <tr className="bg-slate-800 text-white">
-                                                    <th className="px-3 py-2 font-bold w-16">Member</th>
-                                                    <th className="px-3 py-2 font-bold text-right">N (kN)</th>
-                                                    <th className="px-3 py-2 font-bold text-right">V<sub>y</sub> (kN)</th>
-                                                    <th className="px-3 py-2 font-bold text-right">V<sub>z</sub> (kN)</th>
-                                                    <th className="px-3 py-2 font-bold text-right">M<sub>y</sub> (kN·m)</th>
-                                                    <th className="px-3 py-2 font-bold text-right">M<sub>z</sub> (kN·m)</th>
+                                                    <th className="px-3 py-2 font-bold">Component</th>
+                                                    <th className="px-3 py-2 font-bold text-right">ΣApplied</th>
+                                                    <th className="px-3 py-2 font-bold text-right">ΣReactions</th>
+                                                    <th className="px-3 py-2 font-bold text-right">Residual</th>
+                                                    <th className="px-3 py-2 font-bold text-center">Status</th>
                                                 </tr>
                                             </thead>
-                                            <tbody>
-                                                {paginatedForces.map(([id, f], i) => (
-                                                    <tr key={id} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
-                                                        <td className="px-3 py-1.5 font-mono font-bold text-slate-800">{id}</td>
-                                                        <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(f.axial)}</td>
-                                                        <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(f.shearY)}</td>
-                                                        <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(f.shearZ)}</td>
-                                                        <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(f.momentY)}</td>
-                                                        <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(f.momentZ)}</td>
-                                                    </tr>
-                                                ))}
+                                            <tbody className="divide-y divide-slate-200">
+                                                {['Fx', 'Fy', 'Fz', 'Mx', 'My', 'Mz'].map((label, idx) => {
+                                                    const applied = analysisResults.equilibriumCheck!.applied_forces[idx] ?? 0;
+                                                    const reaction = analysisResults.equilibriumCheck!.reaction_forces[idx] ?? 0;
+                                                    const residual = analysisResults.equilibriumCheck!.residual[idx] ?? 0;
+                                                    const ok = Math.abs(residual) < 0.01;
+                                                    return (
+                                                        <tr key={label} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
+                                                            <td className="px-3 py-1.5 font-mono font-bold text-slate-800">{label} ({idx < 3 ? 'kN' : 'kN·m'})</td>
+                                                            <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(applied, 4)}</td>
+                                                            <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(reaction, 4)}</td>
+                                                            <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(residual, 6)}</td>
+                                                            <td className="px-3 py-1.5 text-center"><StatusPill status={ok ? 'PASS' : 'FAIL'} /></td>
+                                                        </tr>
+                                                    );
+                                                })}
                                             </tbody>
                                         </table>
                                     </div>
+                                    <div className="flex items-center gap-2 text-[11px]">
+                                        <StatusPill status={analysisResults.equilibriumCheck.pass ? 'PASS' : 'FAIL'} />
+                                        <span className="text-slate-600">
+                                            Global equilibrium error: <strong className="font-mono">{eng(analysisResults.equilibriumCheck.error_percent, 4)}%</strong>
+                                            {analysisResults.equilibriumCheck.pass ? ' — within acceptable tolerance.' : ' — EXCEEDS tolerance. Review model for errors.'}
+                                        </span>
+                                    </div>
+                                </div>
+                            ) : analysisResults ? (
+                                <div className="mb-6">
+                                    <p className="text-[11px] text-slate-600 mb-3">
+                                        Equilibrium verification can be confirmed by comparing the sum of applied loads with support reactions:
+                                    </p>
+                                    {analysisResults.reactions && analysisResults.reactions.size > 0 && (
+                                        <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-3">
+                                            <table className="w-full text-left">
+                                                <thead>
+                                                    <tr className="bg-slate-100 border-b border-slate-300">
+                                                        <th className="px-3 py-2 font-bold text-slate-600">Component</th>
+                                                        <th className="px-3 py-2 font-bold text-slate-600 text-right">ΣReactions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-slate-200">
+                                                    {(() => {
+                                                        const totals = { fx: 0, fy: 0, fz: 0, mx: 0, my: 0, mz: 0 };
+                                                        analysisResults.reactions!.forEach((r: any) => {
+                                                            totals.fx += (r.fx ?? r.Rx ?? 0);
+                                                            totals.fy += (r.fy ?? r.Ry ?? 0);
+                                                            totals.fz += (r.fz ?? r.Rz ?? 0);
+                                                            totals.mx += (r.mx ?? r.Mx ?? 0);
+                                                            totals.my += (r.my ?? r.My ?? 0);
+                                                            totals.mz += (r.mz ?? r.Mz ?? 0);
+                                                        });
+                                                        return [
+                                                            ['ΣRx (kN)', totals.fx], ['ΣRy (kN)', totals.fy], ['ΣRz (kN)', totals.fz],
+                                                            ['ΣMx (kN·m)', totals.mx], ['ΣMy (kN·m)', totals.my], ['ΣMz (kN·m)', totals.mz],
+                                                        ].map(([label, val], i) => (
+                                                            <tr key={label as string} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
+                                                                <td className="px-3 py-1.5 font-mono font-bold text-slate-800">{label as string}</td>
+                                                                <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(val as number, 4)}</td>
+                                                            </tr>
+                                                        ));
+                                                    })()}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-400 mb-6">
+                                    Run analysis to generate equilibrium verification data.
+                                </div>
+                            )}
+
+                            {/* 4.2 Member Forces */}
+                            <SubHeading number="4.2" title={`Internal Member Forces${forcesEntries.length > 0 ? ` (${forcesEntries.length} members)` : ''}`} />
+
+                            {forcesEntries.length > 0 ? (
+                                <>
+                                    {/* Check if start/end forces are available */}
+                                    {(() => {
+                                        const hasEndForces = forcesEntries.some(([, f]) => f.startForces || f.endForces);
+                                        if (hasEndForces) {
+                                            return (
+                                                <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-2">
+                                                    <table className="w-full text-left">
+                                                        <thead>
+                                                            <tr className="bg-slate-800 text-white">
+                                                                <th className="px-2 py-2 font-bold w-14" rowSpan={2}>Member</th>
+                                                                <th className="px-2 py-2 font-bold text-center" rowSpan={2}>End</th>
+                                                                <th className="px-2 py-2 font-bold text-right">N (kN)</th>
+                                                                <th className="px-2 py-2 font-bold text-right">V<sub>y</sub> (kN)</th>
+                                                                <th className="px-2 py-2 font-bold text-right">V<sub>z</sub> (kN)</th>
+                                                                <th className="px-2 py-2 font-bold text-right">M<sub>y</sub> (kN·m)</th>
+                                                                <th className="px-2 py-2 font-bold text-right">M<sub>z</sub> (kN·m)</th>
+                                                                <th className="px-2 py-2 font-bold text-right">T (kN·m)</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {paginatedForces.map(([id, f], i) => {
+                                                                const sf = f.startForces;
+                                                                const ef = f.endForces;
+                                                                return (
+                                                                    <React.Fragment key={id}>
+                                                                        <tr className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
+                                                                            <td className="px-2 py-1 font-mono font-bold text-slate-800 border-b border-slate-100" rowSpan={2}>{id}</td>
+                                                                            <td className="px-2 py-1 text-center text-[10px] font-bold text-blue-600">Start</td>
+                                                                            <td className="px-2 py-1 text-right font-mono text-slate-600">{eng(sf?.axial ?? f.axial)}</td>
+                                                                            <td className="px-2 py-1 text-right font-mono text-slate-600">{eng(sf?.shearY ?? f.shearY)}</td>
+                                                                            <td className="px-2 py-1 text-right font-mono text-slate-600">{eng(sf?.shearZ ?? f.shearZ)}</td>
+                                                                            <td className="px-2 py-1 text-right font-mono text-slate-600">{eng(sf?.momentY ?? f.momentY)}</td>
+                                                                            <td className="px-2 py-1 text-right font-mono text-slate-600">{eng(sf?.momentZ ?? f.momentZ)}</td>
+                                                                            <td className="px-2 py-1 text-right font-mono text-slate-600">{eng(sf?.torsion ?? f.torsion)}</td>
+                                                                        </tr>
+                                                                        <tr className={`${i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'} border-b border-slate-200`}>
+                                                                            <td className="px-2 py-1 text-center text-[10px] font-bold text-amber-600">End</td>
+                                                                            <td className="px-2 py-1 text-right font-mono text-slate-600">{eng(ef?.axial ?? f.axial)}</td>
+                                                                            <td className="px-2 py-1 text-right font-mono text-slate-600">{eng(ef?.shearY ?? f.shearY)}</td>
+                                                                            <td className="px-2 py-1 text-right font-mono text-slate-600">{eng(ef?.shearZ ?? f.shearZ)}</td>
+                                                                            <td className="px-2 py-1 text-right font-mono text-slate-600">{eng(ef?.momentY ?? f.momentY)}</td>
+                                                                            <td className="px-2 py-1 text-right font-mono text-slate-600">{eng(ef?.momentZ ?? f.momentZ)}</td>
+                                                                            <td className="px-2 py-1 text-right font-mono text-slate-600">{eng(ef?.torsion ?? f.torsion)}</td>
+                                                                        </tr>
+                                                                    </React.Fragment>
+                                                                );
+                                                            })}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            );
+                                        }
+                                        // Fallback: single-row per member (original layout with torsion added)
+                                        return (
+                                            <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-2">
+                                                <table className="w-full text-left">
+                                                    <thead>
+                                                        <tr className="bg-slate-800 text-white">
+                                                            <th className="px-3 py-2 font-bold w-16">Member</th>
+                                                            <th className="px-3 py-2 font-bold text-right">N (kN)</th>
+                                                            <th className="px-3 py-2 font-bold text-right">V<sub>y</sub> (kN)</th>
+                                                            <th className="px-3 py-2 font-bold text-right">V<sub>z</sub> (kN)</th>
+                                                            <th className="px-3 py-2 font-bold text-right">M<sub>y</sub> (kN·m)</th>
+                                                            <th className="px-3 py-2 font-bold text-right">M<sub>z</sub> (kN·m)</th>
+                                                            <th className="px-3 py-2 font-bold text-right">T (kN·m)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {paginatedForces.map(([id, f], i) => (
+                                                            <tr key={id} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
+                                                                <td className="px-3 py-1.5 font-mono font-bold text-slate-800">{id}</td>
+                                                                <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(f.axial)}</td>
+                                                                <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(f.shearY)}</td>
+                                                                <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(f.shearZ)}</td>
+                                                                <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(f.momentY)}</td>
+                                                                <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(f.momentZ)}</td>
+                                                                <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(f.torsion)}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        );
+                                    })()}
                                     {totalForcePages > 1 && (
                                         <div className="flex items-center justify-between text-[10px] text-slate-400 print:hidden mb-4">
                                             <span>
@@ -911,8 +1339,45 @@ export const ReportsPage = () => {
                                 </div>
                             )}
 
-                            {/* 4.2 Support Reactions */}
-                            <SubHeading number="4.2" title="Support Reactions" />
+                            {/* 4.3 Critical Members Summary */}
+                            <SubHeading number="4.3" title="Critical Members Summary" />
+                            {criticalMembers ? (
+                                <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
+                                    <table className="w-full text-left">
+                                        <thead>
+                                            <tr className="bg-slate-800 text-white">
+                                                <th className="px-3 py-2 font-bold">Action</th>
+                                                <th className="px-3 py-2 font-bold text-center">Governing Member</th>
+                                                <th className="px-3 py-2 font-bold text-right">Value</th>
+                                                <th className="px-3 py-2 font-bold text-right">|Value|</th>
+                                                <th className="px-3 py-2 font-bold">Unit</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-200">
+                                            {criticalMembers.map((cm, i) => (
+                                                <tr key={cm.action} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
+                                                    <td className="px-3 py-2 font-medium text-slate-800">{cm.action}</td>
+                                                    <td className="px-3 py-2 text-center">
+                                                        <span className="bg-red-50 text-red-700 border border-red-200 text-[10px] font-bold px-2 py-0.5 rounded font-mono">
+                                                            {cm.id || '—'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-3 py-2 text-right font-mono text-slate-600">{eng(cm.value)}</td>
+                                                    <td className="px-3 py-2 text-right font-mono font-bold text-slate-800">{eng(cm.absValue)}</td>
+                                                    <td className="px-3 py-2 text-slate-500">{cm.unit}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-400 mb-6">
+                                    Critical members will be identified after analysis.
+                                </div>
+                            )}
+
+                            {/* 4.4 Support Reactions */}
+                            <SubHeading number="4.4" title="Support Reactions" />
                             {analysisResults?.reactions && analysisResults.reactions.size > 0 ? (
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
                                     <table className="w-full text-left">
@@ -948,8 +1413,8 @@ export const ReportsPage = () => {
                                 </div>
                             )}
 
-                            {/* 4.3 Nodal Displacements */}
-                            <SubHeading number="4.3" title="Nodal Displacements" />
+                            {/* 4.5 Nodal Displacements */}
+                            <SubHeading number="4.5" title="Nodal Displacements" />
                             {analysisResults?.displacements && analysisResults.displacements.size > 0 ? (
                                 <>
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
@@ -989,6 +1454,48 @@ export const ReportsPage = () => {
                             ) : (
                                 <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-400 mb-6">
                                     Displacement results will appear after analysis.
+                                </div>
+                            )}
+
+                            {/* 4.6 Modal Analysis */}
+                            <SubHeading number="4.6" title="Modal Analysis" />
+                            {modalResults && modalResults.modes && modalResults.modes.length > 0 ? (
+                                <div className="mb-6">
+                                    <p className="text-[11px] text-slate-600 mb-3">
+                                        Dynamic (eigenvalue) analysis yielded <strong>{modalResults.modes.length} mode{modalResults.modes.length !== 1 ? 's' : ''}</strong>.
+                                        {modalResults.totalMass !== undefined && <> Total structural mass: <strong className="font-mono">{eng(modalResults.totalMass, 1)} kg</strong>.</>}
+                                    </p>
+                                    <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px]">
+                                        <table className="w-full text-left">
+                                            <thead>
+                                                <tr className="bg-slate-800 text-white">
+                                                    <th className="px-3 py-2 font-bold text-center">Mode</th>
+                                                    <th className="px-3 py-2 font-bold text-right">Frequency (Hz)</th>
+                                                    <th className="px-3 py-2 font-bold text-right">Period (s)</th>
+                                                    <th className="px-3 py-2 font-bold text-right">&omega; (rad/s)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-200">
+                                                {modalResults.modes.slice(0, 12).map((mode: any, i: number) => (
+                                                    <tr key={mode.modeNumber} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
+                                                        <td className="px-3 py-1.5 text-center font-mono font-bold text-slate-800">{mode.modeNumber}</td>
+                                                        <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(mode.frequency, 4)}</td>
+                                                        <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(mode.period, 4)}</td>
+                                                        <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(mode.angularFrequency, 2)}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    {modalResults.modes.length > 12 && (
+                                        <p className="text-[10px] text-slate-400 italic mt-1">
+                                            Showing first 12 of {modalResults.modes.length} modes. Full data available in exported results.
+                                        </p>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="p-4 border border-slate-200 rounded text-[11px] text-slate-500 mb-4">
+                                    Modal analysis was not performed for this model. Run eigenvalue analysis to display natural frequencies and mode shapes.
                                 </div>
                             )}
                         </Section>
@@ -1127,6 +1634,18 @@ export const ReportsPage = () => {
                                     <li>Ensure capacity values in the design verification table (Section 5.0) are replaced with actual section values before issuing for construction.</li>
                                     <li>Ensure all design modifications are incorporated before issuing for construction.</li>
                                 </ol>
+
+                                <div className="mt-6 border-t border-slate-200 pt-4">
+                                    <p className="text-[11px] font-bold text-slate-700 mb-2">Disclaimer & Limitations</p>
+                                    <ul className="list-disc list-inside space-y-1.5 text-[10px] text-slate-500 leading-relaxed">
+                                        <li>This report has been prepared using automated structural analysis software (BeamLab). Results should be independently verified by a qualified structural engineer.</li>
+                                        <li>The analysis is limited to a linear elastic, first-order static analysis unless otherwise stated. Effects of geometric nonlinearity (P-Δ), material nonlinearity, and construction sequence are outside the scope of this report.</li>
+                                        <li>The design verification checks presented in Section 5.0 are indicative only and based on assumed reference capacities. They do not constitute a full code-compliance design check.</li>
+                                        <li>Connection design, foundation design, and detailing are not covered in this report.</li>
+                                        <li>The engineer of record must verify all inputs, assumptions, loading, boundary conditions, and results before relying on this analysis for design or construction purposes.</li>
+                                        <li>Soil–structure interaction, temperature effects, creep, shrinkage, and fatigue considerations are excluded unless explicitly included in the model.</li>
+                                    </ul>
+                                </div>
                             </div>
                         </Section>
 

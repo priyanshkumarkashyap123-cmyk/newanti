@@ -214,10 +214,10 @@ const convertToAnalysisResultsData = (
         pyniteDiagram.x_values &&
         pyniteDiagram.x_values.length > 0
       ) {
-        // Use actual PyNite data
+        // Use actual PyNite data (with null-safety fallbacks)
         x_values = pyniteDiagram.x_values;
-        shear_values = pyniteDiagram.shear_y;
-        moment_values = pyniteDiagram.moment_z;
+        shear_values = pyniteDiagram.shear_y || [];
+        moment_values = pyniteDiagram.moment_z || [];
         axial_values = pyniteDiagram.axial || [];
         deflection_values = pyniteDiagram.deflection_y || [];
         memberLength = x_values[x_values.length - 1] || 5;
@@ -317,6 +317,10 @@ const convertToAnalysisResultsData = (
           moment_values,
           axial_values,
           deflection_values,
+          // 3D data (minor axis / Z-direction)
+          shear_z_values: pyniteDiagram?.shear_z || [],
+          moment_y_values: pyniteDiagram?.moment_y || [],
+          deflection_z_values: pyniteDiagram?.deflection_z || [],
         },
       });
     });

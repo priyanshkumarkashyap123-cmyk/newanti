@@ -522,9 +522,9 @@ function buildRotationMatrix3x3(
     const zx = cz / zLen;
     const zz = -cx / zLen;
 
-    const yx = -cz * cy / zLen;
+    const yx = -cx * cy / zLen;
     const yy = zLen;
-    const yz = cx * cy / zLen;
+    const yz = -cz * cy / zLen;
 
     // Normalize y-local
     const yLen = Math.sqrt(yx * yx + yy * yy + yz * yz);
@@ -647,24 +647,29 @@ export class EnhancedAnalysisEngine {
 
       // Build sparse stiffness matrix
       onProgress?.('matrix', 20, 'Building stiffness matrix (CSR sparse)...');
-      const { K, F, dofMap } = this.buildGlobalMatrixSparse(nodes, members, config);
+      const { K, F, dofMap, memberFEFLocal } = this.buildGlobalMatrixSparse(nodes, members, config);
 
       onProgress?.('boundary', 30, 'Applying boundary conditions...');
       const fixedDofs = this.getFixedDofs(nodes, dofMap);
-      K.applyPenaltyBC(fixedDofs);
+
+      // Save the complete applied force vector before penalty BCs zero it.
+      // Required for correct reaction computation: R = -penalty*u[j] - F_applied[j]
+      const F_applied = new Float64Array(F);
+      const bcPenalty = 1e20;
+      K.applyPenaltyBC(fixedDofs, bcPenalty);
       for (const dof of fixedDofs) F[dof] = 0;
 
       let results: AnalysisResults;
 
       switch (config.type) {
         case 'linear-static':
-          results = await this.solveLinearStatic(nodes, members, K, F, dofMap, config, onProgress);
+          results = await this.solveLinearStatic(nodes, members, K, F, dofMap, config, onProgress, memberFEFLocal, F_applied, fixedDofs, bcPenalty);
           break;
         case 'modal':
           results = await this.solveModal(nodes, members, K, F, dofMap, config, onProgress);
           break;
         case 'p-delta':
-          results = await this.solvePDelta(nodes, members, K, F, dofMap, config, onProgress);
+          results = await this.solvePDelta(nodes, members, K, F, dofMap, config, onProgress, memberFEFLocal, F_applied, fixedDofs, bcPenalty);
           break;
         case 'buckling':
           results = await this.solveBuckling(nodes, members, K, F, dofMap, config, onProgress);
@@ -673,7 +678,7 @@ export class EnhancedAnalysisEngine {
           results = await this.solveResponseSpectrum(nodes, members, K, F, dofMap, config, onProgress);
           break;
         default:
-          results = await this.solveLinearStatic(nodes, members, K, F, dofMap, config, onProgress);
+          results = await this.solveLinearStatic(nodes, members, K, F, dofMap, config, onProgress, memberFEFLocal, F_applied, fixedDofs, bcPenalty);
       }
 
       const duration = performance.now() - startTime;
@@ -931,16 +936,35 @@ export class EnhancedAnalysisEngine {
       [releases.myEnd, 10],
       [releases.mxStart, 3],
       [releases.mxEnd, 9],
+      [releases.fxStart, 0],
+      [releases.fxEnd, 6],
+      [releases.fyStart, 1],
+      [releases.fyEnd, 7],
+      [releases.fzStart, 2],
+      [releases.fzEnd, 8],
       [releases.startMoment, 5],
       [releases.endMoment, 11],
     ];
 
     for (const [released, dof] of releaseMap) {
-      if (released) {
-        for (let i = 0; i < 12; i++) {
-          ke[dof][i] = 0;
-          ke[i][dof] = 0;
+      if (!released) continue;
+      const n = 12;
+      const pivot = ke[dof][dof];
+      if (Math.abs(pivot) < 1e-20) continue; // Already zero, skip
+
+      // Static condensation: redistribute stiffness before zeroing
+      for (let i = 0; i < n; i++) {
+        if (i === dof) continue;
+        for (let j = 0; j < n; j++) {
+          if (j === dof) continue;
+          ke[i][j] -= (ke[i][dof] * ke[dof][j]) / pivot;
         }
+      }
+
+      // Then zero the released DOF's row and column
+      for (let i = 0; i < n; i++) {
+        ke[dof][i] = 0;
+        ke[i][dof] = 0;
       }
     }
   }
@@ -976,20 +1000,35 @@ export class EnhancedAnalysisEngine {
     F: Float64Array,
     dofMap: Map<string, number>,
     config: AnalysisConfig,
-    onProgress?: ProgressCallback
+    onProgress?: ProgressCallback,
+    memberFEFLocal?: Map<string, Float64Array>,
+    F_applied?: Float64Array,
+    fixedDofs?: Set<number>,
+    bcPenalty?: number,
+    preSolvedU?: Float64Array
   ): Promise<AnalysisResults> {
-    onProgress?.('solve', 50, `Solving ${K.n} DOF system (${K.nnz} non-zeros, ${(K.sparsity * 100).toFixed(1)}% sparse)...`);
+    let u: Float64Array;
+    let solveMethod = 'pre-solved';
+    if (preSolvedU) {
+      u = preSolvedU;
+    } else {
+      onProgress?.('solve', 50, `Solving ${K.n} DOF system (${K.nnz} non-zeros, ${(K.sparsity * 100).toFixed(1)}% sparse)...`);
+      const solveResult = solve(K, F);
+      u = solveResult.x;
+      solveMethod = solveResult.method;
+    }
 
-    const solveResult = solve(K, F);
-    const u = solveResult.x;
-
-    onProgress?.('results', 70, `Solved via ${solveResult.method}. Extracting results...`);
+    onProgress?.('results', 70, `Solved via ${solveMethod}. Extracting results...`);
 
     const displacements: NodalDisplacement[] = [];
     const reactions: NodalReaction[] = [];
 
-    // Compute K*u once for reaction calculation
-    const Ku = K.multiply(u);
+    // Compute reactions using the penalty method identity:
+    // At fixed DOF j: K_orig * u = -penalty * u[j] (from the penalty solve)
+    // So: R[j] = K_orig_j * u - F_applied[j] = -penalty * u[j] - F_applied[j]
+    // This avoids the K*u=F=0 cancellation that occurs with the penalized K.
+    const pen = bcPenalty ?? 1e20;
+    const Fa = F_applied ?? F;
 
     nodes.forEach((node, nodeId) => {
       const base = dofMap.get(nodeId)!;
@@ -1005,21 +1044,23 @@ export class EnhancedAnalysisEngine {
       });
 
       if (node.restraints) {
+        const r = node.restraints;
+        const lcName = config.loadCases[0]?.name || 'LC1';
         reactions.push({
           nodeId,
-          loadCase: config.loadCases[0]?.name || 'LC1',
-          fx: Ku[base] - F[base],
-          fy: Ku[base + 1] - F[base + 1],
-          fz: Ku[base + 2] - F[base + 2],
-          mx: Ku[base + 3] - F[base + 3],
-          my: Ku[base + 4] - F[base + 4],
-          mz: Ku[base + 5] - F[base + 5],
+          loadCase: lcName,
+          fx: r.fx ? -pen * u[base]     - Fa[base]     : 0,
+          fy: r.fy ? -pen * u[base + 1] - Fa[base + 1] : 0,
+          fz: r.fz ? -pen * u[base + 2] - Fa[base + 2] : 0,
+          mx: r.mx ? -pen * u[base + 3] - Fa[base + 3] : 0,
+          my: r.my ? -pen * u[base + 4] - Fa[base + 4] : 0,
+          mz: r.mz ? -pen * u[base + 5] - Fa[base + 5] : 0,
         });
       }
     });
 
     onProgress?.('forces', 85, 'Calculating member forces...');
-    const memberForces = this.calculateMemberForces(members, nodes, u, dofMap, config);
+    const memberForces = this.calculateMemberForces(members, nodes, u, dofMap, config, memberFEFLocal);
     const memberStresses = this.calculateMemberStresses(members, memberForces);
     const summary = this.generateSummary(displacements, reactions, memberForces, memberStresses, members, nodes);
 
@@ -1034,8 +1075,9 @@ export class EnhancedAnalysisEngine {
       memberForces,
       memberStresses,
       summary,
-      warnings: solveResult.method === 'direct-fallback' ? ['PCG solver did not converge, used direct method'] : [],
+      warnings: solveMethod === 'direct-fallback' ? ['PCG solver did not converge, used direct method'] : [],
       errors: [],
+      memberFEF: memberFEFLocal,
     };
   }
 
@@ -1136,21 +1178,30 @@ export class EnhancedAnalysisEngine {
     F: Float64Array,
     dofMap: Map<string, number>,
     config: AnalysisConfig,
-    onProgress?: ProgressCallback
+    onProgress?: ProgressCallback,
+    memberFEFLocal?: Map<string, Float64Array>,
+    F_applied?: Float64Array,
+    fixedDofs?: Set<number>,
+    bcPenalty?: number
   ): Promise<AnalysisResults> {
     const maxIter = config.options.maxIterations || 10;
     const tol = config.options.convergenceTolerance || 0.001;
+    const pen = bcPenalty ?? 1e20;
 
+    // Initial linear solve (K already has penalty BCs applied)
     let solveResult = solve(K, F);
     let u = solveResult.x;
     let prevU = new Float64Array(u);
+
+    // Get fixed DOFs once (immutable for this model)
+    const bcDofs = fixedDofs ?? this.getFixedDofs(nodes, dofMap);
 
     for (let iter = 0; iter < maxIter; iter++) {
       onProgress?.('pdelta', 30 + (iter / maxIter) * 50, `P-Δ iteration ${iter + 1}/${maxIter}`);
 
       const Kg = this.buildGeometricStiffnessSparse(members, nodes, u, dofMap);
 
-      // K_total = K + Kg
+      // K_total = K_original + Kg (re-assemble without penalty first)
       const n = K.n;
       const combinedBuilder = new CSRMatrixBuilder(n);
       for (let i = 0; i < n; i++) {
@@ -1163,10 +1214,9 @@ export class EnhancedAnalysisEngine {
       }
 
       const Ktotal = combinedBuilder.build();
-      const fixedDofs = this.getFixedDofs(nodes, dofMap);
-      Ktotal.applyPenaltyBC(fixedDofs);
+      Ktotal.applyPenaltyBC(bcDofs, pen);
       const Fmod = new Float64Array(F);
-      for (const dof of fixedDofs) Fmod[dof] = 0;
+      for (const dof of bcDofs) Fmod[dof] = 0;
 
       solveResult = solve(Ktotal, Fmod);
       u = solveResult.x;
@@ -1180,7 +1230,12 @@ export class EnhancedAnalysisEngine {
       prevU = new Float64Array(u);
     }
 
-    const result = await this.solveLinearStatic(nodes, members, K, F, dofMap, config, onProgress);
+    // Extract results from converged P-Delta displacements (not a fresh linear solve)
+    const result = await this.solveLinearStatic(
+      nodes, members, K, F, dofMap, config, onProgress,
+      memberFEFLocal, F_applied, fixedDofs, bcPenalty,
+      u  // preSolvedU — use converged P-Δ displacements
+    );
     result.summary.stabilityCheck = 'stable';
     return result;
   }
@@ -1515,12 +1570,29 @@ export class EnhancedAnalysisEngine {
   // MEMBER FORCES (ACTUAL PROPERTIES)
   // ============================================
 
+  /**
+   * Calculate member internal forces using the complete member end force approach.
+   *
+   * f_actual = k_local * u_local - stored_FEF
+   *
+   * Where stored_FEF contains the equivalent nodal loads (negative of fixed-end
+   * reactions) computed during assembly. Subtracting these recovers the true
+   * member-end forces including the effect of span loads (UDL, UVL, point, moment).
+   *
+   * Internal forces at intermediate stations are computed from left free-body
+   * equilibrium using an effective distributed load approximation (exact for UDL).
+   *
+   * References:
+   *   - McGuire, Gallagher & Ziemian, "Matrix Structural Analysis", 2nd Ed, §4.4
+   *   - Przemieniecki, "Theory of Matrix Structural Analysis", Ch. 5
+   */
   private calculateMemberForces(
     members: Map<string, Member>,
     nodes: Map<string, Node>,
     u: Float64Array,
     dofMap: Map<string, number>,
-    config: AnalysisConfig
+    config: AnalysisConfig,
+    memberFEFLocal?: Map<string, Float64Array>
   ): MemberForce[] {
     const forces: MemberForce[] = [];
 
@@ -1532,18 +1604,23 @@ export class EnhancedAnalysisEngine {
 
       const dx = en.x - sn.x, dy = en.y - sn.y, dz = en.z - sn.z;
       const L = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      if (L < 1e-10) return; // skip zero-length members
+
       const E = member.E ?? DEFAULT_STEEL.E;
       const A = member.A ?? DEFAULT_SECTION.A;
       const Iy = member.I ?? DEFAULT_SECTION.Iy;
+      const Iz = member.Iz ?? DEFAULT_SECTION.Iz;
+      const G = member.G ?? DEFAULT_STEEL.G;
+      const J = member.J ?? DEFAULT_SECTION.J;
 
-      // Extract global displacements
+      // ---- Step 1: Extract global displacements for this member ----
       const ue = new Float64Array(12);
       for (let i = 0; i < 6; i++) {
         ue[i] = u[startDof + i] || 0;
         ue[i + 6] = u[endDof + i] || 0;
       }
 
-      // Transform to local: u_local = T * u_global
+      // ---- Step 2: Transform to local coordinates: u_local = T * u_global ----
       const r = buildRotationMatrix3x3(sn, en, L, member.betaAngle);
       const T = buildTransformationMatrix12x12(r);
       const ul = new Float64Array(12);
@@ -1553,25 +1630,78 @@ export class EnhancedAnalysisEngine {
         ul[i] = sum;
       }
 
-      const axial = E * A / L * (ul[6] - ul[0]);
+      // ---- Step 3: Compute member end forces: f = k_local * u_local ----
+      const L2 = L * L;
+      const L3 = L2 * L;
+      const EIz = E * Iz;
+      const EIy = E * Iy;
+
+      const f = new Float64Array(12);
+
+      // Axial (DOFs 0, 6)
+      const EA_L = E * A / L;
+      f[0] = EA_L * (ul[0] - ul[6]);
+      f[6] = EA_L * (ul[6] - ul[0]);
+
+      // Torsion (DOFs 3, 9)
+      const GJ_L = G * J / L;
+      f[3] = GJ_L * (ul[3] - ul[9]);
+      f[9] = GJ_L * (ul[9] - ul[3]);
+
+      // Bending in xy-plane (DOFs 1, 5, 7, 11) — uses Iz (moment of inertia about z-axis)
+      f[1]  =  12*EIz/L3 * ul[1] + 6*EIz/L2 * ul[5] - 12*EIz/L3 * ul[7] + 6*EIz/L2 * ul[11];
+      f[5]  =   6*EIz/L2 * ul[1] + 4*EIz/L  * ul[5] -  6*EIz/L2 * ul[7] + 2*EIz/L  * ul[11];
+      f[7]  = -12*EIz/L3 * ul[1] - 6*EIz/L2 * ul[5] + 12*EIz/L3 * ul[7] - 6*EIz/L2 * ul[11];
+      f[11] =   6*EIz/L2 * ul[1] + 2*EIz/L  * ul[5] -  6*EIz/L2 * ul[7] + 4*EIz/L  * ul[11];
+
+      // Bending in xz-plane (DOFs 2, 4, 8, 10) — uses Iy (moment of inertia about y-axis)
+      f[2]  =  12*EIy/L3 * ul[2] - 6*EIy/L2 * ul[4] - 12*EIy/L3 * ul[8] - 6*EIy/L2 * ul[10];
+      f[4]  =  -6*EIy/L2 * ul[2] + 4*EIy/L  * ul[4] +  6*EIy/L2 * ul[8] + 2*EIy/L  * ul[10];
+      f[8]  = -12*EIy/L3 * ul[2] + 6*EIy/L2 * ul[4] + 12*EIy/L3 * ul[8] + 6*EIy/L2 * ul[10];
+      f[10] =  -6*EIy/L2 * ul[2] + 2*EIy/L  * ul[4] +  6*EIy/L2 * ul[8] + 4*EIy/L  * ul[10];
+
+      // ---- Step 4: Subtract stored equivalent nodal loads (FEFs) ----
+      // f_actual = k_local * u_local - FEF_equivalent
+      // This recovers the true member end forces including span load effects.
+      // For members with no span loads, storedFEF is zero and f is unchanged.
+      const storedFEF = memberFEFLocal?.get(memberId);
+      if (storedFEF) {
+        for (let i = 0; i < 12; i++) f[i] -= storedFEF[i];
+      }
+
+      // ---- Step 5: Internal forces at stations via left free-body equilibrium ----
+      //
+      // Effective distributed loads back-computed from end force imbalance:
+      //   f[1] + f[7] = total transverse-y span load  →  w_eff_y = (f[1]+f[7]) / L
+      //
+      // At position x from node 1 (left free-body):
+      //   N(x)   = f[0] - wEffX·x                    (axial equilibrium)
+      //   V_y(x) = f[1] - wEffY·x                    (shear y)
+      //   V_z(x) = f[2] - wEffZ·x                    (shear z)
+      //   T(x)   = f[3]                               (constant torsion)
+      //   M_z(x) = f[5] - f[1]·x + wEffY·x²/2       (moment about z from cross-product)
+      //   M_y(x) = f[4] + f[2]·x - wEffZ·x²/2       (moment about y from cross-product)
+      //
+      // Sign convention for output: axial positive = tension (reported as -N)
+
+      const wEffX = (f[0] + f[6]) / L;
+      const wEffY = (f[1] + f[7]) / L;
+      const wEffZ = (f[2] + f[8]) / L;
 
       for (const pos of [0, 0.5, 1]) {
-        const shearY = 12 * E * Iy / (L * L * L) * (ul[7] - ul[1]) -
-                       6 * E * Iy / (L * L) * (ul[5] + ul[11]);
-        const momentZ = 6 * E * Iy / (L * L) * (ul[7] - ul[1]) * (1 - 2 * pos) -
-                       (4 * E * Iy / L * ul[5] + 2 * E * Iy / L * ul[11]) * (1 - pos) -
-                       (2 * E * Iy / L * ul[5] + 4 * E * Iy / L * ul[11]) * pos;
+        const x = pos * L;
+        const x2 = x * x;
 
         forces.push({
           memberId,
           loadCase: config.loadCases[0]?.name || 'LC1',
           position: pos,
-          axial,
-          shearY,
-          shearZ: 0,
-          torsion: 0,
-          momentY: 0,
-          momentZ,
+          axial: -(f[0] - wEffX * x),                  // positive = tension
+          shearY: f[1] - wEffY * x,
+          shearZ: f[2] - wEffZ * x,
+          torsion: f[3],
+          momentY: f[4] + f[2] * x - wEffZ * x2 / 2,
+          momentZ: f[5] - f[1] * x + wEffY * x2 / 2,
         });
       }
     });

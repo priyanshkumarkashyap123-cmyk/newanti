@@ -267,31 +267,44 @@ export const SectionScanner: FC<SectionScannerProps> = ({
         const forces = analysisResults.memberForces.get(memberId);
         if (!forces) return null;
 
-        // Calculate value at position (linear interpolation)
+        // Interpolate from actual diagram data if available
+        const lerpDiagram = (arr: number[] | undefined): number | null => {
+            if (!arr || arr.length < 2) return null;
+            const fIdx = position * (arr.length - 1);
+            const lo = Math.floor(fIdx);
+            const hi = Math.min(lo + 1, arr.length - 1);
+            const frac = fIdx - lo;
+            return (arr[lo] ?? 0) + frac * ((arr[hi] ?? 0) - (arr[lo] ?? 0));
+        };
+
         let value = 0;
         let unit = '';
+        const dd = forces.diagramData;
 
         switch (diagramType) {
             case 'SFD':
-                value = forces.shearY * (1 - 2 * position);
+                value = (dd ? lerpDiagram(dd.shear_y) : null) ?? forces.shearY * (1 - 2 * position);
                 unit = 'kN';
                 break;
             case 'BMD':
-                // Parabolic for UDL
-                value = forces.momentZ * 4 * position * (1 - position);
+                value = (dd ? lerpDiagram(dd.moment_z) : null) ?? forces.momentZ * 4 * position * (1 - position);
                 unit = 'kNm';
                 break;
             case 'SFD_VZ':
-                value = (forces.shearZ ?? 0) * (1 - 2 * position);
+                value = (dd ? lerpDiagram(dd.shear_z) : null) ?? (forces.shearZ ?? 0) * (1 - 2 * position);
                 unit = 'kN';
                 break;
             case 'BMD_MY':
-                value = (forces.momentY ?? 0) * 4 * position * (1 - position);
+                value = (dd ? lerpDiagram(dd.moment_y) : null) ?? (forces.momentY ?? 0) * 4 * position * (1 - position);
                 unit = 'kNm';
                 break;
             case 'AFD':
-                value = forces.axial;
+                value = (dd ? lerpDiagram(dd.axial) : null) ?? forces.axial;
                 unit = 'kN';
+                break;
+            case 'DEFLECTION':
+                value = (dd ? lerpDiagram(dd.deflection_y) : null) ?? 0;
+                unit = 'mm';
                 break;
         }
 

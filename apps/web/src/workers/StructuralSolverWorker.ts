@@ -124,7 +124,8 @@ export interface ModelData {
   nodes: NodeData[];
   members: MemberData[];
   loads: LoadData[];
-  memberLoads?: MemberLoadItem[]; // Member loads (UDL, point, etc.)
+  memberLoads?: MemberLoadItem[]; // Member loads (UDL, point, etc.) — used for FEF assembly
+  memberLoadsForRecovery?: MemberLoadItem[]; // Member loads used ONLY for force recovery (f = k*u − FEF)
   dofPerNode: 2 | 3 | 6;
   options?: SolverConfig;
   settings?: { selfWeight?: boolean }; // Alternative path from AnalysisService
@@ -1716,9 +1717,8 @@ function computeMemberEndForces(
       setKL12(10, 8, b2);
       setKL12(10, 10, b3);
 
-      // f_local = kL * uL + fFE  (fixed-end forces from member loads)
-      // fFE is the fixed-end force vector due to distributed loads.
-      // Without this correction, member forces under UDL/PL are wrong.
+      // f_local = kL * uL  (stiffness × local displacements)
+      // FEF subtraction is applied below for force recovery.
       const fLocal12 = new Float64Array(12);
       for (let r = 0; r < 12; r++) {
         let s = 0;
@@ -1731,47 +1731,135 @@ function computeMemberEndForces(
         fLocal12[r] = s;
       }
 
-      // Add fixed-end forces for any member loads
-      const modelML = model as ModelDataWithMemberLoads;
-      if (modelML.memberLoads) {
-        for (const ml of modelML.memberLoads) {
+      // Subtract fixed-end forces for force recovery: f = k*u − FEF
+      // Uses memberLoadsForRecovery (not memberLoads, which is cleared to
+      // prevent double-counting during assembly — loadConversion handles that).
+      // Sign: SUBTRACTION matches McGuire convention used by Rust solver.
+      const recoveryLoads = (model as ModelDataWithMemberLoads).memberLoadsForRecovery
+        ?? (model as ModelDataWithMemberLoads).memberLoads;
+      if (recoveryLoads) {
+        for (const ml of recoveryLoads) {
           if (ml.memberId !== member.id) continue;
 
           const dir = ml.direction ?? "local_y";
 
+          // For global directions on 3D members, project load onto local axes
+          // using the R3 rotation matrix (rows = local axes in global coords).
+          // R3 * global_vec = local_vec
+          // Column index: global_x=0, global_y=1, global_z=2
+          const isGlobal = dir.startsWith("global_");
+          let wLx = 0, wLy = 0, wLz = 0; // local-axis load components
+
           if (ml.type === "UDL") {
             const w = ml.w1 ?? 0;
-            if (dir === "local_y" || dir === "global_y") {
-              // FEF for UDL w in local Y direction on both-fixed beam:
-              //   Vy1 = +wL/2,   Vy2 = +wL/2
-              //   Mz1 = +wL²/12, Mz2 = -wL²/12
-              fLocal12[1] += (w * L) / 2;
-              fLocal12[5] += (w * L * L) / 12;
-              fLocal12[7] += (w * L) / 2;
-              fLocal12[11] += (-w * L * L) / 12;
-            } else if (dir === "local_z" || dir === "global_z") {
-              // FEF for UDL w in local Z direction on both-fixed beam:
-              //   Vz1 = +wL/2,   Vz2 = +wL/2
-              //   My1 = -wL²/12,  My2 = +wL²/12  (opposite sign to Mz due to stiffness coupling)
-              fLocal12[2] += (w * L) / 2;
-              fLocal12[4] += (-w * L * L) / 12;
-              fLocal12[8] += (w * L) / 2;
-              fLocal12[10] += (w * L * L) / 12;
+            if (Math.abs(w) < 1e-15) continue;
+
+            if (isGlobal) {
+              // Which global axis?
+              const gCol = dir === "global_x" ? 0 : dir === "global_y" ? 1 : 2;
+              const r0 = R3[0]; const r1 = R3[1]; const r2 = R3[2];
+              wLx = (r0 ? r0[gCol] ?? 0 : 0) * w; // axial component
+              wLy = (r1 ? r1[gCol] ?? 0 : 0) * w; // local-Y component
+              wLz = (r2 ? r2[gCol] ?? 0 : 0) * w; // local-Z component
+            } else if (dir === "local_y") {
+              wLy = w;
+            } else if (dir === "local_z") {
+              wLz = w;
+            } else if (dir === "local_x" || dir === "axial") {
+              wLx = w;
+            }
+
+            // Axial FEF (local X)
+            if (Math.abs(wLx) > 1e-15) {
+              fLocal12[0] -= (wLx * L) / 2;
+              fLocal12[6] -= (wLx * L) / 2;
+            }
+            // Local Y bending → Mz
+            if (Math.abs(wLy) > 1e-15) {
+              fLocal12[1] -= (wLy * L) / 2;
+              fLocal12[5] -= (wLy * L * L) / 12;
+              fLocal12[7] -= (wLy * L) / 2;
+              fLocal12[11] -= (-wLy * L * L) / 12;
+            }
+            // Local Z bending → My (opposite sign per Rust convention)
+            if (Math.abs(wLz) > 1e-15) {
+              fLocal12[2] -= (wLz * L) / 2;
+              fLocal12[4] -= (-wLz * L * L) / 12;
+              fLocal12[8] -= (wLz * L) / 2;
+              fLocal12[10] -= (wLz * L * L) / 12;
             }
           } else if (ml.type === "point") {
             const P = ml.P ?? 0;
+            if (Math.abs(P) < 1e-15) continue;
             const a = ml.a ?? L / 2;
             const b = L - a;
+            if (a < 0 || a > L) continue;
+            const L2 = L * L;
+            const L3 = L2 * L;
+
+            let pLx = 0, pLy = 0, pLz = 0;
+            if (isGlobal) {
+              const gCol = dir === "global_x" ? 0 : dir === "global_y" ? 1 : 2;
+              const r0 = R3[0]; const r1 = R3[1]; const r2 = R3[2];
+              pLx = (r0 ? r0[gCol] ?? 0 : 0) * P;
+              pLy = (r1 ? r1[gCol] ?? 0 : 0) * P;
+              pLz = (r2 ? r2[gCol] ?? 0 : 0) * P;
+            } else if (dir === "local_y") {
+              pLy = P;
+            } else if (dir === "local_z") {
+              pLz = P;
+            } else if (dir === "local_x" || dir === "axial") {
+              pLx = P;
+            }
+
+            // Axial FEF (local X)
+            if (Math.abs(pLx) > 1e-15) {
+              fLocal12[0] -= pLx * (L - a) / L;
+              fLocal12[6] -= pLx * a / L;
+            }
+            // Local Y → Mz
+            if (Math.abs(pLy) > 1e-15) {
+              fLocal12[1] -= (pLy * b * b * (3 * a + b)) / L3;
+              fLocal12[5] -= (pLy * a * b * b) / L2;
+              fLocal12[7] -= (pLy * a * a * (a + 3 * b)) / L3;
+              fLocal12[11] -= (-pLy * a * a * b) / L2;
+            }
+            // Local Z → My (opposite sign)
+            if (Math.abs(pLz) > 1e-15) {
+              fLocal12[2] -= (pLz * b * b * (3 * a + b)) / L3;
+              fLocal12[4] -= (-pLz * a * b * b) / L2;
+              fLocal12[8] -= (pLz * a * a * (a + 3 * b)) / L3;
+              fLocal12[10] -= (pLz * a * a * b) / L2;
+            }
+          } else if (ml.type === "moment") {
+            const M_app = ml.M ?? 0;
+            if (Math.abs(M_app) < 1e-15) continue;
+            const a = ml.a ?? L / 2;
+            const b = L - a;
+            const L2 = L * L;
+            const L3 = L2 * L;
+
+            // Concentrated moment acts about an axis.
+            // For local_y direction: moment about local Z → bending in XY
+            // For local_z direction: moment about local Y → bending in XZ
             if (dir === "local_y" || dir === "global_y") {
-              fLocal12[1] += (P * b * b * (3 * a + b)) / (L * L * L);
-              fLocal12[5] += (P * a * b * b) / (L * L);
-              fLocal12[7] += (P * a * a * (a + 3 * b)) / (L * L * L);
-              fLocal12[11] += (-P * a * a * b) / (L * L);
+              // Moment about Mz
+              const R1 = (6 * M_app * a * b) / L3;
+              const M1 = (M_app * b * (2 * a - b)) / L2;
+              const M2 = (M_app * a * (2 * b - a)) / L2;
+              fLocal12[1] -= R1;
+              fLocal12[5] -= M1;
+              fLocal12[7] -= -R1;
+              fLocal12[11] -= M2;
             } else if (dir === "local_z" || dir === "global_z") {
-              fLocal12[2] += (P * b * b * (3 * a + b)) / (L * L * L);
-              fLocal12[4] += (-P * a * b * b) / (L * L);
-              fLocal12[8] += (P * a * a * (a + 3 * b)) / (L * L * L);
-              fLocal12[10] += (P * a * a * b) / (L * L);
+              // Moment about My (opposite sign convention)
+              const R1 = (6 * M_app * a * b) / L3;
+              const M1 = (M_app * b * (2 * a - b)) / L2;
+              const M2 = (M_app * a * (2 * b - a)) / L2;
+              fLocal12[2] -= -R1;
+              fLocal12[4] -= -M1;
+              fLocal12[8] -= R1;
+              fLocal12[10] -= -M2;
             }
           }
         }
@@ -1856,7 +1944,7 @@ function computeMemberEndForces(
         [0, (6 * EI) / L2, (2 * EI) / L, 0, (-6 * EI) / L2, (4 * EI) / L],
       ];
 
-      // f_local = k_local * u_local + fFE (fixed-end forces from member loads)
+      // f_local = k_local * u_local − FEF (subtraction for force recovery)
       const fLocal = new Float64Array(6);
       for (let r = 0; r < 6; r++) {
         let sum = 0;
@@ -1869,28 +1957,92 @@ function computeMemberEndForces(
         fLocal[r] = sum;
       }
 
-      // Add fixed-end forces for any member loads
-      const modelML2D = model as ModelDataWithMemberLoads;
-      if (modelML2D.memberLoads) {
-        for (const ml of modelML2D.memberLoads) {
+      // Subtract FEF for force recovery: f = k*u − FEF
+      // Uses memberLoadsForRecovery (memberLoads is cleared for assembly).
+      // For global directions, project onto local axes using 2D rotation.
+      const recoveryLoads2D = (model as ModelDataWithMemberLoads).memberLoadsForRecovery
+        ?? (model as ModelDataWithMemberLoads).memberLoads;
+      if (recoveryLoads2D) {
+        for (const ml of recoveryLoads2D) {
           if (ml.memberId !== member.id) continue;
+          const dir = ml.direction ?? "local_y";
+          const isGlobal = dir.startsWith("global_");
+
           if (ml.type === "UDL") {
             const w = ml.w1 ?? 0;
-            // FEF for UDL w in local Y on both-fixed beam:
-            //   V1 = +wL/2,   M1 = +wL²/12
-            //   V2 = +wL/2,   M2 = -wL²/12
-            fLocal[1] += (w * L) / 2;
-            fLocal[2] += (w * L * L) / 12;
-            fLocal[4] += (w * L) / 2;
-            fLocal[5] += (-w * L * L) / 12;
+            if (Math.abs(w) < 1e-15) continue;
+
+            let wAxial = 0, wTransverse = 0;
+            if (isGlobal) {
+              // 2D rotation: local_x = c*gx + s*gy, local_y = -s*gx + c*gy
+              if (dir === "global_x") {
+                wAxial = c * w;
+                wTransverse = -s * w;
+              } else if (dir === "global_y") {
+                wAxial = s * w;
+                wTransverse = c * w;
+              }
+              // global_z not applicable in 2D
+            } else if (dir === "local_y") {
+              wTransverse = w;
+            } else if (dir === "local_x" || dir === "axial") {
+              wAxial = w;
+            }
+
+            if (Math.abs(wAxial) > 1e-15) {
+              fLocal[0] -= (wAxial * L) / 2;
+              fLocal[3] -= (wAxial * L) / 2;
+            }
+            if (Math.abs(wTransverse) > 1e-15) {
+              fLocal[1] -= (wTransverse * L) / 2;
+              fLocal[2] -= (wTransverse * L * L) / 12;
+              fLocal[4] -= (wTransverse * L) / 2;
+              fLocal[5] -= (-wTransverse * L * L) / 12;
+            }
           } else if (ml.type === "point") {
             const P = ml.P ?? 0;
+            if (Math.abs(P) < 1e-15) continue;
             const a = ml.a ?? L / 2;
             const b = L - a;
-            fLocal[1] += (P * b * b * (3 * a + b)) / (L * L * L);
-            fLocal[2] += (P * a * b * b) / (L * L);
-            fLocal[4] += (P * a * a * (a + 3 * b)) / (L * L * L);
-            fLocal[5] += (-P * a * a * b) / (L * L);
+            if (a < 0 || a > L) continue;
+
+            let pAxial = 0, pTransverse = 0;
+            if (isGlobal) {
+              if (dir === "global_x") {
+                pAxial = c * P;
+                pTransverse = -s * P;
+              } else if (dir === "global_y") {
+                pAxial = s * P;
+                pTransverse = c * P;
+              }
+            } else if (dir === "local_y") {
+              pTransverse = P;
+            } else if (dir === "local_x" || dir === "axial") {
+              pAxial = P;
+            }
+
+            if (Math.abs(pAxial) > 1e-15) {
+              fLocal[0] -= pAxial * (L - a) / L;
+              fLocal[3] -= pAxial * a / L;
+            }
+            if (Math.abs(pTransverse) > 1e-15) {
+              fLocal[1] -= (pTransverse * b * b * (3 * a + b)) / (L * L * L);
+              fLocal[2] -= (pTransverse * a * b * b) / (L * L);
+              fLocal[4] -= (pTransverse * a * a * (a + 3 * b)) / (L * L * L);
+              fLocal[5] -= (-pTransverse * a * a * b) / (L * L);
+            }
+          } else if (ml.type === "moment") {
+            const M_app = ml.M ?? 0;
+            if (Math.abs(M_app) < 1e-15) continue;
+            const a = ml.a ?? L / 2;
+            const b = L - a;
+            const R1 = (6 * M_app * a * b) / (L * L * L);
+            const M1 = (M_app * b * (2 * a - b)) / (L * L);
+            const M2 = (M_app * a * (2 * b - a)) / (L * L);
+            fLocal[1] -= R1;
+            fLocal[2] -= M1;
+            fLocal[4] -= -R1;
+            fLocal[5] -= M2;
           }
         }
       }

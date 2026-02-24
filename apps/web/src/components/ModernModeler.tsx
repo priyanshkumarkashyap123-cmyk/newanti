@@ -1410,6 +1410,53 @@ export const ModernModeler: FC = () => {
           );
 
           // Parse member forces - 3D MemberForces with full 6 DOF at each end
+          // ─── FEF correction for point/moment loads pre-converted to nodal ───
+          // The WASM solver only subtracts FEF for distributed loads.
+          // Point and moment loads were converted to equivalent nodal loads
+          // (lines above), so their FEF is missing from f_total = k*u - FEF.
+          // Compute the missing FEF per member and subtract it during parsing.
+          const { computePointMomentFEF } = await import("../utils/memberLoadFEF");
+          const memberFEFMap = new Map<string, { forces_i: number[]; forces_j: number[] }>();
+          for (const mpl of memberPointLoads) {
+            const mInfo = membersArray.find((m) => m.id === mpl.memberId);
+            if (!mInfo) continue;
+            const nd1 = nodesArray.find((n) => n.id === mInfo.startNodeId);
+            const nd2 = nodesArray.find((n) => n.id === mInfo.endNodeId);
+            if (!nd1 || !nd2) continue;
+            const ddx = nd2.x - nd1.x, ddy = nd2.y - nd1.y;
+            const ddz = (nd2.z ?? 0) - (nd1.z ?? 0);
+            const mL = Math.sqrt(ddx * ddx + ddy * ddy + ddz * ddz);
+            if (mL < 1e-12) continue;
+            const aRaw = mpl.a ?? 0.5;
+            const aVal = aRaw <= 1.0 ? aRaw * mL : aRaw;
+            let val = 0;
+            if (mpl.type === "point" && mpl.P) val = mpl.P * 1000; // kN→N
+            else if (mpl.type === "moment" && mpl.M) val = mpl.M * 1000; // kN·m→N·m
+            if (Math.abs(val) < 1e-12) continue;
+            const beta = ((mInfo.betaAngle || 0) * Math.PI) / 180;
+            const fef = computePointMomentFEF(
+              [{ type: mpl.type as 'point' | 'moment', value: val, a: aVal, direction: mpl.direction || "global_y" }],
+              { x: nd1.x, y: nd1.y, z: nd1.z ?? 0 },
+              { x: nd2.x, y: nd2.y, z: nd2.z ?? 0 },
+              beta,
+            );
+            const existing = memberFEFMap.get(mpl.memberId);
+            if (existing) {
+              for (let k = 0; k < 6; k++) {
+                existing.forces_i[k] += fef.forces_i[k];
+                existing.forces_j[k] += fef.forces_j[k];
+              }
+            } else {
+              memberFEFMap.set(mpl.memberId, { forces_i: [...fef.forces_i], forces_j: [...fef.forces_j] });
+            }
+          }
+          if (memberFEFMap.size > 0) {
+            modelerLogger.log(
+              `[Analysis] FEF correction: ${memberFEFMap.size} member(s) have point/moment loads requiring force recovery correction`,
+            );
+          }
+          // ─── End FEF correction setup ───
+
           const membersDict: Record<string, any> = {};
           const memberForcesMap = wasmResult.member_forces;
           for (const [elemId, forces] of mapEntries(memberForcesMap)) {
@@ -1498,24 +1545,71 @@ export const ModernModeler: FC = () => {
                 myArr.push(my1 + vz1 * x - (wz * x * x) / 2);
               }
 
+              // ─── Compute local axes & solver displacements for deflection BCs ───
+              // The old code always forced y(L)=0 (simply-supported assumption).
+              // This is WRONG for cantilevers where the free end has non-zero deflection.
+              // Fix: use actual solver displacements at end nodes as boundary conditions.
+              const cx_m = ddx / L, cy_m = ddy / L, cz_m = ddz / L;
+              // Local y-axis (perpendicular to member in primary bending plane)
+              let ly_x = -cy_m, ly_y = cx_m, ly_z = 0.0; // 2D default
+              if (Math.abs(cz_m) > 0.001) {
+                // 3D member: compute via cross product with reference vector
+                const isVert = Math.abs(cx_m) < 0.01 && Math.abs(cz_m) < 0.01;
+                const refx = isVert ? 1 : 0, refy = isVert ? 0 : 1;
+                let zx = cy_m * 0 - cz_m * refy;
+                let zy = cz_m * refx - cx_m * 0;
+                let zzc = cx_m * refy - cy_m * refx;
+                const zLen = Math.sqrt(zx * zx + zy * zy + zzc * zzc) || 1;
+                zx /= zLen; zy /= zLen; zzc /= zLen;
+                ly_x = zy * cz_m - zzc * cy_m;
+                ly_y = zzc * cx_m - zx * cz_m;
+                ly_z = zx * cy_m - zy * cx_m;
+              }
+              // Local z-axis = localX × localY
+              const lz_x = cy_m * ly_z - cz_m * ly_y;
+              const lz_y = cz_m * ly_x - cx_m * ly_z;
+              const lz_z = cx_m * ly_y - cy_m * ly_x;
+
+              // Retrieve actual solver displacements at end nodes (meters)
+              const disp_nd_i = nodesDict[mInfo.startNodeId];
+              const disp_nd_j = nodesDict[mInfo.endNodeId];
+              // Local y displacement at each end (dot product with local y-axis)
+              const dy_i_loc = disp_nd_i
+                ? (ly_x * (disp_nd_i.DX ?? 0) + ly_y * (disp_nd_i.DY ?? 0) + ly_z * (disp_nd_i.DZ ?? 0))
+                : 0;
+              const dy_j_loc = disp_nd_j
+                ? (ly_x * (disp_nd_j.DX ?? 0) + ly_y * (disp_nd_j.DY ?? 0) + ly_z * (disp_nd_j.DZ ?? 0))
+                : 0;
+              // Local z displacement at each end
+              const dz_i_loc = disp_nd_i
+                ? (lz_x * (disp_nd_i.DX ?? 0) + lz_y * (disp_nd_i.DY ?? 0) + lz_z * (disp_nd_i.DZ ?? 0))
+                : 0;
+              const dz_j_loc = disp_nd_j
+                ? (lz_x * (disp_nd_j.DX ?? 0) + lz_y * (disp_nd_j.DY ?? 0) + lz_z * (disp_nd_j.DZ ?? 0))
+                : 0;
+
               // Deflection Y via double integration of Mz(x)/EIz
+              // BCs from actual solver: EI·y(x) = ∫∫M dx² + C1·x + C2
+              //   y(0) = dy_i → C2 = dy_i · EI
+              //   y(L) = dy_j → C1 = (dy_j · EI − defl(L) − C2) / L
               if (EIz > 0) {
                 const dx = L / (ST - 1);
-                const slope: number[] = [0];
+                const slopeY: number[] = [0];
                 for (let s = 1; s < ST; s++) {
                   const dArea = ((mzArr[s - 1] + mzArr[s]) / 2) * dx;
-                  slope.push(slope[s - 1] + dArea);
+                  slopeY.push(slopeY[s - 1] + dArea);
                 }
-                const defl: number[] = [0];
+                const deflY: number[] = [0];
                 for (let s = 1; s < ST; s++) {
-                  const dArea = ((slope[s - 1] + slope[s]) / 2) * dx;
-                  defl.push(defl[s - 1] + dArea);
+                  const dArea = ((slopeY[s - 1] + slopeY[s]) / 2) * dx;
+                  deflY.push(deflY[s - 1] + dArea);
                 }
-                const yL = defl[ST - 1];
-                const C1_corr = L > 1e-12 ? -yL / L : 0;
+                const C2_y = dy_i_loc * EIz;
+                const yL = deflY[ST - 1];
+                const C1_y = L > 1e-12 ? (dy_j_loc * EIz - yL - C2_y) / L : 0;
                 for (let s = 0; s < ST; s++) {
                   const x = (s / (ST - 1)) * L;
-                  const yy = (defl[s] + C1_corr * x) / EIz;
+                  const yy = (deflY[s] + C1_y * x + C2_y) / EIz;
                   dy.push(yy * 1000); // m → mm
                 }
               } else {
@@ -1523,23 +1617,25 @@ export const ModernModeler: FC = () => {
               }
 
               // Deflection Z via double integration of My(x)/EIy
+              // Same approach: use solver displacements for BCs
               if (EIy > 0) {
                 const dx = L / (ST - 1);
-                const slope: number[] = [0];
+                const slopeZ: number[] = [0];
                 for (let s = 1; s < ST; s++) {
                   const dArea = ((myArr[s - 1] + myArr[s]) / 2) * dx;
-                  slope.push(slope[s - 1] + dArea);
+                  slopeZ.push(slopeZ[s - 1] + dArea);
                 }
-                const defl: number[] = [0];
+                const deflZ: number[] = [0];
                 for (let s = 1; s < ST; s++) {
-                  const dArea = ((slope[s - 1] + slope[s]) / 2) * dx;
-                  defl.push(defl[s - 1] + dArea);
+                  const dArea = ((slopeZ[s - 1] + slopeZ[s]) / 2) * dx;
+                  deflZ.push(deflZ[s - 1] + dArea);
                 }
-                const zL = defl[ST - 1];
-                const C1_corr = L > 1e-12 ? -zL / L : 0;
+                const C2_z = dz_i_loc * EIy;
+                const zL = deflZ[ST - 1];
+                const C1_z = L > 1e-12 ? (dz_j_loc * EIy - zL - C2_z) / L : 0;
                 for (let s = 0; s < ST; s++) {
                   const x = (s / (ST - 1)) * L;
-                  const zz = (defl[s] + C1_corr * x) / EIy;
+                  const zz = (deflZ[s] + C1_z * x + C2_z) / EIy;
                   dz.push(zz * 1000); // m → mm
                 }
               } else {
@@ -1561,16 +1657,24 @@ export const ModernModeler: FC = () => {
             // Handle both 2D and 3D formats
             if (mf.forces_i && mf.forces_j) {
               // 3D format: Full member end forces [Fx, Fy, Fz, Mx, My, Mz]
-              const axV = (mf.forces_i[0] ?? 0) / 1000;
-              const syV = (mf.forces_i[1] ?? 0) / 1000;
-              const szV = (mf.forces_i[2] ?? 0) / 1000;
-              const txV = (mf.forces_i[3] ?? 0) / 1000;
-              const myV = (mf.forces_i[4] ?? 0) / 1000;
-              const mzV = (mf.forces_i[5] ?? 0) / 1000;
-              const syE = (mf.forces_j[1] ?? 0) / 1000;
-              const szE = (mf.forces_j[2] ?? 0) / 1000;
-              const myE = (mf.forces_j[4] ?? 0) / 1000;
-              const mzE = (mf.forces_j[5] ?? 0) / 1000;
+              // Apply FEF correction for point/moment loads (subtract in N before /1000)
+              const ptFEF = memberFEFMap.get(elemId);
+              const fi0 = (mf.forces_i as number[]).map((v, k) =>
+                (v ?? 0) - (ptFEF ? ptFEF.forces_i[k] : 0),
+              );
+              const fj0 = (mf.forces_j as number[]).map((v, k) =>
+                (v ?? 0) - (ptFEF ? ptFEF.forces_j[k] : 0),
+              );
+              const axV = fi0[0] / 1000;
+              const syV = fi0[1] / 1000;
+              const szV = fi0[2] / 1000;
+              const txV = fi0[3] / 1000;
+              const myV = fi0[4] / 1000;
+              const mzV = fi0[5] / 1000;
+              const syE = fj0[1] / 1000;
+              const szE = fj0[2] / 1000;
+              const myE = fj0[4] / 1000;
+              const mzE = fj0[5] / 1000;
 
               // Diagnostic: Log member end forces to help debug zero-BMD issues
               if (Object.keys(membersDict).length === 0) {
@@ -1593,8 +1697,12 @@ export const ModernModeler: FC = () => {
               // Diagnostic: Log first member's BMD sample values
               if (Object.keys(membersDict).length === 0 && diag3D) {
                 const mz = diag3D.moment_z;
+                const dfy = diag3D.deflection_y;
                 modelerLogger.log(
                   `[Analysis][Diag] BMD for ${elemId}: M(0)=${mz[0]?.toFixed(3)}, M(mid)=${mz[Math.floor(mz.length / 2)]?.toFixed(3)}, M(end)=${mz[mz.length - 1]?.toFixed(3)} kN·m`,
+                );
+                modelerLogger.log(
+                  `[Analysis][Diag] Deflection for ${elemId}: dy(0)=${dfy[0]?.toFixed(4)}, dy(mid)=${dfy[Math.floor(dfy.length / 2)]?.toFixed(4)}, dy(end)=${dfy[dfy.length - 1]?.toFixed(4)} mm`,
                 );
               } else if (Object.keys(membersDict).length === 0 && !diag3D) {
                 modelerLogger.warn(
@@ -1718,13 +1826,46 @@ export const ModernModeler: FC = () => {
             result = { success: false, error: "WASM analysis failed" };
           }
         } catch (err) {
-          // WASM failed — fall back to TypeScript solver with load conversion
+          // WASM failed — try EnhancedAnalysisEngine first, then Worker fallback
           modelerLogger.warn(
-            "[Analysis] WASM solver failed, falling back to TypeScript solver:",
+            "[Analysis] WASM solver failed, trying EnhancedAnalysisEngine:",
             err,
           );
           setAnalysisStage("assembling");
           setAnalysisProgress(35);
+
+          try {
+            const { analyzeWithEnhancedEngine } = await import(
+              "../core/engineAdapter"
+            );
+
+            const engineResult = await analyzeWithEnhancedEngine(
+              nodesArray,
+              membersArray,
+              loads,
+              memberLoads,
+              (stage, progress) => {
+                setAnalysisStage(stage as AnalysisStage);
+                setAnalysisProgress(progress);
+              },
+            );
+
+            if (engineResult.success) {
+              result = engineResult as typeof result;
+              modelerLogger.log(
+                "[Analysis] EnhancedAnalysisEngine succeeded",
+              );
+            } else {
+              throw new Error(
+                engineResult.error ?? "EnhancedAnalysisEngine failed",
+              );
+            }
+          } catch (engineErr) {
+            // Enhanced engine also failed — fall back to TS Worker
+            modelerLogger.warn(
+              "[Analysis] EnhancedAnalysisEngine failed, falling back to TypeScript Worker:",
+              engineErr,
+            );
 
           try {
             const { convertMemberLoadsToNodal, mergeNodalLoads } =
@@ -1811,9 +1952,10 @@ export const ModernModeler: FC = () => {
             );
             result = {
               success: false,
-              error: `WASM solver: ${err instanceof Error ? err.message : String(err)}\nFallback solver: ${fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr)}`,
+              error: `WASM solver: ${err instanceof Error ? err.message : String(err)}\nEnhancedEngine: ${engineErr instanceof Error ? engineErr.message : String(engineErr)}\nWorker fallback: ${fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr)}`,
             };
           }
+          } // close catch(engineErr)
         }
       }
 

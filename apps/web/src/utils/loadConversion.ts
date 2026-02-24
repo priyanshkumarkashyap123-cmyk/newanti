@@ -122,7 +122,9 @@ function calculateMemberLength(startNode: Node, endNode: Node): number {
  */
 function validateLoad(value: number, name: string): number {
     if (!isFinite(value) || isNaN(value)) {
-        console.warn(`[LoadConversion] Invalid ${name}: ${value}, using 0`);
+        if (DEBUG.logConversions) {
+            console.warn(`[LoadConversion] Invalid ${name}: ${value}, using 0`);
+        }
         return 0;
     }
     return value;
@@ -365,8 +367,8 @@ function applyDirectionalLoads(
             load.mz = validateLoad(moment, 'mz');
         } else if (isZ) {
             load.fz = validateLoad(reaction, 'fz');
-            // Moment about X for Z-direction loads (in YZ plane)
-            load.mx = validateLoad(-moment, 'mx');
+            // Moment about Y for Z-direction loads (bending in XZ plane)
+            load.my = validateLoad(-moment, 'my');
         } else {
             // Default: Y direction (gravity)
             load.fy = validateLoad(reaction, 'fy');
@@ -379,18 +381,19 @@ function applyDirectionalLoads(
 }
 
 /**
- * Convert a single UDL to equivalent nodal loads
- * 
- * For a uniformly distributed load w (kN/m) over length L:
- * - Shear reaction at each end: R = wL/2 (opposite to load direction)
- * - Fixed-End Moment at start: M1 = -wL²/12
- * - Fixed-End Moment at end: M2 = +wL²/12
- * 
+ * Convert a single UDL to equivalent nodal loads.
+ *
+ * Returns EQUIVALENT NODAL LOADS (same direction as the applied load),
+ * NOT fixed-end reactions (which would be opposite).
+ *
+ * For a uniformly distributed load w (kN/m, sign included) over length L:
+ *   F1 = wL/2,   M1 = wL²/12
+ *   F2 = wL/2,   M2 = -wL²/12
+ *
  * For partial UDL from position 'a' to 'b':
- * Uses numerical integration or closed-form solutions
- * 
- * Note: The signs follow the convention that the FEM resists the applied load.
- * For a downward UDL (w negative), the reactions are upward (positive).
+ *   Uses exact Hermite shape-function integration.
+ *
+ * Reference: Przemieniecki, "Theory of Matrix Structural Analysis", Ch. 5
  */
 function convertUDL(
     memberLoad: MemberLoad,
@@ -399,127 +402,97 @@ function convertUDL(
     endNode: Node
 ): NodalLoad[] {
     const L = calculateMemberLength(startNode, endNode);
-    if (L < LENGTH_TOL) {
-        console.warn(`[LoadConversion] Zero-length member ${member.id}`);
-        return [];
-    }
-    
-    const w = memberLoad.w1; // Load intensity (kN/m) - typically negative for gravity
-    
-    console.log(`[UDL Convert] Member ${member.id}: w=${w}, L=${L}, direction=${memberLoad.direction}`);
-    
-    if (Math.abs(w) < LOAD_TOL) {
-        console.warn(`[UDL Convert] Load too small, skipping: ${w}`);
-        return []; // No significant load
-    }
+    if (L < LENGTH_TOL) return [];
 
-    // Get load span (default full length)
+    const w = memberLoad.w1; // kN/m — negative for gravity (downward)
+    if (Math.abs(w) < LOAD_TOL) return [];
+
+    // Load span (default full length)
     const startRatio = Math.max(0, Math.min(1, memberLoad.startPos ?? 0));
-    const endRatio = Math.max(0, Math.min(1, memberLoad.endPos ?? 1));
-    
-    const a = startRatio * L;  // Start position from node i
-    const b = endRatio * L;    // End position from node i
+    const endRatio   = Math.max(0, Math.min(1, memberLoad.endPos ?? 1));
+    const a = startRatio * L;
+    const b = endRatio * L;
     const loadSpan = b - a;
-    
-    if (loadSpan <= LENGTH_TOL) {
-        console.warn(`[LoadConversion] Zero load span on member ${member.id}`);
-        return [];
-    }
+    if (loadSpan <= LENGTH_TOL) return [];
 
     let R1: number, R2: number, M1: number, M2: number;
 
     if (Math.abs(a) < LENGTH_TOL && Math.abs(b - L) < LENGTH_TOL) {
         // ========================================
-        // FULL SPAN UDL - Standard formulas
+        // FULL SPAN UDL — Standard formulas
         // ========================================
-        // Total load and reactions
-        R1 = -w * L / 2;
-        R2 = -w * L / 2;
-        
-        // Fixed-End Moments (Hibbeler Table 12-1)
-        M1 = -w * L * L / 12;
-        M2 = w * L * L / 12;
-        
-        if (DEBUG.logMoments) {
-            console.log(`[UDL Full] w=${w}, L=${L}, R1=${R1}, R2=${R2}, M1=${M1}, M2=${M2}`);
-        }
+        // Equivalent nodal loads (same direction as load):
+        R1 = w * L / 2;
+        R2 = w * L / 2;
+        M1 = w * L * L / 12;
+        M2 = -w * L * L / 12;
     } else {
         // ========================================
-        // PARTIAL SPAN UDL - Closed form solution
+        // PARTIAL SPAN UDL — Hermite shape-function integration
         // ========================================
-        // For UDL from 'a' to 'b' on fixed-fixed beam
-        // Reference: Roark's Formulas, Table 8.1
-        
-        const c = loadSpan; // Length of loaded region
-        const d = a + c / 2; // Distance to centroid from start
-        
-        // Total load
-        const P = w * c;
-        
-        // Reactions using equilibrium
-        R1 = -P * (L - d) / L;
-        R2 = -P * d / L;
-        
-        // Fixed-End Moments for partial span UDL
-        // Using superposition of differential elements
-        // M1 = -w * [b³/3L - a³/3L - b⁴/4L² + a⁴/4L² + Lb²/6 - La²/6 - b³/3 + a³/3]
-        // Simplified formula:
-        const b3 = b * b * b;
-        const a3 = a * a * a;
-        const b4 = b3 * b;
-        const a4 = a3 * a;
+        // F1 = w·∫[a,b] N1(x) dx,  M1 = w·∫[a,b] N2(x) dx
+        // F2 = w·∫[a,b] N3(x) dx,  M2 = w·∫[a,b] N4(x) dx
+        //
+        // N1(x) = 1 - 3ξ² + 2ξ³       (ξ = x/L)
+        // N2(x) = x(1 - ξ)²
+        // N3(x) = 3ξ² - 2ξ³
+        // N4(x) = (x²/L)(ξ - 1)
         const L2 = L * L;
         const L3 = L2 * L;
-        
-        // FEM using consistent derivation
-        M1 = -w * (b3 - a3) / (3 * L) + w * (b4 - a4) / (4 * L2) 
-             + w * L * (b * b - a * a) / 12 - w * (b3 - a3) / 6;
-        M2 = w * (b3 - a3) * (2 * L - a - b) / (6 * L2);
-        
-        // Simplified approximation using centroid method (more stable)
-        const M_approx = w * c * c / 12;
-        const leverRatio = d / L;
-        M1 = -M_approx * (1 + 2 * (1 - leverRatio));
-        M2 = M_approx * (1 + 2 * leverRatio);
-        
-        if (DEBUG.logMoments) {
-            console.log(`[UDL Partial] a=${a}, b=${b}, c=${c}, R1=${R1}, R2=${R2}, M1=${M1}, M2=${M2}`);
-        }
+
+        const da  = b - a;
+        const db2 = b * b - a * a;
+        const db3 = b * b * b - a * a * a;
+        const db4 = b * b * b * b - a * a * a * a;
+
+        // ∫[a,b] N1 dx = (b-a) - 3(b³-a³)/(3L²) + 2(b⁴-a⁴)/(4L³)
+        //              = da - db3/L² + db4/(2L³)
+        const intN1 = da - db3 / L2 + db4 / (2 * L3);
+
+        // ∫[a,b] N2 dx = ∫ x(1 - x/L)² dx = db2/2 - 2·db3/(3L) + db4/(4L²)
+        const intN2 = db2 / 2 - 2 * db3 / (3 * L) + db4 / (4 * L2);
+
+        // ∫[a,b] N3 dx = 3·db3/(3L²) - 2·db4/(4L³) = db3/L² - db4/(2L³)
+        const intN3 = db3 / L2 - db4 / (2 * L3);
+
+        // ∫[a,b] N4 dx = ∫ (x²/L)(x/L - 1) dx = db4/(4L²) - db3/(3L)
+        const intN4 = db4 / (4 * L2) - db3 / (3 * L);
+
+        R1 = w * intN1;
+        M1 = w * intN2;
+        R2 = w * intN3;
+        M2 = w * intN4;
     }
 
-    // Validate results
+    if (DEBUG.logMoments) {
+        console.log(`[UDL] w=${w}, L=${L}, a=${a}, b=${b}, R1=${R1}, R2=${R2}, M1=${M1}, M2=${M2}`);
+    }
+
     R1 = validateLoad(R1, 'R1');
     R2 = validateLoad(R2, 'R2');
     M1 = validateLoad(M1, 'M1');
     M2 = validateLoad(M2, 'M2');
 
-    console.log(`[UDL Convert] Calculated forces - R1=${R1}, R2=${R2}, M1=${M1}, M2=${M2}`);
-
-    // Apply loads in the correct direction (pass nodes for local transformation)
-    const loads = [
+    return [
         applyDirectionalLoads(member.startNodeId, R1, M1, memberLoad.direction, startNode, endNode),
         applyDirectionalLoads(member.endNodeId, R2, M2, memberLoad.direction, startNode, endNode)
     ];
-    
-    console.log(`[UDL Convert] Final nodal loads:`, loads);
-    
-    return loads;
 }
 
 /**
- * Convert a triangular/trapezoidal load to equivalent nodal loads
- * 
- * For a triangular load from w1 to w2 over length L:
- * Using Fixed-End Moment formulas for linearly varying load
- * 
- * Reference: Structural Analysis, Hibbeler - Table 12-1
- * Reference: Roark's Formulas for Stress and Strain
- * 
- * Cases:
- * 1. w1 = 0, w2 > 0: Ascending triangle
- * 2. w1 > 0, w2 = 0: Descending triangle  
- * 3. w1 = w2: Uniform (delegates to UDL)
- * 4. General trapezoidal: Decompose into uniform + triangle
+ * Convert a triangular/trapezoidal load to equivalent nodal loads.
+ *
+ * Decomposition: w(x) = w1 (uniform) + (w2-w1)·x/L (ascending triangle).
+ * Equivalent nodal loads (same direction as applied load):
+ *
+ * Full-span ascending triangle (0 → wT):
+ *   F1 = 3·wT·L/20,  M1 = wT·L²/30
+ *   F2 = 7·wT·L/20,  M2 = -wT·L²/20
+ *
+ * Superposition: uniform part + triangle part.
+ *
+ * Reference: Przemieniecki, "Theory of Matrix Structural Analysis", Ch. 5
+ * Reference: Roark's Formulas, Table 8.1
  */
 function convertTriangular(
     memberLoad: MemberLoad,
@@ -528,118 +501,58 @@ function convertTriangular(
     endNode: Node
 ): NodalLoad[] {
     const L = calculateMemberLength(startNode, endNode);
-    if (L < LENGTH_TOL) {
-        console.warn(`[LoadConversion] Zero-length member ${member.id}`);
-        return [];
-    }
-    
-    const w1 = memberLoad.w1; // Load at start
-    const w2 = memberLoad.w2 ?? memberLoad.w1; // Load at end
-    
-    // Check for zero load
-    if (Math.abs(w1) < LOAD_TOL && Math.abs(w2) < LOAD_TOL) {
-        return [];
-    }
-    
-    // If uniform, delegate to UDL
+    if (L < LENGTH_TOL) return [];
+
+    const w1 = memberLoad.w1;
+    const w2 = memberLoad.w2 ?? memberLoad.w1;
+
+    if (Math.abs(w1) < LOAD_TOL && Math.abs(w2) < LOAD_TOL) return [];
+
+    // If uniform, delegate
     if (Math.abs(w1 - w2) < LOAD_TOL) {
         return convertUDL(memberLoad, member, startNode, endNode);
     }
 
     let R1: number, R2: number, M1: number, M2: number;
-    
-    // Total load: Area of trapezoid
-    const totalLoad = (w1 + w2) * L / 2;
-    
-    // Centroid of trapezoidal load from start
-    // For trapezoid: x_bar = L * (w1 + 2*w2) / (3 * (w1 + w2))
-    let centroid: number;
-    if (Math.abs(w1 + w2) < EPSILON) {
-        centroid = L / 2;
-    } else {
-        centroid = L * (w1 + 2 * w2) / (3 * (w1 + w2));
-    }
-    
-    // Reactions (opposite to load direction)
-    R1 = -totalLoad * (L - centroid) / L;
-    R2 = -totalLoad - R1;
-    
-    // ========================================
-    // Fixed-End Moments Calculation
-    // ========================================
-    
-    if (Math.abs(w1) < LOAD_TOL) {
-        // ----------------------------------------
-        // Case 1: Ascending triangle (0 to w2)
-        // ----------------------------------------
-        // FEM formulas from Roark's Table 8.1 (linearly increasing):
-        // For load increasing from 0 at i to w at j on fixed-fixed beam:
-        // M_i = -wL²/30 (fixed-end moment at start)
-        // M_j = +wL²/20 (fixed-end moment at end)
-        // Reactions: R1 = 3wL/20, R2 = 7wL/20
-        M1 = -w2 * L * L / 30;
-        M2 = w2 * L * L / 20;
-        
-        if (DEBUG.logMoments) {
-            console.log(`[Triangle Ascending] w2=${w2}, L=${L}, M1=${M1}, M2=${M2}`);
-        }
-    } else if (Math.abs(w2) < LOAD_TOL) {
-        // ----------------------------------------
-        // Case 2: Descending triangle (w1 to 0)
-        // ----------------------------------------
-        // FEM formulas (mirror of ascending - load decreasing from w at i to 0 at j):
-        // For load decreasing from w at i to 0 at j on fixed-fixed beam:
-        // M_i = -wL²/20 (fixed-end moment at start)
-        // M_j = +wL²/30 (fixed-end moment at end)
-        // Reactions: R1 = 7wL/20, R2 = 3wL/20
-        M1 = -w1 * L * L / 20;
-        M2 = w1 * L * L / 30;
-        
-        if (DEBUG.logMoments) {
-            console.log(`[Triangle Descending] w1=${w1}, L=${L}, M1=${M1}, M2=${M2}`);
-        }
-    } else {
-        // ----------------------------------------
-        // Case 3: General Trapezoidal
-        // ----------------------------------------
-        // Decompose into uniform + triangle using superposition
-        
-        const wMin = Math.min(w1, w2);
-        const wDelta = w2 - w1; // Can be positive or negative
-        
-        // Uniform part contribution
-        const M1_uniform = -wMin * L * L / 12;
-        const M2_uniform = wMin * L * L / 12;
-        
-        // Triangular part contribution
-        // Using corrected Roark's formulas for linearly varying loads
-        let M1_tri: number, M2_tri: number;
-        
-        if (wDelta > 0) {
-            // Ascending triangle (0 to wDelta): M1 = -wL²/30, M2 = +wL²/20
-            M1_tri = -wDelta * L * L / 30;
-            M2_tri = wDelta * L * L / 20;
-        } else {
-            // Descending triangle (|wDelta| to 0): M1 = -wL²/20, M2 = +wL²/30
-            M1_tri = -Math.abs(wDelta) * L * L / 20;
-            M2_tri = Math.abs(wDelta) * L * L / 30;
-        }
-        
-        M1 = M1_uniform + M1_tri;
-        M2 = M2_uniform + M2_tri;
-        
-        if (DEBUG.logMoments) {
-            console.log(`[Trapezoidal] w1=${w1}, w2=${w2}, M1_u=${M1_uniform}, M1_t=${M1_tri}, M1=${M1}`);
-        }
+
+    // Decompose: w(x) = wU (uniform) + wT·x/L (ascending triangle from 0 to wT)
+    const wU = w1;
+    const wT = w2 - w1;
+
+    // ---- Uniform part: F1=wU·L/2, M1=wU·L²/12, F2=wU·L/2, M2=-wU·L²/12 ----
+    let R1_u = 0, R2_u = 0, M1_u = 0, M2_u = 0;
+    if (Math.abs(wU) > LOAD_TOL) {
+        R1_u = wU * L / 2;
+        R2_u = wU * L / 2;
+        M1_u = wU * L * L / 12;
+        M2_u = -wU * L * L / 12;
     }
 
-    // Validate results
+    // ---- Triangle part: ascending from 0 to wT ----
+    // F1 = 3·wT·L/20,  M1 = wT·L²/30
+    // F2 = 7·wT·L/20,  M2 = -wT·L²/20
+    let R1_t = 0, R2_t = 0, M1_t = 0, M2_t = 0;
+    if (Math.abs(wT) > LOAD_TOL) {
+        R1_t = 3 * wT * L / 20;
+        R2_t = 7 * wT * L / 20;
+        M1_t = wT * L * L / 30;
+        M2_t = -wT * L * L / 20;
+    }
+
+    R1 = R1_u + R1_t;
+    R2 = R2_u + R2_t;
+    M1 = M1_u + M1_t;
+    M2 = M2_u + M2_t;
+
+    if (DEBUG.logMoments) {
+        console.log(`[Triangular] w1=${w1}, w2=${w2}, R1=${R1}, R2=${R2}, M1=${M1}, M2=${M2}`);
+    }
+
     R1 = validateLoad(R1, 'R1');
     R2 = validateLoad(R2, 'R2');
     M1 = validateLoad(M1, 'M1');
     M2 = validateLoad(M2, 'M2');
 
-    // Apply loads in the correct direction (pass nodes for local transformation)
     return [
         applyDirectionalLoads(member.startNodeId, R1, M1, memberLoad.direction, startNode, endNode),
         applyDirectionalLoads(member.endNodeId, R2, M2, memberLoad.direction, startNode, endNode)
@@ -647,15 +560,13 @@ function convertTriangular(
 }
 
 /**
- * Convert a point load on member to equivalent nodal loads
- * 
- * For a concentrated load P at distance 'a' from start (b = L - a):
- * - R1 = P * b / L  (reaction at start, opposite to P)
- * - R2 = P * a / L  (reaction at end, opposite to P)
- * - M1 = -P * a * b² / L²  (FEM at start)
- * - M2 = +P * a² * b / L²  (FEM at end)
- * 
- * Reference: Hibbeler Structural Analysis, Table 12-1
+ * Convert a point load on a member to equivalent nodal loads.
+ *
+ * Equivalent nodal loads for P at distance 'a' from start (b = L-a):
+ *   F1 = P·b²·(3a+b) / L³,   M1 = P·a·b² / L²
+ *   F2 = P·a²·(a+3b) / L³,   M2 = -P·a²·b / L²
+ *
+ * Reference: Przemieniecki Ch. 5, Hibbeler Table 12-1
  */
 function convertPointLoad(
     memberLoad: MemberLoad,
@@ -664,49 +575,34 @@ function convertPointLoad(
     endNode: Node
 ): NodalLoad[] {
     const L = calculateMemberLength(startNode, endNode);
-    if (L < LENGTH_TOL) {
-        console.warn(`[LoadConversion] Zero-length member ${member.id}`);
-        return [];
-    }
-    
-    const P = memberLoad.w1; // Point load magnitude (kN)
-    
-    if (Math.abs(P) < LOAD_TOL) {
-        return []; // No significant load
-    }
-    
-    // Clamp position to valid range
-    const pos = Math.max(0, Math.min(1, memberLoad.startPos ?? 0.5));
-    
-    const a = pos * L; // Distance from start
-    const b = L - a;   // Distance from end
-    
-    // Validate distances
-    if (a < 0 || b < 0) {
-        console.warn(`[LoadConversion] Invalid point load position on member ${member.id}`);
-        return [];
-    }
-    
-    // Reactions (opposite to load)
-    let R1 = -P * b / L;
-    let R2 = -P * a / L;
-    
-    // Fixed-End Moments
-    // These resist the rotation caused by the point load
-    let M1 = -P * a * b * b / (L * L);
-    let M2 = P * a * a * b / (L * L);
+    if (L < LENGTH_TOL) return [];
 
-    // Validate results
+    const P = memberLoad.w1; // kN (sign included)
+    if (Math.abs(P) < LOAD_TOL) return [];
+
+    const pos = Math.max(0, Math.min(1, memberLoad.startPos ?? 0.5));
+    const a = pos * L;
+    const b = L - a;
+    if (a < 0 || b < 0) return [];
+
+    const L2 = L * L;
+    const L3 = L2 * L;
+
+    // Equivalent nodal loads (same direction as P)
+    let R1 = P * b * b * (3 * a + b) / L3;
+    let R2 = P * a * a * (a + 3 * b) / L3;
+    let M1 = P * a * b * b / L2;
+    let M2 = -P * a * a * b / L2;
+
     R1 = validateLoad(R1, 'R1');
     R2 = validateLoad(R2, 'R2');
     M1 = validateLoad(M1, 'M1');
     M2 = validateLoad(M2, 'M2');
-    
+
     if (DEBUG.logMoments) {
-        console.log(`[Point Load] P=${P}, a=${a}, b=${b}, R1=${R1}, R2=${R2}, M1=${M1}, M2=${M2}`);
+        console.log(`[Point] P=${P}, a=${a}, b=${b}, R1=${R1}, R2=${R2}, M1=${M1}, M2=${M2}`);
     }
 
-    // Apply loads in the correct direction (pass nodes for local transformation)
     return [
         applyDirectionalLoads(member.startNodeId, R1, M1, memberLoad.direction, startNode, endNode),
         applyDirectionalLoads(member.endNodeId, R2, M2, memberLoad.direction, startNode, endNode)
@@ -714,15 +610,19 @@ function convertPointLoad(
 }
 
 /**
- * Convert a concentrated moment on member to equivalent nodal loads
- * 
- * For a moment M0 applied at distance 'a' from start (b = L - a):
- * - R1 = -6 * M0 * a * b / L³  (creates a couple)
- * - R2 = +6 * M0 * a * b / L³
- * - M1 = M0 * b * (b - 2a) / L²
- * - M2 = M0 * a * (a - 2b) / L²
- * 
- * Reference: Roark's Formulas for Stress and Strain
+ * Convert a concentrated moment on a member to equivalent nodal loads.
+ *
+ * Derived from Hermite shape function derivatives at position x=a:
+ *   F1 = M₀·N₁'(a) = -6·M₀·a·b / L³
+ *   M1 = M₀·N₂'(a) =  M₀·b·(b-2a) / L²
+ *   F2 = M₀·N₃'(a) =  6·M₀·a·b / L³
+ *   M2 = M₀·N₄'(a) =  M₀·a·(a-2b) / L²
+ *
+ * Note: Unlike force loads (UDL, point), concentrated moments do NOT need
+ * a sign flip between "reactions" and "equivalent nodal loads" — the Hermite
+ * derivatives give the correct ENLs directly.
+ *
+ * Reference: Przemieniecki Ch. 5, Roark's Table 8.1
  */
 function convertMomentLoad(
     memberLoad: MemberLoad,
@@ -731,41 +631,32 @@ function convertMomentLoad(
     endNode: Node
 ): NodalLoad[] {
     const L = calculateMemberLength(startNode, endNode);
-    if (L < LENGTH_TOL) {
-        return [];
-    }
-    
-    const M0 = memberLoad.w1; // Applied moment (kN·m)
-    
-    if (Math.abs(M0) < LOAD_TOL) {
-        return [];
-    }
-    
+    if (L < LENGTH_TOL) return [];
+
+    const M0 = memberLoad.w1; // kN·m (sign included)
+    if (Math.abs(M0) < LOAD_TOL) return [];
+
     const pos = Math.max(0, Math.min(1, memberLoad.startPos ?? 0.5));
     const a = pos * L;
     const b = L - a;
     const L2 = L * L;
     const L3 = L2 * L;
-    
-    // Reactions (shear forces that create equilibrium)
+
+    // Equivalent nodal loads (Hermite N' derivatives)
     let R1 = -6 * M0 * a * b / L3;
     let R2 = 6 * M0 * a * b / L3;
-    
-    // Fixed-End Moments
     let M1 = M0 * b * (b - 2 * a) / L2;
     let M2 = M0 * a * (a - 2 * b) / L2;
-    
-    // Validate
+
     R1 = validateLoad(R1, 'R1');
     R2 = validateLoad(R2, 'R2');
     M1 = validateLoad(M1, 'M1');
     M2 = validateLoad(M2, 'M2');
-    
+
     if (DEBUG.logMoments) {
-        console.log(`[Moment Load] M0=${M0}, a=${a}, R1=${R1}, R2=${R2}, M1=${M1}, M2=${M2}`);
+        console.log(`[Moment] M0=${M0}, a=${a}, R1=${R1}, R2=${R2}, M1=${M1}, M2=${M2}`);
     }
-    
-    // Apply loads in the correct direction (pass nodes for local transformation)
+
     return [
         applyDirectionalLoads(member.startNodeId, R1, M1, memberLoad.direction, startNode, endNode),
         applyDirectionalLoads(member.endNodeId, R2, M2, memberLoad.direction, startNode, endNode)
@@ -893,7 +784,6 @@ export function convertMemberLoadsToNodalLegacy(
     nodes: Node[]
 ): NodalLoad[] {
     const result = convertMemberLoadsToNodal(memberLoads, members, nodes);
-    console.log(`[LoadConversion] Converted ${result.summary.convertedLoads}/${result.summary.totalMemberLoads} member loads`);
     return result.nodalLoads;
 }
 
