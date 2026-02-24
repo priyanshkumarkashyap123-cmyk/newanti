@@ -73,11 +73,11 @@ export interface Element {
   Iz?: number; // Moment of Inertia Z (m^4)
   J?: number; // Torsional constant (m^4)
   // Plate element fields (4-node shell: DKQ/Mindlin)
-  element_type?: 'Frame' | 'Truss' | 'Cable' | 'Plate';
+  element_type?: "Frame" | "Truss" | "Cable" | "Plate";
   thickness?: number; // Plate thickness (m)
-  node_k?: string;    // 3rd node (plates)
-  node_l?: string;    // 4th node (plates)
-  nu?: number;        // Poisson's ratio (plates, default 0.3)
+  node_k?: string; // 3rd node (plates)
+  node_l?: string; // 4th node (plates)
+  nu?: number; // Poisson's ratio (plates, default 0.3)
 }
 
 export interface PointLoad {
@@ -130,6 +130,7 @@ export interface AnalysisResult {
   displacements: DisplacementMap; // HashMap from Rust
   reactions: ReactionMap; // HashMap from Rust
   member_forces: MemberForcesMap; // HashMap from Rust
+  plate_results?: any; // HashMap<String, PlateStressResult> from Rust
   success: boolean;
   error?: string;
   stats?: {
@@ -278,12 +279,15 @@ export async function analyzeStructure(
     const displacements = jsMapToPlainObject(result.displacements);
     const reactions = jsMapToPlainObject(result.reactions);
     const member_forces = jsMapToPlainObject(result.member_forces);
-    
+
     // Extract equilibrium check (may be Map or plain object)
     const rawEqCheck = result.equilibrium_check;
-    const equilibrium_check = rawEqCheck instanceof Map 
-      ? Object.fromEntries(rawEqCheck) as AnalysisResult['equilibrium_check']
-      : rawEqCheck ?? undefined;
+    const equilibrium_check =
+      rawEqCheck instanceof Map
+        ? (Object.fromEntries(
+            rawEqCheck,
+          ) as AnalysisResult["equilibrium_check"])
+        : (rawEqCheck ?? undefined);
     const condition_number = result.condition_number ?? undefined;
 
     wasmLogger.debug("Displacements count:", Object.keys(displacements).length);
