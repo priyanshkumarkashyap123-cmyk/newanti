@@ -102,6 +102,9 @@ export interface MemberResult {
     moment_values: number[];
     axial_values: number[];
     deflection_values: number[];
+    shear_z_values?: number[];
+    moment_y_values?: number[];
+    deflection_z_values?: number[];
   };
 }
 
@@ -131,13 +134,13 @@ export interface AnalysisResultsData {
   serviceabilityChecks?: Array<{
     memberId: string;
     length: number;
-    maxDeflection: number;  // mm
+    maxDeflection: number; // mm
     ratios: Array<{
       limit: string;
       code: string;
-      allowable: number;   // mm
-      actual: number;       // mm
-      ratio: number;        // L/actual
+      allowable: number; // mm
+      actual: number; // mm
+      ratio: number; // L/actual
       pass: boolean;
     }>;
     worstRatio: number;
@@ -154,7 +157,7 @@ type ViewMode =
   | "dcRatio"
   | "loadCombos"
   | "stability";
-type DiagramType = "SFD" | "BMD" | "AFD" | "DEFLECTION";
+type DiagramType = "SFD" | "BMD" | "AFD" | "DEFLECTION" | "BMD_MY" | "SFD_VZ";
 
 interface AnalysisResultsDashboardProps {
   results: AnalysisResultsData;
@@ -306,11 +309,46 @@ interface MemberDiagramMiniProps {
   onClick: () => void;
 }
 
-const DIAGRAM_COLORS: Record<DiagramType, { line: string; fill: string; fillNeg: string; label: string }> = {
-  SFD: { line: '#f97316', fill: 'rgba(249,115,22,0.25)', fillNeg: 'rgba(59,130,246,0.25)', label: 'Shear (kN)' },
-  BMD: { line: '#22c55e', fill: 'rgba(34,197,94,0.25)', fillNeg: 'rgba(239,68,68,0.25)', label: 'Moment (kNm)' },
-  AFD: { line: '#ef4444', fill: 'rgba(239,68,68,0.25)', fillNeg: 'rgba(59,130,246,0.25)', label: 'Axial (kN)' },
-  DEFLECTION: { line: '#3b82f6', fill: 'rgba(59,130,246,0.25)', fillNeg: 'rgba(59,130,246,0.15)', label: 'Defl. (mm)' },
+const DIAGRAM_COLORS: Record<
+  DiagramType,
+  { line: string; fill: string; fillNeg: string; label: string }
+> = {
+  SFD: {
+    line: "#f97316",
+    fill: "rgba(249,115,22,0.25)",
+    fillNeg: "rgba(59,130,246,0.25)",
+    label: "Shear Vy (kN)",
+  },
+  BMD: {
+    line: "#22c55e",
+    fill: "rgba(34,197,94,0.25)",
+    fillNeg: "rgba(239,68,68,0.25)",
+    label: "Moment Mz (kNm)",
+  },
+  AFD: {
+    line: "#ef4444",
+    fill: "rgba(239,68,68,0.25)",
+    fillNeg: "rgba(59,130,246,0.25)",
+    label: "Axial (kN)",
+  },
+  DEFLECTION: {
+    line: "#3b82f6",
+    fill: "rgba(59,130,246,0.25)",
+    fillNeg: "rgba(59,130,246,0.15)",
+    label: "Defl. (mm)",
+  },
+  BMD_MY: {
+    line: "#14b8a6",
+    fill: "rgba(20,184,166,0.25)",
+    fillNeg: "rgba(239,68,68,0.25)",
+    label: "Moment My (kNm)",
+  },
+  SFD_VZ: {
+    line: "#0891b2",
+    fill: "rgba(8,145,178,0.25)",
+    fillNeg: "rgba(59,130,246,0.25)",
+    label: "Shear Vz (kN)",
+  },
 };
 
 const MemberDiagramMini: FC<MemberDiagramMiniProps> = ({
@@ -340,12 +378,26 @@ const MemberDiagramMini: FC<MemberDiagramMiniProps> = ({
 
     ctx.clearRect(0, 0, W, H);
 
-    let values: number[];
+    let values: number[] = [];
     switch (type) {
-      case "SFD": values = member.diagramData.shear_values; break;
-      case "BMD": values = member.diagramData.moment_values; break;
-      case "AFD": values = member.diagramData.axial_values; break;
-      case "DEFLECTION": values = member.diagramData.deflection_values; break;
+      case "SFD":
+        values = member.diagramData.shear_values;
+        break;
+      case "BMD":
+        values = member.diagramData.moment_values;
+        break;
+      case "AFD":
+        values = member.diagramData.axial_values;
+        break;
+      case "DEFLECTION":
+        values = member.diagramData.deflection_values;
+        break;
+      case "BMD_MY":
+        values = member.diagramData.moment_y_values ?? [];
+        break;
+      case "SFD_VZ":
+        values = member.diagramData.shear_z_values ?? [];
+        break;
     }
     if (!values || values.length === 0) return;
 
@@ -355,12 +407,12 @@ const MemberDiagramMini: FC<MemberDiagramMiniProps> = ({
     const plotH = H - pad.top - pad.bottom;
 
     const maxVal = Math.max(...values.map(Math.abs), 1e-10);
-    const minIdx = values.reduce((mi, v, i) => v < values[mi] ? i : mi, 0);
-    const maxValIdx = values.reduce((mi, v, i) => v > values[mi] ? i : mi, 0);
+    const minIdx = values.reduce((mi, v, i) => (v < values[mi] ? i : mi), 0);
+    const maxValIdx = values.reduce((mi, v, i) => (v > values[mi] ? i : mi), 0);
 
     // Determine baseline position (0 line)
-    const allPos = values.every(v => v >= -1e-10);
-    const allNeg = values.every(v => v <= 1e-10);
+    const allPos = values.every((v) => v >= -1e-10);
+    const allNeg = values.every((v) => v <= 1e-10);
 
     // Proper scaling: map value to y coordinate
     const vMax = Math.max(...values);
@@ -370,7 +422,7 @@ const MemberDiagramMini: FC<MemberDiagramMiniProps> = ({
     const toX = (i: number) => pad.left + (i / (values.length - 1)) * plotW;
 
     // Grid lines (2 horizontal)
-    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.strokeStyle = "rgba(255,255,255,0.06)";
     ctx.lineWidth = 0.5;
     for (let g = 0; g <= 2; g++) {
       const gy = pad.top + (g / 2) * plotH;
@@ -381,8 +433,9 @@ const MemberDiagramMini: FC<MemberDiagramMiniProps> = ({
     }
 
     // Zero baseline
-    const zeroY = vMax > 0 && vMin < 0 ? toY(0) : (allNeg ? pad.top : pad.top + plotH);
-    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    const zeroY =
+      vMax > 0 && vMin < 0 ? toY(0) : allNeg ? pad.top : pad.top + plotH;
+    ctx.strokeStyle = "rgba(255,255,255,0.2)";
     ctx.lineWidth = 0.8;
     ctx.setLineDash([3, 2]);
     ctx.beginPath();
@@ -402,8 +455,8 @@ const MemberDiagramMini: FC<MemberDiagramMiniProps> = ({
     if (vMax > 0 && vMin < 0) {
       const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + plotH);
       grad.addColorStop(0, colors.fill);
-      grad.addColorStop((vMax / range), colors.fill);
-      grad.addColorStop((vMax / range), colors.fillNeg);
+      grad.addColorStop(vMax / range, colors.fill);
+      grad.addColorStop(vMax / range, colors.fillNeg);
       grad.addColorStop(1, colors.fillNeg);
       ctx.fillStyle = grad;
     } else {
@@ -424,10 +477,13 @@ const MemberDiagramMini: FC<MemberDiagramMiniProps> = ({
     ctx.stroke();
 
     // Peak value annotations
-    ctx.font = '600 9px Inter, system-ui, sans-serif';
-    
+    ctx.font = "600 9px Inter, system-ui, sans-serif";
+
     // Mark the absolute max point
-    const peakIdx = Math.abs(values[maxValIdx]) >= Math.abs(values[minIdx]) ? maxValIdx : minIdx;
+    const peakIdx =
+      Math.abs(values[maxValIdx]) >= Math.abs(values[minIdx])
+        ? maxValIdx
+        : minIdx;
     const peakVal = values[peakIdx];
     const px = toX(peakIdx);
     const py = toY(peakVal);
@@ -437,7 +493,7 @@ const MemberDiagramMini: FC<MemberDiagramMiniProps> = ({
     ctx.beginPath();
     ctx.arc(px, py, 3, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = "#fff";
     ctx.beginPath();
     ctx.arc(px, py, 1.5, 0, Math.PI * 2);
     ctx.fill();
@@ -445,19 +501,26 @@ const MemberDiagramMini: FC<MemberDiagramMiniProps> = ({
     // Peak label with background
     const peakText = formatEngineering(peakVal);
     const textW = ctx.measureText(peakText).width;
-    const labelX = Math.min(Math.max(px - textW / 2, pad.left), W - pad.right - textW - 4);
+    const labelX = Math.min(
+      Math.max(px - textW / 2, pad.left),
+      W - pad.right - textW - 4,
+    );
     const labelY = py < pad.top + plotH / 2 ? py - 6 : py + 12;
-    
-    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+
+    ctx.fillStyle = "rgba(0,0,0,0.7)";
     ctx.beginPath();
     ctx.roundRect(labelX - 2, labelY - 9, textW + 4, 12, 2);
     ctx.fill();
     ctx.fillStyle = colors.line;
-    ctx.textAlign = 'left';
+    ctx.textAlign = "left";
     ctx.fillText(peakText, labelX, labelY);
 
     // If min is significantly different from max, show it too
-    if (Math.abs(values[minIdx]) > 0.1 * maxVal && minIdx !== peakIdx && Math.abs(minIdx - peakIdx) > values.length * 0.15) {
+    if (
+      Math.abs(values[minIdx]) > 0.1 * maxVal &&
+      minIdx !== peakIdx &&
+      Math.abs(minIdx - peakIdx) > values.length * 0.15
+    ) {
       const mv = values[minIdx];
       const mx = toX(minIdx);
       const my = toY(mv);
@@ -465,28 +528,30 @@ const MemberDiagramMini: FC<MemberDiagramMiniProps> = ({
       ctx.beginPath();
       ctx.arc(mx, my, 2, 0, Math.PI * 2);
       ctx.fill();
-      
+
       const minText = formatEngineering(mv);
       const minTW = ctx.measureText(minText).width;
-      const mlX = Math.min(Math.max(mx - minTW / 2, pad.left), W - pad.right - minTW - 4);
+      const mlX = Math.min(
+        Math.max(mx - minTW / 2, pad.left),
+        W - pad.right - minTW - 4,
+      );
       const mlY = my > pad.top + plotH / 2 ? my + 12 : my - 6;
-      
-      ctx.fillStyle = 'rgba(0,0,0,0.7)';
+
+      ctx.fillStyle = "rgba(0,0,0,0.7)";
       ctx.beginPath();
       ctx.roundRect(mlX - 2, mlY - 9, minTW + 4, 12, 2);
       ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      ctx.fillStyle = "rgba(255,255,255,0.6)";
       ctx.fillText(minText, mlX, mlY);
     }
 
     // X-axis: start/end position labels
-    ctx.fillStyle = 'rgba(255,255,255,0.3)';
-    ctx.font = '8px Inter, system-ui, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('0', pad.left, H - 2);
-    ctx.textAlign = 'right';
+    ctx.fillStyle = "rgba(255,255,255,0.3)";
+    ctx.font = "8px Inter, system-ui, sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("0", pad.left, H - 2);
+    ctx.textAlign = "right";
     ctx.fillText(`${member.length.toFixed(1)}m`, W - pad.right, H - 2);
-
   }, [member, type, isSelected]);
 
   const colors = DIAGRAM_COLORS[type];
@@ -494,14 +559,29 @@ const MemberDiagramMini: FC<MemberDiagramMiniProps> = ({
     if (!member.diagramData) return 0;
     let vals: number[];
     switch (type) {
-      case 'SFD': vals = member.diagramData.shear_values; break;
-      case 'BMD': vals = member.diagramData.moment_values; break;
-      case 'AFD': vals = member.diagramData.axial_values; break;
-      case 'DEFLECTION': vals = member.diagramData.deflection_values; break;
-      default: vals = [];
+      case "SFD":
+        vals = member.diagramData.shear_values;
+        break;
+      case "BMD":
+        vals = member.diagramData.moment_values;
+        break;
+      case "AFD":
+        vals = member.diagramData.axial_values;
+        break;
+      case "DEFLECTION":
+        vals = member.diagramData.deflection_values;
+        break;
+      case "BMD_MY":
+        vals = member.diagramData.moment_y_values ?? [];
+        break;
+      case "SFD_VZ":
+        vals = member.diagramData.shear_z_values ?? [];
+        break;
+      default:
+        vals = [];
     }
     if (!vals || vals.length === 0) return 0;
-    return vals.reduce((m, v) => Math.abs(v) > Math.abs(m) ? v : m, 0);
+    return vals.reduce((m, v) => (Math.abs(v) > Math.abs(m) ? v : m), 0);
   })();
 
   return (
@@ -509,27 +589,36 @@ const MemberDiagramMini: FC<MemberDiagramMiniProps> = ({
       onClick={onClick}
       className={`
         relative p-3 rounded-lg border cursor-pointer transition-all hover:scale-[1.01] group
-        ${isSelected
-          ? "border-blue-500 bg-blue-500/10 ring-1 ring-blue-500/30"
-          : "border-zinc-700 hover:border-zinc-500 bg-zinc-800/50"
+        ${
+          isSelected
+            ? "border-blue-500 bg-blue-500/10 ring-1 ring-blue-500/30"
+            : "border-zinc-700 hover:border-zinc-500 bg-zinc-800/50"
         }
       `}
     >
       <div className="flex items-center justify-between mb-1.5">
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-white">M{member.id}</span>
-          <span className="text-[10px] text-zinc-500">{member.sectionType || ''}</span>
+          <span className="text-[10px] text-zinc-500">
+            {member.sectionType || ""}
+          </span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-mono text-zinc-400" style={{ color: colors.line }}>
+          <span
+            className="text-[10px] font-mono text-zinc-400"
+            style={{ color: colors.line }}
+          >
             {colors.label}
           </span>
           <span
             className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
-              member.utilization <= 0.7 ? "bg-green-500/20 text-green-400"
-              : member.utilization <= 0.9 ? "bg-yellow-500/20 text-yellow-400"
-              : member.utilization <= 1.0 ? "bg-orange-500/20 text-orange-400"
-              : "bg-red-500/20 text-red-400"
+              member.utilization <= 0.7
+                ? "bg-green-500/20 text-green-400"
+                : member.utilization <= 0.9
+                  ? "bg-yellow-500/20 text-yellow-400"
+                  : member.utilization <= 1.0
+                    ? "bg-orange-500/20 text-orange-400"
+                    : "bg-red-500/20 text-red-400"
             }`}
           >
             {(member.utilization * 100).toFixed(0)}%
@@ -540,15 +629,22 @@ const MemberDiagramMini: FC<MemberDiagramMiniProps> = ({
       <canvas
         ref={canvasRef}
         className="w-full rounded bg-zinc-900/80"
-        style={{ height: '90px' }}
+        style={{ height: "90px" }}
       />
 
       <div className="flex justify-between mt-1.5 text-[10px]">
         <span className="text-zinc-500">
-          Peak: <span className="font-mono text-zinc-300">{formatEngineering(peakVal)}</span>
+          Peak:{" "}
+          <span className="font-mono text-zinc-300">
+            {formatEngineering(peakVal)}
+          </span>
         </span>
         <span className="text-zinc-500">
-          L = <span className="font-mono text-zinc-300">{member.length.toFixed(2)}</span>m
+          L ={" "}
+          <span className="font-mono text-zinc-300">
+            {member.length.toFixed(2)}
+          </span>
+          m
         </span>
       </div>
     </div>
@@ -570,312 +666,420 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
     BMD: React.useRef<HTMLCanvasElement>(null),
     AFD: React.useRef<HTMLCanvasElement>(null),
     DEFLECTION: React.useRef<HTMLCanvasElement>(null),
+    BMD_MY: React.useRef<HTMLCanvasElement>(null),
+    SFD_VZ: React.useRef<HTMLCanvasElement>(null),
   };
   const overlayRefs = {
     SFD: React.useRef<HTMLCanvasElement>(null),
     BMD: React.useRef<HTMLCanvasElement>(null),
     AFD: React.useRef<HTMLCanvasElement>(null),
     DEFLECTION: React.useRef<HTMLCanvasElement>(null),
+    BMD_MY: React.useRef<HTMLCanvasElement>(null),
+    SFD_VZ: React.useRef<HTMLCanvasElement>(null),
   };
   // Store diagram geometry for each type so hover can compute values
-  const diagramMeta = React.useRef<Record<string, {
-    values: number[];
-    xVals: number[];
-    pad: { top: number; right: number; bottom: number; left: number };
-    plotW: number;
-    plotH: number;
-    W: number;
-    H: number;
-    vMax: number;
-    vMin: number;
-    range: number;
-    length: number;
-    colors: typeof DIAGRAM_COLORS[DiagramType];
-  }>>({});
+  const diagramMeta = React.useRef<
+    Record<
+      string,
+      {
+        values: number[];
+        xVals: number[];
+        pad: { top: number; right: number; bottom: number; left: number };
+        plotW: number;
+        plotH: number;
+        W: number;
+        H: number;
+        vMax: number;
+        vMin: number;
+        range: number;
+        length: number;
+        colors: (typeof DIAGRAM_COLORS)[DiagramType];
+      }
+    >
+  >({});
 
-  const handleCanvasMouseMove = React.useCallback((type: DiagramType, e: React.MouseEvent<HTMLCanvasElement>) => {
-    const overlay = overlayRefs[type].current;
-    const meta = diagramMeta.current[type];
-    if (!overlay || !meta) return;
-    const rect = overlay.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-    const dpr = window.devicePixelRatio || 1;
-    const ctx = overlay.getContext('2d');
-    if (!ctx) return;
-    ctx.clearRect(0, 0, overlay.width, overlay.height);
-    ctx.scale(dpr, dpr);
+  const handleCanvasMouseMove = React.useCallback(
+    (type: DiagramType, e: React.MouseEvent<HTMLCanvasElement>) => {
+      const overlay = overlayRefs[type].current;
+      const meta = diagramMeta.current[type];
+      if (!overlay || !meta) return;
+      const rect = overlay.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      const dpr = window.devicePixelRatio || 1;
+      const ctx = overlay.getContext("2d");
+      if (!ctx) return;
+      ctx.clearRect(0, 0, overlay.width, overlay.height);
+      ctx.scale(dpr, dpr);
 
-    const { pad, plotW, plotH, values, xVals, W, H, vMax, vMin, range, length: mLen, colors } = meta;
-    // Only draw if within plot area
-    if (mx < pad.left || mx > pad.left + plotW || my < pad.top || my > pad.top + plotH) {
+      const {
+        pad,
+        plotW,
+        plotH,
+        values,
+        xVals,
+        W,
+        H,
+        vMax,
+        vMin,
+        range,
+        length: mLen,
+        colors,
+      } = meta;
+      // Only draw if within plot area
+      if (
+        mx < pad.left ||
+        mx > pad.left + plotW ||
+        my < pad.top ||
+        my > pad.top + plotH
+      ) {
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        return;
+      }
+
+      // Compute closest data index
+      const frac = (mx - pad.left) / plotW;
+      const idx = Math.min(
+        Math.max(Math.round(frac * (values.length - 1)), 0),
+        values.length - 1,
+      );
+      const val = values[idx];
+      const pos = xVals[idx] ?? (idx / (values.length - 1)) * mLen;
+      const toY = (v: number) => pad.top + plotH * (1 - (v - vMin) / range);
+      const toX = (i: number) => pad.left + (i / (values.length - 1)) * plotW;
+      const cx = toX(idx);
+      const cy = toY(val);
+
+      // Crosshair lines
+      ctx.setLineDash([3, 2]);
+      ctx.strokeStyle = "rgba(255,255,255,0.4)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(cx, pad.top);
+      ctx.lineTo(cx, pad.top + plotH);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(pad.left, cy);
+      ctx.lineTo(pad.left + plotW, cy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Dot on curve
+      ctx.fillStyle = colors.line;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#000";
+      ctx.beginPath();
+      ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Tooltip box
+      const text = `${formatEngineering(val)} @ ${pos.toFixed(2)}m`;
+      ctx.font = "600 10px Inter, system-ui, sans-serif";
+      const tw = ctx.measureText(text).width;
+      let lx = cx + 10;
+      let ly = cy - 10;
+      if (lx + tw + 10 > W - pad.right) lx = cx - tw - 16;
+      if (ly - 14 < pad.top) ly = cy + 20;
+
+      ctx.fillStyle = "rgba(0,0,0,0.9)";
+      ctx.beginPath();
+      ctx.roundRect(lx - 4, ly - 12, tw + 8, 17, 3);
+      ctx.fill();
+      ctx.strokeStyle = colors.line;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.fillStyle = "#fff";
+      ctx.textAlign = "left";
+      ctx.fillText(text, lx, ly);
+
       ctx.setTransform(1, 0, 0, 1, 0, 0);
-      return;
-    }
-
-    // Compute closest data index
-    const frac = (mx - pad.left) / plotW;
-    const idx = Math.min(Math.max(Math.round(frac * (values.length - 1)), 0), values.length - 1);
-    const val = values[idx];
-    const pos = xVals[idx] ?? (idx / (values.length - 1)) * mLen;
-    const toY = (v: number) => pad.top + plotH * (1 - (v - vMin) / range);
-    const toX = (i: number) => pad.left + (i / (values.length - 1)) * plotW;
-    const cx = toX(idx);
-    const cy = toY(val);
-
-    // Crosshair lines
-    ctx.setLineDash([3, 2]);
-    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(cx, pad.top);
-    ctx.lineTo(cx, pad.top + plotH);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(pad.left, cy);
-    ctx.lineTo(pad.left + plotW, cy);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Dot on curve
-    ctx.fillStyle = colors.line;
-    ctx.beginPath();
-    ctx.arc(cx, cy, 5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#000';
-    ctx.beginPath();
-    ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Tooltip box
-    const text = `${formatEngineering(val)} @ ${pos.toFixed(2)}m`;
-    ctx.font = '600 10px Inter, system-ui, sans-serif';
-    const tw = ctx.measureText(text).width;
-    let lx = cx + 10;
-    let ly = cy - 10;
-    if (lx + tw + 10 > W - pad.right) lx = cx - tw - 16;
-    if (ly - 14 < pad.top) ly = cy + 20;
-
-    ctx.fillStyle = 'rgba(0,0,0,0.9)';
-    ctx.beginPath();
-    ctx.roundRect(lx - 4, ly - 12, tw + 8, 17, 3);
-    ctx.fill();
-    ctx.strokeStyle = colors.line;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-    ctx.fillStyle = '#fff';
-    ctx.textAlign = 'left';
-    ctx.fillText(text, lx, ly);
-
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-  }, []);
+    },
+    [],
+  );
 
   const handleCanvasMouseLeave = React.useCallback((type: DiagramType) => {
     const overlay = overlayRefs[type].current;
     if (!overlay) return;
-    const ctx = overlay.getContext('2d');
+    const ctx = overlay.getContext("2d");
     if (ctx) ctx.clearRect(0, 0, overlay.width, overlay.height);
   }, []);
 
-  const drawDiagram = React.useCallback((
-    canvas: HTMLCanvasElement | null,
-    values: number[],
-    xVals: number[],
-    type: DiagramType,
-    length: number
-  ) => {
-    if (!canvas || !values || values.length === 0) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+  const drawDiagram = React.useCallback(
+    (
+      canvas: HTMLCanvasElement | null,
+      values: number[],
+      xVals: number[],
+      type: DiagramType,
+      length: number,
+    ) => {
+      if (!canvas || !values || values.length === 0) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
 
-    const dpr = window.devicePixelRatio || 1;
-    const W = canvas.clientWidth;
-    const H = 160;
-    canvas.width = W * dpr;
-    canvas.height = H * dpr;
-    canvas.style.height = `${H}px`;
-    ctx.scale(dpr, dpr);
-    ctx.clearRect(0, 0, W, H);
+      const dpr = window.devicePixelRatio || 1;
+      const W = canvas.clientWidth;
+      const H = 160;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      canvas.style.height = `${H}px`;
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, W, H);
 
-    // Also size the overlay canvas to match
-    const overlay = overlayRefs[type].current;
-    if (overlay) {
-      overlay.width = W * dpr;
-      overlay.height = H * dpr;
-      overlay.style.height = `${H}px`;
-    }
+      // Also size the overlay canvas to match
+      const overlay = overlayRefs[type].current;
+      if (overlay) {
+        overlay.width = W * dpr;
+        overlay.height = H * dpr;
+        overlay.style.height = `${H}px`;
+      }
 
-    const colors = DIAGRAM_COLORS[type];
-    const pad = { top: 20, right: 55, bottom: 28, left: 55 };
-    const plotW = W - pad.left - pad.right;
-    const plotH = H - pad.top - pad.bottom;
+      const colors = DIAGRAM_COLORS[type];
+      const pad = { top: 20, right: 55, bottom: 28, left: 55 };
+      const plotW = W - pad.left - pad.right;
+      const plotH = H - pad.top - pad.bottom;
 
-    const vMax = Math.max(...values);
-    const vMin = Math.min(...values);
-    const range = Math.max(vMax - vMin, 1e-10);
-    const toY = (v: number) => pad.top + plotH * (1 - (v - vMin) / range);
-    const toX = (i: number) => pad.left + (i / (values.length - 1)) * plotW;
+      const vMax = Math.max(...values);
+      const vMin = Math.min(...values);
+      const range = Math.max(vMax - vMin, 1e-10);
+      const toY = (v: number) => pad.top + plotH * (1 - (v - vMin) / range);
+      const toX = (i: number) => pad.left + (i / (values.length - 1)) * plotW;
 
-    // Store metadata for hover crosshair
-    diagramMeta.current[type] = { values, xVals, pad, plotW, plotH, W, H, vMax, vMin, range, length, colors };
+      // Store metadata for hover crosshair
+      diagramMeta.current[type] = {
+        values,
+        xVals,
+        pad,
+        plotW,
+        plotH,
+        W,
+        H,
+        vMax,
+        vMin,
+        range,
+        length,
+        colors,
+      };
 
-    // Grid
-    const nGridY = 4;
-    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-    ctx.lineWidth = 0.5;
-    ctx.font = '9px Inter, system-ui, sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      // Grid
+      const nGridY = 4;
+      ctx.strokeStyle = "rgba(255,255,255,0.06)";
+      ctx.lineWidth = 0.5;
+      ctx.font = "9px Inter, system-ui, sans-serif";
+      ctx.fillStyle = "rgba(255,255,255,0.35)";
 
-    for (let g = 0; g <= nGridY; g++) {
-      const gy = pad.top + (g / nGridY) * plotH;
-      const gv = vMax - (g / nGridY) * range;
+      for (let g = 0; g <= nGridY; g++) {
+        const gy = pad.top + (g / nGridY) * plotH;
+        const gv = vMax - (g / nGridY) * range;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, gy);
+        ctx.lineTo(pad.left + plotW, gy);
+        ctx.stroke();
+        // Y-axis label
+        ctx.textAlign = "right";
+        ctx.fillText(formatNumber(gv), pad.left - 4, gy + 3);
+      }
+
+      // X-axis ticks
+      const nGridX = Math.min(Math.round(length), 8);
+      for (let g = 0; g <= nGridX; g++) {
+        const gx = pad.left + (g / nGridX) * plotW;
+        ctx.beginPath();
+        ctx.moveTo(gx, pad.top);
+        ctx.lineTo(gx, pad.top + plotH);
+        ctx.stroke();
+        ctx.textAlign = "center";
+        ctx.fillText(
+          ((g / nGridX) * length).toFixed(1),
+          gx,
+          H - pad.bottom + 14,
+        );
+      }
+
+      // Axis labels
+      ctx.fillStyle = "rgba(255,255,255,0.4)";
+      ctx.font = "8px Inter, system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Position (m)", pad.left + plotW / 2, H - 2);
+
+      ctx.save();
+      ctx.translate(10, pad.top + plotH / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText(colors.label, 0, 0);
+      ctx.restore();
+
+      // Zero baseline
+      if (vMax > 0 && vMin < 0) {
+        const zy = toY(0);
+        ctx.strokeStyle = "rgba(255,255,255,0.25)";
+        ctx.lineWidth = 0.8;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.moveTo(pad.left, zy);
+        ctx.lineTo(pad.left + plotW, zy);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Fill
+      const zy =
+        vMax > 0 && vMin < 0 ? toY(0) : vMin >= 0 ? pad.top + plotH : pad.top;
       ctx.beginPath();
-      ctx.moveTo(pad.left, gy);
-      ctx.lineTo(pad.left + plotW, gy);
-      ctx.stroke();
-      // Y-axis label
-      ctx.textAlign = 'right';
-      ctx.fillText(formatNumber(gv), pad.left - 4, gy + 3);
-    }
-
-    // X-axis ticks
-    const nGridX = Math.min(Math.round(length), 8);
-    for (let g = 0; g <= nGridX; g++) {
-      const gx = pad.left + (g / nGridX) * plotW;
-      ctx.beginPath();
-      ctx.moveTo(gx, pad.top);
-      ctx.lineTo(gx, pad.top + plotH);
-      ctx.stroke();
-      ctx.textAlign = 'center';
-      ctx.fillText(((g / nGridX) * length).toFixed(1), gx, H - pad.bottom + 14);
-    }
-
-    // Axis labels
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
-    ctx.font = '8px Inter, system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Position (m)', pad.left + plotW / 2, H - 2);
-    
-    ctx.save();
-    ctx.translate(10, pad.top + plotH / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillText(colors.label, 0, 0);
-    ctx.restore();
-
-    // Zero baseline
-    if (vMax > 0 && vMin < 0) {
-      const zy = toY(0);
-      ctx.strokeStyle = 'rgba(255,255,255,0.25)';
-      ctx.lineWidth = 0.8;
-      ctx.setLineDash([4, 3]);
-      ctx.beginPath();
-      ctx.moveTo(pad.left, zy);
-      ctx.lineTo(pad.left + plotW, zy);
-      ctx.stroke();
-      ctx.setLineDash([]);
-    }
-
-    // Fill
-    const zy = vMax > 0 && vMin < 0 ? toY(0) : (vMin >= 0 ? pad.top + plotH : pad.top);
-    ctx.beginPath();
-    ctx.moveTo(toX(0), zy);
-    values.forEach((v, i) => ctx.lineTo(toX(i), toY(v)));
-    ctx.lineTo(toX(values.length - 1), zy);
-    ctx.closePath();
-    if (vMax > 0 && vMin < 0) {
-      const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + plotH);
-      grad.addColorStop(0, colors.fill);
-      grad.addColorStop(vMax / range, colors.fill);
-      grad.addColorStop(vMax / range, colors.fillNeg);
-      grad.addColorStop(1, colors.fillNeg);
-      ctx.fillStyle = grad;
-    } else {
-      ctx.fillStyle = colors.fill;
-    }
-    ctx.fill();
-
-    // Line
-    ctx.beginPath();
-    ctx.strokeStyle = colors.line;
-    ctx.lineWidth = 2;
-    values.forEach((v, i) => {
-      if (i === 0) ctx.moveTo(toX(i), toY(v));
-      else ctx.lineTo(toX(i), toY(v));
-    });
-    ctx.stroke();
-
-    // Find peaks
-    let maxI = 0, minI = 0;
-    values.forEach((v, i) => {
-      if (v > values[maxI]) maxI = i;
-      if (v < values[minI]) minI = i;
-    });
-
-    // Annotate max
-    const drawAnnotation = (idx: number, color: string) => {
-      const v = values[idx];
-      const x = toX(idx);
-      const y = toY(v);
-      const pos = xVals[idx] ?? (idx / (values.length - 1)) * length;
-
-      // Marker
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.arc(x, y, 4, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#000';
-      ctx.beginPath();
-      ctx.arc(x, y, 2, 0, Math.PI * 2);
+      ctx.moveTo(toX(0), zy);
+      values.forEach((v, i) => ctx.lineTo(toX(i), toY(v)));
+      ctx.lineTo(toX(values.length - 1), zy);
+      ctx.closePath();
+      if (vMax > 0 && vMin < 0) {
+        const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + plotH);
+        grad.addColorStop(0, colors.fill);
+        grad.addColorStop(vMax / range, colors.fill);
+        grad.addColorStop(vMax / range, colors.fillNeg);
+        grad.addColorStop(1, colors.fillNeg);
+        ctx.fillStyle = grad;
+      } else {
+        ctx.fillStyle = colors.fill;
+      }
       ctx.fill();
 
-      // Label
-      const text = `${formatEngineering(v)} @ ${pos.toFixed(2)}m`;
-      ctx.font = '600 10px Inter, system-ui, sans-serif';
-      const tw = ctx.measureText(text).width;
-      const lx = Math.min(Math.max(x - tw / 2, pad.left + 2), W - pad.right - tw - 2);
-      const ly = y < pad.top + plotH / 2 ? y - 8 : y + 16;
-
-      ctx.fillStyle = 'rgba(0,0,0,0.8)';
+      // Line
       ctx.beginPath();
-      ctx.roundRect(lx - 3, ly - 11, tw + 6, 15, 3);
-      ctx.fill();
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 0.8;
+      ctx.strokeStyle = colors.line;
+      ctx.lineWidth = 2;
+      values.forEach((v, i) => {
+        if (i === 0) ctx.moveTo(toX(i), toY(v));
+        else ctx.lineTo(toX(i), toY(v));
+      });
       ctx.stroke();
-      ctx.fillStyle = color;
-      ctx.textAlign = 'left';
-      ctx.fillText(text, lx, ly);
-    };
 
-    drawAnnotation(maxI, colors.line);
-    if (maxI !== minI && Math.abs(values[minI]) > 0.05 * Math.max(Math.abs(vMax), Math.abs(vMin))) {
-      drawAnnotation(minI, 'rgba(255,255,255,0.7)');
-    }
+      // Find peaks
+      let maxI = 0,
+        minI = 0;
+      values.forEach((v, i) => {
+        if (v > values[maxI]) maxI = i;
+        if (v < values[minI]) minI = i;
+      });
 
-    // Border
-    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(pad.left, pad.top, plotW, plotH);
+      // Annotate max
+      const drawAnnotation = (idx: number, color: string) => {
+        const v = values[idx];
+        const x = toX(idx);
+        const y = toY(v);
+        const pos = xVals[idx] ?? (idx / (values.length - 1)) * length;
 
-  }, []);
+        // Marker
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#000";
+        ctx.beginPath();
+        ctx.arc(x, y, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Label
+        const text = `${formatEngineering(v)} @ ${pos.toFixed(2)}m`;
+        ctx.font = "600 10px Inter, system-ui, sans-serif";
+        const tw = ctx.measureText(text).width;
+        const lx = Math.min(
+          Math.max(x - tw / 2, pad.left + 2),
+          W - pad.right - tw - 2,
+        );
+        const ly = y < pad.top + plotH / 2 ? y - 8 : y + 16;
+
+        ctx.fillStyle = "rgba(0,0,0,0.8)";
+        ctx.beginPath();
+        ctx.roundRect(lx - 3, ly - 11, tw + 6, 15, 3);
+        ctx.fill();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.textAlign = "left";
+        ctx.fillText(text, lx, ly);
+      };
+
+      drawAnnotation(maxI, colors.line);
+      if (
+        maxI !== minI &&
+        Math.abs(values[minI]) > 0.05 * Math.max(Math.abs(vMax), Math.abs(vMin))
+      ) {
+        drawAnnotation(minI, "rgba(255,255,255,0.7)");
+      }
+
+      // Border
+      ctx.strokeStyle = "rgba(255,255,255,0.08)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(pad.left, pad.top, plotW, plotH);
+    },
+    [],
+  );
 
   React.useEffect(() => {
     if (!member.diagramData) return;
     const d = member.diagramData;
-    drawDiagram(canvasRefs.SFD.current, d.shear_values, d.x_values, 'SFD', member.length);
-    drawDiagram(canvasRefs.BMD.current, d.moment_values, d.x_values, 'BMD', member.length);
-    drawDiagram(canvasRefs.AFD.current, d.axial_values, d.x_values, 'AFD', member.length);
-    drawDiagram(canvasRefs.DEFLECTION.current, d.deflection_values, d.x_values, 'DEFLECTION', member.length);
+    drawDiagram(
+      canvasRefs.SFD.current,
+      d.shear_values,
+      d.x_values,
+      "SFD",
+      member.length,
+    );
+    drawDiagram(
+      canvasRefs.BMD.current,
+      d.moment_values,
+      d.x_values,
+      "BMD",
+      member.length,
+    );
+    drawDiagram(
+      canvasRefs.AFD.current,
+      d.axial_values,
+      d.x_values,
+      "AFD",
+      member.length,
+    );
+    drawDiagram(
+      canvasRefs.DEFLECTION.current,
+      d.deflection_values,
+      d.x_values,
+      "DEFLECTION",
+      member.length,
+    );
+    if (d.moment_y_values && d.moment_y_values.length > 0) {
+      drawDiagram(
+        canvasRefs.BMD_MY.current,
+        d.moment_y_values,
+        d.x_values,
+        "BMD_MY",
+        member.length,
+      );
+    }
+    if (d.shear_z_values && d.shear_z_values.length > 0) {
+      drawDiagram(
+        canvasRefs.SFD_VZ.current,
+        d.shear_z_values,
+        d.x_values,
+        "SFD_VZ",
+        member.length,
+      );
+    }
   }, [member, drawDiagram]);
 
-  type ForceKey = 'maxShear' | 'maxMoment' | 'maxAxial' | 'maxDeflection' | 'torsion' | 'stress';
+  type ForceKey =
+    | "maxShear"
+    | "maxMoment"
+    | "maxAxial"
+    | "maxDeflection"
+    | "torsion"
+    | "stress";
   const stats: { label: string; key: ForceKey; unit: string }[] = [
-    { label: 'V_max', key: 'maxShear', unit: 'kN' },
-    { label: 'M_max', key: 'maxMoment', unit: 'kNm' },
-    { label: 'N_max', key: 'maxAxial', unit: 'kN' },
-    { label: 'δ_max', key: 'maxDeflection', unit: 'mm' },
-    { label: 'T', key: 'torsion', unit: 'kNm' },
-    { label: 'σ', key: 'stress', unit: 'MPa' },
+    { label: "V_max", key: "maxShear", unit: "kN" },
+    { label: "M_max", key: "maxMoment", unit: "kNm" },
+    { label: "N_max", key: "maxAxial", unit: "kN" },
+    { label: "δ_max", key: "maxDeflection", unit: "mm" },
+    { label: "T", key: "torsion", unit: "kNm" },
+    { label: "σ", key: "stress", unit: "MPa" },
   ];
 
   return (
@@ -883,20 +1087,34 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          <h3 className="text-base font-bold text-white">Member M{member.id}</h3>
-          <span className="text-xs text-zinc-400">{member.sectionType || 'General'}</span>
-          <span className="text-xs font-mono text-zinc-400">L = {member.length.toFixed(3)} m</span>
+          <h3 className="text-base font-bold text-white">
+            Member M{member.id}
+          </h3>
+          <span className="text-xs text-zinc-400">
+            {member.sectionType || "General"}
+          </span>
+          <span className="text-xs font-mono text-zinc-400">
+            L = {member.length.toFixed(3)} m
+          </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`text-xs px-2 py-1 rounded font-medium ${
-            member.utilization <= 0.7 ? "bg-green-500/20 text-green-400"
-            : member.utilization <= 0.9 ? "bg-yellow-500/20 text-yellow-400"
-            : member.utilization <= 1.0 ? "bg-orange-500/20 text-orange-400"
-            : "bg-red-500/20 text-red-400"
-          }`}>
+          <span
+            className={`text-xs px-2 py-1 rounded font-medium ${
+              member.utilization <= 0.7
+                ? "bg-green-500/20 text-green-400"
+                : member.utilization <= 0.9
+                  ? "bg-yellow-500/20 text-yellow-400"
+                  : member.utilization <= 1.0
+                    ? "bg-orange-500/20 text-orange-400"
+                    : "bg-red-500/20 text-red-400"
+            }`}
+          >
             D/C: {(member.utilization * 100).toFixed(1)}%
           </span>
-          <button onClick={onClose} className="p-1 rounded hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors">
+          <button
+            onClick={onClose}
+            className="p-1 rounded hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
+          >
             <XCircle className="w-4 h-4" />
           </button>
         </div>
@@ -905,31 +1123,40 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
       {/* Force summary strip */}
       <div className="grid grid-cols-6 gap-2 mb-3">
         {stats.map((s) => (
-          <div key={s.label} className="bg-zinc-900/80 rounded-lg p-2 text-center">
+          <div
+            key={s.label}
+            className="bg-zinc-900/80 rounded-lg p-2 text-center"
+          >
             <div className="text-[10px] text-zinc-500">{s.label}</div>
-            <div className="text-sm font-mono font-bold text-white">{formatEngineering((member[s.key] as number) ?? 0)}</div>
+            <div className="text-sm font-mono font-bold text-white">
+              {formatEngineering((member[s.key] as number) ?? 0)}
+            </div>
             <div className="text-[10px] text-zinc-500">{s.unit}</div>
           </div>
         ))}
       </div>
 
-      {/* 2x2 diagram grid */}
+      {/* 2x2 diagram grid (primary: XY-plane) */}
       <div className="grid grid-cols-2 gap-3">
-        {(['SFD', 'BMD', 'AFD', 'DEFLECTION'] as DiagramType[]).map((dt) => (
+        {(["SFD", "BMD", "AFD", "DEFLECTION"] as DiagramType[]).map((dt) => (
           <div key={dt} className="bg-zinc-900/60 rounded-lg p-2">
-            <div className="text-[10px] font-medium mb-1" style={{ color: DIAGRAM_COLORS[dt].line }}>
-              {dt === 'DEFLECTION' ? 'Deflection' : dt} — {DIAGRAM_COLORS[dt].label}
+            <div
+              className="text-[10px] font-medium mb-1"
+              style={{ color: DIAGRAM_COLORS[dt].line }}
+            >
+              {dt === "DEFLECTION" ? "Deflection" : dt} —{" "}
+              {DIAGRAM_COLORS[dt].label}
             </div>
-            <div className="relative" style={{ height: '160px' }}>
+            <div className="relative" style={{ height: "160px" }}>
               <canvas
                 ref={canvasRefs[dt]}
                 className="w-full rounded absolute inset-0"
-                style={{ height: '160px' }}
+                style={{ height: "160px" }}
               />
               <canvas
                 ref={overlayRefs[dt]}
                 className="w-full rounded absolute inset-0 cursor-crosshair"
-                style={{ height: '160px' }}
+                style={{ height: "160px" }}
                 onMouseMove={(e) => handleCanvasMouseMove(dt, e)}
                 onMouseLeave={() => handleCanvasMouseLeave(dt)}
               />
@@ -937,6 +1164,45 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
           </div>
         ))}
       </div>
+
+      {/* Weak-axis diagrams (XZ-plane) — shown only when data exists */}
+      {member.diagramData &&
+        (member.diagramData.moment_y_values?.some((v) => Math.abs(v) > 1e-10) ||
+          member.diagramData.shear_z_values?.some(
+            (v) => Math.abs(v) > 1e-10,
+          )) && (
+          <>
+            <div className="text-[10px] font-medium text-zinc-400 mt-3 mb-1">
+              Weak-Axis (XZ Plane)
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {(["SFD_VZ", "BMD_MY"] as DiagramType[]).map((dt) => (
+                <div key={dt} className="bg-zinc-900/60 rounded-lg p-2">
+                  <div
+                    className="text-[10px] font-medium mb-1"
+                    style={{ color: DIAGRAM_COLORS[dt].line }}
+                  >
+                    {DIAGRAM_COLORS[dt].label}
+                  </div>
+                  <div className="relative" style={{ height: "160px" }}>
+                    <canvas
+                      ref={canvasRefs[dt]}
+                      className="w-full rounded absolute inset-0"
+                      style={{ height: "160px" }}
+                    />
+                    <canvas
+                      ref={overlayRefs[dt]}
+                      className="w-full rounded absolute inset-0 cursor-crosshair"
+                      style={{ height: "160px" }}
+                      onMouseMove={(e) => handleCanvasMouseMove(dt, e)}
+                      onMouseLeave={() => handleCanvasMouseLeave(dt)}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
     </div>
   );
 };
@@ -1370,20 +1636,25 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
   const filteredMembers = useMemo(() => {
     if (!memberSearch.trim()) return members;
     const q = memberSearch.toLowerCase();
-    return members.filter(m =>
-      m.id.toLowerCase().includes(q) ||
-      (m.sectionType || '').toLowerCase().includes(q)
+    return members.filter(
+      (m) =>
+        m.id.toLowerCase().includes(q) ||
+        (m.sectionType || "").toLowerCase().includes(q),
     );
   }, [members, memberSearch]);
 
   // Selected member object
-  const selectedMember = useMemo(() =>
-    selectedMemberId ? members.find(m => m.id === selectedMemberId) ?? null : null,
-  [members, selectedMemberId]);
+  const selectedMember = useMemo(
+    () =>
+      selectedMemberId
+        ? (members.find((m) => m.id === selectedMemberId) ?? null)
+        : null,
+    [members, selectedMemberId],
+  );
 
   const handleMemberSelect = useCallback(
     (memberId: string) => {
-      setSelectedMemberId(prev => prev === memberId ? null : memberId);
+      setSelectedMemberId((prev) => (prev === memberId ? null : memberId));
       onMemberSelect?.(memberId);
     },
     [onMemberSelect],
@@ -1552,18 +1823,32 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                 {members.length > MEMBERS_PER_PAGE && (
                   <div className="flex items-center gap-2 text-xs text-zinc-400">
                     <button
-                      onClick={() => setOverviewPage(p => Math.max(0, p - 1))}
+                      onClick={() => setOverviewPage((p) => Math.max(0, p - 1))}
                       disabled={overviewPage === 0}
                       className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 disabled:opacity-30 transition-colors"
                     >
                       ‹ Prev
                     </button>
                     <span className="font-mono">
-                      {overviewPage * MEMBERS_PER_PAGE + 1}–{Math.min((overviewPage + 1) * MEMBERS_PER_PAGE, members.length)} of {members.length}
+                      {overviewPage * MEMBERS_PER_PAGE + 1}–
+                      {Math.min(
+                        (overviewPage + 1) * MEMBERS_PER_PAGE,
+                        members.length,
+                      )}{" "}
+                      of {members.length}
                     </span>
                     <button
-                      onClick={() => setOverviewPage(p => Math.min(Math.ceil(members.length / MEMBERS_PER_PAGE) - 1, p + 1))}
-                      disabled={(overviewPage + 1) * MEMBERS_PER_PAGE >= members.length}
+                      onClick={() =>
+                        setOverviewPage((p) =>
+                          Math.min(
+                            Math.ceil(members.length / MEMBERS_PER_PAGE) - 1,
+                            p + 1,
+                          ),
+                        )
+                      }
+                      disabled={
+                        (overviewPage + 1) * MEMBERS_PER_PAGE >= members.length
+                      }
                       className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 disabled:opacity-30 transition-colors"
                     >
                       Next ›
@@ -1572,15 +1857,20 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                 )}
               </div>
               <div className="grid grid-cols-3 gap-3 max-h-[420px] overflow-y-auto">
-                {members.slice(overviewPage * MEMBERS_PER_PAGE, (overviewPage + 1) * MEMBERS_PER_PAGE).map((member) => (
-                  <MemberDiagramMini
-                    key={member.id}
-                    member={member}
-                    type="BMD"
-                    isSelected={selectedMemberId === member.id}
-                    onClick={() => handleMemberSelect(member.id)}
-                  />
-                ))}
+                {members
+                  .slice(
+                    overviewPage * MEMBERS_PER_PAGE,
+                    (overviewPage + 1) * MEMBERS_PER_PAGE,
+                  )
+                  .map((member) => (
+                    <MemberDiagramMini
+                      key={member.id}
+                      member={member}
+                      type="BMD"
+                      isSelected={selectedMemberId === member.id}
+                      onClick={() => handleMemberSelect(member.id)}
+                    />
+                  ))}
               </div>
             </div>
 
@@ -1748,31 +2038,53 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                     )}
                     Equilibrium Verification
                   </h3>
-                  <span className={`text-xs px-2 py-1 rounded font-mono ${
-                    results.equilibriumCheck.pass 
-                      ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                      : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                  }`}>
-                    Error: {results.equilibriumCheck.error_percent < 0.001 
-                      ? '< 0.001' 
-                      : results.equilibriumCheck.error_percent.toFixed(4)}%
-                    {results.equilibriumCheck.pass ? ' — PASS' : ' — FAIL'}
+                  <span
+                    className={`text-xs px-2 py-1 rounded font-mono ${
+                      results.equilibriumCheck.pass
+                        ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                        : "bg-red-500/20 text-red-400 border border-red-500/30"
+                    }`}
+                  >
+                    Error:{" "}
+                    {results.equilibriumCheck.error_percent < 0.001
+                      ? "< 0.001"
+                      : results.equilibriumCheck.error_percent.toFixed(4)}
+                    %{results.equilibriumCheck.pass ? " — PASS" : " — FAIL"}
                   </span>
                 </div>
                 <div className="grid grid-cols-6 gap-2 text-xs">
-                  {['Fx', 'Fy', 'Fz', 'Mx', 'My', 'Mz'].map((label, i) => {
-                    const applied = (results.equilibriumCheck!.applied_forces[i] ?? 0) / 1000; // N→kN
-                    const reaction = (results.equilibriumCheck!.reaction_forces[i] ?? 0) / 1000;
-                    const residual = (results.equilibriumCheck!.residual[i] ?? 0) / 1000;
-                    const unit = i < 3 ? 'kN' : 'kNm';
+                  {["Fx", "Fy", "Fz", "Mx", "My", "Mz"].map((label, i) => {
+                    const applied =
+                      (results.equilibriumCheck!.applied_forces[i] ?? 0) / 1000; // N→kN
+                    const reaction =
+                      (results.equilibriumCheck!.reaction_forces[i] ?? 0) /
+                      1000;
+                    const residual =
+                      (results.equilibriumCheck!.residual[i] ?? 0) / 1000;
+                    const unit = i < 3 ? "kN" : "kNm";
                     return (
-                      <div key={label} className="bg-zinc-900 rounded p-2 text-center">
-                        <div className="text-zinc-500 text-[10px] mb-1">Σ{label}</div>
-                        <div className="font-mono text-zinc-300">{formatNumber(applied)} {unit}</div>
-                        <div className="text-zinc-500 text-[10px] mt-1">Reaction</div>
-                        <div className="font-mono text-zinc-400">{formatNumber(-reaction)} {unit}</div>
-                        <div className="text-zinc-500 text-[10px] mt-1">Residual</div>
-                        <div className={`font-mono ${Math.abs(residual) < 0.01 ? 'text-green-400' : 'text-red-400'}`}>
+                      <div
+                        key={label}
+                        className="bg-zinc-900 rounded p-2 text-center"
+                      >
+                        <div className="text-zinc-500 text-[10px] mb-1">
+                          Σ{label}
+                        </div>
+                        <div className="font-mono text-zinc-300">
+                          {formatNumber(applied)} {unit}
+                        </div>
+                        <div className="text-zinc-500 text-[10px] mt-1">
+                          Reaction
+                        </div>
+                        <div className="font-mono text-zinc-400">
+                          {formatNumber(-reaction)} {unit}
+                        </div>
+                        <div className="text-zinc-500 text-[10px] mt-1">
+                          Residual
+                        </div>
+                        <div
+                          className={`font-mono ${Math.abs(residual) < 0.01 ? "text-green-400" : "text-red-400"}`}
+                        >
                           {formatNumber(residual)} {unit}
                         </div>
                       </div>
@@ -1783,10 +2095,11 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                   <div className="mt-3 flex items-center gap-2 text-xs text-yellow-400 bg-yellow-500/10 border border-yellow-500/20 rounded-lg px-3 py-2">
                     <AlertTriangle className="w-3 h-3 flex-shrink-0" />
                     <span>
-                      Condition number: {results.conditionNumber.toExponential(1)} — 
-                      {results.conditionNumber > 1e12 
-                        ? ' Structure may be ill-conditioned. Check for mechanism or very different stiffnesses.' 
-                        : ' Moderate conditioning. Results should be verified.'}
+                      Condition number:{" "}
+                      {results.conditionNumber.toExponential(1)} —
+                      {results.conditionNumber > 1e12
+                        ? " Structure may be ill-conditioned. Check for mechanism or very different stiffnesses."
+                        : " Moderate conditioning. Results should be verified."}
                     </span>
                   </div>
                 )}
@@ -1794,87 +2107,142 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
             )}
 
             {/* ===== SERVICEABILITY CHECKS (Industry Standard) ===== */}
-            {results.serviceabilityChecks && results.serviceabilityChecks.length > 0 && (
-              <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-medium text-zinc-300 uppercase tracking-wide flex items-center gap-2">
-                    {results.serviceabilityChecks.every(c => c.pass) ? (
-                      <CheckCircle className="w-4 h-4 text-green-400" />
-                    ) : (
-                      <AlertTriangle className="w-4 h-4 text-yellow-400" />
-                    )}
-                    Serviceability — Deflection Limits
-                  </h3>
-                  <span className={`text-xs px-2 py-1 rounded ${
-                    results.serviceabilityChecks.every(c => c.pass)
-                      ? 'bg-green-500/20 text-green-400' 
-                      : 'bg-yellow-500/20 text-yellow-400'
-                  }`}>
-                    {results.serviceabilityChecks.filter(c => c.pass).length}/{results.serviceabilityChecks.length} members OK
-                  </span>
-                </div>
-                <div className="overflow-x-auto max-h-[200px] overflow-y-auto">
-                  <table className="w-full text-xs">
-                    <thead className="sticky top-0 bg-zinc-900">
-                      <tr className="border-b border-zinc-700">
-                        <th className="px-2 py-1.5 text-left text-zinc-400">Member</th>
-                        <th className="px-2 py-1.5 text-right text-zinc-400">L (m)</th>
-                        <th className="px-2 py-1.5 text-right text-zinc-400">δ_max (mm)</th>
-                        <th className="px-2 py-1.5 text-right text-zinc-400">L/δ</th>
-                        <th className="px-2 py-1.5 text-center text-zinc-400">L/240</th>
-                        <th className="px-2 py-1.5 text-center text-zinc-400">L/360</th>
-                        <th className="px-2 py-1.5 text-center text-zinc-400">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {results.serviceabilityChecks
-                        .sort((a, b) => a.worstRatio - b.worstRatio)
-                        .slice(0, 20)
-                        .map((check) => {
-                          const l240 = check.ratios.find(r => r.limit.includes('L/240'));
-                          const l360 = check.ratios.find(r => r.limit.includes('L/360'));
-                          return (
-                            <tr key={check.memberId} className="border-b border-zinc-800 hover:bg-zinc-800/50">
-                              <td className="px-2 py-1 font-medium text-white">M{check.memberId}</td>
-                              <td className="px-2 py-1 text-right font-mono text-zinc-300">{check.length.toFixed(2)}</td>
-                              <td className="px-2 py-1 text-right font-mono text-zinc-300">{check.maxDeflection.toFixed(3)}</td>
-                              <td className="px-2 py-1 text-right font-mono text-zinc-300">
-                                {check.worstRatio === Infinity ? '∞' : `L/${Math.round(check.worstRatio)}`}
-                              </td>
-                              <td className="px-2 py-1 text-center">
-                                {l240 ? (
-                                  <span className={l240.pass ? 'text-green-400' : 'text-red-400'}>
-                                    {l240.pass ? '✓' : '✗'}
+            {results.serviceabilityChecks &&
+              results.serviceabilityChecks.length > 0 && (
+                <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-medium text-zinc-300 uppercase tracking-wide flex items-center gap-2">
+                      {results.serviceabilityChecks.every((c) => c.pass) ? (
+                        <CheckCircle className="w-4 h-4 text-green-400" />
+                      ) : (
+                        <AlertTriangle className="w-4 h-4 text-yellow-400" />
+                      )}
+                      Serviceability — Deflection Limits
+                    </h3>
+                    <span
+                      className={`text-xs px-2 py-1 rounded ${
+                        results.serviceabilityChecks.every((c) => c.pass)
+                          ? "bg-green-500/20 text-green-400"
+                          : "bg-yellow-500/20 text-yellow-400"
+                      }`}
+                    >
+                      {
+                        results.serviceabilityChecks.filter((c) => c.pass)
+                          .length
+                      }
+                      /{results.serviceabilityChecks.length} members OK
+                    </span>
+                  </div>
+                  <div className="overflow-x-auto max-h-[200px] overflow-y-auto">
+                    <table className="w-full text-xs">
+                      <thead className="sticky top-0 bg-zinc-900">
+                        <tr className="border-b border-zinc-700">
+                          <th className="px-2 py-1.5 text-left text-zinc-400">
+                            Member
+                          </th>
+                          <th className="px-2 py-1.5 text-right text-zinc-400">
+                            L (m)
+                          </th>
+                          <th className="px-2 py-1.5 text-right text-zinc-400">
+                            δ_max (mm)
+                          </th>
+                          <th className="px-2 py-1.5 text-right text-zinc-400">
+                            L/δ
+                          </th>
+                          <th className="px-2 py-1.5 text-center text-zinc-400">
+                            L/240
+                          </th>
+                          <th className="px-2 py-1.5 text-center text-zinc-400">
+                            L/360
+                          </th>
+                          <th className="px-2 py-1.5 text-center text-zinc-400">
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {results.serviceabilityChecks
+                          .sort((a, b) => a.worstRatio - b.worstRatio)
+                          .slice(0, 20)
+                          .map((check) => {
+                            const l240 = check.ratios.find((r) =>
+                              r.limit.includes("L/240"),
+                            );
+                            const l360 = check.ratios.find((r) =>
+                              r.limit.includes("L/360"),
+                            );
+                            return (
+                              <tr
+                                key={check.memberId}
+                                className="border-b border-zinc-800 hover:bg-zinc-800/50"
+                              >
+                                <td className="px-2 py-1 font-medium text-white">
+                                  M{check.memberId}
+                                </td>
+                                <td className="px-2 py-1 text-right font-mono text-zinc-300">
+                                  {check.length.toFixed(2)}
+                                </td>
+                                <td className="px-2 py-1 text-right font-mono text-zinc-300">
+                                  {check.maxDeflection.toFixed(3)}
+                                </td>
+                                <td className="px-2 py-1 text-right font-mono text-zinc-300">
+                                  {check.worstRatio === Infinity
+                                    ? "∞"
+                                    : `L/${Math.round(check.worstRatio)}`}
+                                </td>
+                                <td className="px-2 py-1 text-center">
+                                  {l240 ? (
+                                    <span
+                                      className={
+                                        l240.pass
+                                          ? "text-green-400"
+                                          : "text-red-400"
+                                      }
+                                    >
+                                      {l240.pass ? "✓" : "✗"}
+                                    </span>
+                                  ) : (
+                                    "—"
+                                  )}
+                                </td>
+                                <td className="px-2 py-1 text-center">
+                                  {l360 ? (
+                                    <span
+                                      className={
+                                        l360.pass
+                                          ? "text-green-400"
+                                          : "text-red-400"
+                                      }
+                                    >
+                                      {l360.pass ? "✓" : "✗"}
+                                    </span>
+                                  ) : (
+                                    "—"
+                                  )}
+                                </td>
+                                <td className="px-2 py-1 text-center">
+                                  <span
+                                    className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                      check.pass
+                                        ? "bg-green-500/20 text-green-400"
+                                        : "bg-red-500/20 text-red-400"
+                                    }`}
+                                  >
+                                    {check.pass ? "OK" : "FAIL"}
                                   </span>
-                                ) : '—'}
-                              </td>
-                              <td className="px-2 py-1 text-center">
-                                {l360 ? (
-                                  <span className={l360.pass ? 'text-green-400' : 'text-red-400'}>
-                                    {l360.pass ? '✓' : '✗'}
-                                  </span>
-                                ) : '—'}
-                              </td>
-                              <td className="px-2 py-1 text-center">
-                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                                  check.pass 
-                                    ? 'bg-green-500/20 text-green-400' 
-                                    : 'bg-red-500/20 text-red-400'
-                                }`}>
-                                  {check.pass ? 'OK' : 'FAIL'}
-                                </span>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                    </tbody>
-                  </table>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="mt-2 text-[10px] text-zinc-500">
+                    Limits per IS 800:2007 Table 6, EN 1993-1-1 §7.2, AISC 360
+                    Commentary L3
+                  </div>
                 </div>
-                <div className="mt-2 text-[10px] text-zinc-500">
-                  Limits per IS 800:2007 Table 6, EN 1993-1-1 §7.2, AISC 360 Commentary L3
-                </div>
-              </div>
-            )}
+              )}
           </div>
         )}
 
@@ -1891,9 +2259,10 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                       onClick={() => setSelectedDiagramType(type)}
                       className={`
                         px-4 py-2 rounded-lg text-sm font-medium transition-all
-                        ${selectedDiagramType === type
-                          ? "bg-white text-black"
-                          : "bg-zinc-800 text-zinc-400 hover:text-white"
+                        ${
+                          selectedDiagramType === type
+                            ? "bg-white text-black"
+                            : "bg-zinc-800 text-zinc-400 hover:text-white"
                         }
                       `}
                     >
@@ -1910,7 +2279,9 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                   placeholder="Search member ID or section..."
                   className="px-3 py-1.5 rounded-lg bg-zinc-800 border border-zinc-700 text-sm text-white placeholder-zinc-500 w-56 focus:border-blue-500 focus:outline-none transition-colors"
                 />
-                <span className="text-xs text-zinc-500">{filteredMembers.length} members</span>
+                <span className="text-xs text-zinc-500">
+                  {filteredMembers.length} members
+                </span>
               </div>
             </div>
 
@@ -3038,12 +3409,16 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                           const Mcap = fy * (I / c_est) * 1000; // kNm capacity
                           const Ncap = fy * A * 1000; // kN capacity
                           const Vcap = 0.6 * fy * A * 1000; // kN shear capacity
-                          const mRatio = Mcap > 0 ? Math.abs(m.maxMoment) / Mcap : 0;
-                          const nRatio = Ncap > 0 ? Math.abs(m.maxAxial) / Ncap : 0;
-                          const vRatio = Vcap > 0 ? Math.abs(m.maxShear) / Vcap : 0;
-                          if (mRatio >= nRatio && mRatio >= vRatio) return 'Bending';
-                          if (vRatio >= nRatio) return 'Shear';
-                          return 'Axial';
+                          const mRatio =
+                            Mcap > 0 ? Math.abs(m.maxMoment) / Mcap : 0;
+                          const nRatio =
+                            Ncap > 0 ? Math.abs(m.maxAxial) / Ncap : 0;
+                          const vRatio =
+                            Vcap > 0 ? Math.abs(m.maxShear) / Vcap : 0;
+                          if (mRatio >= nRatio && mRatio >= vRatio)
+                            return "Bending";
+                          if (vRatio >= nRatio) return "Shear";
+                          return "Axial";
                         })();
                         return (
                           <tr
@@ -3342,20 +3717,27 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
             {/* Spatial Structure View — SVG wireframe colored by utilization */}
             {(() => {
               // Build unique node coordinate map from members' start/end nodes
-              const nodeCoords = new Map<string, { x: number; y: number; z: number }>();
-              nodes.forEach((n) => nodeCoords.set(n.id, { x: n.x, y: n.y, z: n.z }));
-              const hasCoords = [...nodeCoords.values()].some(c => c.x !== 0 || c.y !== 0 || c.z !== 0);
+              const nodeCoords = new Map<
+                string,
+                { x: number; y: number; z: number }
+              >();
+              nodes.forEach((n) =>
+                nodeCoords.set(n.id, { x: n.x, y: n.y, z: n.z }),
+              );
+              const hasCoords = [...nodeCoords.values()].some(
+                (c) => c.x !== 0 || c.y !== 0 || c.z !== 0,
+              );
 
               if (!hasCoords) return null; // Fall back to bars if no geometry
 
               // Project 2D: use XY plane (elevation view) or XZ if structure is planar in Y
               const allPts = [...nodeCoords.values()];
-              const xMin = Math.min(...allPts.map(p => p.x));
-              const xMax = Math.max(...allPts.map(p => p.x));
-              const yMin = Math.min(...allPts.map(p => p.y));
-              const yMax = Math.max(...allPts.map(p => p.y));
-              const zMin = Math.min(...allPts.map(p => p.z));
-              const zMax = Math.max(...allPts.map(p => p.z));
+              const xMin = Math.min(...allPts.map((p) => p.x));
+              const xMax = Math.max(...allPts.map((p) => p.x));
+              const yMin = Math.min(...allPts.map((p) => p.y));
+              const yMax = Math.max(...allPts.map((p) => p.y));
+              const zMin = Math.min(...allPts.map((p) => p.z));
+              const zMax = Math.max(...allPts.map((p) => p.z));
               const ySpan = yMax - yMin;
               const zSpan = zMax - zMin;
               // Choose Y or Z for the vertical axis
@@ -3366,11 +3748,17 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
               const vSpan = Math.max(vMax2 - vMin2, 1e-6);
 
               const svgW = 600;
-              const svgH = Math.max(250, Math.min(400, Math.round(svgW * (vSpan / hSpan))));
+              const svgH = Math.max(
+                250,
+                Math.min(400, Math.round(svgW * (vSpan / hSpan))),
+              );
               const pad = 40;
-              const scale = Math.min((svgW - 2 * pad) / hSpan, (svgH - 2 * pad) / vSpan);
-              const ofsX = pad + ((svgW - 2 * pad) - hSpan * scale) / 2;
-              const ofsY = pad + ((svgH - 2 * pad) - vSpan * scale) / 2;
+              const scale = Math.min(
+                (svgW - 2 * pad) / hSpan,
+                (svgH - 2 * pad) / vSpan,
+              );
+              const ofsX = pad + (svgW - 2 * pad - hSpan * scale) / 2;
+              const ofsY = pad + (svgH - 2 * pad - vSpan * scale) / 2;
 
               const px = (x: number) => ofsX + (x - xMin) * scale;
               const py = (v: number) => svgH - ofsY - (v - vMin2) * scale; // flip Y
@@ -3389,19 +3777,23 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
               return (
                 <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-3 mb-3">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-medium text-zinc-300">Structural Layout — Utilization</span>
-                    <span className="text-[10px] text-zinc-500">{members.length} members, {nodes.length} nodes</span>
+                    <span className="text-xs font-medium text-zinc-300">
+                      Structural Layout — Utilization
+                    </span>
+                    <span className="text-[10px] text-zinc-500">
+                      {members.length} members, {nodes.length} nodes
+                    </span>
                   </div>
                   <svg
                     viewBox={`0 0 ${svgW} ${svgH}`}
                     className="w-full rounded bg-zinc-900/60"
-                    style={{ maxHeight: '400px' }}
+                    style={{ maxHeight: "400px" }}
                   >
                     {/* Members as colored lines */}
                     {members.map((m) => {
                       // Try to find start/end nodes
-                      const sn = nodeCoords.get(m.startNodeId ?? '');
-                      const en = nodeCoords.get(m.endNodeId ?? '');
+                      const sn = nodeCoords.get(m.startNodeId ?? "");
+                      const en = nodeCoords.get(m.endNodeId ?? "");
                       if (!sn || !en) return null;
                       const x1 = px(sn.x);
                       const y1 = py(useZ ? sn.z : sn.y);
@@ -3411,13 +3803,19 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                       return (
                         <g key={m.id}>
                           <line
-                            x1={x1} y1={y1} x2={x2} y2={y2}
+                            x1={x1}
+                            y1={y1}
+                            x2={x2}
+                            y2={y2}
                             stroke={col}
                             strokeWidth={Math.max(3, 6 * m.utilization)}
                             strokeLinecap="round"
                             opacity={0.9}
                           />
-                          <title>M{m.id}: {(m.utilization * 100).toFixed(1)}% — {m.sectionType || 'General'}</title>
+                          <title>
+                            M{m.id}: {(m.utilization * 100).toFixed(1)}% —{" "}
+                            {m.sectionType || "General"}
+                          </title>
                           {/* Member label */}
                           <text
                             x={(x1 + x2) / 2}
@@ -3435,12 +3833,12 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                     {[...nodeCoords.entries()].map(([id, c]) => {
                       const cx = px(c.x);
                       const cy2 = py(useZ ? c.z : c.y);
-                      const n = nodes.find(n2 => n2.id === id);
-                      const isSupport = n?.reaction && (
-                        Math.abs(n.reaction.fx) > 0.01 ||
-                        Math.abs(n.reaction.fy) > 0.01 ||
-                        Math.abs(n.reaction.fz) > 0.01
-                      );
+                      const n = nodes.find((n2) => n2.id === id);
+                      const isSupport =
+                        n?.reaction &&
+                        (Math.abs(n.reaction.fx) > 0.01 ||
+                          Math.abs(n.reaction.fy) > 0.01 ||
+                          Math.abs(n.reaction.fz) > 0.01);
                       return (
                         <g key={id}>
                           {isSupport ? (
@@ -3451,7 +3849,14 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                               strokeWidth="1"
                             />
                           ) : null}
-                          <circle cx={cx} cy={cy2} r={3.5} fill="#fff" stroke="#3B82F6" strokeWidth="1.5" />
+                          <circle
+                            cx={cx}
+                            cy={cy2}
+                            r={3.5}
+                            fill="#fff"
+                            stroke="#3B82F6"
+                            strokeWidth="1.5"
+                          />
                           <text
                             x={cx}
                             y={cy2 - 7}
