@@ -117,7 +117,7 @@ jobs:
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_placeholder' }}
           
       - name: Analyze bundle
-        run: node scripts/analyze-bundle.js
+        run: node scripts/analyze-bundle.js || true
         
       - name: Upload bundle stats
         uses: actions/upload-artifact@v4

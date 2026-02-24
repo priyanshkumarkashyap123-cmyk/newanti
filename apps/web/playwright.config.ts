@@ -107,8 +107,8 @@ export default defineConfig({
 
   // Web server configuration
   webServer: {
-    command: 'pnpm dev',
-    url: 'http://localhost:5173',
+    command: process.env.CI ? 'pnpm preview --port 4173' : 'pnpm dev',
+    url: process.env.CI ? 'http://localhost:4173' : 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },
