@@ -58,10 +58,13 @@ module.exports = {
     'subject-case': [2, 'always', 'lower-case'],
     
     // Header max length (type + scope + subject)
-    'header-max-length': [2, 'always', 100],
+    'header-max-length': [2, 'always', 200],
     
-    // Body max line length
-    'body-max-line-length': [2, 'always', 200],
+    // Body max line length - relaxed for semantic-release changelog bodies
+    'body-max-line-length': [0, 'always', Infinity],
+    
+    // Footer max line length - relaxed for semantic-release
+    'footer-max-line-length': [0, 'always', Infinity],
     
     // Scope is optional but should be lowercase
     'scope-case': [2, 'always', 'lower-case'],
