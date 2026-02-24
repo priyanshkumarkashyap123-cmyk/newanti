@@ -12,6 +12,14 @@
 // IMPORTS
 // ============================================
 
+import {
+  buildLocalAxesForDiagram,
+  accumulateLoadEffects,
+  buildDiagramStations,
+  integrateDeflection,
+  type DiagramLoad,
+} from "../utils/diagramUtils";
+
 // WASM Module import (dynamic from public folder)
 interface WasmSolverModule {
   default: (wasmBytes: ArrayBuffer) => Promise<unknown>;
@@ -2139,12 +2147,20 @@ function generateDiagramData(
     const EIz = (member.E ?? 2e8) * (member.I ?? 1e-4); // EI for bending about Z (deflection in Y)
     const EIy = (member.E ?? 2e8) * (member.Iy ?? member.I ?? 1e-4); // EI for bending about Y (deflection in Z)
 
-    // Back-calculate equivalent distributed load from equilibrium of TOTAL end forces.
-    // This avoids double-counting: V1 already includes UDL effect via FEF.
-    // Y-direction: V1 + V2 = wy*L → wy = (V1 + V2) / L
-    const wy = L > 1e-12 ? (V1 + V2) / L : 0;
-    // Z-direction: Vz1 + Vz2 = wz*L → wz = (Vz1 + Vz2) / L
-    const wz = L > 1e-12 ? (Vz1 + Vz2) / L : 0;
+    // ─── Gather actual member loads for piecewise SFD/BMD generation ───
+    const allMemberLoads: DiagramLoad[] =
+      ((model as ModelDataWithMemberLoads).memberLoadsForRecovery ??
+        (model as ModelDataWithMemberLoads).memberLoads ??
+        []) as DiagramLoad[];
+    const myLoads = allMemberLoads.filter(
+      (ml) => (ml as MemberLoadItem).memberId === mf.id,
+    );
+    const { ly: lyAxis, lz: lzAxis } = buildLocalAxesForDiagram(
+      dx, dy, dz, L, member.betaAngle ?? 0,
+    );
+
+    // Build station positions (includes discontinuity points for point loads / moments)
+    const stations = buildDiagramStations(L, myLoads, DIAGRAM_STATIONS);
 
     // ─── Extract actual local nodal displacements for Hermite interpolation ───
     const ld = mf.localDisplacements;
@@ -2178,6 +2194,7 @@ function generateDiagramData(
     // Generate stations
     // Naming convention: Mz_arr = internal bending moment about Z-axis (primary, XY plane)
     //                    My_arr = internal bending moment about Y-axis (weak-axis, XZ plane)
+    const numSt = stations.length;
     const x_values: number[] = [];
     const shear_y: number[] = [];
     const Mz_arr: number[] = []; // Internal moment about Z (primary BMD)
@@ -2188,74 +2205,47 @@ function generateDiagramData(
     const torsion: number[] = [];
     const deflection_z: number[] = [];
 
-    for (let s = 0; s < DIAGRAM_STATIONS; s++) {
-      const x = (s / (DIAGRAM_STATIONS - 1)) * L;
-      const xi = x / L; // normalized 0..1
+    for (let s = 0; s < numSt; s++) {
+      const x = stations[s];
+      const xi = L > 1e-12 ? x / L : 0; // normalized 0..1
 
       x_values.push(x);
 
       // ─── Axial: constant along member (no intermediate axial loads) ───
       axial.push(N1);
 
-      // ─── Shear Y: V(x) = V1 - wy·x ───
-      const Vx = V1 - wy * x;
-      shear_y.push(Vx);
+      // ─── Accumulate actual load effects at this position ───
+      const { dVy, dMz, dVz, dMy } = accumulateLoadEffects(
+        x, myLoads, L, lyAxis, lzAxis,
+      );
+
+      // ─── Shear Y: V(x) = V1 − ΔV_y(x) ───
+      shear_y.push(V1 - dVy);
 
       // ─── Moment about Z (internal bending moment — PRIMARY BMD) ───
-      //   Mz_internal(x) = -M1 + V1·x - wy·x²/2
-      //   (Negate FEM end moment: FEM Mz [CCW+] → internal moment [sagging+])
-      //   This is the moment that causes bending stress σ = Mz·y/Iz
-      const Mz_x = -M1 + V1 * x - (wy * x * x) / 2;
-      Mz_arr.push(Mz_x);
+      //   Mz_internal(x) = −M1 + V1·x − ΔMz(x)
+      Mz_arr.push(-M1 + V1 * x - dMz);
 
-      // ─── Deflection Y ───
-      // Hermite cubic shape functions (common to Y and Z deflection)
-      const xi2 = xi * xi;
-      const xi3 = xi2 * xi;
-      const N1h = 1 - 3 * xi2 + 2 * xi3;
-      const N2h = L * (xi - 2 * xi2 + xi3);
-      const N3h = 3 * xi2 - 2 * xi3;
-      const N4h = L * (-xi2 + xi3);
-
-      if (EIz > 0) {
-        // Hermite cubic with ACTUAL local nodal displacements + UDL quartic bubble
-        const yHermite = N1h * vy1 + N2h * thz1 + N3h * vy2 + N4h * thz2;
-        const Lmx = L - x;
-        const yBubble = (wy * x * x * Lmx * Lmx) / (24 * EIz);
-        deflection_y.push((yHermite + yBubble) * 1000); // mm
-      } else {
-        deflection_y.push(0);
-      }
-
-      // ─── Shear Z: Vz(x) = Vz1 - wz·x ───
-      //   (Same equilibrium approach as Y-direction)
-      const Vzx = Vz1 - wz * x;
-      shear_z.push(Vzx);
+      // ─── Shear Z: Vz(x) = Vz1 − ΔV_z(x) ───
+      shear_z.push(Vz1 - dVz);
 
       // ─── Moment about Y (weak-axis BMD — XZ plane bending) ───
-      //   My_internal(x) = My1 + Vz1·x - wz·x²/2
-      //   (NO negation of My1: XZ-plane stiffness has opposite coupling sign,
-      //    so My_FEF already has the correct sign for direct use.)
-      //   This is the moment that causes bending stress σ = My·z/Iy
-      const My_x = My1 + Vz1 * x - (wz * x * x) / 2;
-      My_arr.push(My_x);
+      //   My_internal(x) = My1 + Vz1·x − ΔMy(x)
+      My_arr.push(My1 + Vz1 * x - dMy);
 
       // ─── Torsion: linear interpolation between ends ───
       torsion.push(Tx1 + (Tx2 - Tx1) * xi);
-
-      // ─── Deflection Z (bending about Y axis) — Hermite cubic + UDL bubble ───
-      // XZ-plane coupling: k[vz,θy] has opposite sign from k[vy,θz],
-      // so rotation terms enter with flipped sign:
-      //   vz(x) = N1·vz1 − N2·θy1 + N3·vz2 − N4·θy2
-      if (EIy > 0) {
-        const zHermite = N1h * vz1 - N2h * thy1 + N3h * vz2 - N4h * thy2;
-        const Lmx = L - x;
-        const zBubble = (wz * x * x * Lmx * Lmx) / (24 * EIy);
-        deflection_z.push((zHermite + zBubble) * 1000); // mm
-      } else {
-        deflection_z.push(0);
-      }
     }
+
+    // ─── Deflection Y via double integration of Mz(x) ───
+    //   EI_z · v″ = M_z → integrate with sign = +1
+    const rawDeflY = integrateDeflection(stations, Mz_arr, EIz, vy1, vy2, L, 1);
+    for (let s = 0; s < numSt; s++) deflection_y.push(rawDeflY[s] * 1000); // m → mm
+
+    // ─── Deflection Z via double integration of My(x) ───
+    //   EI_y · v″ = −M_y → integrate with sign = −1
+    const rawDeflZ = integrateDeflection(stations, My_arr, EIy, vz1, vz2, L, -1);
+    for (let s = 0; s < numSt; s++) deflection_z.push(rawDeflZ[s] * 1000); // m → mm
 
     // Find max absolute values
     const maxAbs = (arr: number[]) =>

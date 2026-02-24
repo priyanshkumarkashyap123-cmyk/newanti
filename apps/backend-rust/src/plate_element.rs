@@ -195,7 +195,7 @@ impl PlateElement {
     // --- Helpers ---
 
     /// Project 3D global coords to 2D local (z=0)
-    fn get_local_coords_2d(&self) -> [(f64, f64); 4] {
+    pub fn get_local_coords_2d(&self) -> [(f64, f64); 4] {
         // Assume node 1 is origin (0,0)
         // Node 2 is on x-axis (L, 0)
         // Node 4 determines y-plane
@@ -227,7 +227,7 @@ impl PlateElement {
         coords
     }
     
-    fn transformation_matrix(&self) -> DMatrix<f64> {
+    pub fn transformation_matrix(&self) -> DMatrix<f64> {
         // 24x24 matrix
         let p1 = Vector3::new(self.nodes[0].0, self.nodes[0].1, self.nodes[0].2);
         let p2 = Vector3::new(self.nodes[1].0, self.nodes[1].1, self.nodes[1].2);
@@ -258,7 +258,7 @@ impl PlateElement {
         t
     }
 
-    fn shape_func_derivs_membrane(&self, xi: f64, eta: f64, coords: &[(f64, f64); 4]) -> (f64, DMatrix<f64>) {
+    pub fn shape_func_derivs_membrane(&self, xi: f64, eta: f64, coords: &[(f64, f64); 4]) -> (f64, DMatrix<f64>) {
         // Q4 Shape functions
         // N1 = 0.25(1-xi)(1-eta) ...
         
@@ -310,7 +310,7 @@ impl PlateElement {
         (det_j, b)
     }
 
-    fn shape_func_mindlin(&self, xi: f64, eta: f64, coords: &[(f64, f64); 4]) -> (f64, DMatrix<f64>, DMatrix<f64>) {
+    pub fn shape_func_mindlin(&self, xi: f64, eta: f64, coords: &[(f64, f64); 4]) -> (f64, DMatrix<f64>, DMatrix<f64>) {
         // Similar to membrane but for bending (w, tx, ty)
         
         // Derivatives wrt xi, eta (2x4)

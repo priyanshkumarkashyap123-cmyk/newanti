@@ -251,8 +251,84 @@ const convertToAnalysisResultsData = (
           moment_values.push(-Mi + Vi * x - (w * x * x) / 2);
           // Axial: constant
           axial_values.push(ax);
-          // Deflection: zero (no EI info in fallback)
-          deflection_values.push(0);
+        }
+
+        // ─── Deflection: double integration of M(x)/EI with actual nodal displacement BCs ───
+        // EI·y''(x) = M(x)  →  y(x) = (∫∫M dx² + C1·x + C2) / EI
+        // BCs: y(0) = dy_i_local, y(L) = dy_j_local (from solver displacements)
+        const E_fb = memberModel?.E ?? 200000000; // kN/m²
+        const I_fb = memberModel?.I ?? memberModel?.Iz ?? 1e-4; // m⁴
+        const EI_fb = E_fb * I_fb;
+
+        if (EI_fb > 1e-12 && memberModel && modelNodes && results.displacements) {
+          const startNode = modelNodes.get(memberModel.startNodeId);
+          const endNode = modelNodes.get(memberModel.endNodeId);
+          const dispI = results.displacements.get(memberModel.startNodeId);
+          const dispJ = results.displacements.get(memberModel.endNodeId);
+
+          if (startNode && endNode && dispI && dispJ) {
+            // Compute local y-axis for projecting global displacements
+            const ddx = (endNode.x ?? 0) - (startNode.x ?? 0);
+            const ddy = (endNode.y ?? 0) - (startNode.y ?? 0);
+            const ddz = (endNode.z ?? 0) - (startNode.z ?? 0);
+            const Lm = Math.sqrt(ddx * ddx + ddy * ddy + ddz * ddz);
+
+            if (Lm > 1e-12) {
+              const lx_ax = ddx / Lm, ly_ax = ddy / Lm, lz_ax = ddz / Lm;
+
+              // Local y-axis (perpendicular to member in bending plane)
+              // 2D (lz ≈ 0): rotate 90° CCW → (-ly, lx, 0)
+              // 3D vertical: use global X
+              let yx: number, yy: number, yz: number;
+              if (Math.abs(lz_ax) < 0.999) {
+                // Cross Z × localX → local Y (in global XY plane)
+                yx = -ly_ax;
+                yy = lx_ax;
+                yz = 0;
+                const yn = Math.sqrt(yx * yx + yy * yy + yz * yz);
+                if (yn > 1e-12) { yx /= yn; yy /= yn; yz /= yn; }
+              } else {
+                // Vertical member: use global X as local Y
+                yx = 1; yy = 0; yz = 0;
+              }
+
+              // Project global displacements onto local y-axis (m)
+              const dy_i = (dispI.dx ?? 0) * yx + (dispI.dy ?? 0) * yy + (dispI.dz ?? 0) * yz;
+              const dy_j = (dispJ.dx ?? 0) * yx + (dispJ.dy ?? 0) * yy + (dispJ.dz ?? 0) * yz;
+
+              // First integration: slope_raw(x) = ∫ M(x)/EI dx  (starting from 0)
+              const slopeRaw: number[] = [0];
+              for (let k = 1; k <= numPoints; k++) {
+                const dxStep = x_values[k] - x_values[k - 1];
+                const avgM = (moment_values[k - 1] + moment_values[k]) / 2;
+                slopeRaw.push(slopeRaw[k - 1] + (avgM / EI_fb) * dxStep);
+              }
+              // Second integration: y_raw(x) = ∫ slope dx  (starting from 0)
+              const yRaw: number[] = [0];
+              for (let k = 1; k <= numPoints; k++) {
+                const dxStep = x_values[k] - x_values[k - 1];
+                const avgSlope = (slopeRaw[k - 1] + slopeRaw[k]) / 2;
+                yRaw.push(yRaw[k - 1] + avgSlope * dxStep);
+              }
+              // Apply displacement BCs: y(x) = y_raw(x) + C1·x + C2
+              // y(0) = dy_i → C2 = dy_i
+              // y(L) = dy_j → C1 = (dy_j - dy_i - y_raw(L)) / L
+              const C2_fb = dy_i;
+              const C1_fb = L > 1e-12 ? (dy_j - dy_i - yRaw[numPoints]) / L : 0;
+              for (let k = 0; k <= numPoints; k++) {
+                deflection_values.push((yRaw[k] + C1_fb * x_values[k] + C2_fb) * 1000); // m → mm
+              }
+            } else {
+              // Zero-length member
+              for (let k = 0; k <= numPoints; k++) deflection_values.push(0);
+            }
+          } else {
+            // Missing node/displacement data
+            for (let k = 0; k <= numPoints; k++) deflection_values.push(0);
+          }
+        } else {
+          // No EI or no displacement data — zero fallback
+          for (let k = 0; k <= numPoints; k++) deflection_values.push(0);
         }
       }
 

@@ -368,6 +368,19 @@ pub struct TemperatureLoad {
 // ANALYSIS RESULTS
 // ============================================
 
+/// Plate/slab stress results at element center
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct PlateStressResult {
+    pub stress_xx: f64,
+    pub stress_yy: f64,
+    pub stress_xy: f64,
+    pub moment_xx: f64,
+    pub moment_yy: f64,
+    pub moment_xy: f64,
+    pub displacement: f64,
+    pub von_mises: f64,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AnalysisResult3D {
     pub success: bool,
@@ -381,6 +394,10 @@ pub struct AnalysisResult3D {
     
     /// Member forces at ends: element_id -> MemberForces
     pub member_forces: HashMap<String, MemberForces>,
+    
+    /// Plate/slab element results: element_id -> PlateStressResult
+    #[serde(default)]
+    pub plate_results: HashMap<String, PlateStressResult>,
     
     /// Equilibrium verification (industry-standard check)
     #[serde(skip_deserializing)]
@@ -806,12 +823,16 @@ pub fn analyze_3d_frame(
         pass: error_pct < 0.1, // Industry standard: < 0.1% is acceptable
     };
     
+    // Compute plate/slab stress results
+    let plate_results = compute_plate_results(&elements, &nodes, &node_map, &u_global);
+
     Ok(AnalysisResult3D {
         success: true,
         error: None,
         displacements,
         reactions,
         member_forces,
+        plate_results,
         equilibrium_check: Some(equilibrium_check),
         condition_number: Some(condition_estimate),
     })
@@ -1142,6 +1163,139 @@ fn compute_fixed_end_forces(
     Ok(fef_global)
 }
 
+/// Compute plate/slab stress results from nodal displacements
+/// Evaluates membrane stresses, bending moments, and von Mises at element center (ξ=0, η=0)
+fn compute_plate_results(
+    elements: &[Element3D],
+    nodes: &[Node3D],
+    node_map: &HashMap<String, usize>,
+    u_global: &DVector<f64>,
+) -> HashMap<String, PlateStressResult> {
+    let mut results = HashMap::new();
+
+    for elem in elements {
+        if let ElementType::Plate = elem.element_type {
+            // Gather 4 node indices and coordinates
+            let ids = [
+                &elem.node_i,
+                &elem.node_j,
+                match elem.node_k.as_ref() { Some(s) => s, None => continue },
+                match elem.node_l.as_ref() { Some(s) => s, None => continue },
+            ];
+
+            let mut indices = [0usize; 4];
+            let mut coords_3d = [(0.0f64, 0.0f64, 0.0f64); 4];
+            let mut ok = true;
+            for (i, id) in ids.iter().enumerate() {
+                match node_map.get(*id) {
+                    Some(&idx) => {
+                        indices[i] = idx;
+                        let n = &nodes[idx];
+                        coords_3d[i] = (n.x, n.y, n.z);
+                    },
+                    None => { ok = false; break; }
+                }
+            }
+            if !ok { continue; }
+
+            let thickness = match elem.thickness {
+                Some(t) => t,
+                None => continue,
+            };
+            let e_mod = elem.E;
+            let nu = elem.nu.unwrap_or(0.3);
+
+            // Build PlateElement for B-matrix evaluation
+            let plate = PlateElement::new(
+                [ids[0].clone(), ids[1].clone(), ids[2].clone(), ids[3].clone()],
+                thickness,
+                e_mod,
+                nu,
+                coords_3d,
+            );
+
+            // Extract 24-DOF global displacement vector for this element
+            let mut u_elem_global = DVector::zeros(24);
+            for i in 0..4 {
+                let base_g = indices[i] * 6;
+                for d in 0..6 {
+                    u_elem_global[i * 6 + d] = u_global[base_g + d];
+                }
+            }
+
+            // Transform to local coordinates: u_local = T * u_global
+            let t_matrix = plate.transformation_matrix();
+            let u_local = &t_matrix * &u_elem_global;
+
+            // Get local 2D coordinates for B-matrix evaluation
+            let local_coords = plate.get_local_coords_2d();
+
+            // Evaluate at element center (ξ=0, η=0)
+            // --- Membrane stresses ---
+            let (_det_mem, b_mem) = plate.shape_func_derivs_membrane(0.0, 0.0, &local_coords);
+            // Extract membrane DOFs (u, v at each node) from local displacements
+            let mut u_mem = DVector::zeros(8);
+            for i in 0..4 {
+                u_mem[i * 2]     = u_local[i * 6];     // u
+                u_mem[i * 2 + 1] = u_local[i * 6 + 1]; // v
+            }
+            // Membrane constitutive matrix (plane stress)
+            let c_factor = e_mod / (1.0 - nu * nu);
+            // strain = B_mem * u_mem
+            let strain_mem = &b_mem * &u_mem;
+            // stress = C * strain
+            let stress_xx = c_factor * (strain_mem[0] + nu * strain_mem[1]);
+            let stress_yy = c_factor * (nu * strain_mem[0] + strain_mem[1]);
+            let stress_xy = c_factor * (1.0 - nu) / 2.0 * strain_mem[2];
+
+            // --- Bending moments ---
+            let (_det_bend, b_b, _b_s) = plate.shape_func_mindlin(0.0, 0.0, &local_coords);
+            // Extract bending DOFs (w, θx, θy at each node)
+            let mut u_bend = DVector::zeros(12);
+            for i in 0..4 {
+                u_bend[i * 3]     = u_local[i * 6 + 2]; // w
+                u_bend[i * 3 + 1] = u_local[i * 6 + 3]; // θx
+                u_bend[i * 3 + 2] = u_local[i * 6 + 4]; // θy
+            }
+            // Bending D matrix: D_b = E*t³/(12*(1-ν²))
+            let d_factor = e_mod * thickness.powi(3) / (12.0 * (1.0 - nu * nu));
+            // curvature = B_b * u_bend
+            let kappa = &b_b * &u_bend;
+            // moments = D_b * curvature
+            let moment_xx = d_factor * (kappa[0] + nu * kappa[1]);
+            let moment_yy = d_factor * (nu * kappa[0] + kappa[1]);
+            let moment_xy = d_factor * (1.0 - nu) / 2.0 * kappa[2];
+
+            // Average transverse displacement at center
+            let n_center = [0.25f64; 4]; // shape functions at (0,0) for Q4
+            let displacement = n_center.iter().enumerate()
+                .map(|(i, &n)| n * u_local[i * 6 + 2])
+                .sum::<f64>();
+
+            // Von Mises stress (membrane + bending surface stress)
+            // Bending surface stress = 6*M/(t²)
+            let sig_bx = stress_xx + 6.0 * moment_xx / (thickness * thickness);
+            let sig_by = stress_yy + 6.0 * moment_yy / (thickness * thickness);
+            let sig_bxy = stress_xy + 6.0 * moment_xy / (thickness * thickness);
+            let von_mises = (sig_bx * sig_bx + sig_by * sig_by
+                - sig_bx * sig_by + 3.0 * sig_bxy * sig_bxy).sqrt();
+
+            results.insert(elem.id.clone(), PlateStressResult {
+                stress_xx,
+                stress_yy,
+                stress_xy,
+                moment_xx,
+                moment_yy,
+                moment_xy,
+                displacement,
+                von_mises,
+            });
+        }
+    }
+
+    results
+}
+
 /// Calculate member forces from global displacements
 /// 
 /// Member forces = k_local * T * u_global + FEF
@@ -1161,6 +1315,11 @@ fn calculate_member_forces(
     let mut forces = HashMap::new();
     
     for elem in elements {
+        // Skip plate elements — they are handled separately by compute_plate_results
+        if let ElementType::Plate = elem.element_type {
+            continue;
+        }
+
         // Get node indices
         let i_idx = match node_map.get(&elem.node_i) {
             Some(&idx) => idx,
@@ -1369,6 +1528,7 @@ fn zero_displacement_result(nodes: &[Node3D], elements: &[Element3D]) -> Analysi
         displacements,
         reactions,
         member_forces,
+        plate_results: HashMap::new(),
         equilibrium_check: Some(EquilibriumCheck {
             applied_forces: vec![0.0; 6],
             reaction_forces: vec![0.0; 6],
@@ -1820,6 +1980,9 @@ pub fn p_delta_analysis(
         );
     }
     
+    // Compute plate/slab stress results for P-Delta
+    let plate_results = compute_plate_results(&elements, &nodes, &node_map, &u_global);
+
     Ok(AnalysisResult3D {
         success: true,
         error: if converged { None } else { 
@@ -1828,6 +1991,7 @@ pub fn p_delta_analysis(
         displacements,
         reactions,
         member_forces,
+        plate_results,
         equilibrium_check: None,
         condition_number: None,
     })

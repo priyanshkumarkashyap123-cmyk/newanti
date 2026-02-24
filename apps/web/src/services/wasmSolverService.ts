@@ -72,6 +72,12 @@ export interface Element {
   Iy?: number; // Moment of Inertia Y (m^4)
   Iz?: number; // Moment of Inertia Z (m^4)
   J?: number; // Torsional constant (m^4)
+  // Plate element fields (4-node shell: DKQ/Mindlin)
+  element_type?: 'Frame' | 'Truss' | 'Cable' | 'Plate';
+  thickness?: number; // Plate thickness (m)
+  node_k?: string;    // 3rd node (plates)
+  node_l?: string;    // 4th node (plates)
+  nu?: number;        // Poisson's ratio (plates, default 0.3)
 }
 
 export interface PointLoad {

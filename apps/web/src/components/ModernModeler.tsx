@@ -57,6 +57,13 @@ import { LoadInputDialog } from "./ui/LoadInputDialog";
 // TutorialOverlay deferred to Phase 2
 import { validateStructure } from "../utils/structuralValidation";
 import { distributeFloorLoads } from "../services/floorLoadDistributor";
+import {
+  buildLocalAxesForDiagram,
+  accumulateLoadEffects,
+  buildDiagramStations,
+  integrateDeflection,
+  type DiagramLoad,
+} from "../utils/diagramUtils";
 
 // ---- Lazy-loaded dialogs & panels (only fetched when opened) ----
 const StructureWizard = lazy(() =>
@@ -542,6 +549,7 @@ export const ModernModeler: FC = () => {
 
   const nodes = useModelStore((state) => state.nodes);
   const members = useModelStore((state) => state.members);
+  const plates = useModelStore((state) => state.plates);
   const loads = useModelStore((state) => state.loads);
   const memberLoads = useModelStore((state) => state.memberLoads);
   const floorLoads = useModelStore((state) => state.floorLoads);
@@ -1315,13 +1323,66 @@ export const ModernModeler: FC = () => {
             };
           });
 
+          // ── Plate / Slab elements ──
+          // Convert store Plate objects to WASM Element format (element_type: 'Plate')
+          const platesArray = Array.from(plates.values());
+          const wasmPlateElements = platesArray.map((p) => {
+            // Plate nodeIds = [n1, n2, n3, n4] (CCW quad)
+            // Rust expects: node_i, node_j, node_k, node_l
+            return {
+              id: p.id,
+              node_i: p.nodeIds[0],
+              node_j: p.nodeIds[1],
+              node_k: p.nodeIds[2],
+              node_l: p.nodeIds[3],
+              element_type: 'Plate' as const,
+              E: ((p.E ?? (p.materialType === 'concrete' ? 25e6 : 200e6)) * 1000), // kN/m² → Pa
+              thickness: p.thickness ?? 0.2, // m
+              nu: p.nu ?? (p.materialType === 'concrete' ? 0.2 : 0.3),
+              // Frame fields not used for plates but need defaults for Rust serde
+              G: 0, A: 0, Iy: 0, Iz: 0, J: 0, beta: 0,
+              releases_i: [false, false, false, false, false, false],
+              releases_j: [false, false, false, false, false, false],
+            };
+          });
+
+          // Add plate pressure loads as equivalent nodal loads
+          for (const p of platesArray) {
+            if (p.pressure && Math.abs(p.pressure) > 1e-12) {
+              // Lumped load: total = pressure × area / 4 per node
+              const pNodes = p.nodeIds.map((nid) => nodesArray.find((n) => n.id === nid)).filter(Boolean) as typeof nodesArray;
+              if (pNodes.length === 4) {
+                // Approximate area via cross product of diagonals
+                const dx13 = pNodes[2].x - pNodes[0].x, dy13 = pNodes[2].y - pNodes[0].y, dz13 = (pNodes[2].z ?? 0) - (pNodes[0].z ?? 0);
+                const dx24 = pNodes[3].x - pNodes[1].x, dy24 = pNodes[3].y - pNodes[1].y, dz24 = (pNodes[3].z ?? 0) - (pNodes[1].z ?? 0);
+                const cx = dy13 * dz24 - dz13 * dy24;
+                const cy = dz13 * dx24 - dx13 * dz24;
+                const cz = dx13 * dy24 - dy13 * dx24;
+                const area = 0.5 * Math.sqrt(cx * cx + cy * cy + cz * cz);
+                const forcePerNode = (p.pressure * 1000 * area) / 4; // kN/m² → N/m², × area / 4
+                for (const nd of pNodes) {
+                  wasmPointLoads.push({
+                    node_id: nd.id,
+                    fx: 0,
+                    fy: -forcePerNode, // Pressure positive = downward = negative Y
+                    fz: 0,
+                    mx: 0, my: 0, mz: 0,
+                  });
+                }
+              }
+            }
+          }
+
+          // Merge frame + plate elements for the solver
+          const allWasmElements = [...wasmElements, ...wasmPlateElements];
+
           // Run WASM analysis WITH LOADS
           modelerLogger.log(
-            `[Analysis] Calling WASM solver with ${wasmNodes.length} nodes, ${wasmElements.length} members`,
+            `[Analysis] Calling WASM solver with ${wasmNodes.length} nodes, ${allWasmElements.length} elements (${wasmElements.length} frame + ${wasmPlateElements.length} plate)`,
           );
           const wasmResult = await analyzeStructure(
             wasmNodes,
-            wasmElements,
+            allWasmElements,
             wasmPointLoads,
             wasmMemberLoads,
           );
@@ -1479,15 +1540,10 @@ export const ModernModeler: FC = () => {
             };
 
             // Helper: generate SFD/BMD/deflection diagram arrays from TOTAL member end forces
-            // The Rust solver returns f = k_local * T * u + FEF (total forces including all load effects).
-            // We reconstruct the internal force variation using equilibrium:
-            //   V_i + V_j = w*L  →  w = (V_i + V_j) / L  (equivalent distributed load intensity)
-            //   V(x) = V_i - w*x
-            //   M_internal(x) = -M_i + V_i*x - w*x²/2
-            //   (Note: FEM returns Mz_i as nodal applied moment [CCW+], but internal
-            //    bending moment convention [sagging+] requires negation of the end moment)
-            // This is EXACT for any combination of UDL/UVL/point loads and is self-consistent
-            // with the solver output. No need to re-read store loads (which would double-count).
+            // Uses actual member loads for piecewise-correct diagrams:
+            //   point loads → step in SFD, kink in BMD
+            //   applied moments → jump in BMD
+            //   UDL/UVL → parabolic/cubic variation
             const genDiagram = (
               axF: number, // Axial force at node i (kN)
               v1: number, // Shear Y at node i (kN)
@@ -1514,10 +1570,17 @@ export const ModernModeler: FC = () => {
               const EIy = (mInfo.E || 200e6) * (mInfo.Iy || mInfo.I || 1e-4);
 
               // Back-calculate equivalent distributed loads from equilibrium
-              const wy = (v1 + v2) / L; // Y-direction UDL (kN/m)
-              const wz = (vz1 + vz2) / L; // Z-direction UDL (kN/m)
+              // ─── Gather actual loads for this member (piecewise SFD/BMD) ───
+              const myMLs: DiagramLoad[] = memberLoads.filter(
+                (ml) => ml.memberId === memberElemId,
+              );
+              const { ly: lyAx, lz: lzAx } = buildLocalAxesForDiagram(
+                ddx, ddy, ddz, L, mInfo.betaAngle ?? 0,
+              );
 
-              const ST = 51;
+              // Build stations (includes discontinuity points for point loads / moments)
+              const stations = buildDiagramStations(L, myMLs, 51);
+              const numSt = stations.length;
               const xv: number[] = [],
                 sy: number[] = [],
                 sz: number[] = [],
@@ -1527,120 +1590,48 @@ export const ModernModeler: FC = () => {
                 dy: number[] = [],
                 dz: number[] = [];
 
-              for (let s = 0; s < ST; s++) {
-                const x = (s / (ST - 1)) * L;
+              for (let s = 0; s < numSt; s++) {
+                const x = stations[s];
                 xv.push(x);
                 ax.push(axF);
 
-                // Shear Y: V(x) = V1 - wy·x
-                sy.push(v1 - wy * x);
+                const { dVy, dMz, dVz, dMy } = accumulateLoadEffects(
+                  x, myMLs, L, lyAx, lzAx,
+                );
 
-                // Moment about Z (primary BMD): Mz_internal(x) = -M1 + V1·x - wy·x²/2
-                mzArr.push(-m1 + v1 * x - (wy * x * x) / 2);
-
-                // Shear Z: Vz(x) = Vz1 - wz·x
-                sz.push(vz1 - wz * x);
-
-                // Moment about Y (weak-axis BMD): My_internal(x) = My1 + Vz1·x - wz·x²/2
-                myArr.push(my1 + vz1 * x - (wz * x * x) / 2);
+                // Shear Y: V(x) = V1 − ΔV_y
+                sy.push(v1 - dVy);
+                // Moment Z (primary BMD): Mz(x) = −M1 + V1·x − ΔMz
+                mzArr.push(-m1 + v1 * x - dMz);
+                // Shear Z: Vz(x) = Vz1 − ΔV_z
+                sz.push(vz1 - dVz);
+                // Moment Y (weak-axis BMD): My(x) = My1 + Vz1·x − ΔMy
+                myArr.push(my1 + vz1 * x - dMy);
               }
 
-              // ─── Compute local axes & solver displacements for deflection BCs ───
-              // The old code always forced y(L)=0 (simply-supported assumption).
-              // This is WRONG for cantilevers where the free end has non-zero deflection.
-              // Fix: use actual solver displacements at end nodes as boundary conditions.
-              const cx_m = ddx / L, cy_m = ddy / L, cz_m = ddz / L;
-              // Local y-axis (perpendicular to member in primary bending plane)
-              let ly_x = -cy_m, ly_y = cx_m, ly_z = 0.0; // 2D default
-              if (Math.abs(cz_m) > 0.001) {
-                // 3D member: compute via cross product with reference vector
-                const isVert = Math.abs(cx_m) < 0.01 && Math.abs(cz_m) < 0.01;
-                const refx = isVert ? 1 : 0, refy = isVert ? 0 : 1;
-                let zx = cy_m * 0 - cz_m * refy;
-                let zy = cz_m * refx - cx_m * 0;
-                let zzc = cx_m * refy - cy_m * refx;
-                const zLen = Math.sqrt(zx * zx + zy * zy + zzc * zzc) || 1;
-                zx /= zLen; zy /= zLen; zzc /= zLen;
-                ly_x = zy * cz_m - zzc * cy_m;
-                ly_y = zzc * cx_m - zx * cz_m;
-                ly_z = zx * cy_m - zy * cx_m;
-              }
-              // Local z-axis = localX × localY
-              const lz_x = cy_m * ly_z - cz_m * ly_y;
-              const lz_y = cz_m * ly_x - cx_m * ly_z;
-              const lz_z = cx_m * ly_y - cy_m * ly_x;
-
-              // Retrieve actual solver displacements at end nodes (meters)
+              // ─── Retrieve solver displacement BCs for deflection ───
               const disp_nd_i = nodesDict[mInfo.startNodeId];
               const disp_nd_j = nodesDict[mInfo.endNodeId];
-              // Local y displacement at each end (dot product with local y-axis)
               const dy_i_loc = disp_nd_i
-                ? (ly_x * (disp_nd_i.DX ?? 0) + ly_y * (disp_nd_i.DY ?? 0) + ly_z * (disp_nd_i.DZ ?? 0))
+                ? (lyAx[0] * (disp_nd_i.DX ?? 0) + lyAx[1] * (disp_nd_i.DY ?? 0) + lyAx[2] * (disp_nd_i.DZ ?? 0))
                 : 0;
               const dy_j_loc = disp_nd_j
-                ? (ly_x * (disp_nd_j.DX ?? 0) + ly_y * (disp_nd_j.DY ?? 0) + ly_z * (disp_nd_j.DZ ?? 0))
+                ? (lyAx[0] * (disp_nd_j.DX ?? 0) + lyAx[1] * (disp_nd_j.DY ?? 0) + lyAx[2] * (disp_nd_j.DZ ?? 0))
                 : 0;
-              // Local z displacement at each end
               const dz_i_loc = disp_nd_i
-                ? (lz_x * (disp_nd_i.DX ?? 0) + lz_y * (disp_nd_i.DY ?? 0) + lz_z * (disp_nd_i.DZ ?? 0))
+                ? (lzAx[0] * (disp_nd_i.DX ?? 0) + lzAx[1] * (disp_nd_i.DY ?? 0) + lzAx[2] * (disp_nd_i.DZ ?? 0))
                 : 0;
               const dz_j_loc = disp_nd_j
-                ? (lz_x * (disp_nd_j.DX ?? 0) + lz_y * (disp_nd_j.DY ?? 0) + lz_z * (disp_nd_j.DZ ?? 0))
+                ? (lzAx[0] * (disp_nd_j.DX ?? 0) + lzAx[1] * (disp_nd_j.DY ?? 0) + lzAx[2] * (disp_nd_j.DZ ?? 0))
                 : 0;
 
-              // Deflection Y via double integration of Mz(x)/EIz
-              // BCs from actual solver: EI·y(x) = ∫∫M dx² + C1·x + C2
-              //   y(0) = dy_i → C2 = dy_i · EI
-              //   y(L) = dy_j → C1 = (dy_j · EI − defl(L) − C2) / L
-              if (EIz > 0) {
-                const dx = L / (ST - 1);
-                const slopeY: number[] = [0];
-                for (let s = 1; s < ST; s++) {
-                  const dArea = ((mzArr[s - 1] + mzArr[s]) / 2) * dx;
-                  slopeY.push(slopeY[s - 1] + dArea);
-                }
-                const deflY: number[] = [0];
-                for (let s = 1; s < ST; s++) {
-                  const dArea = ((slopeY[s - 1] + slopeY[s]) / 2) * dx;
-                  deflY.push(deflY[s - 1] + dArea);
-                }
-                const C2_y = dy_i_loc * EIz;
-                const yL = deflY[ST - 1];
-                const C1_y = L > 1e-12 ? (dy_j_loc * EIz - yL - C2_y) / L : 0;
-                for (let s = 0; s < ST; s++) {
-                  const x = (s / (ST - 1)) * L;
-                  const yy = (deflY[s] + C1_y * x + C2_y) / EIz;
-                  dy.push(yy * 1000); // m → mm
-                }
-              } else {
-                for (let s = 0; s < ST; s++) dy.push(0);
-              }
+              // ─── Deflection Y: EI_z·v″ = M_z (sign = +1) ───
+              const rawDY = integrateDeflection(stations, mzArr, EIz, dy_i_loc, dy_j_loc, L, 1);
+              for (let s = 0; s < numSt; s++) dy.push(rawDY[s] * 1000); // m → mm
 
-              // Deflection Z via double integration of My(x)/EIy
-              // Same approach: use solver displacements for BCs
-              if (EIy > 0) {
-                const dx = L / (ST - 1);
-                const slopeZ: number[] = [0];
-                for (let s = 1; s < ST; s++) {
-                  const dArea = ((myArr[s - 1] + myArr[s]) / 2) * dx;
-                  slopeZ.push(slopeZ[s - 1] + dArea);
-                }
-                const deflZ: number[] = [0];
-                for (let s = 1; s < ST; s++) {
-                  const dArea = ((slopeZ[s - 1] + slopeZ[s]) / 2) * dx;
-                  deflZ.push(deflZ[s - 1] + dArea);
-                }
-                const C2_z = dz_i_loc * EIy;
-                const zL = deflZ[ST - 1];
-                const C1_z = L > 1e-12 ? (dz_j_loc * EIy - zL - C2_z) / L : 0;
-                for (let s = 0; s < ST; s++) {
-                  const x = (s / (ST - 1)) * L;
-                  const zz = (deflZ[s] + C1_z * x + C2_z) / EIy;
-                  dz.push(zz * 1000); // m → mm
-                }
-              } else {
-                for (let s = 0; s < ST; s++) dz.push(0);
-              }
+              // ─── Deflection Z: EI_y·v″ = −M_y (sign = −1) ───
+              const rawDZ = integrateDeflection(stations, myArr, EIy, dz_i_loc, dz_j_loc, L, -1);
+              for (let s = 0; s < numSt; s++) dz.push(rawDZ[s] * 1000); // m → mm
 
               return {
                 x_values: xv,
@@ -2184,15 +2175,44 @@ export const ModernModeler: FC = () => {
           });
         }
 
+        // ─── Parse plate / slab results ───
+        const plateResultsDict: Record<string, any> = {};
+        if (wasmResult.plate_results) {
+          for (const [elemId, pr] of mapEntries(wasmResult.plate_results)) {
+            const p = pr as any;
+            plateResultsDict[elemId] = {
+              stress_xx: (p.stress_xx ?? 0) / 1e6,   // Pa → MPa
+              stress_yy: (p.stress_yy ?? 0) / 1e6,
+              stress_xy: (p.stress_xy ?? 0) / 1e6,
+              moment_xx: (p.moment_xx ?? 0) / 1000,   // N·m/m → kN·m/m
+              moment_yy: (p.moment_yy ?? 0) / 1000,
+              moment_xy: (p.moment_xy ?? 0) / 1000,
+              displacement: (p.displacement ?? 0) * 1000, // m → mm
+              von_mises: (p.von_mises ?? 0) / 1e6,    // Pa → MPa
+            };
+          }
+          modelerLogger.log(
+            `[Analysis] Parsed ${Object.keys(plateResultsDict).length} plate results`,
+          );
+        }
+
         setAnalysisResults({
           displacements,
           reactions,
           memberForces,
+          plateResults: plateResultsDict,
           equilibriumCheck: result.equilibriumCheck,
           conditionNumber: result.conditionNumber,
           completed: true,
           timestamp: Date.now(),
         } as any);
+
+        // Sync UI store so Design tab gate recognises analysis is complete
+        useUIStore.getState().setAnalysisResults({
+          completed: true,
+          timestamp: Date.now(),
+          type: result.stats?.solver ?? "Rust WASM",
+        });
 
         setAnalysisStage("complete");
         setAnalysisProgress(100);

@@ -225,6 +225,8 @@ export async function runAnalysis(): Promise<{
             const n1 = nodeMap.get(member.startNodeId);
             const n2 = nodeMap.get(member.endNodeId);
             if (n1 && n2) {
+              const d1 = displacementsMap.get(member.startNodeId);
+              const d2 = displacementsMap.get(member.endNodeId);
               diagramData = generateWasmDiagramData(
                 axial,
                 shearStart,
@@ -235,6 +237,8 @@ export async function runAnalysis(): Promise<{
                 n2,
                 member,
                 memberLoadMap.get(member.id) || [],
+                d1,
+                d2,
               );
             }
           }
@@ -303,6 +307,8 @@ function generateWasmDiagramData(
   n2: Node,
   member: Member,
   _mLoads: MemberLoad[], // kept for API compatibility, no longer used
+  dispStart?: { dx: number; dy: number; dz: number; rx: number; ry: number; rz: number },
+  dispEnd?: { dx: number; dy: number; dz: number; rx: number; ry: number; rz: number },
 ): NonNullable<MemberForceData["diagramData"]> {
   const dx = n2.x - n1.x;
   const dy = n2.y - n1.y;
@@ -316,11 +322,46 @@ function generateWasmDiagramData(
   // This is exact and avoids double-counting since V1/V2 already include FEF.
   const w = L > 1e-12 ? (shearStart + shearEnd) / L : 0;
 
+  // ─── Pre-compute local y-axis displacement BCs (once per member) ───
+  // Used for deflection computation with actual solver displacements
+  let dy_i_local = 0;
+  let dy_j_local = 0;
+  if (dispStart || dispEnd) {
+    const lx_ax = dx / L, ly_ax = dy / L, lz_ax = dz / L;
+    let yx = 0, yy = 0, yz = 0;
+    if (Math.abs(lz_ax) < 0.999) {
+      yx = -ly_ax; yy = lx_ax; yz = 0;
+      const yn = Math.sqrt(yx * yx + yy * yy + yz * yz);
+      if (yn > 1e-12) { yx /= yn; yy /= yn; yz /= yn; }
+    } else {
+      yx = 1; yy = 0; yz = 0;
+    }
+    if (dispStart) {
+      dy_i_local = dispStart.dx * yx + dispStart.dy * yy + dispStart.dz * yz;
+    }
+    if (dispEnd) {
+      dy_j_local = dispEnd.dx * yx + dispEnd.dy * yy + dispEnd.dz * yz;
+    }
+  }
+
   const x_values: number[] = [];
   const shear_y: number[] = [];
   const moment_y: number[] = [];
   const axial_arr: number[] = [];
   const deflection_y: number[] = [];
+
+  // Pre-compute deflection integration constants (closed-form for polynomial M(x))
+  // EI·y = -M1·x²/2 + V1·x³/6 − w·x⁴/24 + C1·x + C2
+  // y(0) = dy_i → C2 = dy_i · EI
+  // y(L) = dy_j → C1 = (dy_j·EI + M1·L²/2 − V1·L³/6 + w·L⁴/24 − C2) / L
+  let defl_C1 = 0;
+  let defl_C2 = 0;
+  if (EI > 0) {
+    defl_C2 = dy_i_local * EI;
+    defl_C1 = L > 1e-12
+      ? (dy_j_local * EI + (momentStart * L * L) / 2 - (shearStart * L * L * L) / 6 + (w * L * L * L * L) / 24 - defl_C2) / L
+      : 0;
+  }
 
   for (let s = 0; s < DIAGRAM_STATIONS; s++) {
     const x = (s / (DIAGRAM_STATIONS - 1)) * L;
@@ -336,18 +377,14 @@ function generateWasmDiagramData(
     // Moment: M_internal(x) = -M1 + V1·x - w·x²/2 (negate FEM moment for internal BMD)
     moment_y.push(-momentStart + shearStart * x - (w * x * x) / 2);
 
-    // Deflection via double integration of M_internal(x)/EI
-    // EI·y'' = -M1 + V1·x − w·x²/2
-    // EI·y  = -M1·x²/2 + V1·x³/6 − w·x⁴/24 + C1·x + C2
-    // BC: y(0)=0 → C2=0;  y(L)=0 → C1 = M1·L/2 − V1·L²/6 + w·L³/24
+    // Deflection via closed-form double integration of M(x)/EI
+    // with actual solver nodal displacement BCs
     if (EI > 0) {
-      const C1 =
-        (momentStart * L) / 2 - (shearStart * L * L) / 6 + (w * L * L * L) / 24;
       const y =
         ((-momentStart * x * x) / 2 +
           (shearStart * x * x * x) / 6 -
           (w * x * x * x * x) / 24 +
-          C1 * x) /
+          defl_C1 * x + defl_C2) /
         EI;
       deflection_y.push(y * 1000); // convert to mm
     } else {
