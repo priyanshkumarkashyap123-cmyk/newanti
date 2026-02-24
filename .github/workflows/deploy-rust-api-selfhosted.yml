@@ -12,7 +12,7 @@ jobs:
     runs-on: self-hosted  # ← Uses your own machine instead of GitHub runners
     
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       
       - name: Log in to Azure Container Registry
         uses: azure/docker-login@v1
