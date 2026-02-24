@@ -8,7 +8,7 @@
  * - Clear CTAs
  */
 
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -48,6 +48,16 @@ interface PricingPlan {
   cta: string;
   ctaVariant: "primary" | "secondary" | "outline";
 }
+
+const INDIA_MARKET = {
+  country: "India",
+  currencyCode: "INR",
+  usdToInr: 83,
+  maxPppDiscount: 0.6,
+};
+
+type MarketMode = "india" | "global";
+const MARKET_OVERRIDE_KEY = "beamlab.pricing.market";
 
 const PLANS: PricingPlan[] = [
   {
@@ -379,6 +389,14 @@ const FAQ_ITEMS = [
     q: "Do you offer on-premise deployment?",
     a: "Yes, our Enterprise plan includes the option for on-premise or private cloud deployment. Contact our sales team to discuss your infrastructure requirements.",
   },
+  {
+    q: "Do you provide India-specific pricing?",
+    a: "Yes. We support India-focused commercial terms with PPP-based discounts (up to 60%), INR-oriented quoting, and flexible billing options for freelancers, firms, and institutions.",
+  },
+  {
+    q: "Can you provide GST-compliant invoices for Indian teams?",
+    a: "Yes. We support GST-ready invoicing workflows for eligible plans and enterprise contracts. Our team can also support procurement documentation for annual purchase orders.",
+  },
 ];
 
 // ============================================
@@ -392,7 +410,49 @@ export const EnhancedPricingPage: FC = () => {
   );
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const [showMatrix, setShowMatrix] = useState(false);
-  const [showPPP, setShowPPP] = useState(true);
+  const [marketMode, setMarketMode] = useState<MarketMode>("global");
+  const [showPPP, setShowPPP] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const params = new URLSearchParams(window.location.search);
+    const marketParam = params.get("market")?.toLowerCase();
+    const savedMarket = window.localStorage.getItem(
+      MARKET_OVERRIDE_KEY,
+    ) as MarketMode | null;
+    const locale = window.navigator.language || "";
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+
+    const inferredIndia =
+      locale.toLowerCase().includes("-in") || timeZone === "Asia/Kolkata";
+
+    let resolvedMarket: MarketMode = inferredIndia ? "india" : "global";
+
+    if (savedMarket === "india" || savedMarket === "global") {
+      resolvedMarket = savedMarket;
+    }
+
+    if (marketParam === "in" || marketParam === "india") {
+      resolvedMarket = "india";
+    }
+
+    if (marketParam === "global" || marketParam === "intl") {
+      resolvedMarket = "global";
+    }
+
+    setMarketMode(resolvedMarket);
+    setShowPPP(resolvedMarket === "india");
+  }, []);
+
+  const applyMarketMode = (mode: MarketMode) => {
+    setMarketMode(mode);
+    setShowPPP(mode === "india");
+
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(MARKET_OVERRIDE_KEY, mode);
+    }
+  };
 
   const handleGetStarted = (planId: string) => {
     if (planId === "enterprise") {
@@ -408,6 +468,30 @@ export const EnhancedPricingPage: FC = () => {
     const price =
       billingPeriod === "yearly" ? plan.yearlyPrice : plan.monthlyPrice;
     return `$${price}`;
+  };
+
+  const formatInr = (usdPrice: number) => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: INDIA_MARKET.currencyCode,
+      maximumFractionDigits: 0,
+    }).format(usdPrice * INDIA_MARKET.usdToInr);
+  };
+
+  const getIndiaPPPPrice = (plan: PricingPlan) => {
+    if (plan.monthlyPrice === null || plan.monthlyPrice === 0) {
+      return null;
+    }
+
+    const baseUsdPrice =
+      billingPeriod === "yearly" ? plan.yearlyPrice : plan.monthlyPrice;
+
+    if (!baseUsdPrice) {
+      return null;
+    }
+
+    const discountedUsdPrice = baseUsdPrice * (1 - INDIA_MARKET.maxPppDiscount);
+    return formatInr(discountedUsdPrice);
   };
 
   return (
@@ -452,14 +536,20 @@ export const EnhancedPricingPage: FC = () => {
               <Globe className="w-5 h-5 text-indigo-100 shrink-0 hidden sm:block" />
               <p className="text-sm text-indigo-50">
                 <strong className="font-semibold text-white">
-                  Visiting from a developing economy?
+                  {marketMode === "india"
+                    ? "India pricing support is live."
+                    : "Regional pricing support is available."}
                 </strong>{" "}
-                We offer Purchasing Power Parity (PPP) discounts up to 60% off.
+                {marketMode === "india"
+                  ? "Apply for PPP-adjusted pricing, INR-friendly billing, and GST-ready invoicing."
+                  : "Apply for PPP-adjusted pricing and local payment support."}
               </p>
             </div>
             <div className="flex items-center gap-4 shrink-0">
               <button className="text-sm font-bold text-white hover:text-indigo-200 transition-colors whitespace-nowrap underline decoration-indigo-400 underline-offset-2">
-                Apply Now
+                {marketMode === "india"
+                  ? "Apply for India Plan"
+                  : "Apply for PPP Pricing"}
               </button>
               <button
                 onClick={() => setShowPPP(false)}
@@ -483,7 +573,9 @@ export const EnhancedPricingPage: FC = () => {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-6"
           >
             <Sparkles className="w-4 h-4" />
-            Stop paying for legacy software. Try BeamLab free for 14 days.
+            {marketMode === "india"
+              ? "India-ready pricing, UPI-friendly checkout, and 14-day free trial."
+              : "14-day free trial with flexible global pricing options."}
           </motion.div>
 
           <motion.h1
@@ -507,6 +599,29 @@ export const EnhancedPricingPage: FC = () => {
             Get the modern structural analysis platform that saves you hours on
             every project. No hidden fees, no expensive maintenance contracts.
           </motion.p>
+
+          <div className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/70 p-1 mb-10">
+            <button
+              onClick={() => applyMarketMode("india")}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                marketMode === "india"
+                  ? "bg-blue-500 text-white"
+                  : "text-slate-300 hover:text-white"
+              }`}
+            >
+              India View
+            </button>
+            <button
+              onClick={() => applyMarketMode("global")}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                marketMode === "global"
+                  ? "bg-blue-500 text-white"
+                  : "text-slate-300 hover:text-white"
+              }`}
+            >
+              Global View
+            </button>
+          </div>
 
           {/* Billing Toggle */}
           <motion.div
@@ -585,6 +700,27 @@ export const EnhancedPricingPage: FC = () => {
                     /month {billingPeriod === "yearly" && "(billed yearly)"}
                   </span>
                 )}
+                {marketMode === "india" &&
+                  plan.monthlyPrice !== null &&
+                  plan.monthlyPrice > 0 && (
+                    <p className="text-xs text-emerald-400 mt-2">
+                      India PPP eligible: as low as {getIndiaPPPPrice(plan)}
+                      /month*
+                    </p>
+                  )}
+                {marketMode === "india" &&
+                  plan.monthlyPrice !== null &&
+                  plan.monthlyPrice > 0 && (
+                    <p className="text-xs text-slate-500 mt-1">
+                      Approx. India list:{" "}
+                      {formatInr(
+                        billingPeriod === "yearly"
+                          ? (plan.yearlyPrice ?? plan.monthlyPrice)
+                          : plan.monthlyPrice,
+                      )}
+                      /month
+                    </p>
+                  )}
               </div>
 
               <button
@@ -640,6 +776,96 @@ export const EnhancedPricingPage: FC = () => {
             <div className="flex items-center gap-2 text-xl font-bold">
               <Building2 className="w-6 h-6" /> SOM
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Sensitive Market Experience */}
+      <section className="py-16 px-4 bg-slate-950 border-t border-slate-800/50">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-8">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-semibold mb-5">
+              <Globe className="w-4 h-4" />
+              {marketMode === "india"
+                ? "India-first commercial experience"
+                : "Built for sensitive and price-conscious markets"}
+            </div>
+            <h3 className="text-2xl font-bold mb-3">
+              {marketMode === "india"
+                ? "Commercial model tuned for Indian firms and institutes"
+                : "Regional pricing and flexible procurement that scales"}
+            </h3>
+            <p className="text-slate-400 leading-relaxed mb-6">
+              {marketMode === "india"
+                ? "We support engineering teams across India with PPP-aligned pricing, local payment rails, and procurement-friendly billing so adoption depends on value, not budget friction."
+                : "We support teams in cost-sensitive markets with PPP-aligned pricing, practical payment options, and procurement-friendly contracts to reduce adoption friction."}
+            </p>
+            <div className="grid sm:grid-cols-2 gap-4 text-sm">
+              <div className="rounded-xl border border-slate-800 p-4 bg-slate-900">
+                <p className="text-slate-500 mb-1">PPP Discounts</p>
+                <p className="text-white font-semibold">Up to 60% off</p>
+              </div>
+              <div className="rounded-xl border border-slate-800 p-4 bg-slate-900">
+                <p className="text-slate-500 mb-1">Billing</p>
+                <p className="text-white font-semibold">
+                  {marketMode === "india"
+                    ? "Monthly / Quarterly / Annual PO"
+                    : "Monthly / Quarterly / Yearly"}
+                </p>
+              </div>
+              <div className="rounded-xl border border-slate-800 p-4 bg-slate-900">
+                <p className="text-slate-500 mb-1">Payments</p>
+                <p className="text-white font-semibold">
+                  {marketMode === "india"
+                    ? "UPI, IMPS/NEFT/RTGS, cards"
+                    : "Cards, wire transfer, local rails"}
+                </p>
+              </div>
+              <div className="rounded-xl border border-slate-800 p-4 bg-slate-900">
+                <p className="text-slate-500 mb-1">
+                  {marketMode === "india"
+                    ? "Tax & Invoicing"
+                    : "Implementation"}
+                </p>
+                <p className="text-white font-semibold">
+                  {marketMode === "india"
+                    ? "GST-ready invoicing support"
+                    : "Priority onboarding assistance"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-400 text-xs font-semibold mb-5">
+              <ShieldCheck className="w-4 h-4" /> Compliance-first deployments
+            </div>
+            <h3 className="text-2xl font-bold mb-3">
+              Security posture for regulated and sensitive sectors
+            </h3>
+            <p className="text-slate-400 leading-relaxed mb-6">
+              For infrastructure, government, and enterprise clients, BeamLab
+              supports hardened deployment models and governance requirements to
+              align with internal risk controls.
+            </p>
+            <ul className="space-y-3 text-sm">
+              <li className="flex items-start gap-3 text-slate-300">
+                <Lock className="w-4 h-4 mt-0.5 text-blue-400" /> Data
+                encryption at rest and in transit
+              </li>
+              <li className="flex items-start gap-3 text-slate-300">
+                <Server className="w-4 h-4 mt-0.5 text-blue-400" /> On-premise /
+                private cloud options
+              </li>
+              <li className="flex items-start gap-3 text-slate-300">
+                <Shield className="w-4 h-4 mt-0.5 text-blue-400" /> SSO/SAML and
+                role-based access controls
+              </li>
+              <li className="flex items-start gap-3 text-slate-300">
+                <Check className="w-4 h-4 mt-0.5 text-blue-400" />{" "}
+                Audit-oriented change tracking and logs
+              </li>
+            </ul>
           </div>
         </div>
       </section>

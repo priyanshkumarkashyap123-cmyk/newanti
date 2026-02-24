@@ -1505,6 +1505,13 @@ export const ModernModeler: FC = () => {
               const mzV = (mf.forces_i[5] ?? 0) / 1000;
               const syE = (mf.forces_j[1] ?? 0) / 1000;
               const mzE = (mf.forces_j[5] ?? 0) / 1000;
+
+              // Diagnostic: Log member end forces to help debug zero-BMD issues
+              if (Object.keys(membersDict).length === 0) {
+                modelerLogger.log(
+                  `[Analysis][Diag] First member ${elemId}: Vy_i=${syV.toFixed(3)} kN, Mz_i=${mzV.toFixed(3)} kN·m, Vy_j=${syE.toFixed(3)} kN, Mz_j=${mzE.toFixed(3)} kN·m`,
+                );
+              }
               const maxSY =
                 mf.max_shear_y != null
                   ? mf.max_shear_y / 1000
@@ -1516,6 +1523,18 @@ export const ModernModeler: FC = () => {
                   ? mf.max_moment_z / 1000
                   : Math.max(Math.abs(mzV), Math.abs(mzE));
               const diag3D = genDiagram(axV, syV, mzV, syE, mzE, elemId);
+
+              // Diagnostic: Log first member's BMD sample values
+              if (Object.keys(membersDict).length === 0 && diag3D) {
+                const mz = diag3D.moment_z;
+                modelerLogger.log(
+                  `[Analysis][Diag] BMD for ${elemId}: M(0)=${mz[0]?.toFixed(3)}, M(mid)=${mz[Math.floor(mz.length / 2)]?.toFixed(3)}, M(end)=${mz[mz.length - 1]?.toFixed(3)} kN·m`,
+                );
+              } else if (Object.keys(membersDict).length === 0 && !diag3D) {
+                modelerLogger.warn(
+                  `[Analysis][Diag] genDiagram returned undefined for ${elemId} — member/node lookup failed`,
+                );
+              }
               membersDict[elemId] = {
                 memberId: elemId,
                 axial: diag3D?.axial || [axV],
