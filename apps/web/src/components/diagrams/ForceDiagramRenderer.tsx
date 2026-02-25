@@ -115,8 +115,6 @@ const COLOR_SCHEMES = {
 // ============================================
 
 const DIAGRAM_PADDING = { top: 60, right: 80, bottom: 40, left: 80 };
-const MEMBER_HEIGHT = 8;
-const LABEL_OFFSET = 15;
 
 // ============================================
 // COMPONENT
@@ -193,8 +191,6 @@ export const ForceDiagramRenderer: React.FC<ForceDiagramRendererProps> = ({
         );
         
         let currentY = DIAGRAM_PADDING.top;
-        let diagramIndex = 0;
-        
         // Draw Shear Force Diagram
         if (fullConfig.showShear) {
             drawDiagram(
@@ -216,7 +212,6 @@ export const ForceDiagramRenderer: React.FC<ForceDiagramRendererProps> = ({
                 memberData.endSupport
             );
             currentY += diagramHeight;
-            diagramIndex++;
         }
         
         // Draw Bending Moment Diagram
@@ -240,7 +235,6 @@ export const ForceDiagramRenderer: React.FC<ForceDiagramRendererProps> = ({
                 memberData.endSupport
             );
             currentY += diagramHeight;
-            diagramIndex++;
         }
         
         // Draw Axial Force Diagram
@@ -264,7 +258,6 @@ export const ForceDiagramRenderer: React.FC<ForceDiagramRendererProps> = ({
                 memberData.endSupport
             );
             currentY += diagramHeight;
-            diagramIndex++;
         }
         
         // Draw Torsion Diagram
@@ -352,6 +345,15 @@ function drawDiagram(
     startSupport?: SupportType,
     endSupport?: SupportType
 ) {
+    if (!points || points.length === 0) {
+        // No data available for this diagram - show baseline title only
+        ctx.fillStyle = colors.text;
+        ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'left';
+        ctx.fillText(`${title} (No data)`, x, y - 5);
+        return;
+    }
+
     const centerY = y + height / 2;
     const scale = Math.max(Math.abs(maxValue), Math.abs(minValue));
     const valueScale = scale > 0 ? (height / 2 - 10) / scale : 1;
@@ -455,6 +457,15 @@ function drawAxialDiagram(
     startSupport?: SupportType,
     endSupport?: SupportType
 ) {
+    if (!points || points.length === 0) {
+        // No data available for this diagram - show baseline title only
+        ctx.fillStyle = colors.text;
+        ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'left';
+        ctx.fillText(`${title} (No data)`, x, y - 5);
+        return;
+    }
+
     const centerY = y + height / 2;
     const scale = Math.max(Math.abs(maxValue), Math.abs(minValue));
     const valueScale = scale > 0 ? (height / 2 - 10) / scale : 1;
@@ -675,6 +686,8 @@ function drawValueLabels(
     color: string,
     flipSign: boolean
 ) {
+    if (!points || points.length === 0) return;
+
     ctx.fillStyle = color;
     ctx.font = '10px Arial';
     

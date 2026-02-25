@@ -9,10 +9,10 @@
  */
 
 import React, { FC, useState, useMemo } from 'react';
-import { X, ChevronLeft, ChevronRight, Download, Settings, AlertTriangle, CheckCircle } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Download, AlertTriangle, CheckCircle } from 'lucide-react';
 import { ForceDiagramRenderer, MemberDiagramData, DiagramConfig, SupportType } from '../diagrams/ForceDiagramRenderer';
 import { ForcePoint } from '../../utils/MemberForcesCalculator';
-import { MemberDesignService, DesignInput, DesignResult, DesignCheck } from '../../services/MemberDesignService';
+import { MemberDesignService, DesignInput, DesignResult } from '../../services/MemberDesignService';
 
 // ============================================
 // TYPES

@@ -1643,12 +1643,17 @@ export const ModernModeler: FC = () => {
               // The diagram formula should give correct endpoints by equilibrium,
               // but floating-point drift or load mismatches can cause the last
               // station to deviate. Force exact endpoint values to match solver.
-              // Note: At node j, internal forces = −(member end forces) for
-              // shear and My, because the cut-section convention flips at the
-              // far end. Mz already uses −m2 (negated by convention).
+              //
+              // Sign conventions at node j (far end):
+              //   Shear:  V_internal(L) = −Fy_j  (reaction opposes internal shear)
+              //   Mz:     M_internal(L) = +Mz_j  (at the far end, CCW↔sagging
+              //           relationship reverses vs left end, so NO negation)
+              //   My:     My_internal(L) = −My_j  (similar to shear, because the
+              //           Rust solver already negates My FEF, so the extra negate
+              //           at the far end cancels back)
               if (numSt > 0) {
                 mzArr[0] = -m1; // Should already be this, reinforce
-                mzArr[numSt - 1] = -m2;
+                mzArr[numSt - 1] = m2;  // NOT -m2: at far end, M_internal = Mz_j
                 myArr[0] = my1;
                 myArr[numSt - 1] = -my2;
                 sy[0] = v1;

@@ -281,10 +281,13 @@ const convertToAnalysisResultsData = (
           // Axial: constant
           axial_values.push(ax);
         }
-        // Enforce endpoint closure: last moment must match -Mj
+        // Enforce endpoint closure: M(0) = -Mi, M(L) = +Mj
+        // At the near end (node i): M_internal = -Mz_i (negate DSM CCW+ convention)
+        // At the far end (node j):  M_internal = +Mz_j (NO negation; at the far
+        //   end the CCW↔sagging relationship reverses vs the near end)
         if (moment_values.length > 0) {
           moment_values[0] = -Mi;
-          moment_values[moment_values.length - 1] = -Mj;
+          moment_values[moment_values.length - 1] = Mj;
         }
 
         // ─── Deflection: double integration of M(x)/EI with actual nodal displacement BCs ───

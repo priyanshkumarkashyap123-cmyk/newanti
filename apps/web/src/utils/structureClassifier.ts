@@ -77,25 +77,54 @@ export interface StructureClassification {
 
 function isTrussMember(m: Member): boolean {
   if (!m.releases) return false;
-  // Both-end moment releases → truss member (axial-only)
-  const startMom = m.releases.startMoment || m.releases.mzStart;
-  const endMom = m.releases.endMoment || m.releases.mzEnd;
-  return !!(startMom && endMom);
+  // Both-end bending releases → truss-like axial member
+  const r = m.releases;
+  const startReleased = !!(r.startMoment || r.mzStart || (r.myStart && r.mzStart));
+  const endReleased = !!(r.endMoment || r.mzEnd || (r.myEnd && r.mzEnd));
+  return startReleased && endReleased;
 }
 
 function isCableMember(m: Member): boolean {
-  // Cable if section type is CIRCLE with very small diameter or if it has
-  // full bending releases at both ends AND very low I
-  if (m.sectionType === 'CIRCLE' && (m.I === undefined || m.I < 1e-8)) {
-    // Likely a cable/tendon
-    if (m.releases?.startMoment && m.releases?.endMoment) return true;
-    if (m.releases?.mzStart && m.releases?.mzEnd) return true;
+  // Cable heuristic: tension-like section + near-zero flexural stiffness + released ends
+  const sectionType = m.sectionType?.toUpperCase?.();
+  const circularLike = sectionType === 'CIRCLE';
+  const tinyI = m.I === undefined || m.I < 1e-8;
+  const tinyA = m.A !== undefined && m.A < 5e-4; // ~500 mm²
+  return isTrussMember(m) && (circularLike || tinyI || tinyA);
+}
+
+/** Check if model has any non-negligible external load */
+function hasAnyLoads(nodeLoads: NodeLoad[], memberLoads: MemberLoad[]): boolean {
+  for (const nl of nodeLoads) {
+    if (
+      Math.abs(nl.fx ?? 0) > 1e-6 ||
+      Math.abs(nl.fy ?? 0) > 1e-6 ||
+      Math.abs(nl.fz ?? 0) > 1e-6 ||
+      Math.abs(nl.mx ?? 0) > 1e-6 ||
+      Math.abs(nl.my ?? 0) > 1e-6 ||
+      Math.abs(nl.mz ?? 0) > 1e-6
+    ) {
+      return true;
+    }
+  }
+  for (const ml of memberLoads) {
+    const mag = Math.max(
+      Math.abs(ml.w1 ?? 0),
+      Math.abs(ml.w2 ?? 0),
+      Math.abs(ml.P ?? 0),
+      Math.abs(ml.M ?? 0),
+    );
+    if (mag > 1e-9) return true;
   }
   return false;
 }
 
-function distance(a: Node, b: Node): number {
-  return Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2 + (b.z - a.z) ** 2);
+/** Coarse stability check: at least one translational restraint somewhere in model */
+function hasTranslationalSupport(nodes: Node[]): boolean {
+  return nodes.some((n) => {
+    const r = n.restraints;
+    return !!(r && (r.fx || r.fy || r.fz));
+  });
 }
 
 /** Approximate number of stories by counting distinct Y-level clusters */
@@ -115,10 +144,16 @@ function estimateStories(nodes: Node[]): number {
 /** Check if all Z-coords are effectively the same → 2D structure */
 function detect2D(nodes: Node[]): boolean {
   if (nodes.length === 0) return true;
+  const xVals = nodes.map((n) => n.x ?? 0);
+  const yVals = nodes.map((n) => n.y ?? 0);
   const zVals = nodes.map((n) => n.z ?? 0);
-  const zMin = Math.min(...zVals);
-  const zMax = Math.max(...zVals);
-  return zMax - zMin < 0.001;
+  const spans = [
+    Math.max(...xVals) - Math.min(...xVals),
+    Math.max(...yVals) - Math.min(...yVals),
+    Math.max(...zVals) - Math.min(...zVals),
+  ];
+  const varyingAxes = spans.filter((s) => s > 1e-3).length;
+  return varyingAxes <= 2;
 }
 
 /** Check if members form columns (vertical members) */
@@ -144,7 +179,16 @@ function hasLateralLoads(nodeLoads: NodeLoad[], memberLoads: MemberLoad[]): bool
   for (const nl of nodeLoads) {
     if ((nl.fx && Math.abs(nl.fx) > 1e-6) || (nl.fz && Math.abs(nl.fz) > 1e-6)) return true;
   }
-  // Horizontal member loads would count too but most UDLs are gravity
+  for (const ml of memberLoads) {
+    const mag = Math.max(
+      Math.abs(ml.w1 ?? 0),
+      Math.abs(ml.w2 ?? 0),
+      Math.abs(ml.P ?? 0),
+      Math.abs(ml.M ?? 0),
+    );
+    if (mag <= 1e-9) continue;
+    if (ml.direction === 'global_x' || ml.direction === 'global_z' || ml.direction === 'local_z') return true;
+  }
   return false;
 }
 
@@ -153,12 +197,17 @@ function hasGravityLoads(nodeLoads: NodeLoad[], memberLoads: MemberLoad[]): bool
   for (const nl of nodeLoads) {
     if (nl.fy && Math.abs(nl.fy) > 1e-6) return true;
   }
-  return memberLoads.length > 0; // member loads are typically gravity
-}
-
-/** Check if any node has support restraints */
-function hasSupports(nodes: Node[]): boolean {
-  return nodes.some((n) => n.restraints && Object.values(n.restraints).some(Boolean));
+  for (const ml of memberLoads) {
+    const mag = Math.max(
+      Math.abs(ml.w1 ?? 0),
+      Math.abs(ml.w2 ?? 0),
+      Math.abs(ml.P ?? 0),
+      Math.abs(ml.M ?? 0),
+    );
+    if (mag <= 1e-9) continue;
+    if (ml.direction === 'global_y' || ml.direction === 'local_y') return true;
+  }
+  return false;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -193,6 +242,10 @@ export function classifyStructure(
   const hasCableMembers = cableMembers.length > 0;
   const hasPlateElements = numPlates > 0;
   const hasColumns = hasVerticalMembers(membersArr, nodes);
+  const hasTransSupport = hasTranslationalSupport(nodesArr);
+  const hasLoadsDefined = hasAnyLoads(nodeLoads, memberLoads);
+  const hasGravity = hasGravityLoads(nodeLoads, memberLoads);
+  const hasLateral = hasLateralLoads(nodeLoads, memberLoads);
 
   // ── Size metrics ────────────────────────────────────────────────────────
   const xVals = nodesArr.map((n) => n.x);
@@ -220,6 +273,10 @@ export function classifyStructure(
     category = 'plate_shell';
     label = 'Plate / Shell Structure';
     description = `Pure plate/shell model with ${numPlates} elements.`;
+  } else if (numMembers > 0 && numPlates > 0) {
+    category = 'mixed';
+    label = 'Mixed Frame + Plate System';
+    description = `Hybrid model: ${numMembers} frame members + ${numPlates} plate elements.`;
   } else if (hasCableMembers && cableMembers.length >= numMembers * 0.5) {
     category = 'cable_structure';
     label = 'Cable Structure';
@@ -234,8 +291,8 @@ export function classifyStructure(
     description = `Space truss with ${numMembers} bar elements.`;
   } else if (isFrame && is2D) {
     // Distinguish: simple beam, continuous beam, portal frame, multi-story frame
-    if (!hasColumns && numMembers <= 3) {
-      // All horizontal, 1-3 spans → beam
+    if (!hasColumns) {
+      // All horizontal members → beam system
       category = numMembers === 1 ? 'simple_beam' : 'continuous_beam';
       label = numMembers === 1 ? 'Simple Beam' : 'Continuous Beam';
       description = numMembers === 1
@@ -258,10 +315,6 @@ export function classifyStructure(
     category = 'space_frame_3d';
     label = '3D Space Frame';
     description = `3D frame with ${numMembers} members across ${numNodes} nodes.`;
-  } else if (numMembers > 0 && numPlates > 0) {
-    category = 'mixed';
-    label = 'Mixed Frame + Plate System';
-    description = `Hybrid model: ${numMembers} frame members + ${numPlates} plate elements.`;
   } else {
     category = 'mixed';
     label = 'Mixed Structure';
@@ -280,6 +333,9 @@ export function classifyStructure(
     if (category === 'simple_beam' || category === 'continuous_beam') {
       return { ok: false, reason: 'P-Delta is not applicable to beams without columns — no gravity-axial coupling.', hint: 'Add columns to create a frame.' };
     }
+    if (!hasTransSupport) {
+      return { ok: false, reason: 'Model appears unstable (no translational supports) — P-Delta requires a stable supported structure.', hint: 'Add supports/restraints before running second-order analysis.' };
+    }
     if (isTruss) {
       return { ok: false, reason: 'Trusses carry purely axial loads — P-Delta geometric nonlinearity is implicit in axial behavior.', hint: undefined };
     }
@@ -291,6 +347,12 @@ export function classifyStructure(
     }
     if (!hasColumns) {
       return { ok: false, reason: 'No vertical (column) members detected — P-Delta requires gravity-loaded columns.', hint: 'Add column members.' };
+    }
+    if (!hasLoadsDefined) {
+      return { ok: false, reason: 'No loading detected — P-Delta needs a reference loaded state.', hint: 'Apply gravity/lateral loads before running second-order analysis.' };
+    }
+    if (!hasGravity) {
+      return { ok: false, reason: 'No gravity loading detected — P-Delta effects are typically driven by vertical load on columns.', hint: 'Apply dead/live load for meaningful P-Delta amplification.' };
     }
     return { ok: true, reason: 'Structure has columns subject to gravity loads — second-order effects may be significant.' };
   })();
@@ -304,6 +366,9 @@ export function classifyStructure(
     //                     models with < 2 nodes, pure plate models (our solver is frame-based)
     if (numNodes < 2 || numMembers < 1) {
       return { ok: false, reason: 'Need at least 2 nodes and 1 member to extract vibration modes.', hint: 'Define a structural model first.' };
+    }
+    if (!hasTransSupport) {
+      return { ok: false, reason: 'No translational supports detected — modal extraction on an unconstrained rigid body is not meaningful.', hint: 'Restrain at least one support node.' };
     }
     if (category === 'plate_shell') {
       return { ok: false, reason: 'Our modal solver handles frame/truss members; plate/shell modal not yet supported.', hint: 'Add frame members for modal analysis.' };
@@ -322,6 +387,9 @@ export function classifyStructure(
     if (numNodes < 2 || numMembers < 1) {
       return { ok: false, reason: 'Need structural members for time-history integration.', hint: 'Build a frame model first.' };
     }
+    if (!hasTransSupport) {
+      return { ok: false, reason: 'Model is unconstrained (no translational supports) — time-history response is undefined for rigid-body motion.', hint: 'Add boundary conditions/supports.' };
+    }
     if (category === 'simple_beam') {
       return { ok: false, reason: 'Single-span beams are better analyzed with closed-form dynamic beam theory.', hint: 'Create a frame or multi-span structure.' };
     }
@@ -333,6 +401,9 @@ export function classifyStructure(
     }
     if (isTruss && numMembers < 5) {
       return { ok: false, reason: 'Too few truss members for meaningful dynamic analysis.', hint: 'Expand the truss to 5+ members.' };
+    }
+    if (!hasLateral) {
+      return { ok: true, reason: 'Structure is suitable for time-history analysis; dynamic excitation can be provided in the time-history input.' };
     }
     return { ok: true, reason: 'Structure is suitable for seismic time-history analysis.' };
   })();
@@ -346,6 +417,9 @@ export function classifyStructure(
     // NOT for: simple beams, trusses (no lateral DOFs worth analyzing), cable, plate-only.
     if (numNodes < 2 || numMembers < 1) {
       return { ok: false, reason: 'No structural model to analyze.', hint: 'Build a frame first.' };
+    }
+    if (!hasTransSupport) {
+      return { ok: false, reason: 'No supports detected — response spectrum requires a stable supported system.', hint: 'Define supports/restraints first.' };
     }
     if (category === 'simple_beam' || category === 'continuous_beam') {
       return { ok: false, reason: 'Beams do not have significant lateral seismic response — response spectrum is for multi-DOF systems.', hint: 'Create a frame or multi-story structure.' };
@@ -362,6 +436,9 @@ export function classifyStructure(
     if (!hasColumns) {
       return { ok: false, reason: 'Response spectrum requires vertical elements (columns) to develop lateral base shear.', hint: 'Add columns to your model.' };
     }
+    if (!hasLateral) {
+      return { ok: true, reason: 'Multi-DOF frame — response spectrum is applicable; seismic demand is defined by spectrum parameters.' };
+    }
     return { ok: true, reason: 'Multi-DOF frame — IS 1893 spectrum analysis is applicable.' };
   })();
   eligibility.push({ id: 'spectrum', eligible: spectrumEligible.ok, reason: spectrumEligible.reason, hint: spectrumEligible.hint });
@@ -375,6 +452,9 @@ export function classifyStructure(
     if (numNodes < 2 || numMembers < 1) {
       return { ok: false, reason: 'No structural model to analyze.', hint: 'Build a model first.' };
     }
+    if (!hasTransSupport) {
+      return { ok: false, reason: 'No supports detected — buckling analysis requires a stable restrained model.', hint: 'Add restraints/supports first.' };
+    }
     if (category === 'cable_structure') {
       return { ok: false, reason: 'Cables are tension-only members — they cannot buckle.', hint: undefined };
     }
@@ -385,6 +465,9 @@ export function classifyStructure(
       // Beams can have lateral-torsional buckling, but that requires axial loads
       // For our solver: we check Euler column buckling → needs axial compression
       return { ok: false, reason: 'Euler buckling analysis requires compression members (columns). Beams without axial load do not buckle.', hint: 'Add columns or apply axial compression.' };
+    }
+    if (!hasLoadsDefined) {
+      return { ok: false, reason: 'No loads detected — buckling load factors are meaningful only with a reference load state.', hint: 'Apply compressive/reference loading first.' };
     }
     // Trusses: can buckle (compressed members)
     // Frames with columns: can buckle

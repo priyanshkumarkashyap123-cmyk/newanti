@@ -598,15 +598,16 @@ export class WasmSparseMatrix {
 if (Symbol.dispose) WasmSparseMatrix.prototype[Symbol.dispose] = WasmSparseMatrix.prototype.free;
 
 /**
- * Buckling analysis (stub for backward compatibility)
- * @param {any} _nodes_val
- * @param {any} _elements_val
- * @param {any} _point_loads_val
- * @param {number} _num_modes
+ * Linearized buckling analysis — eigenvalue problem [Ke]{φ} = λ[-Kg]{φ}
+ * Returns critical load factors where P_cr = λ × P_applied
+ * @param {any} nodes_val
+ * @param {any} elements_val
+ * @param {any} point_loads_val
+ * @param {number} num_modes
  * @returns {any}
  */
-export function analyze_buckling(_nodes_val, _elements_val, _point_loads_val, _num_modes) {
-    const ret = wasm.analyze_buckling(addHeapObject(_nodes_val), addHeapObject(_elements_val), addHeapObject(_point_loads_val), _num_modes);
+export function analyze_buckling(nodes_val, elements_val, point_loads_val, num_modes) {
+    const ret = wasm.analyze_buckling(addHeapObject(nodes_val), addHeapObject(elements_val), addHeapObject(point_loads_val), num_modes);
     return takeObject(ret);
 }
 
@@ -675,6 +676,20 @@ export function calculate_beam_capacity(b, d, fck, fy, ast) {
 export function calculate_seismic_base_shear(zone, importance, r_factor, period, soil, weight) {
     const ret = wasm.calculate_seismic_base_shear(zone, importance, r_factor, period, soil, weight);
     return ret;
+}
+
+/**
+ * Combine multiple load case results using factored superposition.
+ * `cases_val`: JSON map { caseName: AnalysisResult3D }
+ * `combinations_val`: JSON array of LoadCombination objects
+ * Returns an EnvelopeResult with max/min across all combinations.
+ * @param {any} cases_val
+ * @param {any} combinations_val
+ * @returns {any}
+ */
+export function combine_load_cases(cases_val, combinations_val) {
+    const ret = wasm.combine_load_cases(addHeapObject(cases_val), addHeapObject(combinations_val));
+    return takeObject(ret);
 }
 
 /**
@@ -781,6 +796,33 @@ export function get_solver_info() {
 }
 
 /**
+ * Get standard AISC LRFD load combinations
+ * @returns {any}
+ */
+export function get_standard_combinations_aisc_lrfd() {
+    const ret = wasm.get_standard_combinations_aisc_lrfd();
+    return takeObject(ret);
+}
+
+/**
+ * Get standard Eurocode load combinations
+ * @returns {any}
+ */
+export function get_standard_combinations_eurocode() {
+    const ret = wasm.get_standard_combinations_eurocode();
+    return takeObject(ret);
+}
+
+/**
+ * Get standard IS 800 load combinations
+ * @returns {any}
+ */
+export function get_standard_combinations_is800() {
+    const ret = wasm.get_standard_combinations_is800();
+    return takeObject(ret);
+}
+
+/**
  * Modal analysis for dynamic properties
  * @param {any} nodes_val
  * @param {any} elements_val
@@ -837,6 +879,7 @@ export function solve_2d_frame_with_loads(nodes_val, elements_val, loads_val) {
 
 /**
  * 3D Frame analysis (new advanced solver)
+ * Accepts nodes, elements, nodal loads, distributed loads, and optional extended parameters
  * @param {any} nodes_val
  * @param {any} elements_val
  * @param {any} nodal_loads_val
@@ -850,6 +893,14 @@ export function solve_3d_frame(nodes_val, elements_val, nodal_loads_val, distrib
 
 /**
  * Extended 3D Frame analysis with temperature loads, point loads, and config
+ * @param {any} nodes_val
+ * @param {any} elements_val
+ * @param {any} nodal_loads_val
+ * @param {any} distributed_loads_val
+ * @param {any} temperature_loads_val
+ * @param {any} point_loads_val
+ * @param {any} config_val
+ * @returns {any}
  */
 export function solve_3d_frame_extended(nodes_val, elements_val, nodal_loads_val, distributed_loads_val, temperature_loads_val, point_loads_val, config_val) {
     const ret = wasm.solve_3d_frame_extended(addHeapObject(nodes_val), addHeapObject(elements_val), addHeapObject(nodal_loads_val), addHeapObject(distributed_loads_val), addHeapObject(temperature_loads_val), addHeapObject(point_loads_val), addHeapObject(config_val));
@@ -857,40 +908,9 @@ export function solve_3d_frame_extended(nodes_val, elements_val, nodal_loads_val
 }
 
 /**
- * Combine multiple load case results using factored superposition
- */
-export function combine_load_cases(cases_val, combinations_val) {
-    const ret = wasm.combine_load_cases(addHeapObject(cases_val), addHeapObject(combinations_val));
-    return takeObject(ret);
-}
-
-/**
- * Get standard IS 800 load combinations
- */
-export function get_standard_combinations_is800() {
-    const ret = wasm.get_standard_combinations_is800();
-    return takeObject(ret);
-}
-
-/**
- * Get standard Eurocode load combinations
- */
-export function get_standard_combinations_eurocode() {
-    const ret = wasm.get_standard_combinations_eurocode();
-    return takeObject(ret);
-}
-
-/**
- * Get standard AISC LRFD load combinations
- */
-export function get_standard_combinations_aisc_lrfd() {
-    const ret = wasm.get_standard_combinations_aisc_lrfd();
-    return takeObject(ret);
-}
-
-/**
  * P-Delta analysis - iterative geometric nonlinear analysis
- * Accounts for secondary moments from axial loads (P) acting on lateral displacements (Δ)
+ * Accounts for secondary moments from axial loads (P) acting on lateral displacements (Δ).
+ * Backward-compatible wrapper — delegates to solve_p_delta_extended with empty optional loads.
  * @param {any} nodes_val
  * @param {any} elements_val
  * @param {any} point_loads_val
@@ -905,7 +925,17 @@ export function solve_p_delta(nodes_val, elements_val, point_loads_val, member_l
 }
 
 /**
- * Extended P-Delta analysis with temperature loads, point loads on members, and config
+ * Extended P-Delta analysis with temperature loads, point loads on members, and config.
+ * @param {any} nodes_val
+ * @param {any} elements_val
+ * @param {any} point_loads_val
+ * @param {any} member_loads_val
+ * @param {any} temperature_loads_val
+ * @param {any} point_loads_on_members_val
+ * @param {any} config_val
+ * @param {number} max_iterations
+ * @param {number} tolerance
+ * @returns {any}
  */
 export function solve_p_delta_extended(nodes_val, elements_val, point_loads_val, member_loads_val, temperature_loads_val, point_loads_on_members_val, config_val, max_iterations, tolerance) {
     const ret = wasm.solve_p_delta_extended(addHeapObject(nodes_val), addHeapObject(elements_val), addHeapObject(point_loads_val), addHeapObject(member_loads_val), addHeapObject(temperature_loads_val), addHeapObject(point_loads_on_members_val), addHeapObject(config_val), max_iterations, tolerance);

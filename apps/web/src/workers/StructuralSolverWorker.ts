@@ -2457,11 +2457,16 @@ function generateDiagramData(
     // ─── Enforce endpoint closure ───
     // Floating-point drift in the integration can cause the last station to
     // deviate from the solver's end value. Force exact endpoint match.
-    // At node j, internal forces from the left-hand cut = −(member end forces)
-    // for shear and My (sign flip at far end). Mz uses −M2 convention.
+    //
+    // At node j (far end), the sign conventions are:
+    //   Shear: V_internal(L) = −V2  (reaction opposes internal shear)
+    //   Mz:    M_internal(L) = +M2  (at far end, the CCW↔sagging relationship
+    //          reverses vs the near end, so Mz is NOT negated)
+    //   My:    My_internal(L) = −My2 (Rust solver negates My FEF, so extra
+    //          negation at far end is needed to stay consistent)
     if (numSt > 0) {
       Mz_arr[0] = -M1;
-      Mz_arr[numSt - 1] = -M2;
+      Mz_arr[numSt - 1] = M2;  // NOT -M2: at far end, M_internal = Mz_j
       My_arr[0] = My1;
       My_arr[numSt - 1] = -My2;
       shear_y[0] = V1;

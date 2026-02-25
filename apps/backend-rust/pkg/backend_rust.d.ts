@@ -77,9 +77,10 @@ export class WasmSparseMatrix {
 }
 
 /**
- * Buckling analysis (stub for backward compatibility)
+ * Linearized buckling analysis — eigenvalue problem [Ke]{φ} = λ[-Kg]{φ}
+ * Returns critical load factors where P_cr = λ × P_applied
  */
-export function analyze_buckling(_nodes_val: any, _elements_val: any, _point_loads_val: any, _num_modes: number): any;
+export function analyze_buckling(nodes_val: any, elements_val: any, point_loads_val: any, num_modes: number): any;
 
 /**
  * Benchmark the ultra-fast solver
@@ -93,6 +94,14 @@ export function calculate_beam_capacity(b: number, d: number, fck: number, fy: n
 
 export function calculate_seismic_base_shear(zone: number, importance: number, r_factor: number, period: number, soil: number, weight: number): number;
 
+/**
+ * Combine multiple load case results using factored superposition.
+ * `cases_val`: JSON map { caseName: AnalysisResult3D }
+ * `combinations_val`: JSON array of LoadCombination objects
+ * Returns an EnvelopeResult with max/min across all combinations.
+ */
+export function combine_load_cases(cases_val: any, combinations_val: any): any;
+
 export function create_bilinear_hysteresis(k0: number, fy: number, alpha: number): Float64Array;
 
 export function create_out_of_core_matrix(ndof: number, block_size: number, max_memory_mb: number): string;
@@ -105,6 +114,21 @@ export function get_available_hysteresis_models(): string[];
  * Get solver version and capabilities
  */
 export function get_solver_info(): string;
+
+/**
+ * Get standard AISC LRFD load combinations
+ */
+export function get_standard_combinations_aisc_lrfd(): any;
+
+/**
+ * Get standard Eurocode load combinations
+ */
+export function get_standard_combinations_eurocode(): any;
+
+/**
+ * Get standard IS 800 load combinations
+ */
+export function get_standard_combinations_is800(): any;
 
 /**
  * Modal analysis for dynamic properties
@@ -123,6 +147,7 @@ export function solve_2d_frame_with_loads(nodes_val: any, elements_val: any, loa
 
 /**
  * 3D Frame analysis (new advanced solver)
+ * Accepts nodes, elements, nodal loads, distributed loads, and optional extended parameters
  */
 export function solve_3d_frame(nodes_val: any, elements_val: any, nodal_loads_val: any, distributed_loads_val: any): any;
 
@@ -132,33 +157,14 @@ export function solve_3d_frame(nodes_val: any, elements_val: any, nodal_loads_va
 export function solve_3d_frame_extended(nodes_val: any, elements_val: any, nodal_loads_val: any, distributed_loads_val: any, temperature_loads_val: any, point_loads_val: any, config_val: any): any;
 
 /**
- * Combine multiple load case results using factored superposition
- */
-export function combine_load_cases(cases_val: any, combinations_val: any): any;
-
-/**
- * Get standard IS 800 load combinations
- */
-export function get_standard_combinations_is800(): any;
-
-/**
- * Get standard Eurocode load combinations
- */
-export function get_standard_combinations_eurocode(): any;
-
-/**
- * Get standard AISC LRFD load combinations
- */
-export function get_standard_combinations_aisc_lrfd(): any;
-
-/**
  * P-Delta analysis - iterative geometric nonlinear analysis
- * Accounts for secondary moments from axial loads (P) acting on lateral displacements (Δ)
+ * Accounts for secondary moments from axial loads (P) acting on lateral displacements (Δ).
+ * Backward-compatible wrapper — delegates to solve_p_delta_extended with empty optional loads.
  */
 export function solve_p_delta(nodes_val: any, elements_val: any, point_loads_val: any, member_loads_val: any, max_iterations: number, tolerance: number): any;
 
 /**
- * Extended P-Delta analysis with temperature loads, point loads on members, and config
+ * Extended P-Delta analysis with temperature loads, point loads on members, and config.
  */
 export function solve_p_delta_extended(nodes_val: any, elements_val: any, point_loads_val: any, member_loads_val: any, temperature_loads_val: any, point_loads_on_members_val: any, config_val: any, max_iterations: number, tolerance: number): any;
 
@@ -199,15 +205,20 @@ export interface InitOutput {
   readonly __wbg_wasmhhtintegrator_free: (a: number, b: number) => void;
   readonly __wbg_wasmsparsematrix_free: (a: number, b: number) => void;
   readonly aiarchitect_suggest_beam_size: (a: number, b: number, c: number) => void;
+  readonly analyze_buckling: (a: number, b: number, c: number, d: number) => number;
   readonly benchmark_ultra_fast: (a: number, b: number, c: number) => number;
   readonly calculate_aisc_capacity: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number, r: number, s: number) => number;
   readonly calculate_beam_capacity: (a: number, b: number, c: number, d: number, e: number) => number;
   readonly calculate_seismic_base_shear: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+  readonly combine_load_cases: (a: number, b: number) => number;
   readonly create_bilinear_hysteresis: (a: number, b: number, c: number, d: number) => void;
   readonly create_out_of_core_matrix: (a: number, b: number, c: number, d: number) => void;
   readonly estimate_solve_requirements: (a: number, b: number, c: number) => void;
   readonly get_available_hysteresis_models: (a: number) => void;
   readonly get_solver_info: (a: number) => void;
+  readonly get_standard_combinations_aisc_lrfd: () => number;
+  readonly get_standard_combinations_eurocode: () => number;
+  readonly get_standard_combinations_is800: () => number;
   readonly macnealharderwasm_generate_twisted_beam: (a: number) => number;
   readonly macnealharderwasm_get_quad4_patch: () => number;
   readonly modal_analysis: (a: number, b: number, c: number) => number;
@@ -218,8 +229,8 @@ export interface InitOutput {
   readonly renderer_width: (a: number) => number;
   readonly simulate_hysteresis_response: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => void;
   readonly solve_2d_frame_with_loads: (a: number, b: number, c: number) => number;
-  readonly solve_3d_frame: (a: number, b: number, c: number, d: number) => number;
-  readonly solve_p_delta: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+  readonly solve_3d_frame_extended: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
+  readonly solve_p_delta_extended: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => number;
   readonly solve_response_spectrum: (a: number, b: number, c: number, d: number, e: number) => number;
   readonly solve_sparse_system_json: (a: number, b: number, c: number) => void;
   readonly solve_structure_wasm: (a: number, b: number) => number;
@@ -236,7 +247,8 @@ export interface InitOutput {
   readonly wasmsparsematrix_new: (a: number, b: number, c: number, d: number) => number;
   readonly wasmsparsematrix_spmv: (a: number, b: number, c: number, d: number) => void;
   readonly set_panic_hook: () => void;
-  readonly analyze_buckling: (a: number, b: number, c: number, d: number) => number;
+  readonly solve_p_delta: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+  readonly solve_3d_frame: (a: number, b: number, c: number, d: number) => number;
   readonly renderer_render: (a: number, b: number) => void;
   readonly __wbg_macnealharderwasm_free: (a: number, b: number) => void;
   readonly aiarchitect_new: () => number;

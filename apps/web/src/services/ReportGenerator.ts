@@ -60,6 +60,12 @@ export interface DesignResult {
     failureReason?: string; // Explanation if failed
 }
 
+function safeAbsMax(values: number[] | undefined, fallback: number): number {
+    if (!values || values.length === 0) return fallback;
+    const m = Math.max(...values.map((v) => Math.abs(v)));
+    return Number.isFinite(m) && m > 0 ? m : fallback;
+}
+
 // ============================================
 // REPORT GENERATOR CLASS
 // ============================================
@@ -74,6 +80,7 @@ export class ReportGenerator {
     private contentTop: number;
     private figureCount: number = 0;
     private tableCount: number = 0;
+    private headerOpCountByPage: Map<number, number> = new Map();
 
     constructor() {
         this.doc = new jsPDF({
@@ -126,6 +133,13 @@ export class ReportGenerator {
 
         // Reset text color
         this.doc.setTextColor(0, 0, 0);
+
+        // Track operation count at header draw time for current page.
+        // This allows addPage() to detect whether meaningful body content was added.
+        const page = this.doc.getCurrentPageInfo().pageNumber;
+        const pageOps = (this.doc as any).internal?.pages?.[page];
+        const opCount = Array.isArray(pageOps) ? pageOps.length : 0;
+        this.headerOpCountByPage.set(page, opCount);
     }
 
     /**
@@ -534,16 +548,15 @@ export class ReportGenerator {
      * Prevents blank pages when back-to-back addPage calls happen.
      */
     addPage(title?: string): void {
-        // Reuse the current page only when it is effectively untouched (no drawing ops yet).
-        // This avoids blank pages from back-to-back addPage() calls while still allowing
-        // normal pagination when the page already has content.
+        // Reuse the current page only when no body content has been added since the header.
+        // This prevents accidental blank pages from consecutive addPage() calls.
         const currentPage = this.doc.getCurrentPageInfo().pageNumber;
         const pageOps = (this.doc as any).internal?.pages?.[currentPage];
-        const hasContentOps = Array.isArray(pageOps)
-            ? pageOps.some((op: unknown) => typeof op === 'string' && op.trim().length > 0)
-            : false;
+        const currentOpCount = Array.isArray(pageOps) ? pageOps.length : 0;
+        const headerOpCount = this.headerOpCountByPage.get(currentPage) ?? 0;
+        const hasBodyContent = currentOpCount > headerOpCount;
 
-        if (hasContentOps) {
+        if (hasBodyContent) {
             this.doc.addPage();
         }
         this.addHeader(title);
@@ -725,6 +738,8 @@ By using this report, you acknowledge that you have read and understood these te
             ctx.stroke();
         }
 
+        const maxAbsValue = Math.max(Math.abs(maxValue), 1e-9);
+
         // Draw data line
         if (values.length > 0 && xValues.length > 0) {
             ctx.strokeStyle = '#2563eb';
@@ -733,7 +748,7 @@ By using this report, you acknowledge that you have read and understood these te
 
             for (let i = 0; i < values.length; i++) {
                 const x = padding + (xValues[i] / (xValues[xValues.length - 1] || 1)) * graphWidth;
-                const y = canvasHeight - padding - ((values[i] + maxValue) / (2 * maxValue)) * graphHeight;
+            const y = canvasHeight - padding - ((values[i] + maxAbsValue) / (2 * maxAbsValue)) * graphHeight;
 
                 if (i === 0) {
                     ctx.moveTo(x, y);
@@ -759,8 +774,8 @@ By using this report, you acknowledge that you have read and understood these te
         ctx.fillText(`L`, canvasWidth - padding + 5, canvasHeight - padding + 15);
         
         ctx.textAlign = 'right';
-        ctx.fillText(`+${maxValue.toFixed(1)}`, padding - 10, padding + 10);
-        ctx.fillText(`-${maxValue.toFixed(1)}`, padding - 10, canvasHeight - padding - 10);
+        ctx.fillText(`+${maxAbsValue.toFixed(1)}`, padding - 10, padding + 10);
+        ctx.fillText(`-${maxAbsValue.toFixed(1)}`, padding - 10, canvasHeight - padding - 10);
     }
 
     /**
@@ -872,21 +887,21 @@ By using this report, you acknowledge that you have read and understood these te
                 { 
                     type: 'Shear Force Diagram (SFD)', 
                     values: member.diagramData.shear_values, 
-                    maxVal: member.maxShear || Math.max(...member.diagramData.shear_values.map(Math.abs)) || 10,
+                    maxVal: Math.max(member.maxShear ?? safeAbsMax(member.diagramData.shear_values, 10), 0.01),
                     unit: 'kN',
                     color: '#dc2626'
                 },
                 { 
                     type: 'Bending Moment Diagram (BMD)', 
                     values: member.diagramData.moment_values, 
-                    maxVal: member.maxMoment || Math.max(...member.diagramData.moment_values.map(Math.abs)) || 10,
+                    maxVal: Math.max(member.maxMoment ?? safeAbsMax(member.diagramData.moment_values, 10), 0.01),
                     unit: 'kN·m',
                     color: '#2563eb'
                 },
                 { 
                     type: 'Axial Force Diagram (AFD)', 
                     values: member.diagramData.axial_values, 
-                    maxVal: member.maxAxial || Math.max(...member.diagramData.axial_values.map(Math.abs)) || 10,
+                    maxVal: Math.max(member.maxAxial ?? safeAbsMax(member.diagramData.axial_values, 10), 0.01),
                     unit: 'kN',
                     color: '#16a34a'
                 }
@@ -986,7 +1001,7 @@ By using this report, you acknowledge that you have read and understood these te
         // Draw diagram curve with fill
         if (values.length > 0 && xValues.length > 0) {
             const maxX = xValues[xValues.length - 1] || memberLength || 1;
-            const scale = maxValue > 0 ? (graphHeight / 2) / maxValue : 1;
+            const scale = (graphHeight / 2) / Math.max(Math.abs(maxValue), 1e-9);
 
             ctx.beginPath();
             ctx.moveTo(padding.left, zeroY);
@@ -1172,8 +1187,9 @@ By using this report, you acknowledge that you have read and understood these te
         this.doc.text(`M(max) = ${Mmax.toFixed(3)} kN\u00B7m`, col1, calcY);
         
         // Calculate bending stress
-        const y_max = 0.15; // Assume 150mm half-depth (typical)
-        const sigma_b = (Mmax * 1000 * y_max) / (I * 1e8); // MPa (approximate)
+        const y_max = 0.15; // m (assumed distance to extreme fiber)
+        // σb = M*c/I, with M in kN·m and I in m⁴ => kN/m²; convert to MPa by /1000
+        const sigma_b = I > 1e-12 ? (Mmax * y_max) / I / 1000 : 0;
         this.doc.text(`\u03C3b \u2248 M\u00B7y/I = ${sigma_b.toFixed(2)} MPa (approx)`, col2, calcY);
         calcY += 7;
 
@@ -1188,7 +1204,8 @@ By using this report, you acknowledge that you have read and understood these te
         this.doc.text(`N(max) = ${Nmax.toFixed(3)} kN`, col1, calcY);
         
         // Calculate axial stress
-        const sigma_a = (Nmax * 1000) / (A * 1e4); // MPa
+        // σa = N/A, with N in kN and A in m² => kN/m²; convert to MPa by /1000
+        const sigma_a = A > 1e-12 ? (Nmax / A) / 1000 : 0;
         this.doc.text(`\u03C3a = N/A = ${sigma_a.toFixed(2)} MPa`, col2, calcY);
         calcY += 7;
 
