@@ -1,3 +1,13 @@
+## [1.1.0](https://github.com/priyanshkumarkashyap123-cmyk/newanti/compare/v1.0.0...v1.1.0) (2026-02-25)
+
+### ✨ Features
+
+- intelligent structure classification gates advanced analysis types ([8a64de0](https://github.com/priyanshkumarkashyap123-cmyk/newanti/commit/8a64de0f20ca5113cce6534390a411032d1de75a))
+
+### 🐛 Bug Fixes
+
+- **BMD:** correct Mz endpoint closure at far end (node j) ([cae7fa0](https://github.com/priyanshkumarkashyap123-cmyk/newanti/commit/cae7fa062a64e06d03bbd6a73579affd592f637b))
+
 ## 1.0.0 (2026-02-25)
 
 ### ⚠ BREAKING CHANGES
