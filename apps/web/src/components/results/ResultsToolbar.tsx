@@ -41,6 +41,7 @@ import {
   type AnalysisResultsData,
 } from "./AnalysisResultsDashboard";
 import { MemberDetailPanel, type MemberForceData } from "./MemberDetailPanel";
+import { PostProcessingDesignStudio } from "./PostProcessingDesignStudio";
 
 
 // ============================================
@@ -228,8 +229,37 @@ const convertToAnalysisResultsData = (
         const L = memberLength;
         const Vi = forces.startForces?.shearY ?? forces.shearY;
         const Vj = forces.endForces?.shearY ?? -forces.shearY;
-        const Mi = forces.startForces?.momentZ ?? forces.momentZ;
+        let Mi = forces.startForces?.momentZ ?? forces.momentZ;
+        let Mj = forces.endForces?.momentZ ?? forces.momentZ;
         const ax = forces.axial;
+
+        // ─── Pin-support zeroing: force moment to zero at simple supports ───
+        // A pin/roller support has translational restraints but NO moment
+        // restraint (mz=false). If only ONE member connects to that node,
+        // the bending moment reaction is zero (simple support).
+        if (memberModel && modelNodes && modelMembers) {
+          const countMembersAtNode = (nodeId: string): number => {
+            let c = 0;
+            modelMembers.forEach((mm: any) => {
+              if (mm.startNodeId === nodeId || mm.endNodeId === nodeId) c++;
+            });
+            return c;
+          };
+          const startNode = modelNodes.get(memberModel.startNodeId);
+          const endNode = modelNodes.get(memberModel.endNodeId);
+          if (startNode?.restraints) {
+            const r = startNode.restraints;
+            if ((r.fx || r.fy || r.fz) && !r.mz && countMembersAtNode(memberModel.startNodeId) <= 1) {
+              Mi = 0;
+            }
+          }
+          if (endNode?.restraints) {
+            const r = endNode.restraints;
+            if ((r.fx || r.fy || r.fz) && !r.mz && countMembersAtNode(memberModel.endNodeId) <= 1) {
+              Mj = 0;
+            }
+          }
+        }
 
         // Back-calculate equivalent distributed load from equilibrium
         const w = L > 1e-12 ? (Vi + Vj) / L : 0;
@@ -250,6 +280,11 @@ const convertToAnalysisResultsData = (
           moment_values.push(-Mi + Vi * x - (w * x * x) / 2);
           // Axial: constant
           axial_values.push(ax);
+        }
+        // Enforce endpoint closure: last moment must match -Mj
+        if (moment_values.length > 0) {
+          moment_values[0] = -Mi;
+          moment_values[moment_values.length - 1] = -Mj;
         }
 
         // ─── Deflection: double integration of M(x)/EI with actual nodal displacement BCs ───
@@ -491,6 +526,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
     "displacement" | "stress" | "utilization"
   >("displacement");
   const [showDashboard, setShowDashboard] = useState(false);
+  const [showDesignStudio, setShowDesignStudio] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [showMemberDetail, setShowMemberDetail] = useState(false);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
@@ -789,6 +825,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
         }
 
         // Add detailed individual member diagrams with calculations
+        // Only include critical members (top by max force) to avoid report bloat
         const dashboardData = convertToAnalysisResultsData(
           analysisResults,
           nodes,
@@ -796,8 +833,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
         );
         if (dashboardData.members.length > 0) {
           try {
-            // Prepare detailed member data
-            const detailedMembers = Array.from(members.values()).map((m) => {
+            // Prepare all member diagram data
+            const allDetailedMembers = Array.from(members.values()).map((m) => {
               const startNode = nodes.get(m.startNodeId);
               const endNode = nodes.get(m.endNodeId);
               let length = 0;
@@ -810,6 +847,14 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
               }
 
               const forceData = analysisResults?.memberForces?.get(m.id);
+              const maxMomentAbs = Math.max(
+                Math.abs(forceData?.momentZ ?? 0),
+                Math.abs(forceData?.momentY ?? 0),
+              );
+              const maxShearAbs = Math.max(
+                Math.abs(forceData?.shearY ?? 0),
+                Math.abs(forceData?.shearZ ?? 0),
+              );
               return {
                 id: m.id,
                 startNodeId: m.startNodeId,
@@ -822,6 +867,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                 maxShear: forceData?.shearY,
                 maxMoment: forceData?.momentZ,
                 maxAxial: forceData?.axial,
+                _rankScore: maxMomentAbs + maxShearAbs + Math.abs(forceData?.axial ?? 0),
                 diagramData: forceData?.diagramData
                   ? {
                       x_values: forceData.diagramData.x_values || [],
@@ -834,6 +880,19 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                   : undefined,
               };
             });
+
+            // Sort by combined force magnitude, take top N critical members
+            // For small models (≤10 members) include all; otherwise top 10
+            const MAX_DETAILED = 10;
+            const sorted = [...allDetailedMembers].sort(
+              (a, b) => (b._rankScore ?? 0) - (a._rankScore ?? 0),
+            );
+            const selectedMembers = allDetailedMembers.length <= MAX_DETAILED
+              ? allDetailedMembers
+              : sorted.slice(0, MAX_DETAILED);
+
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const detailedMembers = selectedMembers.map(({ _rankScore, ...rest }) => rest);
 
             report.addDetailedMemberDiagrams(detailedMembers);
           } catch (error) {
@@ -1440,6 +1499,14 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
               <FileCheck className="w-4 h-4" />
               <span className="font-medium">Design Code Check</span>
             </button>
+            {/* Post-Processing Design Studio — STAAD-Pro-class */}
+            <button
+              onClick={() => setShowDesignStudio(true)}
+              className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:from-emerald-600 hover:to-teal-700 transition-all shadow-lg text-sm"
+            >
+              <BarChart3 className="w-4 h-4" />
+              <span className="font-medium">Post-Processing Design Studio</span>
+            </button>
           </div>
         </div>
       </div>
@@ -1487,6 +1554,11 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
         </div>
       )}
 
+      {/* Post-Processing Design Studio Modal */}
+      {showDesignStudio && (
+        <PostProcessingDesignStudio onClose={() => setShowDesignStudio(false)} />
+      )}
+
       {/* Member Detail Panel Modal */}
       {showMemberDetail &&
         selectedMemberId &&
@@ -1496,6 +1568,25 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
           const actualLength = memberModel
             ? getMemberLength(memberModel, nodes)
             : 5;
+
+          // Classify support type at each end of the selected member
+          const classifySupport = (nodeId: string | undefined): 'free' | 'pin' | 'roller' | 'fixed' => {
+            if (!nodeId) return 'free';
+            const nd = nodes.get(nodeId);
+            if (!nd || !nd.restraints) return 'free';
+            const rest = nd.restraints;
+            const hasTrans = rest.fx || rest.fy || rest.fz;
+            if (!hasTrans) return 'free';
+            const hasMoment = rest.mx || rest.my || rest.mz;
+            if (hasMoment) return 'fixed';
+            // Pin vs roller: roller has only one translational restraint (fy only)
+            const transCount = [rest.fx, rest.fy, rest.fz].filter(Boolean).length;
+            return transCount <= 1 ? 'roller' : 'pin';
+          };
+
+          const startSup = classifySupport(memberModel?.startNodeId);
+          const endSup = classifySupport(memberModel?.endNodeId);
+
           return (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
               <div className="w-[90vw] h-[85vh] max-w-[900px] bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
@@ -1505,6 +1596,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                   memberLength={actualLength}
                   sectionId={memberModel?.sectionId || "Default"}
                   material="steel"
+                  startSupport={startSup}
+                  endSupport={endSup}
                   sectionProps={
                     memberModel
                       ? {
