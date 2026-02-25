@@ -1596,6 +1596,22 @@ export class EnhancedAnalysisEngine {
   ): MemberForce[] {
     const forces: MemberForce[] = [];
 
+    // Build member-count-per-node for pin-support detection
+    const memberCountPerNode = new Map<string, number>();
+    members.forEach((mm) => {
+      memberCountPerNode.set(mm.startNodeId, (memberCountPerNode.get(mm.startNodeId) ?? 0) + 1);
+      memberCountPerNode.set(mm.endNodeId, (memberCountPerNode.get(mm.endNodeId) ?? 0) + 1);
+    });
+    const isPinSupport = (nodeId: string): boolean => {
+      const nd = nodes.get(nodeId);
+      if (!nd?.restraints) return false;
+      const r = nd.restraints;
+      const hasTranslation = r.fx || r.fy || r.fz;
+      const hasMomentZ = r.mz;
+      const singleMember = (memberCountPerNode.get(nodeId) ?? 0) <= 1;
+      return !!hasTranslation && !hasMomentZ && singleMember;
+    };
+
     members.forEach((member, memberId) => {
       const sn = nodes.get(member.startNodeId)!;
       const en = nodes.get(member.endNodeId)!;
@@ -1687,6 +1703,15 @@ export class EnhancedAnalysisEngine {
         if (rel.mxEnd) f[9] = 0;
         if (rel.myEnd) f[10] = 0;
         if (rel.mzEnd) f[11] = 0;
+      }
+      // Pin/roller support zeroing: zero moment at simple supports
+      if (isPinSupport(member.startNodeId)) {
+        f[4] = 0; // My at start
+        f[5] = 0; // Mz at start
+      }
+      if (isPinSupport(member.endNodeId)) {
+        f[10] = 0; // My at end
+        f[11] = 0; // Mz at end
       }
       // Clean numerical noise: zero values below 1e-6 of peak force
       let peakAbs = 0;

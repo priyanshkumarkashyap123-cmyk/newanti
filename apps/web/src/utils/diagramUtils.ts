@@ -86,14 +86,20 @@ export function buildLocalAxesForDiagram(
 }
 
 // ────────────────────────────────────────────────────────────────
-//  Accumulate load effects: shear decrements & moment contributions
-//  at position x from all member loads, projected into local coords.
+//  Accumulate load effects: shear & moment increments from applied
+//  loads at position x, projected into local coords.
 //
-//  Usage:
-//    V_y(x) = V1  - dVy
-//    M_z(x) = -M1 + V1·x - dMz     (Y-plane: primary BMD)
-//    V_z(x) = Vz1  - dVz
-//    M_y(x) = My1 + Vz1·x - dMy    (Z-plane: weak-axis BMD)
+//  These give the total integral of applied load from 0 to x:
+//    dVy = ∫₀ˣ w_y(s) ds      (negative for downward loads)
+//    dMz = ∫₀ˣ w_y(s)(x−s) ds (negative for downward loads)
+//
+//  Usage in free-body diagram formulas:
+//    V_y(x) = V1  + dVy
+//    M_z(x) = -M1 + V1·x + dMz     (Y-plane: primary BMD)
+//    V_z(x) = Vz1 + dVz
+//    M_y(x) = My1 + Vz1·x + dMy    (Z-plane: weak-axis BMD)
+//
+//  Where V1, M1, etc. are the DSM member end forces (forces_i).
 // ────────────────────────────────────────────────────────────────
 export function accumulateLoadEffects(
   x: number,
@@ -190,27 +196,28 @@ export function accumulateLoadEffects(
       const a = aRaw <= 1.0 ? aRaw * L : aRaw;
 
       if (x > a + L * 1e-9) {
-        // Applied moments ADD to internal moment → subtract from dMz/dMy
-        // (since M_internal = … − dMz, negative dMz means positive M contribution).
+        // Applied moments ADD to internal moment directly.
+        // Using M_internal = −M1 + V1·x + dMz, a positive CCW moment
+        // about local Z adds positively to dMz (same sign as UDL/point effects).
         // Moment projection: moment axis projects onto local axes.
         switch (dir) {
           case "local_y":
-            dMy -= M_val;
+            dMy += M_val;
             break;
           case "local_z":
-            dMz -= M_val;
+            dMz += M_val;
             break;
           case "global_x":
-            dMz -= M_val * lz[0];
-            dMy -= M_val * ly[0];
+            dMz += M_val * lz[0];
+            dMy += M_val * ly[0];
             break;
           case "global_y":
-            dMz -= M_val * lz[1];
-            dMy -= M_val * ly[1];
+            dMz += M_val * lz[1];
+            dMy += M_val * ly[1];
             break;
           case "global_z":
-            dMz -= M_val * lz[2];
-            dMy -= M_val * ly[2];
+            dMz += M_val * lz[2];
+            dMy += M_val * ly[2];
             break;
         }
         // Moments do not affect shear

@@ -222,7 +222,7 @@ export const generateBasicPDFReport = (
 
         autoTable(doc, {
             startY: finalY + 5,
-            head: [['Member', 'Axial (kN)', 'Vy (kN)', 'Vz (kN)', 'My (kNm)', 'Mz (kNm)']],
+            head: [['Member', 'N (kN)', 'Vy (kN)', 'Vz (kN)', 'My (kN\u00b7m)', 'Mz (kN\u00b7m)']],
             body: forcesBody,
             theme: 'grid',
             headStyles: { fillColor: [63, 81, 181] },

@@ -1518,6 +1518,28 @@ export const ModernModeler: FC = () => {
           }
           // ─── End FEF correction setup ───
 
+          // ─── Build member-count-per-node for pin-support detection ───
+          // A node that is a support (has translational restraints) with no
+          // moment restraint (mz=false) and connects to only ONE member is a
+          // simple support (pin/roller). The bending moment at that end MUST
+          // be exactly zero. For intermediate supports of continuous beams
+          // (multiple members at a node), the moment is non-zero (continuity).
+          const memberCountPerNode = new Map<string, number>();
+          for (const mm of membersArray) {
+            memberCountPerNode.set(mm.startNodeId, (memberCountPerNode.get(mm.startNodeId) ?? 0) + 1);
+            memberCountPerNode.set(mm.endNodeId, (memberCountPerNode.get(mm.endNodeId) ?? 0) + 1);
+          }
+          const isPinSupport = (nodeId: string): boolean => {
+            const nd = nodesArray.find((n) => n.id === nodeId);
+            if (!nd?.restraints) return false;
+            const r = nd.restraints;
+            // Has translational restraint but NO moment restraint about Z
+            const hasTranslation = r.fx || r.fy || r.fz;
+            const hasMomentRestraint = r.mz;
+            const singleMember = (memberCountPerNode.get(nodeId) ?? 0) <= 1;
+            return !!hasTranslation && !hasMomentRestraint && singleMember;
+          };
+
           const membersDict: Record<string, any> = {};
           const memberForcesMap = wasmResult.member_forces;
           for (const [elemId, forces] of mapEntries(memberForcesMap)) {
@@ -1599,14 +1621,40 @@ export const ModernModeler: FC = () => {
                   x, myMLs, L, lyAx, lzAx,
                 );
 
-                // Shear Y: V(x) = V1 − ΔV_y
-                sy.push(v1 - dVy);
-                // Moment Z (primary BMD): Mz(x) = −M1 + V1·x − ΔMz
-                mzArr.push(-m1 + v1 * x - dMz);
-                // Shear Z: Vz(x) = Vz1 − ΔV_z
-                sz.push(vz1 - dVz);
-                // Moment Y (weak-axis BMD): My(x) = My1 + Vz1·x − ΔMy
-                myArr.push(my1 + vz1 * x - dMy);
+                // accumulateLoadEffects returns the integral of the applied load:
+                //   dVy = ∫₀ˣ w_y(s)ds,  dMz = ∫₀ˣ w_y(s)·(x−s)ds
+                // For a downward load w < 0, dVy < 0 and dMz < 0.
+                // Free-body equilibrium of the left portion [0, x]:
+                //   V(x) = V₁ + ∫₀ˣ w ds = V₁ + dVy
+                //   M(x) = −M₁ + V₁·x + ∫₀ˣ w·(x−s)ds = −M₁ + V₁·x + dMz
+                // (M₁ = forces_i[5] is DSM CCW+ convention; −M₁ converts to sagging+)
+
+                // Shear Y: V(x) = V1 + dVy
+                sy.push(v1 + dVy);
+                // Moment Z (primary BMD): Mz(x) = −M1 + V1·x + dMz
+                mzArr.push(-m1 + v1 * x + dMz);
+                // Shear Z: Vz(x) = Vz1 + dVz
+                sz.push(vz1 + dVz);
+                // Moment Y (weak-axis BMD): My(x) = My1 + Vz1·x + dMy
+                myArr.push(my1 + vz1 * x + dMy);
+              }
+
+              // ─── Enforce endpoint closure ───
+              // The diagram formula should give correct endpoints by equilibrium,
+              // but floating-point drift or load mismatches can cause the last
+              // station to deviate. Force exact endpoint values to match solver.
+              // Note: At node j, internal forces = −(member end forces) for
+              // shear and My, because the cut-section convention flips at the
+              // far end. Mz already uses −m2 (negated by convention).
+              if (numSt > 0) {
+                mzArr[0] = -m1; // Should already be this, reinforce
+                mzArr[numSt - 1] = -m2;
+                myArr[0] = my1;
+                myArr[numSt - 1] = -my2;
+                sy[0] = v1;
+                sy[numSt - 1] = -v2;
+                sz[0] = vz1;
+                sz[numSt - 1] = -vz2;
               }
 
               // ─── Retrieve solver displacement BCs for deflection ───
@@ -1680,10 +1728,20 @@ export const ModernModeler: FC = () => {
                 if (relI.mzEnd || relI.endMoment) fj0[5] = 0;
               }
 
+              // ─── Zero moment at pin/roller supports (node-level check) ───
+              // For simply supported beams: the node has translational restraints
+              // but NO moment restraint (mz=false), and ONLY one member connects.
+              // The bending moment there is structurally zero (no moment reaction).
+              if (isPinSupport(mElem?.startNodeId ?? '')) {
+                fi0[5] = 0; // Mz at start
+                fi0[4] = 0; // My at start
+              }
+              if (isPinSupport(mElem?.endNodeId ?? '')) {
+                fj0[5] = 0; // Mz at end
+                fj0[4] = 0; // My at end
+              }
+
               // ─── Clean numerical noise ───
-              // For simply supported beams (pin supports, no member releases),
-              // moments at supports should be exactly zero. The penalty method
-              // and floating-point arithmetic can leave tiny residuals (e.g. 1e-10).
               // Zero out any force component smaller than 1e-6 of the member's
               // peak force magnitude to prevent displaying noise as real values.
               const peakForce = Math.max(
@@ -1780,7 +1838,10 @@ export const ModernModeler: FC = () => {
                 if (mElem2D.releases.mzStart || mElem2D.releases.startMoment) m1 = 0;
                 if (mElem2D.releases.mzEnd || mElem2D.releases.endMoment) m2 = 0;
               }
-              // Clean numerical noise (same logic as 3D path)
+              // Zero moment at pin/roller supports (same logic as 3D)
+              if (mElem2D && isPinSupport(mElem2D.startNodeId)) m1 = 0;
+              if (mElem2D && isPinSupport(mElem2D.endNodeId)) m2 = 0;
+              // Clean numerical noise
               const peak2D = Math.max(Math.abs(axF), Math.abs(v1), Math.abs(v2), Math.abs(m1), Math.abs(m2), 1e-12);
               const tol2D = peak2D * 1e-6;
               if (Math.abs(m1) < tol2D) m1 = 0;

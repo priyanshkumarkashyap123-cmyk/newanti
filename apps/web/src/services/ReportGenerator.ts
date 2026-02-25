@@ -294,7 +294,7 @@ export class ReportGenerator {
         this.tableCount++;
         this.addResultsTable(
             title || `Table ${this.tableCount}: Member Forces`,
-            ['Member ID', 'Axial (kN)', 'Shear Y (kN)', 'Shear Z (kN)', 'Moment Y (kN·m)', 'Moment Z (kN·m)', 'Torsion (kN·m)'],
+            ['Member', 'N (kN)', 'Vy (kN)', 'Vz (kN)', 'My (kN·m)', 'Mz (kN·m)', 'T (kN·m)'],
             data.map(row => [
                 row.memberId.slice(0, 8),
                 row.axial.toFixed(2),
@@ -530,10 +530,22 @@ export class ReportGenerator {
     // ============================================
 
     /**
-     * Add a new page with header
+     * Add a new page with header — but only if the current page already has content.
+     * Prevents blank pages when back-to-back addPage calls happen.
      */
     addPage(title?: string): void {
-        this.doc.addPage();
+        // Reuse the current page only when it is effectively untouched (no drawing ops yet).
+        // This avoids blank pages from back-to-back addPage() calls while still allowing
+        // normal pagination when the page already has content.
+        const currentPage = this.doc.getCurrentPageInfo().pageNumber;
+        const pageOps = (this.doc as any).internal?.pages?.[currentPage];
+        const hasContentOps = Array.isArray(pageOps)
+            ? pageOps.some((op: unknown) => typeof op === 'string' && op.trim().length > 0)
+            : false;
+
+        if (hasContentOps) {
+            this.doc.addPage();
+        }
         this.addHeader(title);
     }
 
@@ -1142,11 +1154,11 @@ By using this report, you acknowledge that you have read and understood these te
         this.doc.text('Shear Force Analysis:', col1, calcY);
         calcY += 5;
         this.doc.setFont('helvetica', 'normal');
-        this.doc.text(`V_start = ${V_start.toFixed(3)} kN`, col1, calcY);
-        this.doc.text(`V_end = ${V_end.toFixed(3)} kN`, col2, calcY);
+        this.doc.text(`V\u1D62 = ${V_start.toFixed(3)} kN`, col1, calcY);
+        this.doc.text(`V\u2C7C = ${V_end.toFixed(3)} kN`, col2, calcY);
         calcY += 5;
-        this.doc.text(`V_max = ${Vmax.toFixed(3)} kN`, col1, calcY);
-        this.doc.text(`ΔV = ${Math.abs(V_end - V_start).toFixed(3)} kN (change along member)`, col2, calcY);
+        this.doc.text(`V(max) = ${Vmax.toFixed(3)} kN`, col1, calcY);
+        this.doc.text(`\u0394V = ${Math.abs(V_end - V_start).toFixed(3)} kN (change along member)`, col2, calcY);
         calcY += 7;
 
         // Section 2: Bending Moment
@@ -1154,15 +1166,15 @@ By using this report, you acknowledge that you have read and understood these te
         this.doc.text('Bending Moment Analysis:', col1, calcY);
         calcY += 5;
         this.doc.setFont('helvetica', 'normal');
-        this.doc.text(`M_start = ${M_start.toFixed(3)} kN·m`, col1, calcY);
-        this.doc.text(`M_end = ${M_end.toFixed(3)} kN·m`, col2, calcY);
+        this.doc.text(`M\u1D62 = ${M_start.toFixed(3)} kN\u00B7m`, col1, calcY);
+        this.doc.text(`M\u2C7C = ${M_end.toFixed(3)} kN\u00B7m`, col2, calcY);
         calcY += 5;
-        this.doc.text(`M_max = ${Mmax.toFixed(3)} kN·m`, col1, calcY);
+        this.doc.text(`M(max) = ${Mmax.toFixed(3)} kN\u00B7m`, col1, calcY);
         
         // Calculate bending stress
         const y_max = 0.15; // Assume 150mm half-depth (typical)
         const sigma_b = (Mmax * 1000 * y_max) / (I * 1e8); // MPa (approximate)
-        this.doc.text(`σ_b ≈ M·y/I = ${sigma_b.toFixed(2)} MPa (approx)`, col2, calcY);
+        this.doc.text(`\u03C3b \u2248 M\u00B7y/I = ${sigma_b.toFixed(2)} MPa (approx)`, col2, calcY);
         calcY += 7;
 
         // Section 3: Axial Force
@@ -1170,22 +1182,22 @@ By using this report, you acknowledge that you have read and understood these te
         this.doc.text('Axial Force Analysis:', col1, calcY);
         calcY += 5;
         this.doc.setFont('helvetica', 'normal');
-        this.doc.text(`N_start = ${N_start.toFixed(3)} kN`, col1, calcY);
-        this.doc.text(`N_end = ${N_end.toFixed(3)} kN`, col2, calcY);
+        this.doc.text(`N\u1D62 = ${N_start.toFixed(3)} kN`, col1, calcY);
+        this.doc.text(`N\u2C7C = ${N_end.toFixed(3)} kN`, col2, calcY);
         calcY += 5;
-        this.doc.text(`N_max = ${Nmax.toFixed(3)} kN`, col1, calcY);
+        this.doc.text(`N(max) = ${Nmax.toFixed(3)} kN`, col1, calcY);
         
         // Calculate axial stress
         const sigma_a = (Nmax * 1000) / (A * 1e4); // MPa
-        this.doc.text(`σ_a = N/A = ${sigma_a.toFixed(2)} MPa`, col2, calcY);
+        this.doc.text(`\u03C3a = N/A = ${sigma_a.toFixed(2)} MPa`, col2, calcY);
         calcY += 7;
 
         // Section 4: Deflection
         this.doc.setFont('helvetica', 'bold');
         this.doc.text('Deflection:', col1, calcY);
         this.doc.setFont('helvetica', 'normal');
-        this.doc.text(`δ_max = ${(deltaMax * 1000).toFixed(3)} mm`, col1 + 40, calcY);
-        this.doc.text(`L/δ = ${deltaMax > 0 ? (L / deltaMax).toFixed(0) : '∞'}`, col2, calcY);
+        this.doc.text(`\u03B4(max) = ${(deltaMax * 1000).toFixed(3)} mm`, col1 + 40, calcY);
+        this.doc.text(`L/\u03B4 = ${deltaMax > 0 ? (L / deltaMax).toFixed(0) : '\u221E'}`, col2, calcY);
 
         this.contentTop += 75;
     }
@@ -1842,7 +1854,7 @@ By using this report, you acknowledge that you have read and understood these te
 
         // Reactions table
         this.tableCount++;
-        const headers = ['Support Node', 'Rx (kN)', 'Ry (kN)', 'Rz (kN)', 'Mx (kN·m)', 'My (kN·m)', 'Mz (kN·m)'];
+        const headers = ['Support', 'Rx (kN)', 'Ry (kN)', 'Rz (kN)', 'Mx (kN·m)', 'My (kN·m)', 'Mz (kN·m)'];
         const data = reactions.map(r => [
             r.nodeId.slice(0, 10),
             r.fx.toFixed(3),

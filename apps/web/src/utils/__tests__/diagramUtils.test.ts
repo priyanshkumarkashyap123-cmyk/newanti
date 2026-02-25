@@ -119,7 +119,7 @@ describe("accumulateLoadEffects", () => {
     // After (x = 6):
     const after = accumulateLoadEffects(6, loads, L, ly, lz);
     approx(after.dVy, 0); // moments don't change shear
-    approx(after.dMz, -30); // applied moment ADDS to internal (negative dMz)
+    approx(after.dMz, 30); // applied CCW moment adds positively to dMz
   });
 
   it("UVL: triangular load w1=0, w2=30 over full span", () => {
@@ -257,98 +257,90 @@ describe("SFD/BMD end-to-end scenarios", () => {
   const lz = [0, 0, 1];
 
   it("simply supported beam with midspan point load: correct SFD and BMD", () => {
-    // P = 100 kN at midspan (a = 5m)
-    // Reactions: V1 = 50, V2 = -50 (equilibrium upward)
+    // SS beam with DOWNWARD point load P = −100 kN at midspan (a = 5m)
+    // DSM reactions: V1 = +50 kN (upward), V2 = +50 kN
     // M1 = 0, M2 = 0 (simple supports)
-    const P = 100;
+    const P = -100; // downward (store convention: negative = downward)
     const a = 5;
-    const V1 = (P * (L - a)) / L; // 50
+    const V1 = 50; // upward reaction from DSM solver
     const M1 = 0;
     const loads: DiagramLoad[] = [
       { type: "point", P, a, direction: "local_y" },
     ];
 
-    // Shear just before load (x = 4.9):
+    // Shear just before load (x = 4.9): V = V1 + dVy = 50 + 0 = 50
     const { dVy: dV_before } = accumulateLoadEffects(4.9, loads, L, ly, lz);
-    const V_before = V1 - dV_before;
+    const V_before = V1 + dV_before;
     approx(V_before, 50); // no loads applied yet
 
-    // Shear just after load (x = 5.1):
+    // Shear just after load (x = 5.1): V = V1 + dVy = 50 + (-100) = -50
     const { dVy: dV_after } = accumulateLoadEffects(5.1, loads, L, ly, lz);
-    const V_after = V1 - dV_after;
-    approx(V_after, -50); // step down by P=100
+    const V_after = V1 + dV_after;
+    approx(V_after, -50); // step down by |P|=100
 
-    // BMD at midspan (x = 5.1):
+    // BMD at midspan (x = 5.1): M = -M1 + V1*x + dMz
     const { dMz: dM_at_mid } = accumulateLoadEffects(5.1, loads, L, ly, lz);
-    const M_at_mid = -M1 + V1 * 5.1 - dM_at_mid;
-    // Expected: M(5.1) = 50*5.1 - 100*0.1 = 255 - 10 = 245
+    const M_at_mid = -M1 + V1 * 5.1 + dM_at_mid;
+    // Expected: M(5.1) = 50*5.1 + (-100)*0.1 = 255 - 10 = 245
     approx(M_at_mid, 245, 0.1);
 
-    // BMD at exact midspan (approaching from left, x = 4.99):
+    // BMD approaching from left (x = 4.99): M = V1*4.99 = 249.5
     const { dMz: dM_left } = accumulateLoadEffects(4.99, loads, L, ly, lz);
-    const M_left = -M1 + V1 * 4.99 - dM_left;
+    const M_left = -M1 + V1 * 4.99 + dM_left;
     approx(M_left, 249.5, 0.1); // 50 * 4.99 = 249.5
   });
 
   it("cantilever with applied moment: jump in BMD", () => {
     // Fixed at x=0, free at x=L
-    // Applied moment M_app = 60 kN·m about local Z at x = 6m
-    // Reactions at fixed end: V1 = 0 (no vertical load), M1 = -60 (opposing moment)
+    // Applied CCW moment M_app = 60 kN·m about local Z at x = 6m
+    // DSM reaction at fixed end: V1 = 0, M1 = +60 (CCW reaction to balance)
+    // Internal moment: M(x<6) = −M1 = −60, M(x>6) = −60+60 = 0 (free end)
     const V1 = 0;
-    const M1 = -60; // FEM convention: CCW+
+    const M1 = 60; // DSM convention: CCW+ reaction moment at fixed end
     const loads: DiagramLoad[] = [
       { type: "moment", M: 60, a: 6, direction: "local_z" },
     ];
 
-    // Before moment (x = 5):
+    // Before moment (x = 5): M = −M1 + 0 + 0 = −60
     const { dMz: dM_before } = accumulateLoadEffects(5, loads, L, ly, lz);
-    const M_before = -M1 + V1 * 5 - dM_before;
-    approx(M_before, 60); // -(-60) + 0 - 0 = 60
+    const M_before = -M1 + V1 * 5 + dM_before;
+    approx(M_before, -60);
 
-    // After moment (x = 7):
+    // After moment (x = 7): M = −M1 + 0 + 60 = 0 (free end)
     const { dMz: dM_after } = accumulateLoadEffects(7, loads, L, ly, lz);
-    const M_after = -M1 + V1 * 7 - dM_after;
-    // dMz = -60 (from accumulate), so M_after = 60 + 0 - (-60) = 120
-    approx(M_after, 120);
+    const M_after = -M1 + V1 * 7 + dM_after;
+    approx(M_after, 0);
 
-    // Wait — should be: M = 60 before jump, 0 after jump for a cantilever
-    // Let me reconsider: For a cantilever with applied CCW moment at x=6:
-    // At fixed end: M_reaction = -60 (to balance applied moment)
-    // Internal moment: M(x<6) = -M1 = -(-60) = 60
-    //                  M(x>6) = 60 + 60 = 120? No...
-    // Actually for free end: M(L) should be 0 (free end)
-    // Correct: M_reaction = 60 (opposing), M1 = 60 (CCW at fixed end)
-    // Hmm, the actual reactions depend on sign conventions.
-    // Let's just verify the JUMP is 60 kN·m:
+    // Jump at x=6 is +60 kN·m:
     const jump = M_after - M_before;
     approx(jump, 60);
   });
 
   it("UDL-only member: matches classical formula", () => {
-    // Simply supported, UDL w = 12 kN/m
-    // V1 = wL/2 = 60, M1 = 0
-    const w = 12;
-    const V1 = (w * L) / 2; // 60
+    // SS beam, DOWNWARD UDL w = −12 kN/m (store convention)
+    // DSM reactions: V1 = +60 kN (upward), M1 = 0
+    const w = -12; // downward
+    const V1 = 60; // upward reaction from DSM
     const M1 = 0;
     const loads: DiagramLoad[] = [
       { type: "UDL", w1: w, direction: "local_y", startPos: 0, endPos: 1 },
     ];
 
-    // At midspan (x = 5):
+    // At midspan (x = 5): V = V1 + dVy, M = -M1 + V1*x + dMz
     const { dVy, dMz } = accumulateLoadEffects(5, loads, L, ly, lz);
-    const V_mid = V1 - dVy;
-    const M_mid = -M1 + V1 * 5 - dMz;
+    const V_mid = V1 + dVy;
+    const M_mid = -M1 + V1 * 5 + dMz;
 
-    // Classical: V(5) = 60 - 12*5 = 0 (midspan shear = 0 for symmetric UDL)
+    // Classical: V(5) = wL/2−|w|*5 = 60−60 = 0
     approx(V_mid, 0);
-    // Classical: M(5) = 60*5 - 12*25/2 = 300 - 150 = 150
+    // Classical: M(5) = wL²/8 = 12*100/8 = 150
     approx(M_mid, 150);
 
     // At quarter span (x = 2.5):
     const q = accumulateLoadEffects(2.5, loads, L, ly, lz);
-    const V_q = V1 - q.dVy;
-    const M_q = -M1 + V1 * 2.5 - q.dMz;
-    approx(V_q, 60 - 12 * 2.5); // 30
-    approx(M_q, 60 * 2.5 - (12 * 6.25) / 2); // 150 - 37.5 = 112.5
+    const V_q = V1 + q.dVy;
+    const M_q = -M1 + V1 * 2.5 + q.dMz;
+    approx(V_q, 60 + (-12) * 2.5); // 60 - 30 = 30
+    approx(M_q, 60 * 2.5 + ((-12) * 6.25) / 2); // 150 - 37.5 = 112.5
   });
 });

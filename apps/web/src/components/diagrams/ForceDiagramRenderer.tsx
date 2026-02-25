@@ -12,6 +12,9 @@ import { ForcePoint } from '../../utils/MemberForcesCalculator';
 // TYPES
 // ============================================
 
+/** Support type at a member end */
+export type SupportType = 'free' | 'pin' | 'roller' | 'fixed';
+
 export interface MemberDiagramData {
     memberId: string;
     memberName?: string;
@@ -36,6 +39,10 @@ export interface MemberDiagramData {
         zeroShearLocation?: number;
         inflectionPoints?: number[];
     };
+    /** Support condition at the start (left) end */
+    startSupport?: SupportType;
+    /** Support condition at the end (right) end */
+    endSupport?: SupportType;
 }
 
 export interface DiagramConfig {
@@ -203,7 +210,10 @@ export const ForceDiagramRenderer: React.FC<ForceDiagramRendererProps> = ({
                 memberData.maxValues.shear,
                 memberData.minValues.shear,
                 fullConfig,
-                colors
+                colors,
+                false,
+                memberData.startSupport,
+                memberData.endSupport
             );
             currentY += diagramHeight;
             diagramIndex++;
@@ -225,7 +235,9 @@ export const ForceDiagramRenderer: React.FC<ForceDiagramRendererProps> = ({
                 memberData.minValues.moment,
                 fullConfig,
                 colors,
-                true // Flip moment diagram (positive below axis - engineering convention)
+                true, // Flip moment diagram (positive below axis - engineering convention)
+                memberData.startSupport,
+                memberData.endSupport
             );
             currentY += diagramHeight;
             diagramIndex++;
@@ -247,7 +259,9 @@ export const ForceDiagramRenderer: React.FC<ForceDiagramRendererProps> = ({
                 memberData.maxValues.axial,
                 memberData.minValues.axial,
                 fullConfig,
-                colors
+                colors,
+                memberData.startSupport,
+                memberData.endSupport
             );
             currentY += diagramHeight;
             diagramIndex++;
@@ -268,7 +282,10 @@ export const ForceDiagramRenderer: React.FC<ForceDiagramRendererProps> = ({
                 memberData.maxValues.torsion || 0,
                 memberData.minValues.torsion || 0,
                 fullConfig,
-                colors
+                colors,
+                false,
+                memberData.startSupport,
+                memberData.endSupport
             );
         }
         
@@ -331,11 +348,14 @@ function drawDiagram(
     minValue: number,
     config: DiagramConfig,
     colors: typeof COLOR_SCHEMES.engineering,
-    flipSign: boolean = false
+    flipSign: boolean = false,
+    startSupport?: SupportType,
+    endSupport?: SupportType
 ) {
     const centerY = y + height / 2;
     const scale = Math.max(Math.abs(maxValue), Math.abs(minValue));
     const valueScale = scale > 0 ? (height / 2 - 10) / scale : 1;
+    const totalLength = Math.max(points[points.length - 1]?.x || 0, 1e-9);
     
     // Draw grid
     if (config.showGrid) {
@@ -350,9 +370,9 @@ function drawDiagram(
     ctx.lineTo(x + width, centerY);
     ctx.stroke();
     
-    // Draw member end supports
-    drawSupport(ctx, x, centerY, 'left', colors.member);
-    drawSupport(ctx, x + width, centerY, 'right', colors.member);
+    // Draw member end supports — adapt symbol based on actual support type
+    drawSupport(ctx, x, centerY, 'left', colors.member, startSupport || 'free');
+    drawSupport(ctx, x + width, centerY, 'right', colors.member, endSupport || 'free');
     
     // Draw title
     ctx.fillStyle = colors.text;
@@ -370,7 +390,7 @@ function drawDiagram(
     
     for (let i = 0; i < points.length; i++) {
         const point = points[i];
-        const px = x + (point.x / points[points.length - 1].x) * width;
+        const px = x + (point.x / totalLength) * width;
         let value = (point[valueKey] as number) || 0;
         if (flipSign) value = -value;
         const py = centerY - value * valueScale;
@@ -393,7 +413,7 @@ function drawDiagram(
     
     for (let i = 0; i < points.length; i++) {
         const point = points[i];
-        const px = x + (point.x / points[points.length - 1].x) * width;
+        const px = x + (point.x / totalLength) * width;
         let value = (point[valueKey] as number) || 0;
         if (flipSign) value = -value;
         const py = centerY - value * valueScale;
@@ -431,11 +451,14 @@ function drawAxialDiagram(
     maxValue: number,
     minValue: number,
     config: DiagramConfig,
-    colors: typeof COLOR_SCHEMES.engineering
+    colors: typeof COLOR_SCHEMES.engineering,
+    startSupport?: SupportType,
+    endSupport?: SupportType
 ) {
     const centerY = y + height / 2;
     const scale = Math.max(Math.abs(maxValue), Math.abs(minValue));
     const valueScale = scale > 0 ? (height / 2 - 10) / scale : 1;
+    const totalLength = Math.max(points[points.length - 1]?.x || 0, 1e-9);
     
     // Draw grid
     if (config.showGrid) {
@@ -450,9 +473,9 @@ function drawAxialDiagram(
     ctx.lineTo(x + width, centerY);
     ctx.stroke();
     
-    // Draw supports
-    drawSupport(ctx, x, centerY, 'left', colors.member);
-    drawSupport(ctx, x + width, centerY, 'right', colors.member);
+    // Draw supports — adapt symbol based on actual support type
+    drawSupport(ctx, x, centerY, 'left', colors.member, startSupport || 'free');
+    drawSupport(ctx, x + width, centerY, 'right', colors.member, endSupport || 'free');
     
     // Draw title
     ctx.fillStyle = colors.text;
@@ -465,8 +488,8 @@ function drawAxialDiagram(
         const p1 = points[i];
         const p2 = points[i + 1];
         
-        const x1 = x + (p1.x / points[points.length - 1].x) * width;
-        const x2 = x + (p2.x / points[points.length - 1].x) * width;
+        const x1 = x + (p1.x / totalLength) * width;
+        const x2 = x + (p2.x / totalLength) * width;
         const v1 = (p1[valueKey] as number) || 0;
         const v2 = (p2[valueKey] as number) || 0;
         
@@ -555,7 +578,8 @@ function drawSupport(
     x: number,
     y: number,
     side: 'left' | 'right',
-    color: string
+    color: string,
+    supportType: SupportType = 'fixed'
 ) {
     ctx.strokeStyle = color;
     ctx.fillStyle = color;
@@ -563,27 +587,79 @@ function drawSupport(
     
     const size = 10;
     const dir = side === 'left' ? -1 : 1;
-    
-    // Draw triangle support
+
+    if (supportType === 'free') {
+        // Free end — no support symbol, just a small dot
+        ctx.beginPath();
+        ctx.arc(x, y, 2, 0, Math.PI * 2);
+        ctx.fill();
+        return;
+    }
+
+    if (supportType === 'roller') {
+        // Roller: triangle pointing down + two small circles below
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x - size * 0.7, y + size);
+        ctx.lineTo(x + size * 0.7, y + size);
+        ctx.closePath();
+        ctx.stroke();
+
+        // Two rollers (circles)
+        const circR = 3;
+        ctx.beginPath();
+        ctx.arc(x - size * 0.3, y + size + circR + 1, circR, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(x + size * 0.3, y + size + circR + 1, circR, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Ground line below rollers
+        ctx.beginPath();
+        ctx.moveTo(x - size, y + size + 2 * circR + 2);
+        ctx.lineTo(x + size, y + size + 2 * circR + 2);
+        ctx.stroke();
+        return;
+    }
+
+    if (supportType === 'pin') {
+        // Pin: triangle pointing down + ground line + hatching
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x - size * 0.7, y + size);
+        ctx.lineTo(x + size * 0.7, y + size);
+        ctx.closePath();
+        ctx.stroke();
+
+        // Ground line
+        ctx.beginPath();
+        ctx.moveTo(x - size, y + size + 1);
+        ctx.lineTo(x + size, y + size + 1);
+        ctx.stroke();
+
+        // Hatching below ground line
+        ctx.lineWidth = 1;
+        for (let i = -size; i <= size; i += 4) {
+            ctx.beginPath();
+            ctx.moveTo(x + i, y + size + 1);
+            ctx.lineTo(x + i - 4, y + size + 7);
+            ctx.stroke();
+        }
+        return;
+    }
+
+    // Fixed support: vertical line + hatching (wall)
     ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x + dir * size, y + size);
-    ctx.lineTo(x + dir * size, y - size);
-    ctx.closePath();
+    ctx.moveTo(x, y - size);
+    ctx.lineTo(x, y + size);
     ctx.stroke();
-    
-    // Draw ground line
-    ctx.beginPath();
-    ctx.moveTo(x + dir * size, y - size - 2);
-    ctx.lineTo(x + dir * size, y + size + 2);
-    ctx.stroke();
-    
-    // Draw hatching
+
+    // Hatching
     ctx.lineWidth = 1;
     for (let i = -size; i <= size; i += 4) {
         ctx.beginPath();
-        ctx.moveTo(x + dir * size, y + i);
-        ctx.lineTo(x + dir * (size + 5), y + i + 5 * dir);
+        ctx.moveTo(x, y + i);
+        ctx.lineTo(x + dir * 6, y + i + 3 * dir);
         ctx.stroke();
     }
 }
@@ -621,7 +697,7 @@ function drawValueLabels(
         }
     }
     
-    const L = points[points.length - 1].x;
+    const L = Math.max(points[points.length - 1]?.x || 0, 1e-9);
     
     // Draw start value
     const startVal = (points[0][valueKey] as number) || 0;

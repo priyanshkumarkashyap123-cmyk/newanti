@@ -2025,6 +2025,26 @@ fn calculate_member_forces(
 ) -> Result<HashMap<String, MemberForces>, String> {
     let mut forces = HashMap::new();
     
+    // Build member-count-per-node for pin-support detection.
+    // A node with translational restraints but no moment restraint (mz=false),
+    // connected to only ONE element, is a simple support (pin/roller).
+    // The bending moment at that end must be exactly zero.
+    let mut member_count: HashMap<String, usize> = HashMap::new();
+    for elem in elements {
+        if let ElementType::Plate = elem.element_type { continue; }
+        *member_count.entry(elem.node_i.clone()).or_insert(0) += 1;
+        *member_count.entry(elem.node_j.clone()).or_insert(0) += 1;
+    }
+    let is_pin_support = |node_id: &str| -> bool {
+        if let Some(&idx) = node_map.get(node_id) {
+            let nd = &nodes[idx];
+            let has_translation = nd.restraints[0] || nd.restraints[1] || nd.restraints[2];
+            let has_moment_z = nd.restraints[5]; // Mz DOF
+            let single_member = *member_count.get(node_id).unwrap_or(&0) <= 1;
+            has_translation && !has_moment_z && single_member
+        } else { false }
+    };
+    
     for elem in elements {
         if let ElementType::Plate = elem.element_type { continue; }
 
@@ -2116,6 +2136,18 @@ fn calculate_member_forces(
         for k in 0..6 {
             if elem.releases_i[k] { forces_i[k] = 0.0; }
             if elem.releases_j[k] { forces_j[k] = 0.0; }
+        }
+        
+        // Zero moment at pin/roller supports (node-level check).
+        // For simply supported beams: node has translational restraints but
+        // no moment restraint, and only one member connects to it.
+        if is_pin_support(&elem.node_i) {
+            forces_i[4] = 0.0; // My at start
+            forces_i[5] = 0.0; // Mz at start
+        }
+        if is_pin_support(&elem.node_j) {
+            forces_j[4] = 0.0; // My at end
+            forces_j[5] = 0.0; // Mz at end
         }
         
         // Clean numerical noise: zero values below 1e-6 of peak force

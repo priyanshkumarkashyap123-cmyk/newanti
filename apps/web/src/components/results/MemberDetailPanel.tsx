@@ -10,7 +10,7 @@
 
 import React, { FC, useState, useMemo } from 'react';
 import { X, ChevronLeft, ChevronRight, Download, Settings, AlertTriangle, CheckCircle } from 'lucide-react';
-import { ForceDiagramRenderer, MemberDiagramData, DiagramConfig } from '../diagrams/ForceDiagramRenderer';
+import { ForceDiagramRenderer, MemberDiagramData, DiagramConfig, SupportType } from '../diagrams/ForceDiagramRenderer';
 import { ForcePoint } from '../../utils/MemberForcesCalculator';
 import { MemberDesignService, DesignInput, DesignResult, DesignCheck } from '../../services/MemberDesignService';
 
@@ -56,6 +56,9 @@ interface MemberDetailPanelProps {
         fy?: number;      // Yield strength (MPa)
         sectionType?: string; // e.g. 'W', 'I', 'HSS', 'rectangular', 'circular'
     };
+    /** Support condition at start and end of member */
+    startSupport?: SupportType;
+    endSupport?: SupportType;
     onClose?: () => void;
     onNavigate?: (direction: 'prev' | 'next') => void;
 }
@@ -71,6 +74,8 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
     sectionId = 'Default',
     material = 'steel',
     sectionProps,
+    startSupport = 'free',
+    endSupport = 'free',
     onClose,
     onNavigate
 }) => {
@@ -85,9 +90,9 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
 
         const forcePoints: ForcePoint[] = dd.x_values.map((x, i) => ({
             x,
-            Mz: dd.moment_y?.[i] ?? 0,
+            Mz: dd.moment_z?.[i] ?? 0,
             Fy: dd.shear_y?.[i] ?? 0,
-            My: dd.moment_z?.[i] ?? 0,
+            My: dd.moment_y?.[i] ?? 0,
             Fz: dd.shear_z?.[i] ?? 0,
             Fx: dd.axial?.[i] ?? 0,
             Tx: dd.torsion?.[i] ?? 0,
@@ -115,8 +120,10 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                 moment: 0,
                 axial: Math.min(...axialValues, 0),
             },
+            startSupport,
+            endSupport,
         };
-    }, [memberForces, memberId, memberLength]);
+    }, [memberForces, memberId, memberLength, startSupport, endSupport]);
 
     // Section Cut Query - state and interpolation
     const [sectionCutPosition, setSectionCutPosition] = useState(0.5); // 0 to 1 ratio

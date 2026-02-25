@@ -1601,6 +1601,27 @@ function computeMemberEndForces(
   const { members, nodes, dofPerNode } = model;
   const results: MemberForceResult[] = [];
 
+  // ─── Build member-count-per-node for pin-support detection ───
+  // A node with translational restraints but no moment restraint (mz=false),
+  // connected to only ONE member, is a simple support (pin/roller).
+  // The bending moment at that end MUST be exactly zero.
+  const memberCountPerNode = new Map<string, number>();
+  for (const mm of members) {
+    memberCountPerNode.set(mm.startNodeId, (memberCountPerNode.get(mm.startNodeId) ?? 0) + 1);
+    memberCountPerNode.set(mm.endNodeId, (memberCountPerNode.get(mm.endNodeId) ?? 0) + 1);
+  }
+  const isPinSupportNode = (nodeId: string): boolean => {
+    const idx = nodeIndexMap.get(nodeId);
+    if (idx === undefined) return false;
+    const nd = nodes[idx];
+    if (!nd?.restraints) return false;
+    const r = nd.restraints as Record<string, boolean>;
+    const hasTranslation = r.fx || r.fy || r.fz;
+    const hasMomentRestraint = r.mz;
+    const singleMember = (memberCountPerNode.get(nodeId) ?? 0) <= 1;
+    return !!hasTranslation && !hasMomentRestraint && singleMember;
+  };
+
   for (const member of members) {
     const i = nodeIndexMap.get(member.startNodeId);
     const j = nodeIndexMap.get(member.endNodeId);
@@ -2014,6 +2035,15 @@ function computeMemberEndForces(
         if (rel.myEnd) fLocal12[10] = 0;
         if (rel.mzEnd) fLocal12[11] = 0;
       }
+      // ─── Pin/roller support zeroing: zero moment at simple supports ───
+      if (isPinSupportNode(member.startNodeId)) {
+        fLocal12[4] = 0; // My at start
+        fLocal12[5] = 0; // Mz at start
+      }
+      if (isPinSupportNode(member.endNodeId)) {
+        fLocal12[10] = 0; // My at end
+        fLocal12[11] = 0; // Mz at end
+      }
       // Clean numerical noise: zero values below 1e-6 of peak force
       let peakF12 = 0;
       for (let k = 0; k < 12; k++) {
@@ -2219,6 +2249,9 @@ function computeMemberEndForces(
         if (rel.fyEnd) fLocal[4] = 0;
         if (rel.mzEnd) fLocal[5] = 0;
       }
+      // Pin/roller support zeroing for 2D
+      if (isPinSupportNode(member.startNodeId)) fLocal[2] = 0; // Mz at start
+      if (isPinSupportNode(member.endNodeId)) fLocal[5] = 0; // Mz at end
       // Clean numerical noise
       let peakF6 = 0;
       for (let k = 0; k < 6; k++) {
@@ -2313,12 +2346,14 @@ function generateDiagramData(
     const N1 = mf.start?.axial ?? 0; // Axial at start
     const N2 = mf.end?.axial ?? 0;
     const V2 = mf.end?.shear ?? 0; // Shear at end (local Y)
+    const M2 = mf.end?.moment ?? 0; // Moment at end (Mz)
 
     // Z-direction forces (3D frames)
     const Vz1 = mf.start?.shearZ ?? 0; // Shear Z at start
     const My1 = mf.start?.momentY ?? 0; // Moment about Y at start
     const Tx1 = mf.start?.torsion ?? 0; // Torsion at start
     const Vz2 = mf.end?.shearZ ?? 0;
+    const My2 = mf.end?.momentY ?? 0; // Moment about Y at end
     const Tx2 = mf.end?.torsion ?? 0;
 
     const EIz = (member.E ?? 2e8) * (member.I ?? 1e-4); // EI for bending about Z (deflection in Y)
@@ -2396,22 +2431,43 @@ function generateDiagramData(
         x, myLoads, L, lyAxis, lzAxis,
       );
 
-      // ─── Shear Y: V(x) = V1 − ΔV_y(x) ───
-      shear_y.push(V1 - dVy);
+      // accumulateLoadEffects returns the integral of the applied load:
+      //   dVy = ∫₀ˣ w_y(s)ds,  dMz = ∫₀ˣ w_y(s)·(x−s)ds
+      // Free-body equilibrium of the left portion [0, x]:
+      //   V(x) = V₁ + dVy,  M(x) = −M₁ + V₁·x + dMz
+
+      // ─── Shear Y: V(x) = V1 + dVy ───
+      shear_y.push(V1 + dVy);
 
       // ─── Moment about Z (internal bending moment — PRIMARY BMD) ───
-      //   Mz_internal(x) = −M1 + V1·x − ΔMz(x)
-      Mz_arr.push(-M1 + V1 * x - dMz);
+      //   Mz_internal(x) = −M1 + V1·x + dMz
+      Mz_arr.push(-M1 + V1 * x + dMz);
 
-      // ─── Shear Z: Vz(x) = Vz1 − ΔV_z(x) ───
-      shear_z.push(Vz1 - dVz);
+      // ─── Shear Z: Vz(x) = Vz1 + dVz ───
+      shear_z.push(Vz1 + dVz);
 
       // ─── Moment about Y (weak-axis BMD — XZ plane bending) ───
-      //   My_internal(x) = My1 + Vz1·x − ΔMy(x)
-      My_arr.push(My1 + Vz1 * x - dMy);
+      //   My_internal(x) = My1 + Vz1·x + dMy
+      My_arr.push(My1 + Vz1 * x + dMy);
 
       // ─── Torsion: linear interpolation between ends ───
       torsion.push(Tx1 + (Tx2 - Tx1) * xi);
+    }
+
+    // ─── Enforce endpoint closure ───
+    // Floating-point drift in the integration can cause the last station to
+    // deviate from the solver's end value. Force exact endpoint match.
+    // At node j, internal forces from the left-hand cut = −(member end forces)
+    // for shear and My (sign flip at far end). Mz uses −M2 convention.
+    if (numSt > 0) {
+      Mz_arr[0] = -M1;
+      Mz_arr[numSt - 1] = -M2;
+      My_arr[0] = My1;
+      My_arr[numSt - 1] = -My2;
+      shear_y[0] = V1;
+      shear_y[numSt - 1] = -V2;
+      shear_z[0] = Vz1;
+      shear_z[numSt - 1] = -Vz2;
     }
 
     // ─── Deflection Y via double integration of Mz(x) ───

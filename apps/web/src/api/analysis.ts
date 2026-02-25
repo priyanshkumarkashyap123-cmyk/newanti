@@ -202,6 +202,22 @@ export async function runAnalysis(): Promise<{
       const nodeMap = new Map<string, Node>();
       for (const n of nodes) nodeMap.set(n.id, n);
 
+      // Member-count-per-node for pin-support detection
+      const memberCountPerNode = new Map<string, number>();
+      for (const mm of members) {
+        memberCountPerNode.set(mm.startNodeId, (memberCountPerNode.get(mm.startNodeId) ?? 0) + 1);
+        memberCountPerNode.set(mm.endNodeId, (memberCountPerNode.get(mm.endNodeId) ?? 0) + 1);
+      }
+      const isPinSupport = (nodeId: string): boolean => {
+        const nd = nodeMap.get(nodeId);
+        if (!nd?.restraints) return false;
+        const r = nd.restraints;
+        const hasTranslation = r.fx || r.fy || r.fz;
+        const hasMomentZ = r.mz;
+        const singleMember = (memberCountPerNode.get(nodeId) ?? 0) <= 1;
+        return !!hasTranslation && !hasMomentZ && singleMember;
+      };
+
       const memberForcesMap = new Map<string, MemberForceData>();
       // Handle both member_forces and memberForces
       const memberForcesData =
@@ -210,12 +226,14 @@ export async function runAnalysis(): Promise<{
         {};
       Object.entries(memberForcesData as Record<string, MemberForces>).forEach(
         ([id, forces]) => {
-          // BUG FIX: Map from Rust field names (shear_start, moment_start, etc.)
-          let axial = forces?.axial ?? 0;
-          let shearStart = forces?.shear_start ?? 0;
-          let momentStart = forces?.moment_start ?? 0;
-          let shearEnd = forces?.shear_end ?? 0;
-          let momentEnd = forces?.moment_end ?? 0;
+          // Extract member end forces from either 3D (forces_i/forces_j) or legacy scalar format
+          const fi = (forces as any)?.forces_i as number[] | undefined;
+          const fj = (forces as any)?.forces_j as number[] | undefined;
+          let axial = fi ? fi[0] / 1000 : (forces?.axial ?? 0);
+          let shearStart = fi ? fi[1] / 1000 : (forces?.shear_start ?? 0);
+          let momentStart = fi ? fi[5] / 1000 : (forces?.moment_start ?? 0);
+          let shearEnd = fj ? fj[1] / 1000 : (forces?.shear_end ?? 0);
+          let momentEnd = fj ? fj[5] / 1000 : (forces?.moment_end ?? 0);
 
           // Find the member to generate diagram data
           const member = members.find((m) => m.id === id);
@@ -228,6 +246,11 @@ export async function runAnalysis(): Promise<{
             if (rel.fyStart) shearStart = 0;
             if (rel.fyEnd) shearEnd = 0;
             if (rel.fxStart || rel.fxEnd) axial = 0;
+          }
+          // Pin/roller support zeroing — moment is zero at simple supports
+          if (member) {
+            if (isPinSupport(member.startNodeId)) momentStart = 0;
+            if (isPinSupport(member.endNodeId)) momentEnd = 0;
           }
           // Clean numerical noise
           const peak = Math.max(Math.abs(axial), Math.abs(shearStart), Math.abs(momentStart), Math.abs(shearEnd), Math.abs(momentEnd));

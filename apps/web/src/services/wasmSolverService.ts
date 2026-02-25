@@ -141,13 +141,23 @@ export interface ReactionMap {
   [nodeId: string]: [number, number, number]; // [fx, fy, mz]
 }
 
-// Rust MemberForces struct
+// Rust MemberForces struct — 3D solver returns forces_i/forces_j arrays
 export interface MemberForces {
-  axial: number;
-  shear_start: number;
-  moment_start: number;
-  shear_end: number;
-  moment_end: number;
+  // 3D format (actual Rust output)
+  forces_i?: number[]; // [Fx, Fy, Fz, Mx, My, Mz] at node i
+  forces_j?: number[]; // [Fx, Fy, Fz, Mx, My, Mz] at node j
+  max_shear_y?: number;
+  max_shear_z?: number;
+  max_moment_y?: number;
+  max_moment_z?: number;
+  max_axial?: number;
+  max_torsion?: number;
+  // Legacy 2D scalar format (backward compat)
+  axial?: number;
+  shear_start?: number;
+  moment_start?: number;
+  shear_end?: number;
+  moment_end?: number;
 }
 
 export interface MemberForcesMap {
