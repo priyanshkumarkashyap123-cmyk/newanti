@@ -823,7 +823,11 @@ export const useModelStore = create<ModelState>()(
             return { plates: newPlates };
           }),
 
-        setAnalysisResults: (results) => set({ analysisResults: results }),
+        setAnalysisResults: (results) => {
+          set({ analysisResults: results });
+          // Persist to sessionStorage so Design Hub survives navigation
+          persistAnalysisResults(results);
+        },
 
         setIsAnalyzing: (analyzing) => set({ isAnalyzing: analyzing }),
 
@@ -2151,6 +2155,79 @@ export const loadProjectFromStorage = (): boolean => {
     return false;
   }
 };
+
+// ============================================================
+// Analysis Results Session Persistence
+// ============================================================
+const ANALYSIS_SESSION_KEY = "beamlab_analysis_results";
+
+/** Serialize Map → array-of-entries for JSON storage */
+function serializeMap<V>(map: Map<string, V> | undefined): [string, V][] | undefined {
+  if (!map || map.size === 0) return undefined;
+  return Array.from(map.entries());
+}
+
+/** Save analysis results to sessionStorage (survives SPA nav + soft refresh) */
+function persistAnalysisResults(results: AnalysisResults | null): void {
+  try {
+    if (!results) {
+      sessionStorage.removeItem(ANALYSIS_SESSION_KEY);
+      return;
+    }
+    const serializable = {
+      displacements: serializeMap(results.displacements),
+      reactions: serializeMap(results.reactions),
+      memberForces: serializeMap(results.memberForces),
+      plateResults: results.plateResults,
+      equilibriumCheck: results.equilibriumCheck,
+      conditionNumber: results.conditionNumber,
+      stats: results.stats,
+      completed: (results as any).completed,
+      timestamp: (results as any).timestamp ?? Date.now(),
+    };
+    const json = JSON.stringify(serializable);
+    // sessionStorage limit is ~5 MB; skip if too big
+    if (json.length > 4.5 * 1024 * 1024) {
+      console.warn("[BeamLab] Analysis results too large for sessionStorage, skipping persist");
+      return;
+    }
+    sessionStorage.setItem(ANALYSIS_SESSION_KEY, json);
+  } catch (e) {
+    console.warn("[BeamLab] Could not persist analysis results:", e);
+  }
+}
+
+/**
+ * Restore analysis results from sessionStorage.
+ * Called by pages that need results (e.g. Design Hub) when the
+ * in-memory store is empty (page was refreshed / hard-navigated).
+ */
+export function hydrateAnalysisResults(): AnalysisResults | null {
+  try {
+    const raw = sessionStorage.getItem(ANALYSIS_SESSION_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    const results: AnalysisResults = {
+      displacements: new Map(data.displacements ?? []),
+      reactions: new Map(data.reactions ?? []),
+      memberForces: new Map(data.memberForces ?? []),
+      plateResults: data.plateResults,
+      equilibriumCheck: data.equilibriumCheck,
+      conditionNumber: data.conditionNumber,
+      stats: data.stats,
+    };
+    if ((data as any).completed !== undefined) {
+      (results as any).completed = data.completed;
+    }
+    if ((data as any).timestamp !== undefined) {
+      (results as any).timestamp = data.timestamp;
+    }
+    return results;
+  } catch (e) {
+    console.warn("[BeamLab] Could not restore analysis results:", e);
+    return null;
+  }
+}
 
 /**
  * Check if a saved project exists

@@ -11,6 +11,7 @@
  */
 
 import React, { FC, useState, useEffect, useMemo } from "react";
+import { Link } from "react-router-dom";
 import {
   TrendingDown,
   BarChart2,
@@ -1558,13 +1559,13 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
               <span className="font-medium">Post-Processing Design Studio</span>
             </button>
             {/* Design Hub — Full STAAD-Pro workflow */}
-            <a
-              href="/design-hub"
+            <Link
+              to="/design-hub"
               className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg text-sm"
             >
               <Zap className="w-4 h-4" />
               <span className="font-medium">Open Design Hub</span>
-            </a>
+            </Link>
           </div>
         </div>
       </div>

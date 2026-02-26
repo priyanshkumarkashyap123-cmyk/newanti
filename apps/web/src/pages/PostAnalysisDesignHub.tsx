@@ -29,7 +29,7 @@ import {
   Shield, Award, Cpu, Wrench, LayoutGrid, LayoutList,
   Target, TrendingUp, ArrowUpRight, Copy, ArrowRight
 } from 'lucide-react';
-import { useModelStore, type Member, type Node as ModelNode, type AnalysisResults, type MemberForceData } from '../store/model';
+import { useModelStore, hydrateAnalysisResults, type Member, type Node as ModelNode, type AnalysisResults, type MemberForceData } from '../store/model';
 import {
   designSteelMember, designConcreteBeam, designConcreteColumn,
   designConnection, designFoundation,
@@ -1289,6 +1289,18 @@ const PostAnalysisDesignHub: FC = () => {
   const nodes = useModelStore(s => s.nodes);
   const members = useModelStore(s => s.members);
   const analysisResults = useModelStore(s => s.analysisResults);
+
+  // Hydrate from sessionStorage if in-memory results are missing (page was
+  // refreshed or hard-navigated).  This runs once on mount.
+  useEffect(() => {
+    if (!analysisResults) {
+      const restored = hydrateAnalysisResults();
+      if (restored) {
+        useModelStore.getState().setAnalysisResults(restored);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const hasAnalysis = Boolean(
     analysisResults && (
