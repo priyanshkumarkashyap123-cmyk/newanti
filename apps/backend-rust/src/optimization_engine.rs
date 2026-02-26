@@ -165,10 +165,9 @@ impl SIMPOptimization {
         let mut l2 = 1e9;
 
         let mut new_densities = self.densities.clone();
-        let mut lambda = 0.0;
 
         while (l2 - l1) / (l2 + l1) > 1e-3 {
-            lambda = 0.5 * (l1 + l2);
+            let lambda = 0.5 * (l1 + l2);
 
             for (i, rho) in new_densities.iter_mut().enumerate() {
                 let rho_old = self.densities[i];
@@ -300,7 +299,7 @@ impl BESOOptimization {
             .map(|(i, &s)| (i, s))
             .collect();
 
-        indexed.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+        indexed.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal));
 
         // Determine threshold
         let current_volume: f64 = self.densities.iter().sum();
@@ -815,7 +814,7 @@ impl MultiObjectiveProblem {
 
         for m in 0..self.n_objectives {
             // Sort by objective m
-            front.sort_by(|a, b| a.objectives[m].partial_cmp(&b.objectives[m]).unwrap());
+            front.sort_by(|a, b| a.objectives[m].partial_cmp(&b.objectives[m]).unwrap_or(std::cmp::Ordering::Equal));
 
             // Boundary points get infinite distance
             front[0].crowding_distance = f64::INFINITY;

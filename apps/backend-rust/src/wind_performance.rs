@@ -450,7 +450,7 @@ impl WindPerformanceAnalyzer {
             comfort,
         });
         
-        self.results.as_ref().unwrap()
+        self.results.as_ref().expect("results were just set")
     }
 }
 

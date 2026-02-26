@@ -363,8 +363,12 @@ pub fn generate_is800_combinations(load_cases: &[LoadCase]) -> Vec<LoadCombinati
     let ll_id = find_load_case_id(load_cases, LoadType::Live);
     let wx_id = find_load_case_id(load_cases, LoadType::WindX);
     let wxn_id = find_load_case_id(load_cases, LoadType::WindXNeg);
+    let wy_id = find_load_case_id(load_cases, LoadType::WindY);
+    let wyn_id = find_load_case_id(load_cases, LoadType::WindYNeg);
     let ex_id = find_load_case_id(load_cases, LoadType::SeismicX);
     let exn_id = find_load_case_id(load_cases, LoadType::SeismicXNeg);
+    let ey_id = find_load_case_id(load_cases, LoadType::SeismicY);
+    let eyn_id = find_load_case_id(load_cases, LoadType::SeismicYNeg);
     let crane_id = find_load_case_id(load_cases, LoadType::Crane);
     
     let mut combo_num = 1;
@@ -382,7 +386,7 @@ pub fn generate_is800_combinations(load_cases: &[LoadCase]) -> Vec<LoadCombinati
     }
     
     // 1.5DL + 1.5WL
-    for wind_id in [&wx_id, &wxn_id].iter().filter_map(|x| x.as_ref()) {
+    for wind_id in [&wx_id, &wxn_id, &wy_id, &wyn_id].iter().filter_map(|x| x.as_ref()) {
         if let Some(dl) = &dl_id {
             combinations.push(
                 LoadCombination::new(&format!("IS800-{}", combo_num), &format!("1.5DL + 1.5{}", get_load_name(wind_id)), LimitState::Ultimate, DesignCode::Indian)
@@ -394,7 +398,7 @@ pub fn generate_is800_combinations(load_cases: &[LoadCase]) -> Vec<LoadCombinati
     }
     
     // 1.2DL + 1.2LL + 1.2WL
-    for wind_id in [&wx_id, &wxn_id].iter().filter_map(|x| x.as_ref()) {
+    for wind_id in [&wx_id, &wxn_id, &wy_id, &wyn_id].iter().filter_map(|x| x.as_ref()) {
         if let (Some(dl), Some(ll)) = (&dl_id, &ll_id) {
             combinations.push(
                 LoadCombination::new(&format!("IS800-{}", combo_num), &format!("1.2DL + 1.2LL + 1.2{}", get_load_name(wind_id)), LimitState::Ultimate, DesignCode::Indian)
@@ -406,7 +410,7 @@ pub fn generate_is800_combinations(load_cases: &[LoadCase]) -> Vec<LoadCombinati
     }
     
     // 1.5DL + 1.5EL (Seismic)
-    for eq_id in [&ex_id, &exn_id].iter().filter_map(|x| x.as_ref()) {
+    for eq_id in [&ex_id, &exn_id, &ey_id, &eyn_id].iter().filter_map(|x| x.as_ref()) {
         if let Some(dl) = &dl_id {
             combinations.push(
                 LoadCombination::new(&format!("IS800-{}", combo_num), &format!("1.5DL + 1.5{}", get_load_name(eq_id)), LimitState::Ultimate, DesignCode::Indian)
@@ -417,20 +421,22 @@ pub fn generate_is800_combinations(load_cases: &[LoadCase]) -> Vec<LoadCombinati
         }
     }
     
-    // 1.2DL + 0.5LL + 1.2EL (with reduced live load)
-    for eq_id in [&ex_id, &exn_id].iter().filter_map(|x| x.as_ref()) {
+    // 1.2(DL + IL_reduced + EL) per IS 1893:2016 Cl. 6.3.2
+    // IL_reduced = 0.5*IL for floor LL > 3 kPa (per IS 1893 Table 8)
+    // Factor on original LL = 1.2 * 0.5 = 0.6
+    for eq_id in [&ex_id, &exn_id, &ey_id, &eyn_id].iter().filter_map(|x| x.as_ref()) {
         if let (Some(dl), Some(ll)) = (&dl_id, &ll_id) {
             combinations.push(
-                LoadCombination::new(&format!("IS800-{}", combo_num), &format!("1.2DL + 0.5LL + 1.2{}", get_load_name(eq_id)), LimitState::Ultimate, DesignCode::Indian)
-                    .add_factors(&[(dl, 1.2), (ll, 0.5), (eq_id, 1.2)])
-                    .with_notes("IS 800:2007 + IS 1893")
+                LoadCombination::new(&format!("IS800-{}", combo_num), &format!("1.2DL + 0.6LL + 1.2{}", get_load_name(eq_id)), LimitState::Ultimate, DesignCode::Indian)
+                    .add_factors(&[(dl, 1.2), (ll, 0.6), (eq_id, 1.2)])
+                    .with_notes("IS 800:2007 + IS 1893:2016 Cl. 6.3.2 (LL>3kPa)")
             );
             combo_num += 1;
         }
     }
     
     // 0.9DL + 1.5EL (Stability)
-    for eq_id in [&ex_id, &exn_id].iter().filter_map(|x| x.as_ref()) {
+    for eq_id in [&ex_id, &exn_id, &ey_id, &eyn_id].iter().filter_map(|x| x.as_ref()) {
         if let Some(dl) = &dl_id {
             combinations.push(
                 LoadCombination::new(&format!("IS800-{}", combo_num), &format!("0.9DL + 1.5{}", get_load_name(eq_id)), LimitState::Ultimate, DesignCode::Indian)
@@ -532,6 +538,15 @@ pub fn generate_asce7_combinations(load_cases: &[LoadCase]) -> Vec<LoadCombinati
                 );
                 combo_num += 1;
             }
+            // Combo 3 alternate companion: 0.5W instead of L
+            if let Some(w) = &w_id {
+                combinations.push(
+                    LoadCombination::new(&format!("ASCE-{}", combo_num), "1.2D + 1.6Lr + 0.5W", LimitState::Ultimate, DesignCode::ASCE7)
+                        .add_factors(&[(d, 1.2), (lr, 1.6), (w, 0.5)])
+                        .with_notes("ASCE 7-22 Eq. 2.3.1-3 (wind companion)")
+                );
+                combo_num += 1;
+            }
         }
         
         if let Some(s) = &s_id {
@@ -540,6 +555,15 @@ pub fn generate_asce7_combinations(load_cases: &[LoadCase]) -> Vec<LoadCombinati
                     LoadCombination::new(&format!("ASCE-{}", combo_num), "1.2D + 1.6S + 1.0L", LimitState::Ultimate, DesignCode::ASCE7)
                         .add_factors(&[(d, 1.2), (s, 1.6), (l, 1.0)])
                         .with_notes("ASCE 7-22 Eq. 2.3.1-3")
+                );
+                combo_num += 1;
+            }
+            // Combo 3 alternate companion: 0.5W instead of L
+            if let Some(w) = &w_id {
+                combinations.push(
+                    LoadCombination::new(&format!("ASCE-{}", combo_num), "1.2D + 1.6S + 0.5W", LimitState::Ultimate, DesignCode::ASCE7)
+                        .add_factors(&[(d, 1.2), (s, 1.6), (w, 0.5)])
+                        .with_notes("ASCE 7-22 Eq. 2.3.1-3 (wind companion)")
                 );
                 combo_num += 1;
             }
@@ -561,11 +585,25 @@ pub fn generate_asce7_combinations(load_cases: &[LoadCase]) -> Vec<LoadCombinati
         combo_num += 1;
         
         if let Some(s) = &s_id {
-            factors.push((s, 0.5));
+            let mut factors_s: Vec<(&str, f64)> = vec![(d, 1.2), (w, 1.0)];
+            if let Some(l) = &l_id { factors_s.push((l, 1.0)); }
+            factors_s.push((s, 0.5));
             combinations.push(
                 LoadCombination::new(&format!("ASCE-{}", combo_num), "1.2D + 1.0W + L + 0.5S", LimitState::Ultimate, DesignCode::ASCE7)
-                    .add_factors(&factors)
-                    .with_notes("ASCE 7-22 Eq. 2.3.1-4")
+                    .add_factors(&factors_s)
+                    .with_notes("ASCE 7-22 Eq. 2.3.1-4 (Snow companion)")
+            );
+            combo_num += 1;
+        }
+        
+        if let Some(lr) = &lr_id {
+            let mut factors_lr: Vec<(&str, f64)> = vec![(d, 1.2), (w, 1.0)];
+            if let Some(l) = &l_id { factors_lr.push((l, 1.0)); }
+            factors_lr.push((lr, 0.5));
+            combinations.push(
+                LoadCombination::new(&format!("ASCE-{}", combo_num), "1.2D + 1.0W + L + 0.5Lr", LimitState::Ultimate, DesignCode::ASCE7)
+                    .add_factors(&factors_lr)
+                    .with_notes("ASCE 7-22 Eq. 2.3.1-4 (Roof Live companion)")
             );
             combo_num += 1;
         }
@@ -613,44 +651,135 @@ pub fn generate_asce7_combinations(load_cases: &[LoadCase]) -> Vec<LoadCombinati
                 .add_factors(&[(d, 0.9), (e, 1.0)])
                 .with_notes("ASCE 7-22 Eq. 2.3.1-7 (Uplift)")
         );
-        combo_num += 1;
+        let _ = combo_num;
     }
     
     // === ASD Combinations (Section 2.4.1) ===
+    // Note: ASD is a STRENGTH method using allowable stresses, classified as Ultimate limit state
     
     // ASD 1: D
     if let Some(d) = &d_id {
         combinations.push(
-            LoadCombination::new(&format!("ASD-{}", 1), "D", LimitState::Serviceability, DesignCode::ASCE7)
+            LoadCombination::new(&format!("ASD-{}", 1), "D", LimitState::Ultimate, DesignCode::ASCE7)
                 .add_factors(&[(d, 1.0)])
-                .with_notes("ASCE 7-22 Eq. 2.4.1-1")
+                .with_notes("ASCE 7-22 Eq. 2.4.1-1 (ASD)")
         );
     }
     
     // ASD 2: D + L
     if let (Some(d), Some(l)) = (&d_id, &l_id) {
         combinations.push(
-            LoadCombination::new(&format!("ASD-{}", 2), "D + L", LimitState::Serviceability, DesignCode::ASCE7)
+            LoadCombination::new(&format!("ASD-{}", 2), "D + L", LimitState::Ultimate, DesignCode::ASCE7)
                 .add_factors(&[(d, 1.0), (l, 1.0)])
-                .with_notes("ASCE 7-22 Eq. 2.4.1-2")
+                .with_notes("ASCE 7-22 Eq. 2.4.1-2 (ASD)")
         );
+    }
+    
+    // ASD 3: D + (Lr or S or R)
+    if let Some(d) = &d_id {
+        if let Some(lr) = &lr_id {
+            combinations.push(
+                LoadCombination::new(&format!("ASD-{}", 3), "D + Lr", LimitState::Ultimate, DesignCode::ASCE7)
+                    .add_factors(&[(d, 1.0), (lr, 1.0)])
+                    .with_notes("ASCE 7-22 Eq. 2.4.1-3 (ASD)")
+            );
+        }
+        if let Some(s) = &s_id {
+            combinations.push(
+                LoadCombination::new(&format!("ASD-3S"), "D + S", LimitState::Ultimate, DesignCode::ASCE7)
+                    .add_factors(&[(d, 1.0), (s, 1.0)])
+                    .with_notes("ASCE 7-22 Eq. 2.4.1-3 (ASD)")
+            );
+        }
+    }
+    
+    // ASD 4: D + 0.75L + 0.75(Lr or S or R)
+    if let (Some(d), Some(l)) = (&d_id, &l_id) {
+        if let Some(lr) = &lr_id {
+            combinations.push(
+                LoadCombination::new(&format!("ASD-{}", 4), "D + 0.75L + 0.75Lr", LimitState::Ultimate, DesignCode::ASCE7)
+                    .add_factors(&[(d, 1.0), (l, 0.75), (lr, 0.75)])
+                    .with_notes("ASCE 7-22 Eq. 2.4.1-4 (ASD)")
+            );
+        }
+        if let Some(s) = &s_id {
+            combinations.push(
+                LoadCombination::new(&format!("ASD-4S"), "D + 0.75L + 0.75S", LimitState::Ultimate, DesignCode::ASCE7)
+                    .add_factors(&[(d, 1.0), (l, 0.75), (s, 0.75)])
+                    .with_notes("ASCE 7-22 Eq. 2.4.1-4 (ASD)")
+            );
+        }
     }
     
     // ASD 5: D + 0.6W
     if let (Some(d), Some(w)) = (&d_id, &w_id) {
         combinations.push(
-            LoadCombination::new(&format!("ASD-{}", 5), "D + 0.6W", LimitState::Serviceability, DesignCode::ASCE7)
+            LoadCombination::new(&format!("ASD-{}", 5), "D + 0.6W", LimitState::Ultimate, DesignCode::ASCE7)
                 .add_factors(&[(d, 1.0), (w, 0.6)])
-                .with_notes("ASCE 7-22 Eq. 2.4.1-5")
+                .with_notes("ASCE 7-22 Eq. 2.4.1-5 (ASD)")
         );
     }
     
-    // ASD 6: D + 0.7E
+    // ASD 6: D + 0.75L + 0.75(0.6W) + 0.75(Lr or S or R)
+    if let (Some(d), Some(l), Some(w)) = (&d_id, &l_id, &w_id) {
+        let mut factors: Vec<(&str, f64)> = vec![(d, 1.0), (l, 0.75), (w, 0.45)]; // 0.75 * 0.6 = 0.45
+        if let Some(lr) = &lr_id {
+            factors.push((lr, 0.75));
+        }
+        combinations.push(
+            LoadCombination::new(&format!("ASD-{}", 6), "D + 0.75L + 0.75(0.6W) + 0.75Lr", LimitState::Ultimate, DesignCode::ASCE7)
+                .add_factors(&factors)
+                .with_notes("ASCE 7-22 Eq. 2.4.1-6a (ASD)")
+        );
+        
+        // ASD 6a snow variant: D + 0.75L + 0.45W + 0.75S
+        if let Some(s) = &s_id {
+            let factors_s: Vec<(&str, f64)> = vec![(d, 1.0), (l, 0.75), (w, 0.45), (s, 0.75)];
+            combinations.push(
+                LoadCombination::new("ASD-6a-S", "D + 0.75L + 0.75(0.6W) + 0.75S", LimitState::Ultimate, DesignCode::ASCE7)
+                    .add_factors(&factors_s)
+                    .with_notes("ASCE 7-22 Eq. 2.4.1-6a (ASD, Snow companion)")
+            );
+        }
+    }
+    
+    // ASD 6b: D + 0.75L + 0.75(0.7E) + 0.75S  — ASCE 7-22 Eq. 2.4.1-6b
+    if let (Some(d), Some(l), Some(e)) = (&d_id, &l_id, &e_id) {
+        let mut factors: Vec<(&str, f64)> = vec![(d, 1.0), (l, 0.75), (e, 0.525)]; // 0.75 * 0.7 = 0.525
+        if let Some(s) = &s_id {
+            factors.push((s, 0.75));
+        }
+        combinations.push(
+            LoadCombination::new("ASD-6b", "D + 0.75L + 0.75(0.7E)", LimitState::Ultimate, DesignCode::ASCE7)
+                .add_factors(&factors)
+                .with_notes("ASCE 7-22 Eq. 2.4.1-6b (ASD, Seismic)")
+        );
+    }
+    
+    // ASD 7: 0.6D + 0.6W (Uplift)
+    if let (Some(d), Some(w)) = (&d_id, &w_id) {
+        combinations.push(
+            LoadCombination::new(&format!("ASD-{}", 7), "0.6D + 0.6W", LimitState::Ultimate, DesignCode::ASCE7)
+                .add_factors(&[(d, 0.6), (w, 0.6)])
+                .with_notes("ASCE 7-22 Eq. 2.4.1-7 (ASD Uplift)")
+        );
+    }
+    
+    // ASD 8: 0.6D + 0.7E (Uplift)
     if let (Some(d), Some(e)) = (&d_id, &e_id) {
         combinations.push(
-            LoadCombination::new(&format!("ASD-{}", 6), "D + 0.7E", LimitState::Serviceability, DesignCode::ASCE7)
+            LoadCombination::new(&format!("ASD-{}", 8), "0.6D + 0.7E", LimitState::Ultimate, DesignCode::ASCE7)
+                .add_factors(&[(d, 0.6), (e, 0.7)])
+                .with_notes("ASCE 7-22 Eq. 2.4.1-8 (ASD Uplift)")
+        );
+    }
+    
+    // ASD: D + 0.7E
+    if let (Some(d), Some(e)) = (&d_id, &e_id) {
+        combinations.push(
+            LoadCombination::new(&format!("ASD-E"), "D + 0.7E", LimitState::Ultimate, DesignCode::ASCE7)
                 .add_factors(&[(d, 1.0), (e, 0.7)])
-                .with_notes("ASCE 7-22 Eq. 2.4.1-6")
+                .with_notes("ASCE 7-22 Eq. 2.4.1-5E (ASD)")
         );
     }
     
@@ -678,19 +807,23 @@ pub fn generate_eurocode_combinations(load_cases: &[LoadCase]) -> Vec<LoadCombin
     let gamma_q = 1.5;       // Variable load
     let psi_0_q = 0.7;       // Combination factor for imposed load
     let psi_0_w = 0.6;       // Combination factor for wind
-    let _psi_0_s = 0.5;       // Combination factor for snow
+    let psi_0_s = 0.5;       // Combination factor for snow
     let psi_2_q = 0.3;       // Quasi-permanent factor
     
     let mut combo_num = 1;
     
     // === ULS: STR/GEO (Eq. 6.10) ===
     
-    // 1.35G + 1.5Q (leading)
+    // 1.35G + 1.5Q (leading) + companion snow
     if let (Some(g), Some(q)) = (&g_id, &q_id) {
+        let mut factors: Vec<(&str, f64)> = vec![(g, gamma_g_sup), (q, gamma_q)];
+        if let Some(s) = &s_id {
+            factors.push((s, gamma_q * psi_0_s)); // 1.5 × 0.5 = 0.75
+        }
         combinations.push(
-            LoadCombination::new(&format!("EC-{}", combo_num), "1.35G + 1.5Q", LimitState::Ultimate, DesignCode::Eurocode)
-                .add_factors(&[(g, gamma_g_sup), (q, gamma_q)])
-                .with_notes("EN 1990 Eq. 6.10")
+            LoadCombination::new(&format!("EC-{}", combo_num), "1.35G + 1.5Q + 0.75S", LimitState::Ultimate, DesignCode::Eurocode)
+                .add_factors(&factors)
+                .with_notes("EN 1990 Eq. 6.10 (Q leading, S companion)")
         );
         combo_num += 1;
     }
@@ -720,12 +853,16 @@ pub fn generate_eurocode_combinations(load_cases: &[LoadCase]) -> Vec<LoadCombin
         combo_num += 1;
     }
     
-    // Snow combinations
+    // Snow combinations: 1.35G + 1.5S (leading) + ψ₀Q × 1.5Q
     if let (Some(g), Some(s)) = (&g_id, &s_id) {
+        let mut factors: Vec<(&str, f64)> = vec![(g, gamma_g_sup), (s, gamma_q)];
+        if let Some(q) = &q_id {
+            factors.push((q, gamma_q * psi_0_q)); // 1.5 × 0.7 = 1.05
+        }
         combinations.push(
-            LoadCombination::new(&format!("EC-{}", combo_num), "1.35G + 1.5S", LimitState::Ultimate, DesignCode::Eurocode)
-                .add_factors(&[(g, gamma_g_sup), (s, gamma_q)])
-                .with_notes("EN 1990 Eq. 6.10 (Snow leading)")
+            LoadCombination::new(&format!("EC-{}", combo_num), "1.35G + 1.5S + 1.05Q", LimitState::Ultimate, DesignCode::Eurocode)
+                .add_factors(&factors)
+                .with_notes("EN 1990 Eq. 6.10 (Snow leading, Q companion)")
         );
         combo_num += 1;
     }
@@ -754,7 +891,7 @@ pub fn generate_eurocode_combinations(load_cases: &[LoadCase]) -> Vec<LoadCombin
                 .add_factors(&factors)
                 .with_notes("EN 1998-1 Eq. 3.17")
         );
-        combo_num += 1;
+        let _ = combo_num; // last ULS combo
     }
     
     // === SLS: Characteristic (Eq. 6.14) ===

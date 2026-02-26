@@ -7,8 +7,12 @@
 
 import express, { Router, Request, Response } from "express";
 import { rustProxy } from "../../services/serviceProxy.js";
+import { requireAuth } from "../../middleware/authMiddleware.js";
 
 const router: Router = express.Router();
+
+// All template routes require authentication
+router.use(requireAuth());
 
 // ============================================
 // Helper: Forward to Rust and handle response
@@ -35,7 +39,7 @@ async function forwardToRust(
     console.error(`[Templates/${label}] Error:`, error);
     res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : `${label} failed`,
+      error: `${label} failed`,
     });
   }
 }

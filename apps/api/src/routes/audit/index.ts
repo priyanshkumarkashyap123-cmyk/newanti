@@ -10,9 +10,13 @@
 import { Router, Request, Response, type IRouter } from 'express';
 import { getDbAuditService } from '../../services/DatabaseAuditService.js';
 import { AuditType } from '../../types/prisma-stub.js';
+import { requireAuth, getAuth } from '../../middleware/authMiddleware.js';
 
 const router: IRouter = Router();
 const auditService = getDbAuditService();
+
+// All audit routes require authentication
+router.use(requireAuth());
 
 /**
  * POST /api/audit

@@ -150,6 +150,7 @@ pub struct CodeCitation {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[allow(non_camel_case_types)]
 pub enum DesignCode {
     // Indian Codes
     IS456_2000,
@@ -315,6 +316,7 @@ impl EngineeringDomain {
 // ============================================================================
 
 /// Core guardrail validation engine
+#[allow(dead_code)]
 pub struct GuardrailEngine {
     /// Validated domains
     validated_domains: HashSet<EngineeringDomain>,
@@ -665,7 +667,7 @@ fn check_unrealistic_values(text: &str) -> Option<HallucinationWarning> {
     ];
 
     // Simple pattern matching (in production, use NLP)
-    for (name, limit, unit) in &unrealistic {
+    for (name, _limit, _unit) in &unrealistic {
         if text.to_lowercase().contains(name) {
             // Would need actual value extraction here
             // This is a placeholder

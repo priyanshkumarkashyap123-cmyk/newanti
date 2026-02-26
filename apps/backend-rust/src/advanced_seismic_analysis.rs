@@ -174,7 +174,7 @@ impl IncrementalDynamicAnalysis {
         let mut sorted_points: Vec<_> = existing_points.iter()
             .filter(|p| p.converged)
             .collect();
-        sorted_points.sort_by(|a, b| a.im.partial_cmp(&b.im).unwrap());
+        sorted_points.sort_by(|a, b| a.im.partial_cmp(&b.im).unwrap_or(std::cmp::Ordering::Equal));
         
         // Find gaps that need filling
         for i in 0..sorted_points.len() - 1 {
@@ -215,7 +215,7 @@ impl IncrementalDynamicAnalysis {
             }
         }
         
-        intensities.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        intensities.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
         intensities.dedup_by(|a, b| (*a - *b).abs() < 0.01);
         
         intensities

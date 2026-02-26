@@ -947,7 +947,7 @@ impl TaguchiMethod {
                 // Find level with highest S/N
                 level_means.iter()
                     .enumerate()
-                    .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+                    .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
                     .map(|(i, _)| i)
                     .unwrap_or(0)
             })

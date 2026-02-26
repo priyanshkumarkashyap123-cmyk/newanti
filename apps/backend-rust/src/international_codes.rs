@@ -133,7 +133,7 @@ pub mod aci318 {
         let as_t = section.as_tension;
         
         // Strength reduction factor (ACI 318-19 Table 21.2.1)
-        let phi = 0.90; // Tension-controlled
+        let _phi = 0.90; // Tension-controlled
         
         // Beta1 factor (ACI 318-19 Table 22.2.2.4.3)
         let beta1 = if fc <= 28.0 {
@@ -843,7 +843,7 @@ pub mod as4100 {
         iy: f64,    // Radius of gyration about minor axis (mm)
         j: f64,     // Torsion constant (mm⁴)
         iw: f64,    // Warping constant (mm⁶)
-        fy: f64,    // Yield stress (MPa)
+        _fy: f64,    // Yield stress (MPa)
         m_star: f64, // Design moment (kN·m)
     ) -> DesignResult {
         let e = 200000.0; // MPa
@@ -884,7 +884,7 @@ pub mod as4100 {
         alpha_b: f64, // Member section constant
         n_star: f64,  // Design axial force (kN)
     ) -> DesignResult {
-        let e = 200000.0;
+        let _e = 200000.0;
         
         // Modified slenderness
         let lambda_n = le / r * (fy / 250.0).sqrt();
@@ -963,10 +963,10 @@ pub mod csa_s16 {
     /// Flexural resistance per CSA S16 Cl. 13.5
     pub fn flexural_resistance(
         zx: f64,    // Plastic section modulus (mm³)
-        sx: f64,    // Elastic section modulus (mm³)
+        _sx: f64,    // Elastic section modulus (mm³)
         fy: f64,    // Yield strength (MPa)
-        lu: f64,    // Unbraced length (mm)
-        mp: f64,    // Plastic moment capacity (kN·m)
+        _lu: f64,    // Unbraced length (mm)
+        _mp: f64,    // Plastic moment capacity (kN·m)
         mr: f64,    // Critical elastic moment (kN·m)
         mf: f64,    // Factored moment (kN·m)
     ) -> DesignResult {

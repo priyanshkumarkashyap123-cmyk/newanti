@@ -12,7 +12,7 @@
  */
 
 import * as crypto from "crypto";
-import { Request, Response, Router, type IRouter } from "express";
+import express, { Request, Response, Router, type IRouter } from "express";
 import { User, Subscription } from "./models.js";
 import { createRequire } from "module";
 import { env } from "./config/env.js";
@@ -186,9 +186,9 @@ export class RazorpayBillingService {
     await Subscription.findOneAndUpdate(
       { user: user._id },
       {
-        stripeCustomerId: paymentId, // Reusing field for Razorpay payment ID
-        stripeSubscriptionId: orderId, // Reusing field for Razorpay order ID
-        stripePriceId: planType,
+        razorpayPaymentId: paymentId,
+        razorpayOrderId: orderId,
+        planType: planType,
         status: "active",
         currentPeriodStart: now,
         currentPeriodEnd: periodEnd,
@@ -489,6 +489,9 @@ razorpayRouter.post(
  */
 razorpayRouter.post(
   "/webhooks/razorpay",
+  // Use express.raw() to get the exact raw body bytes for HMAC signature verification.
+  // Without this, JSON.stringify(req.body) may produce different byte ordering than what Razorpay signed.
+  express.raw({ type: 'application/json' }),
   async (req: Request, res: Response) => {
     const signature = req.headers["x-razorpay-signature"] as string;
 
@@ -498,11 +501,11 @@ razorpayRouter.post(
     }
 
     try {
-      // Verify webhook signature
-      const body =
-        typeof req.body === "string" ? req.body : JSON.stringify(req.body);
+      // req.body is a Buffer when using express.raw()
+      const rawBody = Buffer.isBuffer(req.body) ? req.body.toString('utf8') : 
+                      (typeof req.body === 'string' ? req.body : JSON.stringify(req.body));
       const isValid = RazorpayBillingService.verifyWebhookSignature(
-        body,
+        rawBody,
         signature,
       );
 
@@ -512,8 +515,7 @@ razorpayRouter.post(
       }
 
       // Parse payload
-      const payload =
-        typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+      const payload = JSON.parse(rawBody);
       const event = payload.event as string;
 
       const result = await RazorpayBillingService.handleWebhook(
@@ -571,7 +573,7 @@ razorpayRouter.get(
           tier: user.tier || "free",
           active: true,
           expiresAt: subscription.currentPeriodEnd,
-          planType: subscription.stripePriceId || "monthly",
+          planType: subscription.planType || "monthly",
         },
       });
     } catch (error) {

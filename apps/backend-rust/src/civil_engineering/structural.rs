@@ -256,8 +256,14 @@ impl Frame2DAnalysis {
         for load in &self.distributed_loads {
             if let Some(&member_idx) = self.member_map.get(&load.member_id) {
                 let member = &self.members[member_idx];
-                let start_idx = *self.node_map.get(&member.start_node).unwrap();
-                let end_idx = *self.node_map.get(&member.end_node).unwrap();
+                let start_idx = match self.node_map.get(&member.start_node) {
+                    Some(&idx) => idx,
+                    None => continue,
+                };
+                let end_idx = match self.node_map.get(&member.end_node) {
+                    Some(&idx) => idx,
+                    None => continue,
+                };
                 
                 let n1 = &self.nodes[start_idx];
                 let n2 = &self.nodes[end_idx];
@@ -419,8 +425,10 @@ impl Frame2DAnalysis {
     
     /// Calculate member end forces from global displacements
     fn calculate_member_forces(&self, member: &Member2D, displacements: &DVector<f64>) -> Result<MemberForces, String> {
-        let start_idx = *self.node_map.get(&member.start_node).unwrap();
-        let end_idx = *self.node_map.get(&member.end_node).unwrap();
+        let start_idx = *self.node_map.get(&member.start_node)
+            .ok_or_else(|| format!("Node {} not found in node_map", &member.start_node))?;
+        let end_idx = *self.node_map.get(&member.end_node)
+            .ok_or_else(|| format!("Node {} not found in node_map", &member.end_node))?;
         
         let n1 = &self.nodes[start_idx];
         let n2 = &self.nodes[end_idx];
@@ -618,8 +626,14 @@ impl Truss2DAnalysis {
         // Calculate member forces
         let mut member_forces = HashMap::new();
         for member in &self.members {
-            let start_idx = *self.node_map.get(&member.start_node).unwrap();
-            let end_idx = *self.node_map.get(&member.end_node).unwrap();
+            let start_idx = match self.node_map.get(&member.start_node) {
+                Some(&idx) => idx,
+                None => continue,
+            };
+            let end_idx = match self.node_map.get(&member.end_node) {
+                Some(&idx) => idx,
+                None => continue,
+            };
             
             let n1 = &self.nodes[start_idx];
             let n2 = &self.nodes[end_idx];

@@ -101,26 +101,22 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
   };
 
   return (
-    <div className="h-full w-full bg-zinc-900 flex flex-col border-r border-zinc-800">
+    <div className="h-full w-full bg-slate-950 flex flex-col border-r border-slate-800/60">
       {/* Header */}
-      <div className="p-4 border-b border-zinc-800 bg-zinc-950">
-        <h2 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+      <div className="px-3 py-3 border-b border-slate-800/60 bg-slate-950">
+        <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
           Workflow
         </h2>
-        <div className="text-[10px] text-zinc-500 mt-1 font-mono">
+        <div className="text-[9px] text-slate-600 mt-0.5 font-mono">
           ANALYTICAL MODELING
         </div>
       </div>
 
       {/* Workflow Steps */}
-      <div className="flex-1 overflow-y-auto py-2">
-        <div className="flex flex-col gap-1 px-2">
-          {workflowItems.map((item) => {
-            // Highlight only the specific clicked step, not entire category group
+      <div className="flex-1 overflow-y-auto py-1.5 eng-scroll">
+        <div className="flex flex-col gap-0.5 px-1.5">
+          {workflowItems.map((item, index) => {
             const isActive = activeStep === item.id;
-
-            // Specifically highlight the exact item if we track granular state in future
-            // For now, highlight broader categories slightly differently or just the main one
 
             return (
               <button
@@ -129,29 +125,30 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                 aria-label={item.label}
                 aria-current={isActive ? "step" : undefined}
                 className={`
-                                    relative group flex items-center gap-3 px-3 py-3 rounded-md text-left transition-all
-                                    ${
-                                      isActive
-                                        ? "bg-blue-600 text-white shadow-md"
-                                        : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
-                                    }
-                                `}
+                    relative group flex items-center gap-2.5 px-2.5 py-2.5 rounded-md text-left transition-all
+                    ${
+                      isActive
+                        ? "bg-blue-600/90 text-white shadow-lg shadow-blue-900/30"
+                        : "text-slate-400 hover:bg-slate-800/60 hover:text-slate-200"
+                    }
+                `}
               >
+                {/* Step number */}
                 <div
                   className={`
-                                    p-1.5 rounded-md transition-colors
-                                    ${isActive ? "bg-blue-500" : "bg-zinc-800 group-hover:bg-zinc-700"}
-                                `}
+                    w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold transition-colors flex-shrink-0
+                    ${isActive ? "bg-blue-500 text-white" : "bg-slate-800/80 text-slate-500 group-hover:bg-slate-700 group-hover:text-slate-300"}
+                  `}
                   aria-hidden="true"
                 >
-                  <item.icon className="w-4 h-4" />
+                  {index + 1}
                 </div>
-                <div className="flex flex-col items-start">
-                  <span className="text-sm font-medium leading-none">
+                <div className="flex flex-col items-start min-w-0">
+                  <span className="text-[12px] font-semibold leading-none truncate">
                     {item.label}
                   </span>
                   <span
-                    className={`text-[10px] mt-1 leading-none ${isActive ? "text-blue-200" : "text-zinc-500"}`}
+                    className={`text-[9px] mt-1 leading-none truncate ${isActive ? "text-blue-200" : "text-slate-600"}`}
                   >
                     {item.subtext}
                   </span>
@@ -160,7 +157,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                 {/* Active Indicator Bar */}
                 {isActive && (
                   <div
-                    className="absolute left-0 w-1 h-8 bg-blue-400 rounded-r-full"
+                    className="absolute left-0 w-[3px] h-7 bg-blue-400 rounded-r-full"
                     aria-hidden="true"
                   />
                 )}
@@ -171,19 +168,16 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
       </div>
 
       {/* Bottom Section */}
-      <div className="p-4 bg-zinc-950 border-t border-zinc-800">
-        <div className="flex flex-col gap-2">
-          <button className="text-xs text-zinc-400 hover:text-white text-left">
-            Connection Client
-          </button>
-          <div className="w-full h-px bg-zinc-800" aria-hidden="true" />
-          <button className="text-xs text-green-500 hover:text-green-400 text-left flex items-center gap-2">
+      <div className="px-3 py-2.5 bg-slate-950 border-t border-slate-800/60">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] text-slate-600">Connection</span>
+          <span className="text-[10px] text-emerald-500 flex items-center gap-1.5">
             <span
-              className="w-1.5 h-1.5 rounded-full bg-green-500"
+              className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"
               aria-hidden="true"
             />
-            Connected
-          </button>
+            Online
+          </span>
         </div>
       </div>
     </div>

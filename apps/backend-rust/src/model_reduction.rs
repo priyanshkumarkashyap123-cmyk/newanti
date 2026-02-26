@@ -830,7 +830,7 @@ impl PODReduction {
 
         // Sort by descending eigenvalue
         let mut indices: Vec<usize> = (0..n).collect();
-        indices.sort_by(|&a, &b| eigenvalues[b].partial_cmp(&eigenvalues[a]).unwrap());
+        indices.sort_by(|&a, &b| eigenvalues[b].partial_cmp(&eigenvalues[a]).unwrap_or(std::cmp::Ordering::Equal));
 
         let sorted_vals: Vec<f64> = indices.iter().map(|&i| eigenvalues[i]).collect();
         let mut sorted_vecs = vec![0.0; n * n];
@@ -880,7 +880,7 @@ impl DEIM {
         // First index: max of first basis vector
         let (idx0, _) = pod_basis[0].iter()
             .enumerate()
-            .max_by(|(_, a), (_, b)| a.abs().partial_cmp(&b.abs()).unwrap())
+            .max_by(|(_, a), (_, b)| a.abs().partial_cmp(&b.abs()).unwrap_or(std::cmp::Ordering::Equal))
             .unwrap();
 
         self.interpolation_indices.push(idx0);
@@ -907,7 +907,7 @@ impl DEIM {
             let (new_idx, _) = r.iter()
                 .enumerate()
                 .filter(|(i, _)| !self.interpolation_indices.contains(i))
-                .max_by(|(_, a), (_, b)| a.abs().partial_cmp(&b.abs()).unwrap())
+                .max_by(|(_, a), (_, b)| a.abs().partial_cmp(&b.abs()).unwrap_or(std::cmp::Ordering::Equal))
                 .unwrap_or((0, &0.0));
 
             self.interpolation_indices.push(new_idx);

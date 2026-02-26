@@ -173,7 +173,7 @@ impl SingleRecordIDA {
         });
 
         // Sort by IM
-        self.points.sort_by(|a, b| a.im.partial_cmp(&b.im).unwrap());
+        self.points.sort_by(|a, b| a.im.partial_cmp(&b.im).unwrap_or(std::cmp::Ordering::Equal));
     }
 
     /// Run IDA with hunt-and-fill algorithm
@@ -367,7 +367,7 @@ impl MultiRecordIDA {
             return;
         }
 
-        collapse_ims.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        collapse_ims.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
 
         let n = collapse_ims.len();
 
@@ -450,7 +450,7 @@ impl MultiRecordIDA {
         }
 
         let mut sorted = edps.clone();
-        sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        sorted.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
 
         let p16 = self.percentile(&sorted, 0.16);
         let p50 = self.percentile(&sorted, 0.50);

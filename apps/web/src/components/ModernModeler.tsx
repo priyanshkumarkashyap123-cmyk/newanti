@@ -39,6 +39,9 @@ import { ViewportManager } from "./ViewportManager";
 import { PropertiesPanel } from "./PropertiesPanel";
 // ResultsTable — replaced by AnalysisResultsDashboard
 
+// New industry-grade UI components
+import { ViewControlsOverlay } from "./ui/ViewControlsOverlay";
+
 // New layout components
 import { WorkflowSidebar } from "./layout/WorkflowSidebar";
 import { EngineeringRibbon } from "./layout/EngineeringRibbon";
@@ -357,10 +360,10 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = memo(
 
     if (collapsed) {
       return (
-        <div className="w-10 h-full bg-slate-900 border-l border-slate-800 flex flex-col items-center py-2 absolute right-0 z-20 md:relative shadow-lg md:shadow-none">
+        <div className="w-10 h-full bg-slate-950 border-l border-slate-800/60 flex flex-col items-center py-2 absolute right-0 z-20 md:relative shadow-lg md:shadow-none">
           <button
             onClick={onToggle}
-            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg"
+            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
             title="Show Properties"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -370,26 +373,26 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = memo(
     }
 
     return (
-      <div className="w-72 h-full bg-slate-900/95 backdrop-blur-sm border-l border-slate-800/60 flex flex-col flex-shrink-0 absolute right-0 z-20 md:relative shadow-xl md:shadow-none">
-        <div className="flex items-center justify-between px-3 py-2 border-b border-slate-800">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            Properties
+      <div className="w-72 h-full bg-slate-950/95 backdrop-blur-sm border-l border-slate-800/60 flex flex-col flex-shrink-0 absolute right-0 z-20 md:relative shadow-xl md:shadow-none">
+        <div className="flex items-center justify-between px-3 py-2 border-b border-slate-800/60">
+          <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+            Inspector
           </h3>
           <button
             onClick={onToggle}
-            className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded"
+            className="p-1 text-slate-500 hover:text-white hover:bg-slate-800 rounded transition-colors"
             title="Hide Properties"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto eng-scroll p-2">
           <PropertiesPanel />
         </div>
-        <div className="p-3 border-t border-slate-800">
-          <p className="text-[10px] text-slate-400 text-center">
+        <div className="px-3 py-2 border-t border-slate-800/60">
+          <p className="text-[10px] text-slate-600 text-center">
             {selectedIds.size === 0
-              ? "Select an element to view properties"
+              ? "Select an element to inspect"
               : `${selectedIds.size} item(s) selected`}
           </p>
         </div>
@@ -400,15 +403,17 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = memo(
 InspectorPanel.displayName = "InspectorPanel";
 
 // ============================================
-// STATUS BAR
+// STATUS BAR — Industry-Standard (STAAD Pro / ETABS Style)
 // ============================================
 
 const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => void }> =
   memo(({ isAnalyzing, onOpenDiagnostics }) => {
     const nodes = useModelStore((state) => state.nodes);
     const members = useModelStore((state) => state.members);
+    const plates = useModelStore((state) => state.plates);
+    const selectedIds = useModelStore((state) => state.selectedIds);
     const analysisResults = useModelStore((state) => state.analysisResults);
-    const { activeCategory, activeTool } = useUIStore();
+    const { activeCategory, activeTool, showGrid, snapToGrid, gridSize } = useUIStore();
 
     const backendHealthConfigs = useMemo(
       () => [
@@ -430,8 +435,8 @@ const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => void }> =
     });
 
     const statusDotClass = (status: HealthStatus): string => {
-      if (status === "healthy") return "bg-green-400";
-      if (status === "degraded") return "bg-yellow-400";
+      if (status === "healthy") return "bg-emerald-400";
+      if (status === "degraded") return "bg-amber-400";
       if (status === "unhealthy") return "bg-red-400";
       return "bg-slate-500";
     };
@@ -440,70 +445,119 @@ const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => void }> =
       (health?.checks || []).map((c) => [c.name, c.status]),
     );
 
+    // Selection info
+    const selCount = selectedIds.size;
+    const selNodes = Array.from(selectedIds).filter(id => id.startsWith("N")).length;
+    const selMembers = Array.from(selectedIds).filter(id => id.startsWith("M")).length;
+
     return (
-      <div className="h-7 bg-slate-950 border-t border-slate-800 flex items-center justify-between px-4 text-xs text-slate-400 flex-shrink-0">
-        <div className="flex items-center gap-6">
+      <div className="h-7 bg-slate-950/95 backdrop-blur-sm border-t border-slate-800/60 flex items-center justify-between px-3 text-[10px] text-slate-500 flex-shrink-0 select-none font-medium">
+        {/* Left Section — Status + Mode */}
+        <div className="flex items-center gap-3">
+          {/* Status Indicator */}
           <span className="flex items-center gap-1.5">
             <span
-              className={`w-2 h-2 rounded-full ${isAnalyzing ? "bg-yellow-500 animate-pulse" : "bg-green-500"}`}
+              className={`w-1.5 h-1.5 rounded-full ${isAnalyzing ? "bg-amber-400 animate-pulse" : analysisResults ? "bg-emerald-400" : "bg-blue-400"}`}
             />
-            {isAnalyzing ? "Analyzing..." : "Ready"}
+            <span className={isAnalyzing ? "text-amber-400" : analysisResults ? "text-emerald-400" : "text-slate-400"}>
+              {isAnalyzing ? "Analyzing..." : analysisResults ? "Results Ready" : "Ready"}
+            </span>
           </span>
-          <span className="h-3 w-px bg-slate-700" />
+
+          <span className="h-3 w-px bg-slate-800" />
+
+          {/* Active Mode */}
           <span>
-            Mode: <span className="text-slate-400">{activeCategory}</span>
+            <span className="text-slate-600">Mode:</span>{" "}
+            <span className="text-slate-400">{activeCategory}</span>
           </span>
-          <span className="h-3 w-px bg-slate-700" />
+
+          <span className="h-3 w-px bg-slate-800" />
+
+          {/* Active Tool */}
           <span>
-            Tool: <span className="text-slate-400">{activeTool || "None"}</span>
+            <span className="text-slate-600">Tool:</span>{" "}
+            <span className="text-blue-400">{activeTool || "Select"}</span>
           </span>
+
+          {/* Selection Info */}
+          {selCount > 0 && (
+            <>
+              <span className="h-3 w-px bg-slate-800" />
+              <span className="text-cyan-400">
+                Selected: {selCount}
+                {selNodes > 0 && ` (${selNodes}N`}
+                {selMembers > 0 && ` ${selMembers}M`}
+                {(selNodes > 0 || selMembers > 0) && ")"}
+              </span>
+            </>
+          )}
         </div>
-        <div className="flex items-center gap-6">
-          <span>
-            Nodes:{" "}
-            <span className="text-slate-400 font-mono">{nodes.size}</span>
+
+        {/* Center — Coordinate Input */}
+        <div className="flex items-center gap-2 bg-slate-900/80 rounded px-2 py-0.5 border border-slate-800/60">
+          <span className="text-slate-600">X:</span>
+          <span className="text-slate-400 font-mono w-12 text-right">0.000</span>
+          <span className="text-slate-700">|</span>
+          <span className="text-slate-600">Y:</span>
+          <span className="text-slate-400 font-mono w-12 text-right">0.000</span>
+          <span className="text-slate-700">|</span>
+          <span className="text-slate-600">Z:</span>
+          <span className="text-slate-400 font-mono w-12 text-right">0.000</span>
+        </div>
+
+        {/* Right Section — Model Info + Backend Status */}
+        <div className="flex items-center gap-3">
+          {/* Grid/Snap Info */}
+          <span className="flex items-center gap-1.5">
+            <span className={`w-1.5 h-1.5 rounded-full ${snapToGrid ? "bg-blue-400" : "bg-slate-600"}`} />
+            <span className={snapToGrid ? "text-blue-400" : "text-slate-500"}>
+              Snap {snapToGrid ? "ON" : "OFF"}
+            </span>
           </span>
-          <span className="h-3 w-px bg-slate-700" />
+
+          <span className="h-3 w-px bg-slate-800" />
+
+          {/* Model Statistics */}
           <span>
-            Members:{" "}
-            <span className="text-slate-400 font-mono">{members.size}</span>
+            <span className="text-slate-600">N:</span>
+            <span className="text-slate-400 font-mono ml-0.5">{nodes.size}</span>
           </span>
-          <span className="h-3 w-px bg-slate-700" />
           <span>
-            Units: <span className="text-slate-400">kN, m</span>
+            <span className="text-slate-600">M:</span>
+            <span className="text-slate-400 font-mono ml-0.5">{members.size}</span>
           </span>
-          <span className="h-3 w-px bg-slate-700" />
+
+          <span className="h-3 w-px bg-slate-800" />
+
+          {/* Units */}
+          <span>
+            <span className="text-slate-600">Units:</span>{" "}
+            <span className="text-slate-400">kN, m</span>
+          </span>
+
+          <span className="h-3 w-px bg-slate-800" />
+
+          {/* Backend Health */}
           <button
             onClick={onOpenDiagnostics}
-            className="flex items-center gap-2 hover:bg-slate-800/60 rounded px-1.5 py-0.5 -my-0.5 transition cursor-pointer"
+            className="flex items-center gap-1.5 hover:bg-slate-800/40 rounded px-1.5 py-0.5 -my-0.5 transition cursor-pointer"
             title="Click for integration diagnostics"
           >
-            <span className="text-slate-500">Backends:</span>
             {(["Node", "Python", "Rust"] as const).map((name) => {
               const status = checkByName.get(name) || "unknown";
               return (
                 <span
                   key={name}
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-0.5"
                   title={`${name}: ${status}`}
                 >
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full ${statusDotClass(status)}`}
-                  />
-                  <span className="text-slate-400">{name}</span>
+                  <span className={`w-1 h-1 rounded-full ${statusDotClass(status)}`} />
+                  <span className="text-slate-500">{name}</span>
                 </span>
               );
             })}
           </button>
-          {analysisResults && (
-            <>
-              <span className="h-3 w-px bg-zinc-700" />
-              <span className="text-green-400 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                Results Available
-              </span>
-            </>
-          )}
         </div>
       </div>
     );
@@ -2951,6 +3005,9 @@ export const ModernModeler: FC = () => {
                 <ModelingToolbar />
               </div>
               <ViewportManager />
+
+              {/* View Controls Overlay (ViewCube + Zoom + Display toggles) */}
+              <ViewControlsOverlay />
 
               {/* Status Bar Overlay */}
               <div className="absolute bottom-0 w-full z-10">

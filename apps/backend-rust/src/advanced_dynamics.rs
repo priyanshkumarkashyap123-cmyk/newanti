@@ -190,7 +190,7 @@ impl ComplexEigenSolver {
             });
         }
         
-        self.results.as_ref().unwrap()
+        self.results.as_ref().expect("results were just set")
     }
 }
 
@@ -632,7 +632,7 @@ impl CraigBamptonReduction {
             reduced_ndof: n_r,
         });
         
-        self.reduced.as_ref().unwrap()
+        self.reduced.as_ref().expect("reduced was just set")
     }
     
     /// Expand reduced solution to full

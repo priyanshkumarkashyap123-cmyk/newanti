@@ -831,7 +831,7 @@ impl MonteCarloSFEM {
         let std_dev = variance.sqrt();
 
         let mut sorted = samples.to_vec();
-        sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        sorted.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
 
         let p05 = sorted[(0.05 * n as f64) as usize];
         let p50 = sorted[(0.50 * n as f64) as usize];

@@ -618,7 +618,7 @@ impl FiberSection {
         // Balanced point (maximum moment)
         let balanced_idx = points.iter()
             .enumerate()
-            .max_by(|(_, a), (_, b)| a.phi_mn.partial_cmp(&b.phi_mn).unwrap())
+            .max_by(|(_, a), (_, b)| a.phi_mn.partial_cmp(&b.phi_mn).unwrap_or(std::cmp::Ordering::Equal))
             .map(|(i, _)| i)
             .unwrap_or(0);
         

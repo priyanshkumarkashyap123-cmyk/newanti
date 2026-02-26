@@ -767,7 +767,7 @@ impl SequentialGaussian {
             .filter(|(_, _, d)| *d < self.search_radius)
             .collect();
 
-        neighbors.sort_by(|a, b| a.2.partial_cmp(&b.2).unwrap());
+        neighbors.sort_by(|a, b| a.2.partial_cmp(&b.2).unwrap_or(std::cmp::Ordering::Equal));
         neighbors.truncate(self.n_neighbors);
         neighbors
     }

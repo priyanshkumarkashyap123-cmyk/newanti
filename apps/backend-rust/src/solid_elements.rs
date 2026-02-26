@@ -886,7 +886,7 @@ pub fn principal_stresses(stress: &[f64; 6]) -> [f64; 3] {
     if stress[3].abs() < 1e-10 && stress[4].abs() < 1e-10 && stress[5].abs() < 1e-10 {
         // No shear - principals are the normal stresses
         let mut principals = [stress[0], stress[1], stress[2]];
-        principals.sort_by(|a, b| b.partial_cmp(a).unwrap());
+        principals.sort_by(|a, b| b.partial_cmp(a).unwrap_or(std::cmp::Ordering::Equal));
         return principals;
     }
     
@@ -921,7 +921,7 @@ pub fn principal_stresses(stress: &[f64; 6]) -> [f64; 3] {
     
     // Sort: σ₁ ≥ σ₂ ≥ σ₃
     let mut principals = [s1, s2, s3];
-    principals.sort_by(|a, b| b.partial_cmp(a).unwrap());
+    principals.sort_by(|a, b| b.partial_cmp(a).unwrap_or(std::cmp::Ordering::Equal));
     principals
 }
 

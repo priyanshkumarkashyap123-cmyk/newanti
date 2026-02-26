@@ -604,7 +604,7 @@ impl SubsetSimulation {
         for level in 0..max_levels {
             // Sort by limit state value
             let mut indices: Vec<usize> = (0..g_values.len()).collect();
-            indices.sort_by(|&i, &j| g_values[i].partial_cmp(&g_values[j]).unwrap());
+            indices.sort_by(|&i, &j| g_values[i].partial_cmp(&g_values[j]).unwrap_or(std::cmp::Ordering::Equal));
 
             // Find threshold
             let threshold_idx = (self.conditional_probability * self.n_samples_per_level as f64) as usize;

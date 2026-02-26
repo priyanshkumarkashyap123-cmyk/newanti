@@ -157,6 +157,25 @@ impl ProcessCapability {
         let all_data: Vec<f64> = data.iter().flatten().cloned().collect();
         let n_total = all_data.len() as f64;
         
+        if n_total < 1.0 {
+            return Self {
+                mean: 0.0,
+                std_dev: 0.0,
+                usl,
+                lsl,
+                target: None,
+                cp: None,
+                cpk: None,
+                cpm: None,
+                pp: None,
+                ppk: None,
+                ppm_below_lsl: 0.0,
+                ppm_above_usl: 0.0,
+                ppm_total: 0.0,
+                sigma_level: 0.0,
+            };
+        }
+        
         let mean = all_data.iter().sum::<f64>() / n_total;
         
         // Within-group variance (for Cp)
@@ -164,17 +183,24 @@ impl ProcessCapability {
         let mut df = 0.0;
         
         for group in data {
+            if group.is_empty() {
+                continue;
+            }
             let group_mean = group.iter().sum::<f64>() / group.len() as f64;
             for &x in group {
                 within_var += (x - group_mean).powi(2);
             }
             df += (group.len() - 1) as f64;
         }
-        let sigma_within = (within_var / df).sqrt();
+        let sigma_within = if df > 0.0 { (within_var / df).sqrt() } else { 0.0 };
 
         // Overall variance (for Pp)
-        let sigma_overall = (all_data.iter().map(|&x| (x - mean).powi(2)).sum::<f64>() 
-            / (n_total - 1.0)).sqrt();
+        let sigma_overall = if n_total > 1.0 {
+            (all_data.iter().map(|&x| (x - mean).powi(2)).sum::<f64>() 
+            / (n_total - 1.0)).sqrt()
+        } else {
+            0.0
+        };
 
         let mut cap = ProcessCapability {
             mean,
@@ -362,7 +388,7 @@ impl ToleranceAnalysis {
         let std_dev = variance.sqrt();
 
         let mut sorted = results.clone();
-        sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        sorted.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
 
         ToleranceMCResult {
             mean,
@@ -1038,9 +1064,12 @@ impl FullFactorial {
             let mut level_counts = vec![0usize; n_levels];
 
             for (run, &response) in responses.iter().enumerate() {
-                let level_idx = factor.levels.iter()
+                let level_idx = match factor.levels.iter()
                     .position(|&l| (l - self.design_matrix[run][f_idx]).abs() < 1e-10)
-                    .unwrap();
+                {
+                    Some(idx) => idx,
+                    None => continue,
+                };
                 level_means[level_idx] += response;
                 level_counts[level_idx] += 1;
             }
@@ -1052,8 +1081,8 @@ impl FullFactorial {
             let effect = if n_levels == 2 {
                 level_means[1] - level_means[0]
             } else {
-                level_means.iter().max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap()
-                - level_means.iter().min_by(|a, b| a.partial_cmp(b).unwrap()).unwrap()
+                level_means.iter().max_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal)).copied().unwrap_or(0.0)
+                - level_means.iter().min_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal)).copied().unwrap_or(0.0)
             };
 
             main_effects.push((factor.name.clone(), effect));

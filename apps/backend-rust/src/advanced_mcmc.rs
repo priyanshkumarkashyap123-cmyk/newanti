@@ -139,7 +139,6 @@ impl HMC {
     {
         let mut rng_state = 42u64;
         let mut q = initial.to_vec();
-        let mut n_accepted = 0;
 
         // Warmup with step size adaptation
         for i in 0..n_warmup {
@@ -147,7 +146,6 @@ impl HMC {
             
             if result.accepted {
                 q = result.position;
-                n_accepted += 1;
             }
 
             // Adapt step size to target ~65% acceptance
@@ -164,7 +162,7 @@ impl HMC {
         }
 
         // Reset for sampling
-        n_accepted = 0;
+        let mut n_accepted = 0;
         self.samples.clear();
 
         // Main sampling
@@ -263,6 +261,7 @@ impl HMC {
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 struct HMCResult {
     position: Vec<f64>,
     momentum: Vec<f64>,
@@ -433,6 +432,7 @@ impl NUTS {
         
         let mut q = q0.to_vec();
         let mut n_valid = 1;
+        #[allow(unused_assignments)]
         let mut s = true;
         let mut depth = 0;
         let mut alpha_sum = 0.0;

@@ -23,8 +23,7 @@ import axios from 'axios';
 import queryString from 'query-string';
 import { UserModel, RefreshTokenModel, VerificationCodeModel } from '../models.js';
 import { emailService } from '../services/emailService.js';
-import {
-    validateBody,
+import { validateBody,
     signUpSchema,
     signInSchema,
     forgotPasswordSchema,
@@ -33,6 +32,7 @@ import {
     updateProfileSchema,
 } from '../middleware/validation.js';
 import { getCircuitBreaker } from '../utils/circuitBreaker.js';
+import { recordAuthFailure, resetAuthFailures } from '../middleware/accountLockout.js';
 
 const router: Router = Router();
 
@@ -583,6 +583,7 @@ router.post('/signin', validateBody(signInSchema), async (req: Request, res: Res
         // Find user
         const user = await UserModel.findOne({ email: email.toLowerCase() });
         if (!user) {
+            recordAuthFailure(req);
             return res.status(401).json({
                 success: false,
                 message: 'Invalid email or password'
@@ -592,11 +593,15 @@ router.post('/signin', validateBody(signInSchema), async (req: Request, res: Res
         // Verify password
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
+            recordAuthFailure(req);
             return res.status(401).json({
                 success: false,
                 message: 'Invalid email or password'
             });
         }
+
+        // Successful login — reset failure counter
+        resetAuthFailures(req);
 
         // Generate tokens
         const accessToken = generateAccessToken({

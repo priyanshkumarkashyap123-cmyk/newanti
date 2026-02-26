@@ -102,7 +102,7 @@ impl FoundationImpedance {
     pub fn surface_circular(radius: f64, soil: SoilProperties) -> Self {
         let g = soil.shear_modulus * 1000.0; // kN/m²
         let v = soil.poissons_ratio;
-        let rho = soil.density;
+        let _rho = soil.density;
         let vs = soil.shear_wave_vel;
 
         // Static stiffnesses (Gazetas, 1991)
@@ -121,7 +121,7 @@ impl FoundationImpedance {
         };
 
         // Radiation damping at low frequency
-        let a0_ref = 0.5; // Reference dimensionless frequency
+        let _a0_ref = 0.5; // Reference dimensionless frequency
         let cz = 0.85 * kz * radius / vs;
         let ch = 0.576 * kh * radius / vs;
         let cr = 0.30 * kr * radius / vs;
@@ -195,9 +195,9 @@ impl FoundationImpedance {
         embedment: f64,
         soil: SoilProperties,
     ) -> Self {
-        let g = soil.shear_modulus * 1000.0; // kN/m²
-        let v = soil.poissons_ratio;
-        let vs = soil.shear_wave_vel;
+        let _g = soil.shear_modulus * 1000.0; // kN/m²
+        let _v = soil.poissons_ratio;
+        let _vs = soil.shear_wave_vel;
 
         // Equivalent radius
         let r_eq = (length * width / PI).sqrt();
@@ -207,7 +207,7 @@ impl FoundationImpedance {
 
         // Embedment factors (Gazetas, 1991)
         let d_b = embedment / width;
-        let l_b = length / width;
+        let _l_b = length / width;
 
         let eta_z = 1.0 + 0.25 * d_b;
         let eta_h = 1.0 + 0.55 * d_b;
@@ -242,7 +242,7 @@ impl FoundationImpedance {
             .min_by(|a, b| {
                 (a.frequency - freq).abs()
                     .partial_cmp(&(b.frequency - freq).abs())
-                    .unwrap()
+                    .unwrap_or(std::cmp::Ordering::Equal)
             })
     }
 }
@@ -334,7 +334,7 @@ impl KinematicInteraction {
     /// Get transfer function value at frequency
     pub fn horizontal_tf(&self, freq: f64) -> f64 {
         self.transfer_functions.horizontal.iter()
-            .min_by(|a, b| (a.0 - freq).abs().partial_cmp(&(b.0 - freq).abs()).unwrap())
+            .min_by(|a, b| (a.0 - freq).abs().partial_cmp(&(b.0 - freq).abs()).unwrap_or(std::cmp::Ordering::Equal))
             .map(|p| p.1)
             .unwrap_or(1.0)
     }
@@ -412,7 +412,7 @@ impl FormAnalysis {
         
         // Initialize at mean point
         let mut u: Vec<f64> = vec![0.0; n];
-        let mut x: Vec<f64> = variables.iter().map(|v| v.mean).collect();
+        let mut x: Vec<f64> = vec![0.0; n];
         
         let mut beta = 0.0;
         let mut converged = false;
@@ -743,7 +743,7 @@ impl PartialFactorCalibration {
         let alpha_s = 0.7;  // Load sensitivity
 
         // Resistance factor
-        let r_mean = resistance.first().map(|r| r.mean).unwrap_or(1.0);
+        let _r_mean = resistance.first().map(|r| r.mean).unwrap_or(1.0);
         let r_cov = resistance.first().map(|r| r.cov).unwrap_or(0.1);
         let gamma_m = 1.0 / (1.0 - alpha_r * beta_target * r_cov);
 

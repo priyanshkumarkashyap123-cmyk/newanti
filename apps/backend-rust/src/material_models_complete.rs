@@ -100,7 +100,7 @@ impl StressInvariants {
         ];
         
         // Sort descending for consistency
-        principals.sort_by(|a, b| b.partial_cmp(a).unwrap());
+        principals.sort_by(|a, b| b.partial_cmp(a).unwrap_or(std::cmp::Ordering::Equal));
         principals
     }
 }

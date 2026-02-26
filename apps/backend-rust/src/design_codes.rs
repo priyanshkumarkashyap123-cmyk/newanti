@@ -70,14 +70,20 @@ pub mod is_456 {
         ast: f64,   // Area of tension steel (mm²)
     ) -> f64 {
         // Design constants
-        let gamma_c = 1.5;  // Partial safety factor for concrete
-        let gamma_s = 1.15; // Partial safety factor for steel
+        let _gamma_c = 1.5;  // Partial safety factor for concrete
+        let _gamma_s = 1.15; // Partial safety factor for steel
         
         // Neutral axis depth
+        // IS 456: 0.87*fy already includes gamma_s (0.87 ≈ 1/1.15)
+        // 0.36*fck already includes gamma_c in the stress block
         let xu = (0.87 * fy * ast) / (0.36 * fck * b);
         
         // Check if section is under-reinforced
-        let xu_max = 0.48 * d;  // For Fe415/Fe500
+        // xu_max/d depends on steel grade per IS 456 Table E
+        let xu_max_ratio = if fy <= 300.0 { 0.53 }      // Fe250
+                           else if fy <= 415.0 { 0.48 }  // Fe415
+                           else { 0.46 };                  // Fe500
+        let xu_max = xu_max_ratio * d;
         
         let xu_limited = xu.min(xu_max);
         
@@ -85,7 +91,8 @@ pub mod is_456 {
         let z = d - 0.42 * xu_limited;
         
         // Ultimate moment (kN-m)
-        (0.87 * fy / gamma_s) * ast * z / 1e6
+        // 0.87*fy already includes γs, do NOT divide by γs again
+        0.87 * fy * ast * z / 1e6
     }
     
     /// Doubly reinforced beam capacity
@@ -95,11 +102,13 @@ pub mod is_456 {
         d_prime: f64, // Compression steel cover (mm)
         fck: f64,   // Concrete strength (N/mm²)
         fy: f64,    // Steel yield strength (N/mm²)
-        ast: f64,   // Area of tension steel (mm²)
+        _ast: f64,   // Area of tension steel (mm²)
         asc: f64,   // Area of compression steel (mm²)
     ) -> f64 {
         // Moment from balanced section
-        let xu_max = 0.48 * d;
+        // xu_max/d depends on steel grade per IS 456 Table E
+        let xu_max_ratio = if fy <= 300.0 { 0.53 } else if fy <= 415.0 { 0.48 } else { 0.46 };
+        let xu_max = xu_max_ratio * d;
         let mu_lim = 0.36 * fck * b * xu_max * (d - 0.42 * xu_max) / 1e6;
         
         // Additional moment from compression steel
@@ -110,14 +119,48 @@ pub mod is_456 {
     }
     
     /// Shear capacity (Cl. 40.2)
-    /// Returns permissible shear stress τc in N/mm²
+    /// Returns permissible shear stress τc in N/mm² per IS 456 Table 19
     pub fn shear_stress_permissible(fck: f64, pt: f64) -> f64 {
-        // Table 19 of IS 456
-        let beta = 0.8 * fck / (6.89 * pt).max(1.0);
-        let tau_c_max = 0.63 * fck.sqrt();
+        // IS 456 Table 19: τc values for concrete grade M20 (scale for other grades)
+        // pt(%)   τc (N/mm²) for M20
+        // 0.15    0.28
+        // 0.25    0.36
+        // 0.50    0.48
+        // 0.75    0.56
+        // 1.00    0.62
+        // 1.50    0.72
+        // 2.00    0.79
+        // 2.50    0.82
+        // 3.00    0.82
+        let pt_clamped = pt.max(0.15).min(3.0);
         
-        let tau_c = beta.min(tau_c_max);
-        tau_c.max(0.0)
+        // Reference interpolation from IS 456 Table 19 for M20 concrete (kept for verification)
+        let _tau_c_m20 = if pt_clamped <= 0.25 {
+            0.28 + (0.36 - 0.28) * (pt_clamped - 0.15) / 0.10
+        } else if pt_clamped <= 0.50 {
+            0.36 + (0.48 - 0.36) * (pt_clamped - 0.25) / 0.25
+        } else if pt_clamped <= 0.75 {
+            0.48 + (0.56 - 0.48) * (pt_clamped - 0.50) / 0.25
+        } else if pt_clamped <= 1.00 {
+            0.56 + (0.62 - 0.56) * (pt_clamped - 0.75) / 0.25
+        } else if pt_clamped <= 1.50 {
+            0.62 + (0.72 - 0.62) * (pt_clamped - 1.00) / 0.50
+        } else if pt_clamped <= 2.00 {
+            0.72 + (0.79 - 0.72) * (pt_clamped - 1.50) / 0.50
+        } else if pt_clamped <= 2.50 {
+            0.79 + (0.82 - 0.79) * (pt_clamped - 2.00) / 0.50
+        } else {
+            0.82
+        };
+        
+        // Scale for concrete grade using SP-16 derivation formula (exact basis of IS 456 Table 19)
+        // τc = 0.85 × √(0.8fck) × (√(1+5β) − 1) / (6β)
+        // where β = max(0.8fck / (6.89 × pt), 1.0)
+        let beta = (0.8 * fck / (6.89 * pt_clamped)).max(1.0);
+        let tau_c = 0.85 * (0.8 * fck).sqrt() * ((1.0 + 5.0 * beta).sqrt() - 1.0) / (6.0 * beta);
+        let tau_c_max = 0.63 * fck.sqrt(); // Maximum shear stress (Table 20)
+        
+        tau_c.min(tau_c_max).max(0.0)
     }
     
     /// Design shear reinforcement (Cl. 40.4)
@@ -153,15 +196,19 @@ pub mod is_456 {
         fy: f64,    // Steel yield strength (N/mm²)
         fck: f64,   // Concrete strength (N/mm²)
     ) -> f64 {
-        // Bond stress (Table 26.2.1.1)
-        let tau_bd = if fck <= 20.0 {
-            1.2 * 1.6  // Deformed bars factor
+        // Bond stress (Table 26.2.1.1) - base values × 1.6 for deformed bars
+        let tau_bd = if fck <= 15.0 {
+            1.0 * 1.6  // M15
+        } else if fck <= 20.0 {
+            1.2 * 1.6  // M20
         } else if fck <= 25.0 {
-            1.4 * 1.6
+            1.4 * 1.6  // M25
         } else if fck <= 30.0 {
-            1.5 * 1.6
+            1.5 * 1.6  // M30
+        } else if fck <= 35.0 {
+            1.7 * 1.6  // M35
         } else {
-            1.7 * 1.6
+            1.9 * 1.6  // M40 and above
         };
         
         // Ld = ψ * σs / (4 * τbd)
@@ -172,8 +219,8 @@ pub mod is_456 {
     /// Deflection limit (Cl. 23.2)
     pub fn span_to_depth_ratio(
         span_type: &str,
-        pt: f64,    // Tension steel percentage
-        fs: f64,    // Service stress in steel
+        _pt: f64,    // Tension steel percentage
+        _fs: f64,    // Service stress in steel
     ) -> f64 {
         let basic_ratio = match span_type {
             "cantilever" => 7.0,
@@ -199,6 +246,7 @@ pub mod is_800 {
     
     /// Steel section type
     #[derive(Serialize, Deserialize, Debug, Clone)]
+    #[allow(non_snake_case)]
     pub struct SteelSection {
         pub designation: String,
         pub A: f64,      // Area (mm²)
@@ -241,6 +289,7 @@ pub mod is_800 {
     }
     
     /// Axial compression capacity (Cl. 7.1.2)
+    #[allow(non_snake_case)]
     pub fn compression_capacity(
         section: &SteelSection, 
         fy: f64, 
@@ -352,8 +401,18 @@ pub mod is_1893 {
         soil_type: SoilType,
         damping: f64,    // Damping ratio (e.g., 0.05 for 5%)
     ) -> f64 {
-        // Damping factor (Table 4)
-        let eta = (10.0 / (5.0 + 100.0 * damping)).sqrt();
+        // Damping factor per IS 1893:2016 Table 3
+        // Values: 0% -> 3.20, 2% -> 1.40, 5% -> 1.00, 7% -> 0.90, 10% -> 0.80, 15% -> 0.70, 20% -> 0.60, 25% -> 0.55, 30% -> 0.50
+        let damping_pct = damping * 100.0;
+        let eta = if damping_pct <= 0.0 { 3.20 }
+                  else if damping_pct <= 2.0 { 3.20 - (3.20 - 1.40) * damping_pct / 2.0 }
+                  else if damping_pct <= 5.0 { 1.40 - (1.40 - 1.00) * (damping_pct - 2.0) / 3.0 }
+                  else if damping_pct <= 7.0 { 1.00 - (1.00 - 0.90) * (damping_pct - 5.0) / 2.0 }
+                  else if damping_pct <= 10.0 { 0.90 - (0.90 - 0.80) * (damping_pct - 7.0) / 3.0 }
+                  else if damping_pct <= 15.0 { 0.80 - (0.80 - 0.70) * (damping_pct - 10.0) / 5.0 }
+                  else if damping_pct <= 20.0 { 0.70 - (0.70 - 0.60) * (damping_pct - 15.0) / 5.0 }
+                  else if damping_pct <= 25.0 { 0.60 - (0.60 - 0.55) * (damping_pct - 20.0) / 5.0 }
+                  else { (0.55 - (0.55 - 0.50) * (damping_pct - 25.0) / 5.0).max(0.50) };
         
         let sa_g = match soil_type {
             SoilType::I => {
@@ -397,6 +456,10 @@ pub mod is_1893 {
             .map(|(w, h)| w * h * h)
             .sum();
         
+        if sum_wi_hi2.abs() < 1e-20 {
+            return vec![0.0; floor_weights.len()];
+        }
+        
         floor_weights.iter()
             .zip(floor_heights.iter())
             .map(|(w, h)| base_shear * w * h * h / sum_wi_hi2)
@@ -409,6 +472,9 @@ pub mod is_1893 {
             "steel_moment_frame" => 0.085 * height.powf(0.75),
             "rc_moment_frame" => 0.075 * height.powf(0.75),
             "rc_shear_wall" => 0.075 * height.powf(0.75) * 0.75,
+            // IS 1893 Cl. 7.6.2: T = 0.09*h/sqrt(d) where d = base dimension along
+            // direction of vibration. Without base dimension info, use height as 
+            // conservative estimate (gives longer period = lower Sa/g)
             "masonry" => 0.09 * height / height.sqrt(),
             _ => 0.075 * height.powf(0.75),
         }
@@ -434,6 +500,7 @@ pub mod is_1893 {
 // ============================================
 
 pub mod is_875 {
+    #[allow(unused_imports)]
     use super::*;
     
     /// Wind speed zones per IS 875-3
@@ -530,6 +597,7 @@ pub mod aisc360 {
     const PHI_T: f64 = 0.90; // Tension
     const PHI_C: f64 = 0.90; // Compression
     const PHI_B: f64 = 0.90; // Flexure
+    #[allow(dead_code)]
     const PHI_V: f64 = 0.90; // Shear
 
     /// Tension Capacity (phiPn) - Yielding (Chapter D)
@@ -538,6 +606,7 @@ pub mod aisc360 {
     }
 
     /// Compression Capacity (phiPn) - Flexural Buckling (Chapter E)
+    #[allow(non_snake_case)]
     pub fn compression_capacity(
         section: &AISCSection, 
         fy: f64, 
@@ -565,6 +634,7 @@ pub mod aisc360 {
 
     /// Flexural Capacity (phiMn) - Major Axis (Chapter F)
     /// Assumes Compact Doubly Symmetric I-Shape
+    #[allow(non_snake_case)]
     pub fn flexural_capacity_major(
         section: &AISCSection,
         fy: f64,
@@ -577,7 +647,7 @@ pub mod aisc360 {
         
         // Lateral-Torsional Buckling (LTB)
         // Limiting lengths Lp and Lr
-        let rts = (section.ry.sqrt() * section.cw.sqrt()).sqrt() / 0.8; // Approx if rts not given? 
+        let _rts = (section.ry.sqrt() * section.cw.sqrt()).sqrt() / 0.8; // Approx if rts not given? 
         // Accurate rts formula: sqrt(sqrt(Iy*Cw)/Sx) ? No, rts^2 = sqrt(IyCw)/Sx is approx
         // Let's use simplified rts approx if not passed: rts approx 1.25 Ry roughly for W-shapes.
         // Actually we can compute rts from properties if we had I_y and Cw.
@@ -666,6 +736,7 @@ pub fn calculate_seismic_base_shear(
 }
 
 #[wasm_bindgen]
+#[allow(non_snake_case)]
 pub fn calculate_aisc_capacity(
     d: f64, bf: f64, tw: f64, tf: f64, 
     rx: f64, ry: f64, zx: f64, zy: f64, sx: f64, sy: f64,
@@ -688,5 +759,5 @@ pub fn calculate_aisc_capacity(
         "Pn_tension": pn_tens
     });
     
-    serde_wasm_bindgen::to_value(&result).unwrap()
+    serde_wasm_bindgen::to_value(&result).unwrap_or(JsValue::NULL)
 }

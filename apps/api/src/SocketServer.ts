@@ -10,6 +10,8 @@
 
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HTTPServer } from 'http';
+import { verifySocketToken } from './middleware/authMiddleware.js';
+import { env } from './config/env.js';
 
 // ============================================
 // TYPES
@@ -109,15 +111,20 @@ export class SocketServer {
     private colorIndex: number = 0;
 
     constructor(httpServer: HTTPServer) {
+        // Build CORS origin list from env + sensible defaults
+        const defaultOrigins = [
+            'http://localhost:5173',
+            'http://localhost:3000',
+            'https://beamlabultimate.tech',
+            'https://www.beamlabultimate.tech',
+            'https://brave-mushroom-0eae8ec00.4.azurestaticapps.net'
+        ];
+        const extraOrigins = (env.CORS_ALLOWED_ORIGINS ?? '').split(',').map(s => s.trim()).filter(Boolean);
+        const allOrigins = [...new Set([...defaultOrigins, ...extraOrigins])];
+
         this.io = new SocketIOServer(httpServer, {
             cors: {
-                origin: [
-                    'http://localhost:5173',
-                    'http://localhost:3000',
-                    'https://beamlabultimate.tech',
-                    'https://www.beamlabultimate.tech',
-                    'https://brave-mushroom-0eae8ec00.4.azurestaticapps.net'
-                ],
+                origin: allOrigins,
                 methods: ['GET', 'POST'],
                 credentials: true
             },
@@ -125,8 +132,30 @@ export class SocketServer {
             pingTimeout: 5000
         });
 
+        // ── Authentication middleware ──
+        // Verify JWT/Clerk token before accepting any WebSocket connection.
+        // Clients must send the token as `auth.token` in the handshake.
+        this.io.use(async (socket, next) => {
+            try {
+                const token = socket.handshake.auth?.token as string | undefined;
+                if (!token) {
+                    return next(new Error('Authentication required: provide auth.token in handshake'));
+                }
+                const payload = await verifySocketToken(token);
+                if (!payload) {
+                    return next(new Error('Invalid or expired authentication token'));
+                }
+                // Attach verified userId to socket data for downstream use
+                (socket as any).userId = payload.userId ?? payload.sub ?? payload.id;
+                next();
+            } catch (err) {
+                console.error('Socket auth failed:', err);
+                next(new Error('Authentication failed'));
+            }
+        });
+
         this.setupEventHandlers();
-        console.log('🔌 Socket.IO server initialized');
+        console.log('🔌 Socket.IO server initialized (with auth middleware)');
     }
 
     /**

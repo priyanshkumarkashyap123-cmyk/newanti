@@ -152,6 +152,9 @@ pub struct ConcreteColumnCapacity {
     pub mn_0: f64,              // kN·m - pure bending capacity
     pub slenderness_ratio: f64,
     pub magnification_factor: f64,
+    pub pc: f64,                // kN - Euler buckling load for moment magnification
+    pub cm: f64,                // Cm factor for moment magnification
+    pub is_slender: bool,       // Whether column is slender
     pub pm_diagram: Vec<(f64, f64)>, // P-M interaction points
 }
 
@@ -415,13 +418,17 @@ impl ConcreteColumn {
 
     /// Reinforcement ratio
     pub fn rho(&self) -> f64 {
-        self.steel_area() / self.gross_area()
+        let gross = self.gross_area();
+        if gross < 1e-10 { return 0.0; }
+        self.steel_area() / gross
     }
 
     /// Slenderness ratio
     pub fn slenderness_ratio(&self) -> f64 {
         let k = self.end_condition.k_factor();
-        let r = self.depth.min(self.width) / 12.0_f64.sqrt();
+        let min_dim = self.depth.min(self.width);
+        if min_dim < 1e-10 { return f64::INFINITY; }
+        let r = min_dim / 12.0_f64.sqrt();
         k * self.length * 1000.0 / r
     }
 
@@ -433,20 +440,47 @@ impl ConcreteColumn {
         let fy = self.fy;
 
         // Maximum axial capacity (ACI 22.4.2)
-        let alpha = if self.width <= 300.0 { 0.80 } else { 0.85 };
+        // alpha = 0.80 for tied columns, 0.85 for spiral columns
+        // Default to tied column (conservative)
+        let alpha = 0.80;
         let pn_max = alpha * (0.85 * fc * (ag - ast) + fy * ast) / 1000.0;
 
         // Slenderness effects
         let kl_r = self.slenderness_ratio();
-        let slender = kl_r > 22.0;
+        // ACI 318-19 6.2.5: For braced frames, slenderness may be neglected when
+        // kLu/r <= 34 - 12(M1/M2), with upper limit of 40
+        // For unbraced frames, the limit is 22
+        let slenderness_limit = if self.braced { 34.0 } else { 22.0 };
+        let slender = kl_r > slenderness_limit;
 
-        // Moment magnification (simplified)
+        // Moment magnification per ACI 318-19 6.6.4
+        // Cm = 0.6 + 0.4*(M1/M2) >= 0.4 for braced; 1.0 for unbraced
         let cm = if self.braced { 0.6 } else { 1.0 };
-        let pc = PI.powi(2) * 25000.0 * ag * (self.depth / 12.0_f64.sqrt()).powi(2) /
-                 (self.end_condition.k_factor() * self.length * 1000.0).powi(2) / 1000.0;
+        // EI_eff = 0.4 * Ec * Ig / (1 + beta_dns)
+        // Ec = 4700 * sqrt(f'c) per ACI 19.2.2.1
+        let ec = 4700.0 * fc.sqrt(); // MPa
+        // Ig must be about the WEAK axis (same axis as slenderness check)
+        // Weak axis: min dimension is the bending dimension
+        let h_min = self.width.min(self.depth);
+        let h_max = self.width.max(self.depth);
+        let ig = h_max * h_min.powi(3) / 12.0; // mm^4 — weak-axis Ig
+        let beta_dns = 0.6; // Ratio of sustained to total load (Table 6.6.4.4.4)
+        let ei_eff = 0.4 * ec * ig / (1.0 + beta_dns); // N·mm²
+        let pc = PI.powi(2) * ei_eff /
+                 (self.end_condition.k_factor() * self.length * 1000.0).powi(2) / 1000.0; // kN
 
+        // ACI 318-19 6.6.4.5.2: delta = Cm / (1 - Pu/(0.75*Pc)) >= 1.0
+        // Store Pc and Cm for recomputation in check() with actual Pu
+        // Use Pn_max as conservative estimate for Pu when actual Pu not available
+        let pu_estimate = pn_max * 0.65; // phi * Pn_max as Pu estimate
         let delta = if slender {
-            cm / (1.0 - pn_max * 0.5 / pc).max(1.0)
+            let denom = 1.0 - pu_estimate / (0.75 * pc);
+            if denom <= 0.0 {
+                // Column is unstable - flag with large magnification
+                10.0_f64.min(cm / 0.05) // Cap at practical limit
+            } else {
+                (cm / denom).max(1.0)
+            }
         } else {
             1.0
         };
@@ -455,16 +489,45 @@ impl ConcreteColumn {
         let pm_diagram = self.generate_pm_diagram();
 
         // Balanced condition
-        let d = self.depth - self.cover - 10.0;
+        // Effective depth: d = h - cover - tie_dia - main_bar/2
+        let (tie_dia, main_dia) = match &self.reinforcement {
+            Some(r) => (r.tie_diameter, r.main_diameter),
+            None => (10.0, 20.0), // Default assumptions
+        };
+        let d = self.depth - self.cover - tie_dia - main_dia / 2.0;
+        let d_prime = self.cover + tie_dia + main_dia / 2.0;
         let cb = 0.003 * d / (0.003 + fy / 200000.0);
-        let ab = 0.85 * cb;
-        let pn_b = 0.85 * fc * ab * self.width + ast / 2.0 * (fy - 0.85 * fc) - ast / 2.0 * fy;
-        let pn_balanced = pn_b / 1000.0;
-        let mn_balanced = pn_balanced.abs() * (self.depth / 2.0 - ab / 2.0) / 1000.0;
+        // ACI 318-19 22.2.2.4.3: beta1 varies with f'c
+        let beta1 = if fc <= 28.0 {
+            0.85
+        } else {
+            (0.85 - 0.05 * (fc - 28.0) / 7.0).max(0.65)
+        };
+        let ab = beta1 * cb;
+        
+        // Balanced axial force
+        let cc_b = 0.85 * fc * ab * self.width; // Concrete compression
+        let eps_s_prime_b = 0.003 * (cb - d_prime) / cb;
+        let fs_prime_b = (eps_s_prime_b * 200000.0).min(fy).max(-fy);
+        // Only subtract displaced concrete (0.85*f'c) when compression steel is within stress block
+        let cs_b = if d_prime < ab {
+            ast / 2.0 * (fs_prime_b - 0.85 * fc)
+        } else {
+            ast / 2.0 * fs_prime_b
+        };
+        let ts_b = ast / 2.0 * fy; // Tension steel at yield
+        let pn_balanced = (cc_b + cs_b - ts_b) / 1000.0;
+        
+        // Balanced moment - sum moments of ALL internal forces about centroid
+        // Sign of cs_b already captures force direction; do NOT use .abs()
+        let h = self.depth;
+        let mn_balanced = (cc_b * (h / 2.0 - ab / 2.0) 
+                         + cs_b * (h / 2.0 - d_prime) 
+                         + ts_b * (d - h / 2.0)) / 1e6;
 
-        // Pure bending
+        // Pure bending: Mn = ρ·fy·b·d²·(1 - 0.59·ρ·fy/f'c)
         let rho = self.rho();
-        let mn_0 = rho * fy * d * self.width * (1.0 - 0.59 * rho * fy / fc) / 1e6;
+        let mn_0 = rho * fy * d.powi(2) * self.width * (1.0 - 0.59 * rho * fy / fc) / 1e6;
 
         ConcreteColumnCapacity {
             pn_max,
@@ -474,6 +537,9 @@ impl ConcreteColumn {
             mn_0,
             slenderness_ratio: kl_r,
             magnification_factor: delta,
+            pc,
+            cm,
+            is_slender: slender,
             pm_diagram,
         }
     }
@@ -486,8 +552,13 @@ impl ConcreteColumn {
         let fy = self.fy;
         let b = self.width;
         let h = self.depth;
-        let d = h - self.cover - 10.0;
-        let d_prime = self.cover + 10.0;
+        // Effective depth: d = h - cover - tie_dia - main_bar/2
+        let (tie_dia, main_dia) = match &self.reinforcement {
+            Some(r) => (r.tie_diameter, r.main_diameter),
+            None => (10.0, 20.0),
+        };
+        let d = h - self.cover - tie_dia - main_dia / 2.0;
+        let d_prime = self.cover + tie_dia + main_dia / 2.0;
 
         let mut points = Vec::new();
 
@@ -495,10 +566,23 @@ impl ConcreteColumn {
         let p0 = 0.85 * fc * (ag - ast) + fy * ast;
         points.push((p0 / 1000.0, 0.0));
 
-        // Points along interaction curve
-        for i in 1..=10 {
-            let c = (h as f64) * i as f64 / 10.0;
-            let a = 0.85 * c;
+        // ACI 318-19 22.2.2.4.3: beta1 varies with f'c
+        let beta1 = if fc <= 28.0 {
+            0.85
+        } else {
+            (0.85 - 0.05 * (fc - 28.0) / 7.0).max(0.65)
+        };
+
+        // Points along interaction curve - extended range for complete diagram
+        // c from 2.0h down to 0.05h to capture full compression through tension range
+        let c_values: Vec<f64> = vec![
+            2.0 * h, 1.5 * h, 1.2 * h, 1.0 * h, 0.9 * h, 0.8 * h,
+            0.7 * h, 0.6 * h, 0.5 * h, 0.4 * h, 0.35 * h, 0.3 * h,
+            0.25 * h, 0.2 * h, 0.15 * h, 0.1 * h, 0.05 * h,
+        ];
+        for c in c_values {
+            if c < 1.0 { continue; }
+            let a = (beta1 * c).min(h);
 
             let eps_s = 0.003 * (d - c) / c;
             let eps_s_prime = 0.003 * (c - d_prime) / c;
@@ -507,7 +591,12 @@ impl ConcreteColumn {
             let fs_prime = (eps_s_prime * 200000.0).min(fy).max(-fy);
 
             let cc = 0.85 * fc * a * b;
-            let cs = ast / 2.0 * (fs_prime - 0.85 * fc);
+            // Only subtract displaced concrete when compression steel is within stress block
+            let cs = if d_prime < a {
+                ast / 2.0 * (fs_prime - 0.85 * fc)
+            } else {
+                ast / 2.0 * fs_prime
+            };
             let ts = ast / 2.0 * fs;
 
             let pn = (cc + cs - ts) / 1000.0;
@@ -565,31 +654,57 @@ impl ConcreteColumn {
     pub fn check(&self, pu: f64, mu_x: f64, mu_y: f64) -> ColumnCheck {
         let cap = self.capacity();
 
-        // Magnified moment
-        let mu_x_mag = mu_x * cap.magnification_factor;
-        let mu_y_mag = mu_y * cap.magnification_factor;
+        // Recompute moment magnification with ACTUAL Pu per ACI 6.6.4.5.2
+        let delta = if cap.is_slender {
+            let denom = 1.0 - pu / (0.75 * cap.pc);
+            if denom <= 0.0 {
+                10.0_f64.min(cap.cm / 0.05) // Unstable — cap at practical limit
+            } else {
+                (cap.cm / denom).max(1.0)
+            }
+        } else {
+            1.0
+        };
 
-        // Biaxial bending (Bresler equation)
+        // Magnified moment using actual-Pu-based delta
+        let mu_x_mag = mu_x * delta;
+        let mu_y_mag = mu_y * delta;
+
+        // Biaxial bending (Bresler load contour method)
         let mn_x = cap.mn_0 * self.depth / self.width.max(self.depth);
         let mn_y = cap.mn_0 * self.width / self.width.max(self.depth);
 
         let axial_ratio = pu / cap.phi_pn_max;
 
-        let moment_ratio = if axial_ratio > 0.1 {
-            // Contour method
-            ((mu_x_mag / (0.65 * mn_x)).powf(1.5) +
-             (mu_y_mag / (0.65 * mn_y)).powf(1.5)).powf(1.0 / 1.5)
+        // Phi transitions: 0.65 (compression-controlled) to 0.90 (tension-controlled)
+        // At balanced point and above: phi = 0.65 for tied columns
+        // Below balanced point toward pure bending: phi transitions to 0.90
+        let phi_m = if pu >= cap.pn_balanced * 0.65 {
+            0.65 // Compression-controlled
         } else {
-            mu_x_mag / (0.65 * mn_x) + mu_y_mag / (0.65 * mn_y)
+            // Linear interpolation between 0.65 at balanced and 0.90 at pure bending
+            let ratio = pu / (cap.pn_balanced * 0.65).max(1.0);
+            0.90 - (0.90 - 0.65) * ratio
         };
 
-        let total_ratio = axial_ratio + moment_ratio;
+        let moment_ratio = if axial_ratio > 0.1 {
+            // Bresler load contour method
+            ((mu_x_mag / (phi_m * mn_x)).powf(1.5) +
+             (mu_y_mag / (phi_m * mn_y)).powf(1.5)).powf(1.0 / 1.5)
+        } else {
+            mu_x_mag / (phi_m * mn_x) + mu_y_mag / (phi_m * mn_y)
+        };
+
+        // Both axial AND moment checks must pass
+        // Axial: Pu must not exceed phi*Pn_max
+        // Moment: Bresler interaction ratio must not exceed 1.0
+        let total_ratio = axial_ratio.max(moment_ratio);
 
         ColumnCheck {
             axial_ratio,
             moment_ratio,
             total_ratio,
-            adequate: total_ratio <= 1.0,
+            adequate: axial_ratio <= 1.0 && moment_ratio <= 1.0,
             magnified_mu_x: mu_x_mag,
             magnified_mu_y: mu_y_mag,
         }

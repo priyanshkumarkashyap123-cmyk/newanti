@@ -11,7 +11,7 @@ use governor::{Quota, RateLimiter, clock::DefaultClock, state::keyed::DashMapSta
 use jsonwebtoken::{decode, DecodingKey, Validation, Algorithm};
 use serde::{Deserialize, Serialize};
 use std::{num::NonZeroU32, sync::Arc, time::Instant, net::IpAddr};
-use tracing::{info, warn};
+use tracing::{info, warn, error};
 
 // ─────────────────────────────────────────────────────────────
 // Rate Limiter (Governor — production-grade token-bucket)
@@ -203,8 +203,16 @@ pub async fn auth_middleware(
     request: Request,
     next: Next,
 ) -> Result<Response, Response> {
-    let jwt_secret = std::env::var("JWT_SECRET")
-        .unwrap_or_else(|_| "development-secret-key".to_string());
+    let jwt_secret = match std::env::var("JWT_SECRET") {
+        Ok(secret) if !secret.is_empty() => secret,
+        _ => {
+            error!("JWT_SECRET environment variable is not set — refusing to start auth");
+            return Err(Response::builder()
+                .status(StatusCode::INTERNAL_SERVER_ERROR)
+                .body(Body::from("{\"error\":\"Server misconfiguration\"}"))
+                .unwrap());
+        }
+    };
     
     // Extract token from Authorization header
     let auth_header = request

@@ -864,7 +864,7 @@ impl MeshRefiner {
         ];
         
         let (i1, i2, _) = edges.iter()
-            .max_by(|a, b| a.2.partial_cmp(&b.2).unwrap())
+            .max_by(|a, b| a.2.partial_cmp(&b.2).unwrap_or(std::cmp::Ordering::Equal))
             .unwrap();
         
         let n1 = t[*i1];

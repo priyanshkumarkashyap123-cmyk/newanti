@@ -611,7 +611,7 @@ impl BuildingPhysicsAnalyzer {
             f_rsi_values,
         });
         
-        self.results.as_ref().unwrap()
+        self.results.as_ref().expect("results were just set")
     }
 }
 

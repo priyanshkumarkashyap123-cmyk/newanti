@@ -110,8 +110,11 @@ export const MONITORING_CONFIG = {
 // AI / GEMINI
 // ============================================
 export const AI_CONFIG = {
-  /** Gemini API key — set via VITE_GEMINI_API_KEY or the in-app settings panel */
-  geminiApiKey: getEnv("VITE_GEMINI_API_KEY"),
+  /**
+   * Gemini API key — ONLY available in development mode.
+   * In production, all AI calls are proxied through the backend to keep the key server-side.
+   */
+  geminiApiKey: import.meta.env.DEV ? getEnv("VITE_GEMINI_API_KEY") : "",
   /** Gemini model to use */
   geminiModel: getEnv("VITE_GEMINI_MODEL", "gemini-1.5-flash"),
   /** Prefer Gemini over local engine when available */

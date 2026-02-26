@@ -670,7 +670,7 @@ impl CrossEntropyIS {
             }
 
             // Sort by performance (we want g <= 0)
-            samples.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+            samples.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal));
 
             // Select elite samples
             let n_elite = (self.elite_fraction * self.n_samples_per_level as f64) as usize;
@@ -710,7 +710,7 @@ impl CrossEntropyIS {
 
         // Final importance sampling estimate
         let mut sum = 0.0;
-        let mut sum_sq = 0.0;
+        let mut _sum_sq = 0.0;
 
         for _ in 0..self.n_samples_per_level {
             let x: Vec<f64> = mean.iter().zip(std.iter())
@@ -725,7 +725,7 @@ impl CrossEntropyIS {
             
             let contribution = indicator * lr;
             sum += contribution;
-            sum_sq += contribution * contribution;
+            _sum_sq += contribution * contribution;
         }
 
         self.pf_estimate = sum / self.n_samples_per_level as f64;
@@ -987,11 +987,11 @@ impl SobolSequence {
         let n = self.current_index;
 
         // Find rightmost zero bit
-        let mut c = 0;
+        let mut _c = 0;
         let mut temp = n;
         while temp & 1 == 1 {
             temp >>= 1;
-            c += 1;
+            _c += 1;
         }
 
         let mut point = vec![0.0; self.dimension];

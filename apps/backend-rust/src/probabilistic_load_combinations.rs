@@ -611,7 +611,7 @@ impl ProbabilisticCombination {
             .map(|&x| (x - mean).powi(2))
             .sum::<f64>() / (n_samples - 1) as f64;
 
-        results.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        results.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
         let p_95 = results[(0.95 * n_samples as f64) as usize];
         let p_99 = results[(0.99 * n_samples as f64) as usize];
 

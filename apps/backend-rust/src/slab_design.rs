@@ -214,21 +214,54 @@ impl OneWaySlab {
             SupportCondition::Simple => (1.0 / 8.0, 0.0),
             SupportCondition::Continuous => (1.0 / 14.0, 1.0 / 10.0),
             SupportCondition::Cantilever => (0.0, 1.0 / 2.0),
-            SupportCondition::Fixed => (1.0 / 16.0, 1.0 / 12.0),
+            SupportCondition::Fixed => (1.0 / 16.0, 1.0 / 11.0), // ACI Table 6.5.2
         };
         
         let m_pos = cm_pos * wu * l.powi(2);
         let m_neg = cm_neg * wu * l.powi(2);
         
-        // Shear
-        let vu = wu * l / 2.0;
+        // Shear (ACI Table 6.5.4: 1.15 factor at face of first interior support)
+        let vu = match self.support {
+            SupportCondition::Continuous | SupportCondition::Fixed => 1.15 * wu * l / 2.0,
+            _ => wu * l / 2.0,
+        };
         
-        // Deflection (immediate)
+        // Deflection (immediate) per ACI 24.2.3.5
         let ec = 4700.0 * self.concrete_fc.sqrt();
-        let i_g = self.width * 1000.0 * self.thickness.powi(3) / 12.0; // mm⁴
-        let w_service = (self.self_weight() + self.dead_load + self.live_load) / 1000.0; // N/mm
+        let b_w = self.width * 1000.0;
+        let i_g = b_w * self.thickness.powi(3) / 12.0; // mm⁴
+        let fr = 0.62 * self.concrete_fc.sqrt(); // Modulus of rupture (MPa) ACI 19.2.3.1
+        let yt = self.thickness / 2.0;
+        let m_cr = fr * i_g / yt / 1e6; // kN·m (cracking moment)
         
-        let delta = 5.0 * w_service * (l * 1000.0).powi(4) / (384.0 * ec * i_g);
+        // Service load: kPa × 1m width = kN/m = N/mm
+        let w_service = self.self_weight() + self.dead_load + self.live_load;
+        let m_a = match self.support {
+            SupportCondition::Simple => w_service * l.powi(2) / 8.0,
+            SupportCondition::Cantilever => w_service * l.powi(2) / 2.0,
+            SupportCondition::Continuous => w_service * l.powi(2) / 10.0,
+            SupportCondition::Fixed => w_service * l.powi(2) / 12.0,
+        };
+        
+        // Effective moment of inertia Ie (ACI 318-19 Eq. 24.2.3.5a)
+        // Approximate Icr ≈ 0.35 Ig for lightly reinforced slabs
+        let i_cr = 0.35 * i_g;
+        let i_e = if m_a <= m_cr {
+            i_g
+        } else {
+            let ratio = (2.0 / 3.0) * (m_cr / m_a);
+            let ie = i_cr / (1.0 - ratio.powi(2) * (1.0 - i_cr / i_g));
+            ie.min(i_g)
+        };
+        
+        // Deflection varies by support condition
+        let delta_coeff = match self.support {
+            SupportCondition::Simple => 5.0 / 384.0,
+            SupportCondition::Fixed => 1.0 / 384.0,
+            SupportCondition::Cantilever => 1.0 / 8.0,
+            SupportCondition::Continuous => 1.0 / 185.0,
+        };
+        let delta = delta_coeff * w_service * (l * 1000.0).powi(4) / (ec * i_e);
         
         SlabAnalysis {
             factored_load: wu,
@@ -236,7 +269,7 @@ impl OneWaySlab {
             max_negative_moment: m_neg,
             max_shear: vu,
             deflection: delta,
-            deflection_ratio: l * 1000.0 / delta,
+            deflection_ratio: if delta.abs() > 1e-10 { l * 1000.0 / delta } else { f64::MAX },
         }
     }
 
@@ -255,8 +288,15 @@ impl OneWaySlab {
         // Negative moment steel
         let as_neg = self.required_steel(analysis.max_negative_moment, d, fc, fy);
         
-        // Minimum/shrinkage steel
-        let as_min = 0.0018 * b * self.thickness;
+        // Minimum/shrinkage steel (ACI 7.6.1.1 - varies with fy)
+        let as_min_ratio = if fy <= 350.0 {
+            0.0020
+        } else if fy <= 420.0 {
+            0.0018
+        } else {
+            (0.0018 * 420.0 / fy).max(0.0014)
+        };
+        let as_min = as_min_ratio * b * self.thickness;
         
         let as_pos = as_pos.max(as_min);
         let as_neg = if as_neg > 0.0 { as_neg.max(as_min) } else { 0.0 };
@@ -265,9 +305,11 @@ impl OneWaySlab {
         let bar_main: f64 = 12.0;
         let bar_area = PI * (bar_main / 2.0).powi(2);
         
-        let spacing_pos = (bar_area / as_pos * 1000.0).min(300.0).min(3.0 * self.thickness);
+        // ACI 7.7.2.3: max spacing = min(3h, 450mm)
+        let s_max = (3.0 * self.thickness).min(450.0);
+        let spacing_pos = (bar_area / as_pos * 1000.0).min(s_max);
         let spacing_neg = if as_neg > 0.0 {
-            (bar_area / as_neg * 1000.0).min(300.0).min(3.0 * self.thickness)
+            (bar_area / as_neg * 1000.0).min(s_max)
         } else {
             300.0
         };
@@ -276,7 +318,8 @@ impl OneWaySlab {
         let as_dist = as_min;
         let bar_dist: f64 = 10.0;
         let bar_area_dist = PI * (bar_dist / 2.0).powi(2);
-        let spacing_dist = (bar_area_dist / as_dist * 1000.0).min(450.0);
+        // ACI 24.4.3.3: max temp/shrinkage spacing = min(5h, 450mm)
+        let spacing_dist = (bar_area_dist / as_dist * 1000.0).min(450.0).min(5.0 * self.thickness);
         
         SlabReinforcement {
             as_positive: as_pos,
@@ -299,8 +342,14 @@ impl OneWaySlab {
         let b = 1000.0;
         let mu_nmm = mu * 1e6; // Convert to N·mm
         
+        // β1 per ACI 22.2.2.4.3
+        let beta1 = if fc <= 28.0 { 0.85 } else { (0.85 - 0.05 * (fc - 28.0) / 7.0).max(0.65) };
+        // ρ_max for tension-controlled (εt ≥ 0.005) per ACI 9.3.3.1
+        let rho_max = 0.85 * beta1 * fc / fy * (0.003 / (0.003 + 0.005));
+        
         let rn = mu_nmm / (0.9 * b * d.powi(2));
         let rho = 0.85 * fc / fy * (1.0 - (1.0 - 2.0 * rn / (0.85 * fc)).sqrt().max(0.0));
+        let rho = rho.min(rho_max); // Ensure tension-controlled (φ=0.9 valid)
         
         rho * b * d
     }
@@ -327,15 +376,12 @@ impl TwoWaySlab {
     }
 
     /// Minimum thickness
-    pub fn minimum_thickness(span_short: f64, ratio: f64) -> f64 {
+    pub fn minimum_thickness(span_short: f64, _ratio: f64) -> f64 {
         let ln = span_short * 1000.0;
         
-        // ACI 318 Table 8.3.1.1
-        if ratio <= 2.0 {
-            (ln / 33.0).max(125.0).ceil()
-        } else {
-            (ln / 30.0).max(125.0).ceil()
-        }
+        // ACI 318 Table 8.3.1.1 - flat plates without drop panels
+        // ln/33, min 125mm (ratio > 2 implies one-way action, not two-way)
+        (ln / 33.0).max(125.0).ceil()
     }
 
     /// Self weight
@@ -374,11 +420,13 @@ impl TwoWaySlab {
         // Deflection
         let ec = 4700.0 * self.concrete_fc.sqrt();
         let i_g = 1000.0 * self.thickness.powi(3) / 12.0;
-        let w_service = (self.self_weight() + self.dead_load + self.live_load) / 1000.0;
+        // Service load: kPa × 1m strip = kN/m = N/mm (no division needed)
+        let w_service = self.self_weight() + self.dead_load + self.live_load;
         
-        // Two-way deflection coefficient
-        let alpha = 0.025 * (1.0 + (1.0 / m).powi(4));
-        let delta = alpha * w_service * (la * 1000.0).powi(4) / (ec * i_g);
+        // Two-way deflection: crossing-beam analogy
+        // Short direction load share: m⁴/(1+m⁴) where m = lb/la
+        let load_share = m.powi(4) / (1.0 + m.powi(4));
+        let delta = 5.0 / 384.0 * w_service * load_share * (la * 1000.0).powi(4) / (ec * i_g);
         
         SlabAnalysis {
             factored_load: wu,
@@ -386,7 +434,7 @@ impl TwoWaySlab {
             max_negative_moment: m_neg,
             max_shear: vu,
             deflection: delta,
-            deflection_ratio: la * 1000.0 / delta,
+            deflection_ratio: if delta.abs() > 1e-10 { la * 1000.0 / delta } else { f64::MAX },
         }
     }
 
@@ -438,7 +486,11 @@ impl TwoWaySlab {
         let as_long_pos = self.required_steel(analysis.max_positive_moment * 0.7, d_long, fc, fy);
         let as_long_neg = self.required_steel(analysis.max_negative_moment * 0.7, d_long, fc, fy);
         
-        let as_min = 0.0018 * 1000.0 * self.thickness;
+        // ACI 8.6.1.1 - varies with fy
+        let as_min_ratio = if fy <= 350.0 { 0.0020 }
+            else if fy <= 420.0 { 0.0018 }
+            else { (0.0018 * 420.0 / fy).max(0.0014) };
+        let as_min = as_min_ratio * 1000.0 * self.thickness;
         
         let short_reinf = self.create_reinforcement(
             as_short_pos.max(as_min),
@@ -464,8 +516,13 @@ impl TwoWaySlab {
         let b = 1000.0;
         let mu_nmm = mu * 1e6;
         
+        // β1 per ACI 22.2.2.4.3
+        let beta1 = if fc <= 28.0 { 0.85 } else { (0.85 - 0.05 * (fc - 28.0) / 7.0).max(0.65) };
+        let rho_max = 0.85 * beta1 * fc / fy * (0.003 / (0.003 + 0.005));
+        
         let rn = mu_nmm / (0.9 * b * d.powi(2));
         let rho = 0.85 * fc / fy * (1.0 - (1.0 - 2.0 * rn / (0.85 * fc)).sqrt().max(0.0));
+        let rho = rho.min(rho_max); // Ensure tension-controlled
         
         rho * b * d
     }
@@ -475,8 +532,10 @@ impl TwoWaySlab {
         let bar_main: f64 = 12.0;
         let bar_area = PI * (bar_main / 2.0).powi(2);
         
-        let spacing_pos = (bar_area / as_pos * 1000.0).min(300.0);
-        let spacing_neg = (bar_area / as_neg * 1000.0).min(300.0);
+        // ACI 8.7.2.2: max spacing = min(2h, 450mm)
+        let s_max_2way = (2.0 * self.thickness).min(450.0);
+        let spacing_pos = (bar_area / as_pos * 1000.0).min(s_max_2way);
+        let spacing_neg = (bar_area / as_neg * 1000.0).min(s_max_2way);
         
         SlabReinforcement {
             as_positive: as_pos,
@@ -494,8 +553,9 @@ impl TwoWaySlab {
 impl FlatSlab {
     /// Create flat plate (no drop panels or capitals)
     pub fn flat_plate(span_x: f64, span_y: f64, ll: f64) -> Self {
-        let avg_span = (span_x + span_y) / 2.0;
-        let thickness = (avg_span * 1000.0 / 30.0).max(200.0).ceil();
+        // ACI Table 8.3.1.1: ln/33 for flat plates, min 125mm
+        let ln = span_x.max(span_y) * 1000.0 - 400.0; // Clear span (assuming 400mm column)
+        let thickness = (ln / 33.0).max(125.0).ceil();
         
         FlatSlab {
             span_x,
@@ -513,8 +573,9 @@ impl FlatSlab {
 
     /// Create flat slab with drop panel
     pub fn with_drop_panel(span_x: f64, span_y: f64, ll: f64) -> Self {
-        let avg_span = (span_x + span_y) / 2.0;
-        let thickness = (avg_span * 1000.0 / 33.0).max(175.0).ceil();
+        // ACI Table 8.3.1.1: ln/36 for flat slabs with drop panels, min 100mm
+        let ln = span_x.max(span_y) * 1000.0 - 400.0; // Clear span (assuming 400mm column)
+        let thickness = (ln / 36.0).max(100.0).ceil();
         
         let drop = DropPanel {
             length: (span_x * 1000.0 / 3.0).max(500.0),
@@ -591,16 +652,21 @@ impl FlatSlab {
 
     /// Check punching shear
     pub fn punching_shear(&self, column_load: f64) -> PunchingShearCheck {
-        let d = self.thickness - 40.0; // Effective depth
-        
-        // Critical perimeter
+        // Critical perimeter per ACI 22.6.4.1 (at d/2 from column face)
         let c = self.column_size;
-        let (bo, _area_reduction) = if let Some(ref drop) = self.drop_panel {
-            // Check at both drop edge and column
-            let bo_drop = 4.0 * (c + 2.0 * d);
-            (bo_drop, drop.length * drop.width)
+        let (d, bo) = if let Some(ref drop) = self.drop_panel {
+            // Enhanced depth within drop panel
+            let d_drop = self.thickness + drop.depth - 40.0;
+            // Critical section at d/2 from column face (within drop)
+            let bo_col = 4.0 * (c + d_drop);
+            // Also check at d/2 from drop panel edge (slab depth only)
+            let d_slab = self.thickness - 40.0;
+            let _bo_drop = 2.0 * (drop.length + d_slab) + 2.0 * (drop.width + d_slab);
+            // Use column-face check (typically controls)
+            (d_drop, bo_col)
         } else {
-            (4.0 * (c + d), 0.0)
+            let d = self.thickness - 40.0;
+            (d, 4.0 * (c + d))
         };
         
         // Factored shear
@@ -610,12 +676,15 @@ impl FlatSlab {
         
         // Concrete capacity
         let fc = self.concrete_fc;
-        let beta = (self.column_size / self.column_size).max(1.0); // For rectangular
+        // ACI 22.6.5.2: beta_c = long side / short side of column (≥1.0)
+        // For square columns beta=1.0; for rectangular, use column_size as short side
+        let beta = 1.0_f64; // TODO: accept column_size_y for rectangular columns
         
         let vc1 = 0.33 * fc.sqrt();
         let vc2 = (0.17 + 0.33 / beta) * fc.sqrt();
         let alpha_s = 40.0; // Interior column
-        let vc3 = (alpha_s * d / bo + 0.17) * fc.sqrt();
+        // ACI 318M Eq. 22.6.5.2(c): 0.083(αs·d/bo + 2)√f'c
+        let vc3 = 0.083 * (alpha_s * d / bo + 2.0) * fc.sqrt();
         
         let vc = vc1.min(vc2).min(vc3);
         let phi_vc = 0.75 * vc * bo * d / 1000.0; // kN
@@ -678,13 +747,17 @@ impl WaffleSlab {
     /// Create waffle slab
     pub fn new(span: f64, ll: f64) -> Self {
         // Standard module sizes
-        let rib_spacing = 900.0; // mm
-        let rib_width = 125.0;
-        let rib_depth = match span {
+        let rib_spacing: f64 = 900.0; // mm
+        let rib_width: f64 = 125.0;
+        let rib_depth: f64 = match span {
             s if s < 8.0 => 300.0,
             s if s < 12.0 => 400.0,
             _ => 500.0,
         };
+        
+        // ACI 9.2.4.4: rib depth ≤ 3.5 × rib_width, clear spacing ≤ 750mm
+        let rib_depth: f64 = rib_depth.min(3.5 * rib_width);
+        let rib_spacing: f64 = rib_spacing.min(rib_width + 750.0); // Max clear spacing 750mm
         
         WaffleSlab {
             span,
@@ -703,11 +776,15 @@ impl WaffleSlab {
     /// Equivalent thickness for self-weight
     pub fn equivalent_thickness(&self) -> f64 {
         let void_width = self.rib_spacing - self.rib_width;
-        let void_depth = self.rib_depth - self.topping;
+        // void_depth is the full rib depth (below the topping slab)
+        let void_depth = self.rib_depth;
         let void_area = void_width * void_depth;
-        let gross_area = self.rib_spacing * self.rib_depth;
+        // Total depth = rib_depth + topping
+        let total_depth = self.rib_depth + self.topping;
+        let gross_area = self.rib_spacing * total_depth;
         
-        (gross_area - void_area) / self.rib_spacing + self.topping
+        // Equivalent solid thickness = (gross - voids) / spacing
+        (gross_area - void_area) / self.rib_spacing
     }
 
     /// Self weight
@@ -736,11 +813,25 @@ impl WaffleSlab {
         
         // Deflection
         let ec = 4700.0 * self.concrete_fc.sqrt();
-        let i_rib = self.rib_width * (self.rib_depth + self.topping).powi(3) / 12.0;
+        // T-section moment of inertia for the rib (flange = topping slab over rib_spacing)
+        let bf = self.rib_spacing; // Effective flange width = rib spacing
+        let bw = self.rib_width;
+        let hf = self.topping;    // Flange thickness (topping)
+        let hw = self.rib_depth;  // Web depth (below topping)
+        let _h_total = hw + hf;    // Total depth
+        // Centroid of T-section from bottom
+        let a_flange = bf * hf;
+        let a_web = bw * hw;
+        let y_bar = (a_flange * (hw + hf / 2.0) + a_web * (hw / 2.0)) / (a_flange + a_web);
+        // Parallel axis theorem
+        let i_flange = bf * hf.powi(3) / 12.0 + a_flange * (hw + hf / 2.0 - y_bar).powi(2);
+        let i_web = bw * hw.powi(3) / 12.0 + a_web * (hw / 2.0 - y_bar).powi(2);
+        let i_rib = i_flange + i_web;
+        // Service load per rib: kPa * rib_spacing(mm) / 1000 = kN/m per rib = N/mm per rib
         let w_service = (self.self_weight() + self.dead_load + self.live_load) * 
-                       self.rib_spacing / 1000.0 / 1000.0;
+                       self.rib_spacing / 1000.0;
         
-        let delta = 5.0 * w_service * (l * 1000.0).powi(4) / (384.0 * ec * i_rib);
+        let delta = 5.0 / 384.0 * w_service * (l * 1000.0).powi(4) / (ec * i_rib);
         
         SlabAnalysis {
             factored_load: wu,
@@ -748,7 +839,7 @@ impl WaffleSlab {
             max_negative_moment: m_neg_rib,
             max_shear: vu_rib,
             deflection: delta,
-            deflection_ratio: l * 1000.0 / delta,
+            deflection_ratio: if delta.abs() > 1e-10 { l * 1000.0 / delta } else { f64::MAX },
         }
     }
 
@@ -759,14 +850,19 @@ impl WaffleSlab {
         let b = self.rib_width;
         
         // Positive moment - T-beam behavior
-        let flange_width = self.rib_spacing.min(b + 8.0 * self.topping);
+        // ACI 6.3.2.1: effective flange overhang per side = min(8hf, sw/2, ln/8)
+        let sw = self.rib_spacing - self.rib_width; // clear spacing
+        let overhang = (8.0 * self.topping).min(sw / 2.0).min(self.span * 1000.0 / 8.0);
+        let flange_width = (b + 2.0 * overhang).min(self.rib_spacing);
         let as_pos = self.required_steel_t(analysis.max_positive_moment, d, flange_width);
         
         // Negative moment - rectangular
         let as_neg = self.required_steel_rect(analysis.max_negative_moment, d, b);
         
-        // Minimum
-        let as_min = 0.0033 * b * d;
+        // ACI Table 9.6.1.2: As_min = max(0.25√fc/fy, 1.4/fy) × bw × d
+        let fc = self.concrete_fc;
+        let fy = self.steel_fy;
+        let as_min = (0.25 * fc.sqrt() / fy).max(1.4 / fy) * b * d;
         
         SlabReinforcement {
             as_positive: as_pos.max(as_min),
@@ -784,19 +880,22 @@ impl WaffleSlab {
     fn required_steel_t(&self, mu: f64, d: f64, bf: f64) -> f64 {
         let fc = self.concrete_fc;
         let fy = self.steel_fy;
+        let phi = 0.9;
         
-        // Check if neutral axis in flange
+        // Check if neutral axis in flange (compare Mu with φMn_flange)
         let a_max = self.topping;
         let mn_flange = 0.85 * fc * bf * a_max * (d - a_max / 2.0) / 1e6;
         
-        if mu <= mn_flange {
-            // Rectangular behavior
+        if mu <= phi * mn_flange {
+            // Rectangular behavior (NA in flange)
             self.required_steel_rect(mu, d, bf)
         } else {
-            // T-beam behavior
+            // T-beam behavior (NA in web)
+            // Flange contribution (nominal moment from overhanging flanges)
             let mf = 0.85 * fc * (bf - self.rib_width) * self.topping * 
                     (d - self.topping / 2.0) / 1e6;
-            let mw = mu - mf;
+            // Web moment: Mu_web = Mu - φ × Mf (factored flange contribution)
+            let mw = mu - phi * mf;
             
             let asf = 0.85 * fc * (bf - self.rib_width) * self.topping / fy;
             let asw = self.required_steel_rect(mw, d, self.rib_width);
@@ -815,8 +914,13 @@ impl WaffleSlab {
         let fy = self.steel_fy;
         let mu_nmm = mu * 1e6;
         
+        // β1 per ACI 22.2.2.4.3
+        let beta1 = if fc <= 28.0 { 0.85 } else { (0.85 - 0.05 * (fc - 28.0) / 7.0).max(0.65) };
+        let rho_max = 0.85 * beta1 * fc / fy * (0.003 / (0.003 + 0.005));
+        
         let rn = mu_nmm / (0.9 * b * d.powi(2));
         let rho = 0.85 * fc / fy * (1.0 - (1.0 - 2.0 * rn / (0.85 * fc)).sqrt().max(0.0));
+        let rho = rho.min(rho_max); // Ensure tension-controlled
         
         rho * b * d
     }
@@ -872,30 +976,37 @@ impl PostTensionedSlab {
         
         // Equivalent load per tendon
         let l = self.span * 1000.0;
-        let wb = 8.0 * self.prestress_force * 1000.0 * drape / l.powi(2);
+        let wb = 8.0 * self.prestress_force * 0.85 * 1000.0 * drape / l.powi(2);
         
         // Per meter width
-        wb * 1000.0 / self.tendon_spacing / 1000.0 // kPa
+        // wb is N/mm per tendon, * 1000/spacing converts to N/mm per m width,
+        // then / 1000 converts N/mm to kN/m = kPa
+        if self.tendon_spacing > 0.0 { wb * 1000.0 / self.tendon_spacing } else { 0.0 }
     }
 
     /// Check stresses
     pub fn check_stresses(&self) -> (f64, f64, bool) {
-        let area = 1000.0 * self.thickness; // per meter
-        let s = 1000.0 * self.thickness.powi(2) / 6.0;
+        let area = 1000.0 * self.thickness; // per meter width, mm²
+        let s = 1000.0 * self.thickness.powi(2) / 6.0; // mm³
         
-        let p = self.prestress_force * 1000.0 / self.tendon_spacing * 1000.0;
-        let e = self.thickness / 2.0 - 25.0;
+        // Prestress force per m width (after ~15% losses per ACI 20.3.2.6)
+        let p_eff = self.prestress_force * 0.85; // kN (effective after losses)
+        // p_eff(kN) × 1e6 / spacing(mm) = N per m width  (kN→N ×1000, ×1000mm/spacing tendons/m)
+        let p = if self.tendon_spacing > 0.0 { p_eff * 1e6 / self.tendon_spacing } else { 0.0 }; // N per m width
+        let e = self.thickness / 2.0 - 25.0; // eccentricity in mm
         
         // Service stresses
         let w = self.dead_load + self.live_load - self.balance_load();
         let m = w * self.span.powi(2) / 8.0 * 1e6;
         
-        let f_top = -p / area - p * e / s + m / s;
-        let f_bot = -p / area + p * e / s - m / s;
+        // f = -P/A ± Pe/S ∓ M/S (tendon below centroid: +Pe/S at top, sagging M: -M/S at top)
+        let f_top = -p / area + p * e / s - m / s;
+        let f_bot = -p / area - p * e / s + m / s;
         
         // Allowable
         let ft_allow = 0.5 * self.concrete_fc.sqrt();
-        let fc_allow = 0.45 * self.concrete_fc;
+        // ACI Table 24.5.4.1: 0.60fc' for total load (DL+LL)
+        let fc_allow = 0.60 * self.concrete_fc;
         
         let ok = f_top > -fc_allow && f_top < ft_allow &&
                  f_bot > -fc_allow && f_bot < ft_allow;
@@ -930,7 +1041,9 @@ mod tests {
         
         assert!(reinf.as_positive > 0.0);
         assert!(reinf.spacing_positive > 0.0);
-        assert!(reinf.spacing_positive <= 300.0);
+        // ACI 7.7.2.3: max spacing = min(3h, 450mm)
+        let s_max = (3.0 * slab.thickness).min(450.0);
+        assert!(reinf.spacing_positive <= s_max);
     }
 
     #[test]
@@ -962,7 +1075,8 @@ mod tests {
     fn test_flat_plate() {
         let slab = FlatSlab::flat_plate(6.0, 6.0, 4.0);
         
-        assert!(slab.thickness >= 200.0);
+        // ACI Table 8.3.1.1: ln/33, min 125mm
+        assert!(slab.thickness >= 125.0);
         assert!(slab.drop_panel.is_none());
     }
 

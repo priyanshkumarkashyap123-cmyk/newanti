@@ -787,7 +787,7 @@ pub fn compute_eigenvalues(
 
             // Sort by eigenvalue magnitude (ascending)
             let mut indices: Vec<usize> = (0..eigenvalues.len()).collect();
-            indices.sort_by(|&a, &b| eigenvalues[a].abs().partial_cmp(&eigenvalues[b].abs()).unwrap());
+            indices.sort_by(|&a, &b| eigenvalues[a].abs().partial_cmp(&eigenvalues[b].abs()).unwrap_or(std::cmp::Ordering::Equal));
 
             let sorted_eigenvalues: Vec<f64> = indices.iter()
                 .take(num_modes.min(dof))
@@ -968,6 +968,24 @@ pub fn solve_structure_wasm(
     let mut k_global = DMatrix::zeros(dof, dof);
     let mut f_global = DVector::zeros(dof);
 
+    // Pre-build node ID -> index map for O(1) lookup and safe error handling
+    let node_idx_map: std::collections::HashMap<i32, usize> = nodes.iter()
+        .enumerate()
+        .map(|(i, n)| (n.id, i))
+        .collect();
+
+    // Helper closure: safe node index lookup
+    let make_error_result = |msg: String| -> JsValue {
+        let result = AnalysisResult {
+            displacements: std::collections::HashMap::new(),
+            reactions: std::collections::HashMap::new(),
+            member_forces: std::collections::HashMap::new(),
+            success: false,
+            error: Some(msg),
+        };
+        serde_wasm_bindgen::to_value(&result).unwrap()
+    };
+
     // Assemble stiffness matrix for each element
     for elem in &elements {
         // Find start and end nodes
@@ -1055,9 +1073,15 @@ pub fn solve_structure_wasm(
         // Transform to global coordinates: K = T^T * k_local * T
         let k_global_elem = t.transpose() * k_local * t;
 
-        // Get DOF indices for this element
-        let start_idx = nodes.iter().position(|n| n.id == elem.node_start).unwrap();
-        let end_idx = nodes.iter().position(|n| n.id == elem.node_end).unwrap();
+        // Get DOF indices for this element (safe lookup)
+        let start_idx = match node_idx_map.get(&elem.node_start) {
+            Some(&idx) => idx,
+            None => return make_error_result(format!("Element {} references non-existent start node {}", elem.id, elem.node_start)),
+        };
+        let end_idx = match node_idx_map.get(&elem.node_end) {
+            Some(&idx) => idx,
+            None => return make_error_result(format!("Element {} references non-existent end node {}", elem.id, elem.node_end)),
+        };
 
         let dof_map = [
             start_idx * 3,     // start x
@@ -1093,8 +1117,14 @@ pub fn solve_structure_wasm(
     // 2. Apply member distributed loads (convert to equivalent nodal loads)
     for load in &member_loads {
         if let Some(elem) = elements.iter().find(|e| e.id == load.element_id) {
-            let start_idx = nodes.iter().position(|n| n.id == elem.node_start).unwrap();
-            let end_idx = nodes.iter().position(|n| n.id == elem.node_end).unwrap();
+            let start_idx = match node_idx_map.get(&elem.node_start) {
+                Some(&idx) => idx,
+                None => continue, // skip invalid element references
+            };
+            let end_idx = match node_idx_map.get(&elem.node_end) {
+                Some(&idx) => idx,
+                None => continue,
+            };
             let start = &nodes[start_idx];
             let end = &nodes[end_idx];
 
@@ -1335,8 +1365,14 @@ pub fn solve_structure_wasm(
     let mut member_forces = std::collections::HashMap::new();
     
     for elem in &elements {
-        let start_idx = nodes.iter().position(|n| n.id == elem.node_start).unwrap();
-        let end_idx = nodes.iter().position(|n| n.id == elem.node_end).unwrap();
+        let start_idx = match node_idx_map.get(&elem.node_start) {
+            Some(&idx) => idx,
+            None => continue, // skip elements with invalid node references
+        };
+        let end_idx = match node_idx_map.get(&elem.node_end) {
+            Some(&idx) => idx,
+            None => continue,
+        };
         let start = &nodes[start_idx];
         let end = &nodes[end_idx];
         
@@ -1344,10 +1380,9 @@ pub fn solve_structure_wasm(
         let dx = end.x - start.x;
         let dy = end.y - start.y;
         let l = (dx * dx + dy * dy).sqrt();
+        if l < 1e-10 { continue; } // skip zero-length elements
         let c = dx / l;
         let s = dy / l;
-        
-        // Build stiffness and transformation matrices (same as assembly)
         let ea_l = elem.e * elem.a / l;
         let ei_l3 = elem.e * elem.i / (l * l * l);
         let ei_l2 = elem.e * elem.i / (l * l);
@@ -1503,6 +1538,12 @@ pub fn solve_p_delta(
     let num_nodes = nodes.len();
     let dof = num_nodes * 3;
     
+    // Pre-build node ID -> index map for safe O(1) lookup
+    let node_idx_map: std::collections::HashMap<i32, usize> = nodes.iter()
+        .enumerate()
+        .map(|(i, n)| (n.id, i))
+        .collect();
+    
     // Initial analysis (first-order)
     let mut u_prev = DVector::zeros(dof);
     let mut converged = false;
@@ -1513,14 +1554,21 @@ pub fn solve_p_delta(
         
         // Assemble elastic stiffness (same as before)
         for elem in &elements {
-            let start_idx = nodes.iter().position(|n| n.id == elem.node_start).unwrap();
-            let end_idx = nodes.iter().position(|n| n.id == elem.node_end).unwrap();
+            let start_idx = match node_idx_map.get(&elem.node_start) {
+                Some(&idx) => idx,
+                None => continue,
+            };
+            let end_idx = match node_idx_map.get(&elem.node_end) {
+                Some(&idx) => idx,
+                None => continue,
+            };
             let start = &nodes[start_idx];
             let end = &nodes[end_idx];
             
             let dx = end.x - start.x;
             let dy = end.y - start.y;
             let l = (dx * dx + dy * dy).sqrt();
+            if l < 1e-10 { continue; } // skip zero-length elements
             let c = dx / l;
             let s = dy / l;
             
@@ -1727,15 +1775,28 @@ pub fn analyze_buckling(
     // Build geometric stiffness with unit loads (will be scaled by eigenvalue)
     let mut k_geometric: DMatrix<f64> = DMatrix::zeros(dof, dof);
     
+    // Pre-build node ID -> index map for safe O(1) lookup
+    let node_idx_map: std::collections::HashMap<i32, usize> = nodes.iter()
+        .enumerate()
+        .map(|(i, n)| (n.id, i))
+        .collect();
+    
     for elem in &elements {
-        let start_idx = nodes.iter().position(|n| n.id == elem.node_start).unwrap();
-        let end_idx = nodes.iter().position(|n| n.id == elem.node_end).unwrap();
+        let start_idx = match node_idx_map.get(&elem.node_start) {
+            Some(&idx) => idx,
+            None => continue,
+        };
+        let end_idx = match node_idx_map.get(&elem.node_end) {
+            Some(&idx) => idx,
+            None => continue,
+        };
         let start = &nodes[start_idx];
         let end = &nodes[end_idx];
         
         let dx = end.x - start.x;
         let dy = end.y - start.y;
         let l = (dx * dx + dy * dy).sqrt();
+        if l < 1e-10 { continue; } // skip zero-length elements
         let c = dx / l;
         let s = dy / l;
         
@@ -1842,7 +1903,7 @@ pub fn analyze_buckling(
         .filter(|&&e| e > 1e-10)
         .map(|&e| 1.0 / e)
         .collect();
-    buckling_factors.sort_by(|a: &f64, b: &f64| a.partial_cmp(b).unwrap());
+    buckling_factors.sort_by(|a: &f64, b: &f64| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
     
     // Take first num_modes
     buckling_factors.truncate(num_modes);

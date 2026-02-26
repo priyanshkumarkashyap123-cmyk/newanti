@@ -257,13 +257,14 @@ impl IS800DesignChecker {
     /// Check compression capacity (Clause 7)
     pub fn check_compression(&self, member: &SteelMember, force: f64) -> DesignCheck {
         let lambda = member.klr_y.max(member.klr_z);
-        let lambda_e = lambda * (member.fy / 250.0).sqrt();
         
         // Buckling class 'b' assumed (typical I-section)
         let alpha = 0.34;
         
-        // Non-dimensional slenderness
-        let lambda_ratio = lambda_e / (PI * (200000.0 / member.fy).sqrt());
+        // Non-dimensional slenderness ratio per IS 800 Cl. 7.1.2.1
+        // λ̄ = (KL/r) / π × √(fy/E) = λ × √(fy / E) / π
+        let e_steel = 200000.0; // MPa
+        let lambda_ratio = lambda / PI * (member.fy / e_steel).sqrt();
         
         // Stress reduction factor (φ)
         let phi = 0.5 * (1.0 + alpha * (lambda_ratio - 0.2) + lambda_ratio.powi(2));
@@ -311,8 +312,9 @@ impl IS800DesignChecker {
     
     /// Check shear capacity (Clause 8.4)
     pub fn check_shear(&self, member: &SteelMember, shear: f64) -> DesignCheck {
-        // Shear area (I-section: depth × web thickness)
-        let a_v = member.depth * member.t_w;
+        // Shear area for rolled I-section: h_w × tw (web depth, IS 800 Cl. 8.4.1.1)
+        let h_w = member.depth - 2.0 * member.t_f;
+        let a_v = h_w * member.t_w;
         
         // Design shear strength
         let v_d = (member.fy / 3.0_f64.sqrt()) * a_v / self.gamma_m0 / 1000.0;
@@ -508,14 +510,19 @@ impl Default for IS456DesignChecker {
 impl IS456DesignChecker {
     /// Check beam flexural capacity (Cl. 38.1)
     pub fn check_beam_flexure(&self, beam: &RCBeam, moment: f64) -> DesignCheck {
-        let fcd = 0.67 * beam.fck / self.gamma_c;
-        let fyd = beam.fy / self.gamma_s;
+        // IS 456 stress block constants already embed partial safety factors:
+        // 0.36*fck = 0.446*fck rounded (includes gamma_c = 1.5)
+        // 0.87*fy = fy/1.15 (includes gamma_s = 1.15)
+        // Do NOT use fcd or fyd with these constants
         
-        // Limiting neutral axis depth
-        let xu_max = 0.48 * beam.d_eff; // For Fe 500
+        // Limiting neutral axis depth - depends on steel grade
+        let xu_max_ratio = if beam.fy <= 300.0 { 0.53 }      // Fe250
+                           else if beam.fy <= 415.0 { 0.48 }  // Fe415
+                           else { 0.46 };                      // Fe500
+        let xu_max = xu_max_ratio * beam.d_eff;
         
-        // Actual neutral axis (assuming tension failure)
-        let xu = beam.ast * fyd / (0.36 * fcd * beam.b);
+        // Actual neutral axis: T = C => 0.87*fy*Ast = 0.36*fck*b*xu
+        let xu = 0.87 * beam.fy * beam.ast / (0.36 * beam.fck * beam.b);
         
         // Moment capacity
         let m_ur = if xu <= xu_max {
@@ -523,7 +530,7 @@ impl IS456DesignChecker {
             0.87 * beam.fy * beam.ast * (beam.d_eff - 0.42 * xu) / 1e6 // kN-m
         } else {
             // Over-reinforced (limit to balanced)
-            0.36 * fcd * beam.b * xu_max * (beam.d_eff - 0.42 * xu_max) / 1e6
+            0.36 * beam.fck * beam.b * xu_max * (beam.d_eff - 0.42 * xu_max) / 1e6
         };
         
         DesignCheck::new("Beam Flexure", moment.abs(), m_ur, "IS 456:2000 Cl. 38.1")
@@ -557,7 +564,7 @@ impl IS456DesignChecker {
             p if p <= 1.75 => 0.75,
             p if p <= 2.00 => 0.79,
             _ => 0.82,
-        } * (beam.fck / 25.0).powf(0.5).min(1.0);
+        } * (beam.fck / 25.0).powf(0.5); // Scale for concrete grade (no cap per IS 456)
         
         let v_c = tau_c * beam.b * beam.d_eff / 1000.0; // kN
         
@@ -573,8 +580,10 @@ impl IS456DesignChecker {
     /// Check column capacity (Cl. 39)
     pub fn check_column(&self, column: &RCColumn, forces: &RCColumnForces) -> DesignCheck {
         let ag = column.b * column.d;
-        let fcd = 0.67 * column.fck / self.gamma_c;
-        let fyd = column.fy / self.gamma_s;
+        
+        // IS 456 Cl. 39.3: Pu = 0.4*fck*Ac + 0.67*fy*Asc
+        // These coefficients already include gamma_c and gamma_s
+        // Do NOT use fcd or fyd here
         
         // Short column check (Cl. 25.1.2)
         let l_eff = column.k * column.length * 1000.0;
@@ -583,20 +592,28 @@ impl IS456DesignChecker {
         let is_short = slenderness_x < 12.0 && slenderness_y < 12.0;
         
         // Axial capacity (Cl. 39.3)
+        let p_u_short = (0.4 * column.fck * (ag - column.ast) + 0.67 * column.fy * column.ast) / 1000.0; // kN
+        
         let p_u = if is_short {
-            // Short column
-            0.4 * fcd * (ag - column.ast) + 0.67 * fyd * column.ast
+            p_u_short
         } else {
-            // Slender column - apply reduction
-            let alpha = slenderness_x.max(slenderness_y) / 12.0;
-            let reduction = 1.0 - 0.005 * (alpha - 1.0) * 12.0;
-            reduction.max(0.6) * (0.4 * fcd * (ag - column.ast) + 0.67 * fyd * column.ast)
-        } / 1000.0; // kN
+            // Slender column per IS 456 Cl. 39.7
+            // Additional moments: Max = Pu * D/2000 * (lex/D)^2
+            // For simplified axial capacity, reduce based on additional eccentricity
+            let le_d = slenderness_x.max(slenderness_y);
+            let e_add = column.d * (le_d).powi(2) / 2000.0; // Additional eccentricity mm
+            let e_min = (l_eff / 500.0).max(20.0); // Minimum eccentricity mm
+            let e_total = e_add + e_min;
+            // Approximate reduction for additional eccentricity
+            let reduction = (1.0 - 2.0 * e_total / column.d).max(0.3);
+            reduction * p_u_short
+        };
         
         // Combined check with moment (simplified interaction)
         if forces.moment_x.abs() > 0.0 || forces.moment_y.abs() > 0.0 {
             // Simplified interaction: P/Pu + M/Mu ≤ 1
-            let m_u = 0.87 * fyd * column.ast * (column.d - column.cover - 10.0) / 1e6;
+            // Use 0.87*fy (not fyd) since 0.87 already is 1/gamma_s
+            let m_u = 0.87 * column.fy * column.ast * (column.d - column.cover - 10.0) / 1e6;
             let ratio = forces.axial / p_u + 
                         (forces.moment_x.abs() + forces.moment_y.abs()) / m_u.max(1.0);
             
@@ -741,7 +758,7 @@ impl MemberDesignSummary {
     pub fn from_checks(member_id: usize, member_type: &str, checks: Vec<DesignCheck>) -> Self {
         let max_ratio = checks.iter().map(|c| c.ratio).fold(0.0, f64::max);
         let critical = checks.iter()
-            .max_by(|a, b| a.ratio.partial_cmp(&b.ratio).unwrap())
+            .max_by(|a, b| a.ratio.partial_cmp(&b.ratio).unwrap_or(std::cmp::Ordering::Equal))
             .map(|c| c.name.clone())
             .unwrap_or_default();
         

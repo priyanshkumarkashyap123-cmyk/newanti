@@ -272,7 +272,11 @@ impl TimeSeries {
         // Rate of change (if multiple readings)
         let rate = if values.len() >= 2 && self.end_time > self.start_time {
             let dt = (self.end_time - self.start_time) as f64 / 3600.0 / 24.0; // days
-            (values.last().unwrap() - values.first().unwrap()) / dt
+            if dt > 0.0 {
+                (values.last().unwrap_or(&0.0) - values.first().unwrap_or(&0.0)) / dt
+            } else {
+                0.0
+            }
         } else {
             0.0
         };

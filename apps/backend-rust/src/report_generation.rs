@@ -801,7 +801,7 @@ pub fn generate_design_report(
     let max_ratio = checks.iter().map(|c| c.ratio).fold(0.0, f64::max);
     let avg_ratio = checks.iter().map(|c| c.ratio).sum::<f64>() / total.max(1) as f64;
     let critical = checks.iter()
-        .max_by(|a, b| a.ratio.partial_cmp(&b.ratio).unwrap())
+        .max_by(|a, b| a.ratio.partial_cmp(&b.ratio).unwrap_or(std::cmp::Ordering::Equal))
         .map(|c| c.member_id)
         .unwrap_or(0);
     

@@ -83,7 +83,7 @@ impl DesignVariable {
             DesignVariable::Discrete { options, .. } => {
                 // Find nearest option
                 options.iter()
-                    .min_by(|a, b| ((*a - value).abs()).partial_cmp(&((*b - value).abs())).unwrap())
+                    .min_by(|a, b| ((*a - value).abs()).partial_cmp(&((*b - value).abs())).unwrap_or(std::cmp::Ordering::Equal))
                     .cloned()
                     .unwrap_or(value)
             },
@@ -320,9 +320,9 @@ impl GeneticAlgorithm {
                 } else if !a.feasible && b.feasible {
                     std::cmp::Ordering::Greater
                 } else if !a.feasible && !b.feasible {
-                    a.violation.partial_cmp(&b.violation).unwrap()
+                    a.violation.partial_cmp(&b.violation).unwrap_or(std::cmp::Ordering::Equal)
                 } else {
-                    a.fitness.partial_cmp(&b.fitness).unwrap()
+                    a.fitness.partial_cmp(&b.fitness).unwrap_or(std::cmp::Ordering::Equal)
                 }
             });
             

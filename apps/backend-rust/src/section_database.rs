@@ -1604,7 +1604,7 @@ impl SectionDatabase {
                 shape.map_or(true, |sh| s.shape == sh)
             })
             .min_by(|a, b| {
-                a.mass_per_m.partial_cmp(&b.mass_per_m).unwrap()
+                a.mass_per_m.partial_cmp(&b.mass_per_m).unwrap_or(std::cmp::Ordering::Equal)
             })
     }
     

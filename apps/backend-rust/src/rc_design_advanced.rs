@@ -14,7 +14,6 @@
 // ============================================================================
 
 use serde::{Deserialize, Serialize};
-use std::f64::consts::PI;
 
 // ============================================================================
 // DEFLECTION ANALYSIS
@@ -342,7 +341,7 @@ impl CrackWidthAnalysis {
         exposure: ExposureClass,
     ) -> Self {
         // Steel strain at crack location
-        let epsilon_sm = fs / es;
+        let _epsilon_sm = fs / es;
 
         // Crack spacing per Eurocode 2 approach
         // sr,max = 3.4*c + 0.425*k1*k2*φ/ρeff
@@ -642,7 +641,7 @@ pub struct CreepShrinkage {
 impl CreepShrinkage {
     /// Calculate creep and shrinkage per ACI 209R-92
     pub fn new(
-        fc: f64,                // Concrete strength (MPa)
+        _fc: f64,                // Concrete strength (MPa)
         ec: f64,                // Elastic modulus (MPa)
         relative_humidity: f64, // RH in %
         volume_surface: f64,    // V/S ratio (mm)

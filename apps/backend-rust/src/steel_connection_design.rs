@@ -681,7 +681,11 @@ pub fn check_shear_tab_connection(
     
     // Bolt forces with eccentricity
     let n_bolts = bolt_group.total_bolts();
-    let direct_shear = applied_shear / n_bolts as f64;
+    let direct_shear = if n_bolts > 0 {
+        applied_shear / n_bolts as f64
+    } else {
+        0.0
+    };
     
     // Moment from eccentricity
     let j = bolt_group.j_bolt_group();
@@ -799,7 +803,11 @@ pub fn check_extended_endplate_connection(
     
     // Bolts in tension (assume half on each side of beam)
     let n_tension_bolts = (n_bolt_rows * n_bolts_per_row) / 2;
-    let tension_per_bolt = flange_force / n_tension_bolts as f64;
+    let tension_per_bolt = if n_tension_bolts > 0 {
+        flange_force / n_tension_bolts as f64
+    } else {
+        f64::MAX // No bolts → infinite demand signals failure
+    };
     
     // Bolt tension capacity
     let fnt = 0.75 * bolt.grade.fub();
@@ -807,7 +815,11 @@ pub fn check_extended_endplate_connection(
     
     // Bolts in shear
     let n_shear_bolts = n_bolt_rows * n_bolts_per_row;
-    let shear_per_bolt = applied_shear / n_shear_bolts as f64;
+    let shear_per_bolt = if n_shear_bolts > 0 {
+        applied_shear / n_shear_bolts as f64
+    } else {
+        f64::MAX
+    };
     
     // Bolt shear capacity
     let fnv = bolt.grade.fnv();

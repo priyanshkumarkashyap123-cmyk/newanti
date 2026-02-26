@@ -281,7 +281,7 @@ impl DiscretizationError {
 
         // Sort by mesh size (coarse to fine)
         self.mesh_results.sort_by(|a, b| {
-            b.mesh_size.partial_cmp(&a.mesh_size).unwrap()
+            b.mesh_size.partial_cmp(&a.mesh_size).unwrap_or(std::cmp::Ordering::Equal)
         });
 
         let h1 = self.mesh_results[2].mesh_size;  // Finest

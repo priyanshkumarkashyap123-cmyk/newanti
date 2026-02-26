@@ -139,7 +139,7 @@ impl StressState {
         // Fast path: For diagonal stress tensor (no shear), eigenvalues are the diagonal entries
         if s[3].abs() < 1e-14 && s[4].abs() < 1e-14 && s[5].abs() < 1e-14 {
             let mut principals = [s[0], s[1], s[2]];
-            principals.sort_by(|a, b| b.partial_cmp(a).unwrap());
+            principals.sort_by(|a, b| b.partial_cmp(a).unwrap_or(std::cmp::Ordering::Equal));
             return principals;
         }
 
@@ -185,7 +185,7 @@ impl StressState {
         };
 
         // Sort descending
-        principals.sort_by(|a, b| b.partial_cmp(a).unwrap());
+        principals.sort_by(|a, b| b.partial_cmp(a).unwrap_or(std::cmp::Ordering::Equal));
         principals
     }
 

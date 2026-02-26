@@ -317,7 +317,10 @@ impl Mitc4Element {
     /// Jacobian matrix at a point
     pub fn jacobian(&self, xi: f64, eta: f64) -> ([[f64; 2]; 2], f64) {
         let dn = self.shape_derivatives(xi, eta);
-        let axes = self.local_axes.unwrap();
+        let axes = match self.local_axes {
+            Some(a) => a,
+            None => return ([[0.0; 2]; 2], 0.0),
+        };
         
         // Project coordinates to local system
         let mut local_coords = [[0.0; 2]; 4];

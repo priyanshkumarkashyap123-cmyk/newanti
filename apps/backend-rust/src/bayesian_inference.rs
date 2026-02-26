@@ -276,6 +276,7 @@ impl MetropolisHastings {
     }
 
     /// Run MCMC sampling
+    #[allow(unused_assignments)]
     pub fn sample<F>(
         &mut self,
         parameters: &mut [BayesianParameter],
@@ -294,10 +295,12 @@ impl MetropolisHastings {
 
         // Current state
         let mut current: Vec<f64> = parameters.iter().map(|p| p.current_value).collect();
+        #[allow(unused_assignments)]
         let mut current_log_prior: f64 = parameters.iter()
             .zip(current.iter())
             .map(|(p, &x)| p.prior.log_pdf(x))
             .sum();
+        #[allow(unused_assignments)]
         let mut current_log_likelihood = log_likelihood(&current);
         let mut current_log_posterior = current_log_prior + current_log_likelihood;
 
@@ -367,7 +370,7 @@ impl MetropolisHastings {
                 / (n_samples - 1) as f64;
 
             let mut sorted = values.clone();
-            sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+            sorted.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
 
             let median = sorted[n_samples / 2];
             let ci_lower = sorted[(0.025 * n_samples as f64) as usize];
@@ -454,6 +457,7 @@ impl AdaptiveMCMC {
     }
 
     /// Run adaptive MCMC
+    #[allow(unused_assignments)]
     pub fn sample<F>(
         &mut self,
         parameters: &mut [BayesianParameter],
@@ -472,10 +476,12 @@ impl AdaptiveMCMC {
         }
 
         let mut current: Vec<f64> = parameters.iter().map(|p| p.current_value).collect();
+        #[allow(unused_assignments)]
         let mut current_log_prior: f64 = parameters.iter()
             .zip(current.iter())
             .map(|(p, &x)| p.prior.log_pdf(x))
             .sum();
+        #[allow(unused_assignments)]
         let mut current_log_likelihood = log_likelihood(&current);
         let mut current_log_posterior = current_log_prior + current_log_likelihood;
 

@@ -123,7 +123,7 @@ impl StressTensor {
         // Check for simple uniaxial/biaxial cases with no shear
         if self.tau_xy.abs() < 1e-12 && self.tau_yz.abs() < 1e-12 && self.tau_zx.abs() < 1e-12 {
             let mut principals = [self.sigma_xx, self.sigma_yy, self.sigma_zz];
-            principals.sort_by(|a, b| b.partial_cmp(a).unwrap());
+            principals.sort_by(|a, b| b.partial_cmp(a).unwrap_or(std::cmp::Ordering::Equal));
             return (principals[0], principals[1], principals[2]);
         }
         
@@ -682,10 +682,10 @@ pub fn calculate_stress_statistics(
     }
     
     let (min_id, min_val) = values.iter()
-        .min_by(|a, b| a.1.partial_cmp(&b.1).unwrap())
+        .min_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal))
         .unwrap();
     let (max_id, max_val) = values.iter()
-        .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap())
+        .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal))
         .unwrap();
     
     let sum: f64 = values.iter().map(|(_, v)| v).sum();

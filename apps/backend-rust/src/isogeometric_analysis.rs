@@ -791,7 +791,7 @@ impl IgaMesh {
         for &knot in new_knots {
             if direction < self.knots.len() {
                 self.knots[direction].push(knot);
-                self.knots[direction].sort_by(|a, b| a.partial_cmp(b).unwrap());
+                self.knots[direction].sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
             }
         }
     }

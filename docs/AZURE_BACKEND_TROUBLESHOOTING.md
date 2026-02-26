@@ -121,14 +121,14 @@ USE_CLERK=false
 NODE_ENV=production
 MONGODB_URI=[your-mongodb-uri]
 JWT_SECRET=[your-jwt-secret]
-GEMINI_API_KEY=AIzaSyDFYavn0QKWTJ8OjQkoe8IalmQijA6BRhw
+GEMINI_API_KEY=REDACTED_ROTATE_THIS_KEY
 FRONTEND_URL=https://beamlabultimate.tech
 ALLOWED_ORIGINS=https://beamlabultimate.tech,...
 ```
 
 ### Python Backend
 ```
-GEMINI_API_KEY=AIzaSyDFYavn0QKWTJ8OjQkoe8IalmQijA6BRhw
+GEMINI_API_KEY=REDACTED_ROTATE_THIS_KEY
 USE_MOCK_AI=false
 FRONTEND_URL=https://beamlabultimate.tech
 ALLOWED_ORIGINS=https://beamlabultimate.tech,...

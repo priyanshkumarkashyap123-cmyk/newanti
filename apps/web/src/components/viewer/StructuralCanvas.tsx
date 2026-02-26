@@ -226,9 +226,7 @@ const StructureRenderer: FC = () => {
   const useUltraLight = totalElements > ULTRA_LIGHT_THRESHOLD;
 
   if (useUltraLight) {
-// console.log(
-      `[StructuralCanvas] Using UltraLight mode for ${memberCount} members, ${nodeCount} nodes`,
-    );
+    // Ultra-light mode active for large models
   }
 
   return (

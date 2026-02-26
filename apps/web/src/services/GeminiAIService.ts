@@ -531,10 +531,14 @@ class GeminiAIService {
   };
 
   constructor() {
-    // Try to get API key from environment or localStorage
-    this.apiKey = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('gemini_api_key');
+    // SECURITY: Only read API key directly in development.
+    // In production, calls are proxied through the backend — no client-side key needed.
     if (import.meta.env.DEV) {
-      console.log('[GeminiAI] 🚀 Power AI Service initialized, API key status:', this.apiKey ? 'Found' : 'Not found');
+      this.apiKey = import.meta.env.VITE_GEMINI_API_KEY || null;
+      console.log('[GeminiAI] 🚀 Power AI Service initialized (DEV mode), API key status:', this.apiKey ? 'Found' : 'Not found');
+    } else {
+      // In production, we use the backend proxy — mark as 'proxy' so callGemini knows to route accordingly
+      this.apiKey = '__PROXY__';
     }
   }
 
@@ -694,8 +698,13 @@ class GeminiAIService {
   // ============================================
 
   setApiKey(key: string): void {
-    this.apiKey = key;
-    localStorage.setItem('gemini_api_key', key);
+    // SECURITY: Only allow direct key setting in development mode.
+    // Never store API keys in localStorage (XSS can steal them).
+    if (import.meta.env.DEV) {
+      this.apiKey = key;
+    } else {
+      console.warn('[GeminiAI] Cannot set API key in production — all calls are proxied through the backend.');
+    }
   }
 
   hasApiKey(): boolean {
@@ -912,6 +921,44 @@ Provide detailed reasoning with formulas shown.`;
   // CORE API METHODS
   // ============================================
 
+  /**
+   * Proxy Gemini calls through the backend to keep API keys server-side.
+   * Used automatically in production mode.
+   */
+  private async callGeminiViaProxy(prompt: string, systemPrompt?: string): Promise<string> {
+    const apiBaseUrl = import.meta.env.VITE_API_URL ||
+      (import.meta.env.PROD ? 'https://api.beamlabultimate.tech' : 'http://localhost:3001');
+
+    const message = systemPrompt ? `${systemPrompt}\n\n${prompt}` : prompt;
+
+    const response = await fetch(`${apiBaseUrl}/api/ai/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // Include auth token if available
+        ...(typeof window !== 'undefined' && window.localStorage?.getItem('auth_token')
+          ? { Authorization: `Bearer ${window.localStorage.getItem('auth_token')}` }
+          : {}),
+      },
+      body: JSON.stringify({
+        message,
+        context: systemPrompt || undefined,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `AI proxy returned ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (!data.success) {
+      throw new Error(data.error || 'AI proxy request failed');
+    }
+
+    return data.response;
+  }
+
   async callGemini(prompt: string, systemPrompt?: string): Promise<string> {
     if (!this.apiKey) {
       throw new Error('Gemini API key not configured. Please set your API key.');
@@ -921,7 +968,12 @@ Provide detailed reasoning with formulas shown.`;
       console.log('[GeminiAI] Calling Gemini API with prompt:', prompt.substring(0, 100) + '...');
     }
 
-    // TODO: Proxy through backend to avoid exposing API key in client requests
+    // SECURITY: In production, proxy through backend to keep API key server-side
+    if (this.apiKey === '__PROXY__' || import.meta.env.PROD) {
+      return this.callGeminiViaProxy(prompt, systemPrompt);
+    }
+
+    // DEV mode only: direct Gemini API call
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`;
 
     const requestBody = {

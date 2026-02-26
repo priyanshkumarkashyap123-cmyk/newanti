@@ -353,7 +353,7 @@ impl CableSystem {
     pub fn minimum_safety_factor(&self) -> f64 {
         self.cables.iter()
             .map(|c| c.check_safety_factor())
-            .min_by(|a, b| a.partial_cmp(b).unwrap())
+            .min_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
             .unwrap_or(f64::INFINITY)
     }
 }

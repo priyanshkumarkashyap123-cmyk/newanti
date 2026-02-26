@@ -100,16 +100,32 @@ impl PunchingShearDesigner {
 
     /// Design strength in shear (IS 456 Table 19)
     pub fn design_shear_strength(&self, pt: f64) -> f64 {
-        // Table 19 values for τc
+        // IS 456 Table 19 interpolation for M20 concrete, scaled for fck
         let pt = pt.max(0.15).min(3.0);
-        let fck = self.fck.min(40.0);
         
-        // Simplified formula for τc
-        let beta = (0.8 * fck / (6.89 * pt)).powf(1.0 / 3.0);
-        let tau_c = 0.25 * fck.sqrt() * beta.min(1.0);
+        // Table 19 base values (for M20 concrete)
+        let tau_c_base = if pt <= 0.25 {
+            0.36
+        } else if pt <= 0.50 {
+            0.36 + (0.48 - 0.36) * (pt - 0.25) / 0.25
+        } else if pt <= 0.75 {
+            0.48 + (0.56 - 0.48) * (pt - 0.50) / 0.25
+        } else if pt <= 1.00 {
+            0.56 + (0.62 - 0.56) * (pt - 0.75) / 0.25
+        } else if pt <= 1.50 {
+            0.62 + (0.72 - 0.62) * (pt - 1.00) / 0.50
+        } else if pt <= 2.00 {
+            0.72 + (0.79 - 0.72) * (pt - 1.50) / 0.50
+        } else {
+            0.79 + (0.82 - 0.79) * (pt - 2.00) / 1.00
+        };
         
-        // Enhanced for punching (factor ks)
-        let beta_c = self.column_cx.max(self.column_cy) / self.column_cx.min(self.column_cy);
+        let tau_c = tau_c_base * (self.fck / 25.0).sqrt();
+        
+        // Enhanced for punching (factor ks per IS 456 Cl. 31.6.3)
+        // Guard: prevent division by zero if column dimensions are zero
+        let min_col = self.column_cx.min(self.column_cy).max(1e-10);
+        let beta_c = self.column_cx.max(self.column_cy) / min_col;
         let ks = (0.5 + beta_c).min(1.0);
         
         ks * tau_c
@@ -317,7 +333,8 @@ impl TorsionDesigner {
         let ve = vu + 1.6 * tu * 1000.0 / b;
         
         // Equivalent bending moment (Clause 41.4.2)
-        let mt = tu * (1.0 + d / b) / 1.7;
+        // IS 456: Mt = Tu * (1 + D/b) / 1.7  where D = overall depth
+        let mt = tu * (1.0 + d1 / b) / 1.7;
         let me = mu + mt;
         
         // Shear stress
@@ -365,7 +382,7 @@ impl TorsionDesigner {
         let (long_bars, long_dia) = self.design_longitudinal(asl);
         
         TorsionResult {
-            equivalent_shear_ve: ve / 1000.0,
+            equivalent_shear_ve: ve,  // already in kN
             equivalent_moment_me: me,
             tau_ve,
             tau_c,

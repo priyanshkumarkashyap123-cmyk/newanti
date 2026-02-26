@@ -197,7 +197,7 @@ impl SeriesSystem {
         // Sort events by decreasing failure probability
         let mut indices: Vec<usize> = (0..n).collect();
         indices.sort_by(|&a, &b| {
-            self.events[b].pf.partial_cmp(&self.events[a].pf).unwrap()
+            self.events[b].pf.partial_cmp(&self.events[a].pf).unwrap_or(std::cmp::Ordering::Equal)
         });
 
         // Ditlevsen lower bound (uses max of intersections)
@@ -716,7 +716,7 @@ impl BranchAndBound {
 
         // Sort by probability (descending)
         self.failure_modes.sort_by(|a, b| {
-            b.probability.partial_cmp(&a.probability).unwrap()
+            b.probability.partial_cmp(&a.probability).unwrap_or(std::cmp::Ordering::Equal)
         });
 
         // Select dominant modes
@@ -756,7 +756,7 @@ impl BranchAndBound {
 
         // Sort and select dominant
         self.failure_modes.sort_by(|a, b| {
-            b.probability.partial_cmp(&a.probability).unwrap()
+            b.probability.partial_cmp(&a.probability).unwrap_or(std::cmp::Ordering::Equal)
         });
 
         self.dominant_modes.clear();
@@ -822,7 +822,7 @@ impl RedundancyAssessment {
         }
 
         // Sort by criticality
-        critical_members.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+        critical_members.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
 
         // Robustness index (Baker et al.)
         // RI = (β_intact - β_damaged) / β_intact

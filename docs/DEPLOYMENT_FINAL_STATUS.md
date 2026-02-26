@@ -42,7 +42,7 @@
 - **Status**: ✅ Full operational
 - **Health Check**: https://beamlab-backend-python.azurewebsites.net/health
 - **API Keys Configured**:
-  - GEMINI_API_KEY: AIzaSyDFYavn0QKWTJ8OjQkoe8IalmQijA6BRhw
+  - GEMINI_API_KEY: REDACTED_ROTATE_THIS_KEY
   - USE_MOCK_AI: false (production mode)
 
 ### Rust API (Port 8080) - *Optional*

@@ -535,7 +535,7 @@ impl FrpConfinement {
             self.dimension
         } else {
             let b = self.dimension;
-            let h = self.depth.unwrap();
+            let h = self.depth.unwrap_or(self.dimension);
             (b * b + h * h).sqrt()
         }
     }
@@ -556,7 +556,7 @@ impl FrpConfinement {
             fl
         } else {
             let b = self.dimension;
-            let h = self.depth.unwrap();
+            let h = self.depth.unwrap_or(self.dimension);
             let rc = self.corner_radius;
             
             // Effective confinement area ratio

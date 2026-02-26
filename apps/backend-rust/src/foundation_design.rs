@@ -12,7 +12,7 @@ pub enum SoilType {
     Sand,
     SiltySand,
     Clay,
-    SiltyCite,
+    SiltyClay,
     Rock,
     OrganicSoil,
 }
@@ -283,6 +283,24 @@ impl SpreadFooting {
     /// Analyze footing under loads
     pub fn analyze(&self, axial: f64, mx: f64, my: f64) -> FootingAnalysis {
         let area = self.length * self.width;
+        
+        // Guard: prevent division by zero for degenerate footings
+        if area < 1e-10 || self.length < 1e-10 || self.width < 1e-10 {
+            return FootingAnalysis {
+                bearing_pressure: f64::INFINITY,
+                bearing_ratio: f64::INFINITY,
+                one_way_shear_ok: false,
+                two_way_shear_ok: false,
+                flexure_ok: false,
+                settlement: 0.0,
+                reinforcement: FootingReinforcement {
+                    as_long: 0.0, as_trans: 0.0,
+                    bar_size_long: 0.0, bar_size_trans: 0.0,
+                    spacing_long: 0.0, spacing_trans: 0.0,
+                },
+            };
+        }
+        
         let sx = self.width * self.length.powi(2) / 6.0;
         let sy = self.length * self.width.powi(2) / 6.0;
 
@@ -295,11 +313,14 @@ impl SpreadFooting {
         // Effective depth
         let d = self.thickness - self.cover / 1000.0 - 0.01; // m
         
-        // One-way shear check
-        let critical_section = (self.length - self.column_length) / 2.0 - d;
-        let vu_one_way = q_max * self.width * critical_section.max(0.0);
-        let vc_one_way = 0.17 * self.concrete_fc.sqrt() * 1000.0 * self.width * d;
-        let one_way_ok = vu_one_way < 0.75 * vc_one_way;
+        // One-way shear check (both directions) — ACI 22.5
+        let crit_l = ((self.length - self.column_length) / 2.0 - d).max(0.0);
+        let crit_w = ((self.width - self.column_width) / 2.0 - d).max(0.0);
+        let vu_l = q_max * self.width * crit_l;
+        let vu_w = q_max * self.length * crit_w;
+        let vc_l = 0.17 * self.concrete_fc.sqrt() * 1000.0 * self.width * d;
+        let vc_w = 0.17 * self.concrete_fc.sqrt() * 1000.0 * self.length * d;
+        let one_way_ok = vu_l < 0.75 * vc_l && vu_w < 0.75 * vc_w;
         
         // Two-way (punching) shear
         let punching = self.punching_shear(axial, d);
@@ -342,7 +363,8 @@ impl SpreadFooting {
         let vc1 = 0.33 * self.concrete_fc.sqrt();
         let vc2 = (0.17 + 0.33 / beta_c) * self.concrete_fc.sqrt();
         let alpha_s = 40.0; // Interior column
-        let vc3 = (alpha_s * d / bo + 0.17) * self.concrete_fc.sqrt();
+        // ACI 318M Eq. 22.6.5.2(c): 0.083(αs·d/bo + 2)√f'c
+        let vc3 = 0.083 * (alpha_s * d / bo + 2.0) * self.concrete_fc.sqrt();
         
         let vc = vc1.min(vc2).min(vc3);
         let vc_total = 0.75 * vc * bo * d * 1000.0; // kN
@@ -364,8 +386,21 @@ impl SpreadFooting {
         let l = self.width.max(self.length);
         let ratio = l / b;
         
-        // Influence factor (Steinbrenner)
-        let i_f = 1.0 - 0.08 * (ratio - 1.0).min(4.0);
+        // Influence factor (Boussinesq/Schleicher) - increases with L/B ratio
+        // Approximate values: L/B=1: 1.12, L/B=2: 1.53, L/B=5: 2.10
+        let i_f = if ratio <= 1.0 {
+            1.12
+        } else if ratio <= 1.5 {
+            1.12 + (1.36 - 1.12) * (ratio - 1.0) / 0.5
+        } else if ratio <= 2.0 {
+            1.36 + (1.53 - 1.36) * (ratio - 1.5) / 0.5
+        } else if ratio <= 3.0 {
+            1.53 + (1.78 - 1.53) * (ratio - 2.0) / 1.0
+        } else if ratio <= 5.0 {
+            1.78 + (2.10 - 1.78) * (ratio - 3.0) / 2.0
+        } else {
+            2.10 + 0.1 * (ratio - 5.0).min(5.0)
+        };
         
         // Settlement (mm)
         let es = self.soil.elastic_modulus * 1000.0; // kPa
@@ -386,7 +421,7 @@ impl SpreadFooting {
         let d_mm = d * 1000.0;
         
         let rn = mu * 1e6 / (phi * b * d_mm.powi(2));
-        let rho = 0.85 * fc / fy * (1.0 - (1.0 - 2.0 * rn / (0.85 * fc)).sqrt());
+        let rho = 0.85 * fc / fy * (1.0 - (1.0 - 2.0 * rn / (0.85 * fc)).max(0.0).sqrt());
         let rho = rho.max(0.0018); // Minimum
         
         let as_req = rho * b * d_mm;
@@ -503,8 +538,18 @@ impl MatFoundation {
         
         // Differential settlement
         let avg_pressure = (q_max + q_min.max(0.0)) / 2.0;
-        let settlement = avg_pressure * self.length / 
-                        (self.soil.elastic_modulus * 1000.0) * 1000.0;
+        // Elastic settlement: delta = q * B * (1 - nu^2) * I_w / Es
+        // Use width (shorter dimension) as characteristic dimension B
+        let b_char = self.width.min(self.length);
+        let nu = self.soil.poisson_ratio;
+        let l_over_b = self.length.max(self.width) / b_char;
+        // Shape influence factor (Schleicher) for flexible foundation
+        let i_w = if l_over_b <= 1.0 { 1.12 }
+                  else if l_over_b <= 2.0 { 1.12 + (1.53 - 1.12) * (l_over_b - 1.0) }
+                  else if l_over_b <= 5.0 { 1.53 + (2.10 - 1.53) * (l_over_b - 2.0) / 3.0 }
+                  else { 2.10 };
+        let settlement = avg_pressure * b_char * (1.0 - nu.powi(2)) * i_w /
+                        (self.soil.elastic_modulus * 1000.0) * 1000.0; // mm
         let diff_settlement = settlement * 0.5; // Approximate
         
         MatAnalysis {
@@ -629,14 +674,21 @@ impl PileFoundation {
     fn calculate_end_bearing(&self, layer: &SoilLayer, area: f64) -> f64 {
         match layer.soil_type {
             SoilType::Sand | SoilType::Gravel | SoilType::SiltySand => {
-                // Meyerhof method for cohesionless
+                // Meyerhof method for cohesionless soils
+                // Nq = tan²(45 + phi/2) * e^(pi * tan(phi))
                 let nq = ((45.0 + layer.friction_angle / 2.0).to_radians().tan()).powi(2) *
-                        (PI * layer.friction_angle.to_radians()).exp();
+                        (PI * layer.friction_angle.to_radians().tan()).exp();
                 let sigma_v = layer.unit_weight * self.length;
                 let qb = sigma_v * nq;
-                qb.min(layer.spt_n * 400.0) * area // Cap based on SPT
+                // SPT-based cap: differentiate by pile type
+                let spt_cap = match self.pile_type {
+                    PileType::Driven => layer.spt_n * 400.0, // Meyerhof for driven
+                    PileType::Bored => layer.spt_n * 120.0,  // IS 2911 Part 1/Sec 2 for bored
+                    _ => layer.spt_n * 250.0,                // Intermediate for other types
+                };
+                qb.min(spt_cap) * area
             }
-            SoilType::Clay | SoilType::SiltyCite => {
+            SoilType::Clay | SoilType::SiltyClay => {
                 // Undrained bearing capacity
                 let nc = 9.0;
                 let qb = nc * layer.cohesion;
@@ -658,8 +710,14 @@ impl PileFoundation {
         match layer.soil_type {
             SoilType::Sand | SoilType::Gravel | SoilType::SiltySand => {
                 // Beta method
-                let ko = 1.0 - layer.friction_angle.to_radians().sin();
-                let beta = ko * layer.friction_angle.to_radians().tan();
+                // K depends on pile installation: driven piles increase lateral pressure
+                let ko_at_rest = 1.0 - layer.friction_angle.to_radians().sin(); // Jaky's K0
+                let k = match self.pile_type {
+                    PileType::Driven => (1.0_f64).max(1.5 * ko_at_rest), // Driven: K = 1.0 to 2.0
+                    PileType::Bored => 0.9 * ko_at_rest,                 // Bored: slightly less than K0
+                    _ => ko_at_rest,                                      // Default: at-rest
+                };
+                let beta = k * layer.friction_angle.to_radians().tan();
                 let sigma_v = layer.unit_weight * mid_depth;
                 let fs = beta * sigma_v;
                 
@@ -671,7 +729,7 @@ impl PileFoundation {
                 
                 fs.min(fs_limit) * perimeter * length
             }
-            SoilType::Clay | SoilType::SiltyCite => {
+            SoilType::Clay | SoilType::SiltyClay => {
                 // Alpha method
                 let alpha = if layer.cohesion > 100.0 { 0.45 } 
                            else if layer.cohesion > 50.0 { 0.6 }
@@ -703,17 +761,23 @@ impl PileFoundation {
         let d = self.diameter;
         
         // Get average soil properties
-        let avg_cu: f64 = self.soil_layers.iter()
-            .filter(|l| l.soil_type == SoilType::Clay)
+        let clay_layers: Vec<&SoilLayer> = self.soil_layers.iter()
+            .filter(|l| l.soil_type == SoilType::Clay || l.soil_type == SoilType::SiltyClay)
+            .collect();
+        let avg_cu: f64 = clay_layers.iter()
             .map(|l| l.cohesion)
-            .sum::<f64>() / self.soil_layers.len().max(1) as f64;
+            .sum::<f64>() / clay_layers.len().max(1) as f64;
         
         if avg_cu > 0.0 {
-            // Short pile in clay
+            // Short pile in clay (Broms method)
             let l = self.length;
-            let e = if free_head { 0.0 } else { 0.5 * d };
+            // Free-head: lower capacity due to no rotational restraint
+            // Fixed-head: higher capacity (1.5-2x free-head)
+            let e = if free_head { 0.5 * d } else { 0.0 };
             
             let hu = 9.0 * avg_cu * d * (l - 1.5 * d);
+            // For free-head, reduce by eccentricity effect
+            // For fixed-head, use full capacity
             hu / (1.0 + 1.5 * e / l)
         } else {
             // Cohesionless - simplified
@@ -722,7 +786,8 @@ impl PileFoundation {
                 .unwrap_or(3.0);
             let gamma = 18.0; // kN/m³ assumed
             
-            0.5 * kp * gamma * d * self.length.powi(2)
+            let hu = 0.5 * kp * gamma * d * self.length.powi(2);
+            if free_head { hu } else { 2.0 * hu }
         }
     }
 }
@@ -796,7 +861,11 @@ impl PileCap {
             min_load = min_load.min(p_total);
         }
         
-        let utilization = max_load / self.pile_capacity;
+        let utilization = if self.pile_capacity > 1e-10 {
+            max_load / self.pile_capacity
+        } else {
+            f64::INFINITY
+        };
         
         // Punching shear check
         let d = self.thickness - 0.1; // Effective depth
@@ -838,7 +907,13 @@ impl PileCap {
         match self.num_piles {
             1 => self.length / 2.0,
             2 => edge + index as f64 * self.pile_spacing,
-            3 => edge + (index % 2) as f64 * self.pile_spacing,
+            3 => {
+                if index < 2 {
+                    edge + index as f64 * self.pile_spacing
+                } else {
+                    edge + self.pile_spacing / 2.0 // Apex pile centered
+                }
+            }
             4 | 5 | 6 => {
                 let cols = if self.num_piles <= 4 { 2 } else { 3 };
                 edge + (index % cols) as f64 * self.pile_spacing

@@ -241,7 +241,7 @@ impl AdaptiveController {
         sorted_indices.sort_by(|&a, &b| {
             errors[b].error_indicator
                 .partial_cmp(&errors[a].error_indicator)
-                .unwrap()
+                .unwrap_or(std::cmp::Ordering::Equal)
         });
         
         match self.strategy {

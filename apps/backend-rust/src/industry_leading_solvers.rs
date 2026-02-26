@@ -725,7 +725,7 @@ impl BlockLanczosSolver {
         
         // Extract smallest eigenvalues and reconstruct eigenvectors
         let mut indices: Vec<usize> = (0..block_dim).collect();
-        indices.sort_by(|&a, &b| evals[a].partial_cmp(&evals[b]).unwrap());
+        indices.sort_by(|&a, &b| evals[a].partial_cmp(&evals[b]).unwrap_or(std::cmp::Ordering::Equal));
         
         let n_found = nev.min(block_dim);
         let mut eigenvalues = Vec::with_capacity(n_found);

@@ -167,9 +167,17 @@ const authStoreCreator: StateCreator<AuthState> = (set, get) => ({
   // SIGN IN
   // ========================================
   socialSignIn: async (provider: "google" | "github"): Promise<boolean> => {
+    // SECURITY: Mock social sign-in is only available in development mode.
+    // In production, social auth is handled by Clerk — this code path should never run.
+    if (import.meta.env.PROD) {
+      console.error('socialSignIn mock is disabled in production. Use Clerk OAuth instead.');
+      set({ error: 'Social sign-in is not available in this mode.', isLoading: false });
+      return false;
+    }
+
     set({ isLoading: true, error: null });
 
-    // Simulate network delay
+    // Simulate network delay (DEV only)
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
     try {

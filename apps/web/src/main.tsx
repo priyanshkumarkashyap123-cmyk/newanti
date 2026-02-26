@@ -11,16 +11,29 @@ import { logger } from './utils/logger';
 import env from './config/env';
 import './index.css';
 
-// Setup root element error display
+// Setup root element error display (XSS-safe: uses textContent, not innerHTML)
 function showRootError(message: string, details?: string) {
     const rootElement = document.getElementById('root');
     if (rootElement) {
-        rootElement.innerHTML = `
-            <div style="padding: 40px; background: #1a1a1a; color: #fff; min-height: 100vh; font-family: monospace;">
-                <h1 style="color: #ff6b6b;">⚠️ ${message}</h1>
-                ${details ? `<pre style="background: #2d2d2d; padding: 20px; border-radius: 8px; color: #ffa07a; overflow: auto; white-space: pre-wrap; margin-top: 20px;">${details}</pre>` : ''}
-            </div>
-        `;
+        // Clear existing content
+        rootElement.textContent = '';
+
+        const container = document.createElement('div');
+        container.style.cssText = 'padding: 40px; background: #1a1a1a; color: #fff; min-height: 100vh; font-family: monospace;';
+
+        const heading = document.createElement('h1');
+        heading.style.color = '#ff6b6b';
+        heading.textContent = `⚠️ ${message}`;
+        container.appendChild(heading);
+
+        if (details) {
+            const pre = document.createElement('pre');
+            pre.style.cssText = 'background: #2d2d2d; padding: 20px; border-radius: 8px; color: #ffa07a; overflow: auto; white-space: pre-wrap; margin-top: 20px;';
+            pre.textContent = details;
+            container.appendChild(pre);
+        }
+
+        rootElement.appendChild(container);
     }
 }
 

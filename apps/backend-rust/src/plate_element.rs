@@ -1,4 +1,4 @@
-use nalgebra::{DMatrix, Matrix3, Matrix6, Vector3};
+use nalgebra::{DMatrix, Matrix3, Vector3};
 
 /// Discrete Kirchhoff Quadrilateral (DKQ) Plate Element
 /// 
@@ -6,6 +6,7 @@ use nalgebra::{DMatrix, Matrix3, Matrix6, Vector3};
 /// into a 24x24 stiffness matrix (4 nodes * 6 DOF).
 /// 
 /// DOFs per node: [u, v, w, θx, θy, θz]
+#[allow(non_snake_case)]
 pub struct PlateElement {
     pub node_ids: [String; 4],
     pub thickness: f64,
@@ -14,6 +15,7 @@ pub struct PlateElement {
     pub nodes: [(f64, f64, f64); 4], // Coordinates
 }
 
+#[allow(non_snake_case)]
 impl PlateElement {
     pub fn new(
         node_ids: [String; 4],
@@ -174,7 +176,7 @@ impl PlateElement {
         let points = [(-g, -g), (g, -g), (g, g), (-g, g)];
         
         for (xi, eta) in points.iter() {
-            let (j_det, b_b, b_s) = self.shape_func_mindlin(*xi, *eta, &local_coords);
+            let (j_det, b_b, _b_s) = self.shape_func_mindlin(*xi, *eta, &local_coords);
             // Bending part (Full integration)
             k += b_b.transpose() * &d_b * &b_b * j_det;
             
@@ -332,7 +334,10 @@ impl PlateElement {
          if det_j.abs() < 1e-10 {
             return (0.0, DMatrix::zeros(3, 12), DMatrix::zeros(2, 12));
         }
-        let j_inv = j_mat.try_inverse().unwrap();
+        let j_inv = match j_mat.try_inverse() {
+            Some(inv) => inv,
+            None => return (0.0, DMatrix::zeros(3, 12), DMatrix::zeros(2, 12)),
+        };
         let d_n_global = &j_inv * &d_n_local;
 
         // Shape functions N (1x4)

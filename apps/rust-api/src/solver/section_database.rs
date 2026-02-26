@@ -122,7 +122,7 @@ impl SectionDatabase {
         let mut candidates: Vec<&SteelSection> = self.sections.iter()
             .filter(|s| s.standard == standard && s.shape == shape && s.zx >= required_zx)
             .collect();
-        candidates.sort_by(|a, b| a.weight_per_m.partial_cmp(&b.weight_per_m).unwrap());
+        candidates.sort_by(|a, b| a.weight_per_m.partial_cmp(&b.weight_per_m).unwrap_or(std::cmp::Ordering::Equal));
         candidates.first().copied()
     }
 

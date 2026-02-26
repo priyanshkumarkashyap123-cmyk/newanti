@@ -1,11 +1,91 @@
 
-import { FC, useState } from 'react';
+import { FC, useState, useCallback, memo } from 'react';
+import {
+    MousePointer2,
+    Circle,
+    Minus,
+    Square,
+    Anchor,
+    ArrowDown,
+    Waves,
+    Play,
+    Loader2,
+    BarChart3,
+    TrendingUp,
+    Table2,
+    FileText,
+    Undo2,
+    Redo2,
+    SlidersHorizontal,
+} from 'lucide-react';
 import { useModelStore } from '../store/model';
 import useStructuralSolver from '../hooks/useStructuralSolver';
 import { ReportGenerator } from '../utils/ReportGenerator';
 import { useIsSignedIn } from '../providers/AuthProvider';
 import { useSubscription } from '../hooks/useSubscription';
 import { PlateCreationDialog } from './dialogs/PlateCreationDialog';
+
+// ============================================
+// TOOL BUTTON COMPONENT
+// ============================================
+interface ToolBtnProps {
+    icon: FC<{ className?: string }>;
+    label: string;
+    onClick: () => void;
+    isActive?: boolean;
+    disabled?: boolean;
+    variant?: 'default' | 'primary' | 'success' | 'purple' | 'danger';
+    shortcut?: string;
+}
+
+const ToolBtn = memo<ToolBtnProps>(({
+    icon: Icon, label, onClick, isActive = false, disabled = false,
+    variant = 'default', shortcut,
+}) => {
+    const variantClasses: Record<string, string> = {
+        default: isActive
+            ? 'bg-blue-600/20 text-blue-300 border-blue-500/40 shadow-sm shadow-blue-500/10'
+            : 'bg-slate-800/60 text-slate-300 border-slate-700/50 hover:bg-slate-700/60 hover:text-white hover:border-slate-600/60',
+        primary: isActive
+            ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
+            : 'bg-blue-600/80 text-white border-blue-500/60 hover:bg-blue-500 hover:shadow-md hover:shadow-blue-500/30',
+        success: 'bg-emerald-600 text-white border-emerald-500/60 hover:bg-emerald-500 shadow-sm shadow-emerald-600/20 hover:shadow-md hover:shadow-emerald-500/30',
+        purple: isActive
+            ? 'bg-purple-600/30 text-purple-300 border-purple-500/50 shadow-sm shadow-purple-500/10'
+            : 'bg-purple-600/80 text-white border-purple-500/60 hover:bg-purple-500',
+        danger: 'bg-red-600/80 text-white border-red-500/60 hover:bg-red-500',
+    };
+
+    return (
+        <button
+            onClick={onClick}
+            disabled={disabled}
+            title={shortcut ? `${label} (${shortcut})` : label}
+            className={`
+                inline-flex items-center gap-1.5 px-3 py-2 rounded-lg
+                text-xs font-medium border transition-all duration-150
+                active:scale-[0.97] select-none
+                disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100
+                ${variantClasses[variant]}
+            `}
+        >
+            <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="whitespace-nowrap">{label}</span>
+        </button>
+    );
+});
+ToolBtn.displayName = 'ToolBtn';
+
+// ============================================
+// SEPARATOR
+// ============================================
+const ToolSep: FC = () => (
+    <div className="w-px h-7 bg-slate-700/50 mx-0.5 flex-shrink-0" />
+);
+
+// ============================================
+// MAIN TOOLBAR
+// ============================================
 
 export const Toolbar: FC = () => {
     const isSignedIn = useIsSignedIn();
@@ -31,11 +111,11 @@ export const Toolbar: FC = () => {
 
     const { analyze, prepareModel } = useStructuralSolver();
 
-    const handleAnalyze = async () => {
+    const handleAnalyze = useCallback(async () => {
         // Security: Require login before analysis
         if (!isSignedIn) {
             const shouldLogin = window.confirm(
-                '🔒 Sign in required\n\nPlease sign in to run structural analysis.\n\nClick OK to go to login page.'
+                'Sign in required\n\nPlease sign in to run structural analysis.\n\nClick OK to go to login page.'
             );
             if (shouldLogin) {
                 window.location.href = '/sign-in';
@@ -44,38 +124,26 @@ export const Toolbar: FC = () => {
         }
 
         setMessage(null);
-        // Sync store loading state
         useModelStore.getState().setIsAnalyzing(true);
 
         try {
-            // 1. Prepare Data
-            // We need to capture the arrays used for input so we can map results back correctly
-            // (Worker returns arrays, we need Maps with IDs)
             const state = useModelStore.getState();
             const nodesArray = Array.from(state.nodes.values());
             const membersArray = Array.from(state.members.values());
             const loadsArray = state.loads;
 
-            const modelData = prepareModel(
-                nodesArray,
-                membersArray,
-                loadsArray
-            );
+            const modelData = prepareModel(nodesArray, membersArray, loadsArray);
 
-            // 2. Run Analysis (Worker)
             const result = await analyze(modelData, (progress) => {
                 setMessage(`${progress.message} (${progress.percent}%)`);
             });
 
             if (result.success && result.displacements) {
-                // 3. Map Results back to Store format
-                // Displacements key: nodeId -> { dx, dy, ... }
                 const displacementMap = new Map();
                 const reactionMap = new Map();
 
-                // The worker preserves node order from input array
                 nodesArray.forEach((node, index) => {
-                    const offset = index * 6; // 6 DOF
+                    const offset = index * 6;
                     if (result.displacements && offset < result.displacements.length) {
                         displacementMap.set(node.id, {
                             dx: result.displacements[offset + 0] || 0,
@@ -86,8 +154,6 @@ export const Toolbar: FC = () => {
                             rz: result.displacements[offset + 5] || 0
                         });
                     }
-
-                    // Extract reactions from worker result
                     if (result.reactions && offset < result.reactions.length) {
                         reactionMap.set(node.id, {
                             fx: result.reactions[offset + 0] || 0,
@@ -100,7 +166,6 @@ export const Toolbar: FC = () => {
                     }
                 });
 
-                // Member Forces (if computed)
                 const memberForcesMap = new Map();
                 if (result.memberForces && Array.isArray(result.memberForces)) {
                     result.memberForces.forEach((mf: any) => {
@@ -114,54 +179,38 @@ export const Toolbar: FC = () => {
                     memberForces: memberForcesMap
                 });
 
-                setMessage(`✅ Analysis Complete! (${result.stats.totalTimeMs.toFixed(0)}ms)`);
+                setMessage(`Analysis Complete — ${result.stats.totalTimeMs.toFixed(0)}ms`);
                 state.setShowResults(true);
                 state.setShowDeflectedShape(true);
             } else {
                 throw new Error(result.error || 'Unknown analysis error');
             }
-
         } catch (error) {
             console.error('Analysis failed:', error);
-            setMessage(`❌ Error: ${error instanceof Error ? error.message : 'Analysis failed'}`);
+            setMessage(`Error: ${error instanceof Error ? error.message : 'Analysis failed'}`);
         } finally {
             useModelStore.getState().setIsAnalyzing(false);
             setTimeout(() => {
-                if (message?.startsWith('✅')) setMessage(null);
+                setMessage((prev) => prev?.startsWith('Analysis Complete') ? null : prev);
             }, 5000);
         }
-    };
+    }, [isSignedIn, analyze, prepareModel]);
 
-    const handleExportPDF = () => {
-        // Feature gate: PDF export requires Pro subscription
-        // Skip check if still loading subscription status
+    const handleExportPDF = useCallback(() => {
         if (!subscription.isLoading && !canAccess('pdfExport')) {
-            // Show limited export for free users
             const shouldUpgrade = window.confirm(
-                '📄 PDF Export - Pro Feature\n\n' +
-                'Full PDF reports with calculations require a Pro subscription.\n\n' +
-                'Free tier users can view results on screen.\n\n' +
-                'Click OK to view pricing, or Cancel to continue.'
+                'PDF Export — Pro Feature\n\nFull PDF reports with calculations require a Pro subscription.\n\nFree tier users can view results on screen.\n\nClick OK to view pricing, or Cancel to continue.'
             );
-            if (shouldUpgrade) {
-                window.location.href = '/pricing';
-            }
+            if (shouldUpgrade) window.location.href = '/pricing';
             return;
         }
 
-        // Check if analysis has been run
         if (!analysisResults) {
-            if (!window.confirm('No analysis results found. Run analysis before exporting for a complete report.\n\nExport anyway?')) {
-                return;
-            }
+            if (!window.confirm('No analysis results found. Run analysis before exporting for a complete report.\n\nExport anyway?')) return;
         } else {
-            // Prompt to save before export
-            if (!window.confirm('Export PDF Report?\n\nThis will generate a BeamLab Ultimate report with your analysis results.')) {
-                return;
-            }
+            if (!window.confirm('Export PDF Report?\n\nThis will generate a professional report with your analysis results.')) return;
         }
 
-        // Find canvas element
         const canvas = document.querySelector('canvas') as HTMLCanvasElement;
         const screenshot = ReportGenerator.captureCanvas(canvas);
 
@@ -170,136 +219,127 @@ export const Toolbar: FC = () => {
             company: 'BeamLab Ultimate',
         });
         report.generateReport(screenshot);
-        setMessage('✅ PDF Report exported: BeamLab_Ultimate_Report.pdf');
+        setMessage('PDF Report exported successfully');
         setTimeout(() => setMessage(null), 4000);
-    };
+    }, [subscription, canAccess, analysisResults]);
 
-    const getBtnStyle = (isActive: boolean) => ({
-        ...btnStyle,
-        background: isActive ? '#007bff' : 'rgba(255, 255, 255, 0.1)',
-        borderColor: isActive ? '#007bff' : 'rgba(255, 255, 255, 0.2)',
-    });
-
-    const getToggleBtnStyle = (isActive: boolean) => ({
-        ...btnStyle,
-        background: isActive ? '#9333ea' : 'rgba(255, 255, 255, 0.1)',
-        borderColor: isActive ? '#9333ea' : 'rgba(255, 255, 255, 0.2)',
-    });
+    const isSuccess = message?.startsWith('Analysis Complete') || message?.startsWith('PDF');
+    const isError = message?.startsWith('Error');
 
     return (
         <>
+            {/* Status Message Toast */}
             {message && (
-                <div style={{
-                    position: 'absolute',
-                    bottom: 80,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    background: message.includes('✓') ? '#2e7d32' : '#c62828',
-                    color: 'white',
-                    padding: '8px 16px',
-                    borderRadius: '4px',
-                    zIndex: 300
-                }}>
+                <div className={`
+                    absolute bottom-20 left-1/2 -translate-x-1/2 z-[300]
+                    px-4 py-2.5 rounded-lg text-sm font-medium
+                    shadow-lg border backdrop-blur-sm
+                    animate-fade-in
+                    ${isSuccess
+                        ? 'bg-emerald-900/90 text-emerald-200 border-emerald-700/50'
+                        : isError
+                            ? 'bg-red-900/90 text-red-200 border-red-700/50'
+                            : 'bg-slate-800/90 text-slate-200 border-slate-700/50'
+                    }
+                `}>
                     {message}
                 </div>
             )}
 
-            {/* Displacement Scale Slider - Show only when results exist */}
+            {/* Displacement Scale Slider */}
             {analysisResults && (
-                <div style={{
-                    position: 'absolute',
-                    bottom: 80,
-                    right: 20,
-                    zIndex: 200,
-                    background: 'rgba(0, 0, 0, 0.8)',
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
-                    border: '1px solid rgba(255,255,255,0.1)'
-                }}>
-                    <label style={{ color: 'white', fontSize: '12px', fontWeight: 500 }}>
-                        📏 Deflection Scale: {displacementScale}x
-                    </label>
+                <div className="absolute bottom-20 right-5 z-[200] bg-slate-900/95 backdrop-blur-sm p-3.5 rounded-xl border border-slate-700/50 shadow-xl flex flex-col gap-2.5">
+                    <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                            <SlidersHorizontal className="w-3.5 h-3.5 text-blue-400" />
+                            Deflection Scale
+                        </label>
+                        <span className="text-xs font-mono text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">
+                            {displacementScale}×
+                        </span>
+                    </div>
                     <input
                         type="range"
                         min="1"
                         max="500"
                         value={displacementScale}
                         onChange={(e) => setDisplacementScale(Number(e.target.value))}
-                        style={{ width: 150, cursor: 'pointer' }}
+                        className="w-40 h-1.5 bg-slate-700 rounded-full appearance-none cursor-pointer
+                                   [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5
+                                   [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-500
+                                   [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:shadow-blue-500/30
+                                   [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-all
+                                   [&::-webkit-slider-thumb]:hover:bg-blue-400 [&::-webkit-slider-thumb]:hover:scale-110"
                     />
                 </div>
             )}
 
-            <div style={{
-                position: 'absolute',
-                bottom: 20,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                zIndex: 200,
-                display: 'flex',
-                gap: '10px',
-                background: 'rgba(0, 0, 0, 0.8)',
-                padding: '10px 20px',
-                borderRadius: '12px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-                border: '1px solid rgba(255,255,255,0.1)'
-            }}>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                    <button onClick={() => undo()} disabled={pastStates.length === 0} style={{ ...btnStyle, opacity: pastStates.length === 0 ? 0.5 : 1 }}>Undo</button>
-                    <button onClick={() => redo()} disabled={futureStates.length === 0} style={{ ...btnStyle, opacity: futureStates.length === 0 ? 0.5 : 1 }}>Redo</button>
+            {/* Main Floating Toolbar */}
+            <div className="
+                absolute bottom-5 left-1/2 -translate-x-1/2 z-[200]
+                flex items-center gap-1.5
+                bg-slate-900/95 backdrop-blur-md
+                px-4 py-2.5 rounded-2xl
+                shadow-2xl shadow-black/40
+                border border-slate-700/40
+                ring-1 ring-white/[0.03]
+            ">
+                {/* Undo / Redo */}
+                <div className="flex items-center gap-1">
+                    <button
+                        onClick={() => undo()}
+                        disabled={pastStates.length === 0}
+                        title="Undo (Ctrl+Z)"
+                        className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/60 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                        <Undo2 className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => redo()}
+                        disabled={futureStates.length === 0}
+                        title="Redo (Ctrl+Shift+Z)"
+                        className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/60 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                        <Redo2 className="w-4 h-4" />
+                    </button>
                 </div>
 
-                <div style={{ width: '1px', background: 'rgba(255,255,255,0.2)' }} />
+                <ToolSep />
 
                 {/* Modeling Tools */}
-                <button onClick={() => setTool('select')} style={getBtnStyle(activeTool === 'select')}>👆 Select</button>
-                <button onClick={() => setTool('node')} style={getBtnStyle(activeTool === 'node')}>● Node</button>
-                <button onClick={() => setTool('member')} style={getBtnStyle(activeTool === 'member')}>╱ Member</button>
-                <button onClick={() => setShowPlateDialog(true)} style={{ ...btnStyle, background: '#7c3aed', borderColor: '#6d28d9' }}>▢ Plate</button>
+                <ToolBtn icon={MousePointer2} label="Select" onClick={() => setTool('select')} isActive={activeTool === 'select'} shortcut="V" />
+                <ToolBtn icon={Circle} label="Node" onClick={() => setTool('node')} isActive={activeTool === 'node'} shortcut="N" />
+                <ToolBtn icon={Minus} label="Member" onClick={() => setTool('member')} isActive={activeTool === 'member'} shortcut="M" />
+                <ToolBtn icon={Square} label="Plate" onClick={() => setShowPlateDialog(true)} variant="purple" shortcut="P" />
 
-                <div style={{ width: '1px', background: 'rgba(255,255,255,0.2)' }} />
+                <ToolSep />
 
                 {/* Boundary & Loads */}
-                <button onClick={() => setTool('support')} style={getBtnStyle(activeTool === 'support')}>📌 Support</button>
-                <button onClick={() => setTool('load')} style={getBtnStyle(activeTool === 'load')}>⬇️ Node Load</button>
-                <button onClick={() => setTool('memberLoad')} style={getBtnStyle(activeTool === 'memberLoad')}>〰️ UDL/UVL</button>
+                <ToolBtn icon={Anchor} label="Support" onClick={() => setTool('support')} isActive={activeTool === 'support'} shortcut="S" />
+                <ToolBtn icon={ArrowDown} label="Node Load" onClick={() => setTool('load')} isActive={activeTool === 'load'} shortcut="L" />
+                <ToolBtn icon={Waves} label="UDL/UVL" onClick={() => setTool('memberLoad')} isActive={activeTool === 'memberLoad'} shortcut="U" />
 
-                <div style={{ width: '1px', background: 'rgba(255,255,255,0.2)' }} />
+                <ToolSep />
 
                 {/* Analysis */}
-                <button
+                <ToolBtn
+                    icon={isAnalyzing ? Loader2 : Play}
+                    label={isAnalyzing ? 'Analyzing...' : 'Run Analysis'}
                     onClick={handleAnalyze}
                     disabled={isAnalyzing}
-                    style={{ ...btnStyle, background: '#4caf50', borderColor: '#388e3c', opacity: isAnalyzing ? 0.5 : 1 }}
-                >
-                    {isAnalyzing ? '⏳...' : '▶️ Run Analysis'}
-                </button>
+                    variant="success"
+                    shortcut="F5"
+                />
 
-                {/* Post-processing - Show only when results exist */}
+                {/* Post-processing */}
                 {analysisResults && (
                     <>
-                        <div style={{ width: '1px', background: 'rgba(255,255,255,0.2)' }} />
-
-                        {/* Diagram Toggles */}
-                        <button onClick={() => setShowSFD(!showSFD)} style={getToggleBtnStyle(showSFD)}>
-                            📊 SFD
-                        </button>
-                        <button onClick={() => setShowBMD(!showBMD)} style={getToggleBtnStyle(showBMD)}>
-                            📈 BMD
-                        </button>
-                        <button onClick={() => setShowResults(!showResults)} style={getToggleBtnStyle(showResults)}>
-                            📋 Results
-                        </button>
-
-                        <div style={{ width: '1px', background: 'rgba(255,255,255,0.2)' }} />
-
-                        {/* Export */}
-                        <button onClick={handleExportPDF} style={{ ...btnStyle, background: '#2563eb', borderColor: '#1d4ed8' }}>
-                            📄 PDF
-                        </button>
+                        <ToolSep />
+                        <ToolBtn icon={BarChart3} label="SFD" onClick={() => setShowSFD(!showSFD)} isActive={showSFD} variant={showSFD ? 'purple' : 'default'} />
+                        <ToolBtn icon={TrendingUp} label="BMD" onClick={() => setShowBMD(!showBMD)} isActive={showBMD} variant={showBMD ? 'purple' : 'default'} />
+                        <ToolBtn icon={Table2} label="Results" onClick={() => setShowResults(!showResults)} isActive={showResults} variant={showResults ? 'purple' : 'default'} />
+                        <ToolSep />
+                        <ToolBtn icon={FileText} label="PDF" onClick={handleExportPDF} variant="primary" />
                     </>
                 )}
             </div>
@@ -311,18 +351,5 @@ export const Toolbar: FC = () => {
             />
         </>
     );
-};
-
-// Styles
-const btnStyle = {
-    background: '#333',
-    color: 'white',
-    border: '1px solid #555',
-    padding: '8px 12px',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: 500,
-    transition: 'all 0.2s'
 };
 

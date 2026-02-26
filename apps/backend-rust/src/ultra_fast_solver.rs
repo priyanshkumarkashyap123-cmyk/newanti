@@ -137,6 +137,7 @@ impl MemoryPool {
 // ============================================
 
 /// Efficiently builds sparse stiffness matrix in CSR format
+#[allow(dead_code)]
 pub struct SparseStiffnessBuilder {
     /// COO format triplets (row, col, value) for assembly
     triplets: Vec<(usize, usize, f64)>,
@@ -218,6 +219,7 @@ impl SparseStiffnessBuilder {
 
 /// Cholesky-based sparse solver for symmetric positive definite matrices
 /// ~2x faster than LU decomposition for SPD systems
+#[allow(dead_code)]
 pub struct CholeskySolver {
     /// Lower triangular factor L where K = L * L^T
     l_factor: CsrMatrix<f64>,
@@ -404,7 +406,7 @@ impl IncrementalSolver {
         // Build U matrix (n x m) and V matrix (n x m)
         // For symmetric update: U = V = columns corresponding to update_dofs
         let mut u = DMatrix::zeros(self.n_dof, m);
-        for (col, &dof) in update_dofs.iter().enumerate() {
+        for (col, &_dof) in update_dofs.iter().enumerate() {
             // Extract column from delta_k
             for (row_idx, &row_dof) in update_dofs.iter().enumerate() {
                 u[(row_dof, col)] = delta_k[(row_idx, col)];
@@ -422,7 +424,7 @@ impl IncrementalSolver {
         // Step 3: Compute (I + V^T*A^(-1)*U) - m x m matrix
         let v = &u; // V = U for symmetric update
         let v_t_a_inv_u = v.transpose() * &a_inv_u;
-        let mut schur = DMatrix::identity(m, m) + v_t_a_inv_u;
+        let schur = DMatrix::identity(m, m) + v_t_a_inv_u;
         
         // Step 4: Solve schur system
         let v_t_x_base = v.transpose() * &x_base;
@@ -872,7 +874,7 @@ impl PodBasis {
             .enumerate()
             .map(|(i, &v)| (i, v))
             .collect();
-        indexed.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+        indexed.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
         
         // Compute total energy and find cutoff
         let total_energy: f64 = indexed.iter().map(|(_, v)| v.max(0.0)).sum();
@@ -922,6 +924,7 @@ impl PodBasis {
 }
 
 /// POD-accelerated solver
+#[allow(dead_code)]
 pub struct PodSolver {
     pub basis: PodBasis,
     /// Reduced stiffness matrix (k x k)
@@ -1022,7 +1025,7 @@ pub fn benchmark_solver(
     }
     
     // Statistics
-    times.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    times.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
     let mean = times.iter().sum::<f64>() / times.len() as f64;
     let median = times[times.len() / 2];
     let min = times[0];

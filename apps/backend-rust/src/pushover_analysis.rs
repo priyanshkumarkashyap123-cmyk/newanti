@@ -355,7 +355,7 @@ impl CapacityCurve {
         
         // Find maximum base shear point
         let max_point = self.points.iter()
-            .max_by(|a, b| a.base_shear.partial_cmp(&b.base_shear).unwrap())
+            .max_by(|a, b| a.base_shear.partial_cmp(&b.base_shear).unwrap_or(std::cmp::Ordering::Equal))
             .unwrap();
         
         let v_max = max_point.base_shear;
@@ -388,12 +388,15 @@ impl CapacityCurve {
         // Yield displacement: Vy = k * dy
         // Area of bilinear ≈ Vy * d_max - 0.5 * Vy * dy = area_under_curve
         // Solve for dy
-        let d_max = self.points.last().unwrap().roof_displacement;
+        let d_max = match self.points.last() {
+            Some(p) => p.roof_displacement,
+            None => return,
+        };
         let v_y = 0.9 * v_max; // Approximate
         let d_y = v_y / k_initial;
         
         self.yield_point = Some((d_y, v_y));
-        self.ultimate_point = Some((d_max, self.points.last().unwrap().base_shear));
+        self.ultimate_point = Some((d_max, self.points.last().map_or(0.0, |p| p.base_shear)));
         
         // Calculate ductility
         if d_y > 0.0 {
@@ -423,10 +426,15 @@ impl CapacityCurve {
         }
         
         // Extrapolate beyond last point
-        if displacement > self.points.last().unwrap().roof_displacement {
-            Some(self.points.last().unwrap().base_shear)
-        } else {
-            Some(self.points.first().unwrap().base_shear)
+        match (self.points.last(), self.points.first()) {
+            (Some(last), Some(first)) => {
+                if displacement > last.roof_displacement {
+                    Some(last.base_shear)
+                } else {
+                    Some(first.base_shear)
+                }
+            }
+            _ => None,
         }
     }
 }
@@ -742,7 +750,7 @@ impl CapacitySpectrumMethod {
         
         // Iterate to find intersection
         let mut t_eff = t_elastic;
-        let mut converged = false;
+        let mut _converged = false;
         
         for _ in 0..20 {
             // Get demand at effective period
@@ -755,7 +763,7 @@ impl CapacitySpectrumMethod {
                 
                 // Check convergence
                 if (sa_demand - sa_capacity).abs() / sa_demand.max(1e-10) < 0.05 {
-                    converged = true;
+                    _converged = true;
                     
                     // Calculate ductility
                     let ductility = sd_demand / (dy / self.modal_participation);

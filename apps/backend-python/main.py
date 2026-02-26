@@ -18,6 +18,8 @@ except Exception as e:
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 from pydantic import BaseModel
 from typing import Optional, List, Dict
 import os
@@ -194,6 +196,29 @@ if HAS_SECURITY_MW:
     app.add_middleware(AuthMiddleware)
     app.add_middleware(RateLimitMiddleware)
     logger.info("Security middleware active: rate limiting, auth verification, security headers")
+
+
+# ============================================
+# REQUEST BODY SIZE LIMIT
+# ============================================
+# Prevent memory exhaustion from oversized payloads.
+# Default: 10 MB. Analysis endpoints that genuinely need larger
+# payloads should use streaming or chunked uploads instead.
+MAX_BODY_SIZE_BYTES = int(os.getenv("MAX_REQUEST_BODY_MB", "10")) * 1024 * 1024
+
+class BodySizeLimitMiddleware(BaseHTTPMiddleware):
+    """Reject requests with Content-Length exceeding the configured limit."""
+
+    async def dispatch(self, request, call_next):
+        content_length = request.headers.get("content-length")
+        if content_length and int(content_length) > MAX_BODY_SIZE_BYTES:
+            return JSONResponse(
+                status_code=413,
+                content={"success": False, "error": f"Request body too large (max {MAX_BODY_SIZE_BYTES // (1024*1024)} MB)"},
+            )
+        return await call_next(request)
+
+app.add_middleware(BodySizeLimitMiddleware)
 
 
 # ============================================
@@ -1465,8 +1490,16 @@ async def list_standard_shapes():
 # MATERIAL & PLATE ELEMENT ENDPOINTS
 # ============================================
 
+class CreateMaterialRequest(BaseModel):
+    type: str  # "steel" or "concrete"
+    fy: float = 250.0
+    E: float = 200000.0
+    plastic_modulus: float = 2000.0
+    fck: float = 30.0
+    density: float = 7850.0
+
 @app.post("/materials/create", tags=["Materials"])
-async def create_material(request: dict):
+async def create_material(request: CreateMaterialRequest):
     """
     Create a material model for non‑linear analysis.
     Expected JSON payload:
@@ -1482,7 +1515,7 @@ async def create_material(request: dict):
     """
     try:
         from analysis.material_models import create_material_from_dict
-        material = create_material_from_dict(request)
+        material = create_material_from_dict(request.model_dump())
         # Store material in a simple in‑memory registry for this session
         # Note: In production this should go to DB
         material_id = f"mat_{len(getattr(app.state, 'materials', {})) + 1}"
@@ -1497,8 +1530,13 @@ async def create_material(request: dict):
         traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
 
+class CreatePlateRequest(BaseModel):
+    node_ids: list
+    thickness: float
+    material_id: str = ""
+
 @app.post("/elements/plate/create", tags=["Elements"])
-async def create_plate(request: dict):
+async def create_plate(request: CreatePlateRequest):
     """
     Create a quadrilateral plate element.
     Expected JSON payload:
@@ -1512,9 +1550,9 @@ async def create_plate(request: dict):
     try:
         from analysis.plate_element import PlateElement
         
-        node_ids = request["node_ids"]
-        thickness = request["thickness"]
-        material_id = request.get("material_id")
+        node_ids = request.node_ids
+        thickness = request.thickness
+        material_id = request.material_id
         
         # Access materials from app state
         if not hasattr(app.state, "materials"):
@@ -1544,9 +1582,82 @@ async def create_plate(request: dict):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+# ============================================
+# INPUT VALIDATION MODELS FOR CRITICAL ENDPOINTS
+# ============================================
+# SECURITY: These Pydantic models enforce bounds on all user input
+# to prevent memory exhaustion and DoS attacks.
+
+from pydantic import Field
+from typing import Literal
+
+class NonlinearAnalysisRequest(BaseModel):
+    nodes: List[Dict] = Field(default_factory=list, max_length=100_000)
+    members: List[Dict] = Field(default_factory=list, max_length=100_000)
+    node_loads: List[Dict] = Field(default_factory=list, max_length=100_000)
+    settings: Dict = Field(default_factory=lambda: {"method": "newton-raphson", "steps": 10})
+
+class DesignCheckMemberInput(BaseModel):
+    member_id: str = Field(max_length=128)
+    section_name: str = Field(default="Unknown", max_length=128)
+    section_properties: Dict = Field(default_factory=dict)
+    length: float = Field(default=0.0, ge=0)
+    material: Dict = Field(default_factory=dict)
+    forces: Dict = Field(default_factory=dict)
+    unbraced_length_major: Optional[float] = None
+    unbraced_length_minor: Optional[float] = None
+    unbraced_length_ltb: Optional[float] = None
+    Kx: float = Field(default=1.0, ge=0, le=10)
+    Ky: float = Field(default=1.0, ge=0, le=10)
+    Cb: float = Field(default=1.0, ge=0, le=10)
+
+class DesignCheckRequest(BaseModel):
+    code: str = Field(default="AISC360-16", max_length=64)
+    method: str = Field(default="LRFD", max_length=32)
+    members: List[DesignCheckMemberInput] = Field(default_factory=list, max_length=10_000)
+
+class StressMemberForces(BaseModel):
+    axial: List[float] = Field(default_factory=list, max_length=10_000)
+    moment_x: List[float] = Field(default_factory=list, max_length=10_000)
+    moment_y: List[float] = Field(default_factory=list, max_length=10_000)
+    shear_y: List[float] = Field(default_factory=list, max_length=10_000)
+    shear_z: List[float] = Field(default_factory=list, max_length=10_000)
+
+class StressMemberSection(BaseModel):
+    area: float = Field(gt=0, le=1e6)
+    Ixx: float = Field(gt=0, le=1e6)
+    Iyy: float = Field(gt=0, le=1e6)
+    depth: float = Field(gt=0, le=1e4)
+    width: float = Field(gt=0, le=1e4)
+
+class StressMemberInput(BaseModel):
+    id: str = Field(max_length=128)
+    forces: StressMemberForces = Field(default_factory=StressMemberForces)
+    section: StressMemberSection
+    length: float = Field(default=1.0, gt=0, le=1e6)
+
+class StressCalculateRequest(BaseModel):
+    members: List[StressMemberInput] = Field(default_factory=list, max_length=10_000)
+    stress_type: str = Field(default="von_mises", max_length=32)
+    fy: float = Field(default=250.0, gt=0, le=5000)
+    safety_factor: float = Field(default=1.5, gt=0, le=10)
+
+class TimeHistoryGroundMotion(BaseModel):
+    name: str = Field(default="el_centro_1940", max_length=128)
+    scale_factor: float = Field(default=1.0, ge=0, le=100)
+
+class TimeHistoryRequest(BaseModel):
+    mass_matrix: List[List[float]] = Field(max_length=1000)
+    stiffness_matrix: List[List[float]] = Field(max_length=1000)
+    damping_ratio: float = Field(default=0.05, ge=0.0, le=1.0)
+    analysis_type: Literal["modal", "newmark", "spectrum"] = Field(default="modal")
+    ground_motion: Optional[TimeHistoryGroundMotion] = None
+    num_modes: int = Field(default=10, ge=1, le=200)
+    periods: List[float] = Field(default_factory=list, max_length=1000)
+
 
 @app.post("/analysis/nonlinear/run", tags=["Analysis"])
-async def run_nonlinear_analysis(request: dict):
+async def run_nonlinear_analysis(request: NonlinearAnalysisRequest):
     """
     Run non-linear structural analysis (Material & Geometric).
     Supports frames and plate elements.
@@ -1554,11 +1665,11 @@ async def run_nonlinear_analysis(request: dict):
     try:
         from analysis.optimized_solver import OptimizedFrameSolver
         
-        # Parse request
-        nodes = request.get('nodes', [])
-        elements = request.get('members', []) # Can contain frames and plates
-        loads = request.get('node_loads', [])
-        settings = request.get('settings', {'method': 'newton-raphson', 'steps': 10})
+        # Parse request (already validated by Pydantic)
+        nodes = request.nodes
+        elements = request.members
+        loads = request.node_loads
+        settings = request.settings
         
         # Prepare model dict for solver
         model = {
@@ -1589,7 +1700,7 @@ async def run_nonlinear_analysis(request: dict):
 # ============================================
 
 @app.post("/design/check", tags=["Design"])
-async def check_design(request: dict):
+async def check_design(request: DesignCheckRequest):
     """
     Perform code checking (AISC, Eurocode, etc.) on structure.
     
@@ -1615,7 +1726,7 @@ async def check_design(request: dict):
     try:
         from design import DesignFactory, DesignMember
         
-        code_name = request.get("code", "AISC360-16")
+        code_name = request.code
         code = DesignFactory.get_code(code_name)
         
         if not code:
@@ -1623,22 +1734,22 @@ async def check_design(request: dict):
             
         results = {}
         
-        for m_data in request.get("members", []):
+        for m_data in request.members:
             try:
                 # Create DesignMember
                 member = DesignMember(
-                    id=m_data["member_id"],
-                    section_name=m_data.get("section_name", "Unknown"),
-                    section_properties=m_data.get("section_properties", {}),
-                    length=m_data.get("length", 0.0),
-                    material=m_data.get("material", {}),
-                    forces=m_data.get("forces", {}),
-                    unbraced_length_major=m_data.get("unbraced_length_major", m_data.get("length")),
-                    unbraced_length_minor=m_data.get("unbraced_length_minor", m_data.get("length")),
-                    unbraced_length_ltb=m_data.get("unbraced_length_ltb", m_data.get("length")),
-                    effective_length_factor_major=m_data.get("Kx", 1.0),
-                    effective_length_factor_minor=m_data.get("Ky", 1.0),
-                    cb=m_data.get("Cb", 1.0)
+                    id=m_data.member_id,
+                    section_name=m_data.section_name,
+                    section_properties=m_data.section_properties,
+                    length=m_data.length,
+                    material=m_data.material,
+                    forces=m_data.forces,
+                    unbraced_length_major=m_data.unbraced_length_major if m_data.unbraced_length_major is not None else m_data.length,
+                    unbraced_length_minor=m_data.unbraced_length_minor if m_data.unbraced_length_minor is not None else m_data.length,
+                    unbraced_length_ltb=m_data.unbraced_length_ltb if m_data.unbraced_length_ltb is not None else m_data.length,
+                    effective_length_factor_major=m_data.Kx,
+                    effective_length_factor_minor=m_data.Ky,
+                    cb=m_data.Cb
                 )
                 
                 # Run Check
@@ -1654,8 +1765,8 @@ async def check_design(request: dict):
                 }
                 
             except Exception as item_err:
-                print(f"Error checking member {m_data.get('member_id')}: {item_err}")
-                results[m_data.get("member_id")] = {"error": str(item_err), "status": "ERROR"}
+                print(f"Error checking member {m_data.member_id}: {item_err}")
+                results[m_data.member_id] = {"error": str(item_err), "status": "ERROR"}
         
         return {
             "success": True, 
@@ -1779,7 +1890,7 @@ async def generate_pdf_report(request: GenerateReportRequest):
 
 
 @app.post("/stress/calculate")
-async def calculate_stress(request: dict):
+async def calculate_stress(request: StressCalculateRequest):
     """
     Calculate stresses for structural members
     
@@ -1816,22 +1927,22 @@ async def calculate_stress(request: dict):
         print("[STRESS] Calculating stresses...")
         
         calculator = StressCalculator()
-        members_data = request.get('members', [])
-        stress_type = request.get('stress_type', 'von_mises')
-        fy = request.get('fy', 250.0)
-        safety_factor = request.get('safety_factor', 1.5)
+        members_data = request.members
+        stress_type = request.stress_type
+        fy = request.fy
+        safety_factor = request.safety_factor
         
         results = []
         
         for member in members_data:
-            member_id = member.get('id', 'unknown')
+            member_id = member.id
             
             # Calculate stress points
             stress_points = calculator.calculate_member_stresses(
                 member_id=member_id,
-                member_forces=member.get('forces', {}),
-                section_properties=member.get('section', {}),
-                member_length=member.get('length', 1.0),
+                member_forces=member.forces.model_dump(),
+                section_properties=member.section.model_dump(),
+                member_length=member.length,
                 num_points=20
             )
             
@@ -1881,7 +1992,7 @@ async def calculate_stress(request: dict):
 
 
 @app.post("/analysis/time-history")
-async def time_history_analysis(request: dict):
+async def time_history_analysis(request: TimeHistoryRequest):
     """
     Perform dynamic time history analysis
     
@@ -1905,12 +2016,12 @@ async def time_history_analysis(request: dict):
         
         print("[TIME-HISTORY] Starting dynamic analysis...")
         
-        analysis_type = request.get('analysis_type', 'modal')
-        damping_ratio = request.get('damping_ratio', 0.05)
+        analysis_type = request.analysis_type
+        damping_ratio = request.damping_ratio
         
-        # Parse matrices
-        M = np.array(request.get('mass_matrix', []))
-        K = np.array(request.get('stiffness_matrix', []))
+        # Parse matrices (validated: max 1000x1000)
+        M = np.array(request.mass_matrix)
+        K = np.array(request.stiffness_matrix)
         
         if M.size == 0 or K.size == 0:
             raise ValueError("Mass and stiffness matrices are required")
@@ -1922,7 +2033,7 @@ async def time_history_analysis(request: dict):
         
         if analysis_type == 'modal':
             # Modal analysis only
-            num_modes = request.get('num_modes', 10)
+            num_modes = request.num_modes
             modes = analyzer.modal_analysis(M, K, num_modes)
             
             results = {
@@ -1945,9 +2056,9 @@ async def time_history_analysis(request: dict):
             
         elif analysis_type == 'newmark':
             # Time history integration
-            ground_motion_config = request.get('ground_motion', {})
-            gm_name = ground_motion_config.get('name', 'el_centro_1940')
-            scale_factor = ground_motion_config.get('scale_factor', 1.0)
+            gm_config = request.ground_motion or TimeHistoryGroundMotion()
+            gm_name = gm_config.name
+            scale_factor = gm_config.scale_factor
             
             ground_motion = load_ground_motion(gm_name, scale_factor)
             
@@ -1981,13 +2092,13 @@ async def time_history_analysis(request: dict):
             
         elif analysis_type == 'spectrum':
             # Response spectrum
-            ground_motion_config = request.get('ground_motion', {})
-            gm_name = ground_motion_config.get('name', 'el_centro_1940')
-            scale_factor = ground_motion_config.get('scale_factor', 1.0)
+            gm_config = request.ground_motion or TimeHistoryGroundMotion()
+            gm_name = gm_config.name
+            scale_factor = gm_config.scale_factor
             
             ground_motion = load_ground_motion(gm_name, scale_factor)
             
-            periods = np.array(request.get('periods', np.linspace(0.1, 4.0, 40)))
+            periods = np.array(request.periods if request.periods else np.linspace(0.1, 4.0, 40))
             spectrum = analyzer.get_response_spectrum(ground_motion, periods, damping_ratio)
             
             results = {
@@ -3265,14 +3376,27 @@ class WindLoadRequest(BaseModel):
     terrainCategory: int = 2
 
 
+class ValidateModelRequest(BaseModel):
+    """Constrained model for structural validation requests."""
+    nodes: List[Dict[str, Any]] = Field(..., max_length=50000, description="List of node definitions")
+    members: List[Dict[str, Any]] = Field(default=[], max_length=50000, description="List of member definitions")
+    loads: List[Dict[str, Any]] = Field(default=[], max_length=50000, description="Load definitions")
+    node_loads: List[Dict[str, Any]] = Field(default=[], max_length=50000)
+    distributed_loads: List[Dict[str, Any]] = Field(default=[], max_length=50000)
+    supports: List[Dict[str, Any]] = Field(default=[], max_length=50000)
+
+    class Config:
+        extra = "allow"
+
+
 @app.post("/analyze/validate", tags=["Advanced Analysis"])
-async def validate_structure_model(model: Dict):
+async def validate_structure_model(request: ValidateModelRequest):
     """
     Validate structural model before analysis.
     Checks for stability, connectivity, and geometry issues.
     """
     try:
-        return validate_model(model)
+        return validate_model(request.model_dump())
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

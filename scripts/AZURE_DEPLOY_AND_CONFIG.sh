@@ -6,7 +6,7 @@ az webapp config appsettings set \
   --resource-group "beamlab-ci-rg" \
   --name "beamlab-backend-python" \
   --settings \
-    GEMINI_API_KEY="AIzaSyDFYavn0QKWTJ8OjQkoe8IalmQijA6BRhw" \
+    GEMINI_API_KEY="${GEMINI_API_KEY:?GEMINI_API_KEY env var required}" \
     USE_MOCK_AI="false" \
     FRONTEND_URL="https://beamlabultimate.tech" \
     ALLOWED_ORIGINS="https://beamlabultimate.tech,https://www.beamlabultimate.tech,https://brave-mushroom-0eae8ec00.4.azurestaticapps.net"

@@ -1,29 +1,12 @@
 /**
  * HTML Sanitizer Utility
  *
- * Lightweight HTML sanitization for use with dangerouslySetInnerHTML.
- * Strips dangerous tags (script, iframe, object, embed, form, style with
- * expression/url) and event-handler attributes while preserving safe markup.
- *
- * For a production app handling untrusted user input, consider using DOMPurify.
- * This utility is a defense-in-depth measure for rendering server-generated or
- * internally-composed HTML where a full library would be overkill.
+ * Uses DOMPurify for robust, battle-tested HTML sanitization.
+ * Strips dangerous tags, event handlers, and javascript: URIs
+ * while preserving safe structural and presentational markup.
  */
 
-// Tags that must be completely removed (including their content)
-const DANGEROUS_TAGS = /(<\s*\/?\s*(script|iframe|object|embed|applet|form|base|link|meta)\b[^>]*>)/gi;
-
-// Content within dangerous tags (greedy, but only for the worst offenders)
-const DANGEROUS_TAG_CONTENT = /<\s*(script|iframe|object|embed|applet)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi;
-
-// Event handler attributes: onclick, onerror, onload, etc.
-const EVENT_HANDLER_ATTRS = /\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi;
-
-// javascript: / data: / vbscript: in href/src/action attributes
-const DANGEROUS_URLS = /(href|src|action|xlink:href)\s*=\s*(?:["']?\s*(?:javascript|data|vbscript)\s*:)/gi;
-
-// style attributes containing expression() or url() with javascript:
-const DANGEROUS_STYLE = /style\s*=\s*["'][^"']*(?:expression|javascript)\s*\([^"']*["']/gi;
+import DOMPurify from 'dompurify';
 
 /**
  * Sanitize an HTML string by stripping dangerous elements and attributes.
@@ -34,22 +17,27 @@ const DANGEROUS_STYLE = /style\s*=\s*["'][^"']*(?:expression|javascript)\s*\([^"
 export function sanitizeHTML(html: string): string {
     if (!html) return '';
 
-    let clean = html;
-
-    // 1. Remove dangerous tag content (script blocks, etc.)
-    clean = clean.replace(DANGEROUS_TAG_CONTENT, '');
-
-    // 2. Remove remaining dangerous tags (self-closing, orphan closing tags)
-    clean = clean.replace(DANGEROUS_TAGS, '');
-
-    // 3. Strip event handler attributes
-    clean = clean.replace(EVENT_HANDLER_ATTRS, '');
-
-    // 4. Neutralise dangerous URL schemes
-    clean = clean.replace(DANGEROUS_URLS, '$1=""');
-
-    // 5. Neutralise dangerous style expressions
-    clean = clean.replace(DANGEROUS_STYLE, 'style=""');
-
-    return clean;
+    return DOMPurify.sanitize(html, {
+        // Allow safe structural tags + SVG for diagrams
+        ALLOWED_TAGS: [
+            'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+            'p', 'br', 'hr', 'div', 'span', 'blockquote', 'pre', 'code',
+            'ul', 'ol', 'li', 'dl', 'dt', 'dd',
+            'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption', 'colgroup', 'col',
+            'a', 'strong', 'em', 'b', 'i', 'u', 's', 'sub', 'sup', 'small', 'mark', 'abbr',
+            'img', 'figure', 'figcaption',
+            'svg', 'path', 'circle', 'rect', 'line', 'polyline', 'polygon', 'text', 'g',
+            'defs', 'use', 'clipPath', 'marker',
+        ],
+        ALLOWED_ATTR: [
+            'href', 'src', 'alt', 'title', 'class', 'id', 'style',
+            'width', 'height', 'colspan', 'rowspan', 'scope',
+            'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'cx', 'cy', 'r',
+            'x', 'y', 'x1', 'y1', 'x2', 'y2', 'points', 'transform',
+            'font-size', 'font-family', 'text-anchor', 'fill-opacity', 'stroke-opacity',
+            'marker-start', 'marker-end', 'marker-mid',
+        ],
+        // Block javascript: URIs
+        ALLOW_UNKNOWN_PROTOCOLS: false,
+    });
 }

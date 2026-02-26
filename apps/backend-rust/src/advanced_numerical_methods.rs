@@ -176,7 +176,7 @@ where
     F: Fn(f64) -> f64,
 {
     let mut fa = f(a);
-    let mut fb = f(b);
+    let fb = f(b);
     
     // Check bracket validity
     if fa * fb > 0.0 {
@@ -210,7 +210,7 @@ where
         
         if fc * fa < 0.0 {
             b = c;
-            fb = fc;
+            let _ = fc;
         } else {
             a = c;
             fa = fc;
@@ -818,7 +818,6 @@ pub fn adaptive_simpson<F>(f: F, a: f64, b: f64, tol: f64, max_depth: usize) -> 
 where
     F: Fn(f64) -> f64,
 {
-    let mut evaluations = 0;
     let mut total_error = 0.0;
     
     fn simpson_step<F>(f: &F, a: f64, b: f64) -> (f64, usize)
@@ -863,7 +862,7 @@ where
     }
     
     let (whole, evals) = simpson_step(&f, a, b);
-    evaluations = evals;
+    let mut evaluations = evals;
     
     let value = adaptive_helper(&f, a, b, tol, whole, 0, max_depth, &mut evaluations, &mut total_error);
     
@@ -1894,6 +1893,7 @@ where
     F: Fn(f64, &[f64]) -> Vec<f64>,
 {
     let n = y0.len();
+    let n_steps = if n_steps == 0 { 1 } else { n_steps };
     let h = (tf - t0) / n_steps as f64;
     
     let mut t_out = Vec::with_capacity(n_steps + 1);

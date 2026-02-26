@@ -129,7 +129,7 @@ impl StressTensor {
         
         // Sort descending
         let mut principals = [s1, s2, s3];
-        principals.sort_by(|a, b| b.partial_cmp(a).unwrap());
+        principals.sort_by(|a, b| b.partial_cmp(a).unwrap_or(std::cmp::Ordering::Equal));
         
         (principals[0], principals[1], principals[2])
     }

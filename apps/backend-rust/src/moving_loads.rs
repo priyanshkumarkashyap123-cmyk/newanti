@@ -806,7 +806,7 @@ impl MovingLoadAnalyzer {
             }
         }
         
-        governing_result.unwrap()
+        governing_result.expect("vehicles should not be empty")
     }
 }
 

@@ -34,7 +34,8 @@ RATE_WINDOW_SEC = 60
 PUBLIC_PATHS = frozenset({
     "/", "/health", "/health/dependencies", "/docs", "/redoc",
     "/openapi.json",
-    "/stress/calculate",
+    # SECURITY: /stress/calculate removed from public paths — it's a
+    # compute-heavy endpoint that must require auth to prevent DoS abuse.
 })
 
 # Paths that get the stricter analysis rate limit
@@ -199,7 +200,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
             # These carry an X-Internal-Service header set by the Node proxy
             internal_secret = os.getenv("INTERNAL_SERVICE_SECRET", "")
             internal = request.headers.get("x-internal-service")
-            if internal_secret and internal == internal_secret:
+            # SECURITY: Require at least 16 chars for internal secret to prevent weak/empty bypasses
+            if internal_secret and len(internal_secret) >= 16 and internal and hmac.compare_digest(internal_secret, internal):
                 return await call_next(request)
 
             logger.warning("Missing or invalid Authorization header on %s %s", method, path)

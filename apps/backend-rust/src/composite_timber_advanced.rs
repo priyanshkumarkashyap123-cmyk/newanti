@@ -208,8 +208,8 @@ impl CompositeBeamDesign {
             + a_c_eff_long * (y_conc - y_na_long).powi(2);
 
         // Plastic moment capacity
-        let f_cd = 0.85 * slab.fck / 1.5;
-        let f_yd = steel.fy / 1.0;
+        let _f_cd = 0.85 * slab.fck / 1.5;
+        let _f_yd = steel.fy / 1.0;
         
         let n_c = 0.85 * slab.fck * slab.width_eff * slab.depth_above_deck / 1000.0;
         let n_a = steel.area * steel.fy / 1000.0;
@@ -568,7 +568,7 @@ impl TimberDesign {
             let residual_width = (section.width - 2.0 * d_ef).max(0.0);
             let residual_depth = (section.depth - d_ef).max(0.0);
 
-            let residual_area = residual_width * residual_depth;
+            let _residual_area = residual_width * residual_depth;
             let residual_w = residual_width * residual_depth.powi(2) / 6.0;
 
             let fire_sigma_m = loading.moment_y.abs() * 1e6 / residual_w;

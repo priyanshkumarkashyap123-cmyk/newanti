@@ -549,7 +549,7 @@ impl DesignSpaceExplorer {
     pub fn best_design(&self) -> Option<&DesignPoint> {
         self.designs.iter()
             .filter(|d| d.feasible)
-            .min_by(|a, b| a.objective.partial_cmp(&b.objective).unwrap())
+            .min_by(|a, b| a.objective.partial_cmp(&b.objective).unwrap_or(std::cmp::Ordering::Equal))
     }
 }
 
@@ -600,7 +600,7 @@ impl SensitivityAnalysis {
     /// Get most sensitive parameters
     pub fn most_sensitive(&self, n: usize) -> Vec<(&String, &f64)> {
         let mut sorted: Vec<_> = self.sensitivities.iter().collect();
-        sorted.sort_by(|a, b| b.1.partial_cmp(a.1).unwrap());
+        sorted.sort_by(|a, b| b.1.partial_cmp(a.1).unwrap_or(std::cmp::Ordering::Equal));
         sorted.into_iter().take(n).collect()
     }
 }

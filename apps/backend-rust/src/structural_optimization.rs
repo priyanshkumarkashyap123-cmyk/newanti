@@ -235,7 +235,7 @@ impl StructuralOptimizer {
             _ => self.run_oc(&evaluate),
         }
         
-        self.solution.as_ref().unwrap()
+        self.solution.as_ref().expect("solution was just set")
     }
     
     /// Optimality criteria method

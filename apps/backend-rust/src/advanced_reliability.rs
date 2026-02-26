@@ -14,7 +14,6 @@
 //! | Response surface FORM | ✓ | ✓ | ✓ | ✓ |
 //! | Interval analysis | ✗ | ✗ | ✓ | ✓ |
 
-use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 use crate::special_functions::*;
 
@@ -88,7 +87,7 @@ impl AKMCS {
         // Build initial Kriging model
         let mut kriging = SimpleKriging::new(&self.training_x, &self.training_y);
 
-        for iter in 0..self.max_iterations {
+        for _iter in 0..self.max_iterations {
             // Predict on all candidates
             let predictions: Vec<(f64, f64)> = candidates.iter()
                 .map(|x| kriging.predict(x))
@@ -100,9 +99,12 @@ impl AKMCS {
                 .collect();
 
             // Find minimum U
-            let (min_idx, min_u) = u_values.iter().enumerate()
-                .min_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
-                .unwrap();
+            let (min_idx, min_u) = match u_values.iter().enumerate()
+                .min_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
+            {
+                Some(v) => v,
+                None => break,
+            };
 
             // Convergence check
             if *min_u > self.convergence_threshold {
@@ -214,7 +216,7 @@ impl SimpleKriging {
     }
 
     fn predict(&self, x: &[f64]) -> (f64, f64) {
-        let n = self.x_train.len();
+        let _n = self.x_train.len();
 
         // Correlation with training points
         let r: Vec<f64> = self.x_train.iter()
@@ -269,7 +271,7 @@ impl AKIS {
     }
 
     /// Run AK-IS with provided design point
-    pub fn analyze<F>(&mut self, dimension: usize, design_point: &[f64], limit_state: F)
+    pub fn analyze<F>(&mut self, _dimension: usize, design_point: &[f64], limit_state: F)
     where
         F: Fn(&[f64]) -> f64,
     {
@@ -326,9 +328,12 @@ impl AKIS {
                 .collect();
 
             // Find maximum H
-            let (max_idx, max_h) = h_values.iter().enumerate()
-                .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
-                .unwrap();
+            let (max_idx, max_h) = match h_values.iter().enumerate()
+                .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
+            {
+                Some(v) => v,
+                None => break,
+            };
 
             if *max_h < 1e-4 {
                 break;
@@ -347,7 +352,7 @@ impl AKIS {
         // Final IS estimate
         let mut pf_sum = 0.0;
         
-        for (i, x) in is_samples.iter().enumerate() {
+        for (_i, x) in is_samples.iter().enumerate() {
             let (mu, _) = kriging.predict(x);
             let indicator = if mu <= 0.0 { 1.0 } else { 0.0 };
             let w = self.is_weight(x, design_point);
@@ -609,7 +614,7 @@ impl ResponseSurfaceFORM {
     }
 
     fn least_squares_fit(&self, basis: &[Vec<f64>], y: &[f64]) -> Vec<f64> {
-        let n = basis.len();
+        let _n = basis.len();
         let p = basis[0].len();
 
         // A^T A
@@ -931,8 +936,8 @@ impl PAWNSensitivity {
     fn ks_statistic(&self, sample1: &[f64], sample2: &[f64]) -> f64 {
         let mut sorted1 = sample1.to_vec();
         let mut sorted2 = sample2.to_vec();
-        sorted1.sort_by(|a, b| a.partial_cmp(b).unwrap());
-        sorted2.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        sorted1.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+        sorted2.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
 
         let n1 = sorted1.len();
         let n2 = sorted2.len();

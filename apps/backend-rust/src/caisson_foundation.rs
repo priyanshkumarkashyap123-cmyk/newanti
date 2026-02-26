@@ -699,7 +699,10 @@ impl DrilledShaft {
     
     /// Total capacity (kN)
     pub fn total_capacity(&self, soil_layers: &[SoilLayer]) -> f64 {
-        let bearing_layer = soil_layers.last().unwrap();
+        let bearing_layer = match soil_layers.last() {
+            Some(layer) => layer,
+            None => return 0.0,
+        };
         self.tip_capacity(bearing_layer) + self.side_capacity(soil_layers)
     }
     
@@ -818,7 +821,12 @@ impl SettlementAnalysis {
         let d = geometry.outer_dimension;
         
         // Elastic settlement (Vesic)
-        let bearing_layer = soil_layers.last().unwrap();
+        let bearing_layer = match soil_layers.last() {
+            Some(layer) => layer,
+            None => return Self {
+                elastic: 0.0, consolidation: 0.0, immediate: 0.0, total: 0.0,
+            },
+        };
         let es = 500.0 * bearing_layer.cohesion.max(bearing_layer.friction_angle);
         let poisson: f64 = 0.3;
         let ip = 0.88; // Influence factor for circular base

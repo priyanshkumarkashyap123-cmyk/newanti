@@ -808,6 +808,7 @@ pub fn step_by_step_analysis(
     let ts = 0.0; // Start of drying
     
     let mut total_stress = initial_stress;
+    #[allow(unused_assignments)]
     let mut total_strain = initial_stress / ec28;
     
     for (i, &t) in time_steps.iter().enumerate() {

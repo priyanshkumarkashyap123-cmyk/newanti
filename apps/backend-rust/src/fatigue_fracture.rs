@@ -365,7 +365,9 @@ impl RainflowCounter {
             }
         }
 
-        self.peaks_valleys.push(*stress_history.last().unwrap());
+        if let Some(&last) = stress_history.last() {
+            self.peaks_valleys.push(last);
+        }
     }
 
     /// ASTM E1049 4-point rainflow counting
@@ -377,7 +379,7 @@ impl RainflowCounter {
         // Rearrange to start from absolute maximum
         if let Some(max_idx) = points.iter()
             .enumerate()
-            .max_by(|(_, a), (_, b)| a.abs().partial_cmp(&b.abs()).unwrap())
+            .max_by(|(_, a), (_, b)| a.abs().partial_cmp(&b.abs()).unwrap_or(std::cmp::Ordering::Equal))
             .map(|(i, _)| i)
         {
             points.rotate_left(max_idx);

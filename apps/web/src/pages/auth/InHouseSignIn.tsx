@@ -29,9 +29,10 @@ export const InHouseSignIn: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Get redirect URL from query params
+    // Get redirect URL from query params (validated: must be relative path, not protocol-relative)
     const searchParams = new URLSearchParams(location.search);
-    const redirectUrl = searchParams.get('redirect_url') || '/app';
+    const rawRedirect = searchParams.get('redirect_url') || '/app';
+    const redirectUrl = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/app';
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();

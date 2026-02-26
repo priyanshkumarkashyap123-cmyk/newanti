@@ -94,7 +94,7 @@ NODE_ENV=production
 USE_CLERK=false
 MONGODB_URI=[from Azure Key Vault]
 JWT_SECRET=[from Azure Key Vault]
-GEMINI_API_KEY=AIzaSyDFYavn0QKWTJ8OjQkoe8IalmQijA6BRhw
+GEMINI_API_KEY=REDACTED_ROTATE_THIS_KEY
 FRONTEND_URL=https://beamlabultimate.tech
 ALLOWED_ORIGINS=https://beamlabultimate.tech,https://www.beamlabultimate.tech,http://localhost:5173
 ```
@@ -103,7 +103,7 @@ ALLOWED_ORIGINS=https://beamlabultimate.tech,https://www.beamlabultimate.tech,ht
 
 ```
 PORT=8000
-GEMINI_API_KEY=AIzaSyDFYavn0QKWTJ8OjQkoe8IalmQijA6BRhw
+GEMINI_API_KEY=REDACTED_ROTATE_THIS_KEY
 USE_MOCK_AI=false
 FRONTEND_URL=https://beamlabultimate.tech
 ALLOWED_ORIGINS=https://beamlabultimate.tech,https://www.beamlabultimate.tech,http://localhost:5173

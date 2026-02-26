@@ -166,9 +166,6 @@ export const UltraLightNodesRenderer: React.FC = React.memo(() => {
     if (config.showOnlySupportNodes) {
       // Filter to only nodes with supports
       const supports = nodeArray.filter(([_, node]) => hasSupport(node));
-// console.log(
-        `[UltraLightNodes] Showing ${supports.length} support nodes out of ${nodeArray.length} total`,
-      );
       return supports;
     }
 
@@ -289,9 +286,6 @@ export const UltraLightNodesRenderer: React.FC = React.memo(() => {
       } else {
         nodeIndexMapRef.current = indexMap;
         setIsInitialized(true);
-// console.log(
-          `[UltraLightNodes] Rendered ${toRender} nodes with ${config.sphereSegments}-segment spheres`,
-        );
       }
     };
 

@@ -4,7 +4,7 @@
 # Configuration
 APP_SERVICE_NAME="beamlab-backend-python"
 RESOURCE_GROUP="beamlab"  # Change if your RG is different
-GEMINI_API_KEY="AIzaSyDFYavn0QKWTJ8OjQkoe8IalmQijA6BRhw"
+GEMINI_API_KEY="${GEMINI_API_KEY:?GEMINI_API_KEY env var required}"
 FRONTEND_URL="https://beamlabultimate.tech"
 ALLOWED_ORIGINS="https://beamlabultimate.tech,https://www.beamlabultimate.tech,https://brave-mushroom-0eae8ec00.4.azurestaticapps.net"
 

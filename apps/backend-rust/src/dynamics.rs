@@ -1,4 +1,4 @@
-use nalgebra::{DMatrix, DVector, SymmetricEigen};
+use nalgebra::{DMatrix, SymmetricEigen};
 use crate::solver_3d::{Node3D, Element3D, ElementType};
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
@@ -22,6 +22,7 @@ pub struct ModalResult {
 // ============================================
 
 /// Assemble Global Consistent Mass Matrix
+#[allow(non_snake_case)]
 pub fn assemble_mass_matrix(
     nodes: &[Node3D],
     elements: &[Element3D],
@@ -48,7 +49,7 @@ pub fn assemble_mass_matrix(
              // Consistent Mass Matrix for Frame (12x12)
              // Simplified formulation: Lumped or Consistent? 
              // Let's use Consistent Mass for higher accuracy in dynamics
-             let m_local = consistent_mass_frame(element, L);
+             let _m_local = consistent_mass_frame(element, L);
              
              // Transformation
              // Reuse transformation logic from solver_3d if possible, or re-implement
@@ -107,7 +108,8 @@ pub fn assemble_mass_matrix(
     Ok(m_global)
 }
 
-fn consistent_mass_frame(elem: &Element3D, L: f64) -> DMatrix<f64> {
+#[allow(non_snake_case)]
+fn consistent_mass_frame(_elem: &Element3D, _L: f64) -> DMatrix<f64> {
     // Placeholder for 12x12 consistent mass matrix
     DMatrix::zeros(12, 12)
 }
@@ -116,6 +118,7 @@ fn consistent_mass_frame(elem: &Element3D, L: f64) -> DMatrix<f64> {
 // EIGENVALUE SOLVER
 // ============================================
 
+#[allow(non_snake_case)]
 pub fn solve_eigenvalues(
     k_global: &DMatrix<f64>,
     m_global: &DMatrix<f64>,
@@ -173,12 +176,12 @@ pub fn solve_eigenvalues(
             modes.push((lambda, i));
         }
     }
-    modes.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+    modes.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
     
     let count = num_modes.min(modes.len());
     let mut frequencies = Vec::new();
     let mut periods = Vec::new();
-    let mut mode_shapes_vec: Vec<HashMap<String, Vec<f64>>> = Vec::new();
+    let _mode_shapes_vec: Vec<HashMap<String, Vec<f64>>> = Vec::new();
     
     for k in 0..count {
         let (lambda, idx) = modes[k];
@@ -196,7 +199,7 @@ pub fn solve_eigenvalues(
         // Normalize (Mass normalized? or Unity?)
         // Let's normalize so max displacement is 1.0 for visualization
         let max_disp = x.iter().fold(0.0f64, |acc, &val| acc.max(val.abs()));
-        let x_norm = x / max_disp;
+        let _x_norm = x / max_disp;
         
         // Store in HashMap format
         // Need node mapping passed here or reconstruct? 
@@ -227,6 +230,7 @@ pub struct SeismicResult {
     pub periods: Vec<f64>,
 }
 
+#[allow(non_snake_case)]
 pub fn calculate_response_spectrum(
     modal_results: &ModalResult,
     zone_factor: f64, // Z
@@ -235,8 +239,8 @@ pub fn calculate_response_spectrum(
     soil_type: u8, // 1=Hard, 2=Medium, 3=Soft
 ) -> SeismicResult {
     // IS 1893:2016 Method
-    let mut total_base_shear_x = 0.0;
-    let mut total_base_shear_z = 0.0;
+    let _total_base_shear_x = 0.0;
+    let _total_base_shear_z = 0.0;
     
     // SRSS Accumulators
     let mut sum_sq_shear_x = 0.0;
@@ -273,6 +277,7 @@ pub fn calculate_response_spectrum(
     }
 }
 
+#[allow(non_snake_case)]
 fn get_spectral_acceleration(T: f64, soil: u8) -> f64 {
     // IS 1893 (Part 1): 2016
     match soil {

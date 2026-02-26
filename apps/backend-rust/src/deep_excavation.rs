@@ -239,7 +239,6 @@ impl EarthPressure {
         let dz = total_depth / n_points as f64;
         
         let mut z = 0.0;
-        let mut sigma_v = surcharge;
         let mut current_layer = 0;
         let mut layer_top = 0.0;
         
@@ -251,7 +250,7 @@ impl EarthPressure {
             
             // Vertical stress at depth
             let z_in_layer = z - layer_top;
-            sigma_v = surcharge;
+            let mut sigma_v = surcharge;
             for (i, l) in layers.iter().enumerate() {
                 if i < current_layer {
                     sigma_v += l.unit_weight * l.thickness;

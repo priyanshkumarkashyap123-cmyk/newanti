@@ -321,7 +321,7 @@ impl MemberDiagram {
         // Track indices for max/min
         let mut max_moment_z_idx = 0;
         let mut min_moment_z_idx = 0;
-        let mut max_shear_y_idx = 0;
+        let mut _max_shear_y_idx = 0;
         
         for (i, station) in self.stations.iter().enumerate() {
             let f = &station.forces;
@@ -332,7 +332,7 @@ impl MemberDiagram {
             
             if f.shear_y > self.max_forces.shear_y { 
                 self.max_forces.shear_y = f.shear_y;
-                max_shear_y_idx = i;
+                _max_shear_y_idx = i;
             }
             if f.shear_y < self.min_forces.shear_y { self.min_forces.shear_y = f.shear_y; }
             
@@ -829,7 +829,8 @@ pub fn generate_diagram_svg(
         path_d.push_str(&format!("L{:.1},{:.1}", px, py));
     }
     
-    let (last_x, _) = transform(data.last().unwrap().0, data.last().unwrap().1);
+    let last = data.last().expect("data non-empty after guard");
+    let (last_x, _) = transform(last.0, last.1);
     path_d.push_str(&format!("L{:.1},{:.1}Z", last_x, baseline_y));
     
     // Filled area (positive blue, negative red handled separately for now)
@@ -851,7 +852,7 @@ pub fn generate_diagram_svg(
         svg.push_str(r##"<g font-family="Arial" font-size="10" fill="#374151">"##);
         
         // Max value
-        let max_point = data.iter().max_by(|a, b| a.1.partial_cmp(&b.1).unwrap()).unwrap();
+        let max_point = data.iter().max_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap();
         let (mx, my) = transform(max_point.0, max_point.1);
         svg.push_str(&format!(
             r##"<text x="{:.1}" y="{:.1}" text-anchor="middle">{:.2} {}</text>"##,
@@ -859,7 +860,7 @@ pub fn generate_diagram_svg(
         ));
         
         // Min value (if different enough from max)
-        let min_point = data.iter().min_by(|a, b| a.1.partial_cmp(&b.1).unwrap()).unwrap();
+        let min_point = data.iter().min_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap();
         if (max_point.1 - min_point.1).abs() > y_range * 0.1 {
             let (mx, my) = transform(min_point.0, min_point.1);
             svg.push_str(&format!(

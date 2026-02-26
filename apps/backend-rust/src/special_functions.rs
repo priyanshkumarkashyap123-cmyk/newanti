@@ -859,19 +859,19 @@ pub fn ellipe(k: f64) -> f64 {
     // Arithmetic-geometric mean method
     let mut a = 1.0;
     let mut b = (1.0 - k * k).sqrt();
-    let mut c = k.abs();
+    let mut _c = k.abs();
     let mut sum = k * k;
     let mut power = 1.0;
     
     for _ in 0..50 {
         let a_new = (a + b) / 2.0;
         let b_new = (a * b).sqrt();
-        c = (a - b) / 2.0;
+        _c = (a - b) / 2.0;
         
         power *= 2.0;
-        sum += power * c * c;
+        sum += power * _c * _c;
         
-        if c.abs() < 1e-15 {
+        if _c.abs() < 1e-15 {
             break;
         }
         
@@ -910,6 +910,10 @@ pub fn ellipf(phi: f64, k: f64) -> f64 {
 }
 
 /// Carlson's symmetric elliptic integral RF(x, y, z)
+///
+/// Computes RF via the duplication algorithm. When x ≈ y ≈ z ≈ μ,
+/// the result is (1/√μ) with higher-order correction terms from
+/// E₂ = dₓdᵧ + dᵧdᵤ + dᵤdₓ and E₃ = dₓdᵧdᵤ.
 fn carlson_rf(x: f64, y: f64, z: f64) -> f64 {
     let mut x = x;
     let mut y = y;
@@ -931,7 +935,14 @@ fn carlson_rf(x: f64, y: f64, z: f64) -> f64 {
         }
     }
     
-    1.0 / (x * y.sqrt() + y * z.sqrt() + z * x.sqrt()).sqrt()
+    // Correct formula: 1/√μ with series correction terms
+    let avg = (x + y + z) / 3.0;
+    let dx = (avg - x) / avg;
+    let dy = (avg - y) / avg;
+    let dz = (avg - z) / avg;
+    let e2 = dx * dy + dy * dz + dz * dx;
+    let e3 = dx * dy * dz;
+    (1.0 - e2 / 10.0 + e3 / 14.0 + e2 * e2 / 24.0 - 3.0 * e2 * e3 / 44.0) / avg.sqrt()
 }
 
 // ============================================================================

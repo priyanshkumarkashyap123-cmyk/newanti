@@ -37,7 +37,7 @@
 ### Environment Variables Set
 
 ```
-✓ GEMINI_API_KEY: AIzaSyDFYavn0QKWTJ8OjQkoe8IalmQijA6BRhw
+✓ GEMINI_API_KEY: REDACTED_ROTATE_THIS_KEY
 ✓ USE_MOCK_AI: false
 ✓ FRONTEND_URL: https://beamlabultimate.tech
 ✓ ALLOWED_ORIGINS: https://beamlabultimate.tech,https://brave-mushroom-0eae8ec00.4.azurestaticapps.net

@@ -12,10 +12,15 @@ import mongoose, { Schema, Document, Types } from 'mongoose';
 /**
  * Master users have unrestricted access to all features
  * regardless of tier or subscription status.
+ *
+ * SECURITY: This is server-side only and never sent to the client.
+ * Set MASTER_EMAILS env var as comma-separated email list to override defaults.
  */
-export const MASTER_EMAILS: ReadonlyArray<string> = [
-    'rakshittiwari048@gmail.com',
-];
+export const MASTER_EMAILS: ReadonlyArray<string> = (
+    process.env.MASTER_EMAILS
+        ? process.env.MASTER_EMAILS.split(',').map((e: string) => e.trim().toLowerCase()).filter(Boolean)
+        : ['rakshittiwari048@gmail.com']
+);
 
 /**
  * Check if an email belongs to a master user
@@ -220,8 +225,14 @@ export const Project = mongoose.model<IProject>('Project', ProjectSchema);
 
 export interface ISubscription extends Document {
     user: Types.ObjectId;
-    stripeCustomerId: string;
+    razorpayPaymentId: string;
+    razorpayOrderId?: string;
+    planType?: string;
+    /** @deprecated Use razorpayPaymentId. Kept for data migration compatibility. */
+    stripeCustomerId?: string;
+    /** @deprecated Use razorpayOrderId. */
     stripeSubscriptionId?: string;
+    /** @deprecated Use planType. */
     stripePriceId?: string;
     status: 'active' | 'canceled' | 'past_due' | 'trialing' | 'incomplete';
     currentPeriodStart: Date;
@@ -238,20 +249,23 @@ const SubscriptionSchema = new Schema<ISubscription>({
         required: true,
         unique: true
     },
-    stripeCustomerId: {
+    razorpayPaymentId: {
         type: String,
         required: true,
-        unique: true,
         index: true
     },
-    stripeSubscriptionId: {
+    razorpayOrderId: {
         type: String,
         sparse: true,
         index: true
     },
-    stripePriceId: {
+    planType: {
         type: String
     },
+    // Deprecated Stripe fields — kept for data migration
+    stripeCustomerId: { type: String, sparse: true, index: true },
+    stripeSubscriptionId: { type: String, sparse: true },
+    stripePriceId: { type: String },
     status: {
         type: String,
         enum: ['active', 'canceled', 'past_due', 'trialing', 'incomplete'],

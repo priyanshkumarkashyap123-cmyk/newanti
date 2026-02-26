@@ -8,8 +8,12 @@
 
 import express, { Router, type Request, type Response } from "express";
 import { requireAuth } from "../../middleware/authMiddleware.js";
+import { generalRateLimit } from "../../middleware/security.js";
 
 const router: Router = express.Router();
+
+// Rate-limit the public-facing ingest endpoints to prevent abuse
+const analyticsRateLimit = generalRateLimit; // re-use general limit (100/min per IP)
 
 // ============================================
 // TYPES
@@ -55,7 +59,7 @@ async function persistToMongo(event: AnalyticsEvent): Promise<boolean> {
 // POST /api/analytics/track — ingest a single event
 // ============================================
 
-router.post("/track", async (req: Request, res: Response) => {
+router.post("/track", requireAuth(), analyticsRateLimit, async (req: Request, res: Response) => {
   const event = req.body as AnalyticsEvent;
 
   if (!event?.name || !event?.sessionId) {
@@ -78,7 +82,7 @@ router.post("/track", async (req: Request, res: Response) => {
 // POST /api/analytics/batch — ingest multiple events
 // ============================================
 
-router.post("/batch", async (req: Request, res: Response) => {
+router.post("/batch", requireAuth(), analyticsRateLimit, async (req: Request, res: Response) => {
   const events = req.body?.events as AnalyticsEvent[] | undefined;
 
   if (!Array.isArray(events) || events.length === 0) {

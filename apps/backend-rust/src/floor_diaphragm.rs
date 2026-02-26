@@ -242,7 +242,7 @@ impl AutoDiaphragmDetector {
             }
         }
         
-        elevations.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        elevations.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
         
         let mut groups = Vec::new();
         for elev in elevations {
@@ -266,8 +266,8 @@ impl AutoDiaphragmDetector {
         
         // Simple convex hull (Graham scan)
         points.sort_by(|a, b| {
-            a[0].partial_cmp(&b[0]).unwrap()
-                .then(a[1].partial_cmp(&b[1]).unwrap())
+            a[0].partial_cmp(&b[0]).unwrap_or(std::cmp::Ordering::Equal)
+                .then(a[1].partial_cmp(&b[1]).unwrap_or(std::cmp::Ordering::Equal))
         });
         
         let mut hull: Vec<[f64; 2]> = Vec::new();
@@ -398,7 +398,7 @@ impl AutoDiaphragmDetector {
             .min_by(|a, b| {
                 let da = (a.x - cm[0]).powi(2) + (a.y - cm[1]).powi(2);
                 let db = (b.x - cm[0]).powi(2) + (b.y - cm[1]).powi(2);
-                da.partial_cmp(&db).unwrap()
+                da.partial_cmp(&db).unwrap_or(std::cmp::Ordering::Equal)
             })
             .map(|n| n.id)
             .unwrap_or(0)

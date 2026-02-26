@@ -206,7 +206,7 @@ impl SensorPlacement {
         
         // Select top sensors
         let mut indices: Vec<usize> = (0..n_cand).collect();
-        indices.sort_by(|&a, &b| ei_values[b].partial_cmp(&ei_values[a]).unwrap());
+        indices.sort_by(|&a, &b| ei_values[b].partial_cmp(&ei_values[a]).unwrap_or(std::cmp::Ordering::Equal));
         
         self.selected = indices[..self.num_sensors.min(n_cand)].to_vec();
         self.selected.clone()

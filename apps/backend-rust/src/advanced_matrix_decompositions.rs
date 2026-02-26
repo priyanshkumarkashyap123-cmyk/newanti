@@ -915,7 +915,7 @@ fn svd_bidiagonal(d: &[f64], e: &[f64], m: usize, n: usize) -> (Vec<f64>, DenseM
     
     // Sort singular values in descending order
     let mut indices: Vec<usize> = (0..s.len()).collect();
-    indices.sort_by(|&i, &j| s[j].partial_cmp(&s[i]).unwrap());
+    indices.sort_by(|&i, &j| s[j].partial_cmp(&s[i]).unwrap_or(std::cmp::Ordering::Equal));
     
     let s_sorted: Vec<f64> = indices.iter().map(|&i| s[i]).collect();
     
@@ -1028,7 +1028,7 @@ impl EigenDecomposition {
         
         // Extract eigenvalues and sort
         let mut pairs: Vec<(f64, usize)> = (0..n).map(|i| (d.get(i, i), i)).collect();
-        pairs.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+        pairs.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
         
         let eigenvalues: Vec<f64> = pairs.iter().map(|p| p.0).collect();
         let mut eigenvectors = DenseMatrix::zeros(n, n);
@@ -1492,7 +1492,7 @@ mod tests {
         
         // Eigenvalues should be 1 and 3
         let mut eigs: Vec<f64> = eigenvalues.iter().cloned().collect();
-        eigs.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        eigs.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
         
         assert!((eigs[0] - 1.0).abs() < 1e-10, "First eigenvalue should be 1, got {}", eigs[0]);
         assert!((eigs[1] - 3.0).abs() < 1e-10, "Second eigenvalue should be 3, got {}", eigs[1]);

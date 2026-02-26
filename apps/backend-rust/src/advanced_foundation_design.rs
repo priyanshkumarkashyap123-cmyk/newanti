@@ -637,7 +637,13 @@ pub fn pile_capacity_alpha(
     }
     
     // End bearing
-    let tip_layer = soil_layers.last().unwrap();
+    let tip_layer = match soil_layers.last() {
+        Some(layer) => layer,
+        None => return PileCapacityResult {
+            qp: 0.0, qs: 0.0, qu: 0.0, qa: 0.0,
+            fs: 0.0, uplift: 0.0, lateral: 0.0,
+        },
+    };
     let nc = 9.0; // Skempton's Nc for deep foundations
     let qp = nc * tip_layer.cohesion * pile.tip_area();
     
@@ -717,7 +723,13 @@ pub fn pile_capacity_beta(
     }
     
     // End bearing (Vesic method for granular)
-    let tip_layer = soil_layers.last().unwrap();
+    let tip_layer = match soil_layers.last() {
+        Some(layer) => layer,
+        None => return PileCapacityResult {
+            qp: 0.0, qs: 0.0, qu: 0.0, qa: 0.0,
+            fs: 0.0, uplift: 0.0, lateral: 0.0,
+        },
+    };
     let phi = tip_layer.friction_angle.to_radians();
     let nq = (45.0_f64.to_radians() + phi / 2.0).tan().powi(2) * (PI * phi.tan()).exp();
     

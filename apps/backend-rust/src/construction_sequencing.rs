@@ -333,7 +333,7 @@ impl ConstructionSequenceAnalyzer {
     /// Find most critical stage
     fn find_critical_stage(&self) -> Option<String> {
         self.stage_results.iter()
-            .max_by(|a, b| a.1.max_stress_ratio.partial_cmp(&b.1.max_stress_ratio).unwrap())
+            .max_by(|a, b| a.1.max_stress_ratio.partial_cmp(&b.1.max_stress_ratio).unwrap_or(std::cmp::Ordering::Equal))
             .map(|(id, _)| id.clone())
     }
 }

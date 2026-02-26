@@ -211,7 +211,7 @@ impl ComponentFragilityGroup {
 
         // Sort curves by median (DS1 < DS2 < DS3 < DS4)
         let mut sorted_curves = self.curves.clone();
-        sorted_curves.sort_by(|a, b| a.median.partial_cmp(&b.median).unwrap());
+        sorted_curves.sort_by(|a, b| a.median.partial_cmp(&b.median).unwrap_or(std::cmp::Ordering::Equal));
 
         // Calculate probability of being in each damage state
         let exceedance_probs: Vec<(DamageState, f64)> = sorted_curves.iter()

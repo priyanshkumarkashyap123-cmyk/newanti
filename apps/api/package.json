@@ -40,7 +40,6 @@
     "query-string": "^9.3.1",
     "razorpay": "^2.9.6",
     "socket.io": "^4.8.1",
-    "stripe": "^20.1.0",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^13.0.0",
     "zod": "^3.23.8"

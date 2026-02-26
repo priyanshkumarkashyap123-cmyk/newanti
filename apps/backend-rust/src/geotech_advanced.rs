@@ -325,7 +325,7 @@ impl LateralSpreading {
     ) -> Self {
         // Youd et al. (2002) empirical equation
         let log_r = distance_km.log10();
-        let r_star = distance_km.powf(0.89) * 10.0_f64.powf(-0.001 * distance_km);
+        let _r_star = distance_km.powf(0.89) * 10.0_f64.powf(-0.001 * distance_km);
         
         let log_dh = -16.713 + 1.532 * magnitude 
             - 1.406 * log_r 

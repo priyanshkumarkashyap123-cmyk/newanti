@@ -499,7 +499,7 @@ impl BucklingAnalyzer {
         }
         
         // Sort by load factor
-        modes.sort_by(|a, b| a.load_factor.partial_cmp(&b.load_factor).unwrap());
+        modes.sort_by(|a, b| a.load_factor.partial_cmp(&b.load_factor).unwrap_or(std::cmp::Ordering::Equal));
         
         BucklingResult {
             modes,

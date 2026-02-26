@@ -39,13 +39,6 @@ const envSchema = z.object({
   CORS_ALLOWED_ORIGINS: z.string().optional().default(""),
   FRONTEND_URL: z.string().url().optional().default("http://localhost:5173"),
 
-  // Payments — Stripe
-  STRIPE_SECRET_KEY: z.string().optional(),
-  STRIPE_WEBHOOK_SECRET: z.string().optional(),
-  STRIPE_PRO_MONTHLY_PRICE_ID: z.string().optional(),
-  STRIPE_PRO_YEARLY_PRICE_ID: z.string().optional(),
-  STRIPE_ENTERPRISE_MONTHLY_PRICE_ID: z.string().optional(),
-
   // Payments — Razorpay
   RAZORPAY_KEY_ID: z.string().optional(),
   RAZORPAY_KEY_SECRET: z.string().optional(),

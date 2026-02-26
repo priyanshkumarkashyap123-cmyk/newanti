@@ -60,7 +60,7 @@ az webapp config appsettings set \
     NODE_ENV="production" \
     MONGODB_URI="$MONGODB_URI" \
     JWT_SECRET="$JWT_SECRET" \
-    GEMINI_API_KEY="AIzaSyDFYavn0QKWTJ8OjQkoe8IalmQijA6BRhw" \
+    GEMINI_API_KEY="${GEMINI_API_KEY:?GEMINI_API_KEY env var required}" \
     FRONTEND_URL="https://beamlabultimate.tech" \
     ALLOWED_ORIGINS="https://beamlabultimate.tech,https://www.beamlabultimate.tech,http://localhost:5173" \
     SMTP_HOST="smtp.gmail.com" \
@@ -101,7 +101,7 @@ az webapp config appsettings set \
   --resource-group "$RESOURCE_GROUP" \
   --name "$PYTHON_BACKEND_APP" \
   --settings \
-    GEMINI_API_KEY="AIzaSyDFYavn0QKWTJ8OjQkoe8IalmQijA6BRhw" \
+    GEMINI_API_KEY="${GEMINI_API_KEY:?GEMINI_API_KEY env var required}" \
     USE_MOCK_AI="false" \
     FRONTEND_URL="https://beamlabultimate.tech" \
     ALLOWED_ORIGINS="https://beamlabultimate.tech,https://www.beamlabultimate.tech,http://localhost:5173" \

@@ -887,7 +887,7 @@ impl BlockLanczosSolver {
         
         // Sort eigenvalues
         let mut indices: Vec<usize> = (0..n).collect();
-        indices.sort_by(|&a, &b| d[a].partial_cmp(&d[b]).unwrap());
+        indices.sort_by(|&a, &b| d[a].partial_cmp(&d[b]).unwrap_or(std::cmp::Ordering::Equal));
         
         let eigenvalues: Vec<f64> = indices.iter().map(|&i| d[i]).collect();
         let eigenvectors: Vec<Vec<f64>> = indices.iter().map(|&i| {

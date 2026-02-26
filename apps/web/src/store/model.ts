@@ -2162,7 +2162,7 @@ export const loadProjectFromStorage = (): boolean => {
 const ANALYSIS_SESSION_KEY = "beamlab_analysis_results";
 
 /** Serialize Map → array-of-entries for JSON storage */
-function serializeMap<V>(map: Map<string, V> | undefined): [string, V][] | undefined {
+function serializeAnalysisMap<V>(map: Map<string, V> | undefined): [string, V][] | undefined {
   if (!map || map.size === 0) return undefined;
   return Array.from(map.entries());
 }
@@ -2175,9 +2175,9 @@ function persistAnalysisResults(results: AnalysisResults | null): void {
       return;
     }
     const serializable = {
-      displacements: serializeMap(results.displacements),
-      reactions: serializeMap(results.reactions),
-      memberForces: serializeMap(results.memberForces),
+      displacements: serializeAnalysisMap(results.displacements),
+      reactions: serializeAnalysisMap(results.reactions),
+      memberForces: serializeAnalysisMap(results.memberForces),
       plateResults: results.plateResults,
       equilibriumCheck: results.equilibriumCheck,
       conditionNumber: results.conditionNumber,

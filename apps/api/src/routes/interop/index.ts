@@ -8,8 +8,12 @@
 
 import { Router, Request, Response, type IRouter } from "express";
 import { pythonProxy } from "../../services/serviceProxy.js";
+import { requireAuth } from "../../middleware/authMiddleware.js";
 
 const router: IRouter = Router();
+
+// All interop routes require authentication
+router.use(requireAuth());
 
 // ============================================
 // Helper: Forward to Python and handle response
@@ -36,7 +40,7 @@ async function forwardToPython(
     } catch (error) {
         console.error(`[Interop/${label}] Error:`, error);
         res.status(500).json({
-            error: error instanceof Error ? error.message : `${label} failed`,
+            error: `${label} failed`,
         });
     }
 }
@@ -150,7 +154,7 @@ router.post("/validate", async (req: Request, res: Response) => {
     } catch (error) {
         console.error("Validation error:", error);
         return res.status(500).json({
-            error: error instanceof Error ? error.message : "Validation failed",
+            error: "Validation failed",
         });
     }
 });

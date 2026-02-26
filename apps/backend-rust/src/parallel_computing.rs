@@ -142,7 +142,7 @@ impl MeshPartitioner {
                 1 => coords[b].1,
                 _ => coords[b].2,
             };
-            va.partial_cmp(&vb).unwrap()
+            va.partial_cmp(&vb).unwrap_or(std::cmp::Ordering::Equal)
         });
         
         // Split in half
@@ -333,7 +333,7 @@ impl ParallelAssembler {
         let mut global = GlobalMatrix::new(n_dofs);
         
         for buffer_arc in &self.local_buffers {
-            let buffer = buffer_arc.lock().unwrap();
+            let buffer = buffer_arc.lock().unwrap_or_else(|e| e.into_inner());
             for i in 0..buffer.rows.len() {
                 global.add_value(buffer.rows[i], buffer.cols[i], buffer.values[i]);
             }
@@ -673,13 +673,13 @@ impl LoadBalancer {
             .enumerate()
             .map(|(i, &w)| (i, w))
             .collect();
-        indexed.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+        indexed.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
         
         // Assign each task to processor with minimum load
         for (task_id, workload) in indexed {
             let min_proc = proc_loads.iter()
                 .enumerate()
-                .min_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+                .min_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
                 .map(|(i, _)| i)
                 .unwrap_or(0);
             

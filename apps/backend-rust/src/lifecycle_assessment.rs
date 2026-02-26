@@ -414,7 +414,7 @@ impl CarbonOptimizer {
         }
         
         // Sort by savings
-        suggestions.sort_by(|a, b| b.carbon_savings_percent.partial_cmp(&a.carbon_savings_percent).unwrap());
+        suggestions.sort_by(|a, b| b.carbon_savings_percent.partial_cmp(&a.carbon_savings_percent).unwrap_or(std::cmp::Ordering::Equal));
         
         suggestions
     }

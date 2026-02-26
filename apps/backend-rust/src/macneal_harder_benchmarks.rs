@@ -1141,14 +1141,14 @@ pub struct MacnealHarderWasm;
 impl MacnealHarderWasm {
     pub fn get_quad4_patch() -> JsValue {
         let mesh = PatchMesh::quad4_patch();
-        serde_wasm_bindgen::to_value(&mesh).unwrap()
+        serde_wasm_bindgen::to_value(&mesh).unwrap_or(JsValue::NULL)
     }
 
     pub fn generate_twisted_beam(n_elem: usize) -> JsValue {
         let mut test = TwistedBeamTest::default();
         test.n_elem = n_elem;
         let mesh = test.generate_mesh();
-        serde_wasm_bindgen::to_value(&mesh).unwrap()
+        serde_wasm_bindgen::to_value(&mesh).unwrap_or(JsValue::NULL)
     }
 }
 

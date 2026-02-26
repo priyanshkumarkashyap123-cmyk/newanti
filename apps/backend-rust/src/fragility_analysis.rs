@@ -453,7 +453,7 @@ impl FragilityAssessor {
         
         // Convert to state probabilities (discrete)
         let mut damage_probs = Vec::new();
-        let mut prev_prob = 1.0;
+        let mut _prev_prob = 1.0;
         
         // P(None) = 1 - P(Slight or worse)
         let p_slight_or_worse = exceedance_probs.iter()
@@ -461,7 +461,7 @@ impl FragilityAssessor {
             .map(|(_, p)| *p)
             .unwrap_or(0.0);
         damage_probs.push((DamageState::None, 1.0 - p_slight_or_worse));
-        prev_prob = p_slight_or_worse;
+        _prev_prob = p_slight_or_worse;
         
         // For each state: P(state) = P(state or worse) - P(worse)
         for i in 0..exceedance_probs.len() {

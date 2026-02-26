@@ -46,7 +46,7 @@ async function forwardToRust(
         console.error(`[Advanced/${label}] Error:`, error);
         res.status(500).json({
             success: false,
-            error: error instanceof Error ? error.message : `${label} failed`,
+            error: `${label} failed`,
         });
     }
 }

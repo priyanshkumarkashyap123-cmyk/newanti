@@ -1044,7 +1044,7 @@ mod tests {
         // Maximum should be near load position
         let max_idx = deflections.iter()
             .enumerate()
-            .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+            .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
             .map(|(i, _)| i)
             .unwrap();
         assert!((max_idx as f64 - 50.0).abs() < 10.0);

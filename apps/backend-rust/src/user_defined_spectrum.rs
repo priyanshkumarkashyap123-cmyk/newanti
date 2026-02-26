@@ -151,7 +151,7 @@ impl UserDefinedSpectrum {
     
     /// Sort points by period
     pub fn sort_points(&mut self) {
-        self.points.sort_by(|a, b| a.period.partial_cmp(&b.period).unwrap());
+        self.points.sort_by(|a, b| a.period.partial_cmp(&b.period).unwrap_or(std::cmp::Ordering::Equal));
     }
     
     /// Get spectral acceleration at given period
@@ -467,7 +467,7 @@ impl UniformHazardSpectrum {
         
         // Log-linear interpolation in return period
         let mut sorted: Vec<_> = self.spectra.iter().collect();
-        sorted.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+        sorted.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
         
         if return_period <= sorted[0].0 {
             return Some(sorted[0].1.clone());
@@ -521,7 +521,7 @@ pub fn envelope_spectra(spectra: &[UserDefinedSpectrum]) -> UserDefinedSpectrum 
         .iter()
         .flat_map(|s| s.points.iter().map(|p| p.period))
         .collect();
-    all_periods.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    all_periods.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
     all_periods.dedup_by(|a, b| (*a - *b).abs() < 0.0001);
     
     // Create envelope

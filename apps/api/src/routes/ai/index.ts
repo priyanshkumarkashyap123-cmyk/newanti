@@ -61,7 +61,7 @@ router.post('/generate', async (req: Request, res: Response) => {
         console.error('[AI] Generation error:', error);
         return res.status(500).json({
             success: false,
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: 'AI generation failed'
         });
     }
 });
@@ -91,7 +91,7 @@ router.post('/validate', async (req: Request, res: Response) => {
     } catch (error) {
         return res.status(500).json({
             success: false,
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: 'Validation failed'
         });
     }
 });

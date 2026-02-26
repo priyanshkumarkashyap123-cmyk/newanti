@@ -401,8 +401,8 @@ app.use("/api/ai-sessions", crudRateLimit, aiSessionRoutes);
 app.use("/api/v1/analytics", analyticsRouter);
 app.use("/api/analytics", analyticsRouter);
 
-// Get users in a project (for multiplayer)
-app.get("/api/project/:id/users", (req: Request, res: Response) => {
+// Get users in a project (for multiplayer) - requires auth
+app.get("/api/project/:id/users", requireAuth(), (req: Request, res: Response) => {
   const projectId = req.params["id"] ?? "";
   const users = socketServer.getProjectUsers(projectId);
   res.ok({

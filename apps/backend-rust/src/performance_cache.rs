@@ -121,9 +121,9 @@ where
     }
 
     pub fn insert(&self, key: K, value: V) {
-        let mut entries = self.entries.write().unwrap();
-        let mut order = self.access_order.write().unwrap();
-        let mut stats = self.stats.write().unwrap();
+        let mut entries = self.entries.write().unwrap_or_else(|e| e.into_inner());
+        let mut order = self.access_order.write().unwrap_or_else(|e| e.into_inner());
+        let mut stats = self.stats.write().unwrap_or_else(|e| e.into_inner());
 
         // Evict if at capacity
         while entries.len() >= self.capacity && !order.is_empty() {
@@ -766,7 +766,7 @@ impl ComputationManager {
     }
 
     /// Clean up completed tasks older than given duration
-    pub fn cleanup_old_tasks(&self, max_age_secs: u64) {
+    pub fn cleanup_old_tasks(&self, _max_age_secs: u64) {
         // Simplified: just keep recent 100 tasks
         if let Ok(mut tasks) = self.tasks.write() {
             if tasks.len() > 100 {

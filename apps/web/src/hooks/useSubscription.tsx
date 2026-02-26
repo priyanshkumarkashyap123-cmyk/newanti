@@ -15,18 +15,12 @@ import { API_CONFIG } from "@/config/env";
 import { createLogger } from "../utils/logger";
 
 // ============================================
-// MASTER USER EMAILS (client-side mirror of backend)
-// Users listed here get full enterprise access regardless
-// of API response or subscription state.
+// MASTER USER ACCESS
 // ============================================
-const MASTER_EMAILS: ReadonlyArray<string> = [
-  'rakshittiwari048@gmail.com',
-];
-
-function isMasterEmail(email: string | null | undefined): boolean {
-  if (!email) return false;
-  return MASTER_EMAILS.includes(email.toLowerCase().trim());
-}
+// SECURITY: Master user emails are checked ONLY on the backend.
+// The backend /api/user/subscription endpoint returns 'enterprise'
+// tier for master users. Never hardcode emails client-side — any
+// client-side bypass can be exploited by modifying localStorage or spoofing Clerk claims.
 
 // ============================================
 // SUBSCRIPTION TYPES
@@ -126,20 +120,6 @@ export const SubscriptionProvider = ({
       return;
     }
 
-    // Client-side master user override — grants enterprise immediately
-    const userEmail = user?.email || '';
-    if (isMasterEmail(userEmail)) {
-      subscriptionLogger.info('Master user detected, granting enterprise access', { email: userEmail });
-      localStorage.setItem('beamlab_subscription_tier', 'enterprise');
-      setSubscription({
-        tier: 'enterprise',
-        isLoading: false,
-        expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-        features: TIER_FEATURES.enterprise,
-      });
-      return;
-    }
-
     try {
       // Get auth token for API call
       const token = await getToken();
@@ -181,35 +161,25 @@ export const SubscriptionProvider = ({
         });
       }
 
-      // Fallback to localStorage for demo mode
-      const savedTier = localStorage.getItem(
-        "beamlab_subscription_tier",
-      ) as SubscriptionTier | null;
-      // Default to free tier if no tier is saved (security: never grant premium on API failure)
-      const tier = savedTier || "free";
-
+      // SECURITY: On API failure, always default to 'free' tier.
+      // Never trust localStorage for subscription state — it can be
+      // modified by the user via DevTools.
+      subscriptionLogger.warn('API unavailable, defaulting to free tier');
       setSubscription({
-        tier,
+        tier: 'free',
         isLoading: false,
-        expiresAt:
-          tier !== "free"
-            ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-            : null,
-        features: TIER_FEATURES[tier],
+        expiresAt: null,
+        features: TIER_FEATURES.free,
       });
     } catch (error) {
       subscriptionLogger.error("Failed to fetch subscription", error);
-      // Fallback to localStorage
-      const savedTier = localStorage.getItem(
-        "beamlab_subscription_tier",
-      ) as SubscriptionTier | null;
-      // Default to free tier if no tier is saved (security: never grant premium on failure)
-      const tier = savedTier || "free";
+      // SECURITY: Always default to free tier on error.
+      // Never trust localStorage for subscription decisions.
       setSubscription({
-        tier,
+        tier: 'free',
         isLoading: false,
         expiresAt: null,
-        features: TIER_FEATURES[tier],
+        features: TIER_FEATURES.free,
       });
     }
   };

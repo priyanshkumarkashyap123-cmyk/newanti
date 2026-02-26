@@ -229,7 +229,6 @@ impl ArcLengthSolver {
         
         // Initialize increments
         let mut delta_u = vec![0.0; n];
-        let mut delta_lambda = 0.0;
         
         // Predictor phase
         let k = k_tangent(u_current);
@@ -264,7 +263,7 @@ impl ArcLengthSolver {
         let predictor_u: Vec<f64> = delta_u_f.iter().map(|&x| x * predictor_lambda).collect();
         
         delta_u = predictor_u;
-        delta_lambda = predictor_lambda;
+        let mut delta_lambda = predictor_lambda;
         
         // Newton-Raphson corrector iterations
         let mut converged = false;

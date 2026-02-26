@@ -15,7 +15,7 @@
  * - Theory of Matrix Structural Analysis (Przemieniecki)
  */
 
-use nalgebra::{DMatrix, DVector, Matrix6, Vector6, SymmetricEigen};
+use nalgebra::{DMatrix, DVector};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use crate::plate_element::PlateElement;
@@ -53,7 +53,7 @@ fn deserialize_restraints<'de, D>(deserializer: D) -> Result<[bool; 6], D::Error
 where
     D: serde::Deserializer<'de>,
 {
-    use serde::de::{self, Visitor, SeqAccess, MapAccess};
+    use serde::de::{Visitor, SeqAccess, MapAccess};
     
     struct RestraintsVisitor;
     
@@ -115,6 +115,7 @@ where
 /// 3D Frame Element with full properties
 /// Supports both Rust and JavaScript naming conventions
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[allow(non_snake_case)]
 pub struct Element3D {
     #[serde(deserialize_with = "deserialize_string_or_number")]
     pub id: String,
@@ -1082,10 +1083,18 @@ pub fn analyze_3d_frame(
         
         let mut fef_local = DVector::zeros(12);
         
-        // X-component (axial point load)
+        // X-component (axial point load) — bar element uses LINEAR shape functions
         if (lx * p).abs() > 1e-12 {
-            let (v1, v2, _m1, _m2) = compute_point_load_fef(lx * p, pos, length, pl.is_moment);
-            fef_local[0] += v1; fef_local[6] += v2;
+            if pl.is_moment {
+                // Axial moment doesn't make physical sense; treat as torsion handled elsewhere
+                let (v1, v2, _m1, _m2) = compute_point_load_fef(lx * p, pos, length, true);
+                fef_local[0] += v1; fef_local[6] += v2;
+            } else {
+                // Linear shape functions: N1 = 1-a/L, N2 = a/L
+                let a = pos * length;
+                fef_local[0] += lx * p * (1.0 - a / length);
+                fef_local[6] += lx * p * (a / length);
+            }
         }
         // Y-component (transverse Y, moments about Z)
         if (ly * p).abs() > 1e-12 {
@@ -1267,7 +1276,7 @@ pub fn analyze_3d_frame(
     
     // Calculate member forces (using shared DRY helpers, includes point loads)
     let member_forces = calculate_member_forces(
-        &elements, &nodes, &node_map, &u_global, &all_distributed_loads, &point_loads_on_members
+        &elements, &nodes, &node_map, &u_global, &all_distributed_loads, &point_loads_on_members, &temperature_loads
     )?;
     
     // ===== EQUILIBRIUM VERIFICATION (H3: industry-standard with moments) =====
@@ -1467,6 +1476,7 @@ pub fn analyze_3d_frame(
 ///
 /// Reference: Przemieniecki, "Theory of Matrix Structural Analysis", Ch. 5
 ///            Cook et al., "Concepts and Applications of FEA", 4th ed.
+#[allow(non_snake_case)]
 fn frame_element_stiffness(elem: &Element3D, L: f64) -> DMatrix<f64> {
     let E = elem.E;
     let G = elem.G;
@@ -1526,6 +1536,7 @@ fn frame_element_stiffness(elem: &Element3D, L: f64) -> DMatrix<f64> {
 }
 
 /// Truss element stiffness (axial only)
+#[allow(non_snake_case)]
 fn truss_element_stiffness(elem: &Element3D, L: f64) -> DMatrix<f64> {
     let mut k = DMatrix::zeros(12, 12);
     let k_axial = elem.E * elem.A / L;
@@ -1539,6 +1550,7 @@ fn truss_element_stiffness(elem: &Element3D, L: f64) -> DMatrix<f64> {
 }
 
 /// Cable element with geometric stiffness
+#[allow(non_snake_case)]
 fn cable_element_stiffness(elem: &Element3D, L: f64) -> DMatrix<f64> {
     let mut k = DMatrix::zeros(12, 12);
     
@@ -1558,6 +1570,7 @@ fn cable_element_stiffness(elem: &Element3D, L: f64) -> DMatrix<f64> {
 // ============================================
 
 /// 3D transformation matrix (12x12)
+#[allow(non_snake_case)]
 fn transformation_matrix_3d(
     dx: f64, dy: f64, dz: f64, 
     L: f64, 
@@ -1682,18 +1695,20 @@ fn compute_fef_1d(wa: f64, wb: f64, length: f64, sp: f64, ep: f64) -> (f64, f64,
         let m = wa * length * length / 12.0;
         (r, r, m, -m)
     } else if wa.abs() < 1e-12 {
-        // Ascending: 0 → wb
+        // Ascending: 0 → wb (consistent nodal forces from Hermite shape functions)
+        // V1 = 3wL/20, V2 = 7wL/20, M1 = wL²/30, M2 = -wL²/20
         (
-            wb * length / 6.0,
-            wb * length / 3.0,
+            3.0 * wb * length / 20.0,
+            7.0 * wb * length / 20.0,
             wb * length * length / 30.0,
             -wb * length * length / 20.0,
         )
     } else if wb.abs() < 1e-12 {
-        // Descending: wa → 0
+        // Descending: wa → 0 (consistent nodal forces from Hermite shape functions)
+        // V1 = 7wL/20, V2 = 3wL/20, M1 = wL²/20, M2 = -wL²/30
         (
-            wa * length / 3.0,
-            wa * length / 6.0,
+            7.0 * wa * length / 20.0,
+            3.0 * wa * length / 20.0,
             wa * length * length / 20.0,
             -wa * length * length / 30.0,
         )
@@ -1705,16 +1720,18 @@ fn compute_fef_1d(wa: f64, wb: f64, length: f64, sp: f64, ep: f64) -> (f64, f64,
         let r_u = w_uniform * length / 2.0;
         let m_u = w_uniform * length * length / 12.0;
         let (r1_t, r2_t, m1_t, m2_t) = if ascending {
+            // Ascending triangular: consistent nodal forces
             (
-                w_triangular * length / 6.0,
-                w_triangular * length / 3.0,
+                3.0 * w_triangular * length / 20.0,
+                7.0 * w_triangular * length / 20.0,
                 w_triangular * length * length / 30.0,
                 -w_triangular * length * length / 20.0,
             )
         } else {
+            // Descending triangular: consistent nodal forces
             (
-                w_triangular * length / 3.0,
-                w_triangular * length / 6.0,
+                7.0 * w_triangular * length / 20.0,
+                3.0 * w_triangular * length / 20.0,
                 w_triangular * length * length / 20.0,
                 -w_triangular * length * length / 30.0,
             )
@@ -2022,6 +2039,7 @@ fn calculate_member_forces(
     u_global: &DVector<f64>,
     distributed_loads: &[DistributedLoad],
     point_loads_on_members: &[PointLoadOnMember],
+    temperature_loads: &[TemperatureLoad],
 ) -> Result<HashMap<String, MemberForces>, String> {
     let mut forces = HashMap::new();
     
@@ -2107,10 +2125,16 @@ fn calculate_member_forces(
             let p = pl.magnitude;
             let pos = pl.position.max(0.0).min(1.0);
             
-            // X-component (axial)
+            // X-component (axial) — linear shape functions for bar element
             if (lx * p).abs() > 1e-12 {
-                let (v1, v2, m1, m2) = compute_point_load_fef(lx * p, pos, length, pl.is_moment);
-                fef_local[0] += v1; fef_local[6] += v2;
+                if pl.is_moment {
+                    let (v1, v2, _m1, _m2) = compute_point_load_fef(lx * p, pos, length, true);
+                    fef_local[0] += v1; fef_local[6] += v2;
+                } else {
+                    let a = pos * length;
+                    fef_local[0] += lx * p * (1.0 - a / length);
+                    fef_local[6] += lx * p * (a / length);
+                }
             }
             // Y-component (transverse Y, moments about Z)
             if (ly * p).abs() > 1e-12 {
@@ -2121,6 +2145,25 @@ fn calculate_member_forces(
             if (lz * p).abs() > 1e-12 {
                 let (v1, v2, m1, m2) = compute_point_load_fef(lz * p, pos, length, pl.is_moment);
                 fef_local[2] += v1; fef_local[4] += -m1; fef_local[8] += v2; fef_local[10] += -m2;
+            }
+        }
+        
+        // Temperature load FEFs (must be subtracted like mechanical FEFs)
+        for tl in temperature_loads {
+            if tl.element_id != elem.id { continue; }
+            let f_axial = elem.E * elem.A * tl.alpha * tl.delta_t;
+            fef_local[0] += -f_axial;   // Same as the thermal equivalent force vector
+            fef_local[6] += f_axial;
+            let iz_val = if elem.Iz > 0.0 { elem.Iz } else { elem.Iy };
+            if tl.gradient_y.abs() > 1e-15 {
+                let m_bend_z = elem.E * iz_val * tl.alpha * tl.gradient_y;
+                fef_local[5] += m_bend_z;
+                fef_local[11] += -m_bend_z;
+            }
+            if tl.gradient_z.abs() > 1e-15 {
+                let m_bend_y = elem.E * elem.Iy * tl.alpha * tl.gradient_z;
+                fef_local[4] += -m_bend_y;
+                fef_local[10] += m_bend_y;
             }
         }
         
@@ -2177,6 +2220,7 @@ fn calculate_member_forces(
     Ok(forces)
 }
 
+#[allow(dead_code)]
 fn zero_displacement_result(nodes: &[Node3D], elements: &[Element3D]) -> AnalysisResult3D {
     let mut displacements = HashMap::new();
     let mut reactions = HashMap::new();
@@ -2230,7 +2274,7 @@ pub fn modal_analysis(
     elements: Vec<Element3D>,
     num_modes: usize,
 ) -> Result<ModalResult, String> {
-    use crate::dynamics::{assemble_mass_matrix, solve_eigenvalues, ModalResult};
+    use crate::dynamics::{assemble_mass_matrix, solve_eigenvalues};
     
     // 1. Build Global Stiffness Matrix (K)
     // Reuse analyze_3d_frame logic but only for K assembly
@@ -2312,7 +2356,7 @@ pub fn modal_analysis(
     }
     
     // Solve
-    let mut raw_result = solve_eigenvalues(&k_reduced, &m_reduced, num_modes)?;
+    let raw_result = solve_eigenvalues(&k_reduced, &m_reduced, num_modes)?;
     
     // 4. Map back to full mode shapes (insert zeros for fixed DOFs)
     // raw_result.mode_shapes is currently empty from dynamics.rs, we construct it here
@@ -2482,7 +2526,7 @@ pub fn linearized_buckling_analysis(
 
     // Calculate member axial forces
     let member_forces = calculate_member_forces(
-        &elements, &nodes, &node_map, &u_global, &distributed_loads, &[],
+        &elements, &nodes, &node_map, &u_global, &distributed_loads, &[], &[],
     )?;
 
     // Step 3: Build K_g from axial forces
@@ -2601,6 +2645,7 @@ pub fn linearized_buckling_analysis(
 /// The geometric stiffness accounts for the effect of axial force on bending stiffness:
 /// - Tensile axial force increases effective bending stiffness
 /// - Compressive axial force decreases effective bending stiffness (buckling tendency)
+#[allow(non_snake_case)]
 fn geometric_stiffness_matrix(axial_force: f64, length: f64) -> DMatrix<f64> {
     let mut kg = DMatrix::zeros(12, 12);
     
@@ -2609,7 +2654,7 @@ fn geometric_stiffness_matrix(axial_force: f64, length: f64) -> DMatrix<f64> {
     
     // Geometric stiffness coefficients
     // From standard FEM texts (Przemieniecki, Cook et al.)
-    let k1 = P / L;
+    let _k1 = P / L;
     let k2 = 6.0 * P / (5.0 * L);
     let k3 = P / 10.0;
     let k4 = 2.0 * P * L / 15.0;
@@ -2833,8 +2878,21 @@ pub fn p_delta_analysis(
                 let (lx, ly, lz) = decompose_load_direction(&pl.direction, &t_matrix);
                 let mut fef_local = DVector::zeros(12);
                 let pos = pl.position.max(0.0).min(1.0);
+                // X-component (axial) — linear shape functions
+                if (lx * pl.magnitude).abs() > 1e-12 {
+                    if pl.is_moment {
+                        let (v1x, v2x, _, _) = compute_point_load_fef(pl.magnitude * lx, pos, length, true);
+                        fef_local[0] += v1x; fef_local[6] += v2x;
+                    } else {
+                        let a = pos * length;
+                        fef_local[0] += pl.magnitude * lx * (1.0 - a / length);
+                        fef_local[6] += pl.magnitude * lx * (a / length);
+                    }
+                }
+                // Y-component
                 let (v1y, v2y, m1y, m2y) = compute_point_load_fef(pl.magnitude * ly, pos, length, pl.is_moment);
                 fef_local[1] += v1y; fef_local[7] += v2y; fef_local[5] += m1y; fef_local[11] += m2y;
+                // Z-component
                 let (v1z, v2z, m1z, m2z) = compute_point_load_fef(pl.magnitude * lz, pos, length, pl.is_moment);
                 fef_local[2] += v1z; fef_local[8] += v2z; fef_local[4] -= m1z; fef_local[10] -= m2z;
                 let fef_global_elem = t_matrix.transpose() * fef_local;
@@ -2897,7 +2955,7 @@ pub fn p_delta_analysis(
                 reactions.insert(node.id.clone(), vec![r_global[d], r_global[d+1], r_global[d+2], r_global[d+3], r_global[d+4], r_global[d+5]]);
             }
         }
-        let member_forces_map = calculate_member_forces(&elements, &nodes, &node_map, &DVector::zeros(num_dof), &all_distributed_loads, &point_loads_on_members)?;
+        let member_forces_map = calculate_member_forces(&elements, &nodes, &node_map, &DVector::zeros(num_dof), &all_distributed_loads, &point_loads_on_members, &temperature_loads)?;
         return Ok(AnalysisResult3D {
             success: true, error: None, displacements, reactions,
             member_forces: member_forces_map, plate_results: HashMap::new(),
@@ -2924,10 +2982,9 @@ pub fn p_delta_analysis(
         u_global[dof_idx] = u_reduced[i];
     }
     
-    // Get initial member forces for axial loads
-    let empty_point_loads: Vec<PointLoadOnMember> = vec![];
+    // Get initial member forces for axial loads (include ALL loads for accurate first iteration)
     let mut member_forces = calculate_member_forces(
-        &elements, &nodes, &node_map, &u_global, &distributed_loads, &empty_point_loads
+        &elements, &nodes, &node_map, &u_global, &all_distributed_loads, &point_loads_on_members, &temperature_loads
     )?;
     
     // ===== Step 3-7: P-Delta iteration loop =====
@@ -2963,8 +3020,10 @@ pub fn p_delta_analysis(
             let length = (dx*dx + dy*dy + dz*dz).sqrt();
             if length < 1e-10 { continue; }
             
-            // Get axial force (local x = forces_i[0], sign: +tension, -compression)
-            let axial_force = match member_forces.get(&element.id) {
+            // Get axial force for geometric stiffness
+            // forces_i[0] follows FEM convention: positive = compression (pushes node)
+            // geometric_stiffness_matrix expects P > 0 = tension, so negate
+            let axial_force = -match member_forces.get(&element.id) {
                 Some(forces) => forces.forces_i[0],
                 None => 0.0,
             };
@@ -3007,7 +3066,7 @@ pub fn p_delta_analysis(
         
         // Update member forces
         member_forces = calculate_member_forces(
-            &elements, &nodes, &node_map, &u_global, &all_distributed_loads, &point_loads_on_members
+            &elements, &nodes, &node_map, &u_global, &all_distributed_loads, &point_loads_on_members, &temperature_loads
         )?;
         
         // Check convergence: relative change in displacement norm

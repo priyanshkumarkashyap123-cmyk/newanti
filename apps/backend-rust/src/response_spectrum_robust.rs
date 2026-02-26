@@ -702,7 +702,7 @@ impl ResponseSpectrumEngine {
                 (i, contrib)
             })
             .collect();
-        mode_contributions.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+        mode_contributions.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
         
         let dominant_modes: Vec<usize> = mode_contributions.iter()
             .take(5)
@@ -842,7 +842,7 @@ impl DesignSpectrum {
         
         // Sort by period
         let mut combined: Vec<(f64, f64)> = periods.iter().cloned().zip(accelerations.iter().cloned()).collect();
-        combined.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+        combined.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
         combined.dedup_by(|a, b| (a.0 - b.0).abs() < 1e-6);
         
         DesignSpectrum {

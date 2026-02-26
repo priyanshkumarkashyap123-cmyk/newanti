@@ -15,7 +15,6 @@
 // ============================================================================
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 // ============================================================================
 // CALCULATION REPORT FRAMEWORK
@@ -290,12 +289,12 @@ impl EnvelopeDiagramGenerator {
 
         // Find critical points for annotations
         let max_idx = y_max.iter().enumerate()
-            .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
+            .max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal))
             .map(|(i, _)| i)
             .unwrap_or(0);
 
         let min_idx = y_min.iter().enumerate()
-            .min_by(|a, b| a.1.partial_cmp(b.1).unwrap())
+            .min_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal))
             .map(|(i, _)| i)
             .unwrap_or(0);
 
@@ -376,7 +375,7 @@ impl EnvelopeDiagramGenerator {
 
         // Find max deflection
         let max_idx = y_max.iter().enumerate()
-            .max_by(|a, b| a.1.abs().partial_cmp(&b.1.abs()).unwrap())
+            .max_by(|a, b| a.1.abs().partial_cmp(&b.1.abs()).unwrap_or(std::cmp::Ordering::Equal))
             .map(|(i, _)| i)
             .unwrap_or(0);
 
@@ -446,7 +445,7 @@ impl InteractionDiagramGenerator {
             .filter(|r| r.distance_from_top <= h / 2.0)
             .map(|r| r.area)
             .sum();
-        let as_tension = as_total - as_prime;
+        let _as_tension = as_total - as_prime;
 
         // Point 0: Pure compression (P0)
         let p0 = 0.85 * fc * b * h + fy * as_total;
@@ -504,7 +503,7 @@ impl InteractionDiagramGenerator {
         points.push((pt, 0.0));
 
         // Sort by P for proper curve
-        points.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
+        points.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
         points
     }
 

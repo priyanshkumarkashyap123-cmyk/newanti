@@ -274,20 +274,64 @@ impl SteelBeam {
         let mn = mp.min(ltb.mn_ltb);
         
         // Reduce for local buckling if needed
+        // Reduce for local buckling per AISC 360-16
         let mn = match (&local.flange_class, &local.web_class) {
-            (SlendernessClass::Slender, _) | (_, SlendernessClass::Slender) => mn * 0.7,
-            (SlendernessClass::Noncompact, _) | (_, SlendernessClass::Noncompact) => {
+            (SlendernessClass::Slender, _) | (_, SlendernessClass::Slender) => {
+                // AISC 360-16 Eq. F3-2: Mn = Fcr * Sx
+                let h = self.depth - 2.0 * self.flange_thickness;
+                let kc = (4.0 / (h / self.web_thickness).sqrt()).clamp(0.35, 0.76);
+                let lambda_f = self.flange_width / (2.0 * self.flange_thickness);
+                let fcr = 0.9 * self.e * kc / lambda_f.powi(2);
+                let mn_slender = fcr * props.sx / 1e6;
+                mn_slender.min(mn)
+            }
+            (SlendernessClass::Noncompact, _) => {
+                // AISC 360-16 Eq. F3-1 — flange local buckling
+                let e = self.e;
+                let fy = self.fy;
+                let bf = self.flange_width;
+                let tf = self.flange_thickness;
+                let lambda_f = bf / (2.0 * tf);
+                let lambda_pf = 0.38 * (e / fy).sqrt();
+                let lambda_rf = 1.0 * (e / fy).sqrt();
+                let interp = ((lambda_f - lambda_pf) / (lambda_rf - lambda_pf)).max(0.0).min(1.0);
+                let mn_noncompact = mp - (mp - 0.7 * fy * props.sx / 1e6) * interp;
+                mn_noncompact.min(mn)
+            }
+            (_, SlendernessClass::Noncompact) => {
+                // AISC 360-16 F4 — web local buckling (compact flange, noncompact web)
+                let h = self.depth - 2.0 * self.flange_thickness;
+                let lambda_w = h / self.web_thickness;
+                let lambda_pw = 3.76 * (self.e / self.fy).sqrt();
+                let lambda_rw = 5.70 * (self.e / self.fy).sqrt();
                 let my = self.fy * props.sx / 1e6;
-                my + (mp - my) * 0.7
+                let interp_w = ((lambda_w - lambda_pw) / (lambda_rw - lambda_pw)).max(0.0).min(1.0);
+                let mn_web = mp - (mp - my) * interp_w;
+                mn_web.min(mn)
             }
             _ => mn,
         };
         
-        // Shear capacity
+        // Shear capacity per AISC 360-16 G2
         let h = self.depth - 2.0 * self.flange_thickness;
         let aw = h * self.web_thickness;
-        let cv = 1.0; // Assuming adequate web
-        let vn = 0.6 * self.fy * aw * cv / 1000.0;
+        let hw_tw = h / self.web_thickness;
+        let e = self.e;
+        let fy = self.fy;
+        // Cv1 per G2.1: Cv1=1.0 when h/tw <= 2.24*sqrt(E/Fy)
+        let cv1_limit = 2.24 * (e / fy).sqrt();
+        let (cv, phi_v_factor) = if hw_tw <= cv1_limit {
+            (1.0, 1.0) // phi_v = 1.00 per G1
+        } else if hw_tw <= 1.10 * (1.2 * e / fy).sqrt() {
+            // Eq. G2-3: Cv1 = 1.10*sqrt(kv*E/Fy) / (h/tw), kv=5.34 for unstiffened
+            let kv = 5.34;
+            (1.10 * (kv * e / fy).sqrt() / hw_tw, 0.9)
+        } else {
+            // Eq. G2-4: Cv1 = 1.51*kv*E / ((h/tw)^2 * Fy)
+            let kv = 5.34;
+            (1.51 * kv * e / (hw_tw.powi(2) * fy), 0.9)
+        };
+        let vn = 0.6 * fy * aw * cv / 1000.0;
         
         // Deflection limit
         let deflection_limit = self.span * 1000.0 / 360.0;
@@ -296,7 +340,7 @@ impl SteelBeam {
             mn,
             phi_mn: 0.9 * mn,
             vn,
-            phi_vn: 0.9 * vn,
+            phi_vn: phi_v_factor * vn,
             lateral_torsional: ltb,
             local_buckling: local,
             deflection_limit,
@@ -360,9 +404,11 @@ impl SteelBeam {
         let rts = ((props.iy * props.cw).sqrt() / props.sx).sqrt();
         let c = 1.0; // For doubly symmetric
         let ho = self.depth - self.flange_thickness;
+        // AISC 360-16 Eq. F2-6: Lr = 1.95 rts (E/(0.7Fy)) sqrt(Jc/(Sx*ho) + sqrt((Jc/(Sx*ho))^2 + 6.76(0.7Fy/E)^2))
+        let jc_sxho = props.j * c / (props.sx * ho);
         let lr = 1.95 * rts * (e / (0.7 * fy)) * 
-                ((props.j * c / (props.sx * ho)).powi(2) + 
-                 6.76 * (0.7 * fy / e).powi(2)).sqrt().sqrt();
+                (jc_sxho + (jc_sxho.powi(2) + 
+                 6.76 * (0.7 * fy / e).powi(2)).sqrt()).sqrt();
         
         // Plastic moment
         let mp = fy * props.zx / 1e6;
@@ -603,16 +649,34 @@ impl ConcreteBeam {
         
         // Flexural capacity (positive moment)
         let rho = as_prov.1 / (b * d);
-        let rho_balanced = 0.85 * fc / fy * 0.003 / (0.003 + fy / 200000.0) * 0.85;
+        // ACI 318-19 22.2.2.4.3: beta1 varies with f'c
+        let beta1 = if fc <= 28.0 {
+            0.85
+        } else {
+            (0.85 - 0.05 * (fc - 28.0) / 7.0).max(0.65)
+        };
+        let rho_balanced = 0.85 * fc / fy * 0.003 / (0.003 + fy / 200000.0) * beta1;
         
         let a = as_prov.1 * fy / (0.85 * fc * b);
-        let phi = if rho < 0.75 * rho_balanced { 0.9 } else { 0.65 };
+        // ACI 318-19: phi based on net tensile strain epsilon_t
+        let c = a / beta1;
+        let epsilon_t = 0.003 * (d - c) / c;
+        let phi = if epsilon_t >= 0.005 {
+            0.9  // Tension-controlled
+        } else if epsilon_t <= 0.002 {
+            0.65 // Compression-controlled
+        } else {
+            // Transition zone: linear interpolation
+            0.65 + 0.25 * (epsilon_t - 0.002) / (0.005 - 0.002)
+        };
         
         let mn = as_prov.1 * fy * (d - a / 2.0) / 1e6;
         let phi_mn = phi * mn;
         
-        // Shear capacity
-        let vc = 0.17 * fc.sqrt() * b * d / 1000.0;
+        // Shear capacity per ACI 318-19 22.5.5.1.3
+        // Size effect factor λs per ACI 318-19
+        let lambda_s = (2.0 / (1.0 + 0.004 * d)).sqrt().min(1.0);
+        let vc = 0.17 * lambda_s * fc.sqrt() * b * d / 1000.0;
         
         let vs = match &self.reinforcement {
             Some(r) if r.stirrup_spacing > 0.0 => {
@@ -621,6 +685,10 @@ impl ConcreteBeam {
             }
             _ => 0.0,
         };
+        
+        // Maximum Vs limit per ACI 318-19, 22.5.1.2
+        let vs_max = 0.66 * fc.sqrt() * b * d / 1000.0;
+        let vs = vs.min(vs_max);
         
         let phi_vn = 0.75 * (vc + vs);
         
@@ -632,7 +700,7 @@ impl ConcreteBeam {
             phi_vn,
             rho,
             rho_balanced,
-            tension_controlled: rho < 0.75 * rho_balanced,
+            tension_controlled: epsilon_t >= 0.005,
         }
     }
 
@@ -646,7 +714,9 @@ impl ConcreteBeam {
         // Required steel
         let rn = mu * 1e6 / (0.9 * b * d.powi(2));
         let rho = 0.85 * fc / fy * (1.0 - (1.0 - 2.0 * rn / (0.85 * fc)).sqrt().max(0.0));
-        let rho = rho.max(0.0033); // Minimum
+        // ACI 318-19 9.6.1.2: rho_min = max(0.25*sqrt(f'c)/fy, 1.4/fy)
+        let rho_min = (0.25 * fc.sqrt() / fy).max(1.4 / fy);
+        let rho = rho.max(rho_min);
         
         let as_req = rho * b * d;
         
@@ -708,11 +778,48 @@ impl ConcreteBeam {
             }
         };
         
-        // Gross moment of inertia
+        // Gross moment of inertia (for uncracked section)
         let ig = self.width * self.depth.powi(3) / 12.0;
         let ec = 4700.0 * self.fc.sqrt();
         
-        let delta = 5.0 * w * (l * 1000.0).powi(4) / (384.0 * ec * ig);
+        // Effective moment of inertia per ACI 318-19, 24.2.3.5 (Branson's equation)
+        let fr = 0.62 * self.fc.sqrt(); // Modulus of rupture
+        let yt = self.depth / 2.0; // Distance to extreme tension fiber
+        let mcr = fr * ig / yt / 1e6; // Cracking moment (kN·m)
+        let ie = if max_moment.abs() > mcr && max_moment.abs() > 1e-6 {
+            // Cracked section: use effective Ie
+            let n = 200000.0_f64 / ec; // Modular ratio (steel Es / Ec)
+            let rho_est: f64 = match &self.reinforcement {
+                Some(r) => {
+                    let as_bot = r.bot_bars as f64 * std::f64::consts::PI * (r.bot_diameter / 2.0).powi(2);
+                    as_bot / (self.width * (self.depth - self.cover))
+                },
+                None => 0.005, // Assume minimum reinforcement
+            };
+            let rho_n = rho_est * n;
+            // Cracked neutral axis depth (rectangular section)
+            let d_eff = self.depth - self.cover;
+            let kd = d_eff * ((2.0_f64 * rho_n + rho_n * rho_n).sqrt() - rho_n);
+            let icr = self.width * kd.powi(3) / 3.0 + n * rho_est * self.width * d_eff * (d_eff - kd).powi(2);
+            let ratio = (mcr / max_moment.abs()).min(1.0);
+            let ie = icr + (ig - icr) * ratio.powi(3);
+            ie.min(ig).max(icr)
+        } else {
+            ig  // Uncracked section
+        };
+        
+        // Deflection coefficient varies by support condition:
+        // Simply-supported: 5/384, Fixed-fixed: 1/384, Cantilever: 1/8
+        let delta_coeff = match self.support {
+            BeamSupport::SimpleSimple => 5.0 / 384.0,
+            BeamSupport::FixedFixed => 1.0 / 384.0,
+            BeamSupport::Cantilever => 1.0 / 8.0,
+            BeamSupport::Continuous => 1.0 / 185.0, // Approximate for continuous
+            _ => 5.0 / 384.0, // Default to simply-supported
+        };
+        // w in kN/m, 1 kN/m = 1 N/mm for consistent units with Ie in mm^4 and Ec in MPa
+        let w_nmm = w; // kN/m = N/mm
+        let delta = delta_coeff * w_nmm * (l * 1000.0).powi(4) / (ec * ie);
         
         // Simplified diagrams
         let n = 20;
@@ -818,7 +925,12 @@ impl CompositeBeam {
         
         // ACI capacity
         let qn1 = 0.5 * asa * (fc * ec).sqrt();
-        let qn2 = asa * fu;
+        // AISC 360-16 I8.2a: Qn = Rg*Rp*Asa*Fu
+        // Rg = 1.0 for studs welded directly to flange (no deck)
+        // Rp = 0.75 for studs welded directly to flange
+        let rg = 1.0;
+        let rp = 0.75;
+        let qn2 = rg * rp * asa * fu;
         
         qn1.min(qn2) / 1000.0 // kN
     }
@@ -836,7 +948,7 @@ impl CompositeBeam {
         let compression = cf.min(ts) / 1000.0; // kN
         
         // Plastic neutral axis
-        let (_a, _y_pna) = if compression * 1000.0 >= ts {
+        let (a_pna, _y_pna) = if compression * 1000.0 >= ts {
             // PNA in concrete
             let a = ts / (0.85 * self.concrete_fc * self.slab_effective_width);
             (a, self.steel_beam.depth + self.deck_height + a / 2.0)
@@ -846,9 +958,9 @@ impl CompositeBeam {
             (tc, d / 2.0)
         };
         
-        // Lever arm
+        // Lever arm: use actual stress block depth for concrete compression centroid
         let d_steel = self.steel_beam.depth / 2.0;
-        let d_conc = self.steel_beam.depth + self.deck_height + tc / 2.0;
+        let d_conc = self.steel_beam.depth + self.deck_height + tc - a_pna / 2.0;
         let lever = d_conc - d_steel;
         
         // Moment capacity

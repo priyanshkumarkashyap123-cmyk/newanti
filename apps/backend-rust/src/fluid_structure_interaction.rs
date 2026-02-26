@@ -674,7 +674,7 @@ impl SloshingTank {
             }
         }
 
-        frequencies.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        frequencies.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
         frequencies.truncate(self.n_modes);
         frequencies
     }

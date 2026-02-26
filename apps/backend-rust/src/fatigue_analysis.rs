@@ -273,7 +273,9 @@ impl StressHistory {
             }
         }
         
-        extrema.push(*self.stress.last().unwrap());
+        if let Some(&last) = self.stress.last() {
+            extrema.push(last);
+        }
         extrema
     }
 }

@@ -249,11 +249,11 @@ impl DomainDecomposition {
         // Sort nodes by coordinate in dominant direction
         let mut sorted_nodes = nodes.to_vec();
         if extent_x >= extent_y && extent_x >= extent_z {
-            sorted_nodes.sort_by(|&a, &b| coords[a].0.partial_cmp(&coords[b].0).unwrap());
+            sorted_nodes.sort_by(|&a, &b| coords[a].0.partial_cmp(&coords[b].0).unwrap_or(std::cmp::Ordering::Equal));
         } else if extent_y >= extent_z {
-            sorted_nodes.sort_by(|&a, &b| coords[a].1.partial_cmp(&coords[b].1).unwrap());
+            sorted_nodes.sort_by(|&a, &b| coords[a].1.partial_cmp(&coords[b].1).unwrap_or(std::cmp::Ordering::Equal));
         } else {
-            sorted_nodes.sort_by(|&a, &b| coords[a].2.partial_cmp(&coords[b].2).unwrap());
+            sorted_nodes.sort_by(|&a, &b| coords[a].2.partial_cmp(&coords[b].2).unwrap_or(std::cmp::Ordering::Equal));
         }
         
         // Split at median

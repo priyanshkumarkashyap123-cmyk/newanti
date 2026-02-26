@@ -770,7 +770,7 @@ impl RobustLanczosSolver {
         // Extract eigenvalues and sort
         let eigenvalues: Vec<f64> = (0..n).map(|i| t[i][i]).collect();
         let mut indices: Vec<usize> = (0..n).collect();
-        indices.sort_by(|&a, &b| eigenvalues[a].partial_cmp(&eigenvalues[b]).unwrap());
+        indices.sort_by(|&a, &b| eigenvalues[a].partial_cmp(&eigenvalues[b]).unwrap_or(std::cmp::Ordering::Equal));
         
         let sorted_eigenvalues: Vec<f64> = indices.iter().map(|&i| eigenvalues[i]).collect();
         let sorted_eigenvectors: Vec<Vec<f64>> = indices.iter()

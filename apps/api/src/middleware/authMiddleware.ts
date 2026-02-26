@@ -153,3 +153,46 @@ export const handleAuthError = (err: Error, _req: Request, res: Response, next: 
     }
     next(err);
 };
+
+// ============================================
+// WEBSOCKET TOKEN VERIFICATION
+// ============================================
+
+/**
+ * Verify a JWT/Clerk token for WebSocket connections.
+ * Used by SocketServer's io.use() middleware to authenticate
+ * socket connections before they are accepted.
+ *
+ * Returns the decoded token payload (with userId/sub) or null if invalid.
+ */
+export async function verifySocketToken(
+    token: string
+): Promise<{ userId?: string; sub?: string; id?: string } | null> {
+    if (!token) return null;
+
+    try {
+        // Attempt Clerk token verification via Clerk Backend SDK
+        // Clerk's verifyToken uses the JWKS endpoint and RS256
+        const { verifyToken } = await import('@clerk/express');
+        const payload = await verifyToken(token, {
+            secretKey: process.env['CLERK_SECRET_KEY'] || '',
+        });
+        if (payload?.sub) {
+            return { userId: payload.sub, sub: payload.sub };
+        }
+        return null;
+    } catch (clerkErr) {
+        // Clerk verification failed — try in-house JWT as fallback
+        try {
+            const jwt = await import('jsonwebtoken');
+            const secret = process.env['JWT_SECRET'];
+            if (!secret) return null;
+            const decoded = jwt.default.verify(token, secret) as Record<string, unknown>;
+            const userId = (decoded.userId ?? decoded.sub ?? decoded.id) as string | undefined;
+            if (userId) return { userId, sub: userId };
+            return null;
+        } catch {
+            return null;
+        }
+    }
+}

@@ -835,8 +835,8 @@ export const RealisticBook: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 
       flex flex-col items-center justify-center p-4 md:p-8">
       
-      {/* Inject styles */}
-      <style dangerouslySetInnerHTML={{ __html: bookStyles }} />
+      {/* Inject styles via ref to avoid dangerouslySetInnerHTML */}
+      <style ref={(el) => { if (el) el.textContent = bookStyles; }} />
       
       {/* Header */}
       <div className="mb-8 text-center">

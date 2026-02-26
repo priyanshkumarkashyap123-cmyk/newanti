@@ -361,6 +361,8 @@ pub struct BoltProperties {
     pub fnv: f64,
     /// Nominal tensile stress (Fnt)
     pub fnt: f64,
+    /// Minimum tensile strength (Fu) for pretension calculation
+    pub fu: f64,
     /// Bolt grade (A325, A490, etc.)
     pub grade: String,
     /// Thread condition
@@ -371,12 +373,14 @@ impl BoltProperties {
     /// Create A325 bolt
     pub fn a325(diameter: f64, threads_excluded: bool) -> Self {
         let ab = PI * diameter.powi(2) / 4.0;
-        let fnv = if threads_excluded { 457.0 } else { 372.0 }; // MPa
+        // AISC 360-22 Table J3.2: Group A Fnv = 68 ksi (X) / 54 ksi (N)
+        let fnv = if threads_excluded { 469.0 } else { 372.0 }; // MPa
         Self {
             diameter,
             ab,
             fnv,
-            fnt: 620.0, // MPa
+            fnt: 620.0, // MPa (90 ksi)
+            fu: 827.0,  // MPa (120 ksi) min tensile strength
             grade: "A325".to_string(),
             threads_excluded,
         }
@@ -385,12 +389,14 @@ impl BoltProperties {
     /// Create A490 bolt
     pub fn a490(diameter: f64, threads_excluded: bool) -> Self {
         let ab = PI * diameter.powi(2) / 4.0;
-        let fnv = if threads_excluded { 579.0 } else { 457.0 }; // MPa
+        // AISC 360-22 Table J3.2: Group B Fnv = 84 ksi (X) / 68 ksi (N)
+        let fnv = if threads_excluded { 579.0 } else { 469.0 }; // MPa
         Self {
             diameter,
             ab,
             fnv,
-            fnt: 780.0, // MPa
+            fnt: 780.0, // MPa (113 ksi)
+            fu: 1034.0, // MPa (150 ksi) min tensile strength
             grade: "A490".to_string(),
             threads_excluded,
         }
@@ -473,7 +479,8 @@ impl BoltedConnection {
             let hsc = 1.0;
             let du = 1.13;
             // Minimum bolt pretension from AISC Table J3.1
-            let tb = 0.7 * bolt.fnt * bolt.ab;
+            // Tb = 0.7 * Fu * Ab (Fu = bolt min tensile strength, not Fnt)
+            let tb = 0.7 * bolt.fu * bolt.ab;
             Some(mu * hsc * du * tb * shear_planes as f64 * num_bolts as f64)
         } else {
             None
@@ -640,7 +647,7 @@ impl LocalBuckling {
             1.0 - ratio * (1.0 - 0.7 * fy * sx / mp)
         } else {
             // Slender - elastic buckling
-            let kc = 4.0 / (self.web_slenderness).sqrt().min(0.76).max(0.35);
+            let kc = (4.0 / (self.web_slenderness).sqrt()).clamp(0.35, 0.76);
             0.9 * 200000.0 * kc * sx / (mp * self.flange_slenderness.powi(2))
         }
     }

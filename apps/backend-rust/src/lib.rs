@@ -1,4 +1,17 @@
 // ============================================================================
+// CRATE-LEVEL LINT CONFIGURATION
+// ============================================================================
+// Allow dead code: many struct fields and methods are defined for future use
+// or serialization completeness (e.g. full code-check clause coverage).
+#![allow(dead_code)]
+// Allow non-snake-case: structural engineering uses conventional symbols
+// like E (Young's modulus), L (length), A (area), Iy, Iz (moments of inertia),
+// G (shear modulus), J (torsion constant), P (load), T (temperature), etc.
+#![allow(non_snake_case)]
+// Allow non-camel-case for code standard identifiers like IS875_Part3, ACI318_19
+#![allow(non_camel_case_types)]
+
+// ============================================================================
 // MODULE DECLARATIONS
 // ============================================================================
 // Core solver modules (private)
@@ -287,6 +300,7 @@ use nalgebra_sparse::{CooMatrix, CsrMatrix};
 use wasm_bindgen::prelude::*;
 use serde_wasm_bindgen;
 use serde::{Deserialize, Serialize};
+#[allow(unused_imports)]
 use std::collections::HashMap;
 
 // Re-export design code calculations
@@ -956,7 +970,7 @@ pub fn solve_sparse_system_json(input_json: &str) -> String {
     // Initialization
     let mut x = DVector::from_element(n, 0.0);
     let mut r = b.clone(); // Residual r = b - Ax (x=0)
-    let mut p = r.clone();
+    let _p = r.clone();
     
     // Jacobi Preconditioner: M = diag(A)
     // We need diagonal elements. CsrMatrix doesn't have easy diag access?
@@ -999,11 +1013,11 @@ pub fn solve_sparse_system_json(input_json: &str) -> String {
     let tol = 1e-8;
     let b_norm = b.norm();
     
-    let mut recovered = true;
-    let mut iterations = 0;
+    let _recovered = true;
+    let mut _iterations = 0;
     
     for iter in 0..max_iter {
-        iterations = iter;
+        _iterations = iter;
         // Ap = A * p
         let ap = &csr * &p;
         

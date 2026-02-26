@@ -219,7 +219,7 @@ impl UncertainOutput {
         };
 
         let mut sorted = samples.to_vec();
-        sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        sorted.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
 
         let mut percentiles = HashMap::new();
         for p in [1, 5, 10, 25, 50, 75, 90, 95, 99] {
@@ -629,9 +629,9 @@ impl MomentPropagation {
         if self.order >= 2 {
             if let Some(h) = hessian {
                 // Mean correction: μ_Y ≈ f(μ) + 0.5 Σ (∂²f/∂x_i²) σ²_i
-                let mut mean_correction = 0.0;
+                let mut _mean_correction = 0.0;
                 for i in 0..n {
-                    mean_correction += 0.5 * h[i * n + i] * input_variances[i];
+                    _mean_correction += 0.5 * h[i * n + i] * input_variances[i];
                 }
                 // Note: mean is not mutated for simplicity, could be:
                 // mean += mean_correction;
@@ -684,7 +684,7 @@ impl DistributionFitter {
     pub fn fit_weibull(samples: &[f64]) -> (f64, f64) {
         let n = samples.len();
         let mut sorted = samples.to_vec();
-        sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        sorted.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
 
         // Simple method of moments approximation
         let mean = samples.iter().sum::<f64>() / n as f64;
@@ -704,7 +704,7 @@ impl DistributionFitter {
     pub fn ks_test(samples: &[f64], cdf: impl Fn(f64) -> f64) -> f64 {
         let n = samples.len();
         let mut sorted = samples.to_vec();
-        sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        sorted.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
 
         let mut d_max = 0.0_f64;
         for (i, &x) in sorted.iter().enumerate() {

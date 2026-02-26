@@ -164,7 +164,7 @@ impl ModalSolver {
         // Sort by eigenvalue (ascending - lowest frequency first)
         let mut indices: Vec<usize> = (0..n).collect();
         indices.sort_by(|&i, &j| {
-            eigenvalues[i].partial_cmp(&eigenvalues[j]).unwrap()
+            eigenvalues[i].partial_cmp(&eigenvalues[j]).unwrap_or(std::cmp::Ordering::Equal)
         });
         
         // Extract first num_modes

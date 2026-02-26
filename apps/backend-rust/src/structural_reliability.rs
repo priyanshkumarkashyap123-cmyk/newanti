@@ -441,7 +441,7 @@ impl ReliabilityAnalyzer {
             converged,
         });
         
-        self.results.as_ref().unwrap()
+        self.results.as_ref().expect("results were just set")
     }
     
     /// Run Monte Carlo simulation
@@ -463,8 +463,8 @@ impl ReliabilityAnalyzer {
             (-2.0 * u1.ln()).sqrt() * (2.0 * PI * u2).cos()
         };
         
-        let mut sum_g = 0.0;
-        let mut sum_g2 = 0.0;
+        let mut _sum_g = 0.0;
+        let mut _sum_g2 = 0.0;
         
         for _ in 0..num_samples {
             // Generate random values
@@ -478,8 +478,8 @@ impl ReliabilityAnalyzer {
                 failures += 1;
             }
             
-            sum_g += g;
-            sum_g2 += g * g;
+            _sum_g += g;
+            _sum_g2 += g * g;
         }
         
         let pf = failures as f64 / num_samples as f64;
@@ -506,7 +506,7 @@ impl ReliabilityAnalyzer {
             converged: true,
         });
         
-        self.results.as_ref().unwrap()
+        self.results.as_ref().expect("results were just set")
     }
     
     /// Run analysis with configured method

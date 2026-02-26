@@ -209,17 +209,22 @@ async def check_concrete_members(request: ConcreteDesignRequest):
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
+class OptimizeSectionRequest(BaseModel):
+    code: str = "AISC360-16"
+    shape_type: str = "I-BEAM"
+    member_params: dict = {}
+    forces: dict = {}
+
 @router.post("/optimize")
-async def optimize_section(request: Request):
+async def optimize_section(request: OptimizeSectionRequest):
     """
     Find lightest section that passes design checks.
     """
     try:
-        data = await request.json()
-        code = data.get("code", "AISC360-16")
-        shape_type = data.get("shape_type", "I-BEAM")
-        member_params = data.get("member_params", {})
-        forces = data.get("forces", {})
+        code = request.code
+        shape_type = request.shape_type
+        member_params = request.member_params
+        forces = request.forces
         
         # Import internally to avoid circular deps
         from design.optimizer import SectionOptimizer

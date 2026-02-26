@@ -443,7 +443,7 @@ impl AdaptiveRefinement {
     /// Mark fixed fraction of elements with largest errors
     fn mark_fixed_fraction(&self, errors: &[ElementError], fraction: f64) -> Vec<usize> {
         let mut sorted: Vec<_> = errors.iter().collect();
-        sorted.sort_by(|a, b| b.error_value.partial_cmp(&a.error_value).unwrap());
+        sorted.sort_by(|a, b| b.error_value.partial_cmp(&a.error_value).unwrap_or(std::cmp::Ordering::Equal));
 
         let n_mark = ((errors.len() as f64 * fraction).ceil() as usize).max(1);
         sorted.iter().take(n_mark).map(|e| e.element_id).collect()
@@ -456,7 +456,7 @@ impl AdaptiveRefinement {
         let target = theta * total_error_sq;
 
         let mut sorted: Vec<_> = errors.iter().collect();
-        sorted.sort_by(|a, b| b.error_value.partial_cmp(&a.error_value).unwrap());
+        sorted.sort_by(|a, b| b.error_value.partial_cmp(&a.error_value).unwrap_or(std::cmp::Ordering::Equal));
 
         let mut marked = Vec::new();
         let mut cumulative = 0.0;
@@ -475,7 +475,7 @@ impl AdaptiveRefinement {
     /// Mark elements up to maximum count
     fn mark_max_elements(&self, errors: &[ElementError], max: usize) -> Vec<usize> {
         let mut sorted: Vec<_> = errors.iter().collect();
-        sorted.sort_by(|a, b| b.error_value.partial_cmp(&a.error_value).unwrap());
+        sorted.sort_by(|a, b| b.error_value.partial_cmp(&a.error_value).unwrap_or(std::cmp::Ordering::Equal));
 
         sorted.iter().take(max).map(|e| e.element_id).collect()
     }
@@ -487,7 +487,7 @@ impl AdaptiveRefinement {
         }
 
         let mut sorted: Vec<_> = errors.iter().collect();
-        sorted.sort_by(|a, b| a.error_value.partial_cmp(&b.error_value).unwrap());
+        sorted.sort_by(|a, b| a.error_value.partial_cmp(&b.error_value).unwrap_or(std::cmp::Ordering::Equal));
 
         let n_coarsen = (errors.len() as f64 * self.coarsen_fraction).floor() as usize;
         sorted.iter().take(n_coarsen).map(|e| e.element_id).collect()

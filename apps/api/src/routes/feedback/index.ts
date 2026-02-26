@@ -7,8 +7,12 @@
  */
 
 import { Router, Request, Response, type IRouter } from 'express';
+import { requireAuth } from '../../middleware/authMiddleware.js';
 
 const router: IRouter = Router();
+
+// All feedback routes require authentication
+router.use(requireAuth());
 
 // In-memory storage (production: use database)
 interface FeedbackEntry {

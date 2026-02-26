@@ -516,7 +516,7 @@ impl ArcLengthSolver {
     {
         let ndof = state.ndof();
         let mut delta_u = delta_u_pred.to_vec();
-        let mut delta_lambda = delta_lambda_pred;
+        let delta_lambda = delta_lambda_pred;
         
         // Apply predictor
         for i in 0..ndof {
@@ -555,7 +555,7 @@ impl ArcLengthSolver {
                 delta_u[i] += du_corr;
                 state.displacement[i] += du_corr;
             }
-            delta_lambda += ddlambda;
+            let _dl = ddlambda;
             state.load_factor += ddlambda;
             
             // Update residual

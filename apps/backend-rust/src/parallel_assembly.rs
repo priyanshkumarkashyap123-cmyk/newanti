@@ -188,13 +188,13 @@ impl TripletAccumulator {
 
     pub fn add(&self, row: usize, col: usize, value: f64) {
         if value.abs() > 1e-15 {
-            let mut triplets = self.triplets.lock().unwrap();
+            let mut triplets = self.triplets.lock().unwrap_or_else(|e| e.into_inner());
             triplets.push((row, col, value));
         }
     }
 
     pub fn add_matrix(&self, row_indices: &[usize], col_indices: &[usize], values: &[f64]) {
-        let mut triplets = self.triplets.lock().unwrap();
+        let mut triplets = self.triplets.lock().unwrap_or_else(|e| e.into_inner());
         let n = row_indices.len();
         for i in 0..n {
             if values[i].abs() > 1e-15 {
@@ -205,7 +205,7 @@ impl TripletAccumulator {
 
     /// Convert to CSR format
     pub fn to_csr(&self) -> (Vec<usize>, Vec<usize>, Vec<f64>) {
-        let triplets = self.triplets.lock().unwrap();
+        let triplets = self.triplets.lock().unwrap_or_else(|e| e.into_inner());
 
         // Sort by (row, col)
         let mut sorted: Vec<_> = triplets.clone();
@@ -447,14 +447,14 @@ impl ElementCostEstimator {
 
         // Sort elements by cost (descending) for better balance
         let mut sorted_indices: Vec<usize> = (0..elements.len()).collect();
-        sorted_indices.sort_by(|&a, &b| costs[b].partial_cmp(&costs[a]).unwrap());
+        sorted_indices.sort_by(|&a, &b| costs[b].partial_cmp(&costs[a]).unwrap_or(std::cmp::Ordering::Equal));
 
         for eid in sorted_indices {
             // Find partition with minimum cost
             let min_partition = partition_costs
                 .iter()
                 .enumerate()
-                .min_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+                .min_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
                 .map(|(idx, _)| idx)
                 .unwrap_or(0);
 
@@ -483,7 +483,7 @@ impl VectorAccumulator {
 
     pub fn add(&self, index: usize, value: f64) {
         if index < self.data.len() {
-            let mut val = self.data[index].lock().unwrap();
+            let mut val = self.data[index].lock().unwrap_or_else(|e| e.into_inner());
             *val += value;
         }
     }
@@ -491,7 +491,7 @@ impl VectorAccumulator {
     pub fn to_vec(&self) -> Vec<f64> {
         self.data
             .iter()
-            .map(|m| *m.lock().unwrap())
+            .map(|m| *m.lock().unwrap_or_else(|e| e.into_inner()))
             .collect()
     }
 }

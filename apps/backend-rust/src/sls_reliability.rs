@@ -452,7 +452,7 @@ impl CrackWidthReliability {
 
         // Statistics
         let mean_w = widths.iter().sum::<f64>() / widths.len() as f64;
-        widths.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        widths.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
         let w_95 = widths[(0.95 * widths.len() as f64) as usize];
 
         CrackWidthResult {
@@ -696,7 +696,7 @@ impl SLSAssessment {
 
         betas.iter()
             .filter_map(|&b| b)
-            .min_by(|a, b| a.partial_cmp(b).unwrap())
+            .min_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
             .unwrap_or(f64::INFINITY)
     }
 }

@@ -6,8 +6,15 @@
 
 import { Router, Request, Response, type IRouter } from 'express';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { requireAuth } from '../../middleware/authMiddleware.js';
 
 const router: IRouter = Router();
+
+// All vision routes require authentication
+router.use(requireAuth());
+
+// Maximum base64 image size: 5MB
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -24,6 +31,14 @@ router.post('/', async (req: Request, res: Response) => {
             return res.status(400).json({
                 success: false,
                 error: 'Missing required fields: image, prompt'
+            });
+        }
+
+        // Validate image size
+        if (typeof image === 'string' && image.length > MAX_IMAGE_SIZE) {
+            return res.status(413).json({
+                success: false,
+                error: `Image too large. Maximum size: ${MAX_IMAGE_SIZE / 1024 / 1024}MB`
             });
         }
 

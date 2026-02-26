@@ -569,7 +569,7 @@ impl BesoOptimizer {
         let mut sens_vol: Vec<(f64, f64, usize)> = self.elements.iter()
             .map(|e| (e.averaged_sensitivity(self.params.n_history), e.volume, e.id))
             .collect();
-        sens_vol.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
+        sens_vol.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
         
         // Determine threshold
         let mut cum_vol = 0.0;
