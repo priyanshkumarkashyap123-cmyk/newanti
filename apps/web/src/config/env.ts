@@ -192,9 +192,14 @@ export function validateEnvironment(): void {
   }
 
   if (errors.length > 0) {
-    throw new Error(
-      `❌ Environment Configuration Error:\n${errors.map((e) => `  - ${e}`).join("\n")}`,
-    );
+    const msg = `❌ Environment Configuration Error:\n${errors.map((e) => `  - ${e}`).join("\n")}`;
+    // In production, only throw for non-HTTPS API URL (truly broken).
+    // Missing Clerk key is handled gracefully by AuthProvider's <MissingClerkKey /> UI.
+    const critical = errors.some((e) => e.includes('HTTPS'));
+    if (critical) {
+      throw new Error(msg);
+    }
+    console.warn(msg);
   }
 
   // Log configuration in development

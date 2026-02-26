@@ -83,12 +83,12 @@ impl PunchingShearDesigner {
                 2.0 * (self.column_cx + self.column_cy + 4.0 * d_half)
             }
             ColumnType::Edge => {
-                // Three sides
-                2.0 * d_half + self.column_cx + 2.0 * d_half + self.column_cy + 2.0 * d_half
+                // Three sides: b0 = c1 + c2 + 2d  (one face at slab edge)
+                self.column_cx + self.column_cy + 2.0 * self.d
             }
             ColumnType::Corner => {
-                // Two sides
-                2.0 * d_half + self.column_cx / 2.0 + 2.0 * d_half + self.column_cy / 2.0 + 2.0 * d_half
+                // Two sides: b0 = cx/2 + cy/2 + d  (two faces at slab edges)
+                self.column_cx / 2.0 + self.d / 2.0 + self.column_cy / 2.0 + self.d / 2.0
             }
         }
     }
@@ -120,12 +120,13 @@ impl PunchingShearDesigner {
             0.79 + (0.82 - 0.79) * (pt - 2.00) / 1.00
         };
         
-        let tau_c = tau_c_base * (self.fck / 25.0).sqrt();
+        // Scale for concrete grade using SP-16 formula (exact basis of IS 456 Table 19)
+        let beta_sp = (0.8 * self.fck / (6.89 * pt.max(0.15))).max(1.0);
+        let tau_c = 0.85 * (0.8 * self.fck).sqrt() * ((1.0 + 5.0 * beta_sp).sqrt() - 1.0) / (6.0 * beta_sp);
         
         // Enhanced for punching (factor ks per IS 456 Cl. 31.6.3)
-        // Guard: prevent division by zero if column dimensions are zero
-        let min_col = self.column_cx.min(self.column_cy).max(1e-10);
-        let beta_c = self.column_cx.max(self.column_cy) / min_col;
+        // βc = short_side / long_side ≤ 1.0
+        let beta_c = self.column_cx.min(self.column_cy) / self.column_cx.max(self.column_cy).max(1e-10);
         let ks = (0.5 + beta_c).min(1.0);
         
         ks * tau_c
@@ -141,14 +142,19 @@ impl PunchingShearDesigner {
         
         // Account for moment transfer (unbalanced moment)
         if let Some((mux, muy)) = moment_transfer {
-            let gamma_v = 0.4; // Fraction transferred by shear
-            let jc = self.polar_moment_of_inertia();
+            // γv = 1 − 1/(1 + (2/3)√(b1/b2)) per IS 456/ACI 318
+            let b1 = self.column_cx + self.d;
+            let b2 = self.column_cy + self.d;
+            let gamma_f = 1.0 / (1.0 + (2.0 / 3.0) * (b1 / b2).sqrt());
+            let gamma_v = 1.0 - gamma_f;
+            // Separate Jc for each direction
+            let (jc_x, jc_y) = self.polar_moment_of_inertia_xy();
             
             let cx = self.column_cx / 2.0 + self.d / 2.0;
             let cy = self.column_cy / 2.0 + self.d / 2.0;
             
-            let tau_mx = gamma_v * mux.abs() * 1e6 * cy / jc;
-            let tau_my = gamma_v * muy.abs() * 1e6 * cx / jc;
+            let tau_mx = gamma_v * mux.abs() * 1e6 * cy / jc_x;
+            let tau_my = gamma_v * muy.abs() * 1e6 * cx / jc_y;
             
             tau_v += tau_mx + tau_my;
         }
@@ -197,20 +203,23 @@ impl PunchingShearDesigner {
         }
     }
 
-    /// Polar moment of inertia of critical section
-    fn polar_moment_of_inertia(&self) -> f64 {
+    /// Polar moment of inertia of critical section (separate per axis)
+    fn polar_moment_of_inertia_xy(&self) -> (f64, f64) {
         let cx = self.column_cx + self.d;
         let cy = self.column_cy + self.d;
         
         match self.column_type {
             ColumnType::Interior => {
-                // Jc = d * (cx³/6 + cx*cy²/2 + cy³/6 + cx²*cy/2)
-                self.d * (cx.powi(3) / 6.0 + cx * cy.powi(2) / 2.0 + 
-                         cy.powi(3) / 6.0 + cx.powi(2) * cy / 2.0)
+                // Jc_x for Mux transfer: about x-axis
+                let jc_x = self.d * (cx.powi(3) / 6.0 + cx.powi(2) * cy / 2.0);
+                // Jc_y for Muy transfer: about y-axis
+                let jc_y = self.d * (cy.powi(3) / 6.0 + cy.powi(2) * cx / 2.0);
+                (jc_x, jc_y)
             }
             ColumnType::Edge | ColumnType::Corner => {
-                // Simplified for edge/corner
-                self.d * cx.powi(3) / 6.0
+                let jc_x = self.d * cx.powi(3) / 6.0;
+                let jc_y = self.d * cy.powi(3) / 6.0;
+                (jc_x, jc_y)
             }
         }
     }
@@ -361,11 +370,9 @@ impl TorsionDesigner {
         let d1_eff = d1 - 2.0 * self.cover;
         
         let asv_torsion = tu * 1e6 / (b1 * d1_eff * 0.87 * self.fy);
-        let asv_shear = if tau_ve > tau_c {
-            (tau_ve - tau_c) * b / (0.87 * self.fy)
-        } else {
-            0.0
-        };
+        // IS 456 Cl. 41.4.3: Asv/sv = Tu/(b1*d1*0.87fy) + Vu/(2.5*d1*0.87fy)
+        // Use actual Vu (not equivalent Ve which already includes torsion)
+        let asv_shear = vu * 1000.0 / (2.5 * d1_eff * 0.87 * self.fy);
         let asv_total = asv_torsion + asv_shear;
         
         // Minimum reinforcement
@@ -407,7 +414,7 @@ impl TorsionDesigner {
         
         // Interpolation from Table 19
         let tau_c = if pt <= 0.25 {
-            0.36 * (fck / 25.0).powf(0.5)
+            0.36  // M20 base value (scaled below)
         } else if pt <= 0.50 {
             0.36 + (0.48 - 0.36) * (pt - 0.25) / 0.25
         } else if pt <= 0.75 {
@@ -422,7 +429,9 @@ impl TorsionDesigner {
             0.79 + (0.82 - 0.79) * (pt - 2.00) / 1.00
         };
         
-        tau_c * (fck / 25.0).sqrt()
+        // Scale for concrete grade using SP-16 formula
+        let beta_sp = (0.8 * fck / (6.89 * pt.max(0.15))).max(1.0);
+        0.85 * (0.8 * fck).sqrt() * ((1.0 + 5.0 * beta_sp).sqrt() - 1.0) / (6.0 * beta_sp)
     }
 
     /// Design stirrups
@@ -869,7 +878,7 @@ impl FlatSlabDesigner {
         let pos_moment = 0.35 * mo;
         
         // Column strip (Clause 31.4.3.2)
-        let col_strip_width = (l2 / 4.0).min(l1 / 4.0);
+        let col_strip_width = (l2 / 2.0).min(l1 / 2.0); // IS 456 Cl. 31.1: 2×(l/4) each side
         let col_strip_neg = 0.75 * neg_moment;
         let col_strip_pos = 0.60 * pos_moment;
         

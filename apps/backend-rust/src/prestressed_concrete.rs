@@ -47,7 +47,7 @@ impl StrandType {
             StrandType::CompactStrand => 0.90 * self.fpu(),
             StrandType::PlainWire => 0.85 * self.fpu(),
             StrandType::DeformedWire => 0.85 * self.fpu(),
-            StrandType::HighStrengthBar => 0.85 * self.fpu(),
+            StrandType::HighStrengthBar => 0.80 * self.fpu(),
         }
     }
     
@@ -57,8 +57,8 @@ impl StrandType {
             StrandType::LowRelaxation7Wire => 195000.0,
             StrandType::StressRelieved7Wire => 195000.0,
             StrandType::CompactStrand => 195000.0,
-            StrandType::PlainWire => 205000.0,
-            StrandType::DeformedWire => 205000.0,
+            StrandType::PlainWire => 210000.0,
+            StrandType::DeformedWire => 210000.0,
             StrandType::HighStrengthBar => 205000.0,
         }
     }
@@ -403,13 +403,19 @@ impl PrestressLossCalculator {
     }
     
     /// Anchorage slip loss (IS 1343 Clause 18.5.2.2)
-    pub fn anchorage_slip_loss(&self, slip: f64, tendon_length: f64) -> AnchorageSlipResult {
+    pub fn anchorage_slip_loss(&self, slip: f64, tendon_length: f64, friction_loss: f64) -> AnchorageSlipResult {
         // Slip in mm, length in mm
         let loss_strain = slip / tendon_length;
         let loss = self.ep * loss_strain;
         
-        // Affected length (where slip loss exceeds friction gain)
-        let affected_length = (self.ep * slip / self.fp_jack).sqrt() * 1000.0;
+        // Affected length: l_set = sqrt(Δs × Ep / p')
+        // where p' = friction stress gradient per unit length (MPa/mm)
+        let p_prime = if friction_loss > 0.0 && tendon_length > 0.0 {
+            friction_loss / tendon_length // MPa/mm
+        } else {
+            0.001 // Small default to avoid division by zero
+        };
+        let affected_length = (slip * self.ep / p_prime).sqrt();
         
         AnchorageSlipResult {
             slip,
@@ -450,10 +456,13 @@ impl PrestressLossCalculator {
     
     /// Creep loss (IS 1343 Clause 18.5.2.4)
     pub fn creep_loss(&self, fcp: f64) -> CreepLossResult {
-        // Ultimate creep coefficient
-        let phi_rh = 1.0 + (1.0 - self.rh / 100.0) / 0.1 * 0.15;
-        let phi_28 = 2.5; // Base creep coefficient for loading at 28 days
-        let phi = phi_rh * phi_28;
+        // Ultimate creep coefficient per IS 1343 Table 7
+        let phi = match self.age_loading {
+            0..=7 => 2.2,
+            8..=28 => 1.6,
+            29..=365 => 1.1,
+            _ => 1.1, // > 1 year
+        };
         
         let n = self.ep / self.ec;
         let loss = n * phi * fcp;
@@ -468,21 +477,21 @@ impl PrestressLossCalculator {
     }
     
     /// Shrinkage loss (IS 1343 Clause 18.5.2.5)
-    pub fn shrinkage_loss(&self, notional_size: f64) -> ShrinkageLossResult {
+    pub fn shrinkage_loss(&self, _notional_size: f64) -> ShrinkageLossResult {
         // Notional size = 2*Ac/u (mm)
         
-        // Ultimate shrinkage strain
-        let eps_s_base = 300e-6; // Base value for RH 70%
-        let rh_factor = 1.0 + 3.0 * (1.0 - self.rh / 100.0);
-        let size_factor = (400.0 / notional_size).powf(0.2).min(1.5);
-        
-        let eps_sh = eps_s_base * rh_factor * size_factor;
+        // Ultimate shrinkage strain per IS 1343 Table 8
+        let eps_sh = if self.rh > 80.0 {
+            190e-6
+        } else if self.rh > 50.0 {
+            300e-6
+        } else {
+            420e-6
+        };
         let loss = self.ep * eps_sh;
         
         ShrinkageLossResult {
             shrinkage_strain: eps_sh,
-            rh_factor,
-            size_factor,
             loss,
             loss_percent: loss / self.fp_jack * 100.0,
         }
@@ -523,7 +532,7 @@ impl PrestressLossCalculator {
     ) -> TotalLossResult {
         // Immediate losses
         let friction = self.friction_loss(geometry, mu, k);
-        let anchorage = self.anchorage_slip_loss(slip, geometry.span);
+        let anchorage = self.anchorage_slip_loss(slip, geometry.span, friction.loss);
         let elastic = self.elastic_shortening_loss(fcp_transfer, n_tendons, true);
         
         let immediate_loss = friction.loss + anchorage.loss + elastic.loss;
@@ -604,8 +613,6 @@ pub struct CreepLossResult {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ShrinkageLossResult {
     pub shrinkage_strain: f64,
-    pub rh_factor: f64,
-    pub size_factor: f64,
     pub loss: f64,
     pub loss_percent: f64,
 }
@@ -662,6 +669,10 @@ pub struct PscSectionProps {
     pub kb: f64,
     /// Perimeter (mm)
     pub perimeter: f64,
+    /// Web width (mm) - for shear/capacity calculations
+    pub bw: f64,
+    /// Overall depth (mm)
+    pub depth: f64,
 }
 
 impl PscSectionProps {
@@ -677,7 +688,7 @@ impl PscSectionProps {
         let kb = i / (area * yt);
         let perimeter = 2.0 * (b + h);
         
-        Self { area, i, yt, yb, zt, zb, kt, kb, perimeter }
+        Self { area, i, yt, yb, zt, zb, kt, kb, perimeter, bw: b, depth: h }
     }
     
     /// Create I-section
@@ -700,9 +711,9 @@ impl PscSectionProps {
         let zb = i / yb;
         let kt = i / (area * yb);
         let kb = i / (area * yt);
-        let perimeter = 2.0 * bf + 2.0 * tf + 2.0 * hw + 2.0 * (bf - bw);
+        let perimeter = 2.0 * bf + 4.0 * tf + 2.0 * hw + 2.0 * (bf - bw);
         
-        Self { area, i, yt, yb, zt, zb, kt, kb, perimeter }
+        Self { area, i, yt, yb, zt, zb, kt, kb, perimeter, bw, depth: h }
     }
     
     /// Create T-section
@@ -725,7 +736,7 @@ impl PscSectionProps {
         let kb = i / (area * yt);
         let perimeter = bf + 2.0 * tf + 2.0 * hw + 2.0 * (bf - bw) / 2.0 + bw;
         
-        Self { area, i, yt, yb, zt, zb, kt, kb, perimeter }
+        Self { area, i, yt, yb, zt, zb, kt, kb, perimeter, bw, depth: d }
     }
     
     /// Notional size for creep/shrinkage (2*Ac/u)
@@ -786,18 +797,20 @@ impl PscBeamDesigner {
         let f_top = -pe / a + pe * e / zt - m_sw * 1e6 / zt;
         let f_bot = -pe / a - pe * e / zb + m_sw * 1e6 / zb;
         
-        // Permissible stresses
-        let fc_perm = self.concrete.fci_perm(self.fci);
-        let ft_perm = -self.concrete.fti_perm(self.fci); // Tension is negative
+        // Permissible stresses (positive magnitudes)
+        let fc_perm = self.concrete.fci_perm(self.fci); // compression limit
+        let ft_perm = self.concrete.fti_perm(self.fci);  // tension limit
         
+        // Convention: negative = compression, positive = tension
+        // Check: -fc_perm <= f <= ft_perm
         TransferCheckResult {
             stress_top: f_top,
             stress_bottom: f_bot,
             compression_limit: fc_perm,
             tension_limit: ft_perm,
-            top_ok: f_top >= ft_perm && f_top <= fc_perm,
-            bottom_ok: f_bot >= ft_perm && f_bot <= fc_perm,
-            pass: f_top >= ft_perm && f_top <= fc_perm && f_bot >= ft_perm && f_bot <= fc_perm,
+            top_ok: f_top >= -fc_perm && f_top <= ft_perm,
+            bottom_ok: f_bot >= -fc_perm && f_bot <= ft_perm,
+            pass: f_top >= -fc_perm && f_top <= ft_perm && f_bot >= -fc_perm && f_bot <= ft_perm,
         }
     }
     
@@ -812,18 +825,19 @@ impl PscBeamDesigner {
         let f_top = -pe / a + pe * e / zt - m_total * 1e6 / zt;
         let f_bot = -pe / a - pe * e / zb + m_total * 1e6 / zb;
         
-        // Permissible stresses
+        // Permissible stresses (positive magnitudes)
         let fc_perm = self.concrete.fc_perm();
-        let ft_perm = -self.concrete.ft_perm();
+        let ft_perm = self.concrete.ft_perm();
         
+        // Convention: negative = compression, positive = tension
         ServiceCheckResult {
             stress_top: f_top,
             stress_bottom: f_bot,
             compression_limit: fc_perm,
             tension_limit: ft_perm,
-            top_ok: f_top >= ft_perm && f_top <= fc_perm,
-            bottom_ok: f_bot >= ft_perm && f_bot <= fc_perm,
-            pass: f_top >= ft_perm && f_top <= fc_perm && f_bot >= ft_perm && f_bot <= fc_perm,
+            top_ok: f_top >= -fc_perm && f_top <= ft_perm,
+            bottom_ok: f_bot >= -fc_perm && f_bot <= ft_perm,
+            pass: f_top >= -fc_perm && f_top <= ft_perm && f_bot >= -fc_perm && f_bot <= ft_perm,
         }
     }
     
@@ -832,7 +846,7 @@ impl PscBeamDesigner {
         let fck = self.concrete.fck();
         let fpu = self.strand_type.fpu();
         let aps = self.aps();
-        let b = 300.0; // Assume rectangular width for now
+        let b = self.section.bw; // Use actual web width
         
         // Effective prestress as ratio of fpu
         let fpe = pe / aps;
@@ -845,15 +859,19 @@ impl PscBeamDesigner {
             fpe + (fpu - fpe) * 0.7
         };
         
+        // Neutral axis depth: Aps * fps = 0.36 * fck * b * xu
+        let xu = aps * fps / (0.36 * fck * b);
+        
         // Depth of stress block
-        let a = aps * fps / (0.36 * fck * b);
-        let xu = a / 0.42; // Neutral axis depth
+        let a = 0.42 * xu;
         
         // Check for over-reinforced section
-        let xu_max = 0.48 * dp; // For Fe 415 approximation
+        // For prestressing steel, xu_max/d is based on strain compatibility
+        // Using 0.6d as conservative limit for prestressing steel
+        let xu_max = 0.6 * dp;
         let is_over_reinforced = xu > xu_max;
         
-        // Moment capacity
+        // Moment capacity: Mu = Aps * fps * (dp - 0.42*xu)
         let mn = aps * fps * (dp - 0.42 * xu) / 1e6;
         
         UltimateMomentResult {
@@ -863,38 +881,54 @@ impl PscBeamDesigner {
             xu_max,
             is_over_reinforced,
             mn_nominal: mn,
-            phi_mn: 0.9 * mn, // IS 1343 capacity reduction
+            phi_mn: mn, // IS 1343 uses partial safety factors, no additional phi
         }
     }
     
     /// Calculate shear capacity (IS 1343 Clause 22.4)
     pub fn shear_capacity(&self, pe: f64, m: f64, v: f64, dp: f64) -> ShearCapacityResult {
         let fck = self.concrete.fck();
-        let b = 300.0; // Web width (assume)
+        let b = self.section.bw; // Use actual web width
         let d = dp;
+        let d_overall = self.section.depth; // Overall depth D
         
-        // Principal tensile stress at centroid
-        let fcp = pe / self.section.area;
+        // Concrete stresses at centroid
+        let fcp = pe / self.section.area + pe * self.geometry.e_mid / self.section.zb;
         let ft = 0.24 * fck.sqrt();
+        let fpe = pe / self.aps();
+        let fp = self.strand_type.fpu();
         
         // Uncracked shear capacity (Vco) - IS 1343 Clause 22.4.1
-        let vco = 0.67 * b * d * (ft.powi(2) + 0.8 * fcp * ft).sqrt() / 1000.0;
+        // Uses overall depth D, not effective depth d
+        let vco = 0.67 * b * d_overall * (ft.powi(2) + 0.8 * fcp * ft).sqrt() / 1000.0;
+        
+        // Decompression moment M0 - includes eccentricity
+        // M0 = (P/A + P*e/Zb) * Zb = P*(Zb/A + e)
+        let mo = (pe / self.section.area + pe * self.geometry.e_mid / self.section.zb) * self.section.zb / 1e6;
         
         // Cracked shear capacity (Vcr) - IS 1343 Clause 22.4.2
-        let mo = fcp * self.section.zb / 1e6; // Decompression moment
-        let tau_c = 0.25 * fck.sqrt(); // Basic shear stress
-        let vcr_base = tau_c * b * d / 1000.0;
+        // Vcr = (1 - 0.55*fpe/fp) * τc * b * d + M0 * V / M
+        let tau_c = 0.25 * fck.sqrt();
+        let fpe_fp_factor = 1.0 - 0.55 * fpe / fp;
+        let vcr_base = fpe_fp_factor * tau_c * b * d / 1000.0;
         let vcr = if m > mo {
             vcr_base + mo * v / (m.max(0.001) * 1000.0)
         } else {
             vco // Use uncracked if moment < decompression
         };
         
-        // Governing capacity - take minimum positive value
-        let vc = vco.min(vcr.max(vco * 0.5)); // Ensure reasonable minimum
+        // Governing capacity - take minimum
+        let vc = vco.min(vcr.max(vco * 0.5));
         
-        // Maximum shear
-        let vc_max = 0.2 * fck * b * d / 1000.0;
+        // Maximum shear per IS 456 Table 20 (τc,max)
+        let tau_c_max = if fck <= 15.0 { 2.5 }
+            else if fck <= 20.0 { 2.8 }
+            else if fck <= 25.0 { 3.1 }
+            else if fck <= 30.0 { 3.5 }
+            else if fck <= 35.0 { 3.7 }
+            else if fck <= 40.0 { 4.0 }
+            else { 4.0 };
+        let vc_max = tau_c_max * b * d / 1000.0;
         
         ShearCapacityResult {
             vco,
@@ -903,7 +937,7 @@ impl PscBeamDesigner {
             vc_max,
             vu_applied: v,
             shear_ratio: if vc > 0.0 { v / vc } else { 1.0 },
-            pass: v <= 0.75 * vc,
+            pass: v <= vc, // IS 1343 uses limit state design, no additional phi
         }
     }
 }

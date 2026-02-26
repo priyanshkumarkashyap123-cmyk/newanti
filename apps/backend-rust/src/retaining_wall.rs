@@ -190,13 +190,15 @@ impl EarthPressureCalculator {
         // Seismic inertia angle
         let theta = (kh / (1.0 - kv)).atan();
         
-        let sin_phi_theta_alpha = (phi + theta - alpha_rad).sin();
+        // Mononobe-Okabe active coefficient
+        // KAE = sin²(α+φ−θ) / [cosθ·sin²α·sin(α−δ−θ)·(1+√(sin(φ+δ)sin(φ−β−θ)/(sin(α−δ−θ)sin(α+β))))²]
+        let sin_phi_theta_alpha = (alpha_rad + phi - theta).sin();
         let cos_theta = theta.cos();
         let sin_alpha = alpha_rad.sin();
-        let sin_alpha_delta_theta = (alpha_rad + delta + theta).sin();
+        let sin_alpha_delta_theta = (alpha_rad - delta - theta).sin();
         let sin_phi_delta = (phi + delta).sin();
-        let sin_phi_beta_theta = (phi - beta + theta).sin();
-        let sin_alpha_beta = (alpha_rad - beta).sin();
+        let sin_phi_beta_theta = (phi - beta - theta).sin();
+        let sin_alpha_beta = (alpha_rad + beta).sin();
         
         let num = sin_phi_theta_alpha.powi(2);
         let denom = cos_theta * sin_alpha.powi(2) * sin_alpha_delta_theta * 
@@ -490,7 +492,14 @@ impl CantileverWallDesigner {
         
         // Stem moment arm from toe
         let stem_area = 0.5 * (g.stem_base + g.stem_top) * g.stem_height();
-        let stem_centroid = g.toe + g.stem_base / 2.0;
+        // Correct centroid of tapered section: (a² + ab + b²) / (3(a+b))
+        let a = g.stem_base;
+        let b = g.stem_top;
+        let stem_centroid = g.toe + if (a - b).abs() < 1e-9 {
+            a / 2.0
+        } else {
+            (a * a + a * b + b * b) / (3.0 * (a + b))
+        };
         let m_stem = stem_area * self.concrete_unit_weight * stem_centroid;
         
         // Base slab moment
@@ -541,9 +550,12 @@ impl CantileverWallDesigner {
         // Friction resistance
         let fr = v * self.foundation.mu;
         
-        // Passive resistance (if key provided)
+        // Passive resistance (if key provided) - use foundation soil, not backfill
+        let foundation_as_backfill = BackfillProperties::new(
+            self.foundation.gamma, self.foundation.phi, self.foundation.c,
+        );
         let kp = EarthPressureCalculator::new(
-            self.backfill.clone(),
+            foundation_as_backfill,
             EarthPressureMethod::Rankine,
         ).kp_rankine();
         
