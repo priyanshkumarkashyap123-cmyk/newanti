@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    types: [opened, synchronize, reopened, closed]
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
@@ -35,13 +31,6 @@ jobs:
         with:
           targets: wasm32-unknown-unknown
       
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: |
-            apps/backend-rust
-            packages/solver-wasm
-
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
@@ -75,8 +64,8 @@ jobs:
           VITE_PYTHON_API_URL: https://beamlab-backend-python.azurewebsites.net
           VITE_RUST_API_URL: https://beamlab-rust-api.azurewebsites.net
           VITE_USE_CLERK: "true"
-          VITE_RAZORPAY_KEY_ID: rzp_test_RzJWtn49KU70H5
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          VITE_RAZORPAY_KEY_ID: rzp_test_RzJWtn49KU70H5
         run: pnpm run build
 
       - name: Deploy to Azure Static Web Apps
