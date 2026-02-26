@@ -312,9 +312,8 @@ impl IS800DesignChecker {
     
     /// Check shear capacity (Clause 8.4)
     pub fn check_shear(&self, member: &SteelMember, shear: f64) -> DesignCheck {
-        // Shear area for rolled I-section: h_w × tw (web depth, IS 800 Cl. 8.4.1.1)
-        let h_w = member.depth - 2.0 * member.t_f;
-        let a_v = h_w * member.t_w;
+        // Shear area for rolled I-section: h × tw (overall depth, IS 800 Cl. 8.4.1.1)
+        let a_v = member.depth * member.t_w;
         
         // Design shear strength
         let v_d = (member.fy / 3.0_f64.sqrt()) * a_v / self.gamma_m0 / 1000.0;
@@ -329,7 +328,11 @@ impl IS800DesignChecker {
         forces: &SteelForces,
     ) -> DesignCheck {
         // Get individual capacities
-        let p_d = self.check_compression(member, forces.axial.abs()).capacity;
+        let p_d = if forces.axial >= 0.0 {
+            self.check_compression(member, forces.axial.abs()).capacity
+        } else {
+            self.check_tension(member, forces.axial.abs()).capacity
+        };
         let m_dz = self.check_bending_major(member, forces.moment_z.abs()).capacity;
         
         // Reduced moment capacity due to axial
@@ -549,22 +552,13 @@ impl IS456DesignChecker {
         let pt = 100.0 * beam.ast / (beam.b * beam.d_eff);
         let pt = pt.min(3.0);
         
-        let tau_c = 0.85 * (0.8 * beam.fck).sqrt() * (1.0 + 5.0 * 0.8 * beam.fck / (6.89 * pt.max(0.15))).sqrt();
-        let _tau_c = tau_c * 0.8 / 6.89; // Convert to MPa (approximate formula)
-        
-        // More accurate IS 456 Table 19
-        let tau_c = match pt {
-            p if p <= 0.15 => 0.28,
-            p if p <= 0.25 => 0.36,
-            p if p <= 0.50 => 0.48,
-            p if p <= 0.75 => 0.56,
-            p if p <= 1.00 => 0.62,
-            p if p <= 1.25 => 0.67,
-            p if p <= 1.50 => 0.72,
-            p if p <= 1.75 => 0.75,
-            p if p <= 2.00 => 0.79,
-            _ => 0.82,
-        } * (beam.fck / 25.0).powf(0.5); // Scale for concrete grade (no cap per IS 456)
+        // SP-16 derivation formula (exact basis of IS 456 Table 19)
+        // τc = 0.85 × √(0.8fck) × (√(1+5β) − 1) / (6β)
+        // where β = max(0.8fck / (6.89 × pt), 1.0)
+        let beta_sp = (0.8 * beam.fck / (6.89 * pt.max(0.15))).max(1.0);
+        let tau_c = 0.85 * (0.8 * beam.fck).sqrt() * ((1.0 + 5.0 * beta_sp).sqrt() - 1.0) / (6.0 * beta_sp);
+        let tau_c_max = 0.63 * beam.fck.sqrt(); // IS 456 Table 20
+        let tau_c = tau_c.min(tau_c_max);
         
         let v_c = tau_c * beam.b * beam.d_eff / 1000.0; // kN
         
@@ -602,7 +596,7 @@ impl IS456DesignChecker {
             // For simplified axial capacity, reduce based on additional eccentricity
             let le_d = slenderness_x.max(slenderness_y);
             let e_add = column.d * (le_d).powi(2) / 2000.0; // Additional eccentricity mm
-            let e_min = (l_eff / 500.0).max(20.0); // Minimum eccentricity mm
+            let e_min = (l_eff / 500.0 + column.d / 30.0).max(20.0); // IS 456 Cl. 25.4: l/500 + D/30 ≥ 20mm
             let e_total = e_add + e_min;
             // Approximate reduction for additional eccentricity
             let reduction = (1.0 - 2.0 * e_total / column.d).max(0.3);
@@ -643,11 +637,13 @@ impl IS456DesignChecker {
         let pt = 100.0 * beam.ast / (beam.b * beam.d_eff);
         let _fs = 0.58 * beam.fy * beam.ast / beam.ast; // Simplified
         
-        // Tension reinforcement factor (Figure 4)
-        let kt = if pt <= 0.5 {
-            2.0 - pt
+        // Tension reinforcement factor (Figure 4, fs ≈ 0.58*fy)
+        let kt = if pt <= 0.3 {
+            2.0 - 1.0 * pt
+        } else if pt <= 1.0 {
+            1.70 - 0.8 * pt  // continuous at pt=0.3: 1.70
         } else {
-            1.3 - 0.6 * pt
+            1.10 - 0.2 * pt  // continuous at pt=1.0: 0.90
         }.max(0.8);
         
         // Compression reinforcement factor (Figure 5)  

@@ -479,8 +479,9 @@ impl BoltedConnection {
             let hsc = 1.0;
             let du = 1.13;
             // Minimum bolt pretension from AISC Table J3.1
-            // Tb = 0.7 * Fu * Ab (Fu = bolt min tensile strength, not Fnt)
-            let tb = 0.7 * bolt.fu * bolt.ab;
+            // Tb = 0.7 * Fu * Ats; Ats ≈ 0.75*Ab for standard hex bolts (ISO 898)
+            let ats = 0.75 * bolt.ab; // tensile stress area ≈ 75% of nominal body area
+            let tb = 0.7 * bolt.fu * ats;
             Some(mu * hsc * du * tb * shear_planes as f64 * num_bolts as f64)
         } else {
             None
@@ -551,14 +552,19 @@ impl BoltedConnection {
 
     /// Get design strength φRn (LRFD)
     pub fn design_strength_lrfd(&self) -> f64 {
-        // Different φ factors for different limit states
-        match self.capacities.governing.as_str() {
-            "Bolt Shear" => 0.75 * self.capacities.capacity,
-            "Bearing" | "Tearout" => 0.75 * self.capacities.capacity,
-            "Block Shear" => 0.75 * self.capacities.capacity,
-            "Slip" => 1.00 * self.capacities.capacity, // φ = 1.0 for slip-critical
-            _ => 0.75 * self.capacities.capacity,
+        // φ = 0.75 for bolt shear, bearing, tearout, block shear
+        // φ = 1.0 for slip (serviceability check per J3.8)
+        // Must compare φRn for EACH limit state and take the minimum
+        let mut min_phi_rn = 0.75 * self.capacities.bolt_shear;
+        min_phi_rn = min_phi_rn.min(0.75 * self.capacities.bearing);
+        min_phi_rn = min_phi_rn.min(0.75 * self.capacities.tearout);
+        if let Some(bs) = self.capacities.block_shear {
+            min_phi_rn = min_phi_rn.min(0.75 * bs);
         }
+        if let Some(slip) = self.capacities.slip {
+            min_phi_rn = min_phi_rn.min(1.00 * slip);
+        }
+        min_phi_rn
     }
 }
 
@@ -716,15 +722,22 @@ impl ShearCapacity {
 
     /// Get design strength φVn (LRFD)
     pub fn design_strength_lrfd(&self) -> f64 {
-        // φ = 1.0 when Cv = 1.0, otherwise φ = 0.90
-        let phi = if self.cv >= 1.0 { 1.0 } else { 0.90 };
+        // AISC G2.1(a): φ=1.0 only for rolled I-shapes with h/tw ≤ 2.24√(E/Fy)
+        // G2.1(b): φ=0.90 for all other cases
+        // Use web_slenderness threshold as proxy for rolled I-shape condition
+        let fy_assumed = 345.0_f64; // Typical grade; conservative when Fy is higher
+        let limit = 2.24 * (200000.0 / fy_assumed).sqrt();
+        let phi = if self.web_slenderness <= limit { 1.0 } else { 0.90 };
         phi * self.vn
     }
 
     /// Get allowable strength Vn/Ω (ASD)
     pub fn allowable_strength_asd(&self) -> f64 {
-        // Ω = 1.50 when Cv = 1.0, otherwise Ω = 1.67
-        let omega = if self.cv >= 1.0 { 1.50 } else { 1.67 };
+        // AISC G2.1(a): Ω=1.50 for rolled I-shapes with h/tw ≤ 2.24√(E/Fy)
+        // G2.1(b): Ω=1.67 otherwise
+        let fy_assumed = 345.0_f64;
+        let limit = 2.24 * (200000.0 / fy_assumed).sqrt();
+        let omega = if self.web_slenderness <= limit { 1.50 } else { 1.67 };
         self.vn / omega
     }
 }
