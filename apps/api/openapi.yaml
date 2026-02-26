@@ -1,0 +1,687 @@
+openapi: 3.1.0
+info:
+  title: BeamLab Ultimate API
+  description: |
+    Professional structural analysis API.
+    All successful responses follow the envelope:
+      { success: true, data: T, requestId: string, ts: string }
+    All error responses follow the envelope:
+      { success: false, error: { code: string, message: string }, requestId: string, ts: string }
+  version: 2.1.0
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  contact:
+    name: BeamLab Team
+    url: https://beamlabultimate.tech
+
+servers:
+  - url: https://api.beamlabultimate.tech
+    description: Production
+  - url: http://localhost:3001
+    description: Local development
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: health
+    description: Service health and status
+  - name: auth
+    description: Authentication operations
+  - name: projects
+    description: Project CRUD
+  - name: analysis
+    description: Structural analysis solvers
+  - name: design
+    description: Section / member design checks
+  - name: advanced
+    description: P-Delta, modal, and buckling analyses
+  - name: ai
+    description: AI design assistant
+  - name: user
+    description: User profile and settings
+  - name: billing
+    description: Subscription and billing
+
+# ─────────────────────────────────────────────────────────────
+# Reusable components
+# ─────────────────────────────────────────────────────────────
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    RequestId:
+      type: string
+      description: UUID v4 correlation ID for this request
+      example: "550e8400-e29b-41d4-a716-446655440000"
+
+    Timestamp:
+      type: string
+      format: date-time
+      description: ISO-8601 UTC timestamp
+      example: "2026-02-18T06:40:00.000Z"
+
+    # ── Success envelope ─────────────────────────────────────
+    SuccessEnvelope:
+      type: object
+      required: [success, data, requestId, ts]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          description: Operation-specific payload
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+        ts:
+          $ref: '#/components/schemas/Timestamp'
+
+    # ── Error envelope ───────────────────────────────────────
+    ErrorEnvelope:
+      type: object
+      required: [success, error, requestId, ts]
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              example: "UNAUTHORIZED"
+            message:
+              type: string
+              example: "Authentication required"
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+        ts:
+          $ref: '#/components/schemas/Timestamp'
+
+    # ── Health ───────────────────────────────────────────────
+    HealthData:
+      type: object
+      required: [status, service, version, uptime, timestamp]
+      properties:
+        status:
+          type: string
+          enum: [ok, degraded]
+        service:
+          type: string
+        version:
+          type: string
+        uptime:
+          type: integer
+          description: Seconds since process start
+        websocket:
+          type: boolean
+        authProvider:
+          type: string
+          enum: [clerk, inhouse]
+        dependencies:
+          type: object
+          properties:
+            mongodb:
+              type: string
+              enum: [connected, disconnected, error, unknown]
+        timestamp:
+          $ref: '#/components/schemas/Timestamp'
+
+    # ── User ─────────────────────────────────────────────────
+    SafeUser:
+      type: object
+      required: [id, email, firstName, lastName, tier]
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        tier:
+          type: string
+          enum: [free, pro, enterprise]
+        avatarUrl:
+          type: string
+          format: uri
+        emailVerified:
+          type: boolean
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+
+    # ── Project ──────────────────────────────────────────────
+    Project:
+      type: object
+      required: [_id, name, createdAt, updatedAt]
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        modelData:
+          type: object
+          description: Full structural model JSON
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+        updatedAt:
+          $ref: '#/components/schemas/Timestamp'
+
+    # ── Analysis ─────────────────────────────────────────────
+    AnalysisResult:
+      type: object
+      required: [nodeDisplacements, memberForces, reactions]
+      properties:
+        nodeDisplacements:
+          type: array
+          items:
+            type: object
+        memberForces:
+          type: array
+          items:
+            type: object
+        reactions:
+          type: array
+          items:
+            type: object
+        warnings:
+          type: array
+          items:
+            type: string
+
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    BadRequest:
+      description: Invalid request payload
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+
+# ─────────────────────────────────────────────────────────────
+# Paths
+# ─────────────────────────────────────────────────────────────
+paths:
+  /health:
+    get:
+      summary: Service health check
+      description: Returns service status, uptime, and MongoDB connectivity
+      operationId: getHealth
+      tags: [health]
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/HealthData'
+        '503':
+          description: Service degraded (DB disconnected)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/HealthData'
+
+  # ── Auth ─────────────────────────────────────────────────────
+  /api/auth/signup:
+    post:
+      summary: Create a new account
+      operationId: authSignup
+      tags: [auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, firstName, lastName]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+      responses:
+        '201':
+          description: Account created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          user:
+                            $ref: '#/components/schemas/SafeUser'
+                          accessToken:
+                            type: string
+                          refreshToken:
+                            type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+
+  /api/auth/signin:
+    post:
+      summary: Sign in with email and password
+      operationId: authSignin
+      tags: [auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Authenticated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          user:
+                            $ref: '#/components/schemas/SafeUser'
+                          accessToken:
+                            type: string
+                          refreshToken:
+                            type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/auth/me:
+    get:
+      summary: Get current authenticated user
+      operationId: authMe
+      tags: [auth]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SafeUser'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/auth/signout:
+    post:
+      summary: Sign out and revoke tokens
+      operationId: authSignout
+      tags: [auth]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Signed out
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+
+  # ── Projects ─────────────────────────────────────────────────
+  /api/project:
+    get:
+      summary: List all projects for authenticated user
+      operationId: listProjects
+      tags: [projects]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Project list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          projects:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Project'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      summary: Create a new project
+      operationId: createProject
+      tags: [projects]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                description:
+                  type: string
+      responses:
+        '200':
+          description: Project created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          project:
+                            $ref: '#/components/schemas/Project'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/project/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Get a project by ID
+      operationId: getProject
+      tags: [projects]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Project data
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          project:
+                            $ref: '#/components/schemas/Project'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      summary: Update a project
+      operationId: updateProject
+      tags: [projects]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                modelData:
+                  type: object
+      responses:
+        '200':
+          description: Project updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      summary: Delete a project
+      operationId: deleteProject
+      tags: [projects]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Project deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/project/{id}/users:
+    get:
+      summary: Get active collaborators on a project (WebSocket presence)
+      operationId: getProjectUsers
+      tags: [projects]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Active users list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          projectId:
+                            type: string
+                          users:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                id:
+                                  type: string
+                                name:
+                                  type: string
+                                color:
+                                  type: string
+
+  # ── Analysis ─────────────────────────────────────────────────
+  /api/analyze:
+    post:
+      summary: Run 2D/3D structural analysis
+      operationId: runAnalysis
+      tags: [analysis]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nodes, members, supports, loads]
+              properties:
+                nodes:
+                  type: array
+                  items:
+                    type: object
+                members:
+                  type: array
+                  items:
+                    type: object
+                supports:
+                  type: array
+                  items:
+                    type: object
+                loads:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        '200':
+          description: Analysis completed
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AnalysisResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ── AI Assistant ──────────────────────────────────────────────
+  /api/ai/generate:
+    post:
+      summary: Generate structural model from natural language prompt
+      operationId: aiGenerate
+      tags: [ai]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [prompt]
+              properties:
+                prompt:
+                  type: string
+                  description: Natural language description of the structure
+                  example: "3-storey residential building with 5m bays, ISMB 300 columns, Fe 500 steel"
+      responses:
+        '200':
+          description: Model generated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          model:
+                            type: object
+                          explanation:
+                            type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '503':
+          description: AI service unavailable (Gemini not configured)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'

@@ -1,0 +1,114 @@
+/**
+ * Tests for API environment schema validation
+ *
+ * We re-create the Zod schema inline (mirroring config/env.ts) so we can test
+ * parsing without triggering the side-effect heavy module-level validation and
+ * potential process.exit in the production path.
+ */
+import { describe, it, expect } from 'vitest';
+import z from 'zod';
+
+/**
+ * Mirror of the env schema from config/env.ts.
+ * If the schema changes there, these tests should be updated accordingly.
+ */
+const envSchema = z.object({
+    NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+    PORT: z.coerce.number().int().positive().default(3001),
+    MONGODB_URI: z.string().min(1).default('mongodb://localhost:27017/beamlab'),
+    USE_CLERK: z.string().optional(),
+    CLERK_SECRET_KEY: z.string().optional(),
+    CLERK_PUBLISHABLE_KEY: z.string().optional(),
+    CORS_ALLOWED_ORIGINS: z.string().optional().default(''),
+    FRONTEND_URL: z.string().url().optional().default('http://localhost:5173'),
+    // Stripe
+    STRIPE_SECRET_KEY: z.string().optional(),
+    STRIPE_WEBHOOK_SECRET: z.string().optional(),
+    STRIPE_PRO_MONTHLY_PRICE_ID: z.string().optional(),
+    STRIPE_PRO_YEARLY_PRICE_ID: z.string().optional(),
+    STRIPE_ENTERPRISE_MONTHLY_PRICE_ID: z.string().optional(),
+    // Razorpay
+    RAZORPAY_KEY_ID: z.string().optional(),
+    RAZORPAY_KEY_SECRET: z.string().optional(),
+    RAZORPAY_WEBHOOK_SECRET: z.string().optional(),
+    RAZORPAY_PRO_MONTHLY_PLAN_ID: z.string().optional(),
+    RAZORPAY_PRO_YEARLY_PLAN_ID: z.string().optional(),
+    RAZORPAY_ENTERPRISE_MONTHLY_PLAN_ID: z.string().optional(),
+    // AI
+    GEMINI_API_KEY: z.string().optional(),
+    SENTRY_DSN: z.string().url().optional(),
+    PYTHON_API_URL: z.string().url().optional().default('http://localhost:8000'),
+    RUST_API_URL: z.string().url().optional().default('http://localhost:8080'),
+});
+
+describe('API env schema', () => {
+    it('parses minimal (empty) env with defaults', () => {
+        const result = envSchema.safeParse({});
+        expect(result.success).toBe(true);
+        if (result.success) {
+            expect(result.data.NODE_ENV).toBe('development');
+            expect(result.data.PORT).toBe(3001);
+            expect(result.data.MONGODB_URI).toBe('mongodb://localhost:27017/beamlab');
+            expect(result.data.FRONTEND_URL).toBe('http://localhost:5173');
+        }
+    });
+
+    it('accepts valid Stripe env vars', () => {
+        const result = envSchema.safeParse({
+            STRIPE_SECRET_KEY: 'sk_test_123',
+            STRIPE_WEBHOOK_SECRET: 'whsec_test_456',
+            STRIPE_PRO_MONTHLY_PRICE_ID: 'price_abc',
+            STRIPE_PRO_YEARLY_PRICE_ID: 'price_def',
+            STRIPE_ENTERPRISE_MONTHLY_PRICE_ID: 'price_ghi',
+        });
+        expect(result.success).toBe(true);
+        if (result.success) {
+            expect(result.data.STRIPE_SECRET_KEY).toBe('sk_test_123');
+            expect(result.data.STRIPE_PRO_MONTHLY_PRICE_ID).toBe('price_abc');
+        }
+    });
+
+    it('accepts valid Razorpay env vars', () => {
+        const result = envSchema.safeParse({
+            RAZORPAY_KEY_ID: 'rzp_test_key',
+            RAZORPAY_KEY_SECRET: 'rzp_secret',
+            RAZORPAY_PRO_MONTHLY_PLAN_ID: 'plan_monthly',
+            RAZORPAY_PRO_YEARLY_PLAN_ID: 'plan_yearly',
+            RAZORPAY_ENTERPRISE_MONTHLY_PLAN_ID: 'plan_ent',
+        });
+        expect(result.success).toBe(true);
+        if (result.success) {
+            expect(result.data.RAZORPAY_KEY_ID).toBe('rzp_test_key');
+            expect(result.data.RAZORPAY_PRO_MONTHLY_PLAN_ID).toBe('plan_monthly');
+        }
+    });
+
+    it('rejects invalid NODE_ENV', () => {
+        const result = envSchema.safeParse({ NODE_ENV: 'staging' });
+        expect(result.success).toBe(false);
+    });
+
+    it('rejects invalid FRONTEND_URL (non-URL)', () => {
+        const result = envSchema.safeParse({ FRONTEND_URL: 'not-a-url' });
+        expect(result.success).toBe(false);
+    });
+
+    it('coerces PORT from string to number', () => {
+        const result = envSchema.safeParse({ PORT: '8080' });
+        expect(result.success).toBe(true);
+        if (result.success) {
+            expect(result.data.PORT).toBe(8080);
+        }
+    });
+
+    it('all payment fields are optional (no failure on empty)', () => {
+        const result = envSchema.safeParse({});
+        expect(result.success).toBe(true);
+        if (result.success) {
+            expect(result.data.STRIPE_SECRET_KEY).toBeUndefined();
+            expect(result.data.RAZORPAY_KEY_ID).toBeUndefined();
+            expect(result.data.STRIPE_PRO_MONTHLY_PRICE_ID).toBeUndefined();
+            expect(result.data.RAZORPAY_PRO_MONTHLY_PLAN_ID).toBeUndefined();
+        }
+    });
+});

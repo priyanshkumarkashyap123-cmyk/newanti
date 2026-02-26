@@ -1,0 +1,69 @@
+    Checking backend-rust v0.1.0 (/Users/rakshittiwari/Desktop/newanti/apps/backend-rust)
+error[E0502]: cannot borrow `*self` as mutable because it is also borrowed as immutable
+  --> src/solver.rs:59:21
+   |
+52 |         for load in &self.beam.loads {
+   |                     ----------------
+   |                     |
+   |                     immutable borrow occurs here
+   |                     immutable borrow later used here
+...
+59 |                     self.add_step(&format!("Point Load: P = {}kN at x = {}m", p, a));
+   |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable borrow occurs here
+
+error[E0502]: cannot borrow `*self` as mutable because it is also borrowed as immutable
+  --> src/solver.rs:70:21
+   |
+52 |           for load in &self.beam.loads {
+   |                       ----------------
+   |                       |
+   |                       immutable borrow occurs here
+   |                       immutable borrow later used here
+...
+70 | /                     self.add_step(&format!(
+71 | |                         "UDL: w = {}kN/m from x = {}m to x = {}m",
+72 | |                         w, start, end
+73 | |                     ));
+   | |______________________^ mutable borrow occurs here
+
+error[E0502]: cannot borrow `*self` as mutable because it is also borrowed as immutable
+  --> src/solver.rs:90:22
+   |
+52 |         for load in &self.beam.loads {
+   |                     ----------------
+   |                     |
+   |                     immutable borrow occurs here
+   |                     immutable borrow later used here
+...
+90 |                      self.add_step(&format!("UVL: w = 0 to {}kN/m over {}m", w1.max(w2), length));
+   |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable borrow occurs here
+
+warning: unused variable: `prev_m`
+   --> src/solver.rs:161:22
+    |
+161 |                  let prev_m = moment_vals[i-1]; 
+    |                      ^^^^^^ help: if this is intentional, prefix it with an underscore: `_prev_m`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `curr_m`
+   --> src/solver.rs:162:22
+    |
+162 |                  let curr_m = m; 
+    |                      ^^^^^^ help: if this is intentional, prefix it with an underscore: `_curr_m`
+
+warning: unused variable: `max_shear`
+   --> src/solver.rs:169:13
+    |
+169 |         let max_shear = shear_vals.iter().fold(0.0_f64, |acc, &val| acc.max(val.abs()));
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_max_shear`
+
+warning: unused variable: `max_moment`
+   --> src/solver.rs:170:13
+    |
+170 | ...   let max_moment = moment_vals.iter().fold(0.0_f64, |acc, &val| acc.max(val.abs())); // Fix: get max absolute moment? Or Python gets ...
+    |           ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_max_moment`
+
+For more information about this error, try `rustc --explain E0502`.
+warning: `backend-rust` (bin "backend-rust") generated 4 warnings
+error: could not compile `backend-rust` (bin "backend-rust") due to 3 previous errors; 4 warnings emitted

@@ -1,0 +1,255 @@
+version: '3.8'
+
+# ===========================================================================
+# NETWORK ISOLATION
+# - frontend: web + api-node (public-facing)
+# - backend: api-node + python + rust (internal service mesh)
+# - data: rust-api + mongo (database tier)
+# ===========================================================================
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+    internal: true
+  data:
+    driver: bridge
+    internal: true
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    image: beamlab/web:${IMAGE_TAG:-latest}
+    ports:
+      - "5173:80"
+    depends_on:
+      api-node:
+        condition: service_healthy
+      backend-python:
+        condition: service_healthy
+      rust-api:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - frontend
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  backend-python:
+    build:
+      context: ./apps/backend-python
+      dockerfile: Dockerfile
+    image: beamlab/backend-python:${IMAGE_TAG:-latest}
+    ports:
+      - "8000:8000"
+    environment:
+      - USE_MOCK_AI=true
+      - FRONTEND_URL=http://localhost:5173
+      - ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3001,http://localhost:3002
+      - NODE_API_URL=http://api-node:3001
+      - RUST_API_URL=http://rust-api:8080
+      - ENABLE_RUST_BACKEND=true
+      - ANALYSIS_WORKERS=4
+    restart: unless-stopped
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '2.0'
+        reservations:
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  rust-api:
+    build:
+      context: ./apps/rust-api
+      dockerfile: Dockerfile
+    image: beamlab/rust-api:${IMAGE_TAG:-latest}
+    ports:
+      - "3002:8080"
+    environment:
+      - PORT=8080
+      - FRONTEND_URL=http://localhost:5173
+      - ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3001,http://localhost:8000
+      - MONGODB_URI=mongodb://${MONGO_USERNAME:-beamlab_admin}:${MONGO_PASSWORD:?MONGO_PASSWORD is required}@mongo:27017/beamlab?authSource=admin
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
+      - RUST_LOG=info
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - backend
+      - data
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  api-node:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    image: beamlab/api-node:${IMAGE_TAG:-latest}
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - PYTHON_API_URL=http://backend-python:8000
+      - RUST_API_URL=http://rust-api:8080
+      - FRONTEND_URL=http://localhost:5173
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET is required}
+      - MONGODB_URI=mongodb://${MONGO_USERNAME:-beamlab_admin}:${MONGO_PASSWORD:?MONGO_PASSWORD is required}@mongo:27017/beamlab?authSource=admin
+    depends_on:
+      backend-python:
+        condition: service_healthy
+      rust-api:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - frontend
+      - backend
+      - data
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/health',res=>process.exit(res.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  mongo:
+    image: mongo:7
+    # SECURITY: Do NOT expose 27017 to host. Only accessible within 'data' network.
+    # Uncomment the line below ONLY for local debugging:
+    # ports:
+    #   - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME:-beamlab_admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD:?MONGO_PASSWORD is required}
+      - MONGO_INITDB_DATABASE=beamlab
+    restart: unless-stopped
+    networks:
+      - data
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+    volumes:
+      - mongo-data:/data/db
+      - mongo-backup:/backup
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 }).ok"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ===========================================================================
+  # MongoDB Backup Sidecar - Daily automated backups
+  # ===========================================================================
+  mongo-backup:
+    image: mongo:7
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - data
+    volumes:
+      - mongo-backup:/backup
+    environment:
+      - MONGO_HOST=mongo
+      - MONGO_PORT=27017
+      - MONGO_USERNAME=${MONGO_USERNAME:-beamlab_admin}
+      - MONGO_PASSWORD=${MONGO_PASSWORD:?MONGO_PASSWORD is required}
+    entrypoint: >
+      /bin/sh -c "
+        while true; do
+          echo \"[backup] Starting mongodump at $$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+          mongodump --host=$$MONGO_HOST:$$MONGO_PORT \
+                    --username=$$MONGO_USERNAME \
+                    --password=$$MONGO_PASSWORD \
+                    --authenticationDatabase=admin \
+                    --out=/backup/$$(date +%Y-%m-%d_%H%M%S)
+          # Keep only last 7 days of backups
+          find /backup -maxdepth 1 -type d -mtime +7 -exec rm -rf {} +
+          echo \"[backup] Done. Sleeping 24h.\"
+          sleep 86400
+        done
+      "
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+volumes:
+  mongo-data:
+  mongo-backup:

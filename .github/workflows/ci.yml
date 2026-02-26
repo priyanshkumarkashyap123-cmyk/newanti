@@ -1,0 +1,222 @@
+name: CI
+
+# AUTO-TRIGGERS DISABLED — GitHub Actions minutes exhausted. Run checks locally.
+on:
+  # push:
+  #   branches: [ main, develop ]
+  #   paths:
+  #     - 'apps/**'
+  #     - 'packages/**'
+  #     - 'package.json'
+  #     - 'pnpm-lock.yaml'
+  #     - '.github/workflows/ci.yml'
+  # pull_request:
+  #   branches: [ main, develop ]
+  #   paths:
+  #     - 'apps/**'
+  #     - 'packages/**'
+  #     - 'package.json'
+  #     - 'pnpm-lock.yaml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # =========================================================================
+  # TYPECHECK - TypeScript compilation check
+  # =========================================================================
+  typecheck:
+    name: TypeScript Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v4
+    - uses: pnpm/action-setup@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'pnpm'
+    - run: pnpm install --frozen-lockfile
+    - name: Run TypeScript Check
+      run: pnpm --filter @beamlab/web type-check
+
+  # =========================================================================
+  # LINT - ESLint code quality
+  # =========================================================================
+  lint:
+    name: ESLint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v4
+    - uses: pnpm/action-setup@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'pnpm'
+    - run: pnpm install --frozen-lockfile
+    - name: Run ESLint
+      run: pnpm lint
+
+  # =========================================================================
+  # WEB BUILD AND TEST
+  # =========================================================================
+  web-build-and-test:
+    runs-on: ubuntu-latest
+    needs: [lint]
+    timeout-minutes: 20
+    
+    defaults:
+      run:
+        working-directory: ./apps/web
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'pnpm'
+
+    - name: Install Dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Build
+      run: pnpm run build
+      env:
+        NODE_OPTIONS: "--max-old-space-size=4096"
+        VITE_CLERK_PUBLISHABLE_KEY: "pk_test_mock"
+        VITE_API_URL: "http://localhost:3000"
+
+    - name: Run Unit Tests
+      run: pnpm run test:run
+
+  # =========================================================================
+  # REGRESSION TESTS - Structural analysis regression
+  # =========================================================================
+  regression:
+    name: Regression Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+    - uses: actions/checkout@v4
+    - uses: pnpm/action-setup@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'pnpm'
+    - run: pnpm install --frozen-lockfile
+    - name: Run Regression Tests
+      run: pnpm --filter @beamlab/web test:regression
+      env:
+        CI: true
+        REGRESSION_TOLERANCE: 0.001
+
+  # =========================================================================
+  # RUST BACKEND CHECK
+  # =========================================================================
+  rust-check:
+    name: Rust Backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: ./apps/backend-rust
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        components: clippy, rustfmt
+    - name: Cache Rust
+      uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: apps/backend-rust
+    - name: Cargo Check
+      run: cargo check --all-features
+    - name: Cargo Test
+      run: cargo test --all-features
+
+  # =========================================================================
+  # BACKEND API BUILD
+  # =========================================================================
+  backend-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: ./apps/api
+    steps:
+    - uses: actions/checkout@v4
+    - uses: pnpm/action-setup@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'pnpm'
+    - run: pnpm install
+    - run: pnpm run build
+
+  # =========================================================================
+  # OPENAPI CONTRACT VALIDATION
+  # Ensures openapi.yaml is valid and no required responses are missing.
+  # Run it on every PR and push to main — fail fast on undocumented changes.
+  # =========================================================================
+  contract-validation:
+    name: OpenAPI Contract Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Redocly CLI
+      run: npm install -g @redocly/cli@latest
+
+    - name: Lint OpenAPI spec
+      run: redocly lint apps/api/openapi.yaml --format=github-actions
+
+    - name: Validate spec is parseable (bundle)
+      run: redocly bundle apps/api/openapi.yaml --output /tmp/bundled.yaml
+
+    - name: Check spec contains required tags
+      run: |
+        for tag in health auth projects analysis ai; do
+          if ! grep -q "tags: \[$tag\]" apps/api/openapi.yaml; then
+            echo "❌ Missing required tag '$tag' in openapi.yaml"
+            exit 1
+          fi
+        done
+        echo "✅ All required tags present"
+
+  # =========================================================================
+  # CI STATUS SUMMARY
+  # =========================================================================
+  ci-status:
+    name: CI Status
+    runs-on: ubuntu-latest
+    needs: [typecheck, lint, web-build-and-test, rust-check, backend-build, contract-validation]
+    if: always()
+    steps:
+    - name: Check Results
+      run: |
+        if [[ "${{ needs.typecheck.result }}" == "failure" || \
+              "${{ needs.lint.result }}" == "failure" || \
+              "${{ needs.web-build-and-test.result }}" == "failure" || \
+              "${{ needs.rust-check.result }}" == "failure" || \
+              "${{ needs.backend-build.result }}" == "failure" || \
+              "${{ needs.contract-validation.result }}" == "failure" ]]; then
+          echo "CI Pipeline Failed"
+          exit 1
+        else
+          echo "CI Pipeline Passed ✅"
+        fi
+
+

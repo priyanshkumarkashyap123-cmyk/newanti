@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "domain": "offshore",
+    "name": "monopile_uls_dnv",
+    "code": "DNV-GL (reference example)",
+    "clause": "ULS extreme storm check",
+    "units": "SI"
+  },
+  "input": {
+    "waterDepth_m": 35,
+    "hs_m": 8.5,
+    "tp_s": 12.0,
+    "current_m_per_s": 1.2,
+    "windSpeed_50yr_m_per_s": 50,
+    "turbine": {
+      "ratedPower_MW": 12,
+      "rotorDiameter_m": 200,
+      "hubHeight_m": 120,
+      "topMass_t": 700,
+      "towerMass_t": 500,
+      "maxThrust_kN": 2500
+    },
+    "soil": {
+      "type": "clay",
+      "su_kPa": 100
+    }
+  },
+  "expected": {
+    "diameter_m": 8.0,
+    "wallThickness_mm": 80,
+    "embeddedLength_m": 30,
+    "naturalFrequency_Hz": 0.25,
+    "utilization": 0.85,
+    "status": "PASS"
+  },
+  "tolerance": {
+    "rel": { "diameter_m": 0.05, "wallThickness_mm": 0.05, "utilization": 0.05 },
+    "abs": { "naturalFrequency_Hz": 0.02 }
+  }
+}

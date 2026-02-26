@@ -1,0 +1,160 @@
+name: Preview Deploy
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches: [main]
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  NODE_OPTIONS: "--max-old-space-size=8192"
+
+jobs:
+  preview:
+    if: github.event.action != 'closed'
+    name: Build & Deploy Preview
+    runs-on: ubuntu-latest
+    environment:
+      name: preview-pr-${{ github.event.pull_request.number }}
+      url: ${{ steps.deploy.outputs.static_web_app_url }}
+    outputs:
+      preview_url: ${{ steps.deploy.outputs.static_web_app_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Rust
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build WASM packages
+        run: |
+          cd apps/backend-rust && wasm-pack build --target web --out-dir ./pkg --release && cd ../..
+          cd packages/solver-wasm && wasm-pack build --target web --out-dir ./pkg --release && cd ../..
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        working-directory: apps/web
+        env:
+          VITE_API_URL: https://beamlab-backend-node.azurewebsites.net
+          VITE_PYTHON_API_URL: https://beamlab-backend-python.azurewebsites.net
+          VITE_RUST_API_URL: https://beamlab-rust-api.azurewebsites.net
+          VITE_USE_CLERK: "true"
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+        run: pnpm run build
+
+      - name: Deploy Preview
+        id: deploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "apps/web/dist"
+          skip_app_build: true
+          skip_api_build: true
+
+  smoke:
+    name: Smoke Test Preview
+    needs: preview
+    if: github.event.action != 'closed' && needs.preview.outputs.preview_url != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for preview to warm up
+        run: sleep 30
+
+      - name: Health check
+        run: |
+          PREVIEW_URL="${{ needs.preview.outputs.preview_url }}"
+          echo "Testing preview at: $PREVIEW_URL"
+
+          STATUS=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$PREVIEW_URL")
+          echo "HTTP status: $STATUS"
+          if [ "$STATUS" -ne 200 ]; then
+            echo "::error::Preview health check failed with status $STATUS"
+            exit 1
+          fi
+
+          # Verify it's actually the SPA (check for index.html content)
+          BODY=$(curl -s --max-time 30 "$PREVIEW_URL")
+          if echo "$BODY" | grep -q '<div id="root"'; then
+            echo "SPA root element found — preview is live."
+          else
+            echo "::warning::Could not confirm SPA root element in response."
+          fi
+
+  comment:
+    name: PR Comment
+    needs: preview
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Find existing comment
+        uses: peter-evans/find-comment@v3
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '🚀 Preview Deployment'
+
+      - name: Post or update comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            ## 🚀 Preview Deployment
+
+            | Property | Value |
+            |----------|-------|
+            | **URL** | ${{ needs.preview.outputs.preview_url }} |
+            | **Commit** | ${{ github.event.pull_request.head.sha }} |
+            | **Branch** | `${{ github.head_ref }}` |
+            | **Updated** | ${{ github.event.pull_request.updated_at }} |
+
+            > Preview will be torn down when this PR is closed or merged.
+
+  # Tear down preview when PR closes
+  cleanup:
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: "close"
+          app_location: "apps/web/dist"

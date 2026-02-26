@@ -1,0 +1,204 @@
+/**
+ * CameraFitController.tsx — Auto-fit / Zoom-to-Extents for the 3D viewport
+ *
+ * Industry-standard behaviour found in STAAD, ETABS, SkyCiv, etc.:
+ *  1. When a model is first loaded or changes significantly, the camera automatically
+ *     frames the entire structure so every node is visible and clickable.
+ *  2. When the user presses the "Fit View" button (or Home key), it re-frames.
+ *  3. OrbitControls maxDistance is dynamically extended so it never clips a large model.
+ *
+ * Usage:
+ *   Placed *inside* the R3F <Canvas> tree, alongside <OrbitControls>.
+ *   It subscribes to the Zustand model store and to the "fit-view" DOM custom event.
+ */
+
+import React from 'react';
+import { useEffect, useRef, useCallback } from "react";
+import { useThree } from "@react-three/fiber";
+import * as THREE from "three";
+import { useModelStore } from "../../store/model";
+
+// ── helpers ──────────────────────────────────────────────────────────
+
+/** Compute the axis-aligned bounding box that encloses every node. */
+function computeModelBounds(
+  nodes: Map<string, { x: number; y: number; z: number }>,
+): THREE.Box3 | null {
+  if (nodes.size === 0) return null;
+
+  const box = new THREE.Box3();
+  for (const n of nodes.values()) {
+    box.expandByPoint(new THREE.Vector3(n.x, n.y, n.z));
+  }
+  return box;
+}
+
+/**
+ * Minimum visible extent in any axis (metres).
+ * Avoids degenerate framing for single-node or collinear models.
+ */
+const MIN_EXTENT = 2;
+
+/**
+ * How much visual "breathing room" around the model (multiplier on the
+ * bounding-sphere radius used for camera distance).
+ */
+const FIT_PADDING = 1.6;
+
+// ── component ────────────────────────────────────────────────────────
+
+export const CameraFitController: React.FC = () => {
+  const { camera, controls } = useThree();
+  const lastNodeCountRef = useRef(0);
+  const hasFittedOnceRef = useRef(false);
+
+  // Read nodes reactively from the store
+  const nodes = useModelStore((s) => s.nodes);
+
+  /**
+   * Frame the camera so the entire model bounding box is visible.
+   * Works with both PerspectiveCamera and OrthographicCamera.
+   */
+  const fitToModel = useCallback(() => {
+    const box = computeModelBounds(nodes);
+    if (!box) return;
+
+    // Ensure minimum extent on every axis so the camera doesn't zoom to infinity
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    if (size.x < MIN_EXTENT) {
+      box.min.x -= MIN_EXTENT / 2;
+      box.max.x += MIN_EXTENT / 2;
+    }
+    if (size.y < MIN_EXTENT) {
+      box.min.y -= MIN_EXTENT / 2;
+      box.max.y += MIN_EXTENT / 2;
+    }
+    if (size.z < MIN_EXTENT) {
+      box.min.z -= MIN_EXTENT / 2;
+      box.max.z += MIN_EXTENT / 2;
+    }
+
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+
+    const sphere = new THREE.Sphere();
+    box.getBoundingSphere(sphere);
+    const radius = Math.max(sphere.radius, 1);
+
+    // Perspective: place camera at a distance that fits the sphere inside the FOV
+    if (camera instanceof THREE.PerspectiveCamera) {
+      const fovRad = THREE.MathUtils.degToRad(camera.fov / 2);
+      const distance = (radius / Math.sin(fovRad)) * FIT_PADDING;
+
+      // Keep the current viewing direction, but reposition at the correct distance
+      const direction = camera.position
+        .clone()
+        .sub((controls as any)?.target ?? center)
+        .normalize();
+      // If direction is zero (camera at target), default to isometric-ish
+      if (direction.lengthSq() < 1e-6) {
+        direction.set(1, 0.8, 1).normalize();
+      }
+
+      camera.position.copy(center).addScaledVector(direction, distance);
+      camera.near = distance * 0.001;
+      camera.far = distance * 10;
+      camera.updateProjectionMatrix();
+    }
+    // Orthographic: adjust zoom so the box fills the viewport
+    else if (camera instanceof THREE.OrthographicCamera) {
+      const aspect =
+        (camera.right - camera.left) / (camera.top - camera.bottom);
+      // Size includes the padding
+      const extentX = (box.max.x - box.min.x) * FIT_PADDING;
+      const extentY = (box.max.y - box.min.y) * FIT_PADDING;
+      const zoom = Math.min(
+        (camera.right - camera.left) / extentX,
+        (camera.top - camera.bottom) / extentY,
+        1000, // sane cap
+      );
+
+      // Look along the same axis we're already looking
+      const camDir = new THREE.Vector3(0, 0, -1)
+        .applyQuaternion(camera.quaternion)
+        .normalize();
+      const dist = radius * 5;
+      camera.position.copy(center).addScaledVector(camDir, -dist);
+      camera.zoom = Math.max(zoom, 0.01);
+      camera.updateProjectionMatrix();
+    }
+
+    // Update OrbitControls target to the model centre
+    if (controls && "target" in controls) {
+      (controls as any).target.copy(center);
+
+      // Dynamically adjust maxDistance so the user can still zoom out
+      const maxDist = radius * 20;
+      if ((controls as any).maxDistance !== undefined) {
+        (controls as any).maxDistance = Math.max(maxDist, 200);
+      }
+      // Also relax minDistance so user can zoom in close on small models
+      if ((controls as any).minDistance !== undefined) {
+        (controls as any).minDistance = Math.min(0.5, radius * 0.05);
+      }
+      (controls as any).update();
+    }
+  }, [camera, controls, nodes]);
+
+  // ── auto-fit on model load / change ──────────────────────────────
+
+  useEffect(() => {
+    const count = nodes.size;
+
+    // Auto-fit the first time the model goes from empty → has nodes
+    if (count > 0 && !hasFittedOnceRef.current) {
+      // Small delay lets the scene finish mounting
+      const t = setTimeout(() => {
+        fitToModel();
+        hasFittedOnceRef.current = true;
+      }, 200);
+      return () => clearTimeout(t);
+    }
+
+    // Also auto-fit if the node count changes by more than 20 % (e.g. demo model loaded)
+    if (
+      count > 0 &&
+      lastNodeCountRef.current > 0 &&
+      Math.abs(count - lastNodeCountRef.current) / lastNodeCountRef.current >
+        0.2
+    ) {
+      const t = setTimeout(fitToModel, 150);
+      lastNodeCountRef.current = count;
+      return () => clearTimeout(t);
+    }
+
+    lastNodeCountRef.current = count;
+  }, [nodes.size, fitToModel]);
+
+  // ── respond to the DOM "fit-view" custom event ───────────────────
+
+  useEffect(() => {
+    const handler = () => fitToModel();
+    document.addEventListener("fit-view", handler);
+    return () => document.removeEventListener("fit-view", handler);
+  }, [fitToModel]);
+
+  // ── respond to "Home" key shortcut ───────────────────────────────
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Home") {
+        e.preventDefault();
+        fitToModel();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [fitToModel]);
+
+  // This component renders nothing — it's purely behavioural
+  return null;
+};
+
+export default CameraFitController;

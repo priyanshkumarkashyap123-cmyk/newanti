@@ -1,0 +1,42 @@
+[
+  {
+    "path": "apps/web/dist/**/*.js",
+    "maxSize": "500 kB",
+    "compression": "gzip"
+  },
+  {
+    "path": "apps/web/dist/**/*.css",
+    "maxSize": "100 kB",
+    "compression": "gzip"
+  },
+  {
+    "path": "apps/web/dist/index.html",
+    "maxSize": "10 kB"
+  },
+  {
+    "path": "apps/web/dist/assets/*.wasm",
+    "maxSize": "2 MB",
+    "compression": "none"
+  },
+  {
+    "path": "apps/web/dist/**/*.{js,mjs}",
+    "maxSize": "250 kB",
+    "limit": "350 kB",
+    "compression": "gzip",
+    "name": "Main JS bundle"
+  },
+  {
+    "path": "apps/web/dist/assets/vendor-*.js",
+    "maxSize": "150 kB",
+    "limit": "200 kB",
+    "compression": "gzip",
+    "name": "Vendor bundle"
+  },
+  {
+    "path": "apps/web/dist/assets/index-*.js",
+    "maxSize": "100 kB",
+    "limit": "150 kB",
+    "compression": "gzip",
+    "name": "App bundle"
+  }
+]

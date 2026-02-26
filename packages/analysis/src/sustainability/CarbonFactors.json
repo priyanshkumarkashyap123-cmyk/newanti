@@ -1,0 +1,249 @@
+{
+    "version": "1.0",
+    "lastUpdated": "2024-12-01",
+    "sources": [
+        "ICE Database v3.0 (Inventory of Carbon & Energy)",
+        "RICS Professional Statement 2023",
+        "EN 15978 Standards"
+    ],
+    "materials": {
+        "steel": {
+            "name": "Structural Steel",
+            "carbonFactor": 1.85,
+            "unit": "kgCO2e/kg",
+            "density": 7850,
+            "densityUnit": "kg/m3",
+            "notes": "Average for hot-rolled sections, includes A1-A3 stages",
+            "variants": {
+                "hotRolled": {
+                    "carbonFactor": 1.85
+                },
+                "coldFormed": {
+                    "carbonFactor": 2.10
+                },
+                "recycled_50": {
+                    "carbonFactor": 1.20
+                },
+                "recycled_90": {
+                    "carbonFactor": 0.65
+                },
+                "stainless": {
+                    "carbonFactor": 6.15
+                }
+            }
+        },
+        "concrete": {
+            "name": "Concrete",
+            "variants": {
+                "C20": {
+                    "carbonFactor": 180,
+                    "unit": "kgCO2e/m3",
+                    "strength": 20
+                },
+                "C25": {
+                    "carbonFactor": 210,
+                    "unit": "kgCO2e/m3",
+                    "strength": 25
+                },
+                "C30": {
+                    "carbonFactor": 240,
+                    "unit": "kgCO2e/m3",
+                    "strength": 30
+                },
+                "C35": {
+                    "carbonFactor": 270,
+                    "unit": "kgCO2e/m3",
+                    "strength": 35
+                },
+                "C40": {
+                    "carbonFactor": 300,
+                    "unit": "kgCO2e/m3",
+                    "strength": 40
+                },
+                "C50": {
+                    "carbonFactor": 350,
+                    "unit": "kgCO2e/m3",
+                    "strength": 50
+                },
+                "lowCarbon_C30": {
+                    "carbonFactor": 150,
+                    "unit": "kgCO2e/m3",
+                    "strength": 30
+                },
+                "ggbs_50_C30": {
+                    "carbonFactor": 170,
+                    "unit": "kgCO2e/m3",
+                    "strength": 30
+                }
+            },
+            "density": 2400,
+            "densityUnit": "kg/m3"
+        },
+        "rebar": {
+            "name": "Reinforcement Steel (Rebar)",
+            "carbonFactor": 1.99,
+            "unit": "kgCO2e/kg",
+            "density": 7850,
+            "densityUnit": "kg/m3",
+            "notes": "Standard reinforcing bar",
+            "variants": {
+                "standard": {
+                    "carbonFactor": 1.99
+                },
+                "recycled_50": {
+                    "carbonFactor": 1.35
+                },
+                "recycled_90": {
+                    "carbonFactor": 0.70
+                }
+            }
+        },
+        "timber": {
+            "name": "Structural Timber",
+            "variants": {
+                "softwood": {
+                    "carbonFactor": -0.46,
+                    "unit": "kgCO2e/kg",
+                    "notes": "Carbon sequestration included"
+                },
+                "hardwood": {
+                    "carbonFactor": -0.35,
+                    "unit": "kgCO2e/kg"
+                },
+                "glulam": {
+                    "carbonFactor": 0.42,
+                    "unit": "kgCO2e/kg"
+                },
+                "CLT": {
+                    "carbonFactor": 0.35,
+                    "unit": "kgCO2e/kg"
+                }
+            },
+            "density": 500,
+            "densityUnit": "kg/m3"
+        },
+        "aluminum": {
+            "name": "Aluminum",
+            "carbonFactor": 9.16,
+            "unit": "kgCO2e/kg",
+            "density": 2700,
+            "densityUnit": "kg/m3",
+            "variants": {
+                "virgin": {
+                    "carbonFactor": 9.16
+                },
+                "recycled_50": {
+                    "carbonFactor": 4.80
+                },
+                "recycled_100": {
+                    "carbonFactor": 0.44
+                }
+            }
+        },
+        "masonry": {
+            "name": "Masonry / Brick",
+            "variants": {
+                "clay_brick": {
+                    "carbonFactor": 0.24,
+                    "unit": "kgCO2e/kg"
+                },
+                "concrete_block": {
+                    "carbonFactor": 0.094,
+                    "unit": "kgCO2e/kg"
+                },
+                "aac_block": {
+                    "carbonFactor": 0.30,
+                    "unit": "kgCO2e/kg"
+                }
+            },
+            "density": 1800,
+            "densityUnit": "kg/m3"
+        }
+    },
+    "benchmarks": {
+        "office": {
+            "A": {
+                "max": 300,
+                "unit": "kgCO2e/m2",
+                "description": "Excellent - Low carbon design"
+            },
+            "B": {
+                "max": 500,
+                "unit": "kgCO2e/m2",
+                "description": "Good - Below average"
+            },
+            "C": {
+                "max": 700,
+                "unit": "kgCO2e/m2",
+                "description": "Average"
+            },
+            "D": {
+                "max": 900,
+                "unit": "kgCO2e/m2",
+                "description": "Above average"
+            },
+            "E": {
+                "max": 1100,
+                "unit": "kgCO2e/m2",
+                "description": "Poor"
+            },
+            "F": {
+                "max": 999999,
+                "unit": "kgCO2e/m2",
+                "description": "Very poor - High carbon"
+            }
+        },
+        "residential": {
+            "A": {
+                "max": 250,
+                "unit": "kgCO2e/m2"
+            },
+            "B": {
+                "max": 400,
+                "unit": "kgCO2e/m2"
+            },
+            "C": {
+                "max": 550,
+                "unit": "kgCO2e/m2"
+            },
+            "D": {
+                "max": 700,
+                "unit": "kgCO2e/m2"
+            },
+            "E": {
+                "max": 850,
+                "unit": "kgCO2e/m2"
+            },
+            "F": {
+                "max": 999999,
+                "unit": "kgCO2e/m2"
+            }
+        },
+        "industrial": {
+            "A": {
+                "max": 200,
+                "unit": "kgCO2e/m2"
+            },
+            "B": {
+                "max": 350,
+                "unit": "kgCO2e/m2"
+            },
+            "C": {
+                "max": 500,
+                "unit": "kgCO2e/m2"
+            },
+            "D": {
+                "max": 650,
+                "unit": "kgCO2e/m2"
+            },
+            "E": {
+                "max": 800,
+                "unit": "kgCO2e/m2"
+            },
+            "F": {
+                "max": 999999,
+                "unit": "kgCO2e/m2"
+            }
+        }
+    }
+}

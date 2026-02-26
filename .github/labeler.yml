@@ -1,0 +1,99 @@
+# Label configuration for PR labeler
+
+# Frontend changes
+frontend:
+  - changed-files:
+      - any-glob-to-any-file: 'apps/web/**'
+
+# Backend changes
+backend:
+  - changed-files:
+      - any-glob-to-any-file: 'apps/server/**'
+
+# Rust/WASM changes
+rust:
+  - changed-files:
+      - any-glob-to-any-file:
+        - 'crates/**'
+        - '**/*.rs'
+        - 'Cargo.toml'
+        - 'Cargo.lock'
+
+# Documentation
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+        - '**/*.md'
+        - 'docs/**'
+
+# Tests
+tests:
+  - changed-files:
+      - any-glob-to-any-file:
+        - '**/*.test.ts'
+        - '**/*.test.tsx'
+        - '**/*.spec.ts'
+        - '**/*.spec.tsx'
+        - 'e2e/**'
+        - 'tests/**'
+
+# Configuration
+config:
+  - changed-files:
+      - any-glob-to-any-file:
+        - '*.json'
+        - '*.yaml'
+        - '*.yml'
+        - '*.config.js'
+        - '*.config.ts'
+        - '.env*'
+
+# CI/CD
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+        - '.github/**'
+
+# Dependencies
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+        - 'package.json'
+        - 'pnpm-lock.yaml'
+        - '**/package.json'
+        - 'Cargo.toml'
+        - 'Cargo.lock'
+
+# Infrastructure
+infrastructure:
+  - changed-files:
+      - any-glob-to-any-file:
+        - 'docker-compose*.yml'
+        - 'Dockerfile*'
+        - 'terraform/**'
+        - 'kubernetes/**'
+        - 'k8s/**'
+
+# UI Components
+components:
+  - changed-files:
+      - any-glob-to-any-file:
+        - 'apps/web/src/components/**'
+        - '**/*.stories.tsx'
+
+# API
+api:
+  - changed-files:
+      - any-glob-to-any-file:
+        - 'apps/server/src/routes/**'
+        - 'apps/server/src/api/**'
+        - 'api/**'
+
+# Security
+security:
+  - changed-files:
+      - any-glob-to-any-file:
+        - '**/security*'
+        - '**/auth*'
+        - '**/*.pem'
+        - '**/*.key'

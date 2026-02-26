@@ -1,0 +1,27 @@
+{
+  "name": "BeamLab Ultimate",
+  "short_name": "BeamLab",
+  "description": "Modern structural analysis platform for beams, frames, and 3D structures.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/branding/icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/branding/icon-ultimate.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

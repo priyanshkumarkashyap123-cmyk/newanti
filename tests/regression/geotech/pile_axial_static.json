@@ -1,0 +1,30 @@
+{
+  "meta": {
+    "domain": "geotech",
+    "name": "pile_axial_static",
+    "code": "Reese-Matlock (reference)",
+    "clause": "Static axial capacity (alpha/lambda methods)",
+    "units": "SI"
+  },
+  "input": {
+    "pileDiameter_m": 0.45,
+    "pileLength_m": 20,
+    "soil": {
+      "type": "clay",
+      "undrainedShearStrength_kPa": 60,
+      "unitWeight_kN_per_m3": 18
+    },
+    "adhesionFactor": 0.6,
+    "endBearingFactor": 9
+  },
+  "expected": {
+    "shaftResistance_kN": 610,
+    "endBearing_kN": 1280,
+    "capacity_kN": 1890,
+    "status": "PASS"
+  },
+  "tolerance": {
+    "rel": { "capacity_kN": 0.05 },
+    "abs": { "shaftResistance_kN": 30, "endBearing_kN": 50 }
+  }
+}

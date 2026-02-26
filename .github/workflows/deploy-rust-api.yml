@@ -1,0 +1,42 @@
+name: Deploy Rust API to Azure
+
+# AUTO-TRIGGERS DISABLED — GitHub Actions minutes exhausted.
+on:
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'apps/rust-api/**'
+  #     - '.github/workflows/deploy-rust-api.yml'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Log in to Azure Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: beamlabregistry.azurecr.io
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/rust-api
+          push: true
+          tags: |
+            beamlabregistry.azurecr.io/beamlab-rust:latest
+            beamlabregistry.azurecr.io/beamlab-rust:${{ github.sha }}
+      
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: beamlab-rust-api
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_RUST }}
+          images: 'beamlabregistry.azurecr.io/beamlab-rust:latest'
+
