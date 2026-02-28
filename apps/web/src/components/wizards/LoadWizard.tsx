@@ -24,6 +24,10 @@ import {
   ArrowDown,
   Loader2
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 
 // ============================================
 // TYPES
@@ -177,27 +181,22 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
   const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 0));
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+    <Dialog open={true} onOpenChange={(open) => !open && onClose?.()}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0">
         {/* Header */}
-        <div className="p-4 border-b border-slate-700 flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-white">Load Definition Wizard</h2>
-            <p className="text-sm text-slate-400">{WIZARD_STEPS[currentStep].description}</p>
-          </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-lg transition-colors">
-            <span className="text-slate-400 text-xl">×</span>
-          </button>
-        </div>
+        <DialogHeader className="p-4 border-b border-zinc-200 dark:border-zinc-700">
+          <DialogTitle>Load Definition Wizard</DialogTitle>
+          <DialogDescription>{WIZARD_STEPS[currentStep].description}</DialogDescription>
+        </DialogHeader>
 
         {/* Progress */}
-        <div className="px-4 py-3 border-b border-slate-800 flex gap-2">
+        <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 flex gap-2">
           {WIZARD_STEPS.map((step, index) => (
             <div 
               key={step.id}
               className={`flex-1 h-1.5 rounded-full transition-colors ${
                 index < currentStep ? 'bg-green-500' : 
-                index === currentStep ? 'bg-blue-500' : 'bg-slate-700'
+                index === currentStep ? 'bg-blue-500' : 'bg-zinc-300 dark:bg-slate-700'
               }`}
             />
           ))}
@@ -208,7 +207,7 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
           {/* Step 1: Category */}
           {currentStep === 0 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white">{WIZARD_STEPS[0].title}</h3>
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">{WIZARD_STEPS[0].title}</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {LOAD_CATEGORIES.map(cat => (
                   <button
@@ -217,13 +216,13 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
                     className={`p-4 rounded-xl border transition-all ${
                       selectedCategory === cat.id 
                         ? 'border-blue-500 bg-blue-500/20' 
-                        : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
+                        : 'border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-slate-800/50 hover:border-zinc-400 dark:hover:border-slate-600'
                     }`}
                   >
                     <div className={`w-10 h-10 rounded-lg ${cat.color} flex items-center justify-center mb-2`}>
                       {cat.icon}
                     </div>
-                    <span className="text-sm font-medium text-white">{cat.label}</span>
+                    <span className="text-sm font-medium text-zinc-900 dark:text-white">{cat.label}</span>
                   </button>
                 ))}
               </div>
@@ -233,7 +232,7 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
           {/* Step 2: Code */}
           {currentStep === 1 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white">{WIZARD_STEPS[1].title}</h3>
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">{WIZARD_STEPS[1].title}</h3>
               <div className="grid grid-cols-2 gap-3">
                 {DESIGN_CODES.map(code => (
                   <button
@@ -242,11 +241,11 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
                     className={`p-4 rounded-xl border text-left transition-all ${
                       selectedCode === code.id 
                         ? 'border-blue-500 bg-blue-500/20' 
-                        : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
+                        : 'border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-slate-800/50 hover:border-zinc-400 dark:hover:border-slate-600'
                     }`}
                   >
-                    <span className="text-sm font-medium text-white block">{code.name}</span>
-                    <span className="text-xs text-slate-400">{code.region}</span>
+                    <span className="text-sm font-medium text-zinc-900 dark:text-white block">{code.name}</span>
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400">{code.region}</span>
                   </button>
                 ))}
               </div>
@@ -256,15 +255,15 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
           {/* Step 3: Values */}
           {currentStep === 2 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white">{WIZARD_STEPS[2].title}</h3>
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">{WIZARD_STEPS[2].title}</h3>
               
               {selectedCategory === 'live' && selectedCode !== 'CUSTOM' && (
                 <div>
-                  <label className="text-sm text-slate-400 block mb-2">Occupancy Type</label>
+                  <Label className="mb-2">Occupancy Type</Label>
                   <select 
                     value={occupancyType}
                     onChange={e => setOccupancyType(e.target.value)}
-                    className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white"
+                    className="w-full px-4 py-2 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white"
                   >
                     {Object.keys(LIVE_LOAD_VALUES).map(type => (
                       <option key={type} value={type}>{type}</option>
@@ -274,58 +273,57 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
               )}
               
               <div>
-                <label className="text-sm text-slate-400 block mb-2">Load Magnitude</label>
+                <Label className="mb-2">Load Magnitude</Label>
                 <div className="flex gap-2">
-                  <input
+                  <Input
                     type="number"
                     value={currentMagnitude}
                     onChange={e => setCustomMagnitude(parseFloat(e.target.value) || 0)}
                     disabled={selectedCode !== 'CUSTOM' && selectedCategory === 'live'}
-                    className="flex-1 px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white disabled:opacity-50"
+                    className="flex-1"
                   />
-                  <span className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-400">
+                  <span className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-500 dark:text-zinc-400">
                     kN/m²
                   </span>
                 </div>
                 {selectedCode !== 'CUSTOM' && selectedCategory === 'live' && (
-                  <p className="text-xs text-green-400 mt-1">
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-1">
                     Per {LIVE_LOAD_VALUES[occupancyType]?.code || 'code'}: {LIVE_LOAD_VALUES[occupancyType]?.value} kN/m²
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="text-sm text-slate-400 block mb-2">Load Name (optional)</label>
-                <input
+                <Label className="mb-2">Load Name (optional)</Label>
+                <Input
                   type="text"
                   value={loadName}
                   onChange={e => setLoadName(e.target.value)}
                   placeholder={`${selectedCategory.toUpperCase()}-1`}
-                  className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white"
                 />
               </div>
 
-              <button
+              <Button
                 onClick={addLoad}
-                className="w-full py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-medium transition-colors"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
               >
                 Add Load
-              </button>
+              </Button>
 
               {appliedLoads.length > 0 && (
                 <div className="mt-4 space-y-2">
-                  <h4 className="text-sm font-medium text-slate-400">Added Loads:</h4>
+                  <h4 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Added Loads:</h4>
                   {appliedLoads.map((load, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-slate-800 rounded-lg">
+                    <div key={i} className="flex items-center justify-between p-3 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
                       <div>
-                        <span className="text-white font-medium">{load.name}</span>
-                        <span className="text-slate-400 text-sm ml-2">
+                        <span className="text-zinc-900 dark:text-white font-medium">{load.name}</span>
+                        <span className="text-zinc-500 dark:text-zinc-400 text-sm ml-2">
                           {load.magnitude} {load.unit}
                         </span>
                       </div>
                       <button 
                         onClick={() => removeLoad(i)}
-                        className="text-red-400 hover:text-red-300"
+                        className="text-red-500 dark:text-red-400 hover:text-red-400 dark:hover:text-red-300"
                       >
                         ×
                       </button>
@@ -339,29 +337,29 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
           {/* Step 4: Application */}
           {currentStep === 3 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white">{WIZARD_STEPS[3].title}</h3>
-              <p className="text-slate-400">
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">{WIZARD_STEPS[3].title}</h3>
+              <p className="text-zinc-500 dark:text-zinc-400">
                 Loads will be applied to the current model. 
                 {model.nodes.size} nodes and {model.members.size} members available.
               </p>
               
               <div className="grid grid-cols-3 gap-3">
                 <button className="p-4 rounded-xl border border-blue-500 bg-blue-500/20 text-center">
-                  <span className="text-sm font-medium text-white block">All Members</span>
-                  <span className="text-xs text-slate-400">Apply uniformly</span>
+                  <span className="text-sm font-medium text-zinc-900 dark:text-white block">All Members</span>
+                  <span className="text-xs text-zinc-500 dark:text-zinc-400">Apply uniformly</span>
                 </button>
-                <button className="p-4 rounded-xl border border-slate-700 bg-slate-800/50 text-center opacity-50">
-                  <span className="text-sm font-medium text-white block">Selected</span>
-                  <span className="text-xs text-slate-400">Choose members</span>
+                <button className="p-4 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-slate-800/50 text-center opacity-50">
+                  <span className="text-sm font-medium text-zinc-900 dark:text-white block">Selected</span>
+                  <span className="text-xs text-zinc-500 dark:text-zinc-400">Choose members</span>
                 </button>
-                <button className="p-4 rounded-xl border border-slate-700 bg-slate-800/50 text-center opacity-50">
-                  <span className="text-sm font-medium text-white block">By Floor</span>
-                  <span className="text-xs text-slate-400">Floor-based</span>
+                <button className="p-4 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-slate-800/50 text-center opacity-50">
+                  <span className="text-sm font-medium text-zinc-900 dark:text-white block">By Floor</span>
+                  <span className="text-xs text-zinc-500 dark:text-zinc-400">Floor-based</span>
                 </button>
               </div>
 
-              <div className="p-4 bg-green-900/20 border border-green-800 rounded-lg">
-                <p className="text-green-400 text-sm">
+              <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <p className="text-green-700 dark:text-green-400 text-sm">
                   ✓ {appliedLoads.length} load case(s) ready to apply
                 </p>
               </div>
@@ -371,8 +369,8 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
           {/* Step 5: Combinations */}
           {currentStep === 4 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white">{WIZARD_STEPS[4].title}</h3>
-              <p className="text-slate-400 text-sm">Select load combinations per IS 456:2000 / IS 800:2007</p>
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">{WIZARD_STEPS[4].title}</h3>
+              <p className="text-zinc-500 dark:text-zinc-400 text-sm">Select load combinations per IS 456:2000 / IS 800:2007</p>
               
               <div className="space-y-2">
                 {STANDARD_COMBINATIONS.map(combo => (
@@ -382,17 +380,17 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
                     className={`w-full p-3 rounded-lg border text-left transition-all flex items-center gap-3 ${
                       selectedCombinations.includes(combo.id)
                         ? 'border-green-500 bg-green-500/20'
-                        : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
+                        : 'border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-slate-800/50 hover:border-zinc-400 dark:hover:border-slate-600'
                     }`}
                   >
                     <div className={`w-5 h-5 rounded border flex items-center justify-center ${
-                      selectedCombinations.includes(combo.id) ? 'bg-green-500 border-green-500' : 'border-slate-600'
+                      selectedCombinations.includes(combo.id) ? 'bg-green-500 border-green-500' : 'border-zinc-400 dark:border-slate-600'
                     }`}>
                       {selectedCombinations.includes(combo.id) && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <div className="flex-1">
-                      <span className="text-white font-medium">{combo.name}</span>
-                      <span className="text-slate-400 text-xs ml-2">- {combo.description}</span>
+                      <span className="text-zinc-900 dark:text-white font-medium">{combo.name}</span>
+                      <span className="text-zinc-500 dark:text-zinc-400 text-xs ml-2">- {combo.description}</span>
                     </div>
                   </button>
                 ))}
@@ -402,41 +400,38 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-700 flex items-center justify-between">
-          <button
+        <DialogFooter className="p-4 border-t border-zinc-200 dark:border-zinc-700 flex items-center justify-between sm:justify-between">
+          <Button
+            variant="outline"
             onClick={prevStep}
             disabled={currentStep === 0}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 rounded-lg transition-colors"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-4 h-4 mr-1" />
             Back
-          </button>
+          </Button>
           
-          <div className="text-sm text-slate-400">
+          <div className="text-sm text-zinc-500 dark:text-zinc-400">
             Step {currentStep + 1} of {WIZARD_STEPS.length}
           </div>
           
           {currentStep < WIZARD_STEPS.length - 1 ? (
-            <button
-              onClick={nextStep}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-            >
+            <Button onClick={nextStep}>
               Next
-              <ChevronRight className="w-4 h-4" />
-            </button>
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
           ) : (
-            <button
+            <Button
               onClick={handleComplete}
               disabled={isProcessing || appliedLoads.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 rounded-lg transition-colors"
+              className="bg-green-600 hover:bg-green-700 text-white"
             >
-              {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+              {isProcessing ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Check className="w-4 h-4 mr-1" />}
               Apply Loads
-            </button>
+            </Button>
           )}
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

@@ -10,8 +10,12 @@
  */
 
 import { FC, useState } from 'react';
-import { X, Triangle, Spline, Building, Layers, Cable } from 'lucide-react';
+import { Triangle, Spline, Building, Cable } from 'lucide-react';
 import { useModelStore } from '../../store/model';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 
 // ============================================
 // TYPES
@@ -165,27 +169,22 @@ export const TrussGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
         onClose();
     };
 
-    if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-            <div className="bg-zinc-900 border border-zinc-700 rounded-xl w-[400px] shadow-2xl">
-                {/* Header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-700">
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-[400px]">
+                <DialogHeader>
                     <div className="flex items-center gap-2">
                         <Triangle className="w-5 h-5 text-blue-400" />
-                        <h2 className="text-lg font-semibold text-white">Truss Generator</h2>
+                        <DialogTitle>Truss Generator</DialogTitle>
                     </div>
-                    <button onClick={onClose} className="text-zinc-400 hover:text-white">
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+                    <DialogDescription>Generate parametric truss structures.</DialogDescription>
+                </DialogHeader>
 
                 {/* Body */}
-                <div className="p-4 space-y-4">
+                <div className="space-y-4">
                     {/* Truss Type */}
                     <div>
-                        <label className="block text-sm text-zinc-400 mb-2">Truss Type</label>
+                        <Label className="mb-2">Truss Type</Label>
                         <div className="grid grid-cols-4 gap-2">
                             {(['warren', 'pratt', 'howe', 'k-truss'] as TrussType[]).map(type => (
                                 <button
@@ -194,7 +193,7 @@ export const TrussGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                                     className={`px-3 py-2 rounded text-sm capitalize
                     ${trussType === type
                                             ? 'bg-blue-600 text-white'
-                                            : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                                            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                                         }`}
                                 >
                                     {type}
@@ -206,60 +205,51 @@ export const TrussGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                     {/* Dimensions */}
                     <div className="grid grid-cols-3 gap-3">
                         <div>
-                            <label className="block text-xs text-zinc-400 mb-1">Span (m)</label>
-                            <input
+                            <Label className="text-xs mb-1">Span (m)</Label>
+                            <Input
                                 type="number"
                                 value={span}
                                 onChange={(e) => setSpan(Number(e.target.value))}
-                                className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-white"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs text-zinc-400 mb-1">Height (m)</label>
-                            <input
+                            <Label className="text-xs mb-1">Height (m)</Label>
+                            <Input
                                 type="number"
                                 value={height}
                                 onChange={(e) => setHeight(Number(e.target.value))}
-                                className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-white"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs text-zinc-400 mb-1">Panels</label>
-                            <input
+                            <Label className="text-xs mb-1">Panels</Label>
+                            <Input
                                 type="number"
                                 value={panels}
                                 onChange={(e) => setPanels(Number(e.target.value))}
-                                className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-white"
                             />
                         </div>
                     </div>
 
                     {/* Preview Info */}
-                    <div className="bg-zinc-800/50 rounded p-3 text-sm">
-                        <div className="text-zinc-400">
-                            Estimated: <span className="text-white">{panels + 1 + (trussType === 'warren' ? panels : panels + 1)}</span> nodes,
-                            <span className="text-white ml-1">{panels * 3 + (trussType === 'warren' ? panels - 1 : panels)}</span> members
+                    <div className="bg-zinc-100 dark:bg-zinc-800/50 rounded p-3 text-sm">
+                        <div className="text-zinc-500 dark:text-zinc-400">
+                            Estimated: <span className="text-zinc-900 dark:text-white">{panels + 1 + (trussType === 'warren' ? panels : panels + 1)}</span> nodes,
+                            <span className="text-zinc-900 dark:text-white ml-1">{panels * 3 + (trussType === 'warren' ? panels - 1 : panels)}</span> members
                         </div>
                     </div>
                 </div>
 
                 {/* Footer */}
-                <div className="flex justify-end gap-2 px-4 py-3 border-t border-zinc-700">
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 text-zinc-400 hover:text-white"
-                    >
+                <DialogFooter>
+                    <Button variant="outline" onClick={onClose}>
                         Cancel
-                    </button>
-                    <button
-                        onClick={handleGenerate}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500"
-                    >
+                    </Button>
+                    <Button onClick={handleGenerate} className="bg-blue-600 hover:bg-blue-500 text-white">
                         Generate
-                    </button>
-                </div>
-            </div>
-        </div>
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
 
@@ -349,24 +339,20 @@ export const ArchGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
         onClose();
     };
 
-    if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-            <div className="bg-zinc-900 border border-zinc-700 rounded-xl w-[400px] shadow-2xl">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-700">
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-[400px]">
+                <DialogHeader>
                     <div className="flex items-center gap-2">
                         <Spline className="w-5 h-5 text-blue-400" />
-                        <h2 className="text-lg font-semibold text-white">Arch Generator</h2>
+                        <DialogTitle>Arch Generator</DialogTitle>
                     </div>
-                    <button onClick={onClose} className="text-zinc-400 hover:text-white">
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+                    <DialogDescription>Generate parametric arch structures.</DialogDescription>
+                </DialogHeader>
 
-                <div className="p-4 space-y-4">
+                <div className="space-y-4">
                     <div>
-                        <label className="block text-sm text-zinc-400 mb-2">Arch Type</label>
+                        <Label className="mb-2">Arch Type</Label>
                         <div className="grid grid-cols-3 gap-2">
                             {(['parabolic', 'circular', 'catenary'] as ArchType[]).map(type => (
                                 <button
@@ -375,7 +361,7 @@ export const ArchGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                                     className={`px-3 py-2 rounded text-sm capitalize
                     ${archType === type
                                             ? 'bg-blue-600 text-white'
-                                            : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                                            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                                         }`}
                                 >
                                     {type}
@@ -386,30 +372,27 @@ export const ArchGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
 
                     <div className="grid grid-cols-3 gap-3">
                         <div>
-                            <label className="block text-xs text-zinc-400 mb-1">Span (m)</label>
-                            <input
+                            <Label className="text-xs mb-1">Span (m)</Label>
+                            <Input
                                 type="number"
                                 value={span}
                                 onChange={(e) => setSpan(Number(e.target.value))}
-                                className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-white"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs text-zinc-400 mb-1">Rise (m)</label>
-                            <input
+                            <Label className="text-xs mb-1">Rise (m)</Label>
+                            <Input
                                 type="number"
                                 value={rise}
                                 onChange={(e) => setRise(Number(e.target.value))}
-                                className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-white"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs text-zinc-400 mb-1">Segments</label>
-                            <input
+                            <Label className="text-xs mb-1">Segments</Label>
+                            <Input
                                 type="number"
                                 value={segments}
                                 onChange={(e) => setSegments(Number(e.target.value))}
-                                className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-white"
                             />
                         </div>
                     </div>
@@ -419,25 +402,20 @@ export const ArchGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                             type="checkbox"
                             checked={includeHangers}
                             onChange={(e) => setIncludeHangers(e.target.checked)}
-                            className="w-4 h-4 rounded bg-zinc-800 border-zinc-600"
+                            className="w-4 h-4 rounded bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-600"
                         />
-                        <span className="text-sm text-zinc-300">Include deck with hangers</span>
+                        <span className="text-sm text-zinc-700 dark:text-zinc-300">Include deck with hangers</span>
                     </label>
                 </div>
 
-                <div className="flex justify-end gap-2 px-4 py-3 border-t border-zinc-700">
-                    <button onClick={onClose} className="px-4 py-2 text-zinc-400 hover:text-white">
-                        Cancel
-                    </button>
-                    <button
-                        onClick={handleGenerate}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500"
-                    >
+                <DialogFooter>
+                    <Button variant="outline" onClick={onClose}>Cancel</Button>
+                    <Button onClick={handleGenerate} className="bg-blue-600 hover:bg-blue-500 text-white">
                         Generate
-                    </button>
-                </div>
-            </div>
-        </div>
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
 

@@ -1,7 +1,10 @@
 import { FC, useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useModelStore, Member } from '../../store/model';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
+import { Button } from '../ui/button';
+import { Label } from '../ui/label';
+import { Input } from '../ui/input';
 
 interface MemberSpecificationsDialogProps {
     isOpen: boolean;
@@ -109,41 +112,23 @@ export const MemberSpecificationsDialog: FC<MemberSpecificationsDialogProps> = (
         onClose();
     };
 
-    if (!isOpen) return null;
-
     return (
-        <AnimatePresence>
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-                onClick={onClose}
-            >
-                <motion.div
-                    initial={{ scale: 0.95, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.95, opacity: 0 }}
-                    onClick={(e) => e.stopPropagation()}
-                    className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden"
-                >
-                    {/* Header */}
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-zinc-900/50">
-                        <h2 className="text-lg font-bold text-white">Member Specifications</h2>
-                        <button onClick={onClose} className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg">
-                            <X className="w-5 h-5" />
-                        </button>
-                    </div>
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-lg">
+                <DialogHeader>
+                    <DialogTitle>Member Specifications</DialogTitle>
+                    <DialogDescription>Configure releases, offsets, and beta angle for selected members.</DialogDescription>
+                </DialogHeader>
 
                     {/* Tabs */}
-                    <div className="flex border-b border-zinc-800">
+                    <div className="flex border-b border-zinc-200 dark:border-zinc-800">
                         {(['releases', 'offsets', 'beta'] as const).map(tab => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
                                 className={`flex-1 py-3 text-sm font-medium transition-colors ${activeTab === tab
-                                    ? 'text-violet-400 border-b-2 border-violet-500 bg-violet-500/10'
-                                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
+                                    ? 'text-violet-600 dark:text-violet-400 border-b-2 border-violet-500 bg-violet-500/10'
+                                    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/50'
                                     }`}
                             >
                                 {tab.charAt(0).toUpperCase() + tab.slice(1)} ({tab === 'beta' ? 'Angle' : ''})
@@ -152,22 +137,22 @@ export const MemberSpecificationsDialog: FC<MemberSpecificationsDialogProps> = (
                     </div>
 
                     {/* Content */}
-                    <div className="p-6">
+                    <div className="py-4">
                         {activeTab === 'releases' && (
                             <div className="space-y-6">
                                 <div className="grid grid-cols-2 gap-8">
                                     {/* Start Node */}
                                     <div>
-                                        <h3 className="text-sm font-semibold text-zinc-300 mb-3 border-b border-zinc-700 pb-1">Start Node</h3>
+                                        <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3 border-b border-zinc-300 dark:border-zinc-700 pb-1">Start Node</h3>
                                         <div className="space-y-2">
                                             {['fx', 'fy', 'fz', 'mx', 'my', 'mz'].map((dof) => (
                                                 <label key={`start-${dof}`} className="flex items-center justify-between group cursor-pointer">
-                                                    <span className="text-sm text-zinc-400 group-hover:text-zinc-300 font-mono uppercase">{dof}</span>
+                                                    <span className="text-sm text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 font-mono uppercase">{dof}</span>
                                                     <input
                                                         type="checkbox"
                                                         checked={(releases as any)[`${dof}Start`]}
                                                         onChange={(e) => setReleases(prev => ({ ...prev, [`${dof}Start`]: e.target.checked }))}
-                                                        className="w-4 h-4 rounded border-zinc-600 bg-zinc-800 text-violet-600 focus:ring-violet-500 focus:ring-offset-zinc-900"
+                                                        className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-violet-600 focus:ring-violet-500 focus:ring-offset-white dark:focus:ring-offset-zinc-900"
                                                     />
                                                 </label>
                                             ))}
@@ -176,23 +161,23 @@ export const MemberSpecificationsDialog: FC<MemberSpecificationsDialogProps> = (
 
                                     {/* End Node */}
                                     <div>
-                                        <h3 className="text-sm font-semibold text-zinc-300 mb-3 border-b border-zinc-700 pb-1">End Node</h3>
+                                        <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3 border-b border-zinc-300 dark:border-zinc-700 pb-1">End Node</h3>
                                         <div className="space-y-2">
                                             {['fx', 'fy', 'fz', 'mx', 'my', 'mz'].map((dof) => (
                                                 <label key={`end-${dof}`} className="flex items-center justify-between group cursor-pointer">
-                                                    <span className="text-sm text-zinc-400 group-hover:text-zinc-300 font-mono uppercase">{dof}</span>
+                                                    <span className="text-sm text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 font-mono uppercase">{dof}</span>
                                                     <input
                                                         type="checkbox"
                                                         checked={(releases as any)[`${dof}End`]}
                                                         onChange={(e) => setReleases(prev => ({ ...prev, [`${dof}End`]: e.target.checked }))}
-                                                        className="w-4 h-4 rounded border-zinc-600 bg-zinc-800 text-violet-600 focus:ring-violet-500 focus:ring-offset-zinc-900"
+                                                        className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-violet-600 focus:ring-violet-500 focus:ring-offset-white dark:focus:ring-offset-zinc-900"
                                                     />
                                                 </label>
                                             ))}
                                         </div>
                                     </div>
                                 </div>
-                                <p className="text-xs text-zinc-400 italic">
+                                <p className="text-xs text-zinc-500 dark:text-zinc-400 italic">
                                     Checked = Released (Free to move/rotate). Unchecked = Fixed.
                                 </p>
                             </div>
@@ -202,19 +187,18 @@ export const MemberSpecificationsDialog: FC<MemberSpecificationsDialogProps> = (
                             <div className="space-y-6">
                                 {/* Start Node Offsets */}
                                 <div>
-                                    <h3 className="text-sm font-semibold text-zinc-300 mb-3">Start Node Offsets (Global)</h3>
+                                    <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">Start Node Offsets (Global)</h3>
                                     <div className="grid grid-cols-3 gap-3">
                                         {['x', 'y', 'z'].map((axis) => (
                                             <div key={`start-${axis}`}>
-                                                <label className="text-xs text-zinc-400 uppercase block mb-1">{axis} (m)</label>
-                                                <input
+                                                <Label className="text-xs uppercase mb-1">{axis} (m)</Label>
+                                                <Input
                                                     type="number"
                                                     value={(offsets.start as any)[axis]}
                                                     onChange={(e) => setOffsets(prev => ({
                                                         ...prev,
                                                         start: { ...prev.start, [axis]: parseFloat(e.target.value) || 0 }
                                                     }))}
-                                                    className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white"
                                                 />
                                             </div>
                                         ))}
@@ -223,19 +207,18 @@ export const MemberSpecificationsDialog: FC<MemberSpecificationsDialogProps> = (
 
                                 {/* End Node Offsets */}
                                 <div>
-                                    <h3 className="text-sm font-semibold text-zinc-300 mb-3">End Node Offsets (Global)</h3>
+                                    <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">End Node Offsets (Global)</h3>
                                     <div className="grid grid-cols-3 gap-3">
                                         {['x', 'y', 'z'].map((axis) => (
                                             <div key={`end-${axis}`}>
-                                                <label className="text-xs text-zinc-400 uppercase block mb-1">{axis} (m)</label>
-                                                <input
+                                                <Label className="text-xs uppercase mb-1">{axis} (m)</Label>
+                                                <Input
                                                     type="number"
                                                     value={(offsets.end as any)[axis]}
                                                     onChange={(e) => setOffsets(prev => ({
                                                         ...prev,
                                                         end: { ...prev.end, [axis]: parseFloat(e.target.value) || 0 }
                                                     }))}
-                                                    className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white"
                                                 />
                                             </div>
                                         ))}
@@ -247,27 +230,28 @@ export const MemberSpecificationsDialog: FC<MemberSpecificationsDialogProps> = (
                         {activeTab === 'beta' && (
                             <div className="space-y-4">
                                 <div>
-                                    <label className="text-sm font-semibold text-zinc-300 block mb-2">Beta Angle (Degrees)</label>
+                                    <Label className="text-sm font-semibold mb-2">Beta Angle (Degrees)</Label>
                                     <div className="flex items-center gap-4">
-                                        <input
+                                        <Input
                                             type="number"
                                             value={betaAngle}
                                             onChange={(e) => setBetaAngle(parseFloat(e.target.value) || 0)}
-                                            className="w-32 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white"
+                                            className="w-32"
                                         />
                                         <div className="flex gap-2">
                                             {[0, 90, 180, 270].map(angle => (
-                                                <button
+                                                <Button
                                                     key={angle}
+                                                    variant="outline"
+                                                    size="sm"
                                                     onClick={() => setBetaAngle(angle)}
-                                                    className="px-3 py-1 text-xs bg-zinc-800 hover:bg-zinc-700 rounded border border-zinc-700 text-zinc-300"
                                                 >
                                                     {angle}°
-                                                </button>
+                                                </Button>
                                             ))}
                                         </div>
                                     </div>
-                                    <p className="text-xs text-zinc-400 mt-2">
+                                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">
                                         Rotation about the local x-axis. Positive is clockwise when looking from start to end.
                                     </p>
                                 </div>
@@ -276,23 +260,16 @@ export const MemberSpecificationsDialog: FC<MemberSpecificationsDialogProps> = (
                     </div>
 
                     {/* Footer */}
-                    <div className="flex justify-end gap-3 px-6 py-4 border-t border-zinc-800 bg-zinc-900/50">
-                        <button
-                            onClick={onClose}
-                            className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white"
-                        >
+                    <DialogFooter>
+                        <Button variant="outline" onClick={onClose}>
                             Cancel
-                        </button>
-                        <button
-                            onClick={handleApply}
-                            className="px-6 py-2 text-sm font-medium bg-violet-600 hover:bg-violet-700 text-white rounded-lg flex items-center gap-2"
-                        >
-                            <Check className="w-4 h-4" />
+                        </Button>
+                        <Button onClick={handleApply} className="bg-violet-600 hover:bg-violet-700 text-white">
+                            <Check className="w-4 h-4 mr-2" />
                             Apply Changes
-                        </button>
-                    </div>
-                </motion.div>
-            </motion.div>
-        </AnimatePresence>
+                        </Button>
+                    </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };

@@ -6,9 +6,11 @@
  */
 
 import { FC, useState } from 'react';
-import { X, Building2, Grid3x3, LayoutGrid, Layers, Search, Sparkles } from 'lucide-react';
+import { Building2, Grid3x3, LayoutGrid, Layers, Search, Sparkles } from 'lucide-react';
 import { FAMOUS_STRUCTURES_TEMPLATES, generateFromTemplate, type TemplateInfo } from '../../services/StructureFactory';
 import { useModelStore } from '../../store/model';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
+import { Input } from '../ui/input';
 
 interface StructureGalleryProps {
     isOpen: boolean;
@@ -40,8 +42,6 @@ export const StructureGallery: FC<StructureGalleryProps> = ({ isOpen, onClose })
     const [searchQuery, setSearchQuery] = useState('');
     const loadStructure = useModelStore((state) => state.loadStructure);
     const clearModel = useModelStore((state) => state.clearModel);
-
-    if (!isOpen) return null;
 
     const categories: Array<TemplateInfo['category'] | 'all'> = [
         'all',
@@ -79,41 +79,34 @@ export const StructureGallery: FC<StructureGalleryProps> = ({ isOpen, onClose })
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-            <div className="relative w-full max-w-6xl h-[85vh] m-4 bg-slate-900 rounded-xl shadow-2xl border border-slate-700 flex flex-col overflow-hidden">
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700 bg-gradient-to-r from-slate-800 to-slate-900">
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-6xl h-[85vh] flex flex-col overflow-hidden p-0">
+                <DialogHeader className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-700 bg-gradient-to-r from-zinc-100 to-white dark:from-slate-800 dark:to-slate-900">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-emerald-500/20 rounded-lg">
                             <Sparkles className="w-6 h-6 text-emerald-400" />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-bold text-white">Iconic Structures Gallery</h2>
-                            <p className="text-sm text-slate-400">
+                            <DialogTitle className="text-2xl font-bold">Iconic Structures Gallery</DialogTitle>
+                            <DialogDescription>
                                 Load famous civil engineering structures to showcase BeamLab capabilities
-                            </p>
+                            </DialogDescription>
                         </div>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
-                    >
-                        <X className="w-6 h-6 text-slate-400" />
-                    </button>
-                </div>
+                </DialogHeader>
 
                 {/* Search and Filter */}
-                <div className="px-6 py-4 border-b border-slate-700 bg-slate-800/50">
+                <div className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-slate-800/50">
                     <div className="flex gap-4 items-center">
                         {/* Search */}
                         <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                            <input
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 dark:text-zinc-400" />
+                            <Input
                                 type="text"
                                 placeholder="Search structures..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                className="pl-10"
                             />
                         </div>
 
@@ -121,7 +114,7 @@ export const StructureGallery: FC<StructureGalleryProps> = ({ isOpen, onClose })
                         <select
                             value={selectedCategory}
                             onChange={(e) => setSelectedCategory(e.target.value as any)}
-                            className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            className="px-4 py-2 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                         >
                             {categories.map((category) => (
                                 <option key={category} value={category}>
@@ -135,7 +128,7 @@ export const StructureGallery: FC<StructureGalleryProps> = ({ isOpen, onClose })
                 {/* Gallery Grid */}
                 <div className="flex-1 overflow-y-auto p-6">
                     {filteredTemplates.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-full text-slate-400">
+                        <div className="flex flex-col items-center justify-center h-full text-zinc-500 dark:text-zinc-400">
                             <Search className="w-16 h-16 mb-4 opacity-50" />
                             <p className="text-lg">No structures found</p>
                             <p className="text-sm">Try adjusting your search or category filter</p>
@@ -147,11 +140,11 @@ export const StructureGallery: FC<StructureGalleryProps> = ({ isOpen, onClose })
                                 return (
                                     <div
                                         key={template.id}
-                                        className="group relative bg-slate-800 rounded-lg border border-slate-700 overflow-hidden hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/20 transition-all cursor-pointer"
+                                        className="group relative bg-zinc-100 dark:bg-slate-800 rounded-lg border border-zinc-300 dark:border-zinc-700 overflow-hidden hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/20 transition-all cursor-pointer"
                                         onClick={() => handleLoadTemplate(template.id)}
                                     >
                                         {/* Thumbnail Image */}
-                                        <div className="h-48 bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center relative overflow-hidden">
+                                        <div className="h-48 bg-gradient-to-br from-zinc-200 to-zinc-100 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center relative overflow-hidden">
                                             <img
                                                 src={`/structures/${template.id}.png`}
                                                 alt={template.name}
@@ -163,26 +156,26 @@ export const StructureGallery: FC<StructureGalleryProps> = ({ isOpen, onClose })
                                                 }}
                                             />
                                             <div className="hidden absolute inset-0 bg-emerald-500/5 group-hover:bg-emerald-500/10 transition-colors flex items-center justify-center">
-                                                <Icon className="w-20 h-20 text-slate-500 group-hover:text-emerald-400 transition-colors" />
+                                                <Icon className="w-20 h-20 text-zinc-500 dark:text-slate-500 group-hover:text-emerald-400 transition-colors" />
                                             </div>
 
                                             {/* Category Badge */}
-                                            <div className="absolute top-3 right-3 px-3 py-1 bg-slate-900/90 backdrop-blur-sm rounded-full text-xs text-emerald-400 font-medium border border-emerald-500/30">
+                                            <div className="absolute top-3 right-3 px-3 py-1 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-full text-xs text-emerald-600 dark:text-emerald-400 font-medium border border-emerald-500/30">
                                                 {categoryNames[template.category]}
                                             </div>
                                         </div>
 
                                         {/* Content */}
                                         <div className="p-4">
-                                            <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-emerald-400 transition-colors">
+                                            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2 group-hover:text-emerald-400 transition-colors">
                                                 {template.name}
                                             </h3>
-                                            <p className="text-sm text-slate-400 line-clamp-2">
+                                            <p className="text-sm text-zinc-500 dark:text-zinc-400 line-clamp-2">
                                                 {template.description}
                                             </p>
 
                                             {/* Load Button */}
-                                            <button className="mt-4 w-full py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg font-medium transition-colors border border-emerald-500/30 group-hover:border-emerald-500">
+                                            <button className="mt-4 w-full py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-lg font-medium transition-colors border border-emerald-500/30 group-hover:border-emerald-500">
                                                 Load Structure
                                             </button>
                                         </div>
@@ -194,14 +187,14 @@ export const StructureGallery: FC<StructureGalleryProps> = ({ isOpen, onClose })
                 </div>
 
                 {/* Footer */}
-                <div className="px-6 py-4 border-t border-slate-700 bg-slate-800/50">
-                    <div className="flex items-center justify-between text-sm text-slate-400">
+                <div className="px-6 py-4 border-t border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-slate-800/50">
+                    <div className="flex items-center justify-between text-sm text-zinc-500 dark:text-zinc-400">
                         <span>{filteredTemplates.length} structures available</span>
-                        <span className="text-emerald-400">Click any structure to load it instantly</span>
+                        <span className="text-emerald-600 dark:text-emerald-400">Click any structure to load it instantly</span>
                     </div>
                 </div>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 };
 
