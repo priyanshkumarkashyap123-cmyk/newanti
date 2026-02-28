@@ -117,6 +117,15 @@ fn safe_buckling_to_js(value: &BucklingResult) -> JsValue {
 // TYPES
 // ============================================
 
+/// Buckling analysis result
+#[derive(Serialize, Deserialize)]
+pub struct BucklingResult {
+    pub success: bool,
+    pub buckling_factors: Vec<f64>,
+    pub critical_loads: Vec<f64>,
+    pub error: Option<String>,
+}
+
 /// Input structure for the solver
 #[derive(Serialize, Deserialize)]
 pub struct SolverInput {
@@ -1774,14 +1783,6 @@ pub fn analyze_buckling(
     point_loads_json: JsValue,
     num_modes: usize,
 ) -> JsValue {
-    #[derive(Serialize)]
-    struct BucklingResult {
-        success: bool,
-        buckling_factors: Vec<f64>,
-        critical_loads: Vec<f64>,
-        error: Option<String>,
-    }
-    
     // Parse inputs
     let nodes: Vec<Node> = match serde_wasm_bindgen::from_value(nodes_json) {
         Ok(n) => n,

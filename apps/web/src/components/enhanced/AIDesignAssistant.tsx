@@ -533,8 +533,18 @@ Format important sections with **bold**.`;
         const aiResponse = await geminiAI.callGemini(prompt, systemPrompt);
         
         // Parse response for structured content
-        const suggestions = aiResponse.match(/suggest|recommend|try|consider/i)
-          ? [aiResponse.split('\n').filter(l => l.startsWith('-') || l.startsWith('•')).slice(0, 3).join(', ') || 'Review the analysis results']
+        const rawSuggestions = aiResponse.match(/suggest|recommend|try|consider/i)
+          ? aiResponse.split('\n').filter(l => l.startsWith('-') || l.startsWith('•')).slice(0, 3)
+          : undefined;
+        
+        const suggestions: DesignSuggestion[] | undefined = rawSuggestions?.length
+          ? rawSuggestions.map((s, i) => ({
+              id: `ai-suggestion-${i}`,
+              category: 'optimization' as SuggestionCategory,
+              title: s.replace(/^[-•]\s*/, '').slice(0, 60),
+              description: s.replace(/^[-•]\s*/, ''),
+              impact: 'medium' as const,
+            }))
           : undefined;
         
         setMessages(m => m.map(msg =>
@@ -542,7 +552,7 @@ Format important sections with **bold**.`;
             ? {
                 ...msg,
                 content: aiResponse || 'I can help with structural design questions. Could you provide more details?',
-                suggestions: suggestions ? suggestions.filter(s => s.length > 0) : undefined,
+                suggestions,
                 isLoading: false,
               }
             : msg
