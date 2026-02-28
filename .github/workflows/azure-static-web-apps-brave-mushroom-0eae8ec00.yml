@@ -1,8 +1,11 @@
 name: Azure Static Web Apps CI/CD
 
-# Temporarily re-enabled for public repo deployment
 on:
   push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
     branches:
       - main
   workflow_dispatch:
@@ -32,6 +35,13 @@ jobs:
         with:
           targets: wasm32-unknown-unknown
       
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            apps/backend-rust
+            packages/solver-wasm
+
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 

@@ -76,7 +76,7 @@ pub fn init() {
 
 /// Safely serialize a result to JsValue, returning an error object instead of panicking.
 /// This prevents WASM instance abort if serialization fails (e.g., NaN values).
-fn safe_to_js(value: &AnalysisResult) -> JsValue {
+fn safe_to_js<T: Serialize>(value: &T) -> JsValue {
     match serde_wasm_bindgen::to_value(value) {
         Ok(v) => v,
         Err(e) => {
@@ -90,6 +90,23 @@ fn safe_to_js(value: &AnalysisResult) -> JsValue {
                 error: Some(error_msg),
             };
             // This inner call should never fail since the error result has no NaN/Inf values
+            serde_wasm_bindgen::to_value(&fallback)
+                .unwrap_or(JsValue::from_str("serialization error"))
+        }
+    }
+}
+
+/// Safely serialize a BucklingResult to JsValue.
+fn safe_buckling_to_js(value: &BucklingResult) -> JsValue {
+    match serde_wasm_bindgen::to_value(value) {
+        Ok(v) => v,
+        Err(e) => {
+            let fallback = BucklingResult {
+                success: false,
+                buckling_factors: vec![],
+                critical_loads: vec![],
+                error: Some(format!("Serialization failed: {}", e)),
+            };
             serde_wasm_bindgen::to_value(&fallback)
                 .unwrap_or(JsValue::from_str("serialization error"))
         }
@@ -965,7 +982,7 @@ pub fn solve_structure_wasm(
                 success: false,
                 error: Some(format!("Failed to parse nodes: {}", e)),
             };
-            return safe_to_js(&result);
+            return serde_wasm_bindgen::to_value(&result).unwrap();
         }
     };
 
@@ -979,7 +996,7 @@ pub fn solve_structure_wasm(
                 success: false,
                 error: Some(format!("Failed to parse elements: {}", e)),
             };
-            return safe_to_js(&result);
+            return serde_wasm_bindgen::to_value(&result).unwrap();
         }
     };
 
@@ -1009,7 +1026,7 @@ pub fn solve_structure_wasm(
             success: false,
             error: Some(msg),
         };
-        safe_to_js(&result)
+        serde_wasm_bindgen::to_value(&result).unwrap()
     };
 
     // Assemble stiffness matrix for each element
@@ -1026,7 +1043,7 @@ pub fn solve_structure_wasm(
                 success: false,
                 error: Some(format!("Element {} references invalid nodes", elem.id)),
             };
-            return safe_to_js(&result);
+            return serde_wasm_bindgen::to_value(&result).unwrap();
         }
 
         let start = start_node.unwrap();
@@ -1045,7 +1062,7 @@ pub fn solve_structure_wasm(
                 success: false,
                 error: Some(format!("Element {} has zero length", elem.id)),
             };
-            return safe_to_js(&result);
+            return serde_wasm_bindgen::to_value(&result).unwrap();
         }
 
         let c = dx / l;
@@ -1323,7 +1340,7 @@ pub fn solve_structure_wasm(
                     success: false,
                     error: Some("Singular stiffness matrix - structure is unstable".to_string()),
                 };
-                return safe_to_js(&result);
+                return serde_wasm_bindgen::to_value(&result).unwrap();
             }
         }
     };
@@ -1485,7 +1502,7 @@ pub fn solve_structure_wasm(
         error: None,
     };
 
-    safe_to_js(&result)
+    serde_wasm_bindgen::to_value(&result).unwrap()
 }
 
 // ============================================
@@ -1555,46 +1572,11 @@ pub fn solve_p_delta(
     let max_iter = max_iterations.unwrap_or(20);
     let tol = tolerance.unwrap_or(1e-4);
     
-    // Parse inputs with proper error handling
-    let nodes: Vec<Node> = match serde_wasm_bindgen::from_value(nodes_json) {
-        Ok(n) => n,
-        Err(e) => {
-            let result = AnalysisResult {
-                displacements: std::collections::HashMap::new(),
-                reactions: std::collections::HashMap::new(),
-                member_forces: std::collections::HashMap::new(),
-                success: false,
-                error: Some(format!("Failed to parse nodes: {}", e)),
-            };
-            return safe_to_js(&result);
-        }
-    };
-    let elements: Vec<Element> = match serde_wasm_bindgen::from_value(elements_json) {
-        Ok(e) => e,
-        Err(e) => {
-            let result = AnalysisResult {
-                displacements: std::collections::HashMap::new(),
-                reactions: std::collections::HashMap::new(),
-                member_forces: std::collections::HashMap::new(),
-                success: false,
-                error: Some(format!("Failed to parse elements: {}", e)),
-            };
-            return safe_to_js(&result);
-        }
-    };
+    // Parse inputs (same as solve_structure_wasm)
+    let nodes: Vec<Node> = serde_wasm_bindgen::from_value(nodes_json).unwrap_or_default();
+    let elements: Vec<Element> = serde_wasm_bindgen::from_value(elements_json).unwrap_or_default();
     let point_loads: Vec<PointLoad> = serde_wasm_bindgen::from_value(point_loads_json).unwrap_or_default();
     let _member_loads: Vec<MemberLoad> = serde_wasm_bindgen::from_value(member_loads_json).unwrap_or_default();
-    
-    if nodes.is_empty() || elements.is_empty() {
-        let result = AnalysisResult {
-            displacements: std::collections::HashMap::new(),
-            reactions: std::collections::HashMap::new(),
-            member_forces: std::collections::HashMap::new(),
-            success: false,
-            error: Some("P-Delta analysis requires at least one node and one element".to_string()),
-        };
-        return safe_to_js(&result);
-    }
     
     let num_nodes = nodes.len();
     let dof = num_nodes * 3;
@@ -1750,18 +1732,6 @@ pub fn solve_p_delta(
         }
         let u_current = DVector::from_vec(u_full.clone());
         
-        // Check for NaN/Infinity — indicates numerical instability (e.g., buckling)
-        if u_current.iter().any(|&v| v.is_nan() || v.is_infinite()) {
-            let result = AnalysisResult {
-                displacements: std::collections::HashMap::new(),
-                reactions: std::collections::HashMap::new(),
-                member_forces: std::collections::HashMap::new(),
-                success: false,
-                error: Some("P-Delta analysis produced NaN/Infinity — structure may be unstable (buckling)".to_string()),
-            };
-            return safe_to_js(&result);
-        }
-        
         // Check convergence
         if iteration > 0 {
             let diff = &u_current - &u_prev;
@@ -1792,7 +1762,7 @@ pub fn solve_p_delta(
         error: if converged { None } else { Some("P-Delta analysis did not converge".to_string()) },
     };
     
-    safe_to_js(&result)
+    serde_wasm_bindgen::to_value(&result).unwrap()
 }
 
 /// Buckling analysis - eigenvalue problem to find critical loads
@@ -1821,7 +1791,7 @@ pub fn analyze_buckling(
                 buckling_factors: vec![],
                 critical_loads: vec![],
                 error: Some("Failed to parse nodes".to_string()),
-            }).unwrap_or(JsValue::from_str("serialization error"));
+            }).unwrap();
         }
     };
     
@@ -1833,7 +1803,7 @@ pub fn analyze_buckling(
                 buckling_factors: vec![],
                 critical_loads: vec![],
                 error: Some("Failed to parse elements".to_string()),
-            }).unwrap_or(JsValue::from_str("serialization error"));
+            }).unwrap();
         }
     };
     
@@ -1962,7 +1932,7 @@ pub fn analyze_buckling(
                 buckling_factors: vec![],
                 critical_loads: vec![],
                 error: Some("Elastic stiffness matrix is singular".to_string()),
-            }).unwrap_or(JsValue::from_str("serialization error"));
+            }).unwrap();
         }
     };
     
@@ -1988,7 +1958,7 @@ pub fn analyze_buckling(
         error: None,
     };
     
-    serde_wasm_bindgen::to_value(&result).unwrap_or(JsValue::from_str("serialization error"))
+    serde_wasm_bindgen::to_value(&result).unwrap()
 }
 
 // ============================================
