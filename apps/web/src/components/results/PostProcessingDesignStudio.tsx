@@ -15,7 +15,6 @@
 
 import React, { FC, useState, useMemo, useCallback, Fragment } from "react";
 import {
-  X,
   ChevronDown,
   ChevronRight,
   Download,
@@ -39,6 +38,8 @@ import {
   Minus,
   Plus,
 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "../ui/dialog";
+import { Button } from "../ui/button";
 
 import {
   useModelStore,
@@ -2173,14 +2174,7 @@ export const PostProcessingDesignStudio: FC<DesignStudioProps> = ({
   const [activeTab, setActiveTab] = useState<TabId>("summary");
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
-  // Escape key to close
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
+  // Dialog handles Escape key natively
 
   // Store hooks
   const analysisResults = useModelStore((s) => s.analysisResults);
@@ -2365,56 +2359,51 @@ export const PostProcessingDesignStudio: FC<DesignStudioProps> = ({
 
   if (!analysisResults) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-        <div className="bg-zinc-900 rounded-2xl p-12 text-center">
-          <AlertTriangle className="w-12 h-12 mx-auto text-amber-400 mb-4" />
-          <p className="text-zinc-300 mb-2">No analysis results available.</p>
-          <p className="text-xs text-zinc-500 mb-6">
-            Run an analysis first to access the design studio.
-          </p>
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-zinc-700 rounded-lg text-sm text-zinc-200 hover:bg-zinc-600"
-          >
-            Close
-          </button>
-        </div>
-      </div>
+      <Dialog open onOpenChange={(open) => !open && onClose()}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>No Analysis Results</DialogTitle>
+            <DialogDescription>Run an analysis first to access the design studio.</DialogDescription>
+          </DialogHeader>
+          <div className="text-center py-4">
+            <AlertTriangle className="w-12 h-12 mx-auto text-amber-400 mb-4" />
+            <p className="text-zinc-700 dark:text-zinc-300 mb-2">No analysis results available.</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={onClose}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-zinc-900/98 backdrop-blur-sm">
-      {/* Title Bar */}
-      <div className="flex items-center justify-between px-5 py-3 bg-zinc-800 border-b border-zinc-700/60 shrink-0">
-        <div className="flex items-center gap-3">
-          <Shield className="w-5 h-5 text-blue-400" />
-          <h2 className="text-lg font-bold text-zinc-100">
-            Post-Processing Design Studio
-          </h2>
-          <span className="text-xs text-zinc-500 bg-zinc-700/50 px-2 py-0.5 rounded-full">
-            {designRows.length} members
-          </span>
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-none w-screen h-screen p-0 rounded-none flex flex-col gap-0">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Post-Processing Design Studio</DialogTitle>
+        </DialogHeader>
+        {/* Title Bar */}
+        <div className="flex items-center justify-between px-5 py-3 bg-zinc-100 dark:bg-zinc-800 border-b border-zinc-300 dark:border-zinc-700/60 shrink-0">
+          <div className="flex items-center gap-3">
+            <Shield className="w-5 h-5 text-blue-400" />
+            <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+              Post-Processing Design Studio
+            </h2>
+            <span className="text-xs text-zinc-500 bg-zinc-200 dark:bg-zinc-700/50 px-2 py-0.5 rounded-full">
+              {designRows.length} members
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleExport}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 rounded-lg text-zinc-700 dark:text-zinc-200 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              Export Report
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleExport}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-zinc-700 hover:bg-zinc-600 rounded-lg text-zinc-200 transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            Export Report
-          </button>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-zinc-700 rounded-lg transition-colors flex items-center gap-1"
-            title="Close (Esc)"
-            aria-label="Close design studio"
-          >
-            <X className="w-5 h-5 text-zinc-400" />
-            <span className="text-xs text-zinc-500 ml-1">Esc</span>
-          </button>
-        </div>
-      </div>
 
       {/* Tab Bar */}
       <div className="flex items-center gap-1 px-5 py-1.5 bg-zinc-800/60 border-b border-zinc-700/40 shrink-0 overflow-x-auto">
@@ -2469,7 +2458,8 @@ export const PostProcessingDesignStudio: FC<DesignStudioProps> = ({
           />
         )}
       </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
