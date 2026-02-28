@@ -8,7 +8,7 @@
  * - Purposeful micro-interactions
  */
 
-import React from 'react';
+import React from "react";
 import {
   FC,
   useState,
@@ -44,6 +44,7 @@ import {
   Cpu,
   Activity as ActivityIcon,
   Sparkles,
+  Users,
 } from "lucide-react";
 import { UserButton } from "@clerk/clerk-react";
 import { useAuth, isUsingClerk } from "../providers/AuthProvider";
@@ -142,7 +143,11 @@ const STATUS_STYLES: Record<
   Project["status"],
   { bg: string; text: string; dot: string }
 > = {
-  draft: { bg: "bg-slate-500/10", text: "text-slate-600 dark:text-slate-400", dot: "bg-slate-400" },
+  draft: {
+    bg: "bg-slate-500/10",
+    text: "text-slate-600 dark:text-slate-400",
+    dot: "bg-slate-400",
+  },
   analyzed: { bg: "bg-blue-500/10", text: "text-blue-400", dot: "bg-blue-400" },
   designed: {
     bg: "bg-amber-500/10",
@@ -202,6 +207,14 @@ const QUICK_ACTIONS: QuickAction[] = [
     route: "/app?tool=import",
     accent: "group-hover:text-orange-400",
   },
+  {
+    id: "collaborate",
+    title: "Collaborate",
+    subtitle: "Team workspace",
+    icon: <Users className="w-5 h-5" />,
+    route: "/collaboration",
+    accent: "group-hover:text-cyan-400",
+  },
 ];
 
 const TEMPLATES: Template[] = [
@@ -246,7 +259,7 @@ const StatPill: FC<{
       {icon}
     </div>
     <div className="min-w-0">
-      <div className="text-lg font-semibold text-slate-100 tabular-nums leading-tight">
+      <div className="text-lg font-semibold text-slate-800 dark:text-slate-100 tabular-nums leading-tight">
         {value}
       </div>
       <div className="text-[11px] text-slate-500 leading-tight">{label}</div>
@@ -293,14 +306,14 @@ const ProjectCard: FC<{
         {/* Hover overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-end p-2.5">
           <div className="rounded-full bg-white/10 backdrop-blur-sm p-1.5 border border-white/10">
-            <ArrowUpRight className="w-3.5 h-3.5 text-white" />
+            <ArrowUpRight className="w-3.5 h-3.5 text-zinc-900 dark:text-white" />
           </div>
         </div>
       </div>
 
       {/* Info */}
       <div className="px-3.5 py-3 space-y-2">
-        <h3 className="text-sm font-medium text-slate-200 truncate group-hover:text-white transition-colors">
+        <h3 className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate group-hover:text-zinc-900 dark:hover:text-zinc-900 dark:hover:text-white transition-colors">
           {project.name}
         </h3>
         <div className="flex items-center gap-2 text-[11px] text-slate-500">
@@ -462,7 +475,7 @@ export const UnifiedDashboard: FC<{
   // ==========================================
 
   return (
-    <div className="min-h-screen bg-[#0a0e17] text-slate-200">
+    <div className="min-h-screen bg-[#0a0e17] text-slate-700 dark:text-slate-200">
       {/* ---- Ambient glow (top-left) ---- */}
       <div className="pointer-events-none fixed -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-blue-600/[0.04] blur-[120px]" />
       <div className="pointer-events-none fixed -bottom-40 -right-40 h-[400px] w-[400px] rounded-full bg-purple-600/[0.03] blur-[120px]" />
@@ -474,7 +487,7 @@ export const UnifiedDashboard: FC<{
           <div className="flex items-center gap-7">
             <Link to="/" className="flex items-center gap-2.5">
               <img src={beamLabLogo} alt="BeamLab" className="h-7 w-7" />
-              <span className="text-[15px] font-bold tracking-tight text-white">
+              <span className="text-[15px] font-bold tracking-tight text-zinc-900 dark:text-white">
                 BeamLab
               </span>
               <span className="rounded-[5px] bg-blue-500/15 px-1.5 py-[1px] text-[10px] font-bold text-blue-400 leading-tight">
@@ -505,12 +518,17 @@ export const UnifiedDashboard: FC<{
                   label: "Reports",
                   icon: <FileText className="w-3.5 h-3.5" />,
                 },
+                {
+                  to: "/collaboration",
+                  label: "Collaborate",
+                  icon: <Users className="w-3.5 h-3.5" />,
+                },
               ].map((n) => (
                 <Link
                   key={n.to}
                   to={n.to}
                   className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-colors
-                    ${n.active ? "text-white bg-white/[0.06]" : "text-slate-500 hover:text-slate-700 dark:text-slate-300 hover:bg-white/[0.03]"}`}
+                    ${n.active ? "text-zinc-900 dark:text-white bg-white/[0.06]" : "text-slate-500 hover:text-slate-700 dark:text-slate-300 hover:bg-white/[0.03]"}`}
                 >
                   {n.icon} {n.label}
                 </Link>
@@ -549,7 +567,7 @@ export const UnifiedDashboard: FC<{
         {/* ---- Welcome Row ---- */}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">
+            <h1 className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight">
               {greeting}, {userName}
             </h1>
             <p className="mt-1 text-sm text-slate-500">
@@ -613,7 +631,7 @@ export const UnifiedDashboard: FC<{
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-medium text-slate-200">
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
                       {a.title}
                     </span>
                     {a.badge && (
