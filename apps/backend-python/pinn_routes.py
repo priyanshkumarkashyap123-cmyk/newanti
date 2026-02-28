@@ -37,8 +37,16 @@ try:
     HAS_PINN = True
 except ImportError:
     HAS_PINN = False
-    # Define a placeholder so type annotations don't crash
+    # Define placeholders so type annotations don't crash at import time
+    EulerBernoulliConfig = Any  # type: ignore
+    TimoshenkoConfig = Any  # type: ignore
+    LoadConfig = Any  # type: ignore
+    BoundaryCondition = Any  # type: ignore
+    LoadType = Any  # type: ignore
+    PINNTrainer = Any  # type: ignore
+    TrainingConfig = Any  # type: ignore
     PINNPredictor = Any  # type: ignore
+    compare_with_analytical = None  # type: ignore
 
 router = APIRouter()
 
