@@ -31,12 +31,14 @@ RATE_LIMIT_AI = int(os.getenv("RATE_LIMIT_AI", "20"))  # req/min
 RATE_WINDOW_SEC = 60
 
 # Public paths that skip authentication
-PUBLIC_PATHS = frozenset({
-    "/", "/health", "/health/dependencies", "/docs", "/redoc",
-    "/openapi.json",
+# Only expose API docs publicly in dev; require auth in production
+_DOC_PATHS = frozenset({"/docs", "/redoc", "/openapi.json"})
+_BASE_PUBLIC = frozenset({
+    "/", "/health", "/health/dependencies",
     # SECURITY: /stress/calculate removed from public paths — it's a
     # compute-heavy endpoint that must require auth to prevent DoS abuse.
 })
+PUBLIC_PATHS = _BASE_PUBLIC | (_DOC_PATHS if os.getenv("ENVIRONMENT", "development") != "production" else frozenset())
 
 # Paths that get the stricter analysis rate limit
 ANALYSIS_PATHS = ("/analyze", "/ai/", "/jobs/", "/generate/")

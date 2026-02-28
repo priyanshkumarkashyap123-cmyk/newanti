@@ -237,13 +237,30 @@ app.get("/", (_req: Request, res: Response) => {
 });
 
 // OpenAPI docs — restrict access in production (require auth header or dev mode)
-const swaggerGuard: RequestHandler = (req, res, next) => {
+const swaggerGuard: RequestHandler = async (req, res, next) => {
   if (process.env.NODE_ENV === "production") {
     const authHeader = req.get("authorization");
-    if (!authHeader) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       res.status(401).json({
         success: false,
         error: "Authentication required to view API docs",
+      });
+      return;
+    }
+    // Validate the token is a real Clerk token
+    try {
+      const { verifyToken } = await import("@clerk/express");
+      await verifyToken(authHeader.split(" ")[1], {
+        authorizedParties: [
+          "https://beamlabultimate.tech",
+          "https://www.beamlabultimate.tech",
+          "http://localhost:5173",
+        ],
+      });
+    } catch {
+      res.status(401).json({
+        success: false,
+        error: "Invalid or expired authentication token",
       });
       return;
     }

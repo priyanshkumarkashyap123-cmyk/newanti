@@ -6,6 +6,7 @@
    and the site breaks when macOS/Windows is in light mode.
    With this line, dark: responds to <html class="dark"> instead.
    ============================================ */
+/* stylelint-disable-next-line at-rule-no-unknown */
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ============================================
@@ -14,6 +15,7 @@
    ============================================ */
 
 /* Custom Theme Extensions for Tailwind v4 */
+/* stylelint-disable-next-line at-rule-no-unknown */
 @theme {
   /* ========================================
      PRIMARY COLORS - Blue Gradient System

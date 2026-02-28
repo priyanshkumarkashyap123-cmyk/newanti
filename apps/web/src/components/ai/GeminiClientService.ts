@@ -95,7 +95,11 @@ class GeminiClientService {
   private loadApiKey(): void {
     // Priority: localStorage > env variable
     const storedKey = localStorage.getItem("beamlab_gemini_api_key");
-    const envKey = import.meta.env.VITE_GEMINI_API_KEY;
+    // SECURITY: Only read API key from env in development.
+    // In production, AI calls are proxied through the backend.
+    const envKey = import.meta.env.DEV
+      ? import.meta.env.VITE_GEMINI_API_KEY
+      : undefined;
 
     const key = storedKey || envKey || "";
     if (key) {
@@ -136,7 +140,7 @@ class GeminiClientService {
       this.chatSession = null;
       this.chatHistory = [];
 
-// console.log("[GeminiClient] Configured with model:", this.modelName);
+      // console.log("[GeminiClient] Configured with model:", this.modelName);
     } catch (err) {
       console.error("[GeminiClient] Configuration error:", err);
       this._isConfigured = false;
