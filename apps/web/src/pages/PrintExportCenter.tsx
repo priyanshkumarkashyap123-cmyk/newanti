@@ -612,7 +612,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
       name: "CSV Data",
       ext: ".csv",
       icon: Table,
-      color: "text-gray-400",
+      color: "text-gray-600 dark:text-gray-400",
     },
     {
       id: "png",
@@ -633,22 +633,22 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
-      <header className="bg-slate-900/50 border-b border-slate-700/50 backdrop-blur-sm sticky top-0 z-40">
+      <header className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-300 dark:border-slate-700/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
                 to="/dashboard"
-                className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors"
+                className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
               >
-                <ArrowLeft className="w-5 h-5 text-slate-400" />
+                <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
               </Link>
               <div>
                 <h1 className="text-2xl font-bold text-white flex items-center gap-2">
                   <Printer className="w-7 h-7 text-orange-400" />
                   Print & Export Center
                 </h1>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
                   Professional document generation and export
                 </p>
               </div>
@@ -680,7 +680,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
       <div className="max-w-7xl mx-auto px-6 py-6">
         {/* Progress Bar */}
         {isExporting && (
-          <div className="mb-6 bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
+          <div className="mb-6 bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-300 dark:border-slate-700/50">
             <div className="flex items-center justify-between mb-2">
               <span className="text-white font-medium">
                 Generating export...
@@ -699,7 +699,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
         )}
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-6 bg-slate-800/50 rounded-xl p-1 border border-slate-700/50 w-fit">
+        <div className="flex gap-1 mb-6 bg-slate-100 dark:bg-slate-800/50 rounded-xl p-1 border border-slate-300 dark:border-slate-700/50 w-fit">
           {[
             { id: "print", label: "Print Preview", icon: Printer },
             { id: "export", label: "Export Options", icon: Download },
@@ -711,7 +711,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                 activeTab === tab.id
                   ? "bg-orange-600 text-white"
-                  : "text-slate-400 hover:text-white hover:bg-slate-700/50"
+                  : "text-slate-600 dark:text-slate-400 hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700/50"
               }`}
             >
               <tab.icon className="w-4 h-4" />
@@ -726,13 +726,13 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
             {/* Summary */}
             <div className="bg-gradient-to-br from-orange-900/30 to-red-900/30 rounded-xl p-4 border border-orange-500/30">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-slate-300">Selected Items</span>
+                <span className="text-slate-700 dark:text-slate-300">Selected Items</span>
                 <span className="text-2xl font-bold text-white">
                   {selectedItems.length}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-400 text-sm">Total Pages</span>
+                <span className="text-slate-600 dark:text-slate-400 text-sm">Total Pages</span>
                 <span className="text-orange-400 font-medium">
                   {totalPages}
                 </span>
@@ -740,8 +740,8 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
             </div>
 
             {/* Items by Category */}
-            <div className="bg-slate-800/50 rounded-xl border border-slate-700/50 overflow-hidden">
-              <div className="p-4 border-b border-slate-700 flex items-center justify-between">
+            <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl border border-slate-300 dark:border-slate-700/50 overflow-hidden">
+              <div className="p-4 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
                 <h3 className="text-white font-semibold">Export Items</h3>
                 <div className="flex gap-2">
                   <button
@@ -760,7 +760,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                         prev.map((i) => ({ ...i, selected: false })),
                       )
                     }
-                    className="text-xs text-slate-400 hover:text-slate-300"
+                    className="text-xs text-slate-600 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300"
                   >
                     Clear
                   </button>
@@ -775,11 +775,11 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                   return (
                     <div
                       key={category}
-                      className="border-b border-slate-700/50 last:border-b-0"
+                      className="border-b border-slate-300 dark:border-slate-700/50 last:border-b-0"
                     >
                       <button
                         onClick={() => toggleCategory(category, !allSelected)}
-                        className="w-full flex items-center gap-3 p-3 hover:bg-slate-700/30"
+                        className="w-full flex items-center gap-3 p-3 hover:bg-slate-200 dark:hover:bg-slate-700/30"
                       >
                         <div
                           className={`w-4 h-4 rounded border flex items-center justify-center ${
@@ -797,7 +797,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                         <span className="text-white font-medium">
                           {category}
                         </span>
-                        <span className="text-slate-400 text-sm ml-auto">
+                        <span className="text-slate-600 dark:text-slate-400 text-sm ml-auto">
                           {items.filter((i) => i.selected).length}/
                           {items.length}
                         </span>
@@ -810,7 +810,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                             <button
                               key={item.id}
                               onClick={() => toggleItem(item.id)}
-                              className={`w-full flex items-center gap-3 p-2 hover:bg-slate-700/30 ${
+                              className={`w-full flex items-center gap-3 p-2 hover:bg-slate-200 dark:hover:bg-slate-700/30 ${
                                 item.selected ? "bg-slate-700/20" : ""
                               }`}
                             >
@@ -825,13 +825,13 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                                   <Check className="w-3 h-3 text-white" />
                                 )}
                               </div>
-                              <Icon className="w-4 h-4 text-slate-400" />
+                              <Icon className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                               <span
-                                className={`flex-1 text-left text-sm ${item.selected ? "text-white" : "text-slate-400"}`}
+                                className={`flex-1 text-left text-sm ${item.selected ? "text-white" : "text-slate-600 dark:text-slate-400"}`}
                               >
                                 {item.name}
                               </span>
-                              <span className="text-slate-400 text-xs">
+                              <span className="text-slate-600 dark:text-slate-400 text-xs">
                                 {item.pages}p
                               </span>
                               {item.status === "complete" && (
@@ -853,33 +853,33 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
             {activeTab === "print" && (
               <>
                 {/* Print Preview */}
-                <div className="bg-slate-800/50 rounded-xl border border-slate-700/50">
-                  <div className="p-4 border-b border-slate-700 flex items-center justify-between">
+                <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl border border-slate-300 dark:border-slate-700/50">
+                  <div className="p-4 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
                     <h3 className="text-white font-semibold">Print Preview</h3>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() =>
                           setPreviewZoom(Math.max(50, previewZoom - 25))
                         }
-                        className="p-1.5 hover:bg-slate-700 rounded"
+                        className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
                       >
-                        <ZoomOut className="w-4 h-4 text-slate-400" />
+                        <ZoomOut className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                       </button>
-                      <span className="text-slate-400 text-sm w-12 text-center">
+                      <span className="text-slate-600 dark:text-slate-400 text-sm w-12 text-center">
                         {previewZoom}%
                       </span>
                       <button
                         onClick={() =>
                           setPreviewZoom(Math.min(200, previewZoom + 25))
                         }
-                        className="p-1.5 hover:bg-slate-700 rounded"
+                        className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
                       >
-                        <ZoomIn className="w-4 h-4 text-slate-400" />
+                        <ZoomIn className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                       </button>
                     </div>
                   </div>
 
-                  <div className="p-8 flex justify-center bg-slate-900/50">
+                  <div className="p-8 flex justify-center bg-slate-50 dark:bg-slate-900/50">
                     {/* A4 Preview */}
                     <div
                       className="bg-white shadow-2xl"
@@ -954,11 +954,11 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                           className="absolute bottom-4 left-4 right-4 border-t border-gray-200 pt-2 flex justify-between"
                           style={{ fontSize: 6 * (previewZoom / 100) }}
                         >
-                          <span className="text-gray-400">
+                          <span className="text-gray-600 dark:text-gray-400">
                             BeamLab Ultimate
                           </span>
                           {pageSettings.pageNumbers && (
-                            <span className="text-gray-400">
+                            <span className="text-gray-600 dark:text-gray-400">
                               Page 1 of {totalPages}
                             </span>
                           )}
@@ -969,7 +969,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                 </div>
 
                 {/* Page Settings */}
-                <div className="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
+                <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
                   <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                     <Settings className="w-5 h-5 text-orange-400" />
                     Page Settings
@@ -977,7 +977,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
-                      <label className="block text-sm text-slate-300 mb-2">
+                      <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">
                         Paper Size
                       </label>
                       <select
@@ -1000,7 +1000,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                     </div>
 
                     <div>
-                      <label className="block text-sm text-slate-300 mb-2">
+                      <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">
                         Orientation
                       </label>
                       <select
@@ -1019,7 +1019,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                     </div>
 
                     <div>
-                      <label className="block text-sm text-slate-300 mb-2">
+                      <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">
                         Scale
                       </label>
                       <select
@@ -1045,7 +1045,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                     </div>
 
                     <div>
-                      <label className="block text-sm text-slate-300 mb-2">
+                      <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">
                         Margins (mm)
                       </label>
                       <input
@@ -1099,7 +1099,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
             )}
 
             {activeTab === "export" && (
-              <div className="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
+              <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                   <Download className="w-5 h-5 text-orange-400" />
                   Export Format
@@ -1115,7 +1115,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                       className={`p-4 rounded-xl border transition-all ${
                         selectedFormat === format.id
                           ? "bg-orange-600/20 border-orange-500"
-                          : "bg-slate-700/30 border-slate-700 hover:border-slate-600"
+                          : "bg-slate-700/30 border-slate-300 dark:border-slate-700 hover:border-slate-600"
                       }`}
                     >
                       <format.icon
@@ -1124,7 +1124,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                       <p className="text-white text-sm font-medium">
                         {format.name}
                       </p>
-                      <p className="text-slate-400 text-xs">{format.ext}</p>
+                      <p className="text-slate-600 dark:text-slate-400 text-xs">{format.ext}</p>
                     </button>
                   ))}
                 </div>
@@ -1144,7 +1144,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                           defaultChecked
                           className="rounded"
                         />
-                        <span className="text-slate-300 text-sm">
+                        <span className="text-slate-700 dark:text-slate-300 text-sm">
                           Include Table of Contents
                         </span>
                       </label>
@@ -1154,18 +1154,18 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                           defaultChecked
                           className="rounded"
                         />
-                        <span className="text-slate-300 text-sm">
+                        <span className="text-slate-700 dark:text-slate-300 text-sm">
                           Include Bookmarks
                         </span>
                       </label>
                       <label className="flex items-center gap-2">
                         <input type="checkbox" className="rounded" />
-                        <span className="text-slate-300 text-sm">
+                        <span className="text-slate-700 dark:text-slate-300 text-sm">
                           Password Protection
                         </span>
                       </label>
                       <div>
-                        <label className="block text-slate-300 text-sm mb-1">
+                        <label className="block text-slate-700 dark:text-slate-300 text-sm mb-1">
                           Quality
                         </label>
                         <select className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm">
@@ -1180,7 +1180,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                   {(selectedFormat === "dwg" || selectedFormat === "dxf") && (
                     <div className="space-y-3">
                       <div>
-                        <label className="block text-slate-300 text-sm mb-1">
+                        <label className="block text-slate-700 dark:text-slate-300 text-sm mb-1">
                           AutoCAD Version
                         </label>
                         <select className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm">
@@ -1196,7 +1196,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                           defaultChecked
                           className="rounded"
                         />
-                        <span className="text-slate-300 text-sm">
+                        <span className="text-slate-700 dark:text-slate-300 text-sm">
                           Include Layers
                         </span>
                       </label>
@@ -1206,7 +1206,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                           defaultChecked
                           className="rounded"
                         />
-                        <span className="text-slate-300 text-sm">
+                        <span className="text-slate-700 dark:text-slate-300 text-sm">
                           Include Dimensions
                         </span>
                       </label>
@@ -1221,7 +1221,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                           defaultChecked
                           className="rounded"
                         />
-                        <span className="text-slate-300 text-sm">
+                        <span className="text-slate-700 dark:text-slate-300 text-sm">
                           Separate Worksheets per Table
                         </span>
                       </label>
@@ -1231,13 +1231,13 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                           defaultChecked
                           className="rounded"
                         />
-                        <span className="text-slate-300 text-sm">
+                        <span className="text-slate-700 dark:text-slate-300 text-sm">
                           Include Headers
                         </span>
                       </label>
                       <label className="flex items-center gap-2">
                         <input type="checkbox" className="rounded" />
-                        <span className="text-slate-300 text-sm">
+                        <span className="text-slate-700 dark:text-slate-300 text-sm">
                           Apply Formatting
                         </span>
                       </label>
@@ -1248,7 +1248,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
             )}
 
             {activeTab === "templates" && (
-              <div className="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
+              <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                   <Layers className="w-5 h-5 text-orange-400" />
                   Export Templates
@@ -1258,21 +1258,21 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                   {templates.map((template) => (
                     <div
                       key={template.id}
-                      className="p-4 bg-slate-700/30 rounded-lg border border-slate-700 hover:border-slate-600 transition-colors"
+                      className="p-4 bg-slate-700/30 rounded-lg border border-slate-300 dark:border-slate-700 hover:border-slate-600 transition-colors"
                     >
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="text-white font-medium">
                           {template.name}
                         </h4>
-                        <span className="px-2 py-0.5 bg-slate-600 text-slate-300 text-xs rounded uppercase">
+                        <span className="px-2 py-0.5 bg-slate-600 text-slate-700 dark:text-slate-300 text-xs rounded uppercase">
                           {template.format}
                         </span>
                       </div>
-                      <p className="text-slate-400 text-sm mb-3">
+                      <p className="text-slate-600 dark:text-slate-400 text-sm mb-3">
                         {template.description}
                       </p>
                       <div className="flex items-center justify-between">
-                        <span className="text-slate-400 text-sm">
+                        <span className="text-slate-600 dark:text-slate-400 text-sm">
                           {template.items.length} items
                         </span>
                         <button
@@ -1286,7 +1286,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                   ))}
                 </div>
 
-                <button className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-slate-600 rounded-lg text-slate-400 hover:text-white hover:border-slate-500 transition-colors">
+                <button className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-slate-600 rounded-lg text-slate-600 dark:text-slate-400 hover:text-white hover:border-slate-500 transition-colors">
                   <Plus className="w-4 h-4" />
                   Create New Template
                 </button>

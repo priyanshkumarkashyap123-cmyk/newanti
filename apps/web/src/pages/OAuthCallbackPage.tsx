@@ -54,13 +54,13 @@ const OAuthCallbackPage = () => {
 
     if (error) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white">
+            <div className="min-h-screen flex items-center justify-center bg-white dark:bg-zinc-950 text-white">
                 <div className="text-center">
                     <h2 className="text-xl font-bold text-red-500 mb-2">Login Failed</h2>
-                    <p className="text-zinc-400 mb-4">{error}</p>
+                    <p className="text-zinc-500 dark:text-zinc-400 mb-4">{error}</p>
                     <button
                         onClick={() => navigate('/sign-in')}
-                        className="px-4 py-2 bg-zinc-800 rounded hover:bg-zinc-700 transition-colors"
+                        className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 rounded hover:bg-zinc-700 transition-colors"
                     >
                         Return to Sign In
                     </button>
@@ -70,11 +70,11 @@ const OAuthCallbackPage = () => {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white">
+        <div className="min-h-screen flex items-center justify-center bg-white dark:bg-zinc-950 text-white">
             <div className="text-center">
                 <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full mx-auto mb-4" />
                 <h2 className="text-xl font-bold mb-2">Authenticating...</h2>
-                <p className="text-zinc-400">Please wait while we log you in via {provider}.</p>
+                <p className="text-zinc-500 dark:text-zinc-400">Please wait while we log you in via {provider}.</p>
             </div>
         </div>
     );

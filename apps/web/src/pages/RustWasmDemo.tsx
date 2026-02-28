@@ -22,7 +22,7 @@ export const RustWasmDemo: FC = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
             {/* Header */}
-            <div className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm sticky top-0 z-10">
+            <div className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm sticky top-0 z-10">
                 <div className="container mx-auto px-6 py-4">
                     <div className="flex items-center justify-between">
                         <div>
@@ -30,13 +30,13 @@ export const RustWasmDemo: FC = () => {
                                 <Zap className="w-7 h-7 text-emerald-400" />
                                 Rust + WASM Performance Demo
                             </h1>
-                            <p className="text-slate-400 mt-1">
+                            <p className="text-slate-600 dark:text-slate-400 mt-1">
                                 High-performance structural analysis powered by Rust & WebGPU
                             </p>
                         </div>
                         <a
                             href="/"
-                            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
+                            className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-white rounded-lg transition-colors"
                         >
                             ← Back to App
                         </a>
@@ -51,7 +51,7 @@ export const RustWasmDemo: FC = () => {
                         onClick={() => setActiveTab('solver')}
                         className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${activeTab === 'solver'
                                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/50'
-                                : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-white'
                             }`}
                     >
                         <Activity className="w-5 h-5" />
@@ -61,7 +61,7 @@ export const RustWasmDemo: FC = () => {
                         onClick={() => setActiveTab('renderer')}
                         className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${activeTab === 'renderer'
                                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/50'
-                                : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-white'
                             }`}
                     >
                         <Zap className="w-5 h-5" />
@@ -71,7 +71,7 @@ export const RustWasmDemo: FC = () => {
                         onClick={() => setActiveTab('phase52')}
                         className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${activeTab === 'phase52'
                                 ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/50'
-                                : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-white'
                             }`}
                     >
                         <FlaskConical className="w-5 h-5" />
@@ -96,30 +96,30 @@ export const RustWasmDemo: FC = () => {
 
                         {/* Technical Details */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
+                            <div className="bg-slate-100 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg p-4">
                                 <div className="text-emerald-400 font-semibold mb-2 flex items-center gap-2">
                                     <Zap className="w-4 h-4" />
                                     Memory Safe
                                 </div>
-                                <p className="text-sm text-slate-300">
+                                <p className="text-sm text-slate-700 dark:text-slate-300">
                                     Rust's compile-time guarantees eliminate buffer overflows and memory leaks
                                 </p>
                             </div>
-                            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
+                            <div className="bg-slate-100 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg p-4">
                                 <div className="text-blue-400 font-semibold mb-2 flex items-center gap-2">
                                     <Cpu className="w-4 h-4" />
                                     Zero-Copy Transfer
                                 </div>
-                                <p className="text-sm text-slate-300">
+                                <p className="text-sm text-slate-700 dark:text-slate-300">
                                     Web Workers with transferable objects for instant data transfer
                                 </p>
                             </div>
-                            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
+                            <div className="bg-slate-100 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg p-4">
                                 <div className="text-purple-400 font-semibold mb-2 flex items-center gap-2">
                                     <Activity className="w-4 h-4" />
                                     Sparse Matrices
                                 </div>
-                                <p className="text-sm text-slate-300">
+                                <p className="text-sm text-slate-700 dark:text-slate-300">
                                     nalgebra-sparse for efficient storage and computation of large systems
                                 </p>
                             </div>
@@ -130,14 +130,14 @@ export const RustWasmDemo: FC = () => {
                 {activeTab === 'renderer' && (
                     <div className="space-y-6">
                         {/* Renderer Toggle */}
-                        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+                        <div className="bg-slate-100 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg p-6">
                             <h3 className="text-lg font-semibold text-white mb-4">Graphics Engine</h3>
                             <div className="flex gap-4">
                                 <button
                                     onClick={() => setUseWebGpu(false)}
                                     className={`flex-1 flex items-center justify-center gap-3 p-4 rounded-lg border-2 transition-all ${!useWebGpu
                                             ? 'border-blue-500 bg-blue-500/20 text-white'
-                                            : 'border-slate-600 bg-slate-700/50 text-slate-400 hover:border-slate-500'
+                                            : 'border-slate-600 bg-slate-700/50 text-slate-600 dark:text-slate-400 hover:border-slate-500'
                                         }`}
                                 >
                                     <Cpu className="w-6 h-6" />
@@ -150,7 +150,7 @@ export const RustWasmDemo: FC = () => {
                                     onClick={() => setUseWebGpu(true)}
                                     className={`flex-1 flex items-center justify-center gap-3 p-4 rounded-lg border-2 transition-all ${useWebGpu
                                             ? 'border-emerald-500 bg-emerald-500/20 text-white'
-                                            : 'border-slate-600 bg-slate-700/50 text-slate-400 hover:border-slate-500'
+                                            : 'border-slate-600 bg-slate-700/50 text-slate-600 dark:text-slate-400 hover:border-slate-500'
                                         }`}
                                 >
                                     <Zap className="w-6 h-6" />
@@ -163,15 +163,15 @@ export const RustWasmDemo: FC = () => {
                         </div>
 
                         {/* Renderer Display */}
-                        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+                        <div className="bg-slate-100 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg p-6">
                             <h3 className="text-lg font-semibold text-white mb-4">
                                 {useWebGpu ? '⚡ WebGPU Renderer' : '🖥️ WebGL Renderer'}
                             </h3>
-                            <div className="aspect-video bg-slate-900 rounded-lg overflow-hidden">
+                            <div className="aspect-video bg-slate-50 dark:bg-slate-900 rounded-lg overflow-hidden">
                                 {useWebGpu ? (
                                     <WgpuCanvas />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-slate-400">
+                                    <div className="w-full h-full flex items-center justify-center text-slate-600 dark:text-slate-400">
                                         <div className="text-center">
                                             <Cpu className="w-16 h-16 mx-auto mb-4 opacity-50" />
                                             <p>WebGL rendering (Three.js) would appear here</p>

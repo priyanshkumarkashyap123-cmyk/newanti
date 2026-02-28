@@ -18,6 +18,22 @@ const RUST_API = API_CONFIG.rustUrl;
 // Fallback to Node.js API
 const API_BASE = API_CONFIG.baseUrl;
 
+/**
+ * Build request headers including auth token when available.
+ */
+function getHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+    };
+    const token = typeof window !== 'undefined'
+        ? window.localStorage?.getItem('auth_token')
+        : null;
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+}
+
 // ============================================
 // COMMON TYPES
 // ============================================
@@ -99,7 +115,7 @@ export async function runPDeltaAnalysis(
 ): Promise<PDeltaResult> {
     const response = await fetch(`${RUST_API}/api/advanced/pdelta`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getHeaders(),
         body: JSON.stringify(request),
     });
 
@@ -153,7 +169,7 @@ export async function runModalAnalysis(
 ): Promise<ModalResult> {
     const response = await fetch(`${RUST_API}/api/advanced/modal`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getHeaders(),
         body: JSON.stringify(request),
     });
 
@@ -210,7 +226,7 @@ export async function runSpectrumAnalysis(
 ): Promise<SpectrumResult> {
     const response = await fetch(`${RUST_API}/api/advanced/spectrum`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getHeaders(),
         body: JSON.stringify(request),
     });
 
@@ -254,7 +270,7 @@ export async function runBucklingAnalysis(
 ): Promise<BucklingResult> {
     const response = await fetch(`${RUST_API}/api/advanced/buckling`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getHeaders(),
         body: JSON.stringify(request),
     });
 
@@ -306,7 +322,7 @@ export async function runCableAnalysis(
 ): Promise<CableResult> {
     const response = await fetch(`${API_BASE}/api/advanced/cable`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getHeaders(),
         body: JSON.stringify(request),
     });
 

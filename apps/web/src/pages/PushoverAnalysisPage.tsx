@@ -150,12 +150,12 @@ export const PushoverAnalysisPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <div className="border-b border-slate-800 bg-gradient-to-r from-slate-900 to-slate-800">
+      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-900 to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent mb-2">
             Pushover Analysis Center
           </h1>
-          <p className="text-slate-400 text-sm">
+          <p className="text-slate-600 dark:text-slate-400 text-sm">
             Nonlinear static analysis for performance-based seismic design (ATC-40, FEMA-356, ASCE 41)
           </p>
         </div>
@@ -166,7 +166,7 @@ export const PushoverAnalysisPage: React.FC = () => {
           {/* Left Panel - Input */}
           <div className="lg:col-span-2 space-y-6">
             {/* Load Pattern */}
-            <div className="bg-slate-900 rounded-xl p-6 border border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
               <h3 className="text-sm font-semibold text-amber-400 mb-4">Load Pattern</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
@@ -181,7 +181,7 @@ export const PushoverAnalysisPage: React.FC = () => {
                     className={`py-3 px-4 rounded-lg font-medium transition-colors flex flex-col items-center gap-2 ${
                       input.loadPattern === value
                         ? 'bg-gradient-to-br from-amber-600 to-orange-600 text-white shadow-lg'
-                        : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-750'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-white hover:bg-slate-750'
                     }`}
                   >
                     <span className="text-2xl">{icon}</span>
@@ -192,15 +192,15 @@ export const PushoverAnalysisPage: React.FC = () => {
             </div>
 
             {/* Analysis Parameters */}
-            <div className="bg-slate-900 rounded-xl p-6 border border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
               <h3 className="text-sm font-semibold text-blue-400 mb-4">Analysis Parameters</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="col-span-2 md:col-span-1">
-                  <label className="text-xs text-slate-400">Target Type</label>
+                  <label className="text-xs text-slate-600 dark:text-slate-400">Target Type</label>
                   <select
                     value={input.targetType}
                     onChange={(e) => updateInput('targetType', e.target.value as TargetType)}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm focus:border-blue-500 focus:outline-none"
+                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm focus:border-blue-500 focus:outline-none"
                   >
                     <option value="displacement">Displacement</option>
                     <option value="drift">Drift Ratio</option>
@@ -208,56 +208,56 @@ export const PushoverAnalysisPage: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-slate-400">
+                  <label className="text-xs text-slate-600 dark:text-slate-400">
                     Target Value {input.targetType === 'displacement' ? '(mm)' : input.targetType === 'drift' ? '(%)' : '(kN)'}
                   </label>
                   <input
                     type="number"
                     value={input.targetValue}
                     onChange={(e) => updateInput('targetValue', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm focus:border-blue-500 focus:outline-none"
+                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm focus:border-blue-500 focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-400">Number of Steps</label>
+                  <label className="text-xs text-slate-600 dark:text-slate-400">Number of Steps</label>
                   <input
                     type="number"
                     value={input.numberOfSteps}
                     onChange={(e) => updateInput('numberOfSteps', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm focus:border-blue-500 focus:outline-none"
+                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm focus:border-blue-500 focus:outline-none"
                   />
                 </div>
               </div>
             </div>
 
             {/* Convergence Settings */}
-            <div className="bg-slate-900 rounded-xl p-6 border border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
               <h3 className="text-sm font-semibold text-emerald-400 mb-4">Convergence Settings</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-slate-400">Max Iterations</label>
+                  <label className="text-xs text-slate-600 dark:text-slate-400">Max Iterations</label>
                   <input
                     type="number"
                     value={input.maxIterations}
                     onChange={(e) => updateInput('maxIterations', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm focus:border-emerald-500 focus:outline-none"
+                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm focus:border-emerald-500 focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-400">Convergence Tolerance</label>
+                  <label className="text-xs text-slate-600 dark:text-slate-400">Convergence Tolerance</label>
                   <input
                     type="number"
                     step="0.0001"
                     value={input.convergenceTolerance}
                     onChange={(e) => updateInput('convergenceTolerance', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm focus:border-emerald-500 focus:outline-none"
+                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm focus:border-emerald-500 focus:outline-none"
                   />
                 </div>
               </div>
             </div>
 
             {/* Nonlinearity Options */}
-            <div className="bg-slate-900 rounded-xl p-6 border border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
               <h3 className="text-sm font-semibold text-purple-400 mb-4">Nonlinearity Options</h3>
               <div className="space-y-3">
                 <label className="flex items-center gap-3 cursor-pointer">
@@ -265,11 +265,11 @@ export const PushoverAnalysisPage: React.FC = () => {
                     type="checkbox"
                     checked={input.includeGeometricNonlinearity}
                     onChange={(e) => updateInput('includeGeometricNonlinearity', e.target.checked)}
-                    className="w-5 h-5 bg-slate-800 border-slate-600 rounded text-purple-600 focus:ring-purple-500 focus:ring-offset-slate-900"
+                    className="w-5 h-5 bg-slate-100 dark:bg-slate-800 border-slate-600 rounded text-purple-600 focus:ring-purple-500 focus:ring-offset-slate-900"
                   />
                   <div>
                     <span className="text-white font-medium">Geometric Nonlinearity (P-Δ)</span>
-                    <p className="text-xs text-slate-400">Include large displacement effects</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">Include large displacement effects</p>
                   </div>
                 </label>
                 <label className="flex items-center gap-3 cursor-pointer">
@@ -277,11 +277,11 @@ export const PushoverAnalysisPage: React.FC = () => {
                     type="checkbox"
                     checked={input.includeMaterialNonlinearity}
                     onChange={(e) => updateInput('includeMaterialNonlinearity', e.target.checked)}
-                    className="w-5 h-5 bg-slate-800 border-slate-600 rounded text-purple-600 focus:ring-purple-500 focus:ring-offset-slate-900"
+                    className="w-5 h-5 bg-slate-100 dark:bg-slate-800 border-slate-600 rounded text-purple-600 focus:ring-purple-500 focus:ring-offset-slate-900"
                   />
                   <div>
                     <span className="text-white font-medium">Material Nonlinearity</span>
-                    <p className="text-xs text-slate-400">Include yielding and plasticity</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">Include yielding and plasticity</p>
                   </div>
                 </label>
               </div>
@@ -320,7 +320,7 @@ export const PushoverAnalysisPage: React.FC = () => {
           {/* Right Panel - Results */}
           <div className="lg:col-span-1">
             {results ? (
-              <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-6 border border-slate-700">
+              <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                   <Activity className="w-6 h-6 text-emerald-400" />
                   Pushover Results
@@ -328,31 +328,31 @@ export const PushoverAnalysisPage: React.FC = () => {
 
                 <div className="space-y-4">
                   {/* Performance Summary */}
-                  <div className="bg-slate-800/50 p-4 rounded-lg">
+                  <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-slate-400">Analysis Status:</span>
+                      <span className="text-sm text-slate-600 dark:text-slate-400">Analysis Status:</span>
                       <span className="font-bold text-emerald-400">
                         {results.converged ? 'CONVERGED' : 'NOT CONVERGED'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-slate-400">Steps Completed:</span>
+                      <span className="text-sm text-slate-600 dark:text-slate-400">Steps Completed:</span>
                       <span className="font-semibold text-white">{results.stepsCompleted}/{input.numberOfSteps}</span>
                     </div>
                   </div>
 
                   {/* Performance Points */}
-                  <div className="bg-slate-800/50 p-4 rounded-lg">
+                  <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
                     <h3 className="text-sm font-semibold text-amber-400 mb-3 flex items-center gap-2">
                       <Target className="w-4 h-4" />
                       Performance Levels
                     </h3>
                     <div className="space-y-2">
                       {performancePoints.map((point) => (
-                        <div key={point.level} className="flex items-center justify-between p-2 bg-slate-900/50 rounded">
+                        <div key={point.level} className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-900/50 rounded">
                           <div>
                             <span className="text-xs font-medium text-white">{point.label}</span>
-                            <p className="text-xs text-slate-400">{point.displacement} mm</p>
+                            <p className="text-xs text-slate-600 dark:text-slate-400">{point.displacement} mm</p>
                           </div>
                           <span className={`text-xs px-2 py-1 rounded ${
                             point.level === 'IO' ? 'bg-green-900/30 text-green-300' :
@@ -368,13 +368,13 @@ export const PushoverAnalysisPage: React.FC = () => {
 
                   {/* Capacity Curve */}
                   {results.pushoverCurve && (
-                    <div className="bg-slate-800/50 p-4 rounded-lg">
+                    <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
                       <h3 className="text-sm font-semibold text-blue-400 mb-2 flex items-center gap-2">
                         <BarChart3 className="w-4 h-4" />
                         Capacity Curve
                       </h3>
-                      <div className="aspect-square bg-slate-900 rounded-lg flex items-center justify-center">
-                        <div className="text-center text-slate-400">
+                      <div className="aspect-square bg-slate-50 dark:bg-slate-900 rounded-lg flex items-center justify-center">
+                        <div className="text-center text-slate-600 dark:text-slate-400">
                           <Activity className="w-12 h-12 mx-auto mb-2 opacity-50" />
                           <p className="text-xs">Pushover curve visualization</p>
                           <p className="text-xs mt-1">
@@ -390,19 +390,19 @@ export const PushoverAnalysisPage: React.FC = () => {
 
                   {/* Damage Assessment */}
                   {results.damage && (
-                    <div className="bg-slate-800/50 p-4 rounded-lg">
+                    <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
                       <h3 className="text-sm font-semibold text-orange-400 mb-2">Damage Assessment</h3>
                       <div className="space-y-1 text-xs">
                         <div className="flex justify-between">
-                          <span className="text-slate-400">Yielded Elements:</span>
+                          <span className="text-slate-600 dark:text-slate-400">Yielded Elements:</span>
                           <span className="text-white">{results.damage.yieldedElements}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-slate-400">Plastic Hinges:</span>
+                          <span className="text-slate-600 dark:text-slate-400">Plastic Hinges:</span>
                           <span className="text-white">{results.damage.plasticHinges}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-slate-400">Max Drift:</span>
+                          <span className="text-slate-600 dark:text-slate-400">Max Drift:</span>
                           <span className="text-white">{results.damage.maxDrift?.toFixed(3)}%</span>
                         </div>
                       </div>
@@ -417,11 +417,11 @@ export const PushoverAnalysisPage: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="bg-slate-900 rounded-xl p-6 border border-slate-700 h-full">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700 h-full">
                 <div className="flex flex-col items-center justify-center py-12 text-center h-full">
                   <Activity className="w-16 h-16 text-slate-500 mb-4" />
-                  <h3 className="text-lg font-semibold text-slate-400 mb-2">No Results Yet</h3>
-                  <p className="text-sm text-slate-400 mb-4">
+                  <h3 className="text-lg font-semibold text-slate-600 dark:text-slate-400 mb-2">No Results Yet</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
                     Configure analysis parameters and run pushover to see results
                   </p>
                   <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 text-left">

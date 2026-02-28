@@ -337,7 +337,7 @@ function formatForce(v: number): string {
 
 /** Color-coded utilization bar */
 const UtilizationBar = memo<{ ratio: number; wide?: boolean }>(({ ratio, wide }) => (
-  <div className={`relative ${wide ? 'h-5' : 'h-3'} bg-slate-800 rounded-full overflow-hidden`}>
+  <div className={`relative ${wide ? 'h-5' : 'h-3'} bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden`}>
     <motion.div
       initial={{ width: 0 }}
       animate={{ width: `${Math.min(ratio * 100, 100)}%` }}
@@ -370,7 +370,7 @@ StatCard.displayName = 'StatCard';
 /** Expandable check detail row */
 const CheckDetailRow = memo<{ check: { name: string; clause?: string; ratio: number; status: string } }>(
   ({ check }) => (
-    <div className="flex items-center justify-between py-2 px-3 bg-slate-800/50 rounded-lg">
+    <div className="flex items-center justify-between py-2 px-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
       <div className="flex items-center gap-2 flex-1">
         {statusIcon(check.status)}
         <span className="text-sm text-slate-200">{check.name}</span>
@@ -414,13 +414,13 @@ const MemberDesignTable: FC<{
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-slate-700 text-slate-400">
+          <tr className="border-b border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400">
             <th className="py-3 px-2 text-left w-10">
               <input
                 type="checkbox"
                 checked={allSelected}
                 onChange={() => onSelectAll(!allSelected)}
-                className="rounded border-slate-600 bg-slate-800 text-blue-500 focus:ring-blue-500"
+                className="rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-blue-500 focus:ring-blue-500"
               />
             </th>
             <th className="py-3 px-2 text-left">Member</th>
@@ -440,24 +440,24 @@ const MemberDesignTable: FC<{
             return (
               <tr
                 key={row.id}
-                className={`border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors ${row.selected ? 'bg-blue-500/5' : ''}`}
+                className={`border-b border-slate-200 dark:border-slate-800/50 hover:bg-slate-100 dark:bg-slate-800/30 transition-colors ${row.selected ? 'bg-blue-500/5' : ''}`}
               >
                 <td className="py-2 px-2">
                   <input
                     type="checkbox"
                     checked={row.selected}
                     onChange={() => onToggleSelect(row.id)}
-                    className="rounded border-slate-600 bg-slate-800 text-blue-500 focus:ring-blue-500"
+                    className="rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-blue-500 focus:ring-blue-500"
                   />
                 </td>
                 <td className="py-2 px-2 font-medium text-slate-200">{row.label}</td>
-                <td className="py-2 px-2 text-slate-400 font-mono text-xs">{row.sectionName || '—'}</td>
-                <td className="py-2 px-2 text-right text-slate-300 font-mono">{row.length.toFixed(3)}</td>
-                <td className="py-2 px-2 text-right font-mono text-slate-300">{formatForce(row.maxAxial)}</td>
-                <td className="py-2 px-2 text-right font-mono text-slate-300">{formatForce(row.maxShearY)}</td>
-                <td className="py-2 px-2 text-right font-mono text-slate-300">{formatForce(row.maxMomentZ)}</td>
+                <td className="py-2 px-2 text-slate-600 dark:text-slate-400 font-mono text-xs">{row.sectionName || '—'}</td>
+                <td className="py-2 px-2 text-right text-slate-700 dark:text-slate-300 font-mono">{row.length.toFixed(3)}</td>
+                <td className="py-2 px-2 text-right font-mono text-slate-700 dark:text-slate-300">{formatForce(row.maxAxial)}</td>
+                <td className="py-2 px-2 text-right font-mono text-slate-700 dark:text-slate-300">{formatForce(row.maxShearY)}</td>
+                <td className="py-2 px-2 text-right font-mono text-slate-700 dark:text-slate-300">{formatForce(row.maxMomentZ)}</td>
                 <td className="py-2 px-2 text-center">
-                  {dr ? statusIcon(dr.status) : <div className="w-4 h-4 rounded-full border-2 border-slate-700 mx-auto" />}
+                  {dr ? statusIcon(dr.status) : <div className="w-4 h-4 rounded-full border-2 border-slate-300 dark:border-slate-700 mx-auto" />}
                 </td>
                 <td className="py-2 px-2">
                   {dr ? (
@@ -475,7 +475,7 @@ const MemberDesignTable: FC<{
                   {dr && (
                     <button
                       onClick={() => onViewDetail(row.id)}
-                      className="p-1 rounded hover:bg-slate-700 text-slate-400 hover:text-blue-400 transition-colors"
+                      className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-blue-400 transition-colors"
                       title="View detailed checks"
                     >
                       <Eye className="w-4 h-4" />
@@ -510,7 +510,7 @@ const DesignParametersPanel: FC<{
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+    <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4">
       <h3 className="text-sm font-semibold text-white flex items-center gap-2">
         <SlidersHorizontal className="w-4 h-4 text-blue-400" />
         Design Parameters
@@ -520,11 +520,11 @@ const DesignParametersPanel: FC<{
         <>
           {/* Steel Code Selection */}
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Steel Design Code</label>
+            <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Steel Design Code</label>
             <select
               value={params.steelCode}
               onChange={e => updateParam('steelCode', e.target.value)}
-              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
             >
               {STEEL_CODES.map(c => (
                 <option key={c.id} value={c.id}>{c.icon} {c.name} — {c.region}</option>
@@ -534,11 +534,11 @@ const DesignParametersPanel: FC<{
 
           {/* Steel Grade */}
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Steel Grade</label>
+            <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Steel Grade</label>
             <select
               value={params.steelGrade}
               onChange={e => updateParam('steelGrade', e.target.value)}
-              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
             >
               {STEEL_GRADES.map(g => (
                 <option key={g.name} value={g.name}>{g.name} (fy={g.fy} MPa, fu={g.fu} MPa)</option>
@@ -548,7 +548,7 @@ const DesignParametersPanel: FC<{
 
           {/* Design Method */}
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Design Method</label>
+            <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Design Method</label>
             <div className="flex gap-2">
               {(['LRFD', 'ASD'] as const).map(m => (
                 <button
@@ -557,7 +557,7 @@ const DesignParametersPanel: FC<{
                   className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
                     params.designMethod === m
                       ? 'bg-blue-600 text-white'
-                      : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                   }`}
                 >
                   {m}
@@ -569,7 +569,7 @@ const DesignParametersPanel: FC<{
           {/* Effective Length Factors */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-slate-400 mb-1">K<sub>y</sub> (Eff. Length Y)</label>
+              <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">K<sub>y</sub> (Eff. Length Y)</label>
               <input
                 type="number"
                 step="0.1"
@@ -577,11 +577,11 @@ const DesignParametersPanel: FC<{
                 max="2.0"
                 value={params.effectiveLengthFactorY}
                 onChange={e => updateParam('effectiveLengthFactorY', parseFloat(e.target.value) || 1.0)}
-                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
+                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs text-slate-400 mb-1">K<sub>z</sub> (Eff. Length Z)</label>
+              <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">K<sub>z</sub> (Eff. Length Z)</label>
               <input
                 type="number"
                 step="0.1"
@@ -589,14 +589,14 @@ const DesignParametersPanel: FC<{
                 max="2.0"
                 value={params.effectiveLengthFactorZ}
                 onChange={e => updateParam('effectiveLengthFactorZ', parseFloat(e.target.value) || 1.0)}
-                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
+                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
               />
             </div>
           </div>
 
           {/* Unbraced Length Ratio */}
           <div>
-            <label className="block text-xs text-slate-400 mb-1">L<sub>b</sub>/L (Unbraced Length Ratio)</label>
+            <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">L<sub>b</sub>/L (Unbraced Length Ratio)</label>
             <input
               type="number"
               step="0.1"
@@ -604,13 +604,13 @@ const DesignParametersPanel: FC<{
               max="1.0"
               value={params.unbracedLengthRatio}
               onChange={e => updateParam('unbracedLengthRatio', parseFloat(e.target.value) || 1.0)}
-              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
             />
           </div>
 
           {/* Cb Factor */}
           <div>
-            <label className="block text-xs text-slate-400 mb-1">C<sub>b</sub> (Moment Gradient Factor)</label>
+            <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">C<sub>b</sub> (Moment Gradient Factor)</label>
             <input
               type="number"
               step="0.1"
@@ -618,7 +618,7 @@ const DesignParametersPanel: FC<{
               max="3.0"
               value={params.Cb}
               onChange={e => updateParam('Cb', parseFloat(e.target.value) || 1.0)}
-              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
             />
           </div>
         </>
@@ -626,11 +626,11 @@ const DesignParametersPanel: FC<{
         <>
           {/* Concrete Code Selection */}
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Concrete Design Code</label>
+            <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Concrete Design Code</label>
             <select
               value={params.concreteCode}
               onChange={e => updateParam('concreteCode', e.target.value)}
-              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
             >
               {CONCRETE_CODES.map(c => (
                 <option key={c.id} value={c.id}>{c.icon} {c.name} — {c.region}</option>
@@ -640,11 +640,11 @@ const DesignParametersPanel: FC<{
 
           {/* Concrete Grade */}
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Concrete Grade</label>
+            <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Concrete Grade</label>
             <select
               value={params.concreteGrade}
               onChange={e => updateParam('concreteGrade', e.target.value)}
-              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
             >
               {CONCRETE_GRADES.map(g => (
                 <option key={g.name} value={g.name}>{g.name} (f<sub>ck</sub>={g.fck} MPa)</option>
@@ -654,11 +654,11 @@ const DesignParametersPanel: FC<{
 
           {/* Rebar Grade */}
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Rebar Grade</label>
+            <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Rebar Grade</label>
             <select
               value={params.rebarGrade}
               onChange={e => updateParam('rebarGrade', e.target.value)}
-              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
             >
               {REBAR_GRADES.map(g => (
                 <option key={g.name} value={g.name}>{g.name} (f<sub>y</sub>={g.fy} MPa)</option>
@@ -703,7 +703,7 @@ const SectionAssignmentPanel: FC<{
   }, [sectionSearch, standard]);
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+    <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center justify-between text-sm font-semibold text-white"
@@ -723,13 +723,13 @@ const SectionAssignmentPanel: FC<{
           className="mt-3 space-y-2"
         >
           <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 dark:text-slate-400" />
             <input
               type="text"
               placeholder="Search sections (e.g. ISMB 300, W14x22)..."
               value={sectionSearch}
               onChange={e => setSectionSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+              className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 placeholder-slate-500 focus:border-blue-500 focus:outline-none"
             />
           </div>
           <div className="max-h-48 overflow-y-auto space-y-1">
@@ -740,7 +740,7 @@ const SectionAssignmentPanel: FC<{
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
                   currentSection === s.designation
                     ? 'bg-blue-600/20 border border-blue-500/30 text-blue-300'
-                    : 'hover:bg-slate-800 text-slate-300'
+                    : 'hover:bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                 }`}
               >
                 <span className="font-mono">{s.designation}</span>
@@ -768,14 +768,14 @@ const MemberDetailPanel: FC<{
     initial={{ x: '100%' }}
     animate={{ x: 0 }}
     exit={{ x: '100%' }}
-    className="fixed right-0 top-0 bottom-0 w-[480px] bg-slate-900 border-l border-slate-700 z-50 overflow-y-auto shadow-2xl"
+    className="fixed right-0 top-0 bottom-0 w-[480px] bg-slate-50 dark:bg-slate-900 border-l border-slate-300 dark:border-slate-700 z-50 overflow-y-auto shadow-2xl"
   >
-    <div className="sticky top-0 bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center justify-between z-10">
+    <div className="sticky top-0 bg-slate-50 dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 px-6 py-4 flex items-center justify-between z-10">
       <div>
         <h3 className="text-lg font-bold text-white">{result.memberName}</h3>
-        <p className="text-xs text-slate-400">{result.code} — {result.section}</p>
+        <p className="text-xs text-slate-600 dark:text-slate-400">{result.code} — {result.section}</p>
       </div>
-      <button onClick={onClose} aria-label="Close" title="Close" className="p-2 rounded-lg hover:bg-slate-800 text-slate-400">
+      <button onClick={onClose} aria-label="Close" title="Close" className="p-2 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
         <XCircle className="w-5 h-5" />
       </button>
     </div>
@@ -793,7 +793,7 @@ const MemberDetailPanel: FC<{
             <div className={`text-xl font-bold ${result.status === 'PASS' ? 'text-emerald-400' : 'text-red-400'}`}>
               {result.status}
             </div>
-            <div className="text-sm text-slate-400">
+            <div className="text-sm text-slate-600 dark:text-slate-400">
               Governing: {result.governingCheck}
             </div>
           </div>
@@ -812,8 +812,8 @@ const MemberDetailPanel: FC<{
             ['Moment Y (M_y)', result.forces.My, 'kN·m'],
             ['Moment Z (M_z)', result.forces.Mz, 'kN·m'],
           ].map(([label, val, unit]) => (
-            <div key={label as string} className="bg-slate-800 rounded-lg px-3 py-2">
-              <div className="text-xs text-slate-400">{label as string}</div>
+            <div key={label as string} className="bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2">
+              <div className="text-xs text-slate-600 dark:text-slate-400">{label as string}</div>
               <div className="text-sm font-mono text-slate-200">{formatForce(val as number)} {unit as string}</div>
             </div>
           ))}
@@ -831,8 +831,8 @@ const MemberDetailPanel: FC<{
               ['Moment', result.capacities.moment, 'kN·m'],
               ['Shear', result.capacities.shear, 'kN'],
             ].map(([label, val, unit]) => (
-              <div key={label as string} className="bg-slate-800 rounded-lg px-3 py-2">
-                <div className="text-xs text-slate-400">{label as string}</div>
+              <div key={label as string} className="bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2">
+                <div className="text-xs text-slate-600 dark:text-slate-400">{label as string}</div>
                 <div className="text-sm font-mono text-emerald-400">{formatForce(val as number)} {unit as string}</div>
               </div>
             ))}
@@ -924,15 +924,15 @@ const ConnectionDesignTab: FC<{
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left: Parameters */}
         <div className="space-y-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+          <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4">
             <h3 className="text-sm font-semibold text-white flex items-center gap-2">
               <Wrench className="w-4 h-4 text-blue-400" />
               Connection Parameters
             </h3>
             <div>
-              <label className="block text-xs text-slate-400 mb-1">Connection Type</label>
+              <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Connection Type</label>
               <select value={connType} onChange={e => setConnType(e.target.value as any)}
-                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none">
+                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none">
                 <option value="bolted_shear">Bolted Shear Connection</option>
                 <option value="bolted_moment">Bolted Moment Connection</option>
                 <option value="welded">Welded Connection</option>
@@ -941,16 +941,16 @@ const ConnectionDesignTab: FC<{
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Bolt Grade</label>
+                <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Bolt Grade</label>
                 <select value={boltGrade} onChange={e => setBoltGrade(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none">
+                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none">
                   {BOLT_GRADES.map(b => <option key={b.name} value={b.name}>{b.name}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Bolt Ø (mm)</label>
+                <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Bolt Ø (mm)</label>
                 <select value={boltDia} onChange={e => setBoltDia(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none">
+                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none">
                   {[12, 16, 20, 24, 30, 36].map(d => <option key={d} value={d}>{d} mm</option>)}
                 </select>
               </div>
@@ -959,7 +959,7 @@ const ConnectionDesignTab: FC<{
         </div>
 
         {/* Middle: Support Selection */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
           <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
             <Target className="w-4 h-4 text-amber-400" />
             Support Reactions
@@ -970,11 +970,11 @@ const ConnectionDesignTab: FC<{
                 key={s.nodeId}
                 onClick={() => setSelectedSupport(s.nodeId)}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
-                  selectedSupport === s.nodeId ? 'bg-blue-600/20 border border-blue-500/30 text-blue-300' : 'hover:bg-slate-800 text-slate-300'
+                  selectedSupport === s.nodeId ? 'bg-blue-600/20 border border-blue-500/30 text-blue-300' : 'hover:bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                 }`}
               >
                 <span className="font-mono">Node {s.nodeId}</span>
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-slate-600 dark:text-slate-400">
                   Fy={formatForce(s.fy)} kN
                 </span>
               </button>
@@ -994,7 +994,7 @@ const ConnectionDesignTab: FC<{
         </div>
 
         {/* Right: Result */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
           <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
             <Shield className="w-4 h-4 text-emerald-400" />
             Design Result
@@ -1011,18 +1011,18 @@ const ConnectionDesignTab: FC<{
                 <UtilizationBar ratio={result.ratio} wide />
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm">
-                <div className="bg-slate-800 rounded-lg px-3 py-2">
-                  <div className="text-xs text-slate-400">Capacity</div>
+                <div className="bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2">
+                  <div className="text-xs text-slate-600 dark:text-slate-400">Capacity</div>
                   <div className="font-mono text-slate-200">{formatForce(result.capacity)} kN</div>
                 </div>
-                <div className="bg-slate-800 rounded-lg px-3 py-2">
-                  <div className="text-xs text-slate-400">Demand</div>
+                <div className="bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2">
+                  <div className="text-xs text-slate-600 dark:text-slate-400">Demand</div>
                   <div className="font-mono text-slate-200">{formatForce(result.demand)} kN</div>
                 </div>
               </div>
               <div className="space-y-1">
                 {result.checks.map((c, i) => (
-                  <div key={i} className="text-xs text-slate-400 flex items-center gap-1">
+                  <div key={i} className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3 text-emerald-500" /> {c}
                   </div>
                 ))}
@@ -1112,49 +1112,49 @@ const FoundationDesignTab: FC<{
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Parameters */}
         <div className="space-y-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+          <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4">
             <h3 className="text-sm font-semibold text-white flex items-center gap-2">
               <SlidersHorizontal className="w-4 h-4 text-blue-400" />
               Foundation Parameters
             </h3>
             <div>
-              <label className="block text-xs text-slate-400 mb-1">Footing Type</label>
+              <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Footing Type</label>
               <select value={footingType} onChange={e => setFootingType(e.target.value as any)}
-                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none">
+                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none">
                 <option value="isolated">Isolated Footing</option>
                 <option value="combined">Combined Footing</option>
                 <option value="mat">Mat/Raft Foundation</option>
               </select>
             </div>
             <div>
-              <label className="block text-xs text-slate-400 mb-1">Bearing Capacity (kN/m²)</label>
+              <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Bearing Capacity (kN/m²)</label>
               <input type="number" value={bearingCapacity} onChange={e => setBearingCapacity(Number(e.target.value))}
-                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none" />
+                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Column Width (mm)</label>
+                <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Column Width (mm)</label>
                 <input type="number" value={colWidth} onChange={e => setColWidth(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none" />
+                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none" />
               </div>
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Column Depth (mm)</label>
+                <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Column Depth (mm)</label>
                 <input type="number" value={colDepth} onChange={e => setColDepth(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none" />
+                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-slate-400 mb-1">f<sub>ck</sub> (MPa)</label>
+                <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">f<sub>ck</sub> (MPa)</label>
                 <select value={fck} onChange={e => setFck(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none">
+                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none">
                   {CONCRETE_GRADES.map(g => <option key={g.fck} value={g.fck}>{g.name} ({g.fck} MPa)</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-slate-400 mb-1">f<sub>y</sub> (MPa)</label>
+                <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">f<sub>y</sub> (MPa)</label>
                 <select value={fy} onChange={e => setFy(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none">
+                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none">
                   {REBAR_GRADES.map(g => <option key={g.fy} value={g.fy}>{g.name} ({g.fy} MPa)</option>)}
                 </select>
               </div>
@@ -1163,7 +1163,7 @@ const FoundationDesignTab: FC<{
         </div>
 
         {/* Support Selection */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
           <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
             <Target className="w-4 h-4 text-amber-400" />
             Select Support Node
@@ -1174,11 +1174,11 @@ const FoundationDesignTab: FC<{
                 key={s.nodeId}
                 onClick={() => setSelectedSupport(s.nodeId)}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
-                  selectedSupport === s.nodeId ? 'bg-blue-600/20 border border-blue-500/30 text-blue-300' : 'hover:bg-slate-800 text-slate-300'
+                  selectedSupport === s.nodeId ? 'bg-blue-600/20 border border-blue-500/30 text-blue-300' : 'hover:bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                 }`}
               >
                 <span className="font-mono">Node {s.nodeId}</span>
-                <span className="text-xs text-slate-400">P={formatForce(Math.abs(s.fy))} kN</span>
+                <span className="text-xs text-slate-600 dark:text-slate-400">P={formatForce(Math.abs(s.fy))} kN</span>
               </button>
             ))}
           </div>
@@ -1193,7 +1193,7 @@ const FoundationDesignTab: FC<{
         </div>
 
         {/* Result */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
           <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
             <Shield className="w-4 h-4 text-emerald-400" />
             Foundation Design
@@ -1207,24 +1207,24 @@ const FoundationDesignTab: FC<{
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm">
-                <div className="bg-slate-800 rounded-lg px-3 py-2">
-                  <div className="text-xs text-slate-400">Size (L×W)</div>
+                <div className="bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2">
+                  <div className="text-xs text-slate-600 dark:text-slate-400">Size (L×W)</div>
                   <div className="font-mono text-slate-200">{result.dimensions.length}×{result.dimensions.width} mm</div>
                 </div>
-                <div className="bg-slate-800 rounded-lg px-3 py-2">
-                  <div className="text-xs text-slate-400">Depth</div>
+                <div className="bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2">
+                  <div className="text-xs text-slate-600 dark:text-slate-400">Depth</div>
                   <div className="font-mono text-slate-200">{result.dimensions.depth || result.dimensions.thickness} mm</div>
                 </div>
               </div>
               <div className="space-y-2">
-                <h4 className="text-xs font-semibold text-slate-400">Check Ratios</h4>
+                <h4 className="text-xs font-semibold text-slate-600 dark:text-slate-400">Check Ratios</h4>
                 {[
                   ['Bearing', result.bearingRatio],
                   ['Punching Shear', result.punchingRatio],
                   ['Flexure', result.flexureRatio],
                 ].map(([label, ratio]) => (
                   <div key={label as string} className="flex items-center gap-3">
-                    <span className="text-xs text-slate-300 w-28">{label as string}</span>
+                    <span className="text-xs text-slate-700 dark:text-slate-300 w-28">{label as string}</span>
                     <div className="flex-1"><UtilizationBar ratio={ratio as number} /></div>
                     <span className={`text-xs font-mono w-12 text-right ${utilizationColor(ratio as number)}`}>
                       {((ratio as number) * 100).toFixed(0)}%
@@ -1233,9 +1233,9 @@ const FoundationDesignTab: FC<{
                 ))}
               </div>
               {result.reinforcement && (
-                <div className="text-xs text-slate-400 space-y-1">
+                <div className="text-xs text-slate-600 dark:text-slate-400 space-y-1">
                   {Object.entries(result.reinforcement).map(([k, v]) => (
-                    <div key={k}><span className="text-slate-500">{k}:</span> <span className="text-slate-300 font-mono">{v}</span></div>
+                    <div key={k}><span className="text-slate-500">{k}:</span> <span className="text-slate-700 dark:text-slate-300 font-mono">{v}</span></div>
                   ))}
                 </div>
               )}
@@ -1596,13 +1596,13 @@ const PostAnalysisDesignHub: FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950 text-white">
       {/* Header */}
-      <header className="bg-slate-900/80 backdrop-blur-sm border-b border-slate-800 sticky top-0 z-40">
+      <header className="bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40">
         <div className="max-w-[1600px] mx-auto px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-slate-800 text-slate-400">
+              <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <div className="flex items-center gap-3">
@@ -1612,7 +1612,7 @@ const PostAnalysisDesignHub: FC = () => {
                     Design Hub
                     <span className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 text-xs font-bold">POST-ANALYSIS</span>
                   </h1>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-600 dark:text-slate-400">
                     {totalMembers} members • {hasAnalysis ? 'Analysis complete' : 'No analysis results'}
                   </p>
                 </div>
@@ -1620,10 +1620,10 @@ const PostAnalysisDesignHub: FC = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              <Link to="/app" className="px-4 py-2 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition-colors">
+              <Link to="/app" className="px-4 py-2 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 transition-colors">
                 ← Back to Modeler
               </Link>
-              <Link to="/stream" className="px-4 py-2 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition-colors">
+              <Link to="/stream" className="px-4 py-2 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 transition-colors">
                 Dashboard
               </Link>
             </div>
@@ -1632,7 +1632,7 @@ const PostAnalysisDesignHub: FC = () => {
       </header>
 
       {/* Tab Bar */}
-      <div className="bg-slate-900/50 border-b border-slate-800">
+      <div className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-[1600px] mx-auto px-6">
           <div className="flex items-center gap-1 overflow-x-auto py-1">
             {TABS.map(tab => (
@@ -1642,7 +1642,7 @@ const PostAnalysisDesignHub: FC = () => {
                 className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                   activeTab === tab.id
                     ? 'border-blue-500 text-blue-400'
-                    : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-600'
+                    : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-200 hover:border-slate-600'
                 }`}
               >
                 {tab.icon}
@@ -1696,7 +1696,7 @@ const PostAnalysisDesignHub: FC = () => {
                         setActiveTab('concrete');
                       }
                     }}
-                    className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-left hover:border-blue-500/30 hover:bg-slate-800/60 transition-all group"
+                    className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-left hover:border-blue-500/30 hover:bg-slate-100 dark:bg-slate-800/60 transition-all group"
                   >
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-2xl">{code.icon}</span>
@@ -1706,7 +1706,7 @@ const PostAnalysisDesignHub: FC = () => {
                       </div>
                       <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-blue-400 ml-auto transition-colors" />
                     </div>
-                    <p className="text-xs text-slate-400 line-clamp-1">{code.fullName}</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-1">{code.fullName}</p>
                   </button>
                 ))}
               </div>
@@ -1747,18 +1747,18 @@ const PostAnalysisDesignHub: FC = () => {
             <div>
               <h2 className="text-lg font-semibold text-white mb-4">All Members</h2>
               {hasAnalysis && memberRows.length === 0 ? (
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-8">
+                <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-8">
                   <div className="space-y-3 animate-pulse">
-                    <div className="h-4 bg-slate-800 rounded w-1/3" />
-                    <div className="h-10 bg-slate-800 rounded" />
-                    <div className="h-10 bg-slate-800 rounded" />
-                    <div className="h-10 bg-slate-800 rounded" />
-                    <div className="h-10 bg-slate-800 rounded w-2/3" />
+                    <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-1/3" />
+                    <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded" />
+                    <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded" />
+                    <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded" />
+                    <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded w-2/3" />
                   </div>
                   <p className="text-sm text-slate-500 mt-4 text-center">Computing member data...</p>
                 </div>
               ) : (
-              <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+              <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
                 <MemberDesignTable
                   rows={memberRows}
                   onToggleSelect={toggleSelect}
@@ -1806,8 +1806,8 @@ const PostAnalysisDesignHub: FC = () => {
                 </button>
 
                 {designResults.size > 0 && (
-                  <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                    <h4 className="text-xs font-semibold text-slate-400 mb-2">DESIGN SUMMARY</h4>
+                  <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+                    <h4 className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">DESIGN SUMMARY</h4>
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="text-emerald-400">Pass</span>
@@ -1818,7 +1818,7 @@ const PostAnalysisDesignHub: FC = () => {
                         <span className="font-bold text-red-400">{failCount}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-slate-400">Max Utilization</span>
+                        <span className="text-slate-600 dark:text-slate-400">Max Utilization</span>
                         <span className={`font-bold ${utilizationColor(maxUtilization)}`}>
                           {(maxUtilization * 100).toFixed(1)}%
                         </span>
@@ -1833,23 +1833,23 @@ const PostAnalysisDesignHub: FC = () => {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <h2 className="text-lg font-semibold text-white">Steel Member Design</h2>
-                    <span className="text-xs text-slate-400 bg-slate-800 px-2 py-1 rounded-full">
+                    <span className="text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">
                       {STEEL_CODES.find(c => c.id === params.steelCode)?.name}
                     </span>
                   </div>
                   <div className="relative">
-                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 dark:text-slate-400" />
                     <input
                       type="text"
                       placeholder="Search members..."
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
-                      className="pl-9 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-slate-300 placeholder-slate-500 focus:outline-none focus:border-blue-500 w-64"
+                      className="pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-700 dark:text-slate-300 placeholder-slate-500 focus:outline-none focus:border-blue-500 w-64"
                     />
                   </div>
                 </div>
 
-                <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
                   <MemberDesignTable
                     rows={memberRows}
                     onToggleSelect={toggleSelect}
@@ -1870,46 +1870,46 @@ const PostAnalysisDesignHub: FC = () => {
               <div className="space-y-4">
                 <DesignParametersPanel params={params} onChange={setParams} material="concrete" />
 
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-3">
                   <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                     <Building2 className="w-4 h-4 text-blue-400" />
                     Concrete Section
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs text-slate-400 mb-1">Width (mm)</label>
+                      <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Width (mm)</label>
                       <input type="number" defaultValue={300}
-                        className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none" />
+                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none" />
                     </div>
                     <div>
-                      <label className="block text-xs text-slate-400 mb-1">Depth (mm)</label>
+                      <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Depth (mm)</label>
                       <input type="number" defaultValue={500}
-                        className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none" />
+                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none" />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">Cover (mm)</label>
+                    <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Cover (mm)</label>
                     <input type="number" defaultValue={40}
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none" />
+                      className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none" />
                   </div>
                 </div>
 
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-3">
                   <h3 className="text-sm font-semibold text-white">Quick Design</h3>
                   <div className="space-y-2">
-                    <Link to="/structural-design-center" className="w-full flex items-center justify-between px-4 py-3 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors group">
+                    <Link to="/structural-design-center" className="w-full flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors group">
                       <span className="text-sm text-slate-200">RC Beam Designer</span>
                       <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-blue-400" />
                     </Link>
-                    <Link to="/structural-design-center" className="w-full flex items-center justify-between px-4 py-3 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors group">
+                    <Link to="/structural-design-center" className="w-full flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors group">
                       <span className="text-sm text-slate-200">RC Column Designer</span>
                       <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-blue-400" />
                     </Link>
-                    <Link to="/structural-design-center" className="w-full flex items-center justify-between px-4 py-3 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors group">
+                    <Link to="/structural-design-center" className="w-full flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors group">
                       <span className="text-sm text-slate-200">Slab Designer</span>
                       <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-blue-400" />
                     </Link>
-                    <Link to="/structural-design-center" className="w-full flex items-center justify-between px-4 py-3 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors group">
+                    <Link to="/structural-design-center" className="w-full flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors group">
                       <span className="text-sm text-slate-200">Footing Designer</span>
                       <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-blue-400" />
                     </Link>
@@ -1920,11 +1920,11 @@ const PostAnalysisDesignHub: FC = () => {
               <div className="lg:col-span-3">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-white">Concrete Member Design</h2>
-                  <span className="text-xs text-slate-400 bg-slate-800 px-2 py-1 rounded-full">
+                  <span className="text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">
                     {CONCRETE_CODES.find(c => c.id === params.concreteCode)?.name}
                   </span>
                 </div>
-                <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
                   <MemberDesignTable
                     rows={memberRows}
                     onToggleSelect={toggleSelect}
@@ -1964,10 +1964,10 @@ const PostAnalysisDesignHub: FC = () => {
         {activeTab === 'optimization' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+              <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
                 <Zap className="w-8 h-8 text-amber-400 mb-3" />
                 <h3 className="text-lg font-semibold text-white mb-2">Auto-Optimize</h3>
-                <p className="text-sm text-slate-400 mb-4">
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
                   Automatically find the lightest section that passes all design checks for each member.
                   Iterates through the section database from lightest to heaviest.
                 </p>
@@ -1987,24 +1987,24 @@ const PostAnalysisDesignHub: FC = () => {
                 )}
               </div>
 
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+              <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
                 <Target className="w-8 h-8 text-blue-400 mb-3" />
                 <h3 className="text-lg font-semibold text-white mb-2">Target Utilization</h3>
-                <p className="text-sm text-slate-400 mb-4">
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
                   Set a target utilization ratio (e.g. 0.85) and the optimizer will select sections
                   closest to that ratio for maximum material efficiency.
                 </p>
                 <div className="flex items-center gap-3">
                   <input type="number" step="0.05" min="0.5" max="0.99" defaultValue="0.85"
-                    className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none" />
-                  <span className="text-sm text-slate-400">ratio</span>
+                    className="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none" />
+                  <span className="text-sm text-slate-600 dark:text-slate-400">ratio</span>
                 </div>
               </div>
 
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+              <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
                 <Award className="w-8 h-8 text-emerald-400 mb-3" />
                 <h3 className="text-lg font-semibold text-white mb-2">Weight Summary</h3>
-                <p className="text-sm text-slate-400 mb-4">
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
                   Total structural steel weight based on current section assignments.
                 </p>
                 <div className="text-3xl font-bold text-emerald-400">
@@ -2018,7 +2018,7 @@ const PostAnalysisDesignHub: FC = () => {
             {designResults.size > 0 && (
               <div>
                 <h2 className="text-lg font-semibold text-white mb-4">Design Results After Optimization</h2>
-                <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
                   <MemberDesignTable
                     rows={memberRows}
                     onToggleSelect={toggleSelect}
@@ -2035,21 +2035,21 @@ const PostAnalysisDesignHub: FC = () => {
         {/* ========== REPORT TAB ========== */}
         {activeTab === 'report' && (
           <div className="space-y-6">
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
               <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-blue-400" />
                 Design Report
               </h2>
 
               {designResults.size === 0 ? (
-                <p className="text-slate-400 py-8 text-center">Run design checks first to generate a report.</p>
+                <p className="text-slate-600 dark:text-slate-400 py-8 text-center">Run design checks first to generate a report.</p>
               ) : (
                 <div className="space-y-6">
                   {/* Report Header */}
-                  <div className="bg-slate-800 rounded-xl p-6 font-mono text-sm">
+                  <div className="bg-slate-100 dark:bg-slate-800 rounded-xl p-6 font-mono text-sm">
                     <div className="text-center mb-6">
                       <h3 className="text-lg font-bold text-white">STRUCTURAL DESIGN REPORT</h3>
-                      <p className="text-slate-400">Generated by BeamLab Ultimate</p>
+                      <p className="text-slate-600 dark:text-slate-400">Generated by BeamLab Ultimate</p>
                       <p className="text-slate-500 text-xs">{new Date().toLocaleString()}</p>
                     </div>
 
@@ -2074,7 +2074,7 @@ const PostAnalysisDesignHub: FC = () => {
 
                     <table className="w-full text-xs">
                       <thead>
-                        <tr className="border-b border-slate-600 text-slate-400">
+                        <tr className="border-b border-slate-600 text-slate-600 dark:text-slate-400">
                           <th className="py-2 text-left">Member</th>
                           <th className="py-2 text-left">Section</th>
                           <th className="py-2 text-right">N (kN)</th>
@@ -2086,12 +2086,12 @@ const PostAnalysisDesignHub: FC = () => {
                       </thead>
                       <tbody>
                         {Array.from(designResults.entries()).map(([id, r]) => (
-                          <tr key={id} className="border-b border-slate-700/50">
+                          <tr key={id} className="border-b border-slate-300 dark:border-slate-700/50">
                             <td className="py-1 text-slate-200">{r.memberName}</td>
-                            <td className="py-1 text-slate-300">{r.section}</td>
-                            <td className="py-1 text-right text-slate-300">{formatForce(r.forces.N)}</td>
-                            <td className="py-1 text-right text-slate-300">{formatForce(r.forces.Vy)}</td>
-                            <td className="py-1 text-right text-slate-300">{formatForce(r.forces.Mz)}</td>
+                            <td className="py-1 text-slate-700 dark:text-slate-300">{r.section}</td>
+                            <td className="py-1 text-right text-slate-700 dark:text-slate-300">{formatForce(r.forces.N)}</td>
+                            <td className="py-1 text-right text-slate-700 dark:text-slate-300">{formatForce(r.forces.Vy)}</td>
+                            <td className="py-1 text-right text-slate-700 dark:text-slate-300">{formatForce(r.forces.Mz)}</td>
                             <td className={`py-1 text-right font-bold ${utilizationColor(r.utilizationRatio)}`}>
                               {(r.utilizationRatio * 100).toFixed(1)}%
                             </td>
@@ -2122,7 +2122,7 @@ const PostAnalysisDesignHub: FC = () => {
                         });
                         navigator.clipboard.writeText(lines.join('\n'));
                       }}
-                      className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                      className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                     >
                       <Copy className="w-4 h-4" /> Copy to Clipboard
                     </button>

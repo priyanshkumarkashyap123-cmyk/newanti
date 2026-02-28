@@ -13,9 +13,9 @@ export const SignInPage = () => {
     useEffect(() => { document.title = 'Sign In | BeamLab Ultimate'; }, []);
 
     return (
-        <div className="min-h-screen bg-slate-950 flex font-sans selection:bg-blue-500/30">
+        <div className="min-h-screen bg-white dark:bg-slate-950 flex font-sans selection:bg-blue-500/30">
             {/* Left Side - Branding */}
-            <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-slate-900 border-r border-slate-800">
+            <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
                 {/* Animated Background */}
                 <div className="absolute inset-0">
                     <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-500/10 via-slate-900 to-slate-950" />
@@ -52,7 +52,7 @@ export const SignInPage = () => {
                                 Engineer with confidence
                             </span>
                         </h1>
-                        <p className="text-lg text-slate-400 max-w-lg leading-relaxed">
+                        <p className="text-lg text-slate-600 dark:text-slate-400 max-w-lg leading-relaxed">
                             Access the most powerful browser-based structural analysis platform.
                             Designed for modern engineering teams.
                         </p>
@@ -69,32 +69,32 @@ export const SignInPage = () => {
                                     <div className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
                                         <CheckCircle className="w-3.5 h-3.5 text-blue-400" />
                                     </div>
-                                    <span className="text-slate-300 font-medium">{f.label}</span>
+                                    <span className="text-slate-700 dark:text-slate-300 font-medium">{f.label}</span>
                                 </div>
                             ))}
                         </div>
                     </div>
 
                     {/* Stats */}
-                    <div className="grid grid-cols-3 gap-8 py-8 border-t border-slate-800/50">
+                    <div className="grid grid-cols-3 gap-8 py-8 border-t border-slate-200 dark:border-slate-800/50">
                         <div>
                             <div className="text-3xl font-bold text-white">10K+</div>
-                            <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">Users</div>
+                            <div className="text-xs text-slate-600 dark:text-slate-400 uppercase tracking-wider mt-1">Users</div>
                         </div>
                         <div>
                             <div className="text-3xl font-bold text-white">99.9%</div>
-                            <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">Uptime</div>
+                            <div className="text-xs text-slate-600 dark:text-slate-400 uppercase tracking-wider mt-1">Uptime</div>
                         </div>
                         <div>
                             <div className="text-3xl font-bold text-white">24/7</div>
-                            <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">Support</div>
+                            <div className="text-xs text-slate-600 dark:text-slate-400 uppercase tracking-wider mt-1">Support</div>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Right Side - Sign In Form */}
-            <main className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-slate-950 overflow-y-auto">
+            <main className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white dark:bg-slate-950 overflow-y-auto">
                 <div className="w-full max-w-md space-y-8">
                     {/* Mobile Logo */}
                     <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
@@ -107,7 +107,7 @@ export const SignInPage = () => {
                     {/* Header */}
                     <div className="text-center lg:text-left space-y-2">
                         <h2 className="text-3xl font-bold text-white">Welcome Back</h2>
-                        <p className="text-slate-400">
+                        <p className="text-slate-600 dark:text-slate-400">
                             Enter your credentials to access your workspace
                         </p>
                     </div>
@@ -115,14 +115,14 @@ export const SignInPage = () => {
                     {/* Clerk Sign In */}
                     <div className="clerk-signin-container" style={{ minHeight: '420px' }}>
                         <ClerkLoading>
-                            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 text-slate-300 text-sm space-y-4" aria-live="polite" style={{ minHeight: '400px' }}>
-                                <div className="h-10 w-full bg-slate-800 rounded-lg animate-pulse" />
-                                <div className="h-4 w-16 bg-slate-800 rounded animate-pulse" />
-                                <div className="h-10 w-full bg-slate-800 rounded-lg animate-pulse" />
-                                <div className="h-4 w-16 bg-slate-800 rounded animate-pulse" />
-                                <div className="h-10 w-full bg-slate-800 rounded-lg animate-pulse" />
-                                <div className="h-10 w-full bg-slate-800 rounded-lg animate-pulse mt-4" />
-                                <p className="text-center text-sm text-slate-400">Loading secure sign-in…</p>
+                            <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 text-slate-700 dark:text-slate-300 text-sm space-y-4" aria-live="polite" style={{ minHeight: '400px' }}>
+                                <div className="h-10 w-full bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse" />
+                                <div className="h-4 w-16 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+                                <div className="h-10 w-full bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse" />
+                                <div className="h-4 w-16 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+                                <div className="h-10 w-full bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse" />
+                                <div className="h-10 w-full bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse mt-4" />
+                                <p className="text-center text-sm text-slate-600 dark:text-slate-400">Loading secure sign-in…</p>
                             </div>
                         </ClerkLoading>
                         <ClerkLoaded>
@@ -130,22 +130,22 @@ export const SignInPage = () => {
                                 appearance={{
                                     elements: {
                                         rootBox: 'w-full',
-                                        card: 'bg-slate-900 border border-slate-800 shadow-xl rounded-xl p-0 overflow-hidden',
+                                        card: 'bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl rounded-xl p-0 overflow-hidden',
                                         headerTitle: 'hidden', // We have our own header
                                         headerSubtitle: 'hidden',
-                                        formFieldLabel: 'text-slate-300 font-medium text-sm',
-                                        formFieldInput: 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all',
+                                        formFieldLabel: 'text-slate-700 dark:text-slate-300 font-medium text-sm',
+                                        formFieldInput: 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-white placeholder:text-slate-600 dark:text-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all',
                                         formButtonPrimary: 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-2.5 rounded-lg shadow-lg shadow-blue-500/20 transition-all',
                                         footerActionLink: 'text-blue-400 hover:text-blue-300 font-medium',
-                                        identityPreviewText: 'text-slate-300',
+                                        identityPreviewText: 'text-slate-700 dark:text-slate-300',
                                         identityPreviewEditButton: 'text-blue-400 hover:text-blue-300',
-                                        socialButtonsBlockButton: 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:border-slate-600 rounded-lg transition-all',
+                                        socialButtonsBlockButton: 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 hover:border-slate-600 rounded-lg transition-all',
                                         socialButtonsBlockButtonText: 'font-medium',
-                                        dividerLine: 'bg-slate-800',
-                                        dividerText: 'text-slate-400 uppercase text-xs tracking-wider bg-slate-900 px-2',
-                                        formFieldInputShowPasswordButton: 'text-slate-400 hover:text-slate-300',
-                                        otpCodeFieldInput: 'bg-slate-800 border-slate-700 text-white text-center font-mono font-bold text-lg focus:ring-blue-500',
-                                        footer: 'bg-slate-900/50 p-6 border-t border-slate-800'
+                                        dividerLine: 'bg-slate-100 dark:bg-slate-800',
+                                        dividerText: 'text-slate-600 dark:text-slate-400 uppercase text-xs tracking-wider bg-slate-50 dark:bg-slate-900 px-2',
+                                        formFieldInputShowPasswordButton: 'text-slate-600 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300',
+                                        otpCodeFieldInput: 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-white text-center font-mono font-bold text-lg focus:ring-blue-500',
+                                        footer: 'bg-slate-50 dark:bg-slate-900/50 p-6 border-t border-slate-200 dark:border-slate-800'
                                     },
                                     layout: {
                                         socialButtonsPlacement: 'top',
@@ -169,7 +169,7 @@ export const SignInPage = () => {
 
                     {/* Additional Links */}
                     <div className="text-center pt-6">
-                        <Link to="/" className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-slate-300 transition-colors group">
+                        <Link to="/" className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300 transition-colors group">
                             <span className="group-hover:-translate-x-1 transition-transform">←</span> Back to home
                         </Link>
                     </div>

@@ -200,13 +200,13 @@ export default function ReportBuilderPage() {
   }, [config, sections]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6">
+    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-100 p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         <header className="flex items-center justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Reports</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-600 dark:text-slate-400">Reports</p>
             <h1 className="text-2xl font-bold">Engineering Report Builder</h1>
-            <p className="text-slate-400">Create professional structural design reports.</p>
+            <p className="text-slate-600 dark:text-slate-400">Create professional structural design reports.</p>
           </div>
           <div className="flex gap-2">
             {members.size > 0 && (
@@ -232,60 +232,60 @@ export default function ReportBuilderPage() {
 
         <div className="grid gap-6 md:grid-cols-3">
           {/* Config Panel */}
-          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-4">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-4 space-y-4">
             <div className="flex items-center gap-2">
               <Settings className="w-5 h-5 text-blue-400" />
               <h2 className="font-semibold">Report Settings</h2>
             </div>
             <div className="space-y-3">
               <div>
-                <label className="text-xs text-slate-400">Project Name</label>
+                <label className="text-xs text-slate-600 dark:text-slate-400">Project Name</label>
                 <input 
                   value={config.projectName || ''} 
                   onChange={e => setConfig(prev => ({ ...prev, projectName: e.target.value }))}
-                  className="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm"
+                  className="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"
                 />
               </div>
               <div>
-                <label className="text-xs text-slate-400">Project Number</label>
+                <label className="text-xs text-slate-600 dark:text-slate-400">Project Number</label>
                 <input 
                   value={config.projectNumber || ''} 
                   onChange={e => setConfig(prev => ({ ...prev, projectNumber: e.target.value }))}
-                  className="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm"
+                  className="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"
                 />
               </div>
               <div>
-                <label className="text-xs text-slate-400">Client</label>
+                <label className="text-xs text-slate-600 dark:text-slate-400">Client</label>
                 <input 
                   value={config.client || ''} 
                   onChange={e => setConfig(prev => ({ ...prev, client: e.target.value }))}
-                  className="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm"
+                  className="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"
                 />
               </div>
               <div>
-                <label className="text-xs text-slate-400">Engineer</label>
+                <label className="text-xs text-slate-600 dark:text-slate-400">Engineer</label>
                 <input 
                   value={config.engineer || ''} 
                   onChange={e => setConfig(prev => ({ ...prev, engineer: e.target.value }))}
-                  className="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm"
+                  className="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"
                 />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs text-slate-400">Revision</label>
+                  <label className="text-xs text-slate-600 dark:text-slate-400">Revision</label>
                   <input 
                     value={config.revision || ''} 
                     onChange={e => setConfig(prev => ({ ...prev, revision: e.target.value }))}
-                    className="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm"
+                    className="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-400">Date</label>
+                  <label className="text-xs text-slate-600 dark:text-slate-400">Date</label>
                   <input 
                     type="date"
                     value={config.date || ''} 
                     onChange={e => setConfig(prev => ({ ...prev, date: e.target.value }))}
-                    className="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm"
+                    className="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"
                   />
                 </div>
               </div>
@@ -301,13 +301,13 @@ export default function ReportBuilderPage() {
           </div>
 
           {/* Sections Panel */}
-          <div className="md:col-span-2 rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-4">
+          <div className="md:col-span-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-4 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-purple-400" />
                 <h2 className="font-semibold">Report Sections</h2>
               </div>
-              <span className="text-xs text-slate-400">{sections.length} sections</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400">{sections.length} sections</span>
             </div>
 
             {showPreview ? (
@@ -318,8 +318,8 @@ export default function ReportBuilderPage() {
               <>
                 <div className="space-y-2 max-h-64 overflow-auto">
                   {sections.map(section => (
-                    <div key={section.id} className="flex items-start gap-2 p-3 bg-slate-800/50 rounded-lg">
-                      <GripVertical className="w-4 h-4 text-slate-400 mt-1 cursor-move" />
+                    <div key={section.id} className="flex items-start gap-2 p-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
+                      <GripVertical className="w-4 h-4 text-slate-600 dark:text-slate-400 mt-1 cursor-move" />
                       <div className="flex-1 space-y-1">
                         <input 
                           value={section.title}
@@ -340,20 +340,20 @@ export default function ReportBuilderPage() {
                   ))}
                 </div>
 
-                <div className="border-t border-slate-700 pt-4 space-y-2">
+                <div className="border-t border-slate-300 dark:border-slate-700 pt-4 space-y-2">
                   <h3 className="text-sm font-medium flex items-center gap-2"><Plus className="w-4 h-4" /> Add Section</h3>
                   <input 
                     placeholder="Section Title"
                     value={newSection.title}
                     onChange={e => setNewSection(prev => ({ ...prev, title: e.target.value }))}
-                    className="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm"
+                    className="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"
                   />
                   <textarea 
                     placeholder="Section Content"
                     value={newSection.content}
                     onChange={e => setNewSection(prev => ({ ...prev, content: e.target.value }))}
                     rows={2}
-                    className="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm resize-none"
+                    className="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm resize-none"
                   />
                   <button onClick={addSection} className="px-4 py-1.5 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm transition-colors">
                     Add Section

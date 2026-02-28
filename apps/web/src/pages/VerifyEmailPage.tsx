@@ -92,8 +92,8 @@ export const VerifyEmailPage: React.FC = () => {
                 <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-8 max-w-md w-full text-center">
                     <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
                     <h2 className="text-2xl font-bold text-white mb-2">Email Verified!</h2>
-                    <p className="text-slate-300 mb-6">Your email has been successfully verified.</p>
-                    <p className="text-sm text-slate-400">Redirecting to dashboard...</p>
+                    <p className="text-slate-700 dark:text-slate-300 mb-6">Your email has been successfully verified.</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">Redirecting to dashboard...</p>
                 </div>
             </div>
         );
@@ -108,7 +108,7 @@ export const VerifyEmailPage: React.FC = () => {
                         <Mail className="w-12 h-12 text-purple-400" />
                     </div>
                     <h1 className="text-3xl font-bold text-white mb-2">Verify Email</h1>
-                    <p className="text-slate-300">
+                    <p className="text-slate-700 dark:text-slate-300">
                         We sent a verification code to<br />
                         <span className="font-semibold text-white">{email}</span>
                     </p>
@@ -138,7 +138,7 @@ export const VerifyEmailPage: React.FC = () => {
                         }}
                         className="w-full px-4 py-3 text-center text-2xl tracking-widest bg-white/5 border border-white/20 rounded-lg text-white placeholder-slate-500 focus:border-purple-500 focus:outline-none transition-colors"
                     />
-                    <p className="text-xs text-slate-400 mt-2">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-2">
                         Enter the 6-digit code from your email
                     </p>
                 </div>
@@ -161,7 +161,7 @@ export const VerifyEmailPage: React.FC = () => {
 
                 {/* Resend Link */}
                 <div className="mt-6 text-center">
-                    <p className="text-sm text-slate-400 mb-2">Didn't receive the code?</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">Didn't receive the code?</p>
                     <button
                         onClick={handleResend}
                         disabled={isVerifying}
@@ -173,7 +173,7 @@ export const VerifyEmailPage: React.FC = () => {
 
                 {/* Support Link */}
                 <div className="mt-6 pt-6 border-t border-white/10 text-center">
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
                         Need help?{' '}
                         <a href="/help" className="text-purple-400 hover:text-purple-300">
                             Contact Support

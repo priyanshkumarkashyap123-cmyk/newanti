@@ -98,13 +98,13 @@ export default function BIMIntegrationPage() {
   }, [parsedMembers, ifcFile]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6">
+    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-100 p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         <header className="flex items-center justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">BIM Integration</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-600 dark:text-slate-400">BIM Integration</p>
             <h1 className="text-2xl font-bold">IFC Import / Clash / Export</h1>
-            <p className="text-slate-400">Upload IFC models, detect clashes, and export structural data.</p>
+            <p className="text-slate-600 dark:text-slate-400">Upload IFC models, detect clashes, and export structural data.</p>
           </div>
           <div className="flex gap-2">
             {['upload', 'preview', 'clash', 'export'].map((mode) => (
@@ -112,7 +112,7 @@ export default function BIMIntegrationPage() {
                 key={mode}
                 onClick={() => setViewMode(mode as ViewMode)}
                 className={`px-3 py-1.5 rounded-lg text-sm capitalize transition-colors ${
-                  viewMode === mode ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  viewMode === mode ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
               >
                 {mode}
@@ -122,38 +122,38 @@ export default function BIMIntegrationPage() {
         </header>
 
         {viewMode === 'upload' && (
-          <section className="rounded-xl border border-dashed border-slate-700 bg-slate-900/60 p-8 text-center">
-            <Upload className="w-12 h-12 mx-auto text-slate-400 mb-4" />
+          <section className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 p-8 text-center">
+            <Upload className="w-12 h-12 mx-auto text-slate-600 dark:text-slate-400 mb-4" />
             <h2 className="text-lg font-semibold mb-2">Upload IFC File</h2>
-            <p className="text-sm text-slate-400 mb-4">Supports IFC 2x3, IFC 4, and IFC 4x3 formats</p>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">Supports IFC 2x3, IFC 4, and IFC 4x3 formats</p>
             <label className="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg cursor-pointer transition-colors">
               <input type="file" accept=".ifc" onChange={handleFileUpload} className="hidden" />
               Select IFC File
             </label>
-            {ifcFile && <p className="text-sm text-slate-300 mt-3">Selected: {ifcFile.name}</p>}
+            {ifcFile && <p className="text-sm text-slate-700 dark:text-slate-300 mt-3">Selected: {ifcFile.name}</p>}
           </section>
         )}
 
         {viewMode === 'preview' && (
           <section className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Layers className="w-5 h-5 text-blue-400" />
                 <h2 className="text-lg font-semibold">Parsed Members ({parsedMembers.length})</h2>
               </div>
               <div className="space-y-2 max-h-64 overflow-auto">
                 {parsedMembers.map(m => (
-                  <div key={m.id} className="flex items-center justify-between p-2 bg-slate-800 rounded-lg text-sm">
+                  <div key={m.id} className="flex items-center justify-between p-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm">
                     <div className="flex items-center gap-2">
-                      <Box className="w-4 h-4 text-slate-400" />
+                      <Box className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                       <span className="font-medium">{m.name}</span>
                     </div>
-                    <span className="text-slate-400 capitalize">{m.type}</span>
+                    <span className="text-slate-600 dark:text-slate-400 capitalize">{m.type}</span>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-4">
               <h2 className="text-lg font-semibold mb-3">Validation Status</h2>
               <div className={`flex items-center gap-2 p-3 rounded-lg ${validationStatus === 'valid' ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`}>
                 {validationStatus === 'valid' ? <CheckCircle className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
@@ -167,10 +167,10 @@ export default function BIMIntegrationPage() {
         )}
 
         {viewMode === 'clash' && (
-          <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+          <section className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-4">
             <h2 className="text-lg font-semibold mb-3">Clash Detection Results ({clashResults.length} issues)</h2>
             {clashResults.length === 0 ? (
-              <div className="text-center py-8 text-slate-400">
+              <div className="text-center py-8 text-slate-600 dark:text-slate-400">
                 <CheckCircle className="w-12 h-12 mx-auto mb-2 text-green-500" />
                 <p>No clashes detected!</p>
               </div>
@@ -180,9 +180,9 @@ export default function BIMIntegrationPage() {
                   <div key={c.id} className={`p-3 rounded-lg border ${c.severity === 'critical' ? 'border-red-700 bg-red-900/20' : c.severity === 'major' ? 'border-orange-700 bg-orange-900/20' : 'border-yellow-700 bg-yellow-900/20'}`}>
                     <div className="flex justify-between">
                       <span className="font-medium">{c.element1.name} ↔ {c.element2.name}</span>
-                      <span className="text-xs uppercase px-2 py-0.5 rounded bg-slate-800">{c.severity}</span>
+                      <span className="text-xs uppercase px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800">{c.severity}</span>
                     </div>
-                    <p className="text-sm text-slate-400">{c.type} clash at ({c.point.x.toFixed(1)}, {c.point.y.toFixed(1)}, {c.point.z.toFixed(1)})</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">{c.type} clash at ({c.point.x.toFixed(1)}, {c.point.y.toFixed(1)}, {c.point.z.toFixed(1)})</p>
                   </div>
                 ))}
               </div>
@@ -191,21 +191,21 @@ export default function BIMIntegrationPage() {
         )}
 
         {viewMode === 'export' && (
-          <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-center">
-            <FileDown className="w-12 h-12 mx-auto text-slate-400 mb-4" />
+          <section className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-6 text-center">
+            <FileDown className="w-12 h-12 mx-auto text-slate-600 dark:text-slate-400 mb-4" />
             <h2 className="text-lg font-semibold mb-2">Export Structural Model</h2>
-            <p className="text-sm text-slate-400 mb-4">Export the analyzed structural model to IFC 4 format</p>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">Export the analyzed structural model to IFC 4 format</p>
             <button onClick={exportIFC} disabled={isProcessing || parsedMembers.length === 0} className="px-6 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 rounded-lg transition-colors">
               {isProcessing ? 'Exporting...' : 'Download IFC File'}
             </button>
           </section>
         )}
 
-        <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <section className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-4">
           <h2 className="text-lg font-semibold mb-2">Supported IFC Structural Types</h2>
           <div className="flex flex-wrap gap-2">
             {supportedTypes.map(type => (
-              <span key={type} className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-200 border border-slate-700">
+              <span key={type} className="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 text-xs text-slate-200 border border-slate-300 dark:border-slate-700">
                 {type}
               </span>
             ))}

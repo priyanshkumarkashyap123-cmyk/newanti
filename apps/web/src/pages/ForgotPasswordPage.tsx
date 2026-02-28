@@ -56,7 +56,7 @@ export const ForgotPasswordPage = () => {
                 </div>
 
                 {/* Card */}
-                <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-8 backdrop-blur-sm shadow-2xl">
+                <div className="bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8 backdrop-blur-sm shadow-2xl">
                     {success ? (
                         // Success State
                         <div className="text-center space-y-4">
@@ -66,10 +66,10 @@ export const ForgotPasswordPage = () => {
                                 </svg>
                             </div>
                             <h2 className="text-2xl font-bold text-white">Check Your Email</h2>
-                            <p className="text-zinc-400">
+                            <p className="text-zinc-500 dark:text-zinc-400">
                                 We've sent a password reset link to <span className="text-white font-medium">{email}</span>
                             </p>
-                            <p className="text-zinc-400 text-sm">
+                            <p className="text-zinc-500 dark:text-zinc-400 text-sm">
                                 Didn't receive the email? Check your spam folder or{' '}
                                 <button 
                                     onClick={() => setSuccess(false)} 
@@ -80,7 +80,7 @@ export const ForgotPasswordPage = () => {
                             </p>
                             <Link 
                                 to="/sign-in" 
-                                className="block mt-6 py-3 bg-zinc-800 text-white font-medium rounded-lg hover:bg-zinc-700 transition-colors"
+                                className="block mt-6 py-3 bg-zinc-100 dark:bg-zinc-800 text-white font-medium rounded-lg hover:bg-zinc-700 transition-colors"
                             >
                                 Back to Sign In
                             </Link>
@@ -90,7 +90,7 @@ export const ForgotPasswordPage = () => {
                         <>
                             <div className="text-center mb-6">
                                 <h2 className="text-2xl font-bold text-white mb-2">Forgot Password?</h2>
-                                <p className="text-zinc-400">
+                                <p className="text-zinc-500 dark:text-zinc-400">
                                     No worries! Enter your email and we'll send you a reset link.
                                 </p>
                             </div>
@@ -103,14 +103,14 @@ export const ForgotPasswordPage = () => {
                                 )}
 
                                 <div>
-                                    <label className="block text-sm font-medium text-zinc-300 mb-2">
+                                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
                                         Email Address
                                     </label>
                                     <input
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg text-white placeholder:text-zinc-500 dark:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="you@example.com"
                                         required
                                     />
@@ -148,7 +148,7 @@ export const ForgotPasswordPage = () => {
                 </div>
 
                 {/* Footer */}
-                <p className="text-center text-zinc-400 text-sm mt-8">
+                <p className="text-center text-zinc-500 dark:text-zinc-400 text-sm mt-8">
                     © 2024 BeamLab Ultimate. Professional Structural Analysis.
                 </p>
             </div>

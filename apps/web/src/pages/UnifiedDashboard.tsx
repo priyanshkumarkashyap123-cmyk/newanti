@@ -142,7 +142,7 @@ const STATUS_STYLES: Record<
   Project["status"],
   { bg: string; text: string; dot: string }
 > = {
-  draft: { bg: "bg-slate-500/10", text: "text-slate-400", dot: "bg-slate-400" },
+  draft: { bg: "bg-slate-500/10", text: "text-slate-600 dark:text-slate-400", dot: "bg-slate-400" },
   analyzed: { bg: "bg-blue-500/10", text: "text-blue-400", dot: "bg-blue-400" },
   designed: {
     bg: "bg-amber-500/10",
@@ -242,7 +242,7 @@ const StatPill: FC<{
   icon: React.ReactNode;
 }> = memo(({ label, value, icon }) => (
   <div className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 backdrop-blur-sm">
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/[0.04] text-slate-400">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/[0.04] text-slate-600 dark:text-slate-400">
       {icon}
     </div>
     <div className="min-w-0">
@@ -274,7 +274,7 @@ const ProjectCard: FC<{
       onClick={onClick}
     >
       {/* Thumbnail area */}
-      <div className="aspect-[16/9] bg-slate-950/60 flex items-center justify-center relative overflow-hidden">
+      <div className="aspect-[16/9] bg-white dark:bg-slate-950/60 flex items-center justify-center relative overflow-hidden">
         {/* Subtle grid background */}
         <div
           className="absolute inset-0 opacity-[0.03]"
@@ -328,7 +328,7 @@ const ProjectCard: FC<{
           onDelete();
         }}
         className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity
-            p-1 rounded-md bg-black/40 backdrop-blur-sm text-slate-400 hover:text-red-400 text-xs"
+            p-1 rounded-md bg-black/40 backdrop-blur-sm text-slate-600 dark:text-slate-400 hover:text-red-400 text-xs"
         title="Delete project"
       >
         <svg
@@ -510,7 +510,7 @@ export const UnifiedDashboard: FC<{
                   key={n.to}
                   to={n.to}
                   className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-colors
-                    ${n.active ? "text-white bg-white/[0.06]" : "text-slate-500 hover:text-slate-300 hover:bg-white/[0.03]"}`}
+                    ${n.active ? "text-white bg-white/[0.06]" : "text-slate-500 hover:text-slate-700 dark:text-slate-300 hover:bg-white/[0.03]"}`}
                 >
                   {n.icon} {n.label}
                 </Link>
@@ -522,7 +522,7 @@ export const UnifiedDashboard: FC<{
           <div className="flex items-center gap-3">
             <Link
               to="/settings"
-              className="rounded-lg p-2 text-slate-500 hover:text-slate-300 hover:bg-white/[0.04] transition-colors"
+              className="rounded-lg p-2 text-slate-500 hover:text-slate-700 dark:text-slate-300 hover:bg-white/[0.04] transition-colors"
             >
               <Settings className="w-4 h-4" />
             </Link>
@@ -534,7 +534,7 @@ export const UnifiedDashboard: FC<{
                 <span className="text-xs text-slate-500">{userName}</span>
                 <button
                   onClick={() => signOut()}
-                  className="rounded-lg p-2 text-slate-500 hover:text-slate-300 hover:bg-white/[0.04] transition-colors"
+                  className="rounded-lg p-2 text-slate-500 hover:text-slate-700 dark:text-slate-300 hover:bg-white/[0.04] transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -607,7 +607,7 @@ export const UnifiedDashboard: FC<{
               >
                 <div
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/[0.04]
-                  text-slate-400 transition-colors ${a.accent}`}
+                  text-slate-600 dark:text-slate-400 transition-colors ${a.accent}`}
                 >
                   {a.icon}
                 </div>
@@ -638,7 +638,7 @@ export const UnifiedDashboard: FC<{
           <div>
             {/* Toolbar */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-4">
-              <h2 className="text-sm font-semibold text-slate-300 flex-1">
+              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex-1">
                 Recent Projects
               </h2>
               <div className="flex items-center gap-2">
@@ -650,7 +650,7 @@ export const UnifiedDashboard: FC<{
                     aria-label="Search projects"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-48 rounded-lg border border-white/[0.06] bg-white/[0.02] py-1.5 pl-8 pr-3 text-xs text-slate-300
+                    className="w-48 rounded-lg border border-white/[0.06] bg-white/[0.02] py-1.5 pl-8 pr-3 text-xs text-slate-700 dark:text-slate-300
                       placeholder-slate-600 focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20
                       transition-colors"
                   />
@@ -658,7 +658,7 @@ export const UnifiedDashboard: FC<{
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-1.5 text-xs text-slate-400
+                  className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-1.5 text-xs text-slate-600 dark:text-slate-400
                     focus:outline-none focus:border-blue-500/40"
                 >
                   <option value="all">All</option>
@@ -715,7 +715,7 @@ export const UnifiedDashboard: FC<{
               filteredProjects.length === 0 && (
                 <div className="mt-4 flex flex-col items-center justify-center rounded-xl border border-dashed border-white/[0.08] py-16 text-center">
                   <FolderOpen className="w-10 h-10 text-slate-700 mb-4" />
-                  <h3 className="text-sm font-medium text-slate-400 mb-1">
+                  <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
                     {searchQuery ? "No matching projects" : "No projects yet"}
                   </h3>
                   <p className="text-xs text-slate-600 mb-5 max-w-xs">
@@ -751,12 +751,12 @@ export const UnifiedDashboard: FC<{
                   >
                     <div
                       className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white/[0.04] text-slate-500
-                      group-hover:text-slate-300 transition-colors"
+                      group-hover:text-slate-700 dark:text-slate-300 transition-colors"
                     >
                       {t.icon}
                     </div>
                     <div>
-                      <div className="text-xs font-medium text-slate-300">
+                      <div className="text-xs font-medium text-slate-700 dark:text-slate-300">
                         {t.name}
                       </div>
                       <div className="text-[10px] text-slate-600">{t.type}</div>
@@ -774,25 +774,25 @@ export const UnifiedDashboard: FC<{
               </h3>
               <div className="space-y-2.5 text-[11px] text-slate-500">
                 <div className="flex items-start gap-2">
-                  <kbd className="shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-slate-400 font-mono">
+                  <kbd className="shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-slate-600 dark:text-slate-400 font-mono">
                     N
                   </kbd>
                   <span>New node in modeler</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <kbd className="shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-slate-400 font-mono">
+                  <kbd className="shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-slate-600 dark:text-slate-400 font-mono">
                     M
                   </kbd>
                   <span>New member between selected</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <kbd className="shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-slate-400 font-mono">
+                  <kbd className="shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-slate-600 dark:text-slate-400 font-mono">
                     F5
                   </kbd>
                   <span>Run analysis</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <kbd className="shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-slate-400 font-mono">
+                  <kbd className="shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-slate-600 dark:text-slate-400 font-mono">
                     Ctrl+S
                   </kbd>
                   <span>Save project</span>

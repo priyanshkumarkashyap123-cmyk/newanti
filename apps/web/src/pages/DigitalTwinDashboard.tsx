@@ -223,7 +223,7 @@ const HealthGauge: React.FC<{ value: number; label: string }> = ({
       <div className="absolute mt-6 text-center">
         <span className="text-lg font-bold text-white">{pct.toFixed(0)}%</span>
       </div>
-      <span className="text-slate-400 text-xs mt-1">{label}</span>
+      <span className="text-slate-600 dark:text-slate-400 text-xs mt-1">{label}</span>
     </div>
   );
 };
@@ -361,15 +361,15 @@ const DigitalTwinDashboard: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-white">
       {/* Header */}
-      <header className="bg-slate-800 border-b border-slate-700 px-6 py-3 flex items-center justify-between">
+      <header className="bg-slate-100 dark:bg-slate-800 border-b border-slate-300 dark:border-slate-700 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link
             to="/dashboard"
-            className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+            className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-slate-400" />
+            <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
           </Link>
           <div className="flex items-center gap-2">
             <Radio className="w-5 h-5 text-cyan-400" />
@@ -386,7 +386,7 @@ const DigitalTwinDashboard: React.FC = () => {
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
               connected
                 ? "bg-green-500/20 text-green-400"
-                : "bg-slate-700 text-slate-400"
+                : "bg-slate-700 text-slate-600 dark:text-slate-400"
             }`}
           >
             {connected ? (
@@ -439,19 +439,19 @@ const DigitalTwinDashboard: React.FC = () => {
         {/* ---- KPI Cards ---- */}
         <div className="col-span-12 grid grid-cols-4 gap-4">
           {/* Overall Health */}
-          <div className="bg-slate-800 rounded-xl p-5 flex items-center gap-4 border border-slate-700">
+          <div className="bg-slate-100 dark:bg-slate-800 rounded-xl p-5 flex items-center gap-4 border border-slate-300 dark:border-slate-700">
             <div className="relative">
               <HealthGauge value={avgHealth} label="" />
             </div>
             <div>
-              <p className="text-slate-400 text-sm">Overall Health</p>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">Overall Health</p>
               <p className="text-2xl font-bold">{avgHealth.toFixed(1)}%</p>
             </div>
           </div>
 
           {/* Active Sensors */}
-          <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
-            <div className="flex items-center gap-2 text-slate-400 text-sm mb-1">
+          <div className="bg-slate-100 dark:bg-slate-800 rounded-xl p-5 border border-slate-300 dark:border-slate-700">
+            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-sm mb-1">
               <Activity className="w-4 h-4" />
               Active Sensors
             </div>
@@ -462,7 +462,7 @@ const DigitalTwinDashboard: React.FC = () => {
           </div>
 
           {/* Critical Alerts */}
-          <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
+          <div className="bg-slate-100 dark:bg-slate-800 rounded-xl p-5 border border-slate-300 dark:border-slate-700">
             <div className="flex items-center gap-2 text-red-400 text-sm mb-1">
               <AlertTriangle className="w-4 h-4" />
               Critical Alerts
@@ -474,8 +474,8 @@ const DigitalTwinDashboard: React.FC = () => {
           </div>
 
           {/* Monitored Elements */}
-          <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
-            <div className="flex items-center gap-2 text-slate-400 text-sm mb-1">
+          <div className="bg-slate-100 dark:bg-slate-800 rounded-xl p-5 border border-slate-300 dark:border-slate-700">
+            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-sm mb-1">
               <Heart className="w-4 h-4" />
               Monitored Elements
             </div>
@@ -488,8 +488,8 @@ const DigitalTwinDashboard: React.FC = () => {
         </div>
 
         {/* ---- Left: Live Sensor Feed ---- */}
-        <div className="col-span-5 bg-slate-800 rounded-xl border border-slate-700 flex flex-col max-h-[520px]">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700">
+        <div className="col-span-5 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-300 dark:border-slate-700 flex flex-col max-h-[520px]">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-300 dark:border-slate-700">
             <span className="font-medium text-sm flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-cyan-400" />
               Live Sensor Feed
@@ -511,7 +511,7 @@ const DigitalTwinDashboard: React.FC = () => {
               return (
                 <div
                   key={sensor.id}
-                  className="px-4 py-2.5 flex items-center justify-between hover:bg-slate-700/30"
+                  className="px-4 py-2.5 flex items-center justify-between hover:bg-slate-200 dark:hover:bg-slate-700/30"
                 >
                   <div>
                     <p className="text-sm font-medium">{sensor.id}</p>
@@ -537,8 +537,8 @@ const DigitalTwinDashboard: React.FC = () => {
         </div>
 
         {/* ---- Right: Health Indicators ---- */}
-        <div className="col-span-7 bg-slate-800 rounded-xl border border-slate-700 flex flex-col max-h-[520px]">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700">
+        <div className="col-span-7 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-300 dark:border-slate-700 flex flex-col max-h-[520px]">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-300 dark:border-slate-700">
             <span className="font-medium text-sm flex items-center gap-2">
               <Heart className="w-4 h-4 text-green-400" />
               Element Health Indicators
@@ -554,8 +554,8 @@ const DigitalTwinDashboard: React.FC = () => {
               </div>
             )}
             <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-slate-800">
-                <tr className="text-slate-400 text-xs border-b border-slate-700">
+              <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800">
+                <tr className="text-slate-600 dark:text-slate-400 text-xs border-b border-slate-300 dark:border-slate-700">
                   <th className="text-left px-4 py-2">Element</th>
                   <th className="text-right px-4 py-2">Health</th>
                   <th className="text-right px-4 py-2">Stress Ratio</th>
@@ -572,7 +572,7 @@ const DigitalTwinDashboard: React.FC = () => {
                         ? "text-amber-400"
                         : "text-red-400";
                   return (
-                    <tr key={h.elementId} className="hover:bg-slate-700/30">
+                    <tr key={h.elementId} className="hover:bg-slate-200 dark:hover:bg-slate-700/30">
                       <td className="px-4 py-2 font-medium">{h.elementId}</td>
                       <td
                         className={`px-4 py-2 text-right font-mono ${healthColor}`}
@@ -604,8 +604,8 @@ const DigitalTwinDashboard: React.FC = () => {
         </div>
 
         {/* ---- Alerts ---- */}
-        <div className="col-span-6 bg-slate-800 rounded-xl border border-slate-700 flex flex-col max-h-[380px]">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700">
+        <div className="col-span-6 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-300 dark:border-slate-700 flex flex-col max-h-[380px]">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-300 dark:border-slate-700">
             <span className="font-medium text-sm flex items-center gap-2">
               <Bell className="w-4 h-4 text-amber-400" />
               Alert Log
@@ -623,7 +623,7 @@ const DigitalTwinDashboard: React.FC = () => {
             {[...alerts].reverse().map((alert) => (
               <div
                 key={alert.id}
-                className={`px-4 py-2.5 ${alert.acknowledged ? "opacity-50" : ""} hover:bg-slate-700/30`}
+                className={`px-4 py-2.5 ${alert.acknowledged ? "opacity-50" : ""} hover:bg-slate-200 dark:hover:bg-slate-700/30`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -633,7 +633,7 @@ const DigitalTwinDashboard: React.FC = () => {
                   {!alert.acknowledged && (
                     <button
                       onClick={() => acknowledgeAlert(alert.id)}
-                      className="text-xs text-slate-400 hover:text-white px-2 py-1 rounded hover:bg-slate-700"
+                      className="text-xs text-slate-600 dark:text-slate-400 hover:text-white px-2 py-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700"
                     >
                       Ack
                     </button>
@@ -648,8 +648,8 @@ const DigitalTwinDashboard: React.FC = () => {
         </div>
 
         {/* ---- Predictive Maintenance ---- */}
-        <div className="col-span-6 bg-slate-800 rounded-xl border border-slate-700 flex flex-col max-h-[380px]">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700">
+        <div className="col-span-6 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-300 dark:border-slate-700 flex flex-col max-h-[380px]">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-300 dark:border-slate-700">
             <span className="font-medium text-sm flex items-center gap-2">
               <Wrench className="w-4 h-4 text-purple-400" />
               Predictive Maintenance
@@ -664,13 +664,13 @@ const DigitalTwinDashboard: React.FC = () => {
             {maintenance.map((pm) => (
               <div
                 key={pm.elementId}
-                className="px-4 py-3 hover:bg-slate-700/30"
+                className="px-4 py-3 hover:bg-slate-200 dark:hover:bg-slate-700/30"
               >
                 <div className="flex items-center justify-between mb-1">
                   <span className="font-medium text-sm">{pm.elementId}</span>
                   <PriorityBadge priority={pm.priority} />
                 </div>
-                <div className="flex items-center gap-4 text-xs text-slate-400 mb-2">
+                <div className="flex items-center gap-4 text-xs text-slate-600 dark:text-slate-400 mb-2">
                   <span>
                     Remaining life:{" "}
                     <span className="text-white font-mono">

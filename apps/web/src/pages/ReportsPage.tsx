@@ -65,7 +65,7 @@ const SectionHeading = ({
     title: string;
     className?: string;
 }) => (
-    <div className={`flex items-baseline gap-3 border-b-2 border-slate-800 pb-1.5 mb-5 mt-10 print:break-before-auto ${className}`}>
+    <div className={`flex items-baseline gap-3 border-b-2 border-slate-200 dark:border-slate-800 pb-1.5 mb-5 mt-10 print:break-before-auto ${className}`}>
         <span className="text-sm font-black text-slate-500 tracking-wider">{number}</span>
         <h2 className="text-[15px] font-extrabold uppercase tracking-wide text-slate-900">{title}</h2>
     </div>
@@ -74,7 +74,7 @@ const SectionHeading = ({
 /** Sub-section heading */
 const SubHeading = ({ number, title }: { number: string; title: string }) => (
     <div className="flex items-baseline gap-2 border-b border-slate-300 pb-1 mb-3 mt-6">
-        <span className="text-xs font-bold text-slate-400">{number}</span>
+        <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{number}</span>
         <h3 className="text-[13px] font-bold text-slate-700">{title}</h3>
     </div>
 );
@@ -101,10 +101,10 @@ const KpiCard = ({
                 : 'border-l-blue-500';
     return (
         <div className={`border border-slate-200 border-l-4 ${ring} rounded-sm px-4 py-3 print:bg-white`}>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">{label}</p>
+            <p className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-0.5">{label}</p>
             <p className="text-lg font-black text-slate-900 leading-tight">
                 {value}
-                {unit && <span className="text-xs font-medium text-slate-400 ml-1">{unit}</span>}
+                {unit && <span className="text-xs font-medium text-slate-600 dark:text-slate-400 ml-1">{unit}</span>}
             </p>
         </div>
     );
@@ -313,13 +313,13 @@ export const ReportsPage = () => {
             <section className="print:break-inside-avoid-page">
                 <button
                     onClick={() => toggle(id)}
-                    className="w-full flex items-center justify-between border-b-2 border-slate-800 pb-1.5 mb-5 mt-10 print:pointer-events-none"
+                    className="w-full flex items-center justify-between border-b-2 border-slate-200 dark:border-slate-800 pb-1.5 mb-5 mt-10 print:pointer-events-none"
                 >
                     <div className="flex items-baseline gap-3">
                         <span className="text-sm font-black text-slate-500 tracking-wider">{num}</span>
                         <h2 className="text-[15px] font-extrabold uppercase tracking-wide text-slate-900">{title}</h2>
                     </div>
-                    <span className="print:hidden text-slate-400">
+                    <span className="print:hidden text-slate-600 dark:text-slate-400">
                         {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     </span>
                 </button>
@@ -330,9 +330,9 @@ export const ReportsPage = () => {
 
     /* ──────────────────────── RENDER ──────────────────────── */
     return (
-        <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col font-sans selection:bg-blue-500/30 print:bg-white print:text-black">
+        <div className="min-h-screen bg-slate-100 dark:bg-white dark:bg-slate-950 flex flex-col font-sans selection:bg-blue-500/30 print:bg-white print:text-black">
             {/* ━━━ App header (hidden in print) ━━━ */}
-            <header className="sticky top-0 z-50 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-950/90 backdrop-blur-md px-6 py-3 print:hidden">
+            <header className="sticky top-0 z-50 flex items-center justify-between border-b border-slate-200 dark:border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-white dark:bg-slate-950/90 backdrop-blur-md px-6 py-3 print:hidden">
                 <div className="flex items-center gap-4">
                     <Link to="/" className="flex items-center gap-3 group">
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-blue-500/25 transition-all overflow-hidden">
@@ -342,15 +342,15 @@ export const ReportsPage = () => {
                     </Link>
                 </div>
                 <div className="hidden md:flex flex-1 justify-center">
-                    <nav className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 px-2 py-1 rounded-full border border-slate-200 dark:border-slate-800">
-                        <Link to="/stream" className="text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors px-4 py-1.5 rounded-full hover:bg-white dark:hover:bg-slate-800">Projects</Link>
-                        <Link to="/app" className="text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors px-4 py-1.5 rounded-full hover:bg-white dark:hover:bg-slate-800">Design</Link>
-                        <span className="text-blue-600 dark:text-white text-sm font-bold bg-white dark:bg-slate-800 shadow-sm px-4 py-1.5 rounded-full border border-slate-200 dark:border-slate-700">Reports</span>
-                        <Link to="/settings" className="text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors px-4 py-1.5 rounded-full hover:bg-white dark:hover:bg-slate-800">Settings</Link>
+                    <nav className="flex items-center gap-1 bg-slate-100 dark:bg-slate-50 dark:bg-slate-900 px-2 py-1 rounded-full border border-slate-200 dark:border-slate-200 dark:border-slate-800">
+                        <Link to="/stream" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors px-4 py-1.5 rounded-full hover:bg-white dark:hover:bg-slate-100 dark:bg-slate-800">Projects</Link>
+                        <Link to="/app" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors px-4 py-1.5 rounded-full hover:bg-white dark:hover:bg-slate-100 dark:bg-slate-800">Design</Link>
+                        <span className="text-blue-600 dark:text-white text-sm font-bold bg-white dark:bg-slate-100 dark:bg-slate-800 shadow-sm px-4 py-1.5 rounded-full border border-slate-200 dark:border-slate-300 dark:border-slate-700">Reports</span>
+                        <Link to="/settings" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors px-4 py-1.5 rounded-full hover:bg-white dark:hover:bg-slate-100 dark:bg-slate-800">Settings</Link>
                     </nav>
                 </div>
                 <div className="flex items-center gap-4">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 border-2 border-white dark:border-slate-800 shadow-sm flex items-center justify-center text-white font-bold text-sm">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 border-2 border-white dark:border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-center text-white font-bold text-sm">
                         {userName.charAt(0)}
                     </div>
                 </div>
@@ -360,10 +360,10 @@ export const ReportsPage = () => {
             <main className="flex-1 w-full flex flex-col items-center py-8 px-4 overflow-y-auto print:p-0 print:overflow-visible">
                 {/* Breadcrumbs (hidden in print) */}
                 <div className="w-full max-w-[210mm] mb-6 flex items-center gap-2 text-sm print:hidden">
-                    <Link to="/stream" className="text-slate-400 hover:text-blue-600 transition-colors">Projects</Link>
-                    <ChevronLeft className="w-4 h-4 text-slate-400 rotate-180" />
-                    <span className="text-slate-400">Current Project</span>
-                    <ChevronLeft className="w-4 h-4 text-slate-400 rotate-180" />
+                    <Link to="/stream" className="text-slate-600 dark:text-slate-400 hover:text-blue-600 transition-colors">Projects</Link>
+                    <ChevronLeft className="w-4 h-4 text-slate-600 dark:text-slate-400 rotate-180" />
+                    <span className="text-slate-600 dark:text-slate-400">Current Project</span>
+                    <ChevronLeft className="w-4 h-4 text-slate-600 dark:text-slate-400 rotate-180" />
                     <span className="text-slate-900 dark:text-white font-semibold">Report View</span>
                 </div>
 
@@ -400,10 +400,10 @@ export const ReportsPage = () => {
                                 </div>
                                 <div>
                                     <h1 className="text-2xl font-black tracking-tight text-slate-900 leading-none">BeamLab</h1>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.25em] mt-0.5">Structural Engineering</p>
+                                    <p className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-[0.25em] mt-0.5">Structural Engineering</p>
                                 </div>
                             </div>
-                            <div className="text-right text-[10px] text-slate-400 space-y-0.5 leading-tight">
+                            <div className="text-right text-[10px] text-slate-600 dark:text-slate-400 space-y-0.5 leading-tight">
                                 <p>www.beamlab.io</p>
                                 <p>support@beamlab.io</p>
                             </div>
@@ -412,7 +412,7 @@ export const ReportsPage = () => {
                         {/* Centre — title block */}
                         <div className="flex-1 flex flex-col items-center justify-center text-center -mt-12">
                             <div className="w-24 h-0.5 bg-slate-300 mb-8" />
-                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.3em] mb-3">
+                            <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">
                                 Structural Analysis Report
                             </p>
                             <h2 className="text-3xl md:text-4xl font-black text-[#12376A] leading-tight mb-4 max-w-md">
@@ -474,7 +474,7 @@ export const ReportsPage = () => {
                     `}</style>
 
                     {/* ─── On-screen running header (hidden in print, @page handles it) ─── */}
-                    <div className="flex items-center justify-between px-12 md:px-16 print:hidden py-2 border-b-2 border-[#12376A] bg-slate-50 text-[10px] text-slate-400">
+                    <div className="flex items-center justify-between px-12 md:px-16 print:hidden py-2 border-b-2 border-[#12376A] bg-slate-50 text-[10px] text-slate-600 dark:text-slate-400">
                         <span className="font-bold tracking-wider">BeamLab — {ref}</span>
                         <span>Rev {revision} &nbsp;|&nbsp; {fmtDate(now)}</span>
                     </div>
@@ -489,7 +489,7 @@ export const ReportsPage = () => {
                         <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
                             <table className="w-full text-left">
                                 <thead>
-                                    <tr className="bg-slate-800 text-white">
+                                    <tr className="bg-slate-100 dark:bg-slate-800 text-white">
                                         <th className="px-3 py-2 font-bold">Rev</th>
                                         <th className="px-3 py-2 font-bold">Date</th>
                                         <th className="px-3 py-2 font-bold">Description</th>
@@ -504,8 +504,8 @@ export const ReportsPage = () => {
                                         <td className="px-3 py-2">{fmtDate(now)}</td>
                                         <td className="px-3 py-2">Initial issue for review</td>
                                         <td className="px-3 py-2">{userName}</td>
-                                        <td className="px-3 py-2 text-slate-400">—</td>
-                                        <td className="px-3 py-2 text-slate-400">—</td>
+                                        <td className="px-3 py-2 text-slate-600 dark:text-slate-400">—</td>
+                                        <td className="px-3 py-2 text-slate-600 dark:text-slate-400">—</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -552,7 +552,7 @@ export const ReportsPage = () => {
                                 ['', 'Appendix A — Signatures & Approval'],
                             ].map(([num, title]) => (
                                 <div key={title} className="flex items-baseline gap-2">
-                                    <span className="font-mono font-bold text-slate-400 w-8 shrink-0">{num}</span>
+                                    <span className="font-mono font-bold text-slate-600 dark:text-slate-400 w-8 shrink-0">{num}</span>
                                     <span className="text-slate-700 font-medium flex-1 border-b border-dotted border-slate-300">{title}</span>
                                 </div>
                             ))}
@@ -709,7 +709,7 @@ export const ReportsPage = () => {
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-800 text-white">
+                                            <tr className="bg-slate-100 dark:bg-slate-800 text-white">
                                                 <th className="px-3 py-2 font-bold">ID</th>
                                                 <th className="px-3 py-2 font-bold">Combination Name</th>
                                                 <th className="px-3 py-2 font-bold">Code Ref.</th>
@@ -771,7 +771,7 @@ export const ReportsPage = () => {
                                             </tbody>
                                         </table>
                                     </div>
-                                    <p className="text-[10px] text-slate-400 italic mt-2">
+                                    <p className="text-[10px] text-slate-600 dark:text-slate-400 italic mt-2">
                                         DL = Dead Load, LL = Live/Imposed Load, WL = Wind Load, EQ = Seismic Load. Define project-specific combinations in the Design workspace for detailed analysis.
                                     </p>
                                 </div>
@@ -789,7 +789,7 @@ export const ReportsPage = () => {
                                     <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-2">
                                         <table className="w-full text-left">
                                             <thead>
-                                                <tr className="bg-slate-800 text-white">
+                                                <tr className="bg-slate-100 dark:bg-slate-800 text-white">
                                                     <th className="px-3 py-2 font-bold w-16">Node</th>
                                                     <th className="px-3 py-2 font-bold text-right">X (m)</th>
                                                     <th className="px-3 py-2 font-bold text-right">Y (m)</th>
@@ -818,7 +818,7 @@ export const ReportsPage = () => {
                                                                         {restraintCodes}
                                                                     </span>
                                                                 ) : (
-                                                                    <span className="text-slate-400">Free</span>
+                                                                    <span className="text-slate-600 dark:text-slate-400">Free</span>
                                                                 )}
                                                             </td>
                                                         </tr>
@@ -829,7 +829,7 @@ export const ReportsPage = () => {
                                     </div>
                                     {/* Pagination */}
                                     {totalNodePages > 1 && (
-                                        <div className="flex items-center justify-between text-[10px] text-slate-400 print:hidden mb-4">
+                                        <div className="flex items-center justify-between text-[10px] text-slate-600 dark:text-slate-400 print:hidden mb-4">
                                             <span>
                                                 Showing {nodesPage * ROWS_PER_PAGE + 1}–{Math.min((nodesPage + 1) * ROWS_PER_PAGE, nodeList.length)} of {nodeList.length}
                                             </span>
@@ -856,7 +856,7 @@ export const ReportsPage = () => {
                                     )}
                                 </>
                             ) : (
-                                <div className="p-6 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-400 mb-6">
+                                <div className="p-6 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-600 dark:text-slate-400 mb-6">
                                     No nodes defined. Create a structural model to populate this section.
                                 </div>
                             )}
@@ -868,7 +868,7 @@ export const ReportsPage = () => {
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-4">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-800 text-white">
+                                            <tr className="bg-slate-100 dark:bg-slate-800 text-white">
                                                 <th className="px-3 py-2 font-bold w-16">ID</th>
                                                 <th className="px-3 py-2 font-bold text-center">Start Node</th>
                                                 <th className="px-3 py-2 font-bold text-center">End Node</th>
@@ -890,13 +890,13 @@ export const ReportsPage = () => {
                                     </table>
                                 </div>
                                 {memberList.length > ROWS_PER_PAGE && (
-                                    <p className="text-[10px] text-slate-400 italic mb-4">
+                                    <p className="text-[10px] text-slate-600 dark:text-slate-400 italic mb-4">
                                         Showing first {ROWS_PER_PAGE} of {memberList.length} members. Full listing available in exported data.
                                     </p>
                                 )}
                                 </>
                             ) : (
-                                <div className="p-6 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-400 mb-6">
+                                <div className="p-6 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-600 dark:text-slate-400 mb-6">
                                     No members defined.
                                 </div>
                             )}
@@ -907,7 +907,7 @@ export const ReportsPage = () => {
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-800 text-white">
+                                            <tr className="bg-slate-100 dark:bg-slate-800 text-white">
                                                 <th className="px-3 py-2 font-bold">Section ID</th>
                                                 <th className="px-3 py-2 font-bold text-right">A (mm²)</th>
                                                 <th className="px-3 py-2 font-bold text-right">I<sub>y</sub> (mm⁴)</th>
@@ -942,7 +942,7 @@ export const ReportsPage = () => {
                                     </table>
                                 </div>
                             ) : (
-                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-400 mb-6">
+                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-600 dark:text-slate-400 mb-6">
                                     Assign sections in the Design workspace to populate this table.
                                 </div>
                             )}
@@ -958,7 +958,7 @@ export const ReportsPage = () => {
                                             <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px]">
                                                 <table className="w-full text-left">
                                                     <thead>
-                                                        <tr className="bg-slate-800 text-white">
+                                                        <tr className="bg-slate-100 dark:bg-slate-800 text-white">
                                                             <th className="px-3 py-2 font-bold">Node</th>
                                                             <th className="px-3 py-2 font-bold text-right">F<sub>x</sub> (kN)</th>
                                                             <th className="px-3 py-2 font-bold text-right">F<sub>y</sub> (kN)</th>
@@ -984,7 +984,7 @@ export const ReportsPage = () => {
                                                 </table>
                                             </div>
                                             {loads.length > ROWS_PER_PAGE && (
-                                                <p className="text-[10px] text-slate-400 italic mt-1">
+                                                <p className="text-[10px] text-slate-600 dark:text-slate-400 italic mt-1">
                                                     Showing first {ROWS_PER_PAGE} of {loads.length} nodal loads.
                                                 </p>
                                             )}
@@ -998,7 +998,7 @@ export const ReportsPage = () => {
                                             <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px]">
                                                 <table className="w-full text-left">
                                                     <thead>
-                                                        <tr className="bg-slate-800 text-white">
+                                                        <tr className="bg-slate-100 dark:bg-slate-800 text-white">
                                                             <th className="px-3 py-2 font-bold">Member</th>
                                                             <th className="px-3 py-2 font-bold">Type</th>
                                                             <th className="px-3 py-2 font-bold text-right">w₁ / P (kN/m or kN)</th>
@@ -1020,7 +1020,7 @@ export const ReportsPage = () => {
                                                 </table>
                                             </div>
                                             {memberLoads.length > ROWS_PER_PAGE && (
-                                                <p className="text-[10px] text-slate-400 italic mt-1">
+                                                <p className="text-[10px] text-slate-600 dark:text-slate-400 italic mt-1">
                                                     Showing first {ROWS_PER_PAGE} of {memberLoads.length} member loads.
                                                 </p>
                                             )}
@@ -1057,7 +1057,7 @@ export const ReportsPage = () => {
                                     )}
                                 </>
                             ) : (
-                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-400 mb-6">
+                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-600 dark:text-slate-400 mb-6">
                                     <p>No loads have been applied to this model.</p>
                                     <p className="text-[11px] mt-1">Apply nodal or member loads in the Design workspace to populate this section.</p>
                                 </div>
@@ -1069,7 +1069,7 @@ export const ReportsPage = () => {
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-4">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-800 text-white">
+                                            <tr className="bg-slate-100 dark:bg-slate-800 text-white">
                                                 <th className="px-3 py-2 font-bold">Member</th>
                                                 <th className="px-3 py-2 font-bold text-center">Start Node</th>
                                                 <th className="px-3 py-2 font-bold text-center">End Node</th>
@@ -1129,7 +1129,7 @@ export const ReportsPage = () => {
                                         )}
                                         {analysisResults.stats?.usedCloud && <> Computed via cloud solver.</>}
                                     </p>
-                                    <p className="mt-1 text-[10px] text-slate-400">
+                                    <p className="mt-1 text-[10px] text-slate-600 dark:text-slate-400">
                                         DOF count: {nodes.size * 6} ({nodes.size} nodes × 6 DOF). Global stiffness matrix assembled and factored using LU decomposition.
                                     </p>
                                 </div>
@@ -1146,7 +1146,7 @@ export const ReportsPage = () => {
                                     <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-3">
                                         <table className="w-full text-left">
                                             <thead>
-                                                <tr className="bg-slate-800 text-white">
+                                                <tr className="bg-slate-100 dark:bg-slate-800 text-white">
                                                     <th className="px-3 py-2 font-bold">Component</th>
                                                     <th className="px-3 py-2 font-bold text-right">ΣApplied</th>
                                                     <th className="px-3 py-2 font-bold text-right">ΣReactions</th>
@@ -1222,7 +1222,7 @@ export const ReportsPage = () => {
                                     )}
                                 </div>
                             ) : (
-                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-400 mb-6">
+                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-600 dark:text-slate-400 mb-6">
                                     Run analysis to generate equilibrium verification data.
                                 </div>
                             )}
@@ -1240,7 +1240,7 @@ export const ReportsPage = () => {
                                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-2">
                                                     <table className="w-full text-left">
                                                         <thead>
-                                                            <tr className="bg-slate-800 text-white">
+                                                            <tr className="bg-slate-100 dark:bg-slate-800 text-white">
                                                                 <th className="px-2 py-2 font-bold w-14" rowSpan={2}>Member</th>
                                                                 <th className="px-2 py-2 font-bold text-center" rowSpan={2}>End</th>
                                                                 <th className="px-2 py-2 font-bold text-right">N (kN)</th>
@@ -1289,7 +1289,7 @@ export const ReportsPage = () => {
                                             <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-2">
                                                 <table className="w-full text-left">
                                                     <thead>
-                                                        <tr className="bg-slate-800 text-white">
+                                                        <tr className="bg-slate-100 dark:bg-slate-800 text-white">
                                                             <th className="px-3 py-2 font-bold w-16">Member</th>
                                                             <th className="px-3 py-2 font-bold text-right">N (kN)</th>
                                                             <th className="px-3 py-2 font-bold text-right">V<sub>y</sub> (kN)</th>
@@ -1317,7 +1317,7 @@ export const ReportsPage = () => {
                                         );
                                     })()}
                                     {totalForcePages > 1 && (
-                                        <div className="flex items-center justify-between text-[10px] text-slate-400 print:hidden mb-4">
+                                        <div className="flex items-center justify-between text-[10px] text-slate-600 dark:text-slate-400 print:hidden mb-4">
                                             <span>
                                                 Showing {forcesPage * ROWS_PER_PAGE + 1}–{Math.min((forcesPage + 1) * ROWS_PER_PAGE, forcesEntries.length)} of {forcesEntries.length}
                                             </span>
@@ -1344,7 +1344,7 @@ export const ReportsPage = () => {
                                     )}
                                 </>
                             ) : (
-                                <div className="p-6 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-400 mb-6">
+                                <div className="p-6 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-600 dark:text-slate-400 mb-6">
                                     Run the analysis to populate member force results.
                                 </div>
                             )}
@@ -1355,7 +1355,7 @@ export const ReportsPage = () => {
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-800 text-white">
+                                            <tr className="bg-slate-100 dark:bg-slate-800 text-white">
                                                 <th className="px-3 py-2 font-bold">Action</th>
                                                 <th className="px-3 py-2 font-bold text-center">Governing Member</th>
                                                 <th className="px-3 py-2 font-bold text-right">Value</th>
@@ -1381,7 +1381,7 @@ export const ReportsPage = () => {
                                     </table>
                                 </div>
                             ) : (
-                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-400 mb-6">
+                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-600 dark:text-slate-400 mb-6">
                                     Critical members will be identified after analysis.
                                 </div>
                             )}
@@ -1392,7 +1392,7 @@ export const ReportsPage = () => {
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-800 text-white">
+                                            <tr className="bg-slate-100 dark:bg-slate-800 text-white">
                                                 <th className="px-3 py-2 font-bold">Node</th>
                                                 <th className="px-3 py-2 font-bold text-right">R<sub>x</sub> (kN)</th>
                                                 <th className="px-3 py-2 font-bold text-right">R<sub>y</sub> (kN)</th>
@@ -1418,7 +1418,7 @@ export const ReportsPage = () => {
                                     </table>
                                 </div>
                             ) : (
-                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-400 mb-6">
+                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-600 dark:text-slate-400 mb-6">
                                     Support reactions will appear after analysis.
                                 </div>
                             )}
@@ -1430,7 +1430,7 @@ export const ReportsPage = () => {
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-800 text-white">
+                                            <tr className="bg-slate-100 dark:bg-slate-800 text-white">
                                                 <th className="px-3 py-2 font-bold">Node</th>
                                                 <th className="px-3 py-2 font-bold text-right">δ<sub>x</sub> (mm)</th>
                                                 <th className="px-3 py-2 font-bold text-right">δ<sub>y</sub> (mm)</th>
@@ -1456,13 +1456,13 @@ export const ReportsPage = () => {
                                     </table>
                                 </div>
                                 {analysisResults.displacements.size > ROWS_PER_PAGE && (
-                                    <p className="text-[10px] text-slate-400 italic mb-4">
+                                    <p className="text-[10px] text-slate-600 dark:text-slate-400 italic mb-4">
                                         Showing first {ROWS_PER_PAGE} of {analysisResults.displacements.size} nodal results. Full data available in exported spreadsheet.
                                     </p>
                                 )}
                                 </>
                             ) : (
-                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-400 mb-6">
+                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-600 dark:text-slate-400 mb-6">
                                     Displacement results will appear after analysis.
                                 </div>
                             )}
@@ -1478,7 +1478,7 @@ export const ReportsPage = () => {
                                     <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px]">
                                         <table className="w-full text-left">
                                             <thead>
-                                                <tr className="bg-slate-800 text-white">
+                                                <tr className="bg-slate-100 dark:bg-slate-800 text-white">
                                                     <th className="px-3 py-2 font-bold text-center">Mode</th>
                                                     <th className="px-3 py-2 font-bold text-right">Frequency (Hz)</th>
                                                     <th className="px-3 py-2 font-bold text-right">Period (s)</th>
@@ -1498,7 +1498,7 @@ export const ReportsPage = () => {
                                         </table>
                                     </div>
                                     {modalResults.modes.length > 12 && (
-                                        <p className="text-[10px] text-slate-400 italic mt-1">
+                                        <p className="text-[10px] text-slate-600 dark:text-slate-400 italic mt-1">
                                             Showing first 12 of {modalResults.modes.length} modes. Full data available in exported results.
                                         </p>
                                     )}
@@ -1523,7 +1523,7 @@ export const ReportsPage = () => {
                             <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-4">
                                 <table className="w-full text-left">
                                     <thead>
-                                        <tr className="bg-slate-800 text-white">
+                                        <tr className="bg-slate-100 dark:bg-slate-800 text-white">
                                             <th className="px-3 py-2 font-bold">Check</th>
                                             <th className="px-3 py-2 font-bold">Code Ref.</th>
                                             <th className="px-3 py-2 font-bold text-right">Demand</th>
@@ -1607,7 +1607,7 @@ export const ReportsPage = () => {
                                     </tbody>
                                 </table>
                             </div>
-                            <p className="text-[10px] text-slate-400 italic">
+                            <p className="text-[10px] text-slate-600 dark:text-slate-400 italic">
                                 * Capacity values marked with asterisk are assumed reference values for indicative D/C ratios.
                                 Actual member capacities should be verified against assigned section properties in the detailed design.
                             </p>
@@ -1674,25 +1674,25 @@ export const ReportsPage = () => {
                                     { role: 'Approved by', name: '________________', title: 'Project Manager' },
                                 ].map((sig) => (
                                     <div key={sig.role}>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">{sig.role}</p>
+                                        <p className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">{sig.role}</p>
                                         <div className="h-16 border-b-2 border-slate-400 mb-2" />
                                         <p className="text-[12px] font-bold text-slate-900">{sig.name}</p>
                                         <p className="text-[10px] text-slate-500">{sig.title}</p>
-                                        <p className="text-[10px] text-slate-400 mt-1">Date: _______________</p>
+                                        <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-1">Date: _______________</p>
                                     </div>
                                 ))}
                             </div>
                         </section>
 
                         {/* ── Document footer ── */}
-                        <div className="border-t-2 border-slate-800 pt-4 pb-8 text-center">
-                            <p className="text-[10px] text-slate-400 font-medium">
+                        <div className="border-t-2 border-slate-200 dark:border-slate-800 pt-4 pb-8 text-center">
+                            <p className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">
                                 This is a computer-generated document. Results should be independently verified.
                             </p>
-                            <p className="text-[10px] text-slate-400 mt-0.5">
+                            <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-0.5">
                                 Generated by <strong>BeamLab Ultimate</strong> — Document {ref} Rev {revision} — {fmtDate(now)} {fmtTime(now)}
                             </p>
-                            <p className="text-[9px] text-slate-300 mt-2">
+                            <p className="text-[9px] text-slate-700 dark:text-slate-300 mt-2">
                                 © {now.getFullYear()} BeamLab Engineering Pvt. Ltd. All rights reserved. CONFIDENTIAL.
                             </p>
                         </div>
@@ -1702,7 +1702,7 @@ export const ReportsPage = () => {
 
             {/* ━━━ Floating Action Bar (hidden in print) ━━━ */}
             <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 print:hidden">
-                <div className="flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-slate-700">
+                <div className="flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-slate-100 dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-slate-300 dark:border-slate-700">
                     <button
                         onClick={handleExportPDF}
                         className="flex items-center gap-2 px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all shadow-lg shadow-blue-500/20"
@@ -1713,12 +1713,12 @@ export const ReportsPage = () => {
                     <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1" />
                     <button
                         onClick={handlePrint}
-                        className="flex items-center gap-2 px-6 py-3 rounded-lg text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium text-sm transition-colors"
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg text-slate-500 dark:text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-200 dark:hover:bg-slate-700 font-medium text-sm transition-colors"
                     >
                         <Printer className="w-5 h-5" />
                         Print
                     </button>
-                    <button className="flex items-center gap-2 px-6 py-3 rounded-lg text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium text-sm transition-colors">
+                    <button className="flex items-center gap-2 px-6 py-3 rounded-lg text-slate-500 dark:text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-200 dark:hover:bg-slate-700 font-medium text-sm transition-colors">
                         <Share2 className="w-5 h-5" />
                         Share
                     </button>
@@ -1729,7 +1729,7 @@ export const ReportsPage = () => {
             <div className="fixed bottom-6 right-6 z-40 print:hidden flex flex-col gap-3">
                 <button
                     onClick={handleExportDXF}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-gray-300 font-medium text-sm"
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-zinc-100 dark:bg-zinc-800 border border-slate-200 dark:border-slate-300 dark:border-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-gray-700 dark:text-gray-300 font-medium text-sm"
                     title="Export DXF (AutoCAD)"
                 >
                     <Layout className="w-5 h-5 text-fuchsia-600" />
@@ -1737,7 +1737,7 @@ export const ReportsPage = () => {
                 </button>
                 <button
                     onClick={handleExportIFC}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-gray-300 font-medium text-sm"
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-zinc-100 dark:bg-zinc-800 border border-slate-200 dark:border-slate-300 dark:border-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-gray-700 dark:text-gray-300 font-medium text-sm"
                     title="Export IFC (BIM)"
                 >
                     <FileCode className="w-5 h-5 text-amber-600" />
@@ -1745,7 +1745,7 @@ export const ReportsPage = () => {
                 </button>
                 <button
                     onClick={handleExportExcel}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-gray-300 font-medium text-sm"
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-zinc-100 dark:bg-zinc-800 border border-slate-200 dark:border-slate-300 dark:border-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-gray-700 dark:text-gray-300 font-medium text-sm"
                     title="Export Results to Excel (CSV)"
                 >
                     <TableProperties className="w-5 h-5 text-green-600" />

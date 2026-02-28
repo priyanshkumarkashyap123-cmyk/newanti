@@ -2263,3 +2263,39 @@ export const getSavedProjectInfo = (): {
 export const clearSavedProject = (): void => {
   localStorage.removeItem(STORAGE_KEY);
 };
+
+// ============================================
+// AUTO-SAVE (debounced subscription)
+// ============================================
+
+const AUTO_SAVE_DELAY_MS = 2000; // 2 seconds after last change
+
+let autoSaveTimer: ReturnType<typeof setTimeout> | null = null;
+
+/**
+ * Subscribe to store changes and auto-save to localStorage.
+ * Only saves when structural data (nodes, members, loads) changes.
+ */
+useModelStore.subscribe(
+  (state, prevState) => {
+    // Only auto-save when structural data changes (not UI state or analysis results)
+    const structuralChanged =
+      state.nodes !== prevState.nodes ||
+      state.members !== prevState.members ||
+      state.loads !== prevState.loads ||
+      state.memberLoads !== prevState.memberLoads ||
+      state.projectInfo !== prevState.projectInfo;
+
+    if (!structuralChanged) return;
+
+    // Debounce: clear previous timer and set a new one
+    if (autoSaveTimer) clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(() => {
+      try {
+        saveProjectToStorage();
+      } catch {
+        // Silently fail — user can still manually save
+      }
+    }, AUTO_SAVE_DELAY_MS);
+  }
+);

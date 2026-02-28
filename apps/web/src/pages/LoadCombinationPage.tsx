@@ -320,12 +320,12 @@ export const LoadCombinationPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <div className="border-b border-slate-800 bg-gradient-to-r from-slate-900 to-slate-800">
+      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-900 to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2">
             Load Combination Generator
           </h1>
-          <p className="text-slate-400 text-sm">
+          <p className="text-slate-600 dark:text-slate-400 text-sm">
             Auto-generate code-compliant load combinations for {designCode}
           </p>
         </div>
@@ -336,7 +336,7 @@ export const LoadCombinationPage: React.FC = () => {
           {/* Left Panel - Input */}
           <div className="lg:col-span-2 space-y-6">
             {/* Design Code Selection */}
-            <div className="bg-slate-900 rounded-xl p-6 border border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
               <h3 className="text-sm font-semibold text-blue-400 mb-4">Design Code</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
@@ -351,7 +351,7 @@ export const LoadCombinationPage: React.FC = () => {
                     className={`py-2 px-4 rounded-lg font-medium transition-colors ${
                       designCode === code
                         ? 'bg-blue-600 text-white'
-                        : 'bg-slate-800 text-slate-400 hover:text-white'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-white'
                     }`}
                   >
                     {label}
@@ -361,7 +361,7 @@ export const LoadCombinationPage: React.FC = () => {
             </div>
 
             {/* Load Cases */}
-            <div className="bg-slate-900 rounded-xl p-6 border border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-amber-400">Load Cases</h3>
                 <button
@@ -377,7 +377,7 @@ export const LoadCombinationPage: React.FC = () => {
                 {loadCases.map((loadCase) => {
                   const Icon = loadTypeIcons[loadCase.type];
                   return (
-                    <div key={loadCase.id} className="bg-slate-800 p-4 rounded-lg flex items-center gap-3">
+                    <div key={loadCase.id} className="bg-slate-100 dark:bg-slate-800 p-4 rounded-lg flex items-center gap-3">
                       <Icon className="w-5 h-5 text-amber-400 flex-shrink-0" />
                       
                       <input
@@ -437,7 +437,7 @@ export const LoadCombinationPage: React.FC = () => {
           {/* Right Panel - Results */}
           <div className="lg:col-span-1">
             {combinations.length > 0 ? (
-              <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-6 border border-slate-700">
+              <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold text-white">Combinations</h2>
                   <button
@@ -459,7 +459,7 @@ export const LoadCombinationPage: React.FC = () => {
 
                 <div className="space-y-2 max-h-[600px] overflow-y-auto">
                   {combinations.map((combo) => (
-                    <div key={combo.id} className="bg-slate-800/50 p-4 rounded-lg">
+                    <div key={combo.id} className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
                       <div className="flex items-start justify-between mb-2">
                         <h4 className="font-semibold text-white text-sm">{combo.name}</h4>
                         <span className={`text-xs px-2 py-1 rounded ${
@@ -473,7 +473,7 @@ export const LoadCombinationPage: React.FC = () => {
                         {combo.cases.map((c, idx) => {
                           const caseData = loadCases.find(lc => lc.id === c.caseId);
                           return (
-                            <div key={idx} className="text-xs text-slate-400 flex items-center gap-2">
+                            <div key={idx} className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2">
                               <span className="text-amber-400">{c.factor > 0 ? '+' : ''}{c.factor.toFixed(2)}</span>
                               <span>×</span>
                               <span>{caseData?.name || 'Unknown'}</span>
@@ -486,11 +486,11 @@ export const LoadCombinationPage: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="bg-slate-900 rounded-xl p-6 border border-slate-700 h-full">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700 h-full">
                 <div className="flex flex-col items-center justify-center py-12 text-center h-full">
                   <FileText className="w-16 h-16 text-slate-500 mb-4" />
-                  <h3 className="text-lg font-semibold text-slate-400 mb-2">No Combinations Yet</h3>
-                  <p className="text-sm text-slate-400">
+                  <h3 className="text-lg font-semibold text-slate-600 dark:text-slate-400 mb-2">No Combinations Yet</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
                     Configure load cases and click generate to create combinations
                   </p>
                 </div>

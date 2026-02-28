@@ -29,9 +29,9 @@ export const ContactPage: FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col font-sans selection:bg-blue-500/30">
+    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-50 flex flex-col font-sans selection:bg-blue-500/30">
       {/* Header - Dark Theme */}
-      <nav className="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/90 backdrop-blur-xl">
+      <nav className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/90 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link to="/" className="flex items-center gap-3 group">
@@ -49,19 +49,19 @@ export const ContactPage: FC = () => {
             <div className="hidden md:flex items-center gap-8">
               <Link
                 to="/pricing"
-                className="text-slate-400 hover:text-white text-sm font-medium transition-colors"
+                className="text-slate-600 dark:text-slate-400 hover:text-white text-sm font-medium transition-colors"
               >
                 Pricing
               </Link>
               <Link
                 to="/help"
-                className="text-slate-400 hover:text-white text-sm font-medium transition-colors"
+                className="text-slate-600 dark:text-slate-400 hover:text-white text-sm font-medium transition-colors"
               >
                 Help
               </Link>
               <Link
                 to="/sign-in"
-                className="text-slate-300 hover:text-white text-sm font-medium transition-colors"
+                className="text-slate-700 dark:text-slate-300 hover:text-white text-sm font-medium transition-colors"
               >
                 Log in
               </Link>
@@ -91,14 +91,14 @@ export const ContactPage: FC = () => {
               <h1 className="text-4xl md:text-5xl font-bold text-white mt-2 mb-6">
                 Get in touch
               </h1>
-              <p className="text-lg text-slate-400 leading-relaxed">
+              <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
                 Have questions about our Enterprise plans, need a custom
                 integration, or just want to say hi? We'd love to hear from you.
               </p>
             </div>
 
             <div className="flex flex-col gap-6">
-              <div className="flex items-start gap-4 p-5 rounded-xl bg-slate-900 border border-slate-800 hover-lift">
+              <div className="flex items-start gap-4 p-5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover-lift">
                 <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
                   <Mail className="w-6 h-6 text-blue-400" />
                 </div>
@@ -106,7 +106,7 @@ export const ContactPage: FC = () => {
                   <h3 className="text-lg font-bold text-white mb-1">
                     Email Us
                   </h3>
-                  <p className="text-slate-400 mb-2">
+                  <p className="text-slate-600 dark:text-slate-400 mb-2">
                     Our friendly team is here to help.
                   </p>
                   <a
@@ -118,13 +118,13 @@ export const ContactPage: FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-start gap-4 p-5 rounded-xl bg-slate-900 border border-slate-800 hover-lift">
+              <div className="flex items-start gap-4 p-5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover-lift">
                 <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
                   <MapPin className="w-6 h-6 text-purple-400" />
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-white mb-1">Office</h3>
-                  <p className="text-slate-400">
+                  <p className="text-slate-600 dark:text-slate-400">
                     Rajapur Teonthar, Rewa
                     <br />
                     Madhya Pradesh 486220
@@ -134,7 +134,7 @@ export const ContactPage: FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-start gap-4 p-5 rounded-xl bg-slate-900 border border-slate-800 hover-lift">
+              <div className="flex items-start gap-4 p-5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover-lift">
                 <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
                   <Phone className="w-6 h-6 text-emerald-400" />
                 </div>
@@ -142,7 +142,7 @@ export const ContactPage: FC = () => {
                   <h3 className="text-lg font-bold text-white mb-1">
                     Call Us
                   </h3>
-                  <p className="text-slate-400 mb-2">
+                  <p className="text-slate-600 dark:text-slate-400 mb-2">
                     Mon-Sat, 9:00 AM - 7:00 PM (IST)
                   </p>
                   <a
@@ -161,7 +161,7 @@ export const ContactPage: FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-xl"
+            className="bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl"
           >
             {submitted ? (
               <div className="h-full flex flex-col items-center justify-center text-center py-12">
@@ -171,7 +171,7 @@ export const ContactPage: FC = () => {
                 <h3 className="text-2xl font-bold text-white mb-2">
                   Message Sent!
                 </h3>
-                <p className="text-slate-400">
+                <p className="text-slate-600 dark:text-slate-400">
                   Thanks for reaching out. We'll get back to you shortly.
                 </p>
                 <button
@@ -187,7 +187,7 @@ export const ContactPage: FC = () => {
                   <div className="flex flex-col gap-2">
                     <label
                       htmlFor="name"
-                      className="text-sm font-bold text-slate-300"
+                      className="text-sm font-bold text-slate-700 dark:text-slate-300"
                     >
                       Name
                     </label>
@@ -195,7 +195,7 @@ export const ContactPage: FC = () => {
                       type="text"
                       id="name"
                       required
-                      className="px-4 py-3 rounded-lg border border-slate-700 bg-slate-800 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400"
+                      className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-600 dark:text-slate-400"
                       placeholder="Your name"
                       value={formState.name}
                       onChange={(e) =>
@@ -206,7 +206,7 @@ export const ContactPage: FC = () => {
                   <div className="flex flex-col gap-2">
                     <label
                       htmlFor="email"
-                      className="text-sm font-bold text-slate-300"
+                      className="text-sm font-bold text-slate-700 dark:text-slate-300"
                     >
                       Email
                     </label>
@@ -214,7 +214,7 @@ export const ContactPage: FC = () => {
                       type="email"
                       id="email"
                       required
-                      className="px-4 py-3 rounded-lg border border-slate-700 bg-slate-800 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400"
+                      className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-600 dark:text-slate-400"
                       placeholder="you@company.com"
                       value={formState.email}
                       onChange={(e) =>
@@ -227,13 +227,13 @@ export const ContactPage: FC = () => {
                 <div className="flex flex-col gap-2">
                   <label
                     htmlFor="subject"
-                    className="text-sm font-bold text-slate-300"
+                    className="text-sm font-bold text-slate-700 dark:text-slate-300"
                   >
                     Subject
                   </label>
                   <select
                     id="subject"
-                    className="px-4 py-3 rounded-lg border border-slate-700 bg-slate-800 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                    className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                     value={formState.subject}
                     onChange={(e) =>
                       setFormState({ ...formState, subject: e.target.value })
@@ -250,7 +250,7 @@ export const ContactPage: FC = () => {
                 <div className="flex flex-col gap-2">
                   <label
                     htmlFor="message"
-                    className="text-sm font-bold text-slate-300"
+                    className="text-sm font-bold text-slate-700 dark:text-slate-300"
                   >
                     Message
                   </label>
@@ -258,7 +258,7 @@ export const ContactPage: FC = () => {
                     id="message"
                     required
                     rows={4}
-                    className="px-4 py-3 rounded-lg border border-slate-700 bg-slate-800 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none placeholder:text-slate-400"
+                    className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none placeholder:text-slate-600 dark:text-slate-400"
                     placeholder="How can we help you?"
                     value={formState.message}
                     onChange={(e) =>
@@ -288,7 +288,7 @@ export const ContactPage: FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-800 bg-slate-950 py-8 text-center text-sm text-slate-400">
+      <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-8 text-center text-sm text-slate-600 dark:text-slate-400">
         <p>© 2026 BeamLab Ultimate. All rights reserved.</p>
       </footer>
     </div>

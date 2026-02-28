@@ -16,7 +16,7 @@ export interface Material {
     id: string;
     name: string;
     type: 'steel' | 'concrete' | 'timber' | 'aluminum' | 'custom';
-    E: number;           // Young's Modulus (MPa or kN/m²)
+    E: number;           // Young's Modulus (MPa) — converted to kN/m² (*1e3) before storage in model
     G?: number;          // Shear Modulus (MPa)
     fy?: number;         // Yield Strength (MPa) - for steel
     fu?: number;         // Ultimate Strength (MPa) - for steel

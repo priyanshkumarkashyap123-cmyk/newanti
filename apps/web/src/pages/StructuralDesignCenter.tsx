@@ -291,14 +291,14 @@ export default function StructuralDesignCenter() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex">
       {/* Sidebar */}
       <aside className={cn(
-        "fixed left-0 top-0 bottom-0 z-40 bg-slate-800/95 backdrop-blur-xl border-r border-slate-700/50 transition-all duration-300",
+        "fixed left-0 top-0 bottom-0 z-40 bg-slate-100 dark:bg-slate-800/95 backdrop-blur-xl border-r border-slate-300 dark:border-slate-700/50 transition-all duration-300",
         sidebarOpen ? "w-72" : "w-16"
       )}>
         {/* Header */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-700/50">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-300 dark:border-slate-700/50">
           {sidebarOpen && (
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg">
@@ -306,15 +306,15 @@ export default function StructuralDesignCenter() {
               </div>
               <div>
                 <h1 className="font-bold text-white">Design Center</h1>
-                <p className="text-xs text-slate-400">Structural Engineering</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400">Structural Engineering</p>
               </div>
             </div>
           )}
           <button 
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors"
+            className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
           >
-            {sidebarOpen ? <X className="w-5 h-5 text-slate-400" /> : <Menu className="w-5 h-5 text-slate-400" />}
+            {sidebarOpen ? <X className="w-5 h-5 text-slate-600 dark:text-slate-400" /> : <Menu className="w-5 h-5 text-slate-600 dark:text-slate-400" />}
           </button>
         </div>
         
@@ -322,7 +322,7 @@ export default function StructuralDesignCenter() {
         {sidebarOpen && (
           <div className="p-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 dark:text-slate-400" />
               <input
                 type="text"
                 placeholder="Search modules..."
@@ -343,7 +343,7 @@ export default function StructuralDesignCenter() {
               "w-full flex items-center gap-3 px-3 py-2 rounded-lg mb-2 transition-colors",
               activeModule === 'dashboard' 
                 ? "bg-blue-500/20 text-blue-400" 
-                : "text-slate-400 hover:bg-slate-700/50 hover:text-white"
+                : "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 hover:text-white"
             )}
           >
             <Home className="w-5 h-5 flex-shrink-0" />
@@ -357,7 +357,7 @@ export default function StructuralDesignCenter() {
                 onClick={() => toggleCategory(category.id)}
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
-                  "text-slate-400 hover:bg-slate-700/50 hover:text-white"
+                  "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 hover:text-white"
                 )}
               >
                 <category.icon className="w-5 h-5 flex-shrink-0" style={{ color: category.color }} />
@@ -390,7 +390,7 @@ export default function StructuralDesignCenter() {
                           "w-full flex items-center gap-3 px-3 py-2 pl-11 rounded-lg transition-colors text-left",
                           activeModule === item.id 
                             ? "bg-slate-700/70 text-white" 
-                            : "text-slate-400 hover:bg-slate-700/30 hover:text-slate-200"
+                            : "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/30 hover:text-slate-200"
                         )}
                       >
                         <div className="flex-1 min-w-0">
@@ -419,12 +419,12 @@ export default function StructuralDesignCenter() {
         
         {/* Footer */}
         {sidebarOpen && (
-          <div className="p-3 border-t border-slate-700/50">
-            <div className="flex items-center justify-between text-xs text-slate-400">
+          <div className="p-3 border-t border-slate-300 dark:border-slate-700/50">
+            <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
               <span>v4.0.0</span>
               <div className="flex items-center gap-2">
-                <button aria-label="Help" title="Help" className="hover:text-slate-300"><HelpCircle className="w-4 h-4" /></button>
-                <button aria-label="Settings" title="Settings" className="hover:text-slate-300"><Settings className="w-4 h-4" /></button>
+                <button aria-label="Help" title="Help" className="hover:text-slate-700 dark:text-slate-300"><HelpCircle className="w-4 h-4" /></button>
+                <button aria-label="Settings" title="Settings" className="hover:text-slate-700 dark:text-slate-300"><Settings className="w-4 h-4" /></button>
               </div>
             </div>
           </div>
@@ -437,12 +437,12 @@ export default function StructuralDesignCenter() {
         sidebarOpen ? "ml-72" : "ml-16"
       )}>
         {/* Top Bar */}
-        <header className="h-16 bg-slate-800/50 backdrop-blur-xl border-b border-slate-700/50 flex items-center justify-between px-6 sticky top-0 z-30">
+        <header className="h-16 bg-slate-100 dark:bg-slate-800/50 backdrop-blur-xl border-b border-slate-300 dark:border-slate-700/50 flex items-center justify-between px-6 sticky top-0 z-30">
           <div className="flex items-center gap-4">
             {activeModule !== 'dashboard' && (
               <button
                 onClick={() => navigateToModule('dashboard')}
-                className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
+                className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-white transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span className="text-sm">Back</span>
@@ -454,7 +454,7 @@ export default function StructuralDesignCenter() {
           </div>
           
           <div className="flex items-center gap-3">
-            <button className="px-4 py-2 bg-slate-700/50 hover:bg-slate-700 rounded-lg text-sm text-slate-300 transition-colors flex items-center gap-2">
+            <button className="px-4 py-2 bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-300 transition-colors flex items-center gap-2">
               <BookOpen className="w-4 h-4" />
               Docs
             </button>
@@ -531,10 +531,10 @@ function DashboardContent({
       </div>
       
       {/* Recent Projects */}
-      <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-6">
+      <div className="bg-slate-100 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-300 dark:border-slate-700/50 p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-            <Clock className="w-5 h-5 text-slate-400" />
+            <Clock className="w-5 h-5 text-slate-600 dark:text-slate-400" />
             Recent Designs
           </h3>
           <button className="text-sm text-blue-400 hover:text-blue-300 transition-colors">
@@ -547,7 +547,7 @@ function DashboardContent({
             <button
               key={project.id}
               onClick={() => onNavigate(project.module)}
-              className="w-full flex items-center gap-4 p-3 bg-slate-700/30 hover:bg-slate-700/50 rounded-xl transition-colors"
+              className="w-full flex items-center gap-4 p-3 bg-slate-700/30 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-xl transition-colors"
             >
               <div className={cn(
                 "p-2 rounded-lg",
@@ -561,19 +561,19 @@ function DashboardContent({
               </div>
               <div className="flex-1 text-left">
                 <p className="text-white font-medium">{project.name}</p>
-                <p className="text-sm text-slate-400">{getModuleLabel(project.module)}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{getModuleLabel(project.module)}</p>
               </div>
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-slate-600 dark:text-slate-400">
                 {formatTimeAgo(project.timestamp)}
               </span>
-              <ChevronRight className="w-4 h-4 text-slate-400" />
+              <ChevronRight className="w-4 h-4 text-slate-600 dark:text-slate-400" />
             </button>
           ))}
         </div>
       </div>
       
       {/* All Modules Grid */}
-      <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-6">
+      <div className="bg-slate-100 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-300 dark:border-slate-700/50 p-6">
         <h3 className="text-lg font-semibold text-white mb-4">All Design Modules</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
           {NAVIGATION.flatMap(category => 
@@ -581,7 +581,7 @@ function DashboardContent({
               <button
                 key={item.id}
                 onClick={() => onNavigate(item.id)}
-                className="p-4 bg-slate-700/30 hover:bg-slate-700/50 rounded-xl transition-all hover:scale-105 text-left group"
+                className="p-4 bg-slate-700/30 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-xl transition-all hover:scale-105 text-left group"
               >
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-sm font-medium text-white group-hover:text-blue-400 transition-colors">
@@ -598,7 +598,7 @@ function DashboardContent({
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-slate-400 line-clamp-2">{item.description}</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">{item.description}</p>
               </button>
             ))
           )}
@@ -630,15 +630,15 @@ function StatCard({
     cyan: 'from-cyan-500/20 to-teal-500/20 text-cyan-400',
     orange: 'from-orange-500/20 to-amber-500/20 text-orange-400',
     purple: 'from-purple-500/20 to-violet-500/20 text-purple-400',
-  }[color] || 'from-slate-500/20 to-slate-400/20 text-slate-400';
+  }[color] || 'from-slate-500/20 to-slate-400/20 text-slate-600 dark:text-slate-400';
   
   return (
-    <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-5">
+    <div className="bg-slate-100 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-300 dark:border-slate-700/50 p-5">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm text-slate-400">{title}</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">{title}</p>
           <p className="text-3xl font-bold text-white mt-1">{value}</p>
-          <p className="text-xs text-slate-400 mt-1">{subtitle}</p>
+          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{subtitle}</p>
         </div>
         <div className={cn("p-3 rounded-xl bg-gradient-to-br", colorClasses)}>
           <Icon className="w-6 h-6" />
@@ -660,7 +660,7 @@ function QuickAccessCard({
       "bg-gradient-to-br rounded-2xl p-[1px]",
       category.gradient
     )}>
-      <div className="bg-slate-800/95 backdrop-blur-xl rounded-2xl p-5 h-full">
+      <div className="bg-slate-100 dark:bg-slate-800/95 backdrop-blur-xl rounded-2xl p-5 h-full">
         <div className="flex items-center gap-3 mb-4">
           <div className={cn("p-2 rounded-lg bg-gradient-to-br", category.gradient)}>
             <category.icon className="w-5 h-5 text-white" />
@@ -673,18 +673,18 @@ function QuickAccessCard({
             <button
               key={item.id}
               onClick={() => onSelect(item.id)}
-              className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-slate-700/50 transition-colors group"
+              className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors group"
             >
-              <span className="text-sm text-slate-300 group-hover:text-white transition-colors">
+              <span className="text-sm text-slate-700 dark:text-slate-300 group-hover:text-white transition-colors">
                 {item.label}
               </span>
-              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-white transition-colors" />
+              <ChevronRight className="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:text-white transition-colors" />
             </button>
           ))}
         </div>
         
         {category.items.length > 4 && (
-          <button className="w-full mt-3 text-sm text-slate-400 hover:text-white transition-colors">
+          <button className="w-full mt-3 text-sm text-slate-600 dark:text-slate-400 hover:text-white transition-colors">
             +{category.items.length - 4} more modules
           </button>
         )}

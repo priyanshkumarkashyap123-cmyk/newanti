@@ -499,9 +499,9 @@ export const EnhancedPricingPage: FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950 text-white">
       {/* Navigation */}
-      <nav className="fixed top-0 inset-x-0 z-50 bg-slate-950/90 backdrop-blur-xl border-b border-slate-800">
+      <nav className="fixed top-0 inset-x-0 z-50 bg-white dark:bg-slate-950/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
@@ -512,19 +512,19 @@ export const EnhancedPricingPage: FC = () => {
           <div className="flex items-center gap-6">
             <Link
               to="/"
-              className="text-sm text-slate-400 hover:text-white transition-colors"
+              className="text-sm text-slate-600 dark:text-slate-400 hover:text-white transition-colors"
             >
               Home
             </Link>
             <Link
               to="/demo"
-              className="text-sm text-slate-400 hover:text-white transition-colors"
+              className="text-sm text-slate-600 dark:text-slate-400 hover:text-white transition-colors"
             >
               Demo
             </Link>
             <Link
               to="/sign-in"
-              className="text-sm text-slate-400 hover:text-white transition-colors"
+              className="text-sm text-slate-600 dark:text-slate-400 hover:text-white transition-colors"
             >
               Sign In
             </Link>
@@ -596,13 +596,13 @@ export const EnhancedPricingPage: FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-xl text-slate-400 mb-10 max-w-2xl mx-auto"
+            className="text-xl text-slate-600 dark:text-slate-400 mb-10 max-w-2xl mx-auto"
           >
             Get the modern structural analysis platform that saves you hours on
             every project. No hidden fees, no expensive maintenance contracts.
           </motion.p>
 
-          <div className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/70 p-1 mb-10">
+          <div className="inline-flex items-center gap-2 rounded-full border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/70 p-1 mb-10">
             <span className="px-4 py-1.5 rounded-full text-xs font-semibold bg-blue-500 text-white">
               🇮🇳 All prices in ₹ (INR)
             </span>
@@ -613,14 +613,14 @@ export const EnhancedPricingPage: FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="inline-flex items-center gap-4 p-1 rounded-full bg-slate-900 border border-slate-800"
+            className="inline-flex items-center gap-4 p-1 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
           >
             <button
               onClick={() => setBillingPeriod("monthly")}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
                 billingPeriod === "monthly"
                   ? "bg-white text-slate-950"
-                  : "text-slate-400 hover:text-white"
+                  : "text-slate-600 dark:text-slate-400 hover:text-white"
               }`}
             >
               Monthly
@@ -630,7 +630,7 @@ export const EnhancedPricingPage: FC = () => {
               className={`px-6 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
                 billingPeriod === "yearly"
                   ? "bg-white text-slate-950"
-                  : "text-slate-400 hover:text-white"
+                  : "text-slate-600 dark:text-slate-400 hover:text-white"
               }`}
             >
               Yearly
@@ -654,7 +654,7 @@ export const EnhancedPricingPage: FC = () => {
               className={`relative rounded-2xl p-6 flex flex-col ${
                 plan.highlighted
                   ? "bg-gradient-to-b from-blue-600/20 to-purple-600/20 border-2 border-blue-500/50 shadow-xl shadow-blue-500/10"
-                  : "bg-slate-900 border border-slate-800"
+                  : "bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
               }`}
             >
               {plan.badge && (
@@ -667,21 +667,21 @@ export const EnhancedPricingPage: FC = () => {
                 className={`p-3 rounded-xl w-fit mb-4 ${
                   plan.highlighted
                     ? "bg-blue-500/20 text-blue-400"
-                    : "bg-slate-800 text-slate-400"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
                 }`}
               >
                 {plan.icon}
               </div>
 
               <h3 className="text-xl font-bold text-white mb-1">{plan.name}</h3>
-              <p className="text-sm text-slate-400 mb-4">{plan.description}</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{plan.description}</p>
 
               <div className="mb-6">
                 <span className="text-4xl font-bold text-white">
                   {formatPrice(plan)}
                 </span>
                 {plan.monthlyPrice !== null && plan.monthlyPrice > 0 && (
-                  <span className="text-slate-400 ml-2">
+                  <span className="text-slate-600 dark:text-slate-400 ml-2">
                     /month {billingPeriod === "yearly" && "(billed yearly)"}
                   </span>
                 )}
@@ -700,7 +700,7 @@ export const EnhancedPricingPage: FC = () => {
                     ? "bg-white text-slate-950 hover:bg-slate-100"
                     : plan.ctaVariant === "secondary"
                       ? "bg-blue-600 text-white hover:bg-blue-500"
-                      : "border-2 border-slate-700 text-white hover:bg-slate-800"
+                      : "border-2 border-slate-300 dark:border-slate-700 text-white hover:bg-slate-100 dark:bg-slate-800"
                 }`}
               >
                 {plan.cta}
@@ -711,10 +711,10 @@ export const EnhancedPricingPage: FC = () => {
                   <li key={j} className="flex items-start gap-3 text-sm">
                     <Check
                       className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                        plan.highlighted ? "text-blue-400" : "text-slate-400"
+                        plan.highlighted ? "text-blue-400" : "text-slate-600 dark:text-slate-400"
                       }`}
                     />
-                    <span className="text-slate-300">{feature}</span>
+                    <span className="text-slate-700 dark:text-slate-300">{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -724,7 +724,7 @@ export const EnhancedPricingPage: FC = () => {
       </section>
 
       {/* Trust Signals */}
-      <section className="py-16 px-4 border-t border-slate-800/50 bg-slate-900/20">
+      <section className="py-16 px-4 border-t border-slate-200 dark:border-slate-800/50 bg-slate-50 dark:bg-slate-900/20">
         <div className="max-w-7xl mx-auto text-center">
           <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-8">
             Trusted by innovative engineering teams worldwide
@@ -751,9 +751,9 @@ export const EnhancedPricingPage: FC = () => {
       </section>
 
       {/* Sensitive Market Experience */}
-      <section className="py-16 px-4 bg-slate-950 border-t border-slate-800/50">
+      <section className="py-16 px-4 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800/50">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-8">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-8">
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-8">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-semibold mb-5">
               <Globe className="w-4 h-4" />
               {marketMode === "india"
@@ -765,17 +765,17 @@ export const EnhancedPricingPage: FC = () => {
                 ? "Commercial model tuned for Indian firms and institutes"
                 : "Regional pricing and flexible procurement that scales"}
             </h3>
-            <p className="text-slate-400 leading-relaxed mb-6">
+            <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-6">
               {marketMode === "india"
                 ? "We support engineering teams across India with PPP-aligned pricing, local payment rails, and procurement-friendly billing so adoption depends on value, not budget friction."
                 : "We support teams in cost-sensitive markets with PPP-aligned pricing, practical payment options, and procurement-friendly contracts to reduce adoption friction."}
             </p>
             <div className="grid sm:grid-cols-2 gap-4 text-sm">
-              <div className="rounded-xl border border-slate-800 p-4 bg-slate-900">
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-4 bg-slate-50 dark:bg-slate-900">
                 <p className="text-slate-500 mb-1">PPP Discounts</p>
                 <p className="text-white font-semibold">Up to 60% off</p>
               </div>
-              <div className="rounded-xl border border-slate-800 p-4 bg-slate-900">
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-4 bg-slate-50 dark:bg-slate-900">
                 <p className="text-slate-500 mb-1">Billing</p>
                 <p className="text-white font-semibold">
                   {marketMode === "india"
@@ -783,7 +783,7 @@ export const EnhancedPricingPage: FC = () => {
                     : "Monthly / Quarterly / Yearly"}
                 </p>
               </div>
-              <div className="rounded-xl border border-slate-800 p-4 bg-slate-900">
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-4 bg-slate-50 dark:bg-slate-900">
                 <p className="text-slate-500 mb-1">Payments</p>
                 <p className="text-white font-semibold">
                   {marketMode === "india"
@@ -791,7 +791,7 @@ export const EnhancedPricingPage: FC = () => {
                     : "Cards, wire transfer, local rails"}
                 </p>
               </div>
-              <div className="rounded-xl border border-slate-800 p-4 bg-slate-900">
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-4 bg-slate-50 dark:bg-slate-900">
                 <p className="text-slate-500 mb-1">
                   {marketMode === "india"
                     ? "Tax & Invoicing"
@@ -806,32 +806,32 @@ export const EnhancedPricingPage: FC = () => {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-8">
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-8">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-400 text-xs font-semibold mb-5">
               <ShieldCheck className="w-4 h-4" /> Compliance-first deployments
             </div>
             <h3 className="text-2xl font-bold mb-3">
               Security posture for regulated and sensitive sectors
             </h3>
-            <p className="text-slate-400 leading-relaxed mb-6">
+            <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-6">
               For infrastructure, government, and enterprise clients, BeamLab
               supports hardened deployment models and governance requirements to
               align with internal risk controls.
             </p>
             <ul className="space-y-3 text-sm">
-              <li className="flex items-start gap-3 text-slate-300">
+              <li className="flex items-start gap-3 text-slate-700 dark:text-slate-300">
                 <Lock className="w-4 h-4 mt-0.5 text-blue-400" /> Data
                 encryption at rest and in transit
               </li>
-              <li className="flex items-start gap-3 text-slate-300">
+              <li className="flex items-start gap-3 text-slate-700 dark:text-slate-300">
                 <Server className="w-4 h-4 mt-0.5 text-blue-400" /> On-premise /
                 private cloud options
               </li>
-              <li className="flex items-start gap-3 text-slate-300">
+              <li className="flex items-start gap-3 text-slate-700 dark:text-slate-300">
                 <Shield className="w-4 h-4 mt-0.5 text-blue-400" /> SSO/SAML and
                 role-based access controls
               </li>
-              <li className="flex items-start gap-3 text-slate-300">
+              <li className="flex items-start gap-3 text-slate-700 dark:text-slate-300">
                 <Check className="w-4 h-4 mt-0.5 text-blue-400" />{" "}
                 Audit-oriented change tracking and logs
               </li>
@@ -845,7 +845,7 @@ export const EnhancedPricingPage: FC = () => {
         <div className="max-w-7xl mx-auto">
           <button
             onClick={() => setShowMatrix(!showMatrix)}
-            className="w-full py-4 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 font-medium hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
+            className="w-full py-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:bg-slate-800 transition-all flex items-center justify-center gap-2"
           >
             {showMatrix ? "Hide" : "Show"} Full Feature Comparison
             {showMatrix ? (
@@ -863,8 +863,8 @@ export const EnhancedPricingPage: FC = () => {
           <div className="max-w-7xl mx-auto overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-slate-800">
-                  <th className="text-left py-4 px-4 text-slate-400 font-medium">
+                <tr className="border-b border-slate-200 dark:border-slate-800">
+                  <th className="text-left py-4 px-4 text-slate-600 dark:text-slate-400 font-medium">
                     Features
                   </th>
                   <th className="text-center py-4 px-4 text-white font-medium">
@@ -884,17 +884,17 @@ export const EnhancedPricingPage: FC = () => {
               <tbody>
                 {FEATURE_MATRIX.map((category) => (
                   <React.Fragment key={category.category}>
-                    <tr className="bg-slate-900/50">
+                    <tr className="bg-slate-50 dark:bg-slate-900/50">
                       <td
                         colSpan={5}
-                        className="py-3 px-4 text-sm font-semibold text-slate-300"
+                        className="py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300"
                       >
                         {category.category}
                       </td>
                     </tr>
                     {category.features.map((feature, i) => (
-                      <tr key={i} className="border-b border-slate-800/50">
-                        <td className="py-3 px-4 text-sm text-slate-400">
+                      <tr key={i} className="border-b border-slate-200 dark:border-slate-800/50">
+                        <td className="py-3 px-4 text-sm text-slate-600 dark:text-slate-400">
                           {feature.name}
                         </td>
                         <td className="py-3 px-4 text-center">
@@ -920,49 +920,49 @@ export const EnhancedPricingPage: FC = () => {
       )}
 
       {/* Why Choose BeamLab */}
-      <section className="py-24 px-4 bg-slate-950 border-t border-slate-800">
+      <section className="py-24 px-4 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Why switch to BeamLab?
             </h2>
-            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
               We built BeamLab because we were tired of clunky, expensive legacy
               software that hasn't changed in 20 years.
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-20">
-            <div className="p-8 rounded-2xl bg-slate-900 border border-slate-800">
+            <div className="p-8 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
               <div className="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center mb-6">
                 <Zap className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-bold mb-3">10x Faster Workflows</h3>
-              <p className="text-slate-400 leading-relaxed">
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                 Our modern, intuitive interface and AI-powered design assistant
                 cut modeling and analysis time by up to 80%. Stop fighting the
                 UI and start engineering.
               </p>
             </div>
-            <div className="p-8 rounded-2xl bg-slate-900 border border-slate-800">
+            <div className="p-8 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
               <div className="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center mb-6">
                 <Shield className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-bold mb-3">No Hidden Costs</h3>
-              <p className="text-slate-400 leading-relaxed">
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                 Say goodbye to expensive "maintenance contracts", paid upgrades,
                 and confusing module pricing. You get the full engine, always up
                 to date.
               </p>
             </div>
-            <div className="p-8 rounded-2xl bg-slate-900 border border-slate-800">
+            <div className="p-8 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
               <div className="w-12 h-12 rounded-xl bg-green-500/20 text-green-400 flex items-center justify-center mb-6">
                 <Users className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-bold mb-3">
                 Built for Collaboration
               </h3>
-              <p className="text-slate-400 leading-relaxed">
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                 Work together in real-time, share projects with a link, and
                 access your models from any device. Cloud-native architecture
                 for modern teams.
@@ -971,10 +971,10 @@ export const EnhancedPricingPage: FC = () => {
           </div>
 
           {/* Legacy Comparison */}
-          <div className="max-w-4xl mx-auto bg-slate-900/50 rounded-3xl border border-slate-800 overflow-hidden">
+          <div className="max-w-4xl mx-auto bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden">
             <div className="grid md:grid-cols-2">
-              <div className="p-10 border-b md:border-b-0 md:border-r border-slate-800">
-                <h4 className="text-xl font-bold text-slate-400 mb-6 flex items-center gap-2">
+              <div className="p-10 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800">
+                <h4 className="text-xl font-bold text-slate-600 dark:text-slate-400 mb-6 flex items-center gap-2">
                   <X className="w-6 h-6 text-red-400" /> Legacy Software
                 </h4>
                 <ul className="space-y-4">
@@ -1005,23 +1005,23 @@ export const EnhancedPricingPage: FC = () => {
                   <Check className="w-6 h-6 text-blue-400" /> BeamLab Ultimate
                 </h4>
                 <ul className="space-y-4">
-                  <li className="flex items-start gap-3 text-slate-300">
+                  <li className="flex items-start gap-3 text-slate-700 dark:text-slate-300">
                     <Check className="w-5 h-5 text-blue-400 shrink-0" />
                     Simple monthly/yearly subscription
                   </li>
-                  <li className="flex items-start gap-3 text-slate-300">
+                  <li className="flex items-start gap-3 text-slate-700 dark:text-slate-300">
                     <Check className="w-5 h-5 text-blue-400 shrink-0" />
                     All updates & support included
                   </li>
-                  <li className="flex items-start gap-3 text-slate-300">
+                  <li className="flex items-start gap-3 text-slate-700 dark:text-slate-300">
                     <Check className="w-5 h-5 text-blue-400 shrink-0" />
                     All codes & features included
                   </li>
-                  <li className="flex items-start gap-3 text-slate-300">
+                  <li className="flex items-start gap-3 text-slate-700 dark:text-slate-300">
                     <Check className="w-5 h-5 text-blue-400 shrink-0" />
                     Access from any device, anywhere
                   </li>
-                  <li className="flex items-start gap-3 text-slate-300">
+                  <li className="flex items-start gap-3 text-slate-700 dark:text-slate-300">
                     <Check className="w-5 h-5 text-blue-400 shrink-0" />
                     Modern, lightning-fast web interface
                   </li>
@@ -1033,12 +1033,12 @@ export const EnhancedPricingPage: FC = () => {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 px-4 bg-slate-900/30">
+      <section className="py-20 px-4 bg-slate-50 dark:bg-slate-900/30">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-4">
             Frequently Asked Questions
           </h2>
-          <p className="text-center text-slate-400 mb-12">
+          <p className="text-center text-slate-600 dark:text-slate-400 mb-12">
             Can't find what you're looking for?{" "}
             <Link to="/contact" className="text-blue-400 hover:underline">
               Contact us
@@ -1052,26 +1052,26 @@ export const EnhancedPricingPage: FC = () => {
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
-                className="rounded-xl border border-slate-800 bg-slate-900/50 overflow-hidden"
+                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 overflow-hidden"
               >
                 <button
                   onClick={() => setExpandedFaq(expandedFaq === i ? null : i)}
                   aria-expanded={expandedFaq === i}
                   aria-controls={`faq-answer-${i}`}
-                  className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-800/50 transition-colors"
+                  className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-100 dark:bg-slate-800/50 transition-colors"
                 >
                   <span className="font-medium text-white">{faq.q}</span>
                   {expandedFaq === i ? (
-                    <ChevronUp className="w-5 h-5 text-slate-400" />
+                    <ChevronUp className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                   ) : (
-                    <ChevronDown className="w-5 h-5 text-slate-400" />
+                    <ChevronDown className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                   )}
                 </button>
                 {expandedFaq === i && (
                   <div
                     id={`faq-answer-${i}`}
                     role="region"
-                    className="px-5 pb-5 text-slate-400 text-sm leading-relaxed"
+                    className="px-5 pb-5 text-slate-600 dark:text-slate-400 text-sm leading-relaxed"
                   >
                     {faq.a}
                   </div>
@@ -1083,12 +1083,12 @@ export const EnhancedPricingPage: FC = () => {
       </section>
 
       {/* CTA */}
-      <section className="py-24 px-4 bg-gradient-to-b from-slate-950 to-blue-950/20 border-t border-slate-800">
+      <section className="py-24 px-4 bg-gradient-to-b from-slate-950 to-blue-950/20 border-t border-slate-200 dark:border-slate-800">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-extrabold mb-6">
             Ready to upgrade your engineering workflow?
           </h2>
-          <p className="text-xl text-slate-400 mb-10 max-w-2xl mx-auto">
+          <p className="text-xl text-slate-600 dark:text-slate-400 mb-10 max-w-2xl mx-auto">
             Join thousands of engineers who have already switched to BeamLab.
             Start your 14-day free trial today. No credit card required.
           </p>
@@ -1101,7 +1101,7 @@ export const EnhancedPricingPage: FC = () => {
             </button>
             <Link
               to="/contact"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-full border-2 border-slate-700 text-white font-medium hover:bg-slate-800 transition-all"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-full border-2 border-slate-300 dark:border-slate-700 text-white font-medium hover:bg-slate-100 dark:bg-slate-800 transition-all"
             >
               <MessageSquare className="w-5 h-5" /> Talk to Sales
             </Link>
@@ -1113,27 +1113,27 @@ export const EnhancedPricingPage: FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-800 py-8 px-4">
+      <footer className="border-t border-slate-200 dark:border-slate-800 py-8 px-4">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-slate-400 text-sm">
+          <p className="text-slate-600 dark:text-slate-400 text-sm">
             © 2026 BeamLab Ultimate. All rights reserved.
           </p>
           <div className="flex gap-6">
             <Link
               to="/privacy"
-              className="text-slate-400 text-sm hover:text-white"
+              className="text-slate-600 dark:text-slate-400 text-sm hover:text-white"
             >
               Privacy
             </Link>
             <Link
               to="/terms"
-              className="text-slate-400 text-sm hover:text-white"
+              className="text-slate-600 dark:text-slate-400 text-sm hover:text-white"
             >
               Terms
             </Link>
             <Link
               to="/contact"
-              className="text-slate-400 text-sm hover:text-white"
+              className="text-slate-600 dark:text-slate-400 text-sm hover:text-white"
             >
               Contact
             </Link>
@@ -1160,7 +1160,7 @@ const FeatureValue: FC<{ value: boolean | string; highlight?: boolean }> = ({
   }
   return (
     <span
-      className={`text-sm ${highlight ? "text-blue-400" : "text-slate-300"}`}
+      className={`text-sm ${highlight ? "text-blue-400" : "text-slate-700 dark:text-slate-300"}`}
     >
       {value}
     </span>

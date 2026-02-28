@@ -141,7 +141,7 @@ export const SettingsPageEnhanced: FC = () => {
                                 onClick={() => setActiveTab(item.id)}
                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === item.id
                                         ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                                        : 'text-text-muted hover:bg-zinc-800 hover:text-white'
+                                        : 'text-text-muted hover:bg-zinc-100 dark:bg-zinc-800 hover:text-white'
                                     }`}
                             >
                                 <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
@@ -209,7 +209,7 @@ export const SettingsPageEnhanced: FC = () => {
                                             </div>
                                             <button className="text-xs font-bold text-primary hover:underline">Clear Cache</button>
                                         </div>
-                                        <div className="w-full h-2 bg-zinc-900 rounded-full overflow-hidden">
+                                        <div className="w-full h-2 bg-white dark:bg-zinc-900 rounded-full overflow-hidden">
                                             <div className="h-full bg-primary rounded-full" style={{ width: '9%' }}></div>
                                         </div>
                                     </div>
@@ -252,7 +252,7 @@ export const SettingsPageEnhanced: FC = () => {
                                 </div>
 
                                 <div>
-                                    <label className="text-zinc-400 text-sm font-medium block mb-2">Grid Spacing</label>
+                                    <label className="text-zinc-500 dark:text-zinc-400 text-sm font-medium block mb-2">Grid Spacing</label>
                                     <div className="bg-surface-dark border border-border-dark rounded-lg p-5">
                                         <div className="flex items-center justify-between mb-3">
                                             <span className="text-white text-sm">Current: {gridSize.toFixed(1)} m</span>
@@ -263,7 +263,7 @@ export const SettingsPageEnhanced: FC = () => {
                                                 step="0.1"
                                                 min="0.1"
                                                 max="10"
-                                                className="w-24 bg-zinc-900 border border-zinc-700 rounded px-3 py-1 text-white text-sm"
+                                                className="w-24 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded px-3 py-1 text-white text-sm"
                                             />
                                         </div>
                                         <input
@@ -407,32 +407,32 @@ export const SettingsPageEnhanced: FC = () => {
 
                                 <div className="bg-surface-dark border border-border-dark rounded-lg p-6 space-y-4">
                                     <div>
-                                        <label className="text-zinc-400 text-sm font-medium block mb-2">Full Name</label>
+                                        <label className="text-zinc-500 dark:text-zinc-400 text-sm font-medium block mb-2">Full Name</label>
                                         <input
                                             type="text"
                                             value={userName}
                                             onChange={(e) => setUserName(e.target.value)}
-                                            className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                                            className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="text-zinc-400 text-sm font-medium block mb-2">Email Address</label>
+                                        <label className="text-zinc-500 dark:text-zinc-400 text-sm font-medium block mb-2">Email Address</label>
                                         <input
                                             type="email"
                                             value={userEmail}
                                             onChange={(e) => setUserEmail(e.target.value)}
-                                            className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                                            className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="text-zinc-400 text-sm font-medium block mb-2">Organization</label>
+                                        <label className="text-zinc-500 dark:text-zinc-400 text-sm font-medium block mb-2">Organization</label>
                                         <input
                                             type="text"
                                             value={userOrg}
                                             onChange={(e) => setUserOrg(e.target.value)}
-                                            className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                                            className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                                         />
                                     </div>
                                 </div>
@@ -440,11 +440,11 @@ export const SettingsPageEnhanced: FC = () => {
                                 <div className="bg-surface-dark border border-border-dark rounded-lg p-6">
                                     <h3 className="text-white text-sm font-bold mb-4">Account Actions</h3>
                                     <div className="flex flex-col gap-3">
-                                        <button className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-border-dark hover:border-primary hover:bg-zinc-800 text-white transition-all group">
+                                        <button className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-border-dark hover:border-primary hover:bg-zinc-100 dark:bg-zinc-800 text-white transition-all group">
                                             <span className="text-sm font-medium">Change Password</span>
                                             <span className="material-symbols-outlined text-[18px] text-text-muted group-hover:text-primary">chevron_right</span>
                                         </button>
-                                        <button className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-border-dark hover:border-primary hover:bg-zinc-800 text-white transition-all group">
+                                        <button className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-border-dark hover:border-primary hover:bg-zinc-100 dark:bg-zinc-800 text-white transition-all group">
                                             <span className="text-sm font-medium">Export My Data</span>
                                             <span className="material-symbols-outlined text-[18px] text-text-muted group-hover:text-primary">download</span>
                                         </button>

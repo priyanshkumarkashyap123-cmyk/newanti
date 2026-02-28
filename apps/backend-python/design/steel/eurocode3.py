@@ -209,7 +209,7 @@ class Eurocode3Designer:
             # Simplified: Max(eta*h*tw, A - 2b*tf) -> Often just h*tw for rolled I
             Av = max(Av, self.section.h * self.section.tw) 
         else: # Horizontal shear
-            Av = 2 * section.b * section.tf # Flanges take horizontal shear
+            Av = 2 * self.section.b * self.section.tf # Flanges take horizontal shear
             
         V_pl_Rd = (Av * (self.fy / math.sqrt(3))) / GAMMA_M0 / 1000.0
         return V_pl_Rd

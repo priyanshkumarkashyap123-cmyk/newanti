@@ -108,9 +108,9 @@ const VideoCard = ({ tutorial, index }: { tutorial: VideoTutorial; index: number
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.1 }}
-        className="group bg-slate-900 rounded-xl overflow-hidden border border-slate-800 hover:border-blue-500/30 transition-all duration-300 cursor-pointer flex flex-col h-full hover-lift"
+        className="group bg-slate-50 dark:bg-slate-900 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 hover:border-blue-500/30 transition-all duration-300 cursor-pointer flex flex-col h-full hover-lift"
     >
-        <div className="relative aspect-video bg-slate-800 overflow-hidden">
+        <div className="relative aspect-video bg-slate-100 dark:bg-slate-800 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20 flex items-center justify-center">
                 <BookOpen className="w-16 h-16 text-blue-500/30" />
             </div>
@@ -127,10 +127,10 @@ const VideoCard = ({ tutorial, index }: { tutorial: VideoTutorial; index: number
             <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">
                 {tutorial.title}
             </h3>
-            <p className="text-sm text-slate-400 mb-4 line-clamp-2">
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">
                 {tutorial.description}
             </p>
-            <div className="mt-auto flex items-center gap-2 text-xs font-medium text-slate-400 uppercase tracking-wider">
+            <div className="mt-auto flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                 <span className={`w-2 h-2 rounded-full ${tutorial.level === 'Beginner' ? 'bg-green-500' :
                     tutorial.level === 'Intermediate' ? 'bg-yellow-500' : 'bg-red-500'
                     }`} />
@@ -141,20 +141,20 @@ const VideoCard = ({ tutorial, index }: { tutorial: VideoTutorial; index: number
 );
 
 const FAQItem = ({ faq, isOpen, onToggle }: { faq: FAQ; isOpen: boolean; onToggle: () => void }) => (
-    <div className="border border-slate-800 rounded-lg bg-slate-900 overflow-hidden">
+    <div className="border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-900 overflow-hidden">
         <button
             onClick={onToggle}
-            className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-800/50 transition-colors"
+            className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-100 dark:bg-slate-800/50 transition-colors"
         >
             <span className="font-bold text-white pr-4">{faq.question}</span>
             {isOpen ? (
-                <ChevronUp className="w-5 h-5 text-slate-400 flex-shrink-0" />
+                <ChevronUp className="w-5 h-5 text-slate-600 dark:text-slate-400 flex-shrink-0" />
             ) : (
-                <ChevronDown className="w-5 h-5 text-slate-400 flex-shrink-0" />
+                <ChevronDown className="w-5 h-5 text-slate-600 dark:text-slate-400 flex-shrink-0" />
             )}
         </button>
         {isOpen && (
-            <div className="p-5 pt-0 border-t border-slate-800 text-slate-400 text-sm leading-relaxed">
+            <div className="p-5 pt-0 border-t border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
                 <p className="mt-4">{faq.answer}</p>
             </div>
         )}
@@ -170,9 +170,9 @@ export const HelpPage = () => {
     const [openFAQ, setOpenFAQ] = useState<string | null>('1');
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col font-sans selection:bg-blue-500/30">
+        <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-50 flex flex-col font-sans selection:bg-blue-500/30">
             {/* Header - Dark Theme */}
-            <nav className="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/90 backdrop-blur-xl">
+            <nav className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/90 backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <Link to="/" className="flex items-center gap-3 group">
@@ -184,8 +184,8 @@ export const HelpPage = () => {
                             </span>
                         </Link>
                         <div className="hidden md:flex items-center gap-8">
-                            <Link to="/dashboard" className="text-slate-400 hover:text-white text-sm font-medium transition-colors">Dashboard</Link>
-                            <Link to="/app" className="text-slate-400 hover:text-white text-sm font-medium transition-colors">Projects</Link>
+                            <Link to="/dashboard" className="text-slate-600 dark:text-slate-400 hover:text-white text-sm font-medium transition-colors">Dashboard</Link>
+                            <Link to="/app" className="text-slate-600 dark:text-slate-400 hover:text-white text-sm font-medium transition-colors">Projects</Link>
                             <Link to="/help" className="text-white font-semibold text-sm">Help</Link>
                             <Link to="/app" className="flex items-center gap-2 rounded-full h-9 px-5 bg-white text-slate-950 text-sm font-bold hover:bg-slate-100 transition-colors">
                                 <Plus className="w-4 h-4" />
@@ -212,22 +212,22 @@ export const HelpPage = () => {
                             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
                                 Help & Tutorials
                             </h1>
-                            <p className="text-lg text-slate-400">
+                            <p className="text-lg text-slate-600 dark:text-slate-400">
                                 Master structural analysis with our comprehensive video guides and expert support.
                             </p>
                         </motion.div>
 
                         {/* Search Bar */}
                         <div className="relative w-full max-w-2xl mx-auto">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 dark:text-slate-400" />
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search for topics, commands, or errors..."
-                                className="w-full rounded-xl border border-slate-800 bg-slate-900 pl-12 pr-4 py-4 text-base text-white shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-slate-400 transition-all"
+                                className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 pl-12 pr-4 py-4 text-base text-white shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-slate-600 dark:text-slate-400 transition-all"
                             />
-                            <kbd className="absolute right-4 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center rounded border border-slate-700 bg-slate-800 px-2 py-1 font-sans text-xs text-slate-400">
+                            <kbd className="absolute right-4 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center rounded border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-2 py-1 font-sans text-xs text-slate-600 dark:text-slate-400">
                                 ⌘K
                             </kbd>
                         </div>
@@ -260,7 +260,7 @@ export const HelpPage = () => {
                             <h2 className="text-2xl font-bold text-white mb-4">
                                 Frequently Asked Questions
                             </h2>
-                            <p className="text-slate-400 text-sm mb-6">
+                            <p className="text-slate-600 dark:text-slate-400 text-sm mb-6">
                                 Can't find the answer you're looking for? Browse our full documentation or reach out to support.
                             </p>
                             <a
@@ -285,7 +285,7 @@ export const HelpPage = () => {
 
                     {/* Support CTA */}
                     <section className="mt-4 mb-8">
-                        <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-8 md:p-12 relative overflow-hidden border border-slate-800">
+                        <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-8 md:p-12 relative overflow-hidden border border-slate-200 dark:border-slate-800">
                             {/* Decorative background */}
                             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
                             <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/10 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none" />
@@ -293,7 +293,7 @@ export const HelpPage = () => {
                             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
                                 <div className="max-w-xl">
                                     <h3 className="text-2xl font-bold text-white mb-3">Still need help?</h3>
-                                    <p className="text-slate-400">
+                                    <p className="text-slate-600 dark:text-slate-400">
                                         Our dedicated structural engineering support team is ready to assist you with complex modeling questions or technical issues.
                                     </p>
                                 </div>
@@ -314,8 +314,8 @@ export const HelpPage = () => {
             </main>
 
             {/* Footer - Dark Theme */}
-            <footer className="border-t border-slate-800 bg-slate-950 py-8">
-                <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
+            <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-8">
+                <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
                     <p>© 2026 BeamLab Ultimate. All rights reserved.</p>
                     <div className="flex gap-6">
                         <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>

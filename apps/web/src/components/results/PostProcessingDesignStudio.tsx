@@ -965,7 +965,7 @@ const RCBeamTab: FC<{
               className={`w-full text-left px-3 py-2 text-sm border-b border-zinc-200/60 dark:border-zinc-800/60 transition-colors ${
                 r.id === activeMember?.id
                   ? "bg-blue-900/30 text-blue-300 border-l-2 border-l-blue-400"
-                  : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-700/40 border-l-2 border-l-transparent"
+                  : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/40 dark:hover:bg-zinc-700/40 border-l-2 border-l-transparent"
               }`}
             >
               <div className="font-mono font-medium truncate">{r.label}</div>
@@ -1434,7 +1434,7 @@ const SteelDesignTab: FC<{
                 className={`w-full text-left px-3 py-2 text-sm border-b border-zinc-200/60 dark:border-zinc-800/60 transition-colors ${
                   r.id === activeMember?.id
                     ? "bg-blue-900/30 text-blue-300 border-l-2 border-l-blue-400"
-                    : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-700/40 border-l-2 border-l-transparent"
+                    : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/40 dark:hover:bg-zinc-700/40 border-l-2 border-l-transparent"
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -2397,7 +2397,7 @@ export const PostProcessingDesignStudio: FC<DesignStudioProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={handleExport}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 rounded-lg text-zinc-700 dark:text-zinc-800 dark:text-zinc-200 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-300 dark:hover:bg-zinc-600 rounded-lg text-zinc-700 dark:text-zinc-800 dark:text-zinc-200 transition-colors"
             >
               <Download className="w-4 h-4" />
               Export Report
@@ -2414,7 +2414,7 @@ export const PostProcessingDesignStudio: FC<DesignStudioProps> = ({
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
               activeTab === tab.id
                 ? "bg-blue-600 text-white shadow"
-                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:text-zinc-200 hover:bg-zinc-700/50"
+                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50"
             }`}
           >
             {tab.icon}

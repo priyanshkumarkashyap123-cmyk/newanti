@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom';
 
 export function NotFoundPage() {
     return (
-        <div className="min-h-screen bg-slate-900 flex items-center justify-center px-6">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center px-6">
             <div className="text-center max-w-lg">
                 {/* 404 number */}
                 <h1
@@ -28,7 +28,7 @@ export function NotFoundPage() {
                 <h2 className="text-2xl font-semibold text-slate-200 mb-3">
                     Page Not Found
                 </h2>
-                <p className="text-slate-400 mb-8 leading-relaxed">
+                <p className="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
                     The page you're looking for doesn't exist or has been moved.
                     Check the URL or navigate back to the dashboard.
                 </p>

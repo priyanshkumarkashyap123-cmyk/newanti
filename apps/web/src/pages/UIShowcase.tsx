@@ -65,7 +65,7 @@ export const UIShowcase: FC = () => {
     };
 
     return (
-        <PageTransition className="min-h-screen bg-slate-950 p-8">
+        <PageTransition className="min-h-screen bg-white dark:bg-slate-950 p-8">
             {/* Header */}
             <div className="max-w-6xl mx-auto">
                 <FadeIn>
@@ -81,9 +81,9 @@ export const UIShowcase: FC = () => {
                     <h1 className="text-3xl font-bold text-white mb-2">
                         UI Component Library
                     </h1>
-                    <p className="text-slate-400 mb-8">
-                        Press <kbd className="px-2 py-1 bg-slate-800 rounded text-sm">⌘K</kbd> for command palette,
-                        <kbd className="px-2 py-1 bg-slate-800 rounded text-sm ml-2">⌘/</kbd> for keyboard shortcuts
+                    <p className="text-slate-600 dark:text-slate-400 mb-8">
+                        Press <kbd className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm">⌘K</kbd> for command palette,
+                        <kbd className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm ml-2">⌘/</kbd> for keyboard shortcuts
                     </p>
                 </FadeIn>
 
@@ -135,7 +135,7 @@ export const UIShowcase: FC = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Badges & Avatars */}
-                        <div className="p-6 bg-slate-900 rounded-xl border border-slate-800">
+                        <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
                             <h3 className="text-lg font-semibold text-white mb-4">Badges & Avatars</h3>
 
                             <div className="flex flex-wrap gap-2 mb-6">
@@ -159,12 +159,12 @@ export const UIShowcase: FC = () => {
                                     ]}
                                     max={4}
                                 />
-                                <span className="text-slate-400 text-sm">5 team members</span>
+                                <span className="text-slate-600 dark:text-slate-400 text-sm">5 team members</span>
                             </div>
                         </div>
 
                         {/* Progress Indicators */}
-                        <div className="p-6 bg-slate-900 rounded-xl border border-slate-800">
+                        <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
                             <h3 className="text-lg font-semibold text-white mb-4">Progress</h3>
 
                             <div className="flex items-center gap-6 mb-6">
@@ -182,21 +182,21 @@ export const UIShowcase: FC = () => {
                 {/* Data Viz Tab */}
                 <TabPanel isActive={activeTab === 'data'}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="p-6 bg-slate-900 rounded-xl border border-slate-800">
+                        <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
                             <h3 className="text-lg font-semibold text-white mb-4">Sparkline Charts</h3>
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-slate-400">Analysis Time</span>
+                                    <span className="text-slate-600 dark:text-slate-400">Analysis Time</span>
                                     <Sparkline data={sparklineData} width={120} color="green" />
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-slate-400">Memory Usage</span>
+                                    <span className="text-slate-600 dark:text-slate-400">Memory Usage</span>
                                     <Sparkline data={[30, 25, 40, 35, 45, 30, 50, 45, 55, 40]} width={120} color="blue" />
                                 </div>
                             </div>
                         </div>
 
-                        <div className="p-6 bg-slate-900 rounded-xl border border-slate-800">
+                        <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
                             <h3 className="text-lg font-semibold text-white mb-4">Tooltips</h3>
                             <div className="flex gap-4">
                                 <Tooltip content="Top tooltip" position="top">
@@ -216,7 +216,7 @@ export const UIShowcase: FC = () => {
                 {/* Overlays Tab */}
                 <TabPanel isActive={activeTab === 'overlays'}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="p-6 bg-slate-900 rounded-xl border border-slate-800">
+                        <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
                             <h3 className="text-lg font-semibold text-white mb-4">Dialogs</h3>
                             <div className="flex flex-wrap gap-3">
                                 <Button onClick={modal.open}>Open Modal</Button>
@@ -226,7 +226,7 @@ export const UIShowcase: FC = () => {
                             </div>
                         </div>
 
-                        <div className="p-6 bg-slate-900 rounded-xl border border-slate-800">
+                        <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
                             <h3 className="text-lg font-semibold text-white mb-4">Toast Notifications</h3>
                             <div className="flex flex-wrap gap-3">
                                 <Button size="sm" onClick={() => toast.success('Success!', 'Operation completed.')}>
@@ -249,7 +249,7 @@ export const UIShowcase: FC = () => {
                 {/* Navigation Tab */}
                 <TabPanel isActive={activeTab === 'navigation'}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="p-6 bg-slate-900 rounded-xl border border-slate-800">
+                        <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
                             <h3 className="text-lg font-semibold text-white mb-4">Stepper</h3>
                             <Stepper
                                 steps={[
@@ -272,7 +272,7 @@ export const UIShowcase: FC = () => {
                             </div>
                         </div>
 
-                        <div className="p-6 bg-slate-900 rounded-xl border border-slate-800">
+                        <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
                             <h3 className="text-lg font-semibold text-white mb-4">Pagination</h3>
                             <Pagination
                                 currentPage={currentPage}
@@ -282,7 +282,7 @@ export const UIShowcase: FC = () => {
                         </div>
                     </div>
 
-                    <div className="mt-6 p-6 bg-slate-900 rounded-xl border border-slate-800">
+                    <div className="mt-6 p-6 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
                         <h3 className="text-lg font-semibold text-white mb-4">Accordion</h3>
                         <Accordion
                             items={[
@@ -309,7 +309,7 @@ export const UIShowcase: FC = () => {
                         </>
                     }
                 >
-                    <p className="text-slate-400">
+                    <p className="text-slate-600 dark:text-slate-400">
                         Modal content goes here. You can put forms, information, or any other content.
                     </p>
                 </Modal>
@@ -323,7 +323,7 @@ export const UIShowcase: FC = () => {
                     size="md"
                 >
                     <div className="space-y-4">
-                        <p className="text-slate-400">
+                        <p className="text-slate-600 dark:text-slate-400">
                             This is a side drawer, perfect for property panels and settings.
                         </p>
                         <ProgressBar progress={60} label="Loading..." color="blue" />
@@ -342,7 +342,7 @@ export const UIShowcase: FC = () => {
                             <button
                                 key={action}
                                 onClick={sheet.close}
-                                className="p-4 bg-slate-800 rounded-xl hover:bg-slate-700 transition-colors"
+                                className="p-4 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                             >
                                 <span className="text-white font-medium">{action}</span>
                             </button>

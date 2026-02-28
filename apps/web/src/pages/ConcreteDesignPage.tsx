@@ -501,70 +501,70 @@ export const ConcreteDesignPage: React.FC = () => {
   const renderBeamForm = () => (
     <div className="space-y-6">
       {/* Geometry Section */}
-      <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+      <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-300 dark:border-slate-700">
         <h3 className="text-sm font-semibold text-emerald-400 mb-3 flex items-center gap-2">
           <Box className="w-4 h-4" />
           Beam Geometry
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div>
-            <label className="text-xs text-slate-400">Span (mm)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Span (mm)</label>
             <input
               type="number"
               value={beamInput.span}
               onChange={(e) => setBeamInput({...beamInput, span: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             />
           </div>
           <div>
-            <label className="text-xs text-slate-400">Width b (mm)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Width b (mm)</label>
             <input
               type="number"
               value={beamInput.width}
               onChange={(e) => setBeamInput({...beamInput, width: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             />
           </div>
           <div>
-            <label className="text-xs text-slate-400">Total Depth D (mm)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Total Depth D (mm)</label>
             <input
               type="number"
               value={beamInput.depth}
               onChange={(e) => setBeamInput({...beamInput, depth: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             />
           </div>
           <div>
-            <label className="text-xs text-slate-400">Effective Depth d (mm)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Effective Depth d (mm)</label>
             <input
               type="number"
               value={beamInput.effectiveDepth}
               onChange={(e) => setBeamInput({...beamInput, effectiveDepth: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             />
           </div>
           <div>
-            <label className="text-xs text-slate-400">Clear Cover (mm)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Clear Cover (mm)</label>
             <input
               type="number"
               value={beamInput.cover}
               onChange={(e) => setBeamInput({...beamInput, cover: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             />
           </div>
         </div>
       </div>
 
       {/* Materials Section */}
-      <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+      <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-300 dark:border-slate-700">
         <h3 className="text-sm font-semibold text-blue-400 mb-3">Materials</h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-xs text-slate-400">Concrete Grade f'ck (MPa)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Concrete Grade f'ck (MPa)</label>
             <select
               value={beamInput.fck}
               onChange={(e) => setBeamInput({...beamInput, fck: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             >
               <option value="20">M20 / 3000 psi</option>
               <option value="25">M25 / 3600 psi</option>
@@ -574,11 +574,11 @@ export const ConcreteDesignPage: React.FC = () => {
             </select>
           </div>
           <div>
-            <label className="text-xs text-slate-400">Steel Grade fy (MPa)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Steel Grade fy (MPa)</label>
             <select
               value={beamInput.fy}
               onChange={(e) => setBeamInput({...beamInput, fy: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             >
               <option value="415">Fe 415 / Grade 60</option>
               <option value="500">Fe 500 / Grade 75</option>
@@ -589,44 +589,44 @@ export const ConcreteDesignPage: React.FC = () => {
       </div>
 
       {/* Loads Section */}
-      <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+      <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-300 dark:border-slate-700">
         <h3 className="text-sm font-semibold text-amber-400 mb-3">Loads & Moments</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div>
-            <label className="text-xs text-slate-400">Dead Load (kN/m)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Dead Load (kN/m)</label>
             <input
               type="number"
               value={beamInput.deadLoad}
               onChange={(e) => setBeamInput({...beamInput, deadLoad: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             />
           </div>
           <div>
-            <label className="text-xs text-slate-400">Live Load (kN/m)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Live Load (kN/m)</label>
             <input
               type="number"
               value={beamInput.liveLoad}
               onChange={(e) => setBeamInput({...beamInput, liveLoad: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             />
           </div>
           <div className="col-span-2 md:col-span-1" />
           <div>
-            <label className="text-xs text-slate-400">Ultimate Moment Mu (kN·m)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Ultimate Moment Mu (kN·m)</label>
             <input
               type="number"
               value={beamInput.Mu}
               onChange={(e) => setBeamInput({...beamInput, Mu: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             />
           </div>
           <div>
-            <label className="text-xs text-slate-400">Ultimate Shear Vu (kN)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Ultimate Shear Vu (kN)</label>
             <input
               type="number"
               value={beamInput.Vu}
               onChange={(e) => setBeamInput({...beamInput, Vu: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             />
           </div>
         </div>
@@ -637,70 +637,70 @@ export const ConcreteDesignPage: React.FC = () => {
   const renderColumnForm = () => (
     <div className="space-y-6">
       {/* Geometry */}
-      <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+      <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-300 dark:border-slate-700">
         <h3 className="text-sm font-semibold text-emerald-400 mb-3 flex items-center gap-2">
           <Columns className="w-4 h-4" />
           Column Geometry
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div>
-            <label className="text-xs text-slate-400">Width b (mm)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Width b (mm)</label>
             <input
               type="number"
               value={columnInput.width}
               onChange={(e) => setColumnInput({...columnInput, width: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             />
           </div>
           <div>
-            <label className="text-xs text-slate-400">Depth D (mm)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Depth D (mm)</label>
             <input
               type="number"
               value={columnInput.depth}
               onChange={(e) => setColumnInput({...columnInput, depth: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             />
           </div>
           <div>
-            <label className="text-xs text-slate-400">Height (mm)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Height (mm)</label>
             <input
               type="number"
               value={columnInput.height}
               onChange={(e) => setColumnInput({...columnInput, height: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             />
           </div>
           <div>
-            <label className="text-xs text-slate-400">Effective Length (mm)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Effective Length (mm)</label>
             <input
               type="number"
               value={columnInput.effectiveLength}
               onChange={(e) => setColumnInput({...columnInput, effectiveLength: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             />
           </div>
           <div>
-            <label className="text-xs text-slate-400">Clear Cover (mm)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Clear Cover (mm)</label>
             <input
               type="number"
               value={columnInput.cover}
               onChange={(e) => setColumnInput({...columnInput, cover: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             />
           </div>
         </div>
       </div>
 
       {/* Materials */}
-      <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+      <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-300 dark:border-slate-700">
         <h3 className="text-sm font-semibold text-blue-400 mb-3">Materials</h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-xs text-slate-400">Concrete Grade f'ck (MPa)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Concrete Grade f'ck (MPa)</label>
             <select
               value={columnInput.fck}
               onChange={(e) => setColumnInput({...columnInput, fck: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             >
               <option value="20">M20 / 3000 psi</option>
               <option value="25">M25 / 3600 psi</option>
@@ -710,11 +710,11 @@ export const ConcreteDesignPage: React.FC = () => {
             </select>
           </div>
           <div>
-            <label className="text-xs text-slate-400">Steel Grade fy (MPa)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Steel Grade fy (MPa)</label>
             <select
               value={columnInput.fy}
               onChange={(e) => setColumnInput({...columnInput, fy: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             >
               <option value="415">Fe 415 / Grade 60</option>
               <option value="500">Fe 500 / Grade 75</option>
@@ -725,34 +725,34 @@ export const ConcreteDesignPage: React.FC = () => {
       </div>
 
       {/* Loads */}
-      <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+      <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-300 dark:border-slate-700">
         <h3 className="text-sm font-semibold text-amber-400 mb-3">Loads</h3>
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="text-xs text-slate-400">Axial Load Pu (kN)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Axial Load Pu (kN)</label>
             <input
               type="number"
               value={columnInput.Pu}
               onChange={(e) => setColumnInput({...columnInput, Pu: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             />
           </div>
           <div>
-            <label className="text-xs text-slate-400">Moment Mux (kN·m)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Moment Mux (kN·m)</label>
             <input
               type="number"
               value={columnInput.Mux}
               onChange={(e) => setColumnInput({...columnInput, Mux: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             />
           </div>
           <div>
-            <label className="text-xs text-slate-400">Moment Muy (kN·m)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Moment Muy (kN·m)</label>
             <input
               type="number"
               value={columnInput.Muy}
               onChange={(e) => setColumnInput({...columnInput, Muy: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             />
           </div>
         </div>
@@ -763,54 +763,54 @@ export const ConcreteDesignPage: React.FC = () => {
   const renderSlabForm = () => (
     <div className="space-y-6">
       {/* Geometry */}
-      <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+      <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-300 dark:border-slate-700">
         <h3 className="text-sm font-semibold text-emerald-400 mb-3 flex items-center gap-2">
           <Square className="w-4 h-4" />
           Slab Geometry
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div>
-            <label className="text-xs text-slate-400">Short Span lx (mm)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Short Span lx (mm)</label>
             <input
               type="number"
               value={slabInput.lx}
               onChange={(e) => setSlabInput({...slabInput, lx: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             />
           </div>
           <div>
-            <label className="text-xs text-slate-400">Long Span ly (mm)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Long Span ly (mm)</label>
             <input
               type="number"
               value={slabInput.ly}
               onChange={(e) => setSlabInput({...slabInput, ly: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             />
           </div>
           <div>
-            <label className="text-xs text-slate-400">Thickness (mm)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Thickness (mm)</label>
             <input
               type="number"
               value={slabInput.thickness}
               onChange={(e) => setSlabInput({...slabInput, thickness: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             />
           </div>
           <div>
-            <label className="text-xs text-slate-400">Clear Cover (mm)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Clear Cover (mm)</label>
             <input
               type="number"
               value={slabInput.cover}
               onChange={(e) => setSlabInput({...slabInput, cover: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             />
           </div>
           <div>
-            <label className="text-xs text-slate-400">Support Type</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Support Type</label>
             <select
               value={slabInput.supportType}
               onChange={(e) => setSlabInput({...slabInput, supportType: e.target.value as any})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             >
               <option value="simply-supported">Simply Supported</option>
               <option value="fixed">Fixed</option>
@@ -821,15 +821,15 @@ export const ConcreteDesignPage: React.FC = () => {
       </div>
 
       {/* Materials */}
-      <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+      <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-300 dark:border-slate-700">
         <h3 className="text-sm font-semibold text-blue-400 mb-3">Materials</h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-xs text-slate-400">Concrete Grade f'ck (MPa)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Concrete Grade f'ck (MPa)</label>
             <select
               value={slabInput.fck}
               onChange={(e) => setSlabInput({...slabInput, fck: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             >
               <option value="20">M20 / 3000 psi</option>
               <option value="25">M25 / 3600 psi</option>
@@ -839,11 +839,11 @@ export const ConcreteDesignPage: React.FC = () => {
             </select>
           </div>
           <div>
-            <label className="text-xs text-slate-400">Steel Grade fy (MPa)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Steel Grade fy (MPa)</label>
             <select
               value={slabInput.fy}
               onChange={(e) => setSlabInput({...slabInput, fy: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             >
               <option value="415">Fe 415 / Grade 60</option>
               <option value="500">Fe 500 / Grade 75</option>
@@ -854,25 +854,25 @@ export const ConcreteDesignPage: React.FC = () => {
       </div>
 
       {/* Loads */}
-      <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+      <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-300 dark:border-slate-700">
         <h3 className="text-sm font-semibold text-amber-400 mb-3">Loads</h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-xs text-slate-400">Dead Load (kN/m²)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Dead Load (kN/m²)</label>
             <input
               type="number"
               value={slabInput.deadLoad}
               onChange={(e) => setSlabInput({...slabInput, deadLoad: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             />
           </div>
           <div>
-            <label className="text-xs text-slate-400">Live Load (kN/m²)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Live Load (kN/m²)</label>
             <input
               type="number"
               value={slabInput.liveLoad}
               onChange={(e) => setSlabInput({...slabInput, liveLoad: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-white text-sm"
             />
           </div>
         </div>
@@ -884,7 +884,7 @@ export const ConcreteDesignPage: React.FC = () => {
     if (!results) return null;
 
     return (
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-6 border border-slate-700">
+      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
         <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
           <CheckCircle2 className="w-6 h-6 text-emerald-400" />
           Design Results
@@ -897,17 +897,17 @@ export const ConcreteDesignPage: React.FC = () => {
 
         <div className="space-y-4">
           {/* Design Summary */}
-          <div className="bg-slate-800/50 p-4 rounded-lg">
+          <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
             <h3 className="text-sm font-semibold text-emerald-400 mb-2">Design Summary</h3>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <span className="text-slate-400">Status:</span>
+                <span className="text-slate-600 dark:text-slate-400">Status:</span>
                 <span className={`ml-2 font-semibold ${results.passed ? 'text-emerald-400' : 'text-red-400'}`}>
                   {results.passed ? 'SAFE' : 'UNSAFE'}
                 </span>
               </div>
               <div>
-                <span className="text-slate-400">Utilization:</span>
+                <span className="text-slate-600 dark:text-slate-400">Utilization:</span>
                 <span className="ml-2 font-semibold text-white">{(results.utilization * 100).toFixed(1)}%</span>
               </div>
             </div>
@@ -915,9 +915,9 @@ export const ConcreteDesignPage: React.FC = () => {
 
           {/* Reinforcement */}
           {results.reinforcement && (
-            <div className="bg-slate-800/50 p-4 rounded-lg">
+            <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
               <h3 className="text-sm font-semibold text-blue-400 mb-2">Reinforcement Details</h3>
-              <div className="space-y-2 text-sm text-slate-300">
+              <div className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
                 {memberType === 'beam' && (
                   <>
                     <p>Main Steel (Bottom): {results.reinforcement.mainBottom || results.reinforcement.main}</p>
@@ -944,7 +944,7 @@ export const ConcreteDesignPage: React.FC = () => {
 
           {/* Code Checks */}
           {results.checks && (
-            <div className="bg-slate-800/50 p-4 rounded-lg">
+            <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
               <h3 className="text-sm font-semibold text-amber-400 mb-2">Code Checks</h3>
               <div className="space-y-2">
                 {results.checks.map((check: any, idx: number) => (
@@ -954,8 +954,8 @@ export const ConcreteDesignPage: React.FC = () => {
                     ) : (
                       <AlertCircle className="w-4 h-4 text-red-400" />
                     )}
-                    <span className="text-slate-300">{check.description}</span>
-                    <span className="text-slate-400 text-xs ml-auto">{check.clause}</span>
+                    <span className="text-slate-700 dark:text-slate-300">{check.description}</span>
+                    <span className="text-slate-600 dark:text-slate-400 text-xs ml-auto">{check.clause}</span>
                   </div>
                 ))}
               </div>
@@ -975,12 +975,12 @@ export const ConcreteDesignPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <div className="border-b border-slate-800 bg-gradient-to-r from-slate-900 to-slate-800">
+      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-900 to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-blue-500 bg-clip-text text-transparent mb-2">
             Concrete Design Center
           </h1>
-          <p className="text-slate-400 text-sm">
+          <p className="text-slate-600 dark:text-slate-400 text-sm">
             Professional RC design per {designCode === 'IS456' ? 'IS 456:2000' : 'ACI 318-19'}
           </p>
         </div>
@@ -991,17 +991,17 @@ export const ConcreteDesignPage: React.FC = () => {
           {/* Left Panel - Input */}
           <div className="lg:col-span-2 space-y-6">
             {/* Code & Member Type Selection */}
-            <div className="bg-slate-900 rounded-xl p-6 border border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
-                  <label className="text-sm font-medium text-slate-300 mb-2 block">Design Code</label>
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Design Code</label>
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       onClick={() => setDesignCode('IS456')}
                       className={`py-2 px-4 rounded-lg font-medium transition-colors ${
                         designCode === 'IS456'
                           ? 'bg-emerald-600 text-white'
-                          : 'bg-slate-800 text-slate-400 hover:text-white'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-white'
                       }`}
                     >
                       IS 456:2000
@@ -1011,7 +1011,7 @@ export const ConcreteDesignPage: React.FC = () => {
                       className={`py-2 px-4 rounded-lg font-medium transition-colors ${
                         designCode === 'ACI318'
                           ? 'bg-emerald-600 text-white'
-                          : 'bg-slate-800 text-slate-400 hover:text-white'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-white'
                       }`}
                     >
                       ACI 318-19
@@ -1020,14 +1020,14 @@ export const ConcreteDesignPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-slate-300 mb-2 block">Member Type</label>
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Member Type</label>
                   <div className="grid grid-cols-3 gap-2">
                     <button
                       onClick={() => setMemberType('beam')}
                       className={`py-2 px-3 rounded-lg font-medium transition-colors flex flex-col items-center gap-1 ${
                         memberType === 'beam'
                           ? 'bg-blue-600 text-white'
-                          : 'bg-slate-800 text-slate-400 hover:text-white'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-white'
                       }`}
                     >
                       <Box className="w-5 h-5" />
@@ -1038,7 +1038,7 @@ export const ConcreteDesignPage: React.FC = () => {
                       className={`py-2 px-3 rounded-lg font-medium transition-colors flex flex-col items-center gap-1 ${
                         memberType === 'column'
                           ? 'bg-blue-600 text-white'
-                          : 'bg-slate-800 text-slate-400 hover:text-white'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-white'
                       }`}
                     >
                       <Columns className="w-5 h-5" />
@@ -1049,7 +1049,7 @@ export const ConcreteDesignPage: React.FC = () => {
                       className={`py-2 px-3 rounded-lg font-medium transition-colors flex flex-col items-center gap-1 ${
                         memberType === 'slab'
                           ? 'bg-blue-600 text-white'
-                          : 'bg-slate-800 text-slate-400 hover:text-white'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-white'
                       }`}
                     >
                       <Square className="w-5 h-5" />
@@ -1100,11 +1100,11 @@ export const ConcreteDesignPage: React.FC = () => {
             {results ? (
               renderResults()
             ) : (
-              <div className="bg-slate-900 rounded-xl p-6 border border-slate-700">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <Calculator className="w-16 h-16 text-slate-500 mb-4" />
-                  <h3 className="text-lg font-semibold text-slate-400 mb-2">No Results Yet</h3>
-                  <p className="text-sm text-slate-400">
+                  <h3 className="text-lg font-semibold text-slate-600 dark:text-slate-400 mb-2">No Results Yet</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
                     Configure the member properties and run analysis to see results
                   </p>
                 </div>

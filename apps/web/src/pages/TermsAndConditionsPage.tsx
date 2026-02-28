@@ -105,7 +105,7 @@ function TermsAndConditionsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-xl border-b border-white/10">
+      <header className="sticky top-0 z-50 bg-slate-50 dark:bg-slate-900/80 backdrop-blur-xl border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-3">
@@ -140,7 +140,7 @@ function TermsAndConditionsPage() {
           {/* Sidebar - Table of Contents */}
           <aside
             className={`
-              ${mobileMenuOpen ? 'fixed inset-0 z-40 bg-slate-900 p-6 overflow-y-auto' : 'hidden'}
+              ${mobileMenuOpen ? 'fixed inset-0 z-40 bg-slate-50 dark:bg-slate-900 p-6 overflow-y-auto' : 'hidden'}
               lg:block lg:relative lg:w-72 lg:flex-shrink-0
             `}
           >

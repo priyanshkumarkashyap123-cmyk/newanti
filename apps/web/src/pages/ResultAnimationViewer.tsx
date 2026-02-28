@@ -194,22 +194,22 @@ const ResultAnimationViewer: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
-      <header className="bg-slate-900/50 border-b border-slate-700/50 backdrop-blur-sm sticky top-0 z-40">
+      <header className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-300 dark:border-slate-700/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
                 to="/dashboard"
-                className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors"
+                className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
               >
-                <ArrowLeft className="w-5 h-5 text-slate-400" />
+                <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
               </Link>
               <div>
                 <h1 className="text-2xl font-bold text-white flex items-center gap-2">
                   <Activity className="w-7 h-7 text-purple-400" />
                   Result Animation Viewer
                 </h1>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
                   Dynamic visualization of structural analysis results
                 </p>
               </div>
@@ -234,7 +234,7 @@ const ResultAnimationViewer: React.FC = () => {
           {/* Left Panel - Animation Types & Cases */}
           <div className="space-y-6">
             {/* Animation Type */}
-            <div className="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
+            <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <Layers className="w-5 h-5 text-purple-400" />
                 Animation Type
@@ -255,7 +255,7 @@ const ResultAnimationViewer: React.FC = () => {
                     className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${
                       settings.type === type.id 
                         ? 'bg-purple-600 text-white' 
-                        : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'
+                        : 'bg-slate-700/50 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                     }`}
                   >
                     <type.icon className="w-4 h-4" />
@@ -267,7 +267,7 @@ const ResultAnimationViewer: React.FC = () => {
 
             {/* Load Cases (for static/deformation) */}
             {(settings.type === 'deformation' || settings.type === 'stress') && (
-              <div className="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
+              <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
                 <h3 className="text-lg font-semibold text-white mb-4">Load Cases</h3>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {loadCases.map(lc => (
@@ -276,7 +276,7 @@ const ResultAnimationViewer: React.FC = () => {
                       className={`w-full flex items-center gap-3 p-2 rounded-lg text-sm ${
                         lc.selected 
                           ? 'bg-purple-600/30 border border-purple-500 text-white' 
-                          : 'bg-slate-700/30 text-slate-400 hover:bg-slate-700/50'
+                          : 'bg-slate-700/30 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/50'
                       }`}
                     >
                       <span className={`w-2 h-2 rounded-full ${
@@ -292,7 +292,7 @@ const ResultAnimationViewer: React.FC = () => {
 
             {/* Mode Selection (for modal animation) */}
             {settings.type === 'modal' && (
-              <div className="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
+              <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
                 <h3 className="text-lg font-semibold text-white mb-4">Mode Shapes</h3>
                 <div className="space-y-2 max-h-80 overflow-y-auto">
                   {modeShapes.map(mode => (
@@ -302,14 +302,14 @@ const ResultAnimationViewer: React.FC = () => {
                       className={`w-full p-3 rounded-lg text-left ${
                         selectedMode === mode.mode 
                           ? 'bg-purple-600/30 border border-purple-500' 
-                          : 'bg-slate-700/30 hover:bg-slate-700/50'
+                          : 'bg-slate-700/30 hover:bg-slate-200 dark:hover:bg-slate-700/50'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-white font-medium">Mode {mode.mode}</span>
                         <span className="text-purple-400 text-sm">{mode.frequency.toFixed(2)} Hz</span>
                       </div>
-                      <p className="text-slate-400 text-sm">{mode.description}</p>
+                      <p className="text-slate-600 dark:text-slate-400 text-sm">{mode.description}</p>
                       <div className="flex gap-3 mt-2 text-xs">
                         <span className="text-red-400">X: {mode.participation.x}%</span>
                         <span className="text-green-400">Y: {mode.participation.y}%</span>
@@ -325,7 +325,7 @@ const ResultAnimationViewer: React.FC = () => {
           {/* Main Viewport */}
           <div className="lg:col-span-2 space-y-4">
             {/* 3D Viewport */}
-            <div className="bg-slate-800/50 rounded-xl border border-slate-700/50 aspect-video relative overflow-hidden">
+            <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl border border-slate-300 dark:border-slate-700/50 aspect-video relative overflow-hidden">
               {/* Placeholder for 3D animation */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
@@ -335,7 +335,7 @@ const ResultAnimationViewer: React.FC = () => {
                       transition: 'transform 0.1s'
                     }} 
                   />
-                  <p className="text-slate-400">
+                  <p className="text-slate-600 dark:text-slate-400">
                     {settings.type === 'modal' && `Mode ${selectedMode} Animation`}
                     {settings.type === 'deformation' && 'Deformed Shape Animation'}
                     {settings.type === 'time-history' && 'Time History Response'}
@@ -345,14 +345,14 @@ const ResultAnimationViewer: React.FC = () => {
               </div>
 
               {/* Frame Counter */}
-              <div className="absolute top-4 left-4 bg-slate-900/80 px-3 py-1.5 rounded-lg">
+              <div className="absolute top-4 left-4 bg-slate-50 dark:bg-slate-900/80 px-3 py-1.5 rounded-lg">
                 <span className="text-white text-sm font-mono">
                   Frame: {settings.currentFrame + 1} / {settings.frameCount}
                 </span>
               </div>
 
               {/* Scale Indicator */}
-              <div className="absolute top-4 right-4 bg-slate-900/80 px-3 py-1.5 rounded-lg">
+              <div className="absolute top-4 right-4 bg-slate-50 dark:bg-slate-900/80 px-3 py-1.5 rounded-lg">
                 <span className="text-white text-sm">
                   Scale: {settings.scale}x
                 </span>
@@ -360,9 +360,9 @@ const ResultAnimationViewer: React.FC = () => {
 
               {/* Animation Phase Indicator */}
               <div className="absolute bottom-4 left-4 right-4">
-                <div className="bg-slate-900/80 rounded-lg p-3">
+                <div className="bg-slate-50 dark:bg-slate-900/80 rounded-lg p-3">
                   <div className="flex items-center gap-4 mb-2">
-                    <span className="text-slate-400 text-sm">Phase:</span>
+                    <span className="text-slate-600 dark:text-slate-400 text-sm">Phase:</span>
                     <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-purple-500 transition-all"
@@ -378,7 +378,7 @@ const ResultAnimationViewer: React.FC = () => {
             </div>
 
             {/* Playback Controls */}
-            <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
+            <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-300 dark:border-slate-700/50">
               <div className="flex items-center justify-center gap-2">
                 <button
                   onClick={stop}
@@ -445,18 +445,18 @@ const ResultAnimationViewer: React.FC = () => {
 
               {/* Speed indicator */}
               <div className="flex items-center justify-center mt-3 gap-4">
-                <span className="text-slate-400 text-sm">Speed: {settings.speed}x</span>
-                <span className="text-slate-400 text-sm">|</span>
-                <span className="text-slate-400 text-sm">
+                <span className="text-slate-600 dark:text-slate-400 text-sm">Speed: {settings.speed}x</span>
+                <span className="text-slate-600 dark:text-slate-400 text-sm">|</span>
+                <span className="text-slate-600 dark:text-slate-400 text-sm">
                   {playbackState === 'playing' ? '▶ Playing' : playbackState === 'paused' ? '⏸ Paused' : '⏹ Stopped'}
                 </span>
               </div>
             </div>
 
             {/* Timeline Scrubber */}
-            <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
+            <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-300 dark:border-slate-700/50">
               <div className="flex items-center gap-4">
-                <span className="text-slate-400 text-sm w-16">0:00</span>
+                <span className="text-slate-600 dark:text-slate-400 text-sm w-16">0:00</span>
                 <input
                   type="range"
                   min={0}
@@ -465,7 +465,7 @@ const ResultAnimationViewer: React.FC = () => {
                   onChange={(e) => setSettings(prev => ({ ...prev, currentFrame: parseInt(e.target.value) }))}
                   className="flex-1 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
                 />
-                <span className="text-slate-400 text-sm w-16 text-right">
+                <span className="text-slate-600 dark:text-slate-400 text-sm w-16 text-right">
                   {(settings.frameCount / 30).toFixed(1)}s
                 </span>
               </div>
@@ -475,7 +475,7 @@ const ResultAnimationViewer: React.FC = () => {
           {/* Right Panel - Settings */}
           <div className="space-y-6">
             {/* Display Settings */}
-            <div className="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
+            <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <Sliders className="w-5 h-5 text-purple-400" />
                 Display Settings
@@ -483,7 +483,7 @@ const ResultAnimationViewer: React.FC = () => {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm text-slate-300 mb-2">
+                  <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">
                     Deformation Scale: {settings.scale}x
                   </label>
                   <input
@@ -494,14 +494,14 @@ const ResultAnimationViewer: React.FC = () => {
                     onChange={(e) => setSettings(prev => ({ ...prev, scale: parseInt(e.target.value) }))}
                     className="w-full h-2 bg-slate-700 rounded-lg appearance-none"
                   />
-                  <div className="flex justify-between text-xs text-slate-400 mt-1">
+                  <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400 mt-1">
                     <span>1x</span>
                     <span>500x</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm text-slate-300 mb-2">
+                  <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">
                     Frame Count: {settings.frameCount}
                   </label>
                   <input
@@ -518,7 +518,7 @@ const ResultAnimationViewer: React.FC = () => {
             </div>
 
             {/* Display Options */}
-            <div className="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
+            <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
               <h3 className="text-lg font-semibold text-white mb-4">Options</h3>
 
               <div className="space-y-3">
@@ -528,9 +528,9 @@ const ResultAnimationViewer: React.FC = () => {
                   { key: 'showVectors', label: 'Show Vectors', icon: TrendingUp },
                   { key: 'loop', label: 'Loop Animation', icon: RefreshCw },
                 ].map(option => (
-                  <label key={option.key} className="flex items-center justify-between p-2 bg-slate-700/30 rounded-lg cursor-pointer hover:bg-slate-700/50">
+                  <label key={option.key} className="flex items-center justify-between p-2 bg-slate-700/30 rounded-lg cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700/50">
                     <div className="flex items-center gap-2">
-                      <option.icon className="w-4 h-4 text-slate-400" />
+                      <option.icon className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                       <span className="text-white text-sm">{option.label}</span>
                     </div>
                     <input
@@ -545,7 +545,7 @@ const ResultAnimationViewer: React.FC = () => {
             </div>
 
             {/* Export Options */}
-            <div className="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
+            <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <Download className="w-5 h-5 text-purple-400" />
                 Export
@@ -573,15 +573,15 @@ const ResultAnimationViewer: React.FC = () => {
                 <h4 className="text-white font-medium mb-3">Mode {selectedMode} Properties</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Frequency</span>
+                    <span className="text-slate-600 dark:text-slate-400">Frequency</span>
                     <span className="text-white">{modeShapes[selectedMode - 1]?.frequency.toFixed(2)} Hz</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Period</span>
+                    <span className="text-slate-600 dark:text-slate-400">Period</span>
                     <span className="text-white">{modeShapes[selectedMode - 1]?.period.toFixed(2)} s</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Type</span>
+                    <span className="text-slate-600 dark:text-slate-400">Type</span>
                     <span className="text-white">{modeShapes[selectedMode - 1]?.description}</span>
                   </div>
                 </div>

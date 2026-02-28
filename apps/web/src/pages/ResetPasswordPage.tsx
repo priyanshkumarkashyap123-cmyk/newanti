@@ -111,9 +111,9 @@ export const ResetPasswordPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900 flex flex-col">
+        <div className="min-h-screen bg-zinc-50 dark:bg-white dark:bg-zinc-900 flex flex-col">
             {/* Header */}
-            <header className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-6 py-4 lg:px-10">
+            <header className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-200 dark:border-zinc-800 bg-white dark:bg-white dark:bg-zinc-900 px-6 py-4 lg:px-10">
                 <Link to="/" className="flex items-center gap-3 text-zinc-900 dark:text-white">
                     <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                         <Shield className="w-5 h-5 text-white" />
@@ -136,13 +136,13 @@ export const ResetPasswordPage = () => {
                         <h1 className="text-zinc-900 dark:text-white text-3xl sm:text-4xl font-black tracking-tight">
                             Reset Your Password
                         </h1>
-                        <p className="text-zinc-400 dark:text-zinc-400 text-base">
+                        <p className="text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 dark:text-zinc-400 text-base">
                             Please enter your new password below. Ensure it meets security standards to keep your structural data safe.
                         </p>
                     </div>
 
                     {/* Form Card */}
-                    <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-700 p-6 sm:p-8">
+                    <div className="bg-white dark:bg-zinc-100 dark:bg-zinc-800 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-300 dark:border-zinc-700 p-6 sm:p-8">
                         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                             {/* Error Message */}
                             {error && (
@@ -157,19 +157,19 @@ export const ResetPasswordPage = () => {
                                 </label>
                                 <div className="flex w-full items-stretch rounded-lg focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
                                     <div className="relative flex-1">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
+                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 dark:text-zinc-400" />
                                         <input
                                             type={showPassword ? 'text' : 'password'}
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
                                             placeholder="Enter new password"
-                                            className="w-full rounded-l-lg border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:border-blue-500 h-12 pl-12 pr-4 text-base"
+                                            className="w-full rounded-l-lg border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white placeholder:text-zinc-500 dark:text-zinc-400 focus:outline-none focus:border-blue-500 h-12 pl-12 pr-4 text-base"
                                         />
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="flex items-center justify-center px-4 rounded-r-lg border border-l-0 border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
+                                        className="flex items-center justify-center px-4 rounded-r-lg border border-l-0 border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
                                     >
                                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                     </button>
@@ -180,7 +180,7 @@ export const ResetPasswordPage = () => {
                             {password && (
                                 <div className="flex flex-col gap-2">
                                     <div className="flex justify-between items-center">
-                                        <p className="text-zinc-700 dark:text-zinc-300 text-xs font-semibold uppercase tracking-wider">
+                                        <p className="text-zinc-700 dark:text-zinc-700 dark:text-zinc-300 text-xs font-semibold uppercase tracking-wider">
                                             Password Strength
                                         </p>
                                         <span className={`text-xs font-bold ${strength.label === 'Strong' ? 'text-green-500' :
@@ -199,7 +199,7 @@ export const ResetPasswordPage = () => {
                             )}
 
                             {/* Requirements Checklist */}
-                            <div className="rounded-lg bg-zinc-50 dark:bg-zinc-900/50 p-4 border border-zinc-100 dark:border-zinc-700">
+                            <div className="rounded-lg bg-zinc-50 dark:bg-white dark:bg-zinc-900/50 p-4 border border-zinc-100 dark:border-zinc-300 dark:border-zinc-700">
                                 <p className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">
                                     Password must contain:
                                 </p>
@@ -212,7 +212,7 @@ export const ResetPasswordPage = () => {
                                                 }`}>
                                                 {req.met && <Check className="w-3 h-3 text-white" />}
                                             </div>
-                                            <span className={`text-sm ${req.met ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-400'
+                                            <span className={`text-sm ${req.met ? 'text-zinc-900 dark:text-white' : 'text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 dark:text-zinc-400'
                                                 }`}>
                                                 {req.label}
                                             </span>
@@ -228,13 +228,13 @@ export const ResetPasswordPage = () => {
                                 </label>
                                 <div className="flex w-full items-stretch rounded-lg focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
                                     <div className="relative flex-1">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
+                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 dark:text-zinc-400" />
                                         <input
                                             type={showConfirmPassword ? 'text' : 'password'}
                                             value={confirmPassword}
                                             onChange={(e) => setConfirmPassword(e.target.value)}
                                             placeholder="Re-enter new password"
-                                            className={`w-full rounded-l-lg border bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none h-12 pl-12 pr-4 text-base ${confirmPassword && !passwordsMatch
+                                            className={`w-full rounded-l-lg border bg-zinc-50 dark:bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white placeholder:text-zinc-500 dark:text-zinc-400 focus:outline-none h-12 pl-12 pr-4 text-base ${confirmPassword && !passwordsMatch
                                                     ? 'border-red-500 focus:border-red-500'
                                                     : 'border-zinc-300 dark:border-zinc-600 focus:border-blue-500'
                                                 }`}
@@ -243,7 +243,7 @@ export const ResetPasswordPage = () => {
                                     <button
                                         type="button"
                                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                        className="flex items-center justify-center px-4 rounded-r-lg border border-l-0 border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
+                                        className="flex items-center justify-center px-4 rounded-r-lg border border-l-0 border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
                                     >
                                         {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                     </button>
@@ -266,7 +266,7 @@ export const ResetPasswordPage = () => {
                             <div className="flex justify-center pt-2">
                                 <Link
                                     to="/sign-in"
-                                    className="flex items-center gap-2 text-zinc-400 hover:text-blue-600 dark:text-zinc-400 dark:hover:text-white transition-colors text-sm font-semibold"
+                                    className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 hover:text-blue-600 dark:text-zinc-500 dark:text-zinc-400 dark:hover:text-white transition-colors text-sm font-semibold"
                                 >
                                     <ArrowLeft className="w-4 h-4" />
                                     Back to Login

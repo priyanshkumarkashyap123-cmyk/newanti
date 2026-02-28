@@ -158,7 +158,7 @@ const FormField: React.FC<{
   step?: number;
 }> = ({ label, unit, value, onChange, type = 'number', min = 0, step = 1 }) => (
   <div className="flex flex-col gap-1">
-    <label className="text-xs text-slate-400 font-medium">
+    <label className="text-xs text-slate-600 dark:text-slate-400 font-medium">
       {label} {unit && <span className="text-slate-500">({unit})</span>}
     </label>
     <input
@@ -167,7 +167,7 @@ const FormField: React.FC<{
       onChange={e => onChange(e.target.value)}
       min={min}
       step={step}
-      className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white
+      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white
                  focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors"
     />
   </div>
@@ -179,11 +179,11 @@ const DiameterSelect: React.FC<{
   onChange: (v: number) => void;
 }> = ({ label, value, onChange }) => (
   <div className="flex flex-col gap-1">
-    <label className="text-xs text-slate-400 font-medium">{label}</label>
+    <label className="text-xs text-slate-600 dark:text-slate-400 font-medium">{label}</label>
     <select
       value={value}
       onChange={e => onChange(Number(e.target.value))}
-      className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white
+      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white
                  focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors"
     >
       {BAR_DIAMETERS.map(d => (
@@ -408,12 +408,12 @@ export const BarBendingSchedulePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <div className="border-b border-slate-800 bg-gradient-to-r from-slate-900 to-slate-800">
+      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-900 to-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <div className="flex items-center gap-4 mb-4">
             <button
               onClick={() => navigate(-1)}
-              className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+              className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-white transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -425,7 +425,7 @@ export const BarBendingSchedulePage: React.FC = () => {
                 <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">
                   Bar Bending Schedule
                 </h1>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
                   IS 2502 compliant BBS generator &bull; {members.length} member{members.length !== 1 ? 's' : ''} defined
                 </p>
               </div>
@@ -441,7 +441,7 @@ export const BarBendingSchedulePage: React.FC = () => {
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   activeTab === tab
                     ? 'bg-blue-600 text-white'
-                    : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
               >
                 {tab === 'input' ? 'Member Input' : tab === 'schedule' ? 'BBS Table' : 'Summary'}
@@ -457,7 +457,7 @@ export const BarBendingSchedulePage: React.FC = () => {
         {activeTab === 'input' && (
           <div className="space-y-6">
             {/* Project Info */}
-            <div className="bg-slate-900 rounded-xl p-6 border border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <FileSpreadsheet className="w-5 h-5 text-blue-400" />
                 Project Information
@@ -467,11 +467,11 @@ export const BarBendingSchedulePage: React.FC = () => {
                 <FormField label="Drawing Ref" value={drawingRef} onChange={setDrawingRef} type="text" />
                 <FormField label="Prepared By" value={preparedBy} onChange={setPreparedBy} type="text" />
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-slate-400 font-medium">Bar Grade</label>
+                  <label className="text-xs text-slate-600 dark:text-slate-400 font-medium">Bar Grade</label>
                   <select
                     value={barGrade}
                     onChange={e => setBarGrade(e.target.value as BarGrade)}
-                    className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white
                                focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors"
                   >
                     <option value="Fe250">Fe 250 (Mild Steel)</option>
@@ -485,14 +485,14 @@ export const BarBendingSchedulePage: React.FC = () => {
               </div>
 
               {/* Quick stats */}
-              <div className="mt-4 pt-4 border-t border-slate-700 flex flex-wrap gap-4">
+              <div className="mt-4 pt-4 border-t border-slate-300 dark:border-slate-700 flex flex-wrap gap-4">
                 <div className="flex items-center gap-2 text-xs text-slate-500">
                   <Info className="w-3.5 h-3.5" />
-                  <span>Dev. length (20mm bar, M25): <strong className="text-slate-300">{devLength} mm</strong></span>
+                  <span>Dev. length (20mm bar, M25): <strong className="text-slate-700 dark:text-slate-300">{devLength} mm</strong></span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-slate-500">
                   <Calculator className="w-3.5 h-3.5" />
-                  <span>Code: <strong className="text-slate-300">IS 456:2000 + IS 2502</strong></span>
+                  <span>Code: <strong className="text-slate-700 dark:text-slate-300">IS 456:2000 + IS 2502</strong></span>
                 </div>
               </div>
             </div>
@@ -535,12 +535,12 @@ export const BarBendingSchedulePage: React.FC = () => {
                 return (
                   <div
                     key={idx}
-                    className="bg-slate-900 rounded-xl border border-slate-700 overflow-hidden"
+                    className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 overflow-hidden"
                   >
                     {/* Member header */}
                     <button
                       onClick={() => setExpandedIdx(isExpanded ? -1 : idx)}
-                      className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-800/50 transition-colors"
+                      className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-100 dark:bg-slate-800/50 transition-colors"
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center
@@ -576,7 +576,7 @@ export const BarBendingSchedulePage: React.FC = () => {
 
                     {/* Member form */}
                     {isExpanded && (
-                      <div className="px-5 pb-5 border-t border-slate-700/50 pt-4">
+                      <div className="px-5 pb-5 border-t border-slate-300 dark:border-slate-700/50 pt-4">
                         {member.type === 'beam' && (
                           <BeamForm data={member.data as BeamInput} onChange={d => updateMember(idx, d)} />
                         )}
@@ -593,9 +593,9 @@ export const BarBendingSchedulePage: React.FC = () => {
               })}
 
               {members.length === 0 && (
-                <div className="bg-slate-900 rounded-xl border border-slate-700 p-12 text-center">
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 p-12 text-center">
                   <Layers className="w-12 h-12 mx-auto text-slate-600 mb-4" />
-                  <p className="text-slate-400 mb-2">No members defined</p>
+                  <p className="text-slate-600 dark:text-slate-400 mb-2">No members defined</p>
                   <p className="text-xs text-slate-500">Add beams, columns, or slabs using the buttons above</p>
                 </div>
               )}
@@ -621,9 +621,9 @@ export const BarBendingSchedulePage: React.FC = () => {
         {activeTab === 'schedule' && (
           <div className="space-y-6">
             {!schedule ? (
-              <div className="bg-slate-900 rounded-xl border border-slate-700 p-12 text-center">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 p-12 text-center">
                 <ClipboardList className="w-12 h-12 mx-auto text-slate-600 mb-3" />
-                <p className="text-slate-400">No schedule generated yet</p>
+                <p className="text-slate-600 dark:text-slate-400">No schedule generated yet</p>
                 <p className="text-xs text-slate-500 mt-1">Go to Member Input tab and click "Generate BBS"</p>
               </div>
             ) : (
@@ -646,32 +646,32 @@ export const BarBendingSchedulePage: React.FC = () => {
                 </div>
 
                 {/* BBS Table */}
-                <div className="bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="bg-slate-800 border-b border-slate-700">
-                          <th className="text-left px-4 py-3 text-slate-400 font-medium">Bar Mark</th>
-                          <th className="text-left px-4 py-3 text-slate-400 font-medium">Member</th>
-                          <th className="text-left px-4 py-3 text-slate-400 font-medium">Type</th>
-                          <th className="text-left px-4 py-3 text-slate-400 font-medium">Shape</th>
-                          <th className="text-right px-4 py-3 text-slate-400 font-medium">Dia (mm)</th>
-                          <th className="text-right px-4 py-3 text-slate-400 font-medium">No./Mem</th>
-                          <th className="text-right px-4 py-3 text-slate-400 font-medium">Members</th>
-                          <th className="text-right px-4 py-3 text-slate-400 font-medium">Total</th>
-                          <th className="text-right px-4 py-3 text-slate-400 font-medium">Cut Len (mm)</th>
-                          <th className="text-right px-4 py-3 text-slate-400 font-medium">Total Len (m)</th>
-                          <th className="text-right px-4 py-3 text-slate-400 font-medium">Wt (kg)</th>
-                          <th className="text-left px-4 py-3 text-slate-400 font-medium">Remarks</th>
+                        <tr className="bg-slate-100 dark:bg-slate-800 border-b border-slate-300 dark:border-slate-700">
+                          <th className="text-left px-4 py-3 text-slate-600 dark:text-slate-400 font-medium">Bar Mark</th>
+                          <th className="text-left px-4 py-3 text-slate-600 dark:text-slate-400 font-medium">Member</th>
+                          <th className="text-left px-4 py-3 text-slate-600 dark:text-slate-400 font-medium">Type</th>
+                          <th className="text-left px-4 py-3 text-slate-600 dark:text-slate-400 font-medium">Shape</th>
+                          <th className="text-right px-4 py-3 text-slate-600 dark:text-slate-400 font-medium">Dia (mm)</th>
+                          <th className="text-right px-4 py-3 text-slate-600 dark:text-slate-400 font-medium">No./Mem</th>
+                          <th className="text-right px-4 py-3 text-slate-600 dark:text-slate-400 font-medium">Members</th>
+                          <th className="text-right px-4 py-3 text-slate-600 dark:text-slate-400 font-medium">Total</th>
+                          <th className="text-right px-4 py-3 text-slate-600 dark:text-slate-400 font-medium">Cut Len (mm)</th>
+                          <th className="text-right px-4 py-3 text-slate-600 dark:text-slate-400 font-medium">Total Len (m)</th>
+                          <th className="text-right px-4 py-3 text-slate-600 dark:text-slate-400 font-medium">Wt (kg)</th>
+                          <th className="text-left px-4 py-3 text-slate-600 dark:text-slate-400 font-medium">Remarks</th>
                         </tr>
                       </thead>
                       <tbody>
                         {schedule.entries.map((entry, idx) => (
-                          <tr key={idx} className="border-b border-slate-800 hover:bg-slate-800/50 transition-colors">
+                          <tr key={idx} className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:bg-slate-800/50 transition-colors">
                             <td className="px-4 py-3 text-orange-400 font-mono font-medium">{entry.barMark}</td>
                             <td className="px-4 py-3 text-white">{entry.memberRef}</td>
-                            <td className="px-4 py-3 text-slate-400 capitalize">{entry.memberType}</td>
-                            <td className="px-4 py-3 text-slate-400">{entry.shape.replace(/_/g, ' ')}</td>
+                            <td className="px-4 py-3 text-slate-600 dark:text-slate-400 capitalize">{entry.memberType}</td>
+                            <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{entry.shape.replace(/_/g, ' ')}</td>
                             <td className="px-4 py-3 text-right text-cyan-400 font-mono">{entry.dia}</td>
                             <td className="px-4 py-3 text-right text-white">{entry.noPerMember}</td>
                             <td className="px-4 py-3 text-right text-white">{entry.noOfMembers}</td>
@@ -684,8 +684,8 @@ export const BarBendingSchedulePage: React.FC = () => {
                         ))}
                       </tbody>
                       <tfoot>
-                        <tr className="bg-slate-800 border-t border-slate-600">
-                          <td colSpan={10} className="px-4 py-3 text-right text-slate-300 font-semibold">
+                        <tr className="bg-slate-100 dark:bg-slate-800 border-t border-slate-600">
+                          <td colSpan={10} className="px-4 py-3 text-right text-slate-700 dark:text-slate-300 font-semibold">
                             Total Steel Weight:
                           </td>
                           <td className="px-4 py-3 text-right text-emerald-400 font-bold text-base">
@@ -706,37 +706,37 @@ export const BarBendingSchedulePage: React.FC = () => {
         {activeTab === 'summary' && (
           <div className="space-y-6">
             {!schedule ? (
-              <div className="bg-slate-900 rounded-xl border border-slate-700 p-12 text-center">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 p-12 text-center">
                 <BarChart3 className="w-12 h-12 mx-auto text-slate-600 mb-3" />
-                <p className="text-slate-400">Generate a schedule first to see the summary</p>
+                <p className="text-slate-600 dark:text-slate-400">Generate a schedule first to see the summary</p>
               </div>
             ) : (
               <>
                 {/* Summary Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="bg-slate-900 rounded-xl p-5 border border-slate-700">
+                  <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700">
                     <p className="text-xs text-slate-500 mb-1">Total Entries</p>
                     <p className="text-2xl font-bold text-white">{schedule.entries.length}</p>
                   </div>
-                  <div className="bg-slate-900 rounded-xl p-5 border border-slate-700">
+                  <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700">
                     <p className="text-xs text-slate-500 mb-1">Steel Weight</p>
                     <p className="text-2xl font-bold text-emerald-400">{schedule.totalWeight.toFixed(1)} kg</p>
                   </div>
-                  <div className="bg-slate-900 rounded-xl p-5 border border-slate-700">
+                  <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700">
                     <p className="text-xs text-slate-500 mb-1">Wastage ({schedule.wastageFactor}%)</p>
                     <p className="text-2xl font-bold text-amber-400">
                       {(schedule.totalWeightWithWastage - schedule.totalWeight).toFixed(1)} kg
                     </p>
                   </div>
-                  <div className="bg-slate-900 rounded-xl p-5 border border-slate-700">
+                  <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700">
                     <p className="text-xs text-slate-500 mb-1">Total with Wastage</p>
                     <p className="text-2xl font-bold text-orange-400">{schedule.totalWeightWithWastage.toFixed(1)} kg</p>
                   </div>
                 </div>
 
                 {/* Summary by Diameter */}
-                <div className="bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
-                  <div className="px-5 py-4 border-b border-slate-700">
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 overflow-hidden">
+                  <div className="px-5 py-4 border-b border-slate-300 dark:border-slate-700">
                     <h3 className="text-base font-semibold text-white flex items-center gap-2">
                       <Columns3 className="w-4 h-4 text-blue-400" />
                       Summary by Diameter
@@ -745,12 +745,12 @@ export const BarBendingSchedulePage: React.FC = () => {
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="bg-slate-800/50">
-                          <th className="text-left px-5 py-3 text-slate-400 font-medium">Diameter (mm)</th>
-                          <th className="text-right px-5 py-3 text-slate-400 font-medium">Total Length (m)</th>
-                          <th className="text-right px-5 py-3 text-slate-400 font-medium">Unit Weight (kg/m)</th>
-                          <th className="text-right px-5 py-3 text-slate-400 font-medium">Total Weight (kg)</th>
-                          <th className="px-5 py-3 text-slate-400 font-medium">Proportion</th>
+                        <tr className="bg-slate-100 dark:bg-slate-800/50">
+                          <th className="text-left px-5 py-3 text-slate-600 dark:text-slate-400 font-medium">Diameter (mm)</th>
+                          <th className="text-right px-5 py-3 text-slate-600 dark:text-slate-400 font-medium">Total Length (m)</th>
+                          <th className="text-right px-5 py-3 text-slate-600 dark:text-slate-400 font-medium">Unit Weight (kg/m)</th>
+                          <th className="text-right px-5 py-3 text-slate-600 dark:text-slate-400 font-medium">Total Weight (kg)</th>
+                          <th className="px-5 py-3 text-slate-600 dark:text-slate-400 font-medium">Proportion</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -759,7 +759,7 @@ export const BarBendingSchedulePage: React.FC = () => {
                             ? (row.totalWeight / schedule.totalWeight * 100)
                             : 0;
                           return (
-                            <tr key={idx} className="border-b border-slate-800 hover:bg-slate-800/50">
+                            <tr key={idx} className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:bg-slate-800/50">
                               <td className="px-5 py-3">
                                 <span className="inline-flex items-center gap-2">
                                   <span className="w-3 h-3 rounded-full bg-cyan-500" />
@@ -767,17 +767,17 @@ export const BarBendingSchedulePage: React.FC = () => {
                                 </span>
                               </td>
                               <td className="px-5 py-3 text-right text-white">{row.totalLength.toFixed(2)}</td>
-                              <td className="px-5 py-3 text-right text-slate-400">{row.unitWeight.toFixed(3)}</td>
+                              <td className="px-5 py-3 text-right text-slate-600 dark:text-slate-400">{row.unitWeight.toFixed(3)}</td>
                               <td className="px-5 py-3 text-right text-emerald-400 font-medium">{row.totalWeight.toFixed(2)}</td>
                               <td className="px-5 py-3">
                                 <div className="flex items-center gap-3">
-                                  <div className="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
+                                  <div className="flex-1 h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                                     <div
                                       className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"
                                       style={{ width: `${Math.min(pct, 100)}%` }}
                                     />
                                   </div>
-                                  <span className="text-xs text-slate-400 w-12 text-right">{pct.toFixed(1)}%</span>
+                                  <span className="text-xs text-slate-600 dark:text-slate-400 w-12 text-right">{pct.toFixed(1)}%</span>
                                 </div>
                               </td>
                             </tr>
@@ -789,27 +789,27 @@ export const BarBendingSchedulePage: React.FC = () => {
                 </div>
 
                 {/* IS Code Reference */}
-                <div className="bg-slate-900 rounded-xl p-5 border border-slate-700">
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700">
                   <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
                     <Info className="w-4 h-4 text-blue-400" />
                     Design Code References
                   </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-400">
-                    <div className="flex justify-between border-b border-slate-800 pb-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-600 dark:text-slate-400">
+                    <div className="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
                       <span>Development Length (IS 456 Cl. 26.2.1)</span>
-                      <span className="text-slate-300 font-mono">L_d = ϕσ_s / 4τ_bd</span>
+                      <span className="text-slate-700 dark:text-slate-300 font-mono">L_d = ϕσ_s / 4τ_bd</span>
                     </div>
-                    <div className="flex justify-between border-b border-slate-800 pb-2">
+                    <div className="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
                       <span>Bend Deductions (IS 2502:1963)</span>
-                      <span className="text-slate-300 font-mono">45°→1d, 90°→2d, 135°→3d</span>
+                      <span className="text-slate-700 dark:text-slate-300 font-mono">45°→1d, 90°→2d, 135°→3d</span>
                     </div>
-                    <div className="flex justify-between border-b border-slate-800 pb-2">
+                    <div className="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
                       <span>Hook Allowance (HYSD bars)</span>
-                      <span className="text-slate-300 font-mono">4d + 75mm</span>
+                      <span className="text-slate-700 dark:text-slate-300 font-mono">4d + 75mm</span>
                     </div>
-                    <div className="flex justify-between border-b border-slate-800 pb-2">
+                    <div className="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
                       <span>Standard Bar Sizes (IS 1786)</span>
-                      <span className="text-slate-300 font-mono">6,8,10,12,16,20,25,28,32,36,40</span>
+                      <span className="text-slate-700 dark:text-slate-300 font-mono">6,8,10,12,16,20,25,28,32,36,40</span>
                     </div>
                   </div>
                 </div>

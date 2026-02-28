@@ -1,22 +1,21 @@
 name: CI
 
-# AUTO-TRIGGERS DISABLED — GitHub Actions minutes exhausted. Run checks locally.
 on:
-  # push:
-  #   branches: [ main, develop ]
-  #   paths:
-  #     - 'apps/**'
-  #     - 'packages/**'
-  #     - 'package.json'
-  #     - 'pnpm-lock.yaml'
-  #     - '.github/workflows/ci.yml'
-  # pull_request:
-  #   branches: [ main, develop ]
-  #   paths:
-  #     - 'apps/**'
-  #     - 'packages/**'
-  #     - 'package.json'
-  #     - 'pnpm-lock.yaml'
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
   workflow_dispatch:
 
 concurrency:

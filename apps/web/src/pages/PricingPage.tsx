@@ -178,9 +178,9 @@ export const PricingPage: FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30">
+        <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30">
             {/* Navbar - Dark Theme Matching Landing Page */}
-            <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/5 bg-slate-950/90 backdrop-blur-xl">
+            <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/5 bg-white dark:bg-slate-950/90 backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         {/* Logo */}
@@ -196,16 +196,16 @@ export const PricingPage: FC = () => {
                         {/* Desktop Links */}
                         <div className="hidden md:flex items-center justify-center flex-1 px-8">
                             <div className="flex items-center gap-8">
-                                <Link to="/#features" className="text-sm font-medium text-slate-400 hover:text-white transition-colors px-2 py-1">
+                                <Link to="/#features" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-white transition-colors px-2 py-1">
                                     Features
                                 </Link>
                                 <Link to="/pricing" className="text-sm font-bold text-white transition-colors px-2 py-1">
                                     Pricing
                                 </Link>
-                                <Link to="/help" className="text-sm font-medium text-slate-400 hover:text-white transition-colors px-2 py-1">
+                                <Link to="/help" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-white transition-colors px-2 py-1">
                                     Docs
                                 </Link>
-                                <Link to="/demo" className="text-sm font-medium text-slate-400 hover:text-white transition-colors px-2 py-1">
+                                <Link to="/demo" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-white transition-colors px-2 py-1">
                                     Demo
                                 </Link>
                             </div>
@@ -213,7 +213,7 @@ export const PricingPage: FC = () => {
 
                         {/* Auth - Right aligned */}
                         <div className="flex items-center gap-4">
-                            <Link to="/sign-in" className="text-sm font-medium text-slate-300 hover:text-white transition-colors relative group">
+                            <Link to="/sign-in" className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-white transition-colors relative group">
                                 Log in
                                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all group-hover:w-full" />
                             </Link>
@@ -258,7 +258,7 @@ export const PricingPage: FC = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="text-lg text-slate-400 max-w-2xl mx-auto mb-10"
+                        className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-10"
                     >
                         Choose the right plan for your structural analysis needs. From learning to enterprise scale.
                     </motion.p>
@@ -270,12 +270,12 @@ export const PricingPage: FC = () => {
                         transition={{ delay: 0.2 }}
                         className="flex justify-center mb-12"
                     >
-                        <div className="flex h-12 items-center justify-center rounded-xl bg-slate-900 border border-slate-800 p-1 w-full max-w-sm">
+                        <div className="flex h-12 items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 w-full max-w-sm">
                             <button
                                 onClick={() => setBillingPeriod('monthly')}
                                 className={`flex-1 h-full rounded-lg px-4 text-sm font-bold transition-all ${billingPeriod === 'monthly'
-                                    ? 'bg-slate-800 shadow-sm text-white'
-                                    : 'text-slate-400 hover:text-slate-300'
+                                    ? 'bg-slate-100 dark:bg-slate-800 shadow-sm text-white'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300'
                                     }`}
                             >
                                 Monthly
@@ -283,8 +283,8 @@ export const PricingPage: FC = () => {
                             <button
                                 onClick={() => setBillingPeriod('yearly')}
                                 className={`flex-1 h-full rounded-lg px-4 text-sm font-bold transition-all flex items-center justify-center gap-2 ${billingPeriod === 'yearly'
-                                    ? 'bg-slate-800 shadow-sm text-white'
-                                    : 'text-slate-400 hover:text-slate-300'
+                                    ? 'bg-slate-100 dark:bg-slate-800 shadow-sm text-white'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300'
                                     }`}
                             >
                                 Yearly
@@ -313,8 +313,8 @@ export const PricingPage: FC = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
                                 className={`relative flex flex-col rounded-2xl sm:rounded-3xl p-6 sm:p-8 h-full ${tier.popular
-                                    ? 'bg-slate-900 border-2 border-blue-500/50 shadow-2xl shadow-blue-500/10 lg:scale-105 z-10'
-                                    : 'bg-slate-950 border border-slate-800 hover:border-slate-700 transition-all'
+                                    ? 'bg-slate-50 dark:bg-slate-900 border-2 border-blue-500/50 shadow-2xl shadow-blue-500/10 lg:scale-105 z-10'
+                                    : 'bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:border-slate-700 transition-all'
                                     }`}
                             >
                                 {/* Badge */}
@@ -331,11 +331,11 @@ export const PricingPage: FC = () => {
                                     <h3 className={`text-xl sm:text-2xl font-bold mb-2 ${tier.popular ? 'text-white' : 'text-slate-200'}`}>
                                         {tier.name}
                                     </h3>
-                                    <p className="text-sm text-slate-400">{tier.description}</p>
+                                    <p className="text-sm text-slate-600 dark:text-slate-400">{tier.description}</p>
                                 </div>
                                 <div className="mb-6 sm:mb-8">
                                     <span className="text-3xl sm:text-4xl font-bold text-white">{getPrice(tier)}</span>
-                                    {tier.period && <span className="text-slate-400 ml-1">{tier.period}</span>}
+                                    {tier.period && <span className="text-slate-600 dark:text-slate-400 ml-1">{tier.period}</span>}
                                 </div>
 
                                 {/* CTA Button */}
@@ -346,7 +346,7 @@ export const PricingPage: FC = () => {
                                         ? 'bg-white text-slate-950 hover:bg-slate-100 shadow-lg hover:shadow-xl'
                                         : tier.name === 'Enterprise'
                                             ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-500 hover:to-purple-500'
-                                            : 'bg-slate-800 text-white hover:bg-slate-700'
+                                            : 'bg-slate-100 dark:bg-slate-800 text-white hover:bg-slate-200 dark:hover:bg-slate-700'
                                         }`}
                                 >
                                     {paymentLoading && tier.name === 'Pro' ? 'Processing...' : tier.cta}
@@ -356,13 +356,13 @@ export const PricingPage: FC = () => {
                                 {/* Features */}
                                 <ul className="space-y-3 sm:space-y-4 flex-1">
                                     {tier.features.map((feature) => (
-                                        <li key={feature} className="flex items-start gap-3 text-sm text-slate-300">
-                                            <CheckCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${tier.popular ? 'text-blue-400' : 'text-slate-400'}`} />
+                                        <li key={feature} className="flex items-start gap-3 text-sm text-slate-700 dark:text-slate-300">
+                                            <CheckCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${tier.popular ? 'text-blue-400' : 'text-slate-600 dark:text-slate-400'}`} />
                                             <span>{feature}</span>
                                         </li>
                                     ))}
                                     {tier.notIncluded?.map((feature) => (
-                                        <li key={feature} className="flex items-start gap-3 text-sm text-slate-400 line-through">
+                                        <li key={feature} className="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-400 line-through">
                                             <X className="w-5 h-5 flex-shrink-0 mt-0.5 text-slate-700" />
                                             <span>{feature}</span>
                                         </li>
@@ -375,7 +375,7 @@ export const PricingPage: FC = () => {
             </section>
 
             {/* FAQ Section - Dark Theme */}
-            <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-900/50 border-t border-slate-800">
+            <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-800">
                 <div className="mx-auto max-w-3xl">
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -387,7 +387,7 @@ export const PricingPage: FC = () => {
                             FAQ
                         </span>
                         <h2 className="text-3xl font-bold text-white mb-4">Frequently Asked Questions</h2>
-                        <p className="text-slate-400">Everything you need to know about pricing and billing.</p>
+                        <p className="text-slate-600 dark:text-slate-400">Everything you need to know about pricing and billing.</p>
                     </motion.div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
@@ -404,7 +404,7 @@ export const PricingPage: FC = () => {
                                     <HelpCircle className="w-5 h-5 text-blue-400" />
                                     {item.question}
                                 </h5>
-                                <p className="text-slate-400 text-sm leading-relaxed pl-7">
+                                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed pl-7">
                                     {item.answer}
                                 </p>
                             </motion.div>
@@ -414,7 +414,7 @@ export const PricingPage: FC = () => {
             </section>
 
             {/* Footer - Dark Theme */}
-            <footer className="border-t border-slate-800 py-12 px-4 sm:px-6 lg:px-8 bg-slate-950">
+            <footer className="border-t border-slate-200 dark:border-slate-800 py-12 px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-950">
                 <div className="mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center gap-4">
                     <div className="flex items-center gap-3">
                         <div className="w-9 h-9 flex items-center justify-center rounded-lg overflow-hidden">
@@ -422,12 +422,12 @@ export const PricingPage: FC = () => {
                         </div>
                         <span className="text-xl font-bold text-white">BeamLab Ultimate</span>
                     </div>
-                    <div className="flex gap-6 text-sm text-slate-400">
+                    <div className="flex gap-6 text-sm text-slate-600 dark:text-slate-400">
                         <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
                         <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
                         <a href="mailto:support@beamlabultimate.tech" className="hover:text-white transition-colors">Support</a>
                     </div>
-                    <p className="text-sm text-slate-400">© 2026 BeamLab Ultimate. All rights reserved.</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">© 2026 BeamLab Ultimate. All rights reserved.</p>
                 </div>
             </footer>
         </div>
