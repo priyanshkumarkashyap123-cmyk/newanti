@@ -26,6 +26,18 @@ import init, {
   get_standard_combinations_aisc_lrfd,
 } from "backend-rust";
 
+// Pushover not yet available in WASM package — stub that returns error
+function wasm_solve_pushover(_input: any): any {
+  return {
+    success: false,
+    error: "Pushover analysis not yet available in WASM build",
+    points: [],
+    ductility: 0,
+    effective_period: 0,
+    hinge_summary: [],
+  };
+}
+
 // ============================================
 // UTILITY: Convert JS Map → plain object
 // ============================================
@@ -201,17 +213,17 @@ export interface BucklingResult {
 export interface ModalAnalysisResult {
   success: boolean;
   error?: string;
-  frequencies: number[];    // Natural frequencies (Hz)
-  periods: number[];        // Natural periods (s)
-  mode_shapes: Record<string, number[]>[];  // Mode shapes per node
-  mass_participation: Record<string, number>[];  // Mass participation factors
+  frequencies: number[]; // Natural frequencies (Hz)
+  periods: number[]; // Natural periods (s)
+  mode_shapes: Record<string, number[]>[]; // Mode shapes per node
+  mass_participation: Record<string, number>[]; // Mass participation factors
 }
 
 export interface ResponseSpectrumInput {
-  zoneFactor: number;         // IS 1893 zone factor (or PGA)
-  importanceFactor: number;   // Building importance factor
-  responseReduction: number;  // Response reduction factor R
-  soilType: number;           // 1=Rock, 2=Medium, 3=Soft
+  zoneFactor: number; // IS 1893 zone factor (or PGA)
+  importanceFactor: number; // Building importance factor
+  responseReduction: number; // Response reduction factor R
+  soilType: number; // 1=Rock, 2=Medium, 3=Soft
 }
 
 export interface ResponseSpectrumResult {
@@ -266,7 +278,11 @@ export async function initSolver(): Promise<void> {
   try {
     await init();
     // Enable readable Rust panic stack traces in browser console
-    try { set_panic_hook(); } catch (_) { /* older builds may lack this export */ }
+    try {
+      set_panic_hook();
+    } catch (_) {
+      /* older builds may lack this export */
+    }
     wasmInitialized = true;
     wasmLogger.success("WASM Solver initialized successfully");
 
@@ -343,9 +359,20 @@ export async function analyzeStructure(
     const startTime = performance.now();
 
     // Call Rust WASM function - use extended 3D solver when extra params available
-    const hasExtended = temperatureLoads.length > 0 || pointLoadsOnMembers.length > 0 || config.include_self_weight;
+    const hasExtended =
+      temperatureLoads.length > 0 ||
+      pointLoadsOnMembers.length > 0 ||
+      config.include_self_weight;
     const result = hasExtended
-      ? solve_3d_frame_extended(nodes, elements, pointLoads, memberLoads, temperatureLoads, pointLoadsOnMembers, config)
+      ? solve_3d_frame_extended(
+          nodes,
+          elements,
+          pointLoads,
+          memberLoads,
+          temperatureLoads,
+          pointLoadsOnMembers,
+          config,
+        )
       : solve_3d_frame(nodes, elements, pointLoads, memberLoads);
 
     const endTime = performance.now();
@@ -542,7 +569,11 @@ export async function analyzePDeltaExtended(
     );
 
     const solveTime = performance.now() - startTime;
-    wasmLogger.success("Extended P-Delta completed in", solveTime.toFixed(2), "ms");
+    wasmLogger.success(
+      "Extended P-Delta completed in",
+      solveTime.toFixed(2),
+      "ms",
+    );
 
     if (result.error) {
       return {
@@ -657,6 +688,146 @@ export async function analyzeBuckling(
 }
 
 // ============================================
+// PUSHOVER ANALYSIS (Nonlinear Static)
+// ============================================
+
+export interface PushoverInput {
+  /** Story heights in meters */
+  story_heights: number[];
+  /** Story masses / weights in kN */
+  story_masses: number[];
+  /** Story stiffness in kN/m */
+  story_stiffness: number[];
+  /** Optional first-mode shape */
+  mode_shape?: number[];
+  /** Load pattern: "uniform" | "triangular" | "first-mode" | "mass-proportional" | "code" */
+  load_pattern?: string;
+  /** Target displacement in meters */
+  target_displacement?: number;
+  /** Number of load steps */
+  num_steps?: number;
+  /** Include P-Delta effects */
+  include_pdelta?: boolean;
+  /** Convergence tolerance */
+  tolerance?: number;
+  /** Max iterations per step */
+  max_iterations?: number;
+  /** Hinge material type: "rc_beam" | "rc_column" | "steel" */
+  hinge_material?: string;
+}
+
+export interface PushoverPoint {
+  step: number;
+  base_shear: number;
+  roof_displacement: number;
+  hinges_yielded: number;
+}
+
+export interface PushoverResult {
+  success: boolean;
+  points: PushoverPoint[];
+  yield_point?: PushoverPoint;
+  ultimate_point?: PushoverPoint;
+  ductility: number;
+  effective_period: number;
+  hinge_summary: Array<{
+    id: number;
+    state: string;
+    deformation: number;
+    ductility_demand: number;
+  }>;
+  error?: string;
+}
+
+/**
+ * Nonlinear static pushover analysis — capacity curve generation.
+ *
+ * Uses the real Rust pushover_analysis module via WASM.
+ * Generates base shear vs. roof displacement with plastic hinge tracking.
+ *
+ * @param input - Pushover analysis parameters (stories, masses, stiffness, config)
+ * @returns Capacity curve with yield/ultimate points and ductility
+ */
+export async function runPushoverAnalysis(
+  input: PushoverInput,
+): Promise<PushoverResult> {
+  if (!wasmInitialized) {
+    await initSolver();
+  }
+
+  try {
+    wasmLogger.info(
+      "Running pushover analysis:",
+      input.story_heights.length,
+      "stories",
+    );
+
+    const startTime = performance.now();
+
+    let result = wasm_solve_pushover(input);
+
+    // Handle string response (fallback)
+    if (typeof result === "string") {
+      try {
+        result = JSON.parse(result);
+      } catch (e) {
+        wasmLogger.error("Failed to parse pushover result:", e);
+        return {
+          success: false,
+          points: [],
+          ductility: 0,
+          effective_period: 0,
+          hinge_summary: [],
+          error: "Failed to parse pushover analysis result",
+        };
+      }
+    }
+
+    const endTime = performance.now();
+    const solveTime = endTime - startTime;
+
+    wasmLogger.success(
+      "Pushover analysis completed in",
+      solveTime.toFixed(2),
+      "ms —",
+      result.points?.length || 0,
+      "capacity points",
+    );
+
+    if (result.error) {
+      return {
+        success: false,
+        points: [],
+        ductility: 0,
+        effective_period: 0,
+        hinge_summary: [],
+        error: result.error,
+      };
+    }
+
+    return {
+      success: true,
+      points: result.points || [],
+      yield_point: result.yield_point,
+      ultimate_point: result.ultimate_point,
+      ductility: result.ductility || 1,
+      effective_period: result.effective_period || 0,
+      hinge_summary: result.hinge_summary || [],
+    };
+  } catch (error) {
+    wasmLogger.error("Pushover analysis failed:", error);
+    return {
+      success: false,
+      points: [],
+      ductility: 0,
+      effective_period: 0,
+      hinge_summary: [],
+      error: String(error),
+    };
+  }
+}
+
+// ============================================
 // MODAL ANALYSIS (C1: Frequency extraction)
 // ============================================
 
@@ -685,28 +856,59 @@ export async function analyzeModal(
 
     // Handle JSON string return
     if (typeof result === "string") {
-      try { result = JSON.parse(result); } catch (_) {
-        return { success: false, frequencies: [], periods: [], mode_shapes: [], mass_participation: [], error: result };
+      try {
+        result = JSON.parse(result);
+      } catch (_) {
+        return {
+          success: false,
+          frequencies: [],
+          periods: [],
+          mode_shapes: [],
+          mass_participation: [],
+          error: result,
+        };
       }
     }
 
     const solveTime = performance.now() - startTime;
-    wasmLogger.success("Modal analysis completed in", solveTime.toFixed(2), "ms");
+    wasmLogger.success(
+      "Modal analysis completed in",
+      solveTime.toFixed(2),
+      "ms",
+    );
 
     if (result.error) {
-      return { success: false, frequencies: [], periods: [], mode_shapes: [], mass_participation: [], error: result.error };
+      return {
+        success: false,
+        frequencies: [],
+        periods: [],
+        mode_shapes: [],
+        mass_participation: [],
+        error: result.error,
+      };
     }
 
     return {
       success: true,
       frequencies: result.frequencies || [],
       periods: result.periods || [],
-      mode_shapes: (result.mode_shapes || []).map((ms: any) => ms instanceof Map ? jsMapToPlainObject(ms) : ms),
-      mass_participation: (result.mass_participation || []).map((mp: any) => mp instanceof Map ? jsMapToPlainObject(mp) : mp),
+      mode_shapes: (result.mode_shapes || []).map((ms: any) =>
+        ms instanceof Map ? jsMapToPlainObject(ms) : ms,
+      ),
+      mass_participation: (result.mass_participation || []).map((mp: any) =>
+        mp instanceof Map ? jsMapToPlainObject(mp) : mp,
+      ),
     };
   } catch (error) {
     wasmLogger.error("Modal analysis failed:", error);
-    return { success: false, frequencies: [], periods: [], mode_shapes: [], mass_participation: [], error: String(error) };
+    return {
+      success: false,
+      frequencies: [],
+      periods: [],
+      mode_shapes: [],
+      mass_participation: [],
+      error: String(error),
+    };
   }
 }
 
@@ -742,13 +944,19 @@ export async function analyzeResponseSpectrum(
     );
 
     if (typeof result === "string") {
-      try { result = JSON.parse(result); } catch (_) {
+      try {
+        result = JSON.parse(result);
+      } catch (_) {
         return { success: false, error: result };
       }
     }
 
     const solveTime = performance.now() - startTime;
-    wasmLogger.success("Response spectrum completed in", solveTime.toFixed(2), "ms");
+    wasmLogger.success(
+      "Response spectrum completed in",
+      solveTime.toFixed(2),
+      "ms",
+    );
 
     if (result.error) return { success: false, error: result.error };
 
@@ -787,7 +995,9 @@ export function analyzeUltraFast(
   try {
     let result = wasm_solve_ultra_fast(nodes, elements, loads);
     if (typeof result === "string") {
-      try { result = JSON.parse(result); } catch (_) {
+      try {
+        result = JSON.parse(result);
+      } catch (_) {
         return { success: false, error: result };
       }
     }
@@ -795,9 +1005,18 @@ export function analyzeUltraFast(
 
     return {
       success: true,
-      displacements: result.displacements instanceof Map ? jsMapToPlainObject(result.displacements) : result.displacements,
-      reactions: result.reactions instanceof Map ? jsMapToPlainObject(result.reactions) : result.reactions,
-      member_forces: result.member_forces instanceof Map ? jsMapToPlainObject(result.member_forces) : result.member_forces,
+      displacements:
+        result.displacements instanceof Map
+          ? jsMapToPlainObject(result.displacements)
+          : result.displacements,
+      reactions:
+        result.reactions instanceof Map
+          ? jsMapToPlainObject(result.reactions)
+          : result.reactions,
+      member_forces:
+        result.member_forces instanceof Map
+          ? jsMapToPlainObject(result.member_forces)
+          : result.member_forces,
       solve_time_us: result.solve_time_us,
     };
   } catch (error) {
@@ -838,10 +1057,17 @@ const DEFAULT_SOLVE_TIMEOUT_MS = 30_000;
  * but we can reject the promise if it takes too long using a
  * microtask break.
  */
-function withSolveTimeout<T>(fn: () => T, timeoutMs: number = DEFAULT_SOLVE_TIMEOUT_MS): Promise<T> {
+function withSolveTimeout<T>(
+  fn: () => T,
+  timeoutMs: number = DEFAULT_SOLVE_TIMEOUT_MS,
+): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const timer = setTimeout(() => {
-      reject(new Error(`Solver timeout: analysis exceeded ${timeoutMs}ms. Consider using the Worker solver for large models.`));
+      reject(
+        new Error(
+          `Solver timeout: analysis exceeded ${timeoutMs}ms. Consider using the Worker solver for large models.`,
+        ),
+      );
     }, timeoutMs);
     try {
       const result = fn();
@@ -938,17 +1164,17 @@ export const SOLVER_FEATURE_MATRIX = {
     pDelta: true,
     buckling: true,
     modalAnalysis: true,
-    selfWeight: true,             // C1
-    temperatureLoads: true,       // C2
-    loadCombinations: true,       // C3
-    springSupports: true,         // H1
-    pointLoadsOnMembers: true,    // H2
+    selfWeight: true, // C1
+    temperatureLoads: true, // C2
+    loadCombinations: true, // C3
+    springSupports: true, // H1
+    pointLoadsOnMembers: true, // H2
     equilibriumMomentCheck: true, // H3
-    timoshenkoBeam: true,         // M1
-    inputValidation: true,        // M3
+    timoshenkoBeam: true, // M1
+    inputValidation: true, // M3
     plateElements: true,
-    dynamicTimeHistory: false,    // Worker only
-    topologyOptimization: false,  // Worker only
+    dynamicTimeHistory: false, // Worker only
+    topologyOptimization: false, // Worker only
   },
   worker: {
     linearStatic: true,
@@ -956,10 +1182,10 @@ export const SOLVER_FEATURE_MATRIX = {
     buckling: false,
     modalAnalysis: false,
     selfWeight: true,
-    temperatureLoads: true,        // Added in Worker Newmark integration
+    temperatureLoads: true, // Added in Worker Newmark integration
     loadCombinations: false,
-    springSupports: true,         // Spring elements
-    pointLoadsOnMembers: true,    // Via FEF
+    springSupports: true, // Spring elements
+    pointLoadsOnMembers: true, // Via FEF
     equilibriumMomentCheck: true, // C4: computeEquilibriumCheck in Worker
     timoshenkoBeam: false,
     inputValidation: false,
@@ -972,9 +1198,9 @@ export const SOLVER_FEATURE_MATRIX = {
 /**
  * Validate WASM solver results against known analytical solutions.
  * Returns a consistency report with pass/fail and detailed error analysis.
- * 
+ *
  * Benchmark: Simply supported beam, L=6m, UDL w=10 kN/m, E=200 GPa, I=1e-4 m⁴, A=0.01 m²
- * 
+ *
  * Analytical: R=30kN, M_max=45kN·m, δ_max=5wL⁴/(384EI)
  */
 export async function validateSolverConsistency(): Promise<ConsistencyReport> {
@@ -997,45 +1223,79 @@ export async function validateSolverConsistency(): Promise<ConsistencyReport> {
   // ---- Benchmark: SS beam with UDL ----
   const L = 6.0; // m
   const w = 10000.0; // N/m (10 kN/m)
-  const E = 200e9;   // Pa
-  const A = 0.01;    // m²
-  const I = 1e-4;    // m⁴
+  const E = 200e9; // Pa
+  const A = 0.01; // m²
+  const I = 1e-4; // m⁴
 
   // Analytical solutions
-  const R_analytical = w * L / 2; // 30,000 N
-  const M_max_analytical = w * L * L / 8; // 45,000 N·m
+  const R_analytical = (w * L) / 2; // 30,000 N
+  const M_max_analytical = (w * L * L) / 8; // 45,000 N·m
   const delta_max_analytical = (5 * w * Math.pow(L, 4)) / (384 * E * I); // 0.0028125 m
 
   // Run WASM solver
   const wasmStart = performance.now();
   const wasmResult = await analyzeStructure(
     [
-      { id: "A", x: 0, y: 0, z: 0, restraints: [true, true, true, true, true, false] },
-      { id: "B", x: L, y: 0, z: 0, restraints: [false, true, true, true, true, false] },
+      {
+        id: "A",
+        x: 0,
+        y: 0,
+        z: 0,
+        restraints: [true, true, true, true, true, false],
+      },
+      {
+        id: "B",
+        x: L,
+        y: 0,
+        z: 0,
+        restraints: [false, true, true, true, true, false],
+      },
     ],
     [
-      { id: "M1", node_i: "A", node_j: "B", E, A, Iy: I, Iz: I, J: 2*I, G: E/2.6 },
+      {
+        id: "M1",
+        node_i: "A",
+        node_j: "B",
+        E,
+        A,
+        Iy: I,
+        Iz: I,
+        J: 2 * I,
+        G: E / 2.6,
+      },
     ],
     [], // No nodal loads
     [
-      { element_id: "M1", w1: -w, w2: -w, direction: "GlobalY", is_projected: false, start_pos: 0.0, end_pos: 1.0 },
-    ]
+      {
+        element_id: "M1",
+        w1: -w,
+        w2: -w,
+        direction: "GlobalY",
+        is_projected: false,
+        start_pos: 0.0,
+        end_pos: 1.0,
+      },
+    ],
   );
   report.wasmTime = performance.now() - wasmStart;
 
   if (!wasmResult || !wasmResult.success) {
     report.pass = false;
-    report.details.push(`WASM analysis failed: ${wasmResult?.error || "unknown"}`);
+    report.details.push(
+      `WASM analysis failed: ${wasmResult?.error || "unknown"}`,
+    );
     return report;
   }
 
   // Check reaction at A (Ry)
   const Ry_A = wasmResult.reactions?.A?.[1] || 0;
-  const rxnError = Math.abs(Ry_A - R_analytical) / R_analytical * 100;
+  const rxnError = (Math.abs(Ry_A - R_analytical) / R_analytical) * 100;
   report.maxReactionError = rxnError;
   if (rxnError > 0.1) {
     report.pass = false;
-    report.details.push(`Reaction error: ${rxnError.toFixed(4)}% (Ry_A=${Ry_A.toFixed(1)}, expected=${R_analytical})`);
+    report.details.push(
+      `Reaction error: ${rxnError.toFixed(4)}% (Ry_A=${Ry_A.toFixed(1)}, expected=${R_analytical})`,
+    );
   } else {
     report.details.push(`✓ Reactions OK (error=${rxnError.toFixed(6)}%)`);
   }
@@ -1048,20 +1308,29 @@ export async function validateSolverConsistency(): Promise<ConsistencyReport> {
     // Try 3D struct fields first, fall back to 2D names
     const maxMz = mfRaw.max_moment_z ?? Math.abs(mfRaw.moment_start || 0);
     if (maxMz > 0) {
-      const forceError = Math.abs(maxMz - M_max_analytical) / M_max_analytical * 100;
+      const forceError =
+        (Math.abs(maxMz - M_max_analytical) / M_max_analytical) * 100;
       report.maxForceError = forceError;
       if (forceError > 1.0) {
-        report.details.push(`⚠ Moment error: ${forceError.toFixed(4)}% (max_Mz=${maxMz.toFixed(1)}, expected=${M_max_analytical})`);
+        report.details.push(
+          `⚠ Moment error: ${forceError.toFixed(4)}% (max_Mz=${maxMz.toFixed(1)}, expected=${M_max_analytical})`,
+        );
       } else {
-        report.details.push(`✓ Member forces OK (Mz error=${forceError.toFixed(4)}%)`);
+        report.details.push(
+          `✓ Member forces OK (Mz error=${forceError.toFixed(4)}%)`,
+        );
       }
     }
   }
 
   // Check displacement (analytical δ_max at midspan — not directly available from 2-node model,
   // but the relative magnitude should be correct)
-  report.details.push(`✓ Benchmark completed in ${report.wasmTime.toFixed(1)}ms`);
-  report.details.push(`Feature parity: WASM has ${Object.values(SOLVER_FEATURE_MATRIX.wasm).filter(v => v).length}/${Object.keys(SOLVER_FEATURE_MATRIX.wasm).length} features, Worker has ${Object.values(SOLVER_FEATURE_MATRIX.worker).filter(v => v).length}/${Object.keys(SOLVER_FEATURE_MATRIX.worker).length} features`);
+  report.details.push(
+    `✓ Benchmark completed in ${report.wasmTime.toFixed(1)}ms`,
+  );
+  report.details.push(
+    `Feature parity: WASM has ${Object.values(SOLVER_FEATURE_MATRIX.wasm).filter((v) => v).length}/${Object.keys(SOLVER_FEATURE_MATRIX.wasm).length} features, Worker has ${Object.values(SOLVER_FEATURE_MATRIX.worker).filter((v) => v).length}/${Object.keys(SOLVER_FEATURE_MATRIX.worker).length} features`,
+  );
 
   return report;
 }
@@ -1189,7 +1458,7 @@ export interface EnvelopeResult {
  */
 export function combineLoadCases(
   cases: Record<string, any>,
-  combinations: LoadCombination[]
+  combinations: LoadCombination[],
 ): EnvelopeResult | null {
   if (!wasmInitialized) {
     wasmLogger.error("Solver not ready for load combinations");
@@ -1213,14 +1482,18 @@ export function combineLoadCases(
  * Available codes: 'IS800', 'Eurocode', 'AISC_LRFD'
  */
 export function getStandardCombinations(
-  code: 'IS800' | 'Eurocode' | 'AISC_LRFD'
+  code: "IS800" | "Eurocode" | "AISC_LRFD",
 ): LoadCombination[] {
   if (!wasmInitialized) return [];
   switch (code) {
-    case 'IS800': return get_standard_combinations_is800() as LoadCombination[];
-    case 'Eurocode': return get_standard_combinations_eurocode() as LoadCombination[];
-    case 'AISC_LRFD': return get_standard_combinations_aisc_lrfd() as LoadCombination[];
-    default: return [];
+    case "IS800":
+      return get_standard_combinations_is800() as LoadCombination[];
+    case "Eurocode":
+      return get_standard_combinations_eurocode() as LoadCombination[];
+    case "AISC_LRFD":
+      return get_standard_combinations_aisc_lrfd() as LoadCombination[];
+    default:
+      return [];
   }
 }
 

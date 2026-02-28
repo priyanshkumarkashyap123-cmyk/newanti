@@ -23,6 +23,8 @@ import consentRoutes from "./routes/consentRoutes.js";
 import auditRoutes from "./routes/audit/index.js";
 import analyticsRouter from "./routes/analytics/index.js";
 import aiSessionRoutes from "./routes/aiSessionRoutes.js";
+import aiRoutes from "./routes/ai/index.js";
+import feedbackRoutes from "./routes/feedback/index.js";
 import { razorpayRouter } from "./razorpay.js";
 import swaggerUi from "swagger-ui-express";
 import { connectDB } from "./models.js";
@@ -145,40 +147,10 @@ const socketServer = new SocketServer(httpServer);
 // every response (including errors) carries CORS headers.
 // ============================================
 
-const configuredOrigins = (process.env["CORS_ALLOWED_ORIGINS"] || "")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+import { getAllowedOrigins, isTrustedOrigin } from "./config/cors.js";
 
-const normalizeOrigin = (origin: string): string =>
-  origin.trim().replace(/\/+$/, "").toLowerCase();
-
-const ALLOWED_ORIGINS = Array.from(
-  new Set([
-    process.env["FRONTEND_URL"] || "http://localhost:5173",
-    "https://beamlabultimate.tech",
-    "https://www.beamlabultimate.tech",
-    "https://brave-mushroom-0eae8ec00.4.azurestaticapps.net",
-    "http://localhost:5173",
-    "http://localhost:3000",
-  ]),
-)
-  .concat(configuredOrigins)
-  .map(normalizeOrigin);
-
+const ALLOWED_ORIGINS = getAllowedOrigins();
 const ALLOWED_ORIGIN_SET = new Set(ALLOWED_ORIGINS);
-
-const isTrustedOrigin = (origin: string): boolean => {
-  const normalized = normalizeOrigin(origin);
-  if (ALLOWED_ORIGIN_SET.has(normalized)) return true;
-
-  // Allow any beamlabultimate subdomain over HTTPS (preview envs, app subdomains, etc.)
-  if (/^https:\/\/([a-z0-9-]+\.)*beamlabultimate\.tech$/i.test(normalized)) {
-    return true;
-  }
-
-  return false;
-};
 
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
@@ -211,7 +183,8 @@ const corsOptions: cors.CorsOptions = {
 };
 
 // Preflight + all requests — BEFORE everything else
-app.options("*", cors(corsOptions));
+// Express 5 requires named wildcard parameter instead of bare "*"
+app.options("/{*path}", cors(corsOptions) as express.RequestHandler);
 app.use(cors(corsOptions));
 
 // ============================================
@@ -397,19 +370,31 @@ app.use("/api/audit", crudRateLimit, auditRoutes);
 app.use("/api/v1/ai-sessions", crudRateLimit, aiSessionRoutes);
 app.use("/api/ai-sessions", crudRateLimit, aiSessionRoutes);
 
+// AI Model Generation API (architect, vision — auth required)
+app.use("/api/v1/ai", authRequired, analysisRateLimit, aiRoutes);
+app.use("/api/ai", authRequired, analysisRateLimit, aiRoutes);
+
+// Feedback API (user feedback for AI improvement — auth required)
+app.use("/api/v1/feedback", authRequired, crudRateLimit, feedbackRoutes);
+app.use("/api/feedback", authRequired, crudRateLimit, feedbackRoutes);
+
 // Analytics API (product event tracking — no auth required for track/batch)
 app.use("/api/v1/analytics", analyticsRouter);
 app.use("/api/analytics", analyticsRouter);
 
 // Get users in a project (for multiplayer) - requires auth
-app.get("/api/project/:id/users", requireAuth(), (req: Request, res: Response) => {
-  const projectId = req.params["id"] ?? "";
-  const users = socketServer.getProjectUsers(projectId);
-  res.ok({
-    projectId,
-    users: users.map((u) => ({ id: u.id, name: u.name, color: u.color })),
-  });
-});
+app.get(
+  "/api/project/:id/users",
+  requireAuth(),
+  (req: Request, res: Response) => {
+    const projectId = req.params["id"] ?? "";
+    const users = socketServer.getProjectUsers(projectId);
+    res.ok({
+      projectId,
+      users: users.map((u) => ({ id: u.id, name: u.name, color: u.color })),
+    });
+  },
+);
 
 // Error handler (must be last middleware — BEFORE listen)
 app.use(secureErrorHandler);
