@@ -97,7 +97,6 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
                         {isComplete ? 'Analysis finished successfully' : isError ? 'Analysis encountered an error' : 'Analysis is in progress'}
                     </DialogDescription>
                 </DialogHeader>
-                </div>
 
                 {/* Content */}
                 <div className="px-6 py-4">

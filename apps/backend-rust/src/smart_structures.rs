@@ -288,16 +288,18 @@ impl StateSpaceModel {
         for i in 0..n {
             m_inv[i][i] = 1.0 / masses[i];
             
-            if i == 0 {
-                k[i][i] = stiffnesses[i];
-                c[i][i] = dampings[i];
-            } else {
-                k[i][i] = stiffnesses[i] + stiffnesses[i-1];
-                k[i][i-1] = -stiffnesses[i-1];
-                k[i-1][i] = -stiffnesses[i-1];
-                c[i][i] = dampings[i] + dampings[i-1];
-                c[i][i-1] = -dampings[i-1];
-                c[i-1][i] = -dampings[i-1];
+            // Spring i connects DOF i to support below (ground for i=0, DOF i-1 for i>0)
+            k[i][i] += stiffnesses[i];
+            c[i][i] += dampings[i];
+            
+            if i > 0 {
+                // This spring also connects to DOF i-1
+                k[i-1][i-1] += stiffnesses[i];
+                k[i][i-1] = -stiffnesses[i];
+                k[i-1][i] = -stiffnesses[i];
+                c[i-1][i-1] += dampings[i];
+                c[i][i-1] = -dampings[i];
+                c[i-1][i] = -dampings[i];
             }
         }
         
