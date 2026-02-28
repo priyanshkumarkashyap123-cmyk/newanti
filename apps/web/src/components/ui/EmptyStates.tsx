@@ -95,7 +95,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         <div
           className={`
             ${sizes.iconWrapper}
-            rounded-full bg-slate-700/50 
+            rounded-full bg-slate-200/50 dark:bg-slate-700/50 
             flex items-center justify-center mb-4
           `}
           aria-hidden="true"
@@ -104,12 +104,12 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         </div>
       )}
 
-      <h3 className={`font-semibold text-slate-200 mb-2 ${sizes.title}`}>
+      <h3 className={`font-semibold text-slate-700 dark:text-slate-200 mb-2 ${sizes.title}`}>
         {title}
       </h3>
 
       {description && (
-        <p className={`text-slate-400 mb-6 max-w-md ${sizes.description}`}>
+        <p className={`text-slate-500 dark:text-slate-400 mb-6 max-w-md ${sizes.description}`}>
           {description}
         </p>
       )}
@@ -123,7 +123,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
                 ${sizes.button}
                 ${
                   action.variant === 'secondary'
-                    ? 'bg-slate-700 hover:bg-slate-600 text-slate-200'
+                    ? 'bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-700 dark:text-slate-200'
                     : 'bg-blue-600 hover:bg-blue-700 text-white'
                 }
                 font-medium rounded-lg transition-colors
@@ -138,7 +138,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
               onClick={secondaryAction.onClick}
               className={`
                 ${sizes.button}
-                bg-transparent hover:bg-slate-700 text-slate-300
+                bg-transparent hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300
                 font-medium rounded-lg transition-colors
                 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-900
               `}
@@ -180,7 +180,7 @@ export const NoData: React.FC<NoDataProps> = ({
       title={title}
       description={description}
       icon={
-        <svg className="w-6 h-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-6 h-6 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -272,7 +272,7 @@ export const SearchNoResults: React.FC<SearchNoResultsProps> = ({
       title={query ? `No results for "${query}"` : 'No results found'}
       description="Try adjusting your search or filter criteria."
       icon={
-        <svg className="w-6 h-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-6 h-6 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -287,13 +287,13 @@ export const SearchNoResults: React.FC<SearchNoResultsProps> = ({
     >
       {suggestions && suggestions.length > 0 && (
         <div className="mt-4">
-          <p className="text-sm text-slate-400 mb-2">Try searching for:</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Try searching for:</p>
           <div className="flex flex-wrap gap-2 justify-center">
             {suggestions.map((suggestion, index) => (
               <button
                 key={index}
                 onClick={() => onSuggestionClick?.(suggestion)}
-                className="px-3 py-1 bg-slate-700/50 hover:bg-slate-700 text-slate-300 text-sm rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-1 bg-slate-200/50 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {suggestion}
               </button>
@@ -442,13 +442,13 @@ export const OnboardingState: React.FC<OnboardingStateProps> = ({
           {steps.map((step, index) => (
             <div
               key={index}
-              className="flex flex-col items-center p-4 bg-slate-800/30 rounded-xl"
+              className="flex flex-col items-center p-4 bg-slate-100/30 dark:bg-slate-800/30 rounded-xl"
             >
               <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center mb-3">
                 {step.icon}
               </div>
               <h4 className="font-medium text-slate-200 mb-1">{step.title}</h4>
-              <p className="text-sm text-slate-400">{step.description}</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">{step.description}</p>
             </div>
           ))}
         </div>
@@ -567,8 +567,8 @@ export const UploadState: React.FC<UploadStateProps> = ({
     <div
       className={`
         flex flex-col items-center justify-center text-center
-        p-8 border-2 border-dashed border-slate-600 rounded-xl
-        hover:border-blue-500/50 hover:bg-slate-800/30 transition-colors
+        p-8 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl
+        hover:border-blue-500/50 hover:bg-slate-100/30 dark:hover:bg-slate-800/30 transition-colors
         cursor-pointer
         ${className}
       `}
@@ -589,11 +589,11 @@ export const UploadState: React.FC<UploadStateProps> = ({
         </svg>
       </div>
 
-      <h3 className="text-lg font-semibold text-slate-200 mb-2">{title}</h3>
-      <p className="text-slate-400 mb-4">{description}</p>
+      <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-2">{title}</h3>
+      <p className="text-slate-500 dark:text-slate-400 mb-4">{description}</p>
 
       {(acceptedFormats || maxSize) && (
-        <div className="text-sm text-slate-400">
+        <div className="text-sm text-slate-500 dark:text-slate-400">
           {acceptedFormats && (
             <p>Accepted: {acceptedFormats.join(', ')}</p>
           )}

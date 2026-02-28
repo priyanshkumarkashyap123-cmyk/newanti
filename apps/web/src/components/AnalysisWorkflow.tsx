@@ -161,7 +161,7 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
                                         ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400'
                                         : isComplete || isPast
                                             ? 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20'
-                                            : 'text-zinc-400 dark:text-zinc-500'
+                                            : 'text-zinc-500 dark:text-zinc-500'
                                     }
                                     ${isClickable ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}
                                 `}
@@ -172,7 +172,7 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
                                         ? 'bg-blue-600 text-white'
                                         : isComplete
                                             ? 'bg-green-600 text-white'
-                                            : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-400 dark:text-zinc-400'
+                                            : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400'
                                     }
                                 `}>
                                     {isComplete && !isActive ? (
@@ -185,7 +185,7 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
                                     <div className={`text-sm font-medium ${isActive ? '' : 'text-zinc-500 dark:text-zinc-400'}`}>
                                         {step.label}
                                     </div>
-                                    <div className="text-xs text-zinc-400 dark:text-zinc-400">
+                                    <div className="text-xs text-zinc-500 dark:text-zinc-400">
                                         {step.description}
                                     </div>
                                 </div>
@@ -213,13 +213,13 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
                         flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ml-4
                         ${stepStatus.analyze && !isAnalyzing
                             ? 'bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/25'
-                            : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-400 cursor-not-allowed'
+                            : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400 cursor-not-allowed'
                         }
                     `}
                 >
                     {isAnalyzing ? (
                         <>
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            <div className="w-4 h-4 border-2 border-zinc-200 dark:border-white border-t-transparent rounded-full animate-spin" />
                             <span>Analyzing...</span>
                         </>
                     ) : (

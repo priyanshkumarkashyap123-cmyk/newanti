@@ -50,7 +50,7 @@ export function HydraulicsDesigner() {
                 {activeTab === 'open-channel' && <OpenChannelFlowCalculator />}
                 {activeTab === 'pipe-flow' && <PipeFlowCalculator />}
                 {activeTab === 'pipe-network' && (
-                    <Suspense fallback={<div className="flex items-center justify-center h-64 text-gray-400">Loading Pipe Network Designer...</div>}>
+                    <Suspense fallback={<div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">Loading Pipe Network Designer...</div>}>
                         <PipeNetworkDesigner />
                     </Suspense>
                 )}

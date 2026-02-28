@@ -9,6 +9,9 @@
  * - Force diagram animation
  * - Export to video/GIF
  * 
+ * Wired to real analysis results from useModelStore when available.
+ * Falls back to demo data when no analysis has been run.
+ * 
  * Industry Standard: Matches ETABS, SAP2000, ANSYS post-processors
  */
 
@@ -100,37 +103,75 @@ const ResultAnimationViewer: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const animationRef = useRef<number | null>(null);
 
-  // Mock load cases
-  const [loadCases] = useState<LoadCase[]>([
-    { id: 'lc1', name: 'Dead Load (DL)', type: 'static', selected: false },
-    { id: 'lc2', name: 'Live Load (LL)', type: 'static', selected: false },
-    { id: 'lc3', name: 'Seismic X (EQX)', type: 'seismic', selected: true },
-    { id: 'lc4', name: 'Seismic Y (EQY)', type: 'seismic', selected: false },
-    { id: 'lc5', name: 'Wind Load (WL)', type: 'static', selected: false },
-    { id: 'lc6', name: 'Combination 1 (1.5DL+1.5LL)', type: 'static', selected: false },
-  ]);
-
-  // Mock mode shapes
-  const [modeShapes] = useState<ModeShape[]>([
-    { mode: 1, frequency: 1.25, period: 0.80, description: 'First Translation X', participation: { x: 72, y: 5, z: 2 } },
-    { mode: 2, frequency: 1.42, period: 0.70, description: 'First Translation Y', participation: { x: 4, y: 68, z: 3 } },
-    { mode: 3, frequency: 1.85, period: 0.54, description: 'First Torsion', participation: { x: 2, y: 3, z: 45 } },
-    { mode: 4, frequency: 3.65, period: 0.27, description: 'Second Translation X', participation: { x: 12, y: 1, z: 0 } },
-    { mode: 5, frequency: 4.12, period: 0.24, description: 'Second Translation Y', participation: { x: 1, y: 10, z: 0 } },
-    { mode: 6, frequency: 5.25, period: 0.19, description: 'Second Torsion', participation: { x: 0, y: 0, z: 8 } },
-  ]);
-
+  // Try to load real data from analysis store
+  const [loadCases, setLoadCases] = useState<LoadCase[]>([]);
+  const [modeShapes, setModeShapes] = useState<ModeShape[]>([]);
   const [selectedMode, setSelectedMode] = useState(1);
+  const [timeHistory, setTimeHistory] = useState<TimeStep[]>([]);
 
-  // Mock time history data
-  const [timeHistory] = useState<TimeStep[]>(
-    Array.from({ length: 200 }, (_, i) => ({
-      time: i * 0.05,
-      displacement: Math.sin(i * 0.1) * Math.exp(-i * 0.01) * 0.05,
-      velocity: Math.cos(i * 0.1) * Math.exp(-i * 0.01) * 0.3,
-      acceleration: -Math.sin(i * 0.1) * Math.exp(-i * 0.01) * 2.0
-    }))
-  );
+  useEffect(() => {
+    // Attempt to pull real data from the model store
+    (async () => {
+      try {
+        const { useModelStore } = await import('../store/model');
+        const state = useModelStore.getState();
+
+        // Load cases from store
+        if (state.loadCases && state.loadCases.length > 0) {
+          setLoadCases(state.loadCases.map((lc: any) => ({
+            id: lc.id,
+            name: lc.name || lc.id,
+            type: lc.type || 'static',
+            selected: false,
+          })));
+        }
+
+        // Modal results from store
+        if (state.modalResults) {
+          const mr = state.modalResults as any;
+          if (mr.frequencies && mr.frequencies.length > 0) {
+            setModeShapes(mr.frequencies.map((freq: number, i: number) => ({
+              mode: i + 1,
+              frequency: freq,
+              period: freq > 0 ? 1 / freq : 0,
+              description: `Mode ${i + 1}`,
+              participation: mr.participation_factors?.[i] || { x: 0, y: 0, z: 0 },
+            })));
+          }
+        }
+      } catch {
+        // Store not available
+      }
+
+      // If no real data loaded, use defaults
+      setLoadCases(prev => prev.length > 0 ? prev : [
+        { id: 'lc1', name: 'Dead Load (DL)', type: 'static', selected: false },
+        { id: 'lc2', name: 'Live Load (LL)', type: 'static', selected: false },
+        { id: 'lc3', name: 'Seismic X (EQX)', type: 'seismic', selected: true },
+        { id: 'lc4', name: 'Seismic Y (EQY)', type: 'seismic', selected: false },
+        { id: 'lc5', name: 'Wind Load (WL)', type: 'static', selected: false },
+        { id: 'lc6', name: 'Combination 1 (1.5DL+1.5LL)', type: 'static', selected: false },
+      ]);
+
+      setModeShapes(prev => prev.length > 0 ? prev : [
+        { mode: 1, frequency: 1.25, period: 0.80, description: 'First Translation X', participation: { x: 72, y: 5, z: 2 } },
+        { mode: 2, frequency: 1.42, period: 0.70, description: 'First Translation Y', participation: { x: 4, y: 68, z: 3 } },
+        { mode: 3, frequency: 1.85, period: 0.54, description: 'First Torsion', participation: { x: 2, y: 3, z: 45 } },
+        { mode: 4, frequency: 3.65, period: 0.27, description: 'Second Translation X', participation: { x: 12, y: 1, z: 0 } },
+        { mode: 5, frequency: 4.12, period: 0.24, description: 'Second Translation Y', participation: { x: 1, y: 10, z: 0 } },
+        { mode: 6, frequency: 5.25, period: 0.19, description: 'Second Torsion', participation: { x: 0, y: 0, z: 8 } },
+      ]);
+
+      setTimeHistory(prev => prev.length > 0 ? prev : 
+        Array.from({ length: 200 }, (_, i) => ({
+          time: i * 0.05,
+          displacement: Math.sin(i * 0.1) * Math.exp(-i * 0.01) * 0.05,
+          velocity: Math.cos(i * 0.1) * Math.exp(-i * 0.01) * 0.3,
+          acceleration: -Math.sin(i * 0.1) * Math.exp(-i * 0.01) * 2.0
+        }))
+      );
+    })();
+  }, []);
 
   // Animation loop
   useEffect(() => {
@@ -192,7 +233,7 @@ const ResultAnimationViewer: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 via-slate-100 dark:via-slate-800 to-slate-50 dark:to-slate-900">
       {/* Header */}
       <header className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-300 dark:border-slate-700/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -205,7 +246,7 @@ const ResultAnimationViewer: React.FC = () => {
                 <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
               </Link>
               <div>
-                <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+                <h1 className="text-2xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                   <Activity className="w-7 h-7 text-purple-400" />
                   Result Animation Viewer
                 </h1>
@@ -216,7 +257,7 @@ const ResultAnimationViewer: React.FC = () => {
             </div>
             
             <div className="flex items-center gap-3">
-              <button className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors">
+              <button className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white rounded-lg transition-colors">
                 <Camera className="w-4 h-4" />
                 Screenshot
               </button>
@@ -235,7 +276,7 @@ const ResultAnimationViewer: React.FC = () => {
           <div className="space-y-6">
             {/* Animation Type */}
             <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                 <Layers className="w-5 h-5 text-purple-400" />
                 Animation Type
               </h3>
@@ -255,7 +296,7 @@ const ResultAnimationViewer: React.FC = () => {
                     className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${
                       settings.type === type.id 
                         ? 'bg-purple-600 text-white' 
-                        : 'bg-slate-700/50 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                        : 'bg-slate-200/50 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                     }`}
                   >
                     <type.icon className="w-4 h-4" />
@@ -268,14 +309,14 @@ const ResultAnimationViewer: React.FC = () => {
             {/* Load Cases (for static/deformation) */}
             {(settings.type === 'deformation' || settings.type === 'stress') && (
               <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
-                <h3 className="text-lg font-semibold text-white mb-4">Load Cases</h3>
+                <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Load Cases</h3>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {loadCases.map(lc => (
                     <button
                       key={lc.id}
                       className={`w-full flex items-center gap-3 p-2 rounded-lg text-sm ${
                         lc.selected 
-                          ? 'bg-purple-600/30 border border-purple-500 text-white' 
+                          ? 'bg-purple-600/30 border border-purple-500 text-zinc-900 dark:text-white' 
                           : 'bg-slate-700/30 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/50'
                       }`}
                     >
@@ -293,7 +334,7 @@ const ResultAnimationViewer: React.FC = () => {
             {/* Mode Selection (for modal animation) */}
             {settings.type === 'modal' && (
               <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
-                <h3 className="text-lg font-semibold text-white mb-4">Mode Shapes</h3>
+                <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Mode Shapes</h3>
                 <div className="space-y-2 max-h-80 overflow-y-auto">
                   {modeShapes.map(mode => (
                     <button
@@ -306,7 +347,7 @@ const ResultAnimationViewer: React.FC = () => {
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-white font-medium">Mode {mode.mode}</span>
+                        <span className="text-zinc-900 dark:text-white font-medium">Mode {mode.mode}</span>
                         <span className="text-purple-400 text-sm">{mode.frequency.toFixed(2)} Hz</span>
                       </div>
                       <p className="text-slate-600 dark:text-slate-400 text-sm">{mode.description}</p>
@@ -346,14 +387,14 @@ const ResultAnimationViewer: React.FC = () => {
 
               {/* Frame Counter */}
               <div className="absolute top-4 left-4 bg-slate-50 dark:bg-slate-900/80 px-3 py-1.5 rounded-lg">
-                <span className="text-white text-sm font-mono">
+                <span className="text-zinc-900 dark:text-white text-sm font-mono">
                   Frame: {settings.currentFrame + 1} / {settings.frameCount}
                 </span>
               </div>
 
               {/* Scale Indicator */}
               <div className="absolute top-4 right-4 bg-slate-50 dark:bg-slate-900/80 px-3 py-1.5 rounded-lg">
-                <span className="text-white text-sm">
+                <span className="text-zinc-900 dark:text-white text-sm">
                   Scale: {settings.scale}x
                 </span>
               </div>
@@ -363,13 +404,13 @@ const ResultAnimationViewer: React.FC = () => {
                 <div className="bg-slate-50 dark:bg-slate-900/80 rounded-lg p-3">
                   <div className="flex items-center gap-4 mb-2">
                     <span className="text-slate-600 dark:text-slate-400 text-sm">Phase:</span>
-                    <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+                    <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-purple-500 transition-all"
                         style={{ width: `${((settings.currentFrame + 1) / settings.frameCount) * 100}%` }}
                       />
                     </div>
-                    <span className="text-white text-sm font-mono">
+                    <span className="text-zinc-900 dark:text-white text-sm font-mono">
                       {((settings.currentFrame / settings.frameCount) * 360).toFixed(0)}°
                     </span>
                   </div>
@@ -382,21 +423,21 @@ const ResultAnimationViewer: React.FC = () => {
               <div className="flex items-center justify-center gap-2">
                 <button
                   onClick={stop}
-                  className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white"
+                  className="p-2 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white"
                   title="Stop"
                 >
                   <RotateCcw className="w-5 h-5" />
                 </button>
                 <button
                   onClick={prevFrame}
-                  className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white"
+                  className="p-2 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white"
                   title="Previous Frame"
                 >
                   <SkipBack className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => setSettings(prev => ({ ...prev, speed: Math.max(0.25, prev.speed - 0.25) }))}
-                  className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white"
+                  className="p-2 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white"
                   title="Slower"
                 >
                   <Rewind className="w-5 h-5" />
@@ -422,21 +463,21 @@ const ResultAnimationViewer: React.FC = () => {
 
                 <button
                   onClick={() => setSettings(prev => ({ ...prev, speed: Math.min(4, prev.speed + 0.25) }))}
-                  className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white"
+                  className="p-2 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white"
                   title="Faster"
                 >
                   <FastForward className="w-5 h-5" />
                 </button>
                 <button
                   onClick={nextFrame}
-                  className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white"
+                  className="p-2 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white"
                   title="Next Frame"
                 >
                   <SkipForward className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => setSettings(prev => ({ ...prev, loop: !prev.loop }))}
-                  className={`p-2 rounded-lg ${settings.loop ? 'bg-purple-600' : 'bg-slate-700'} hover:bg-purple-500 text-white`}
+                  className={`p-2 rounded-lg ${settings.loop ? 'bg-purple-600' : 'bg-slate-200 dark:bg-slate-700'} hover:bg-purple-500 text-white`}
                   title="Loop"
                 >
                   <RefreshCw className="w-5 h-5" />
@@ -463,7 +504,7 @@ const ResultAnimationViewer: React.FC = () => {
                   max={settings.frameCount - 1}
                   value={settings.currentFrame}
                   onChange={(e) => setSettings(prev => ({ ...prev, currentFrame: parseInt(e.target.value) }))}
-                  className="flex-1 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                  className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
                 />
                 <span className="text-slate-600 dark:text-slate-400 text-sm w-16 text-right">
                   {(settings.frameCount / 30).toFixed(1)}s
@@ -476,7 +517,7 @@ const ResultAnimationViewer: React.FC = () => {
           <div className="space-y-6">
             {/* Display Settings */}
             <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                 <Sliders className="w-5 h-5 text-purple-400" />
                 Display Settings
               </h3>
@@ -492,7 +533,7 @@ const ResultAnimationViewer: React.FC = () => {
                     max={500}
                     value={settings.scale}
                     onChange={(e) => setSettings(prev => ({ ...prev, scale: parseInt(e.target.value) }))}
-                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none"
+                    className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none"
                   />
                   <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400 mt-1">
                     <span>1x</span>
@@ -511,7 +552,7 @@ const ResultAnimationViewer: React.FC = () => {
                     step={12}
                     value={settings.frameCount}
                     onChange={(e) => setSettings(prev => ({ ...prev, frameCount: parseInt(e.target.value), currentFrame: 0 }))}
-                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none"
+                    className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none"
                   />
                 </div>
               </div>
@@ -519,7 +560,7 @@ const ResultAnimationViewer: React.FC = () => {
 
             {/* Display Options */}
             <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
-              <h3 className="text-lg font-semibold text-white mb-4">Options</h3>
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Options</h3>
 
               <div className="space-y-3">
                 {[
@@ -531,7 +572,7 @@ const ResultAnimationViewer: React.FC = () => {
                   <label key={option.key} className="flex items-center justify-between p-2 bg-slate-700/30 rounded-lg cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700/50">
                     <div className="flex items-center gap-2">
                       <option.icon className="w-4 h-4 text-slate-600 dark:text-slate-400" />
-                      <span className="text-white text-sm">{option.label}</span>
+                      <span className="text-zinc-900 dark:text-white text-sm">{option.label}</span>
                     </div>
                     <input
                       type="checkbox"
@@ -546,21 +587,21 @@ const ResultAnimationViewer: React.FC = () => {
 
             {/* Export Options */}
             <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                 <Download className="w-5 h-5 text-purple-400" />
                 Export
               </h3>
 
               <div className="space-y-2">
-                <button className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors">
+                <button className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white rounded-lg transition-colors">
                   <Video className="w-4 h-4" />
                   Export as MP4
                 </button>
-                <button className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors">
+                <button className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white rounded-lg transition-colors">
                   <Camera className="w-4 h-4" />
                   Export as GIF
                 </button>
-                <button className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors">
+                <button className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white rounded-lg transition-colors">
                   <Camera className="w-4 h-4" />
                   Export Frame Sequence
                 </button>
@@ -570,19 +611,19 @@ const ResultAnimationViewer: React.FC = () => {
             {/* Quick Stats */}
             {settings.type === 'modal' && selectedMode && (
               <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/30 rounded-xl p-5 border border-purple-500/30">
-                <h4 className="text-white font-medium mb-3">Mode {selectedMode} Properties</h4>
+                <h4 className="text-zinc-900 dark:text-white font-medium mb-3">Mode {selectedMode} Properties</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-slate-600 dark:text-slate-400">Frequency</span>
-                    <span className="text-white">{modeShapes[selectedMode - 1]?.frequency.toFixed(2)} Hz</span>
+                    <span className="text-zinc-900 dark:text-white">{modeShapes[selectedMode - 1]?.frequency.toFixed(2)} Hz</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600 dark:text-slate-400">Period</span>
-                    <span className="text-white">{modeShapes[selectedMode - 1]?.period.toFixed(2)} s</span>
+                    <span className="text-zinc-900 dark:text-white">{modeShapes[selectedMode - 1]?.period.toFixed(2)} s</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600 dark:text-slate-400">Type</span>
-                    <span className="text-white">{modeShapes[selectedMode - 1]?.description}</span>
+                    <span className="text-zinc-900 dark:text-white">{modeShapes[selectedMode - 1]?.description}</span>
                   </div>
                 </div>
               </div>

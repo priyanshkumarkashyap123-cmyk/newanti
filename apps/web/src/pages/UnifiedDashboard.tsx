@@ -313,7 +313,7 @@ const ProjectCard: FC<{
 
       {/* Info */}
       <div className="px-3.5 py-3 space-y-2">
-        <h3 className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate group-hover:text-zinc-900 dark:hover:text-zinc-900 dark:hover:text-white transition-colors">
+        <h3 className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate group-hover:text-zinc-900 dark:hover:text-white transition-colors">
           {project.name}
         </h3>
         <div className="flex items-center gap-2 text-[11px] text-slate-500">

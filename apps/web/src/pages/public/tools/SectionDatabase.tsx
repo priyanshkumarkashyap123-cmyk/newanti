@@ -251,16 +251,16 @@ interface PropertyRowProps {
 
 const PropertyRow: FC<PropertyRowProps> = ({ label, value, unit, highlighted, onHover, onLeave }) => (
     <tr
-        className={`border-b border-slate-700/50 transition-colors ${highlighted ? 'bg-yellow-500/20' : 'hover:bg-slate-700/30'
+        className={`border-b border-slate-200/50 dark:border-slate-700/50 transition-colors ${highlighted ? 'bg-yellow-500/20' : 'hover:bg-slate-700/30'
             }`}
         onMouseEnter={onHover}
         onMouseLeave={onLeave}
     >
-        <td className="py-2 px-3 text-slate-400 text-sm">{label}</td>
-        <td className={`py-2 px-3 text-right font-mono ${highlighted ? 'text-yellow-400 font-bold' : 'text-white'}`}>
+        <td className="py-2 px-3 text-slate-500 dark:text-slate-400 text-sm">{label}</td>
+        <td className={`py-2 px-3 text-right font-mono ${highlighted ? 'text-yellow-400 font-bold' : 'text-zinc-900 dark:text-white'}`}>
             {typeof value === 'number' ? value.toLocaleString() : value}
         </td>
-        <td className="py-2 px-3 text-slate-400 text-sm">{unit}</td>
+        <td className="py-2 px-3 text-slate-500 dark:text-slate-400 text-sm">{unit}</td>
     </tr>
 );
 
@@ -285,9 +285,9 @@ export const SectionDatabase: FC = () => {
     }, [searchQuery, typeFilter]);
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950">
+        <div className="min-h-screen bg-gradient-to-b from-slate-50 dark:from-slate-900 to-white dark:to-slate-950">
             {/* Header */}
-            <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-xl sticky top-0 z-50">
+            <header className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-xl sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <Link to="/" className="flex items-center gap-2">
@@ -297,9 +297,9 @@ export const SectionDatabase: FC = () => {
                             <span className="text-white font-bold">BeamLab</span>
                         </Link>
                         <span className="text-slate-500">/</span>
-                        <Link to="/tools" className="text-slate-400 hover:text-white text-sm">Tools</Link>
+                        <Link to="/tools" className="text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white text-sm">Tools</Link>
                         <span className="text-slate-500">/</span>
-                        <span className="text-white text-sm font-medium">Section Library</span>
+                        <span className="text-zinc-900 dark:text-white text-sm font-medium">Section Library</span>
                     </div>
                 </div>
             </header>
@@ -307,8 +307,8 @@ export const SectionDatabase: FC = () => {
             <main className="max-w-7xl mx-auto px-4 py-8">
                 {/* Title */}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-white mb-2">Steel Section Library</h1>
-                    <p className="text-slate-400">
+                    <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">Steel Section Library</h1>
+                    <p className="text-slate-500 dark:text-slate-400">
                         Browse AISC W-shapes and IS steel sections. Click a section to view properties and cross-section.
                     </p>
                 </div>
@@ -316,29 +316,29 @@ export const SectionDatabase: FC = () => {
                 {/* Search & Filter */}
                 <div className="flex flex-col sm:flex-row gap-4 mb-6">
                     <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-slate-400" />
                         <input
                             type="text"
                             placeholder="Search sections... (e.g., W14x90, ISMB 500)"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 bg-slate-800/80 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full pl-10 pr-4 py-3 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-zinc-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                         {searchQuery && (
                             <button
                                 onClick={() => setSearchQuery('')}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white"
                             >
                                 <X className="w-4 h-4" />
                             </button>
                         )}
                     </div>
                     <div className="relative">
-                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400" />
                         <select
                             value={typeFilter}
                             onChange={(e) => setTypeFilter(e.target.value)}
-                            className="pl-9 pr-8 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="pl-9 pr-8 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-zinc-900 dark:text-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                             {SECTION_TYPES.map(t => (
                                 <option key={t.value} value={t.value}>{t.label}</option>
@@ -349,8 +349,8 @@ export const SectionDatabase: FC = () => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Section List */}
-                    <div className="lg:col-span-1 bg-slate-800/50 rounded-xl p-4 max-h-[600px] overflow-y-auto">
-                        <h3 className="text-white font-medium mb-3 flex items-center gap-2">
+                    <div className="lg:col-span-1 bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-4 max-h-[600px] overflow-y-auto">
+                        <h3 className="text-zinc-900 dark:text-white font-medium mb-3 flex items-center gap-2">
                             <Layers className="w-4 h-4" />
                             Sections ({filteredSections.length})
                         </h3>
@@ -361,7 +361,7 @@ export const SectionDatabase: FC = () => {
                                     onClick={() => setSelectedSection(section)}
                                     className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${selectedSection?.name === section.name
                                         ? 'bg-blue-600 text-white'
-                                        : 'text-slate-300 hover:bg-slate-700/50'
+                                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
                                         }`}
                                 >
                                     <div className="font-medium">{section.name}</div>
@@ -375,8 +375,8 @@ export const SectionDatabase: FC = () => {
                     {selectedSection ? (
                         <div className="lg:col-span-2 space-y-6">
                             {/* Cross-Section Visual */}
-                            <div className="bg-slate-800/50 rounded-xl p-4">
-                                <h3 className="text-white font-semibold text-xl mb-4">
+                            <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-4">
+                                <h3 className="text-zinc-900 dark:text-white font-semibold text-xl mb-4">
                                     {selectedSection.name}
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -385,7 +385,7 @@ export const SectionDatabase: FC = () => {
                                         highlightPart={highlightPart}
                                         onHoverPart={setHighlightPart}
                                     />
-                                    <div className="text-sm text-slate-400">
+                                    <div className="text-sm text-slate-500 dark:text-slate-400">
                                         <p className="mb-2">
                                             <span className="text-blue-400">Hover</span> over the cross-section
                                             to highlight related properties.
@@ -411,8 +411,8 @@ export const SectionDatabase: FC = () => {
                             {/* Properties Tables */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {/* Dimensions */}
-                                <div className="bg-slate-800/50 rounded-xl p-4">
-                                    <h4 className="text-white font-medium mb-3">Dimensions</h4>
+                                <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-4">
+                                    <h4 className="text-zinc-900 dark:text-white font-medium mb-3">Dimensions</h4>
                                     <table className="w-full">
                                         <tbody>
                                             <PropertyRow
@@ -452,8 +452,8 @@ export const SectionDatabase: FC = () => {
                                 </div>
 
                                 {/* Section Properties */}
-                                <div className="bg-slate-800/50 rounded-xl p-4">
-                                    <h4 className="text-white font-medium mb-3">Section Properties</h4>
+                                <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-4">
+                                    <h4 className="text-zinc-900 dark:text-white font-medium mb-3">Section Properties</h4>
                                     <table className="w-full">
                                         <tbody>
                                             <PropertyRow label="Area (A)" value={selectedSection.A} unit="cm²" />
@@ -465,8 +465,8 @@ export const SectionDatabase: FC = () => {
                                 </div>
 
                                 {/* Section Modulus */}
-                                <div className="bg-slate-800/50 rounded-xl p-4">
-                                    <h4 className="text-white font-medium mb-3">Section Modulus</h4>
+                                <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-4">
+                                    <h4 className="text-zinc-900 dark:text-white font-medium mb-3">Section Modulus</h4>
                                     <table className="w-full">
                                         <tbody>
                                             <PropertyRow label="Zx" value={selectedSection.Zx} unit="cm³" />
@@ -478,14 +478,14 @@ export const SectionDatabase: FC = () => {
                                 </div>
 
                                 {/* Actions */}
-                                <div className="bg-slate-800/50 rounded-xl p-4 flex flex-col justify-center">
+                                <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-4 flex flex-col justify-center">
                                     <button className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors mb-3">
                                         <Download className="w-4 h-4" />
                                         Download Data
                                     </button>
                                     <Link
                                         to="/demo"
-                                        className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                                        className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white rounded-lg transition-colors"
                                     >
                                         Use in 3D Model
                                         <ArrowRight className="w-4 h-4" />
@@ -494,7 +494,7 @@ export const SectionDatabase: FC = () => {
                             </div>
                         </div>
                     ) : (
-                        <div className="lg:col-span-2 flex items-center justify-center text-slate-400">
+                        <div className="lg:col-span-2 flex items-center justify-center text-slate-500 dark:text-slate-400">
                             Select a section to view details
                         </div>
                     )}

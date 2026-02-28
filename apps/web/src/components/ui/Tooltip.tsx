@@ -93,7 +93,7 @@ export const Tooltip: FC<TooltipProps> = ({
                     id="tooltip-content"
                     role="tooltip"
                     aria-live="polite"
-                    className="fixed z-[1000] px-3 py-1.5 bg-slate-900 border border-slate-700 text-slate-100 text-xs rounded-lg shadow-xl whitespace-nowrap pointer-events-none animate-in fade-in zoom-in-95 duration-100"
+                    className="fixed z-[1000] px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-xs rounded-lg shadow-xl whitespace-nowrap pointer-events-none animate-in fade-in zoom-in-95 duration-100"
                     style={{
                         top: position.top,
                         left: position.left,
@@ -103,7 +103,7 @@ export const Tooltip: FC<TooltipProps> = ({
                     <div className="flex items-center gap-2">
                         <span className="font-medium">{content}</span>
                         {shortcut && (
-                            <kbd className="bg-slate-700 border border-slate-600 px-1.5 py-0.5 rounded text-[10px] text-slate-300 font-mono">
+                            <kbd className="bg-slate-200 dark:bg-slate-700 border border-slate-600 px-1.5 py-0.5 rounded text-[10px] text-slate-600 dark:text-slate-300 font-mono">
                                 {shortcut}
                             </kbd>
                         )}

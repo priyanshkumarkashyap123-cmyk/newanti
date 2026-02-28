@@ -3,7 +3,6 @@
  * Interactive UI for bar development length calculations
  */
 
-'use client';
 
 import React, { useState, useMemo } from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
@@ -155,8 +154,7 @@ export function DevelopmentLengthPanel() {
         <Tabs.List className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
           <Tabs.Trigger 
             value="input"
-            className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 
-                       hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent
+            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white border-b-2 border-transparent
                        data-[state=active]:text-green-600 data-[state=active]:border-green-600"
           >
             <Calculator className="w-4 h-4 inline mr-2" />
@@ -164,8 +162,7 @@ export function DevelopmentLengthPanel() {
           </Tabs.Trigger>
           <Tabs.Trigger 
             value="results"
-            className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 
-                       hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent
+            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white border-b-2 border-transparent
                        data-[state=active]:text-green-600 data-[state=active]:border-green-600"
           >
             <FileText className="w-4 h-4 inline mr-2" />
@@ -173,8 +170,7 @@ export function DevelopmentLengthPanel() {
           </Tabs.Trigger>
           <Tabs.Trigger 
             value="table"
-            className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 
-                       hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent
+            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white border-b-2 border-transparent
                        data-[state=active]:text-green-600 data-[state=active]:border-green-600"
           >
             <Table className="w-4 h-4 inline mr-2" />
@@ -555,7 +551,7 @@ export function DevelopmentLengthPanel() {
             </>
           ) : (
             <div className="text-center py-12">
-              <Ruler className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+              <Ruler className="w-16 h-16 mx-auto text-gray-500 dark:text-gray-400 mb-4" />
               <p className="text-gray-500 dark:text-gray-400">
                 Enter parameters and click Calculate to see development length
               </p>
@@ -614,7 +610,7 @@ export function DevelopmentLengthPanel() {
             </div>
           ) : (
             <div className="text-center py-12 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
-              <Table className="w-12 h-12 mx-auto text-gray-400 mb-3" />
+              <Table className="w-12 h-12 mx-auto text-gray-500 dark:text-gray-400 mb-3" />
               <p className="text-gray-500 dark:text-gray-400">
                 Click "Generate Table" to create a quick reference chart
               </p>

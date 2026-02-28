@@ -269,19 +269,19 @@ const SummaryCard: FC<SummaryCardProps> = ({
   trend,
   subtitle,
 }) => (
-  <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-4 hover:border-zinc-600 transition-colors animate-slideUp">
+  <div className="bg-zinc-100/50 dark:bg-zinc-800/50 rounded-xl border border-zinc-200 dark:border-zinc-700 p-4 hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors animate-slideUp">
     <div className="flex items-start justify-between">
       <div>
-        <p className="text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1">
+        <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1">
           {title}
         </p>
         <div className="flex items-baseline gap-1">
-          <span className="text-2xl font-bold text-white font-mono">
+          <span className="text-2xl font-bold text-zinc-900 dark:text-white font-mono">
             {value}
           </span>
-          {unit && <span className="text-sm text-zinc-400">{unit}</span>}
+          {unit && <span className="text-sm text-zinc-500 dark:text-zinc-400">{unit}</span>}
         </div>
-        {subtitle && <p className="text-xs text-zinc-400 mt-1">{subtitle}</p>}
+        {subtitle && <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{subtitle}</p>}
       </div>
       <div className={`p-2 rounded-lg ${color}`}>
         <Icon className="w-5 h-5" />
@@ -593,20 +593,20 @@ const MemberDiagramMini: FC<MemberDiagramMiniProps> = ({
         ${
           isSelected
             ? "border-blue-500 bg-blue-500/10 ring-1 ring-blue-500/30"
-            : "border-zinc-700 hover:border-zinc-500 bg-zinc-800/50"
+            : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500 bg-zinc-100/50 dark:bg-zinc-800/50"
         }
       `}
     >
       <div className="flex items-center justify-between mb-1.5">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-white">M{member.id}</span>
+          <span className="text-sm font-semibold text-zinc-900 dark:text-white">M{member.id}</span>
           <span className="text-[10px] text-zinc-500">
             {member.sectionType || ""}
           </span>
         </div>
         <div className="flex items-center gap-1.5">
           <span
-            className="text-[10px] font-mono text-zinc-400"
+            className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400"
             style={{ color: colors.line }}
           >
             {colors.label}
@@ -629,20 +629,20 @@ const MemberDiagramMini: FC<MemberDiagramMiniProps> = ({
 
       <canvas
         ref={canvasRef}
-        className="w-full rounded bg-zinc-900/80"
+        className="w-full rounded bg-white/80 dark:bg-zinc-900/80"
         style={{ height: "90px" }}
       />
 
       <div className="flex justify-between mt-1.5 text-[10px]">
         <span className="text-zinc-500">
           Peak:{" "}
-          <span className="font-mono text-zinc-300">
+          <span className="font-mono text-zinc-600 dark:text-zinc-300">
             {formatEngineering(peakVal)}
           </span>
         </span>
         <span className="text-zinc-500">
           L ={" "}
-          <span className="font-mono text-zinc-300">
+          <span className="font-mono text-zinc-600 dark:text-zinc-300">
             {member.length.toFixed(2)}
           </span>
           m
@@ -1084,17 +1084,17 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
   ];
 
   return (
-    <div className="bg-zinc-800/80 rounded-xl border border-zinc-600 p-4 animate-slideUp">
+    <div className="bg-zinc-100/80 dark:bg-zinc-800/80 rounded-xl border border-zinc-600 p-4 animate-slideUp">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          <h3 className="text-base font-bold text-white">
+          <h3 className="text-base font-bold text-zinc-900 dark:text-white">
             Member M{member.id}
           </h3>
-          <span className="text-xs text-zinc-400">
+          <span className="text-xs text-zinc-500 dark:text-zinc-400">
             {member.sectionType || "General"}
           </span>
-          <span className="text-xs font-mono text-zinc-400">
+          <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400">
             L = {member.length.toFixed(3)} m
           </span>
         </div>
@@ -1114,7 +1114,7 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
           </span>
           <button
             onClick={onClose}
-            className="p-1 rounded hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
+            className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
           >
             <XCircle className="w-4 h-4" />
           </button>
@@ -1126,10 +1126,10 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
         {stats.map((s) => (
           <div
             key={s.label}
-            className="bg-zinc-900/80 rounded-lg p-2 text-center"
+            className="bg-white/80 dark:bg-zinc-900/80 rounded-lg p-2 text-center"
           >
             <div className="text-[10px] text-zinc-500">{s.label}</div>
-            <div className="text-sm font-mono font-bold text-white">
+            <div className="text-sm font-mono font-bold text-zinc-900 dark:text-white">
               {formatEngineering((member[s.key] as number) ?? 0)}
             </div>
             <div className="text-[10px] text-zinc-500">{s.unit}</div>
@@ -1140,7 +1140,7 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
       {/* 2x2 diagram grid (primary: XY-plane) */}
       <div className="grid grid-cols-2 gap-3">
         {(["SFD", "BMD", "AFD", "DEFLECTION"] as DiagramType[]).map((dt) => (
-          <div key={dt} className="bg-zinc-900/60 rounded-lg p-2">
+          <div key={dt} className="bg-white/60 dark:bg-zinc-900/60 rounded-lg p-2">
             <div
               className="text-[10px] font-medium mb-1"
               style={{ color: DIAGRAM_COLORS[dt].line }}
@@ -1173,12 +1173,12 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
             (v) => Math.abs(v) > 1e-10,
           )) && (
           <>
-            <div className="text-[10px] font-medium text-zinc-400 mt-3 mb-1">
+            <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mt-3 mb-1">
               Weak-Axis (XZ Plane)
             </div>
             <div className="grid grid-cols-2 gap-3">
               {(["SFD_VZ", "BMD_MY"] as DiagramType[]).map((dt) => (
-                <div key={dt} className="bg-zinc-900/60 rounded-lg p-2">
+                <div key={dt} className="bg-white/60 dark:bg-zinc-900/60 rounded-lg p-2">
                   <div
                     className="text-[10px] font-medium mb-1"
                     style={{ color: DIAGRAM_COLORS[dt].line }}
@@ -1253,8 +1253,8 @@ const ReactionDisplay: FC<ReactionDisplayProps> = ({ nodes }) => {
     colorPos: string;
     colorNeg: string;
   }> = ({ label, value, unit, colorPos, colorNeg }) => (
-    <div className="text-center p-2 bg-zinc-900 rounded">
-      <div className="text-xs text-zinc-400 mb-1">{label}</div>
+    <div className="text-center p-2 bg-white dark:bg-zinc-900 rounded">
+      <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">{label}</div>
       <div
         className={`font-mono font-bold ${value >= 0 ? colorPos : colorNeg}`}
       >
@@ -1282,52 +1282,52 @@ const ReactionDisplay: FC<ReactionDisplayProps> = ({ nodes }) => {
   return (
     <div className="space-y-4">
       {/* Summary totals */}
-      <div className="bg-zinc-800/50 rounded-lg border border-zinc-700 p-3">
-        <div className="text-xs font-medium text-zinc-400 uppercase tracking-wide mb-2">
+      <div className="bg-zinc-100/50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700 p-3">
+        <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">
           Reaction Totals (Equilibrium Check)
         </div>
         <div
           className={`grid ${is3D ? "grid-cols-6" : "grid-cols-3"} gap-2 text-center text-xs`}
         >
           <div>
-            <span className="text-zinc-400">ΣFx =</span>{" "}
-            <span className="font-mono text-white">
+            <span className="text-zinc-500 dark:text-zinc-400">ΣFx =</span>{" "}
+            <span className="font-mono text-zinc-900 dark:text-white">
               {formatNumber(totals.fx)} kN
             </span>
           </div>
           <div>
-            <span className="text-zinc-400">ΣFy =</span>{" "}
-            <span className="font-mono text-white">
+            <span className="text-zinc-500 dark:text-zinc-400">ΣFy =</span>{" "}
+            <span className="font-mono text-zinc-900 dark:text-white">
               {formatNumber(totals.fy)} kN
             </span>
           </div>
           {is3D && (
             <div>
-              <span className="text-zinc-400">ΣFz =</span>{" "}
-              <span className="font-mono text-white">
+              <span className="text-zinc-500 dark:text-zinc-400">ΣFz =</span>{" "}
+              <span className="font-mono text-zinc-900 dark:text-white">
                 {formatNumber(totals.fz)} kN
               </span>
             </div>
           )}
           {is3D && (
             <div>
-              <span className="text-zinc-400">ΣMx =</span>{" "}
-              <span className="font-mono text-white">
+              <span className="text-zinc-500 dark:text-zinc-400">ΣMx =</span>{" "}
+              <span className="font-mono text-zinc-900 dark:text-white">
                 {formatNumber(totals.mx)} kNm
               </span>
             </div>
           )}
           {is3D && (
             <div>
-              <span className="text-zinc-400">ΣMy =</span>{" "}
-              <span className="font-mono text-white">
+              <span className="text-zinc-500 dark:text-zinc-400">ΣMy =</span>{" "}
+              <span className="font-mono text-zinc-900 dark:text-white">
                 {formatNumber(totals.my)} kNm
               </span>
             </div>
           )}
           <div>
-            <span className="text-zinc-400">ΣMz =</span>{" "}
-            <span className="font-mono text-white">
+            <span className="text-zinc-500 dark:text-zinc-400">ΣMz =</span>{" "}
+            <span className="font-mono text-zinc-900 dark:text-white">
               {formatNumber(totals.mz)} kNm
             </span>
           </div>
@@ -1339,11 +1339,11 @@ const ReactionDisplay: FC<ReactionDisplayProps> = ({ nodes }) => {
         {supportNodes.map((node) => (
           <div
             key={node.id}
-            className="bg-zinc-800/50 rounded-lg border border-zinc-700 p-4 animate-slideIn"
+            className="bg-zinc-100/50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700 p-4 animate-slideIn"
           >
             <div className="flex items-center justify-between mb-3">
-              <span className="font-medium text-white">Node {node.id}</span>
-              <span className="text-xs text-zinc-400">
+              <span className="font-medium text-zinc-900 dark:text-white">Node {node.id}</span>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400">
                 ({formatNumber(node.x)}, {formatNumber(node.y)},{" "}
                 {formatNumber(node.z)})
               </span>
@@ -1496,12 +1496,12 @@ const DetailedMemberTable: FC<DetailedMemberTableProps> = ({
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-zinc-700">
+          <tr className="border-b border-zinc-200 dark:border-zinc-700">
             {columns.map((col) => (
               <th
                 key={col.key}
                 onClick={() => handleSort(col.key)}
-                className="px-3 py-2 text-left text-zinc-400 font-medium cursor-pointer hover:text-white transition-colors"
+                className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 font-medium cursor-pointer hover:text-zinc-900 dark:hover:text-white transition-colors"
               >
                 <div className="flex items-center gap-1">
                   {col.label}
@@ -1543,7 +1543,7 @@ const DetailedMemberTable: FC<DetailedMemberTableProps> = ({
                 <tr
                   key={member.id}
                   onClick={() => onSelect(member.id)}
-                  className="border-b border-zinc-800 hover:bg-zinc-800/50 cursor-pointer transition-colors"
+                  className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors"
                   style={{
                     position: "absolute",
                     top: 0,
@@ -1554,37 +1554,37 @@ const DetailedMemberTable: FC<DetailedMemberTableProps> = ({
                     display: "table-row",
                   }}
                 >
-                  <td className="px-3 py-2 font-medium text-white">
+                  <td className="px-3 py-2 font-medium text-zinc-900 dark:text-white">
                     M{member.id}
                   </td>
-                  <td className="px-3 py-2 text-xs text-zinc-400">
+                  <td className="px-3 py-2 text-xs text-zinc-500 dark:text-zinc-400">
                     {member.sectionType || "—"}
                   </td>
-                  <td className="px-3 py-2 font-mono text-zinc-300">
+                  <td className="px-3 py-2 font-mono text-zinc-600 dark:text-zinc-300">
                     {formatNumber(member.length)}
                   </td>
-                  <td className="px-3 py-2 font-mono text-zinc-300">
+                  <td className="px-3 py-2 font-mono text-zinc-600 dark:text-zinc-300">
                     {formatNumber(member.maxShear)}
                   </td>
-                  <td className="px-3 py-2 font-mono text-zinc-300">
+                  <td className="px-3 py-2 font-mono text-zinc-600 dark:text-zinc-300">
                     {formatNumber(member.maxShearZ ?? 0)}
                   </td>
-                  <td className="px-3 py-2 font-mono text-zinc-300">
+                  <td className="px-3 py-2 font-mono text-zinc-600 dark:text-zinc-300">
                     {formatNumber(member.maxMoment)}
                   </td>
-                  <td className="px-3 py-2 font-mono text-zinc-300">
+                  <td className="px-3 py-2 font-mono text-zinc-600 dark:text-zinc-300">
                     {formatNumber(member.maxMomentY ?? 0)}
                   </td>
-                  <td className="px-3 py-2 font-mono text-zinc-300">
+                  <td className="px-3 py-2 font-mono text-zinc-600 dark:text-zinc-300">
                     {formatNumber(member.maxAxial)}
                   </td>
-                  <td className="px-3 py-2 font-mono text-zinc-300">
+                  <td className="px-3 py-2 font-mono text-zinc-600 dark:text-zinc-300">
                     {formatNumber(member.torsion ?? 0)}
                   </td>
-                  <td className="px-3 py-2 font-mono text-zinc-300">
+                  <td className="px-3 py-2 font-mono text-zinc-600 dark:text-zinc-300">
                     {formatNumber(member.maxDeflection)}
                   </td>
-                  <td className="px-3 py-2 font-mono text-zinc-300">
+                  <td className="px-3 py-2 font-mono text-zinc-600 dark:text-zinc-300">
                     {formatNumber(member.stress)}
                   </td>
                   <td className="px-3 py-2">
@@ -1662,9 +1662,9 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
   );
 
   return (
-    <div className="bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden animate-fadeIn h-full flex flex-col">
+    <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden animate-fadeIn h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 bg-zinc-800/50 border-b border-zinc-800">
+      <div className="flex items-center justify-between px-6 py-4 bg-zinc-100/50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-4">
           <div
             className={`p-2 rounded-lg ${statusConfig.bg} ${statusConfig.border} border`}
@@ -1672,8 +1672,8 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
             <StatusIcon className={`w-6 h-6 ${statusConfig.text}`} />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white">Analysis Results</h2>
-            <p className="text-sm text-zinc-400">
+            <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Analysis Results</h2>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
               {summary.totalNodes} nodes • {summary.totalMembers} members •{" "}
               {summary.totalDOF} DOF
             </p>
@@ -1681,21 +1681,21 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-sm text-zinc-400">
+          <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
             <span>Analysis time:</span>
-            <span className="font-mono text-white">
+            <span className="font-mono text-zinc-900 dark:text-white">
               {summary.analysisTime.toFixed(0)}ms
             </span>
           </div>
 
-          <div className="h-6 w-px bg-zinc-700" />
+          <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-700" />
 
           <button
             onClick={() => setShowLegend(!showLegend)}
             className={`p-2 rounded-lg transition-colors ${
               showLegend
                 ? "bg-blue-500/20 text-blue-400"
-                : "text-zinc-400 hover:text-white"
+                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
             }`}
             title={showLegend ? "Hide legend" : "Show legend"}
             aria-label={showLegend ? "Hide legend" : "Show legend"}
@@ -1720,7 +1720,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
             <button
               onClick={onClose}
               autoFocus
-              className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors"
+              className="p-2 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
               aria-label="Close dashboard"
               title="Close"
             >
@@ -1731,7 +1731,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
       </div>
 
       {/* View Mode Tabs */}
-      <div className="flex items-center gap-2 px-6 py-3 border-b border-zinc-800 bg-zinc-800/30" role="tablist">
+      <div className="flex items-center gap-2 px-6 py-3 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-100/30 dark:bg-zinc-800/30" role="tablist">
         {VIEW_MODES.map((mode) => {
           const Icon = mode.icon;
           const isActive = viewMode === mode.id;
@@ -1747,8 +1747,8 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                                 transition-all border active:scale-[0.98] hover:scale-[1.02]
                                 ${
                                   isActive
-                                    ? "bg-white text-black border-white"
-                                    : "border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-600"
+                                    ? "bg-white text-black border-zinc-200 dark:border-white"
+                                    : "border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-300 dark:hover:border-zinc-600"
                                 }
                             `}
             >
@@ -1811,21 +1811,21 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setViewMode("diagrams")}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white text-sm transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white text-sm transition-colors"
               >
                 <BarChart2 className="w-4 h-4" />
                 View Force Diagrams
               </button>
               <button
                 onClick={() => setViewMode("heatmap")}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white text-sm transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white text-sm transition-colors"
               >
                 <Flame className="w-4 h-4" />
                 View Heat Map
               </button>
               <button
                 onClick={() => setViewMode("reactions")}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white text-sm transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white text-sm transition-colors"
               >
                 <ArrowDown className="w-4 h-4" />
                 View Reactions
@@ -1835,15 +1835,15 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
             {/* Member Overview Grid with Pagination */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide">
+                <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
                   Member Overview — click for detail
                 </h3>
                 {members.length > MEMBERS_PER_PAGE && (
-                  <div className="flex items-center gap-2 text-xs text-zinc-400">
+                  <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
                     <button
                       onClick={() => setOverviewPage((p) => Math.max(0, p - 1))}
                       disabled={overviewPage === 0}
-                      className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 disabled:opacity-30 transition-colors"
+                      className="px-2 py-1 rounded bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 disabled:opacity-30 transition-colors"
                     >
                       ‹ Prev
                     </button>
@@ -1867,7 +1867,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                       disabled={
                         (overviewPage + 1) * MEMBERS_PER_PAGE >= members.length
                       }
-                      className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 disabled:opacity-30 transition-colors"
+                      className="px-2 py-1 rounded bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 disabled:opacity-30 transition-colors"
                     >
                       Next ›
                     </button>
@@ -1902,29 +1902,29 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
 
             {/* Node Displacement Summary */}
             <div>
-              <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">
                 Node Displacements — Most Displaced
               </h3>
               <div className="overflow-x-auto max-h-[180px] overflow-y-auto">
                 <table className="w-full text-sm">
-                  <thead className="sticky top-0 bg-zinc-900">
-                    <tr className="border-b border-zinc-700">
-                      <th className="px-3 py-1.5 text-left text-zinc-400 text-xs">
+                  <thead className="sticky top-0 bg-white dark:bg-zinc-900">
+                    <tr className="border-b border-zinc-200 dark:border-zinc-700">
+                      <th className="px-3 py-1.5 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                         Node
                       </th>
-                      <th className="px-3 py-1.5 text-left text-zinc-400 text-xs">
+                      <th className="px-3 py-1.5 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                         Δx (mm)
                       </th>
-                      <th className="px-3 py-1.5 text-left text-zinc-400 text-xs">
+                      <th className="px-3 py-1.5 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                         Δy (mm)
                       </th>
-                      <th className="px-3 py-1.5 text-left text-zinc-400 text-xs">
+                      <th className="px-3 py-1.5 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                         Δz (mm)
                       </th>
-                      <th className="px-3 py-1.5 text-left text-zinc-400 text-xs">
+                      <th className="px-3 py-1.5 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                         |Δ| (mm)
                       </th>
-                      <th className="px-3 py-1.5 text-left text-zinc-400 text-xs">
+                      <th className="px-3 py-1.5 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                         θz (rad)
                       </th>
                     </tr>
@@ -1944,18 +1944,18 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                       .map((n) => (
                         <tr
                           key={n.id}
-                          className="border-b border-zinc-800 hover:bg-zinc-800/50"
+                          className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
                         >
-                          <td className="px-3 py-1 font-medium text-white text-xs">
+                          <td className="px-3 py-1 font-medium text-zinc-900 dark:text-white text-xs">
                             N{n.id}
                           </td>
-                          <td className="px-3 py-1 font-mono text-zinc-300 text-xs">
+                          <td className="px-3 py-1 font-mono text-zinc-600 dark:text-zinc-300 text-xs">
                             {(n.displacement.dx * 1000).toFixed(3)}
                           </td>
-                          <td className="px-3 py-1 font-mono text-zinc-300 text-xs">
+                          <td className="px-3 py-1 font-mono text-zinc-600 dark:text-zinc-300 text-xs">
                             {(n.displacement.dy * 1000).toFixed(3)}
                           </td>
-                          <td className="px-3 py-1 font-mono text-zinc-300 text-xs">
+                          <td className="px-3 py-1 font-mono text-zinc-600 dark:text-zinc-300 text-xs">
                             {(n.displacement.dz * 1000).toFixed(3)}
                           </td>
                           <td className="px-3 py-1 font-mono text-xs">
@@ -1971,7 +1971,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                               {(n.totalDisp * 1000).toFixed(3)}
                             </span>
                           </td>
-                          <td className="px-3 py-1 font-mono text-zinc-300 text-xs">
+                          <td className="px-3 py-1 font-mono text-zinc-600 dark:text-zinc-300 text-xs">
                             {(n.displacement.rz ?? 0).toFixed(6)}
                           </td>
                         </tr>
@@ -2003,41 +2003,41 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                     : 0;
                 return (
                   <>
-                    <div className="bg-zinc-800/50 rounded-lg border border-zinc-700 p-3 text-center">
+                    <div className="bg-zinc-100/50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700 p-3 text-center">
                       <div className="text-[10px] text-zinc-500 uppercase">
                         Total Vert. Reaction
                       </div>
-                      <div className="text-lg font-bold font-mono text-white">
+                      <div className="text-lg font-bold font-mono text-zinc-900 dark:text-white">
                         {formatNumber(totalWeight)}
                       </div>
-                      <div className="text-xs text-zinc-400">kN</div>
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400">kN</div>
                     </div>
-                    <div className="bg-zinc-800/50 rounded-lg border border-zinc-700 p-3 text-center">
+                    <div className="bg-zinc-100/50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700 p-3 text-center">
                       <div className="text-[10px] text-zinc-500 uppercase">
                         Peak Moment
                       </div>
-                      <div className="text-lg font-bold font-mono text-white">
+                      <div className="text-lg font-bold font-mono text-zinc-900 dark:text-white">
                         {formatNumber(maxMoment)}
                       </div>
-                      <div className="text-xs text-zinc-400">kNm</div>
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400">kNm</div>
                     </div>
-                    <div className="bg-zinc-800/50 rounded-lg border border-zinc-700 p-3 text-center">
+                    <div className="bg-zinc-100/50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700 p-3 text-center">
                       <div className="text-[10px] text-zinc-500 uppercase">
                         Peak Shear
                       </div>
-                      <div className="text-lg font-bold font-mono text-white">
+                      <div className="text-lg font-bold font-mono text-zinc-900 dark:text-white">
                         {formatNumber(maxShear)}
                       </div>
-                      <div className="text-xs text-zinc-400">kN</div>
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400">kN</div>
                     </div>
-                    <div className="bg-zinc-800/50 rounded-lg border border-zinc-700 p-3 text-center">
+                    <div className="bg-zinc-100/50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700 p-3 text-center">
                       <div className="text-[10px] text-zinc-500 uppercase">
                         Peak Axial
                       </div>
-                      <div className="text-lg font-bold font-mono text-white">
+                      <div className="text-lg font-bold font-mono text-zinc-900 dark:text-white">
                         {formatNumber(maxAxial)}
                       </div>
-                      <div className="text-xs text-zinc-400">kN</div>
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400">kN</div>
                     </div>
                   </>
                 );
@@ -2046,9 +2046,9 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
 
             {/* ===== EQUILIBRIUM VERIFICATION (Industry Standard) ===== */}
             {results.equilibriumCheck && (
-              <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-4">
+              <div className="bg-zinc-100/50 dark:bg-zinc-800/50 rounded-xl border border-zinc-200 dark:border-zinc-700 p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-medium text-zinc-300 uppercase tracking-wide flex items-center gap-2">
+                  <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-300 uppercase tracking-wide flex items-center gap-2">
                     {results.equilibriumCheck.pass ? (
                       <CheckCircle className="w-4 h-4 text-green-400" />
                     ) : (
@@ -2083,18 +2083,18 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                     return (
                       <div
                         key={label}
-                        className="bg-zinc-900 rounded p-2 text-center"
+                        className="bg-white dark:bg-zinc-900 rounded p-2 text-center"
                       >
                         <div className="text-zinc-500 text-[10px] mb-1">
                           Σ{label}
                         </div>
-                        <div className="font-mono text-zinc-300">
+                        <div className="font-mono text-zinc-600 dark:text-zinc-300">
                           {formatNumber(applied)} {unit}
                         </div>
                         <div className="text-zinc-500 text-[10px] mt-1">
                           Reaction
                         </div>
-                        <div className="font-mono text-zinc-400">
+                        <div className="font-mono text-zinc-500 dark:text-zinc-400">
                           {formatNumber(-reaction)} {unit}
                         </div>
                         <div className="text-zinc-500 text-[10px] mt-1">
@@ -2127,9 +2127,9 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
             {/* ===== SERVICEABILITY CHECKS (Industry Standard) ===== */}
             {results.serviceabilityChecks &&
               results.serviceabilityChecks.length > 0 && (
-                <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-4">
+                <div className="bg-zinc-100/50 dark:bg-zinc-800/50 rounded-xl border border-zinc-200 dark:border-zinc-700 p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-medium text-zinc-300 uppercase tracking-wide flex items-center gap-2">
+                    <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-300 uppercase tracking-wide flex items-center gap-2">
                       {results.serviceabilityChecks.every((c) => c.pass) ? (
                         <CheckCircle className="w-4 h-4 text-green-400" />
                       ) : (
@@ -2153,27 +2153,27 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                   </div>
                   <div className="overflow-x-auto max-h-[200px] overflow-y-auto">
                     <table className="w-full text-xs">
-                      <thead className="sticky top-0 bg-zinc-900">
-                        <tr className="border-b border-zinc-700">
-                          <th className="px-2 py-1.5 text-left text-zinc-400">
+                      <thead className="sticky top-0 bg-white dark:bg-zinc-900">
+                        <tr className="border-b border-zinc-200 dark:border-zinc-700">
+                          <th className="px-2 py-1.5 text-left text-zinc-500 dark:text-zinc-400">
                             Member
                           </th>
-                          <th className="px-2 py-1.5 text-right text-zinc-400">
+                          <th className="px-2 py-1.5 text-right text-zinc-500 dark:text-zinc-400">
                             L (m)
                           </th>
-                          <th className="px-2 py-1.5 text-right text-zinc-400">
+                          <th className="px-2 py-1.5 text-right text-zinc-500 dark:text-zinc-400">
                             δ_max (mm)
                           </th>
-                          <th className="px-2 py-1.5 text-right text-zinc-400">
+                          <th className="px-2 py-1.5 text-right text-zinc-500 dark:text-zinc-400">
                             L/δ
                           </th>
-                          <th className="px-2 py-1.5 text-center text-zinc-400">
+                          <th className="px-2 py-1.5 text-center text-zinc-500 dark:text-zinc-400">
                             L/240
                           </th>
-                          <th className="px-2 py-1.5 text-center text-zinc-400">
+                          <th className="px-2 py-1.5 text-center text-zinc-500 dark:text-zinc-400">
                             L/360
                           </th>
-                          <th className="px-2 py-1.5 text-center text-zinc-400">
+                          <th className="px-2 py-1.5 text-center text-zinc-500 dark:text-zinc-400">
                             Status
                           </th>
                         </tr>
@@ -2192,18 +2192,18 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                             return (
                               <tr
                                 key={check.memberId}
-                                className="border-b border-zinc-800 hover:bg-zinc-800/50"
+                                className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
                               >
-                                <td className="px-2 py-1 font-medium text-white">
+                                <td className="px-2 py-1 font-medium text-zinc-900 dark:text-white">
                                   M{check.memberId}
                                 </td>
-                                <td className="px-2 py-1 text-right font-mono text-zinc-300">
+                                <td className="px-2 py-1 text-right font-mono text-zinc-600 dark:text-zinc-300">
                                   {check.length.toFixed(2)}
                                 </td>
-                                <td className="px-2 py-1 text-right font-mono text-zinc-300">
+                                <td className="px-2 py-1 text-right font-mono text-zinc-600 dark:text-zinc-300">
                                   {check.maxDeflection.toFixed(3)}
                                 </td>
-                                <td className="px-2 py-1 text-right font-mono text-zinc-300">
+                                <td className="px-2 py-1 text-right font-mono text-zinc-600 dark:text-zinc-300">
                                   {check.worstRatio === Infinity
                                     ? "∞"
                                     : `L/${Math.round(check.worstRatio)}`}
@@ -2280,7 +2280,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                         ${
                           selectedDiagramType === type
                             ? "bg-white text-black"
-                            : "bg-zinc-800 text-zinc-400 hover:text-white"
+                            : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
                         }
                       `}
                     >
@@ -2295,7 +2295,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                   value={memberSearch}
                   onChange={(e) => setMemberSearch(e.target.value)}
                   placeholder="Search member ID or section..."
-                  className="px-3 py-1.5 rounded-lg bg-zinc-800 border border-zinc-700 text-sm text-white placeholder-zinc-500 w-56 focus:border-blue-500 focus:outline-none transition-colors"
+                  className="px-3 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 w-56 focus:border-blue-500 focus:outline-none transition-colors"
                 />
                 <span className="text-xs text-zinc-500">
                   {filteredMembers.length} members
@@ -2334,14 +2334,14 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
         {/* Reactions Mode */}
         {viewMode === "reactions" && (
           <div key="reactions" className="animate-slideUp">
-            <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide mb-4">
+            <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-4">
               Support Reactions
             </h3>
             <ReactionDisplay nodes={nodes} />
 
             {/* Support Displacements / Settlement */}
             <div className="mt-6">
-              <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">
                 Support Displacements (Settlement Check)
               </h3>
               {(() => {
@@ -2354,7 +2354,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                 );
                 if (supports.length === 0) {
                   return (
-                    <div className="text-sm text-zinc-500 p-3 bg-zinc-800/50 rounded-lg border border-zinc-700">
+                    <div className="text-sm text-zinc-500 p-3 bg-zinc-100/50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
                       No support nodes found.
                     </div>
                   );
@@ -2363,29 +2363,29 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-zinc-700">
-                          <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                        <tr className="border-b border-zinc-200 dark:border-zinc-700">
+                          <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                             Node
                           </th>
-                          <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                          <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                             Δx (mm)
                           </th>
-                          <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                          <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                             Δy (mm)
                           </th>
-                          <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                          <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                             Δz (mm)
                           </th>
-                          <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                          <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                             θx (rad)
                           </th>
-                          <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                          <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                             θy (rad)
                           </th>
-                          <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                          <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                             θz (rad)
                           </th>
-                          <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                          <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                             Status
                           </th>
                         </tr>
@@ -2400,27 +2400,27 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                           return (
                             <tr
                               key={n.id}
-                              className="border-b border-zinc-800 hover:bg-zinc-800/50"
+                              className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
                             >
-                              <td className="px-3 py-1.5 font-medium text-white text-xs">
+                              <td className="px-3 py-1.5 font-medium text-zinc-900 dark:text-white text-xs">
                                 N{n.id}
                               </td>
-                              <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">
+                              <td className="px-3 py-1.5 font-mono text-zinc-600 dark:text-zinc-300 text-xs">
                                 {(d.dx * 1000).toFixed(4)}
                               </td>
-                              <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">
+                              <td className="px-3 py-1.5 font-mono text-zinc-600 dark:text-zinc-300 text-xs">
                                 {(d.dy * 1000).toFixed(4)}
                               </td>
-                              <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">
+                              <td className="px-3 py-1.5 font-mono text-zinc-600 dark:text-zinc-300 text-xs">
                                 {(d.dz * 1000).toFixed(4)}
                               </td>
-                              <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">
+                              <td className="px-3 py-1.5 font-mono text-zinc-600 dark:text-zinc-300 text-xs">
                                 {(d.rx ?? 0).toFixed(6)}
                               </td>
-                              <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">
+                              <td className="px-3 py-1.5 font-mono text-zinc-600 dark:text-zinc-300 text-xs">
                                 {(d.ry ?? 0).toFixed(6)}
                               </td>
-                              <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">
+                              <td className="px-3 py-1.5 font-mono text-zinc-600 dark:text-zinc-300 text-xs">
                                 {(d.rz ?? 0).toFixed(6)}
                               </td>
                               <td className="px-3 py-1.5 text-xs">
@@ -2452,7 +2452,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
         {viewMode === "detailed" && (
           <div key="detailed" className="space-y-4 animate-slideUp">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide">
+              <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
                 Detailed Member Results
               </h3>
               <input
@@ -2460,7 +2460,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                 value={memberSearch}
                 onChange={(e) => setMemberSearch(e.target.value)}
                 placeholder="Filter by ID or section..."
-                className="px-3 py-1.5 rounded-lg bg-zinc-800 border border-zinc-700 text-sm text-white placeholder-zinc-500 w-52 focus:border-blue-500 focus:outline-none transition-colors"
+                className="px-3 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 w-52 focus:border-blue-500 focus:outline-none transition-colors"
               />
             </div>
             <DetailedMemberTable
@@ -2481,32 +2481,32 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
           <div key="stability" className="space-y-6 animate-slideUp">
             {/* ── Euler Buckling Check ── */}
             <div>
-              <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">
                 Euler Buckling Check (Elastic Critical Load)
               </h3>
               <div className="overflow-x-auto max-h-[250px] overflow-y-auto">
                 <table className="w-full text-sm">
-                  <thead className="sticky top-0 bg-zinc-900">
-                    <tr className="border-b border-zinc-700">
-                      <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                  <thead className="sticky top-0 bg-white dark:bg-zinc-900">
+                    <tr className="border-b border-zinc-200 dark:border-zinc-700">
+                      <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                         Member
                       </th>
-                      <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                      <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                         L (m)
                       </th>
-                      <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                      <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                         P (kN)
                       </th>
-                      <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                      <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                         Pcr (kN)
                       </th>
-                      <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                      <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                         λ (slenderness)
                       </th>
-                      <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                      <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                         P/Pcr
                       </th>
-                      <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                      <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                         Status
                       </th>
                     </tr>
@@ -2545,21 +2545,21 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                         return (
                           <tr
                             key={m.id}
-                            className="border-b border-zinc-800 hover:bg-zinc-800/50"
+                            className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
                           >
-                            <td className="px-3 py-1.5 font-medium text-white text-xs">
+                            <td className="px-3 py-1.5 font-medium text-zinc-900 dark:text-white text-xs">
                               M{m.id}
                             </td>
-                            <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">
+                            <td className="px-3 py-1.5 font-mono text-zinc-600 dark:text-zinc-300 text-xs">
                               {L.toFixed(2)}
                             </td>
-                            <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">
+                            <td className="px-3 py-1.5 font-mono text-zinc-600 dark:text-zinc-300 text-xs">
                               {formatNumber(m.maxAxial)}
                             </td>
-                            <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">
+                            <td className="px-3 py-1.5 font-mono text-zinc-600 dark:text-zinc-300 text-xs">
                               {formatNumber(Pcr)}
                             </td>
-                            <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">
+                            <td className="px-3 py-1.5 font-mono text-zinc-600 dark:text-zinc-300 text-xs">
                               {slenderness.toFixed(1)}
                             </td>
                             <td className="px-3 py-1.5 font-mono text-xs">
@@ -2601,10 +2601,10 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
 
             {/* ── P-M Interaction Diagram ── */}
             <div>
-              <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">
                 P-M Interaction — Demand vs Capacity
               </h3>
-              <div className="bg-zinc-800/50 rounded-lg border border-zinc-700 p-4">
+              <div className="bg-zinc-100/50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700 p-4">
                 {(() => {
                   // Build the P-M envelope (simplified rectangular/steel section)
                   // Capacity envelope: Pcap = fy * A, Mcap = fy * Z (plastic modulus)
@@ -2824,7 +2824,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                       </svg>
 
                       {/* Legend */}
-                      <div className="flex items-center justify-center gap-4 text-xs text-zinc-400">
+                      <div className="flex items-center justify-center gap-4 text-xs text-zinc-500 dark:text-zinc-400">
                         <span className="flex items-center gap-1">
                           <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />{" "}
                           Safe
@@ -2853,10 +2853,10 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
 
             {/* ── Approximate Modal Properties ── */}
             <div>
-              <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">
                 Approximate Natural Frequency Estimates
               </h3>
-              <div className="bg-zinc-800/50 rounded-lg border border-zinc-700 p-4">
+              <div className="bg-zinc-100/50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700 p-4">
                 {(() => {
                   // Rayleigh quotient approximation: f ≈ (1/2π) √(Σ F·d / Σ m·d²)
                   // Simplified: for each member as a simply-supported beam
@@ -2898,36 +2898,36 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                   return (
                     <div className="space-y-3">
                       <div className="grid grid-cols-3 gap-4">
-                        <div className="text-center p-3 bg-zinc-900 rounded-lg">
+                        <div className="text-center p-3 bg-white dark:bg-zinc-900 rounded-lg">
                           <div className="text-[10px] text-zinc-500 uppercase">
                             Lowest Member f₁
                           </div>
                           <div className="text-xl font-bold font-mono text-blue-400">
                             {lowest ? lowest.f1.toFixed(2) : "—"}
                           </div>
-                          <div className="text-xs text-zinc-400">
+                          <div className="text-xs text-zinc-500 dark:text-zinc-400">
                             Hz (T={lowest ? lowest.T.toFixed(3) : "—"}s)
                           </div>
                         </div>
-                        <div className="text-center p-3 bg-zinc-900 rounded-lg">
+                        <div className="text-center p-3 bg-white dark:bg-zinc-900 rounded-lg">
                           <div className="text-[10px] text-zinc-500 uppercase">
                             Est. Building Period
                           </div>
                           <div className="text-xl font-bold font-mono text-purple-400">
                             {Tapprox.toFixed(2)}
                           </div>
-                          <div className="text-xs text-zinc-400">
+                          <div className="text-xs text-zinc-500 dark:text-zinc-400">
                             sec (T≈0.1N, N={numStories})
                           </div>
                         </div>
-                        <div className="text-center p-3 bg-zinc-900 rounded-lg">
+                        <div className="text-center p-3 bg-white dark:bg-zinc-900 rounded-lg">
                           <div className="text-[10px] text-zinc-500 uppercase">
                             # Members Analyzed
                           </div>
                           <div className="text-xl font-bold font-mono text-cyan-400">
                             {members.length}
                           </div>
-                          <div className="text-xs text-zinc-400">
+                          <div className="text-xs text-zinc-500 dark:text-zinc-400">
                             beam approximation
                           </div>
                         </div>
@@ -2936,21 +2936,21 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                       {/* Frequency table (top 8 lowest) */}
                       <div className="overflow-x-auto max-h-[150px] overflow-y-auto">
                         <table className="w-full text-sm">
-                          <thead className="sticky top-0 bg-zinc-900">
-                            <tr className="border-b border-zinc-700">
-                              <th className="px-3 py-1.5 text-left text-zinc-400 text-xs">
+                          <thead className="sticky top-0 bg-white dark:bg-zinc-900">
+                            <tr className="border-b border-zinc-200 dark:border-zinc-700">
+                              <th className="px-3 py-1.5 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                                 Member
                               </th>
-                              <th className="px-3 py-1.5 text-left text-zinc-400 text-xs">
+                              <th className="px-3 py-1.5 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                                 Section
                               </th>
-                              <th className="px-3 py-1.5 text-left text-zinc-400 text-xs">
+                              <th className="px-3 py-1.5 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                                 Length (m)
                               </th>
-                              <th className="px-3 py-1.5 text-left text-zinc-400 text-xs">
+                              <th className="px-3 py-1.5 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                                 f₁ (Hz)
                               </th>
-                              <th className="px-3 py-1.5 text-left text-zinc-400 text-xs">
+                              <th className="px-3 py-1.5 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                                 T (sec)
                               </th>
                             </tr>
@@ -2959,21 +2959,21 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                             {freqs.slice(0, 8).map((f) => (
                               <tr
                                 key={f.id}
-                                className="border-b border-zinc-800"
+                                className="border-b border-zinc-200 dark:border-zinc-800"
                               >
-                                <td className="px-3 py-1 font-medium text-white text-xs">
+                                <td className="px-3 py-1 font-medium text-zinc-900 dark:text-white text-xs">
                                   M{f.id}
                                 </td>
-                                <td className="px-3 py-1 text-xs text-zinc-400">
+                                <td className="px-3 py-1 text-xs text-zinc-500 dark:text-zinc-400">
                                   {f.sectionType || "—"}
                                 </td>
-                                <td className="px-3 py-1 font-mono text-zinc-300 text-xs">
+                                <td className="px-3 py-1 font-mono text-zinc-600 dark:text-zinc-300 text-xs">
                                   {f.length.toFixed(2)}
                                 </td>
                                 <td className="px-3 py-1 font-mono text-blue-300 text-xs">
                                   {f.f1.toFixed(2)}
                                 </td>
-                                <td className="px-3 py-1 font-mono text-zinc-300 text-xs">
+                                <td className="px-3 py-1 font-mono text-zinc-600 dark:text-zinc-300 text-xs">
                                   {f.T.toFixed(4)}
                                 </td>
                               </tr>
@@ -2995,10 +2995,10 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
 
             {/* ── Code Design Spectrum ── */}
             <div>
-              <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">
                 Code Design Response Spectrum (Sa/g vs T)
               </h3>
-              <div className="bg-zinc-800/50 rounded-lg border border-zinc-700 p-4">
+              <div className="bg-zinc-100/50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700 p-4">
                 {/* IS 1893:2016 & ASCE 7-22 Spectrum Curves */}
                 <svg
                   viewBox="0 0 400 200"
@@ -3226,11 +3226,11 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                   {codes.map((codeGroup) => (
                     <div
                       key={codeGroup.key}
-                      className="bg-zinc-800/50 rounded-lg border border-zinc-700 overflow-hidden"
+                      className="bg-zinc-100/50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden"
                     >
-                      <div className="px-4 py-2.5 bg-zinc-800 border-b border-zinc-700 flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-zinc-400" />
-                        <span className="text-sm font-medium text-white">
+                      <div className="px-4 py-2.5 bg-zinc-100 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                        <span className="text-sm font-medium text-zinc-900 dark:text-white">
                           {codeGroup.label}
                         </span>
                         <span className="ml-auto text-xs text-zinc-500">
@@ -3240,17 +3240,17 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                           <thead>
-                            <tr className="border-b border-zinc-700">
-                              <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                            <tr className="border-b border-zinc-200 dark:border-zinc-700">
+                              <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                                 ID
                               </th>
-                              <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                              <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                                 Combination
                               </th>
-                              <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                              <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                                 Type
                               </th>
-                              <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                              <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                                 Description
                               </th>
                             </tr>
@@ -3259,12 +3259,12 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                             {codeGroup.combos.map((combo) => (
                               <tr
                                 key={combo.id}
-                                className="border-b border-zinc-800 hover:bg-zinc-800/50"
+                                className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
                               >
-                                <td className="px-3 py-1.5 font-mono text-xs text-zinc-400">
+                                <td className="px-3 py-1.5 font-mono text-xs text-zinc-500 dark:text-zinc-400">
                                   {combo.id}
                                 </td>
-                                <td className="px-3 py-1.5 font-mono text-white text-xs">
+                                <td className="px-3 py-1.5 font-mono text-zinc-900 dark:text-white text-xs">
                                   {combo.name}
                                 </td>
                                 <td className="px-3 py-1.5">
@@ -3282,7 +3282,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                                     {combo.type.toUpperCase()}
                                   </span>
                                 </td>
-                                <td className="px-3 py-1.5 text-xs text-zinc-400">
+                                <td className="px-3 py-1.5 text-xs text-zinc-500 dark:text-zinc-400">
                                   {combo.description}
                                 </td>
                               </tr>
@@ -3297,30 +3297,30 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
             })()}
 
             {/* Factor summary */}
-            <div className="bg-zinc-800/50 rounded-lg border border-zinc-700 p-4">
-              <h4 className="text-sm font-medium text-white mb-2">
+            <div className="bg-zinc-100/50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700 p-4">
+              <h4 className="text-sm font-medium text-zinc-900 dark:text-white mb-2">
                 Typical Load Factors
               </h4>
               <div className="grid grid-cols-3 gap-4 text-xs">
                 <div>
-                  <div className="text-zinc-400 mb-1">Dead Load (D/Gk)</div>
-                  <div className="space-y-0.5 text-zinc-300">
+                  <div className="text-zinc-500 dark:text-zinc-400 mb-1">Dead Load (D/Gk)</div>
+                  <div className="space-y-0.5 text-zinc-600 dark:text-zinc-300">
                     <div>IS: 1.5 (strength) / 1.0 (service)</div>
                     <div>ASCE: 1.2–1.4 (strength)</div>
                     <div>EC: 1.35 (unfavourable)</div>
                   </div>
                 </div>
                 <div>
-                  <div className="text-zinc-400 mb-1">Live Load (L/Qk)</div>
-                  <div className="space-y-0.5 text-zinc-300">
+                  <div className="text-zinc-500 dark:text-zinc-400 mb-1">Live Load (L/Qk)</div>
+                  <div className="space-y-0.5 text-zinc-600 dark:text-zinc-300">
                     <div>IS: 1.5 (strength)</div>
                     <div>ASCE: 1.6 (strength)</div>
                     <div>EC: 1.5 (strength)</div>
                   </div>
                 </div>
                 <div>
-                  <div className="text-zinc-400 mb-1">Wind / Seismic</div>
-                  <div className="space-y-0.5 text-zinc-300">
+                  <div className="text-zinc-500 dark:text-zinc-400 mb-1">Wind / Seismic</div>
+                  <div className="space-y-0.5 text-zinc-600 dark:text-zinc-300">
                     <div>IS: 1.2–1.5 (combined)</div>
                     <div>ASCE: 1.0 (W or E)</div>
                     <div>EC: 1.5W / 1.0AEd</div>
@@ -3351,7 +3351,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                       <div className="text-2xl font-bold text-green-400">
                         {safe}
                       </div>
-                      <div className="text-xs text-zinc-400">
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400">
                         Safe (&le;70%)
                       </div>
                     </div>
@@ -3359,7 +3359,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                       <div className="text-2xl font-bold text-yellow-400">
                         {warn}
                       </div>
-                      <div className="text-xs text-zinc-400">
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400">
                         Warning (70-90%)
                       </div>
                     </div>
@@ -3367,7 +3367,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                       <div className="text-2xl font-bold text-orange-400">
                         {crit}
                       </div>
-                      <div className="text-xs text-zinc-400">
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400">
                         Critical (90-100%)
                       </div>
                     </div>
@@ -3375,7 +3375,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                       <div className="text-2xl font-bold text-red-400">
                         {fail}
                       </div>
-                      <div className="text-xs text-zinc-400">
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400">
                         Failed (&gt;100%)
                       </div>
                     </div>
@@ -3386,29 +3386,29 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
 
             {/* D/C Ratio Table */}
             <div>
-              <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">
                 Demand/Capacity Ratio — All Members
               </h3>
               <div className="overflow-x-auto max-h-[280px] overflow-y-auto">
                 <table className="w-full text-sm">
-                  <thead className="sticky top-0 bg-zinc-900">
-                    <tr className="border-b border-zinc-700">
-                      <th className="px-3 py-2 text-left text-zinc-400">
+                  <thead className="sticky top-0 bg-white dark:bg-zinc-900">
+                    <tr className="border-b border-zinc-200 dark:border-zinc-700">
+                      <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400">
                         Member
                       </th>
-                      <th className="px-3 py-2 text-left text-zinc-400">
+                      <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400">
                         Length (m)
                       </th>
-                      <th className="px-3 py-2 text-left text-zinc-400">
+                      <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400">
                         D/C Ratio
                       </th>
-                      <th className="px-3 py-2 text-left text-zinc-400">
+                      <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400">
                         Stress (MPa)
                       </th>
-                      <th className="px-3 py-2 text-left text-zinc-400">
+                      <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400">
                         Status
                       </th>
-                      <th className="px-3 py-2 text-left text-zinc-400">
+                      <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400">
                         Governing
                       </th>
                     </tr>
@@ -3442,17 +3442,17 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                           <tr
                             key={m.id}
                             onClick={() => handleMemberSelect(m.id)}
-                            className="border-b border-zinc-800 hover:bg-zinc-800/50 cursor-pointer"
+                            className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 cursor-pointer"
                           >
-                            <td className="px-3 py-1.5 font-medium text-white">
+                            <td className="px-3 py-1.5 font-medium text-zinc-900 dark:text-white">
                               M{m.id}
                             </td>
-                            <td className="px-3 py-1.5 font-mono text-zinc-300">
+                            <td className="px-3 py-1.5 font-mono text-zinc-600 dark:text-zinc-300">
                               {formatNumber(m.length)}
                             </td>
                             <td className="px-3 py-1.5">
                               <div className="flex items-center gap-2">
-                                <div className="w-16 h-2 bg-zinc-700 rounded-full overflow-hidden">
+                                <div className="w-16 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
                                   <div
                                     className={`h-full rounded-full ${
                                       st === "safe"
@@ -3473,7 +3473,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                                 </span>
                               </div>
                             </td>
-                            <td className="px-3 py-1.5 font-mono text-zinc-300">
+                            <td className="px-3 py-1.5 font-mono text-zinc-600 dark:text-zinc-300">
                               {formatNumber(m.stress)}
                             </td>
                             <td className="px-3 py-1.5">
@@ -3491,7 +3491,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                                 {st.toUpperCase()}
                               </span>
                             </td>
-                            <td className="px-3 py-1.5 text-xs text-zinc-400">
+                            <td className="px-3 py-1.5 text-xs text-zinc-500 dark:text-zinc-400">
                               {governing}
                             </td>
                           </tr>
@@ -3504,7 +3504,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
 
             {/* Deflection Limit Checks */}
             <div>
-              <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">
                 Deflection Serviceability Checks
               </h3>
               <div className="space-y-2">
@@ -3530,10 +3530,10 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                           <AlertTriangle className="w-4 h-4 text-red-400" />
                         )}
                         <div>
-                          <div className="text-sm text-white">
+                          <div className="text-sm text-zinc-900 dark:text-white">
                             {limit.label}
                           </div>
-                          <div className="text-xs text-zinc-400">
+                          <div className="text-xs text-zinc-500 dark:text-zinc-400">
                             {limit.code}
                           </div>
                         </div>
@@ -3574,7 +3574,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
 
             {/* Inter-story Drift Check */}
             <div>
-              <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">
                 Inter-Story Drift Check
               </h3>
               {(() => {
@@ -3596,7 +3596,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
 
                 if (stories.length < 2) {
                   return (
-                    <div className="text-sm text-zinc-500 p-3 bg-zinc-800/50 rounded-lg border border-zinc-700">
+                    <div className="text-sm text-zinc-500 p-3 bg-zinc-100/50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
                       Single-story structure — inter-story drift check not
                       applicable.
                     </div>
@@ -3652,24 +3652,24 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                 return (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
-                      <thead className="sticky top-0 bg-zinc-900">
-                        <tr className="border-b border-zinc-700">
-                          <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                      <thead className="sticky top-0 bg-white dark:bg-zinc-900">
+                        <tr className="border-b border-zinc-200 dark:border-zinc-700">
+                          <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                             Story
                           </th>
-                          <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                          <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                             Height (mm)
                           </th>
-                          <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                          <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                             Drift (mm)
                           </th>
-                          <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                          <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                             Δ/H Ratio
                           </th>
-                          <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                          <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                             H/400 (IS 1893)
                           </th>
-                          <th className="px-3 py-2 text-left text-zinc-400 text-xs">
+                          <th className="px-3 py-2 text-left text-zinc-500 dark:text-zinc-400 text-xs">
                             H/500 (ASCE 7)
                           </th>
                         </tr>
@@ -3678,18 +3678,18 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                         {driftResults.map((dr, i) => (
                           <tr
                             key={i}
-                            className="border-b border-zinc-800 hover:bg-zinc-800/50"
+                            className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
                           >
-                            <td className="px-3 py-1.5 font-medium text-white text-xs">
+                            <td className="px-3 py-1.5 font-medium text-zinc-900 dark:text-white text-xs">
                               {dr.storyLabel}
                             </td>
-                            <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">
+                            <td className="px-3 py-1.5 font-mono text-zinc-600 dark:text-zinc-300 text-xs">
                               {dr.height.toFixed(0)}
                             </td>
-                            <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">
+                            <td className="px-3 py-1.5 font-mono text-zinc-600 dark:text-zinc-300 text-xs">
                               {dr.drift.toFixed(3)}
                             </td>
-                            <td className="px-3 py-1.5 font-mono text-zinc-300 text-xs">
+                            <td className="px-3 py-1.5 font-mono text-zinc-600 dark:text-zinc-300 text-xs">
                               {dr.driftRatio.toFixed(6)}
                             </td>
                             <td className="px-3 py-1.5 text-xs">
@@ -3728,7 +3728,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
         )}
         {viewMode === "heatmap" && (
           <div key="heatmap" className="space-y-4 animate-slideUp">
-            <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wide">
+            <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
               Stress / Utilization Heat Map
             </h3>
 
@@ -3793,9 +3793,9 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
               // Fall back: pair each member with the two closest nodes by distance = member.length
 
               return (
-                <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-3 mb-3">
+                <div className="bg-zinc-100/50 dark:bg-zinc-800/50 rounded-xl border border-zinc-200 dark:border-zinc-700 p-3 mb-3">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-medium text-zinc-300">
+                    <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
                       Structural Layout — Utilization
                     </span>
                     <span className="text-[10px] text-zinc-500">
@@ -3804,7 +3804,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                   </div>
                   <svg
                     viewBox={`0 0 ${svgW} ${svgH}`}
-                    className="w-full rounded bg-zinc-900/60"
+                    className="w-full rounded bg-white/60 dark:bg-zinc-900/60"
                     style={{ maxHeight: "400px" }}
                   >
                     {/* Members as colored lines */}
@@ -3930,10 +3930,10 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                       return (
                         <div
                           key={sType}
-                          className="bg-zinc-800/50 rounded-lg border border-zinc-700 p-3"
+                          className="bg-zinc-100/50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700 p-3"
                         >
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium text-white">
+                            <span className="text-xs font-medium text-zinc-900 dark:text-white">
                               {sType}
                             </span>
                             <span className="text-[10px] text-zinc-500">
@@ -3941,7 +3941,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className="flex-1 h-2 bg-zinc-900 rounded-full overflow-hidden">
+                            <div className="flex-1 h-2 bg-white dark:bg-zinc-900 rounded-full overflow-hidden">
                               <div
                                 className={`h-full rounded-full ${
                                   st === "safe"
@@ -3957,7 +3957,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                                 }}
                               />
                             </div>
-                            <span className="text-xs font-mono text-zinc-300">
+                            <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300">
                               {(g.maxUtil * 100).toFixed(0)}%
                             </span>
                           </div>
@@ -3973,7 +3973,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
             })()}
             {/* Color legend */}
             <div className="flex items-center gap-3 text-xs">
-              <span className="text-zinc-400">Low</span>
+              <span className="text-zinc-500 dark:text-zinc-400">Low</span>
               <div
                 className="flex-1 h-3 rounded-full"
                 style={{
@@ -3981,7 +3981,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                     "linear-gradient(to right, #22d3ee, #22c55e, #eab308, #f97316, #ef4444)",
                 }}
               />
-              <span className="text-zinc-400">High</span>
+              <span className="text-zinc-500 dark:text-zinc-400">High</span>
             </div>
             {/* Member bars sorted by utilization */}
             <div className="space-y-1.5 max-h-[400px] overflow-y-auto pr-2">
@@ -3995,12 +3995,12 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                     <div
                       key={m.id}
                       onClick={() => handleMemberSelect(m.id)}
-                      className="flex items-center gap-3 p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 cursor-pointer transition-colors"
+                      className="flex items-center gap-3 p-2 rounded-lg bg-zinc-100/50 dark:bg-zinc-800/50 hover:bg-zinc-200 dark:hover:bg-zinc-800 cursor-pointer transition-colors"
                     >
-                      <span className="text-xs font-medium text-white w-12">
+                      <span className="text-xs font-medium text-zinc-900 dark:text-white w-12">
                         M{m.id}
                       </span>
-                      <div className="flex-1 h-4 bg-zinc-900 rounded-full overflow-hidden relative">
+                      <div className="flex-1 h-4 bg-white dark:bg-zinc-900 rounded-full overflow-hidden relative">
                         <div
                           className="h-full rounded-full transition-all duration-500"
                           style={{
@@ -4034,7 +4034,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between px-6 py-3 bg-zinc-800/30 border-t border-zinc-800 text-xs text-zinc-400">
+      <div className="flex items-center justify-between px-6 py-3 bg-zinc-100/30 dark:bg-zinc-800/30 border-t border-zinc-200 dark:border-zinc-800 text-xs text-zinc-500 dark:text-zinc-400">
         <span>
           {summary.totalNodes > 0 && summary.totalMembers > 0
             ? "Analysis completed successfully"
@@ -4043,26 +4043,26 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
         <div className="flex items-center gap-4">
           <button
             onClick={() => onExport?.("excel")}
-            className="flex items-center gap-1 hover:text-white transition-colors"
+            className="flex items-center gap-1 hover:text-zinc-900 dark:hover:text-white transition-colors"
           >
             <FileText className="w-3.5 h-3.5" />
             Export CSV
           </button>
           <button
             onClick={() => onExport?.("json")}
-            className="flex items-center gap-1 hover:text-white transition-colors"
+            className="flex items-center gap-1 hover:text-zinc-900 dark:hover:text-white transition-colors"
           >
             <Download className="w-3.5 h-3.5" />
             Export JSON
           </button>
           <button
             onClick={() => onExport?.("pdf")}
-            className="flex items-center gap-1 hover:text-white transition-colors"
+            className="flex items-center gap-1 hover:text-zinc-900 dark:hover:text-white transition-colors"
           >
             <Printer className="w-3.5 h-3.5" />
             Print Report
           </button>
-          <button className="flex items-center gap-1 hover:text-white transition-colors">
+          <button className="flex items-center gap-1 hover:text-zinc-900 dark:hover:text-white transition-colors">
             <Share2 className="w-3.5 h-3.5" />
             Share
           </button>

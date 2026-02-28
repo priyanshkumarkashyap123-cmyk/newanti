@@ -272,7 +272,7 @@ export function ShortcutsDialog({
       aria-labelledby="shortcuts-title"
     >
       <div
-        className="bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-auto p-6"
+        className="bg-slate-100 dark:bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-auto p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 id="shortcuts-title" className="text-xl font-semibold text-slate-100 mb-4">
@@ -282,7 +282,7 @@ export function ShortcutsDialog({
         <div className="space-y-6">
           {groups.map((group) => (
             <div key={group.name}>
-              <h3 className="text-sm font-medium text-slate-400 mb-2">
+              <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
                 {group.name}
               </h3>
               <ul className="space-y-2">
@@ -291,8 +291,8 @@ export function ShortcutsDialog({
                     key={index}
                     className="flex items-center justify-between py-1"
                   >
-                    <span className="text-slate-300">{shortcut.description}</span>
-                    <kbd className="px-2 py-1 bg-slate-700 rounded text-sm font-mono text-slate-200">
+                    <span className="text-slate-600 dark:text-slate-300">{shortcut.description}</span>
+                    <kbd className="px-2 py-1 bg-slate-200 dark:bg-slate-700 rounded text-sm font-mono text-slate-200">
                       {formatShortcut(shortcut)}
                     </kbd>
                   </li>
@@ -303,7 +303,7 @@ export function ShortcutsDialog({
         </div>
         
         <button
-          className="mt-6 w-full py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded"
+          className="mt-6 w-full py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-200 rounded"
           onClick={onClose}
         >
           Close (Esc)

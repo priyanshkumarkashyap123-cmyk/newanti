@@ -22,7 +22,7 @@ const NumberInputNode: FC<NodeProps<NumberInputData>> = ({ data, isConnectable }
         >
             {/* Header */}
             <div
-                className="px-3 py-2 text-white text-sm font-medium"
+                className="px-3 py-2 text-zinc-900 dark:text-white text-sm font-medium"
                 style={{ backgroundColor: NODE_COLORS.input }}
             >
                 {data.label || 'Number'}
@@ -37,7 +37,7 @@ const NumberInputNode: FC<NodeProps<NumberInputData>> = ({ data, isConnectable }
                     max={data.max}
                     step={data.step ?? 0.1}
                     onChange={handleChange}
-                    className="w-full px-2 py-1.5 bg-slate-700 text-white text-sm rounded border border-slate-600 focus:border-blue-500 focus:outline-none"
+                    className="w-full px-2 py-1.5 bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white text-sm rounded border border-slate-600 focus:border-blue-500 focus:outline-none"
                 />
             </div>
 

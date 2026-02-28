@@ -511,7 +511,7 @@ const ToastItem: FC<ToastItemProps> = ({ toast, onDismiss }) => {
       aria-atomic="true"
       className={`
         pointer-events-auto w-full max-w-sm mb-3
-        bg-slate-800 border ${typeStyles.border} rounded-xl shadow-lg
+        bg-slate-100 dark:bg-slate-800 border ${typeStyles.border} rounded-xl shadow-lg
         transform transition-all duration-200
         ${isExiting ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}
         ${reducedMotion ? '' : 'animate-slide-in'}
@@ -529,9 +529,9 @@ const ToastItem: FC<ToastItemProps> = ({ toast, onDismiss }) => {
           {/* Content */}
           <div className="flex-1 min-w-0">
             {toast.title && (
-              <p className="text-sm font-semibold text-slate-100">{toast.title}</p>
+              <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{toast.title}</p>
             )}
-            <p className={`text-sm text-slate-300 ${toast.title ? 'mt-1' : ''}`}>
+            <p className={`text-sm text-slate-600 dark:text-slate-300 ${toast.title ? 'mt-1' : ''}`}>
               {toast.message}
             </p>
 
@@ -547,7 +547,7 @@ const ToastItem: FC<ToastItemProps> = ({ toast, onDismiss }) => {
                     text-sm font-medium px-3 py-1.5 rounded-lg transition-colors
                     ${
                       toast.action.variant === 'secondary'
-                        ? 'bg-slate-700 hover:bg-slate-600 text-slate-200'
+                        ? 'bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-700 dark:text-slate-200'
                         : `${typeStyles.actionBg} ${typeStyles.actionText}`
                     }
                   `}
@@ -562,7 +562,7 @@ const ToastItem: FC<ToastItemProps> = ({ toast, onDismiss }) => {
           {toast.dismissible && (
             <button
               onClick={handleDismiss}
-              className="flex-shrink-0 text-slate-400 hover:text-slate-200 transition-colors p-1 rounded-lg hover:bg-slate-700"
+              className="flex-shrink-0 text-slate-500 hover:text-slate-700 dark:text-slate-200 transition-colors p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700"
               aria-label="Dismiss notification"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -575,7 +575,7 @@ const ToastItem: FC<ToastItemProps> = ({ toast, onDismiss }) => {
 
       {/* Progress bar */}
       {toast.duration && toast.type !== 'loading' && (
-        <div className="h-1 bg-slate-700/50 rounded-b-xl overflow-hidden">
+        <div className="h-1 bg-slate-200/50 dark:bg-slate-700/50 rounded-b-xl overflow-hidden">
           <div
             className={`h-full ${typeStyles.progressBg} transition-all duration-100`}
             style={{ width: `${progress}%` }}

@@ -327,7 +327,7 @@ const useCommands = (): Command[] => {
             label: 'Select Tool',
             description: 'Select nodes and members',
             category: 'MODELING' as Category,
-            icon: <Box className="w-4 h-4 text-zinc-400" />,
+            icon: <Box className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />,
             shortcut: 'V',
             action: () => { setCategory('MODELING'); setActiveTool('SELECT'); },
             keywords: ['select', 'pick', 'choose']
@@ -493,12 +493,12 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
 
             {/* Palette */}
             <div
-                className="relative w-full max-w-2xl bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl overflow-hidden"
+                className="relative w-full max-w-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-2xl overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Search Input */}
-                <div className="flex items-center gap-3 px-4 py-4 border-b border-zinc-800">
-                    <Search className="w-5 h-5 text-zinc-400" />
+                <div className="flex items-center gap-3 px-4 py-4 border-b border-zinc-200 dark:border-zinc-800">
+                    <Search className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
                     <input
                         ref={inputRef}
                         type="text"
@@ -506,9 +506,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                         onChange={(e) => setQuery(e.target.value)}
                         onKeyDown={handleKeyDown}
                         placeholder="Search all features... (e.g., 'wind load', 'modal analysis', 'burj khalifa')"
-                        className="flex-1 bg-transparent text-white text-lg placeholder-zinc-500 outline-none"
+                        className="flex-1 bg-transparent text-zinc-900 dark:text-white text-lg placeholder-zinc-400 dark:placeholder-zinc-500 outline-none"
                     />
-                    <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-1 text-xs font-mono text-zinc-400 bg-zinc-800 border border-zinc-700 rounded">
+                    <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-1 text-xs font-mono text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded">
                         ESC
                     </kbd>
                 </div>
@@ -518,7 +518,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                     {Object.entries(groupedCommands).map(([category, cmds]) => (
                         <div key={category}>
                             {/* Category Header */}
-                            <div className="sticky top-0 px-4 py-2 text-xs font-semibold text-zinc-400 bg-zinc-900/95 backdrop-blur uppercase tracking-wider">
+                            <div className="sticky top-0 px-4 py-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400 bg-white/95 dark:bg-zinc-900/95 backdrop-blur uppercase tracking-wider">
                                 {categoryLabels[category] || category}
                             </div>
 
@@ -535,16 +535,16 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                                             w-full flex items-center gap-3 px-4 py-3 text-left transition-colors
                                             ${isSelected
                                                 ? 'bg-blue-600/20 border-l-2 border-blue-500'
-                                                : 'hover:bg-zinc-800/50 border-l-2 border-transparent'
+                                                : 'hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 border-l-2 border-transparent'
                                             }
                                         `}
                                     >
-                                        <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-zinc-800">
+                                        <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
                                             {cmd.icon}
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
-                                                <span className="font-medium text-white truncate">{cmd.label}</span>
+                                                <span className="font-medium text-zinc-900 dark:text-white truncate">{cmd.label}</span>
                                                 {cmd.isPro && (
                                                     <span className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded">
                                                         <Crown className="w-3 h-3" />
@@ -552,10 +552,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                                                     </span>
                                                 )}
                                             </div>
-                                            <span className="text-sm text-zinc-400 truncate">{cmd.description}</span>
+                                            <span className="text-sm text-zinc-500 dark:text-zinc-400 truncate">{cmd.description}</span>
                                         </div>
                                         {cmd.shortcut && (
-                                            <kbd className="flex-shrink-0 px-2 py-1 text-xs font-mono text-zinc-400 bg-zinc-800 border border-zinc-700 rounded">
+                                            <kbd className="flex-shrink-0 px-2 py-1 text-xs font-mono text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded">
                                                 {cmd.shortcut}
                                             </kbd>
                                         )}
@@ -569,29 +569,29 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                     {filteredCommands.length === 0 && (
                         <div className="px-4 py-12 text-center">
                             <Search className="w-12 h-12 mx-auto text-zinc-500 mb-4" />
-                            <p className="text-zinc-400">No commands found for "{query}"</p>
-                            <p className="text-sm text-zinc-400 mt-1">Try different keywords</p>
+                            <p className="text-zinc-500 dark:text-zinc-400">No commands found for "{query}"</p>
+                            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Try different keywords</p>
                         </div>
                     )}
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between px-4 py-2 border-t border-zinc-800 bg-zinc-900/80">
-                    <div className="flex items-center gap-4 text-xs text-zinc-400">
+                <div className="flex items-center justify-between px-4 py-2 border-t border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80">
+                    <div className="flex items-center gap-4 text-xs text-zinc-500 dark:text-zinc-400">
                         <span className="flex items-center gap-1">
-                            <kbd className="px-1.5 py-0.5 bg-zinc-800 rounded">↑↓</kbd>
+                            <kbd className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded">↑↓</kbd>
                             Navigate
                         </span>
                         <span className="flex items-center gap-1">
-                            <kbd className="px-1.5 py-0.5 bg-zinc-800 rounded">↵</kbd>
+                            <kbd className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded">↵</kbd>
                             Select
                         </span>
                         <span className="flex items-center gap-1">
-                            <kbd className="px-1.5 py-0.5 bg-zinc-800 rounded">ESC</kbd>
+                            <kbd className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded">ESC</kbd>
                             Close
                         </span>
                     </div>
-                    <span className="text-xs text-zinc-400">{filteredCommands.length} commands</span>
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400">{filteredCommands.length} commands</span>
                 </div>
             </div>
         </div>,

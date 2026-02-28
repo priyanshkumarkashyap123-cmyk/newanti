@@ -415,7 +415,7 @@ export const FoundationDesignDialog: FC<FoundationDesignDialogProps> = ({ isOpen
                                         }}
                                         className={`p-3 rounded-lg border text-left transition-all ${selectedSoil === soil.id && !useCustomBearing
                                                 ? 'border-blue-500 bg-blue-500/10'
-                                                : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-600'
+                                                : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600'
                                             }`}
                                     >
                                         <div className={`w-4 h-4 rounded ${soil.color} mb-2`} />
@@ -431,7 +431,7 @@ export const FoundationDesignDialog: FC<FoundationDesignDialogProps> = ({ isOpen
                                         type="checkbox"
                                         checked={useCustomBearing}
                                         onChange={(e) => setUseCustomBearing(e.target.checked)}
-                                        className="w-4 h-4 rounded border-zinc-600 bg-zinc-900 text-blue-600"
+                                        className="w-4 h-4 rounded border-zinc-600 bg-white dark:bg-zinc-900 text-blue-600"
                                     />
                                     <span className="text-zinc-600 dark:text-zinc-300 text-sm">Custom Bearing Capacity</span>
                                 </label>
@@ -520,7 +520,7 @@ export const FoundationDesignDialog: FC<FoundationDesignDialogProps> = ({ isOpen
                                         onClick={() => setConcreteGrade(grade)}
                                         className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${concreteGrade === grade
                                                 ? 'border-blue-500 bg-blue-500/10 text-blue-400'
-                                                : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:border-zinc-600'
+                                                : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-600'
                                             }`}
                                     >
                                         {grade}

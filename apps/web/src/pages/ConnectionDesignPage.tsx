@@ -6,7 +6,7 @@ import { ConnectionDesignPanel } from '../components/design/ConnectionDesignPane
 
 export const ConnectionDesignPage: React.FC = () => {
     return (
-        <div className="min-h-screen bg-black">
+        <div className="min-h-screen bg-white dark:bg-black">
             {/* Navigation Header usually handled by Sidebar, but we might be in full page mode */}
             <ConnectionDesignPanel />
         </div>

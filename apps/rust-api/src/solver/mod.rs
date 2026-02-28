@@ -585,7 +585,11 @@ impl Solver {
         let ea_l = e * a / l;
         let ei_y_l3 = e * iy / l3;
         let ei_z_l3 = e * iz / l3;
-        let gj_l = e * j / (2.6 * l); // Approximate G = E/2.6
+        // Compute G from E using Poisson's ratio ν.
+        // Default ν=0.3 (steel). For other materials, G should be provided directly.
+        let nu = 0.3_f64;
+        let g = e / (2.0 * (1.0 + nu));
+        let gj_l = g * j / l;
 
         let mut k = DMatrix::zeros(12, 12);
 

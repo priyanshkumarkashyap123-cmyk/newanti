@@ -48,11 +48,11 @@ interface ToggleProps {
 const Toggle: FC<ToggleProps> = ({ enabled, onChange, label, description, statusText }) => (
     <div className="flex items-center justify-between gap-4 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 p-5">
         <div className="flex items-start gap-4">
-            <div className="p-3 rounded bg-zinc-700/30 text-white">
+            <div className="p-3 rounded bg-zinc-200/30 dark:bg-zinc-700/30 text-zinc-900 dark:text-white">
                 <Cpu className="w-5 h-5" />
             </div>
             <div className="flex flex-col gap-1">
-                <p className="text-white text-base font-bold">{label}</p>
+                <p className="text-zinc-900 dark:text-white text-base font-bold">{label}</p>
                 {description && <p className="text-zinc-500 dark:text-zinc-400 text-sm">{description}</p>}
                 {statusText && (
                     <div className="flex items-center gap-2 mt-1">
@@ -101,7 +101,7 @@ const Select: FC<SelectProps> = ({ label, value, onChange, options }) => (
             <select
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="w-full appearance-none rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-white h-12 px-4 pr-10 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm"
+                className="w-full appearance-none rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white h-12 px-4 pr-10 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm"
             >
                 {options.map(opt => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -134,7 +134,7 @@ const Input: FC<InputProps> = ({ label, value, onChange, type = 'text', placehol
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
             readOnly={readOnly}
-            className={`w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-white h-12 px-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm placeholder:text-zinc-500 dark:text-zinc-400 ${readOnly ? 'text-zinc-500 dark:text-zinc-400 cursor-default' : ''}`}
+            className={`w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 h-12 px-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm placeholder:text-zinc-500 dark:text-zinc-400 ${readOnly ? 'text-zinc-500 dark:text-zinc-400 cursor-default' : ''}`}
         />
     </div>
 );
@@ -157,7 +157,7 @@ const Slider: FC<SliderProps> = ({ label, value, onChange, min, max, labels, val
     <div className="bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg p-5">
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-                <label className="text-white text-base font-medium">{label}</label>
+                <label className="text-zinc-900 dark:text-white text-base font-medium">{label}</label>
                 <span className="px-2 py-1 rounded bg-blue-600/20 text-blue-400 text-xs font-bold uppercase">
                     {valueLabel}
                 </span>
@@ -169,7 +169,7 @@ const Slider: FC<SliderProps> = ({ label, value, onChange, min, max, labels, val
                     max={max}
                     value={value}
                     onChange={(e) => onChange(Number(e.target.value))}
-                    className="w-full h-1.5 bg-zinc-700 rounded-full appearance-none cursor-pointer accent-blue-500"
+                    className="w-full h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full appearance-none cursor-pointer accent-blue-500"
                     style={{
                         background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${value}%, #3f3f46 ${value}%, #3f3f46 100%)`
                     }}
@@ -216,7 +216,7 @@ export const SettingsPage: FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white dark:bg-zinc-900 text-white flex">
+        <div className="min-h-screen bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white flex">
             {/* Sidebar */}
             <aside className="w-72 flex-shrink-0 flex flex-col border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
                 {/* App Header */}
@@ -241,8 +241,8 @@ export const SettingsPage: FC = () => {
                                 key={item.id}
                                 onClick={() => setActiveTab(item.id)}
                                 className={`flex items-center gap-3 px-3 py-2.5 rounded transition-colors w-full text-left ${isActive
-                                        ? 'bg-blue-600/10 border border-blue-600/20 text-white'
-                                        : 'hover:bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-white'
+                                        ? 'bg-blue-600/10 border border-blue-600/20 text-zinc-900 dark:text-white'
+                                        : 'hover:bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                                     }`}
                             >
                                 <Icon className={`w-5 h-5 ${isActive ? 'text-blue-500' : ''}`} />
@@ -256,7 +256,7 @@ export const SettingsPage: FC = () => {
                 <div className="p-4 border-t border-zinc-200 dark:border-zinc-800/50">
                     <button
                         onClick={handleSignOut}
-                        className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 hover:text-white text-sm font-medium transition-colors w-full px-2 py-2"
+                        className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-sm font-medium transition-colors w-full px-2 py-2"
                     >
                         <LogOut className="w-5 h-5" />
                         Sign Out
@@ -268,11 +268,11 @@ export const SettingsPage: FC = () => {
             <main className="flex-1 flex flex-col h-screen overflow-hidden bg-white dark:bg-zinc-900 relative">
                 {/* Header */}
                 <header className="flex-shrink-0 h-16 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between px-8 bg-white dark:bg-zinc-900/80 backdrop-blur-md sticky top-0 z-10">
-                    <h2 className="text-xl font-bold tracking-tight text-white">
+                    <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
                         {NAV_ITEMS.find(n => n.id === activeTab)?.label}
                     </h2>
                     <div className="flex gap-3">
-                        <button className="px-4 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 text-sm font-medium hover:bg-zinc-100 dark:bg-zinc-800 hover:text-white transition-colors flex items-center gap-2">
+                        <button className="px-4 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 text-sm font-medium hover:bg-zinc-100 dark:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white transition-colors flex items-center gap-2">
                             <RotateCcw className="w-4 h-4" />
                             Reset Defaults
                         </button>
@@ -292,7 +292,7 @@ export const SettingsPage: FC = () => {
                                 {/* Solver Configuration */}
                                 <section className="flex flex-col gap-5">
                                     <div className="border-b border-zinc-300 dark:border-zinc-700 pb-2">
-                                        <h3 className="text-white text-lg font-medium">Solver Configuration</h3>
+                                        <h3 className="text-zinc-900 dark:text-white text-lg font-medium">Solver Configuration</h3>
                                         <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">Configure the core computational engine parameters.</p>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -338,7 +338,7 @@ export const SettingsPage: FC = () => {
                                 {/* Meshing */}
                                 <section className="flex flex-col gap-5 pt-4">
                                     <div className="border-b border-zinc-300 dark:border-zinc-700 pb-2">
-                                        <h3 className="text-white text-lg font-medium">Meshing & Discretization</h3>
+                                        <h3 className="text-zinc-900 dark:text-white text-lg font-medium">Meshing & Discretization</h3>
                                         <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">Control the density and quality of the finite element mesh.</p>
                                     </div>
                                     <Slider
@@ -361,7 +361,7 @@ export const SettingsPage: FC = () => {
                                 {/* Hardware */}
                                 <section className="flex flex-col gap-5 pt-4">
                                     <div className="border-b border-zinc-300 dark:border-zinc-700 pb-2">
-                                        <h3 className="text-white text-lg font-medium">Performance & Hardware</h3>
+                                        <h3 className="text-zinc-900 dark:text-white text-lg font-medium">Performance & Hardware</h3>
                                         <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">Manage computational resources and hardware acceleration.</p>
                                     </div>
                                     <Toggle
@@ -382,7 +382,7 @@ export const SettingsPage: FC = () => {
                                 {/* Output */}
                                 <section className="flex flex-col gap-5 pt-4">
                                     <div className="border-b border-zinc-300 dark:border-zinc-700 pb-2">
-                                        <h3 className="text-white text-lg font-medium">Output Handling</h3>
+                                        <h3 className="text-zinc-900 dark:text-white text-lg font-medium">Output Handling</h3>
                                     </div>
                                     <div className="grid grid-cols-1 gap-4">
                                         <label className="flex items-center p-4 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 cursor-pointer hover:border-blue-500/50 transition-colors">
@@ -393,7 +393,7 @@ export const SettingsPage: FC = () => {
                                                 className="w-5 h-5 rounded border-zinc-600 bg-white dark:bg-zinc-900 text-blue-600 focus:ring-blue-500"
                                             />
                                             <div className="ml-3">
-                                                <span className="block text-sm font-medium text-white">Auto-save Intermediate Results</span>
+                                                <span className="block text-sm font-medium text-zinc-900 dark:text-white">Auto-save Intermediate Results</span>
                                                 <span className="block text-xs text-zinc-500 dark:text-zinc-400">Save state after each iteration step (uses more disk space)</span>
                                             </div>
                                         </label>
@@ -405,7 +405,7 @@ export const SettingsPage: FC = () => {
                                                 className="w-5 h-5 rounded border-zinc-600 bg-white dark:bg-zinc-900 text-blue-600 focus:ring-blue-500"
                                             />
                                             <div className="ml-3">
-                                                <span className="block text-sm font-medium text-white">Generate Analysis Report</span>
+                                                <span className="block text-sm font-medium text-zinc-900 dark:text-white">Generate Analysis Report</span>
                                                 <span className="block text-xs text-zinc-500 dark:text-zinc-400">Create PDF summary after analysis completes</span>
                                             </div>
                                         </label>
@@ -417,7 +417,7 @@ export const SettingsPage: FC = () => {
                         {activeTab === 'general' && (
                             <section className="flex flex-col gap-5">
                                 <div className="border-b border-zinc-300 dark:border-zinc-700 pb-2">
-                                    <h3 className="text-white text-lg font-medium">General Settings</h3>
+                                    <h3 className="text-zinc-900 dark:text-white text-lg font-medium">General Settings</h3>
                                     <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">Configure basic application preferences.</p>
                                 </div>
                                 <Select
@@ -445,7 +445,7 @@ export const SettingsPage: FC = () => {
                         {activeTab === 'display' && (
                             <section className="flex flex-col gap-5">
                                 <div className="border-b border-zinc-300 dark:border-zinc-700 pb-2">
-                                    <h3 className="text-white text-lg font-medium">Display Settings</h3>
+                                    <h3 className="text-zinc-900 dark:text-white text-lg font-medium">Display Settings</h3>
                                     <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">Customize the visual appearance.</p>
                                 </div>
                                 <Select
@@ -470,7 +470,7 @@ export const SettingsPage: FC = () => {
                         {activeTab === 'profile' && (
                             <section className="flex flex-col gap-5">
                                 <div className="border-b border-zinc-300 dark:border-zinc-700 pb-2">
-                                    <h3 className="text-white text-lg font-medium">User Profile</h3>
+                                    <h3 className="text-zinc-900 dark:text-white text-lg font-medium">User Profile</h3>
                                     <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">Manage your account information.</p>
                                 </div>
                                 <div className="flex items-center gap-4 p-4 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800">

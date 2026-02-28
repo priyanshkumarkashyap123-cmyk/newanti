@@ -166,7 +166,7 @@ export const NodeInputDialog: FC<NodeInputDialogProps> = ({
                         </h3>
                         <div className="grid grid-cols-3 gap-3">
                             <div>
-                                <label className="block text-xs text-zinc-400 dark:text-zinc-400 mb-1">X (m)</label>
+                                <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">X (m)</label>
                                 <input
                                     ref={xInputRef}
                                     type="number"
@@ -177,7 +177,7 @@ export const NodeInputDialog: FC<NodeInputDialogProps> = ({
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-zinc-400 dark:text-zinc-400 mb-1">Y (m)</label>
+                                <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Y (m)</label>
                                 <input
                                     type="number"
                                     step="0.1"
@@ -187,7 +187,7 @@ export const NodeInputDialog: FC<NodeInputDialogProps> = ({
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-zinc-400 dark:text-zinc-400 mb-1">Z (m)</label>
+                                <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Z (m)</label>
                                 <input
                                     type="number"
                                     step="0.1"
@@ -253,7 +253,7 @@ export const NodeInputDialog: FC<NodeInputDialogProps> = ({
 
                     {/* Manual Restraints (Advanced) */}
                     <details className="mb-4">
-                        <summary className="text-xs text-zinc-400 cursor-pointer hover:text-zinc-700 dark:hover:text-zinc-300">
+                        <summary className="text-xs text-zinc-500 dark:text-zinc-400 cursor-pointer hover:text-zinc-700 dark:hover:text-zinc-300">
                             Advanced: Manual Restraints
                         </summary>
                         <div className="mt-2 p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">

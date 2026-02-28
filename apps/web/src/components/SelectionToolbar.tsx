@@ -615,7 +615,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
               </span>{" "}
               selected
             </span>
-            <span className="text-zinc-300 dark:text-zinc-600">|</span>
+            <span className="text-zinc-600 dark:text-zinc-600">|</span>
             <span>{selectedNodeCount} nodes</span>
             <span>{selectedMemberCount} members</span>
             {selectedPlateCount > 0 && <span>{selectedPlateCount} plates</span>}

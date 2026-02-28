@@ -153,8 +153,8 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                         ${type.disabled
                                             ? 'opacity-50 cursor-not-allowed'
                                             : loadType === type.id
-                                                ? 'border-orange-500 bg-orange-900/30 text-white'
-                                                : 'border-zinc-300 dark:border-zinc-700 hover:border-zinc-500 text-zinc-700 dark:text-zinc-300'
+                                                ? 'border-orange-500 bg-orange-900/30 text-zinc-900 dark:text-white'
+                                                : 'border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500 text-zinc-700 dark:text-zinc-300'
                                         }
                                     `}
                                 >
@@ -182,8 +182,8 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                             className={`
                                                 flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all
                                                 ${direction === dir
-                                                    ? 'border-orange-500 bg-orange-900/30 text-white'
-                                                    : 'border-zinc-300 dark:border-zinc-700 hover:border-zinc-500 text-zinc-700 dark:text-zinc-300'
+                                                    ? 'border-orange-500 bg-orange-900/30 text-zinc-900 dark:text-white'
+                                                    : 'border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500 text-zinc-700 dark:text-zinc-300'
                                                 }
                                             `}
                                         >
@@ -210,8 +210,8 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                         className={`
                                             flex items-center justify-center gap-2 p-3 rounded-lg border-2 transition-all
                                             ${direction === dir
-                                                ? 'border-orange-500 bg-orange-900/30 text-white'
-                                                : 'border-zinc-300 dark:border-zinc-700 hover:border-zinc-500 text-zinc-700 dark:text-zinc-300'
+                                                ? 'border-orange-500 bg-orange-900/30 text-zinc-900 dark:text-white'
+                                                : 'border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500 text-zinc-700 dark:text-zinc-300'
                                             }
                                         `}
                                     >

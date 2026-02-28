@@ -128,7 +128,7 @@ export const KeyboardShortcutsOverlay: FC<KeyboardShortcutsOverlayProps> = memo(
                 <div className="space-y-1">
                   {group.shortcuts.map(({ keys, description }) => (
                     <div key={description} className="flex items-center justify-between py-1 group">
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-800 dark:group-hover:text-zinc-200 transition-colors">{description}</span>
+                      <span className="text-xs text-zinc-500 group-hover:text-zinc-800 dark:group-hover:text-zinc-700 dark:text-zinc-200 transition-colors">{description}</span>
                       <div className="flex items-center gap-0.5 ml-3">
                         {keys.map((key, i) => (
                           <span key={i}>
@@ -136,7 +136,7 @@ export const KeyboardShortcutsOverlay: FC<KeyboardShortcutsOverlayProps> = memo(
                                           text-[10px] font-mono px-1.5 py-0.5 rounded shadow-sm shadow-black/20">
                               {key}
                             </kbd>
-                            {i < keys.length - 1 && <span className="text-zinc-400 dark:text-zinc-600 mx-0.5 text-[10px]">+</span>}
+                            {i < keys.length - 1 && <span className="text-zinc-500 dark:text-zinc-600 mx-0.5 text-[10px]">+</span>}
                           </span>
                         ))}
                       </div>

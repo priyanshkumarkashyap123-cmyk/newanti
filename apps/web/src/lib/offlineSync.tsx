@@ -584,7 +584,7 @@ export function SyncStatus({ className = '' }: SyncStatusProps): JSX.Element {
         disabled={isSyncing || !isOnline}
         className={`p-1.5 rounded transition-colors ${
           isSyncing || !isOnline
-            ? 'text-gray-300 cursor-not-allowed'
+            ? 'text-gray-600 dark:text-gray-300 cursor-not-allowed'
             : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
         }`}
         title={isSyncing ? 'Syncing...' : 'Sync now'}

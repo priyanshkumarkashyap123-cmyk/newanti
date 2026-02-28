@@ -111,23 +111,23 @@ const MenuItemComponent: FC<{
                         ? 'opacity-40 cursor-not-allowed'
                         : item.danger
                             ? 'hover:bg-red-500/10 text-red-400 hover:text-red-300'
-                            : 'hover:bg-slate-700 text-slate-300 hover:text-white'
+                            : 'hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white'
                     }
                 `}
             >
                 {item.icon && (
-                    <span className={item.danger ? 'text-red-400' : 'text-slate-400'}>
+                    <span className={item.danger ? 'text-red-400' : 'text-slate-500 dark:text-slate-400'}>
                         {item.icon}
                     </span>
                 )}
                 <span className="flex-1">{item.label}</span>
                 {item.shortcut && (
-                    <span className="text-xs text-slate-400 font-mono">
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
                         {item.shortcut}
                     </span>
                 )}
                 {item.submenu && (
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                    <ChevronRight className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                 )}
             </button>
 
@@ -136,7 +136,7 @@ const MenuItemComponent: FC<{
                 <motion.div
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="absolute left-full top-0 ml-1 min-w-[180px] bg-slate-800 border border-slate-700 rounded-xl shadow-xl p-1"
+                    className="absolute left-full top-0 ml-1 min-w-[180px] bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl p-1"
                 >
                     {item.submenu.map((subItem) => (
                         <MenuItemComponent
@@ -223,7 +223,7 @@ export const ContextMenu: FC<ContextMenuProps> = ({
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: -5 }}
                         transition={{ duration: 0.1 }}
-                        className="fixed z-[200] min-w-[200px] bg-slate-800 border border-slate-700 rounded-xl shadow-2xl p-1.5"
+                        className="fixed z-[200] min-w-[200px] bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl p-1.5"
                         style={{ left: position.x, top: position.y }}
                     >
                         {items.map((item, index) => {
@@ -231,7 +231,7 @@ export const ContextMenu: FC<ContextMenuProps> = ({
                                 return (
                                     <div
                                         key={`divider-${index}`}
-                                        className="my-1.5 border-t border-slate-700"
+                                        className="my-1.5 border-t border-slate-200 dark:border-slate-700"
                                     />
                                 );
                             }

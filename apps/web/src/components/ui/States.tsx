@@ -33,7 +33,7 @@ export const Loading: React.FC<LoadingProps> = ({
   const colorClasses = {
     primary: 'border-blue-600 border-t-transparent',
     secondary: 'border-gray-400 border-t-transparent',
-    white: 'border-white border-t-transparent',
+    white: 'border-zinc-200 dark:border-white border-t-transparent',
   };
 
   return (

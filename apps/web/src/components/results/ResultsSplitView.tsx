@@ -94,12 +94,12 @@ export const ResultsSplitView: FC<ResultsSplitViewProps> = ({
     if (!isOpen || !analysisResults) return null;
 
     return (
-        <div className={`fixed inset-0 z-50 bg-slate-950 ${isFullscreen ? '' : 'p-4'} ${className}`}>
+        <div className={`fixed inset-0 z-50 bg-white dark:bg-slate-950 ${isFullscreen ? '' : 'p-4'} ${className}`}>
             {/* Header Bar */}
-            <div className="h-12 bg-slate-900 border-b border-slate-700 flex items-center justify-between px-4">
+            <div className="h-12 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between px-4">
                 <div className="flex items-center gap-4">
-                    <h2 className="text-lg font-semibold text-white">Analysis Results</h2>
-                    <div className="flex items-center gap-1 text-sm text-slate-400">
+                    <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Analysis Results</h2>
+                    <div className="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
                         <span className="w-2 h-2 rounded-full bg-emerald-400" />
                         Analysis Complete
                     </div>
@@ -109,24 +109,24 @@ export const ResultsSplitView: FC<ResultsSplitViewProps> = ({
                     {/* Panel Toggles */}
                     <button
                         onClick={() => setLeftPanelOpen(!leftPanelOpen)}
-                        className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                        className="p-2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
                         title={leftPanelOpen ? "Hide Table Panel" : "Show Table Panel"}
                     >
                         {leftPanelOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
                     </button>
                     <button
                         onClick={() => setBottomPanelOpen(!bottomPanelOpen)}
-                        className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                        className="p-2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
                         title={bottomPanelOpen ? "Hide Control Panel" : "Show Control Panel"}
                     >
                         {bottomPanelOpen ? <PanelBottomClose size={18} /> : <PanelBottomOpen size={18} />}
                     </button>
                     
-                    <div className="w-px h-6 bg-slate-700 mx-1" />
+                    <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1" />
                     
                     <button
                         onClick={() => setIsFullscreen(!isFullscreen)}
-                        className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                        className="p-2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
                         title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
                     >
                         {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
@@ -135,7 +135,7 @@ export const ResultsSplitView: FC<ResultsSplitViewProps> = ({
                     {onClose && (
                         <button
                             onClick={onClose}
-                            className="p-2 text-slate-400 hover:text-white hover:bg-red-800 rounded transition-colors"
+                            className="p-2 text-slate-500 dark:text-slate-400 hover:text-white hover:bg-red-800 rounded transition-colors"
                             title="Close Results View"
                         >
                             <X size={18} />
@@ -150,7 +150,7 @@ export const ResultsSplitView: FC<ResultsSplitViewProps> = ({
                 {leftPanelOpen && (
                     <>
                         <div 
-                            className="bg-slate-900 border-r border-slate-700 flex flex-col overflow-hidden"
+                            className="bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden"
                             style={{ width: leftPanelWidth }}
                         >
                             <ResultsTablePanel className="flex-1 border-0 rounded-none" />
@@ -158,7 +158,7 @@ export const ResultsSplitView: FC<ResultsSplitViewProps> = ({
                         
                         {/* Left Resize Handle */}
                         <div
-                            className="w-1 bg-slate-700 hover:bg-cyan-500 cursor-col-resize transition-colors"
+                            className="w-1 bg-slate-200 dark:bg-slate-700 hover:bg-cyan-500 cursor-col-resize transition-colors"
                             onMouseDown={handleLeftResize}
                         />
                     </>
@@ -167,9 +167,9 @@ export const ResultsSplitView: FC<ResultsSplitViewProps> = ({
                 {/* Main + Bottom Area */}
                 <div className="flex-1 flex flex-col">
                     {/* Main Viewport Area */}
-                    <div className="flex-1 bg-slate-950 relative overflow-hidden">
+                    <div className="flex-1 bg-white dark:bg-slate-950 relative overflow-hidden">
                         {/* This is where the 3D viewport would render */}
-                        <div className="absolute inset-0 flex items-center justify-center text-slate-400">
+                        <div className="absolute inset-0 flex items-center justify-center text-slate-500 dark:text-slate-400">
                             <div className="text-center">
                                 <Settings size={48} className="mx-auto mb-4 opacity-30" />
                                 <p className="text-sm">3D Viewport with Analysis Overlays</p>
@@ -185,12 +185,12 @@ export const ResultsSplitView: FC<ResultsSplitViewProps> = ({
                         <>
                             {/* Bottom Resize Handle */}
                             <div
-                                className="h-1 bg-slate-700 hover:bg-cyan-500 cursor-row-resize transition-colors"
+                                className="h-1 bg-slate-200 dark:bg-slate-700 hover:bg-cyan-500 cursor-row-resize transition-colors"
                                 onMouseDown={handleBottomResize}
                             />
                             
                             <div 
-                                className="bg-slate-900 border-t border-slate-700 overflow-auto"
+                                className="bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 overflow-auto"
                                 style={{ height: bottomPanelHeight }}
                             >
                                 <ResultsControlPanel className="border-0 rounded-none h-full" />
@@ -229,7 +229,7 @@ export const DockableResultsPanel: FC<DockableResultsPanelProps> = ({
         <div 
             className={`
                 ${isCollapsed ? collapsedSize : size}
-                bg-slate-900 border-slate-700
+                bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700
                 ${isHorizontal ? 'border-t' : position === 'left' ? 'border-r' : 'border-l'}
                 transition-all duration-300
                 ${className}
@@ -238,7 +238,7 @@ export const DockableResultsPanel: FC<DockableResultsPanelProps> = ({
             {/* Collapse Toggle */}
             <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                className="absolute top-2 right-2 z-10 p-1 bg-slate-800 rounded hover:bg-slate-700"
+                className="absolute top-2 right-2 z-10 p-1 bg-slate-100 dark:bg-slate-800 rounded hover:bg-slate-200 dark:hover:bg-slate-700"
             >
                 {isCollapsed ? (
                     isHorizontal ? <PanelBottomOpen size={14} /> : <PanelLeftOpen size={14} />

@@ -62,7 +62,7 @@ function getMessageTypeIcon(type?: string) {
     case 'generate': return <Wand2 className="w-3 h-3 text-purple-400" />;
     case 'modify': return <Edit3 className="w-3 h-3 text-green-400" />;
     case 'chat': return <MessageCircle className="w-3 h-3 text-blue-400" />;
-    default: return <Sparkles className="w-3 h-3 text-zinc-400" />;
+    default: return <Sparkles className="w-3 h-3 text-zinc-500 dark:text-zinc-400" />;
   }
 }
 
@@ -91,20 +91,20 @@ const SessionCard: FC<{
   const userMsgCount = session.messages.filter(m => m.role === 'user').length;
 
   return (
-    <div className="bg-zinc-800/50 border border-zinc-700/50 rounded-lg overflow-hidden hover:border-zinc-600/50 transition-colors">
+    <div className="bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-200/50 dark:border-zinc-700/50 rounded-lg overflow-hidden hover:border-zinc-600/50 transition-colors">
       {/* Header */}
       <div
         className="flex items-center gap-2 px-3 py-2.5 cursor-pointer hover:bg-zinc-700/30 transition-colors"
         onClick={onToggle}
       >
         {isExpanded
-          ? <ChevronDown className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" />
-          : <ChevronRight className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" />
+          ? <ChevronDown className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 flex-shrink-0" />
+          : <ChevronRight className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 flex-shrink-0" />
         }
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-zinc-200 truncate">
+            <span className="text-xs font-medium text-zinc-700 dark:text-zinc-200 truncate">
               {session.name}
             </span>
           </div>
@@ -138,16 +138,16 @@ const SessionCard: FC<{
           </button>
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="p-1 text-zinc-500 hover:text-zinc-300 rounded hover:bg-zinc-700/50 transition-colors"
+            className="p-1 text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 rounded hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 transition-colors"
           >
             <MoreVertical className="w-3.5 h-3.5" />
           </button>
 
           {showMenu && (
-            <div className="absolute right-0 top-full mt-1 z-20 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl py-1 min-w-[120px]">
+            <div className="absolute right-0 top-full mt-1 z-20 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-xl py-1 min-w-[120px]">
               <button
                 onClick={() => { onExport(); setShowMenu(false); }}
-                className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-700 transition-colors"
+                className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
               >
                 <Download className="w-3 h-3" /> Export
               </button>
@@ -164,14 +164,14 @@ const SessionCard: FC<{
 
       {/* Expanded Message Preview */}
       {isExpanded && (
-        <div className="border-t border-zinc-700/50 px-3 py-2 space-y-1.5 max-h-48 overflow-y-auto">
+        <div className="border-t border-zinc-200/50 dark:border-zinc-700/50 px-3 py-2 space-y-1.5 max-h-48 overflow-y-auto">
           {session.messages.length === 0 ? (
             <p className="text-[10px] text-zinc-500 italic">Empty session</p>
           ) : (
             session.messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex gap-2 text-[10px] ${msg.role === 'user' ? 'text-zinc-300' : 'text-zinc-400'}`}
+                className={`flex gap-2 text-[10px] ${msg.role === 'user' ? 'text-zinc-600 dark:text-zinc-300' : 'text-zinc-500 dark:text-zinc-400'}`}
               >
                 <span className="flex-shrink-0 mt-0.5">
                   {msg.role === 'user' ? '👤' : '🤖'}
@@ -204,7 +204,7 @@ const SessionCard: FC<{
           {session.tags.map(tag => (
             <span
               key={tag}
-              className="flex items-center gap-0.5 px-1.5 py-0.5 bg-zinc-700/50 rounded text-[9px] text-zinc-400"
+              className="flex items-center gap-0.5 px-1.5 py-0.5 bg-zinc-200/50 dark:bg-zinc-700/50 rounded text-[9px] text-zinc-500 dark:text-zinc-400"
             >
               <Tag className="w-2 h-2" />
               {tag}
@@ -314,19 +314,19 @@ export const AISessionHistoryPanel: FC<SessionHistoryPanelProps> = ({
   }, [deleteSession]);
 
   return (
-    <div className="h-full flex flex-col bg-zinc-900">
+    <div className="h-full flex flex-col bg-white dark:bg-zinc-900">
       {/* Header */}
-      <div className="px-3 py-3 border-b border-zinc-800">
+      <div className="px-3 py-3 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {onClose && (
-              <button onClick={onClose} aria-label="Close" title="Close" className="p-1 hover:bg-zinc-700/50 rounded transition-colors">
-                <ArrowLeft className="w-4 h-4 text-zinc-400" />
+              <button onClick={onClose} aria-label="Close" title="Close" className="p-1 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 rounded transition-colors">
+                <ArrowLeft className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
               </button>
             )}
             <Clock className="w-4 h-4 text-blue-400" />
-            <h3 className="text-sm font-semibold text-white">Session History</h3>
-            <span className="text-[10px] text-zinc-500 bg-zinc-800 px-1.5 py-0.5 rounded">
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">Session History</h3>
+            <span className="text-[10px] text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
               {sessions.length}
             </span>
           </div>
@@ -352,14 +352,14 @@ export const AISessionHistoryPanel: FC<SessionHistoryPanelProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search sessions..."
-            className="w-full pl-8 pr-3 py-1.5 bg-zinc-800 border border-zinc-700 rounded-lg text-xs text-zinc-200 placeholder-zinc-500 focus:border-blue-500 focus:outline-none"
+            className="w-full pl-8 pr-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-xs text-zinc-700 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-500 focus:border-blue-500 focus:outline-none"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
               className="absolute right-2 top-1/2 -translate-y-1/2"
             >
-              <X className="w-3 h-3 text-zinc-500 hover:text-zinc-300" />
+              <X className="w-3 h-3 text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300" />
             </button>
           )}
         </div>
@@ -373,7 +373,7 @@ export const AISessionHistoryPanel: FC<SessionHistoryPanelProps> = ({
               className={`flex items-center gap-1 px-2 py-1 text-[10px] rounded transition-colors ${
                 filterType === type
                   ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                  : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700/50'
+                  : 'text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50'
               }`}
             >
               {type === 'all' && 'All'}
@@ -390,7 +390,7 @@ export const AISessionHistoryPanel: FC<SessionHistoryPanelProps> = ({
         {filteredSessions.length === 0 ? (
           <div className="text-center py-12">
             <Clock className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
-            <p className="text-sm text-zinc-400 mb-1">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">
               {searchQuery ? 'No sessions match your search' : 'No sessions yet'}
             </p>
             <p className="text-xs text-zinc-500">
@@ -405,7 +405,7 @@ export const AISessionHistoryPanel: FC<SessionHistoryPanelProps> = ({
                 <span className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">
                   {group.label}
                 </span>
-                <div className="flex-1 h-px bg-zinc-800" />
+                <div className="flex-1 h-px bg-zinc-100 dark:bg-zinc-800" />
               </div>
               <div className="space-y-2">
                 {group.sessions.map(session => (

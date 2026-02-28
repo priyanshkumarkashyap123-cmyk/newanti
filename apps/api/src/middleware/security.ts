@@ -180,7 +180,7 @@ export const requestLogger = (
   const timestamp = new Date().toISOString();
   const method = req.method;
   const url = req.originalUrl;
-  const ip = req.ip || req.connection.remoteAddress || "unknown";
+  const ip = req.ip || req.socket?.remoteAddress || "unknown";
   const userAgent = req.get("user-agent") || "unknown";
 
   // Log request (in production, send to logging service)
@@ -243,10 +243,24 @@ export const secureErrorHandler = (
   console.error("[ERROR]", err.message);
 
   // Ensure CORS headers are present even on error responses
+  // Only reflect origin if it's in the allowed list (avoid open CORS on errors)
   const origin = req.get("origin");
   if (origin) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-    res.setHeader("Access-Control-Allow-Credentials", "true");
+    const normalizeOrigin = (o: string): string => o.trim().replace(/\/+$/, "").toLowerCase();
+    const allowed = [
+      "https://beamlabultimate.tech",
+      "https://www.beamlabultimate.tech",
+      "https://brave-mushroom-0eae8ec00.4.azurestaticapps.net",
+      "http://localhost:5173",
+      "http://localhost:3000",
+    ];
+    const normalized = normalizeOrigin(origin);
+    const isTrusted = allowed.includes(normalized) ||
+      /^https:\/\/([a-z0-9-]+\.)*beamlabultimate\.tech$/i.test(normalized);
+    if (isTrusted) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+    }
   }
 
   // Don't expose internal errors to client

@@ -14,7 +14,6 @@
  * @version 3.0.0
  */
 
-'use client';
 
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -696,11 +695,11 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
   }, [viewSettings.showGrid, zoom]);
 
   return (
-    <div className="w-full h-full flex flex-col bg-slate-900 rounded-xl shadow-lg overflow-hidden">
+    <div className="w-full h-full flex flex-col bg-slate-50 dark:bg-slate-900 rounded-xl shadow-lg overflow-hidden">
       {/* Toolbar */}
-      <div className="flex items-center justify-between p-3 bg-slate-800 border-b border-slate-700">
+      <div className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-slate-200 flex items-center gap-2">
+          <span className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2">
             <Activity className="w-5 h-5 text-blue-600" />
             Structural Analysis
           </span>
@@ -810,7 +809,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
         {/* Main canvas */}
         <div 
           ref={containerRef}
-          className="flex-1 relative bg-slate-900 cursor-crosshair"
+          className="flex-1 relative bg-slate-50 dark:bg-slate-900 cursor-crosshair"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -913,7 +912,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
           </svg>
           
           {/* Zoom indicator */}
-          <div className="absolute bottom-4 left-4 bg-slate-800/90 backdrop-blur-sm px-3 py-1 rounded-lg text-sm text-slate-400 shadow">
+          <div className="absolute bottom-4 left-4 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur-sm px-3 py-1 rounded-lg text-sm text-slate-500 dark:text-slate-400 shadow">
             Zoom: {(zoom * 100).toFixed(0)}%
           </div>
         </div>
@@ -925,11 +924,11 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
               initial={{ width: 0, opacity: 0 }}
               animate={{ width: 280, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
-              className="border-l border-slate-700 bg-slate-800 overflow-hidden"
+              className="border-l border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 overflow-hidden"
             >
               <div className="p-4 space-y-6 w-[280px]">
                 <div>
-                  <h3 className="font-semibold text-slate-200 mb-3">Display Options</h3>
+                  <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-3">Display Options</h3>
                   <div className="space-y-2">
                     {[
                       { key: 'showGrid', label: 'Show Grid' },
@@ -952,7 +951,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-slate-200 mb-3">Diagrams</h3>
+                  <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-3">Diagrams</h3>
                   <div className="space-y-2">
                     {[
                       { key: 'showBMD', label: 'Bending Moment (BMD)', color: 'text-red-500' },
@@ -974,10 +973,10 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-slate-200 mb-3">Scale</h3>
+                  <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-3">Scale</h3>
                   <div className="space-y-4">
                     <div>
-                      <label className="text-xs text-slate-400">Deflection Scale: {viewSettings.deflectionScale}x</label>
+                      <label className="text-xs text-slate-500 dark:text-slate-400">Deflection Scale: {viewSettings.deflectionScale}x</label>
                       <input
                         type="range"
                         min="10"
@@ -988,7 +987,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-slate-400">Diagram Scale: {viewSettings.diagramScale}%</label>
+                      <label className="text-xs text-slate-500 dark:text-slate-400">Diagram Scale: {viewSettings.diagramScale}%</label>
                       <input
                         type="range"
                         min="10"
@@ -1004,10 +1003,10 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
                 {/* Selected element info */}
                 {selectedElement && (
                   <div>
-                    <h3 className="font-semibold text-slate-200 mb-3">
+                    <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-3">
                       Selected {selectedElement.type === 'node' ? 'Node' : 'Member'}
                     </h3>
-                    <div className="bg-slate-800 p-3 rounded-lg border border-slate-700 text-sm">
+                    <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 text-sm">
                       <p className="text-slate-500">ID: {selectedElement.id}</p>
                       {selectedElement.type === 'node' && (() => {
                         const node = nodes.find(n => n.id === selectedElement.id);
@@ -1052,22 +1051,22 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
         <motion.div
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: 'auto', opacity: 1 }}
-          className="border-t border-slate-700 bg-slate-800 p-3"
+          className="border-t border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-3"
         >
           <div className="flex items-center justify-around text-sm">
             <div className="flex items-center gap-2">
               <span className="text-red-500 font-medium">Max Moment:</span>
-              <span className="text-slate-300">{result.maxMoment.value.toFixed(2)} kNm @ {result.maxMoment.location}</span>
+              <span className="text-slate-600 dark:text-slate-300">{result.maxMoment.value.toFixed(2)} kNm @ {result.maxMoment.location}</span>
             </div>
             <div className="w-px h-4 bg-slate-600" />
             <div className="flex items-center gap-2">
               <span className="text-blue-500 font-medium">Max Shear:</span>
-              <span className="text-slate-300">{result.maxShear.value.toFixed(2)} kN @ {result.maxShear.location}</span>
+              <span className="text-slate-600 dark:text-slate-300">{result.maxShear.value.toFixed(2)} kN @ {result.maxShear.location}</span>
             </div>
             <div className="w-px h-4 bg-slate-600" />
             <div className="flex items-center gap-2">
               <span className="text-green-500 font-medium">Max Deflection:</span>
-              <span className="text-slate-300">{result.maxDeflection.value.toFixed(3)} mm @ {result.maxDeflection.location}</span>
+              <span className="text-slate-600 dark:text-slate-300">{result.maxDeflection.value.toFixed(3)} mm @ {result.maxDeflection.location}</span>
             </div>
           </div>
         </motion.div>

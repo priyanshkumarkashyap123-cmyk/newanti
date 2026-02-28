@@ -851,7 +851,7 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
 
                         {activeTab === 'results' && !designResults && (
                             <div className="text-center py-12">
-                                <Train className="w-16 h-16 text-zinc-400 dark:text-zinc-500 mx-auto mb-4" />
+                                <Train className="w-16 h-16 text-zinc-500 dark:text-zinc-500 mx-auto mb-4" />
                                 <p className="text-zinc-500 dark:text-zinc-400">Generate the bridge first to see results</p>
                             </div>
                         )}

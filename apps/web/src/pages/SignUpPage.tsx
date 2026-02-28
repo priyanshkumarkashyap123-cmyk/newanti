@@ -18,12 +18,12 @@ export const SignUpPage = () => {
             <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
                 {/* Animated Background */}
                 <div className="absolute inset-0">
-                    <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-500/10 via-slate-900 to-slate-950" />
+                    <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-500/10 via-slate-100 dark:via-slate-900 to-white dark:to-slate-950" />
                     <div className="absolute bottom-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-blue-500/10 via-transparent to-transparent" />
                 </div>
 
                 {/* Content */}
-                <div className="relative z-10 flex flex-col justify-between p-16 text-slate-50 w-full">
+                <div className="relative z-10 flex flex-col justify-between p-16 text-slate-900 dark:text-slate-50 w-full">
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-3 group w-fit">
                         <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-blue-500/25 transition-all">
@@ -55,7 +55,7 @@ export const SignUpPage = () => {
                                     <Zap className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-white">Instant Access</h3>
+                                    <h3 className="font-semibold text-zinc-900 dark:text-white">Instant Access</h3>
                                     <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">No downloads required. Works directly in your browser.</p>
                                 </div>
                             </div>
@@ -64,7 +64,7 @@ export const SignUpPage = () => {
                                     <Shield className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-white">Enterprise Security</h3>
+                                    <h3 className="font-semibold text-zinc-900 dark:text-white">Enterprise Security</h3>
                                     <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">Your data is encrypted and backed up automatically.</p>
                                 </div>
                             </div>
@@ -73,7 +73,7 @@ export const SignUpPage = () => {
                                     <Rocket className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-white">Always Up to Date</h3>
+                                    <h3 className="font-semibold text-zinc-900 dark:text-white">Always Up to Date</h3>
                                     <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">Get the latest analysis codes and features instantly.</p>
                                 </div>
                             </div>
@@ -102,7 +102,7 @@ export const SignUpPage = () => {
 
                     {/* Header */}
                     <div className="text-center lg:text-left space-y-2">
-                        <h2 className="text-3xl font-bold text-white">Create Account</h2>
+                        <h2 className="text-3xl font-bold text-zinc-900 dark:text-white">Create Account</h2>
                         <p className="text-slate-600 dark:text-slate-400">
                             Get started with your free workspace today
                         </p>
@@ -134,16 +134,16 @@ export const SignUpPage = () => {
                                         headerTitle: 'hidden',
                                         headerSubtitle: 'hidden',
                                         formFieldLabel: 'text-slate-700 dark:text-slate-300 font-medium text-sm',
-                                        formFieldInput: 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-white placeholder:text-slate-600 dark:text-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all',
+                                        formFieldInput: 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-zinc-900 placeholder:text-slate-600 dark:text-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all',
                                         formButtonPrimary: 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-2.5 rounded-lg shadow-lg shadow-blue-500/20 transition-all',
                                         footerActionLink: 'text-blue-400 hover:text-blue-300 font-medium',
                                         identityPreviewText: 'text-slate-700 dark:text-slate-300',
                                         identityPreviewEditButton: 'text-blue-400 hover:text-blue-300',
-                                        socialButtonsBlockButton: 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 hover:border-slate-600 rounded-lg transition-all',
+                                        socialButtonsBlockButton: 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg transition-all',
                                         socialButtonsBlockButtonText: 'font-medium',
                                         dividerLine: 'bg-slate-100 dark:bg-slate-800',
                                         dividerText: 'text-slate-600 dark:text-slate-400 uppercase text-xs tracking-wider bg-slate-50 dark:bg-slate-900 px-2',
-                                        formFieldInputShowPasswordButton: 'text-slate-600 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300',
+                                        formFieldInputShowPasswordButton: 'text-slate-600 hover:text-slate-700 dark:text-slate-300',
                                         footer: 'bg-slate-50 dark:bg-slate-900/50 p-6 border-t border-slate-200 dark:border-slate-800'
                                     },
                                     layout: {
@@ -168,7 +168,7 @@ export const SignUpPage = () => {
 
                     {/* Additional Links */}
                     <div className="text-center pt-6">
-                        <Link to="/" className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300 transition-colors group">
+                        <Link to="/" className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-700 dark:text-slate-300 transition-colors group">
                             <span className="group-hover:-translate-x-1 transition-transform">←</span> Back to home
                         </Link>
                     </div>

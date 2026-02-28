@@ -345,7 +345,7 @@ const AnimatedNode: FC<AnimatedNodeProps> = ({
                     center
                     style={{ pointerEvents: 'none' }}
                 >
-                    <div className="bg-black/80 text-white text-xs px-1.5 py-0.5 rounded whitespace-nowrap">
+                    <div className="bg-black/80 text-zinc-900 dark:text-white text-xs px-1.5 py-0.5 rounded whitespace-nowrap">
                         {(magnitude * 1000).toFixed(2)} mm
                     </div>
                 </Html>
@@ -503,14 +503,14 @@ export const DeflectionControls: FC<DeflectionControlsProps> = ({
     maxDisplacement
 }) => {
     return (
-        <div className="bg-slate-800/90 backdrop-blur rounded-lg p-4 space-y-4">
-            <h4 className="text-sm font-semibold text-white mb-3">Deflection Animation</h4>
+        <div className="bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur rounded-lg p-4 space-y-4">
+            <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">Deflection Animation</h4>
 
             {/* Scale control */}
             <div>
-                <label className="flex items-center justify-between text-xs text-slate-400 mb-1">
+                <label className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
                     <span>Scale Factor</span>
-                    <span className="font-mono text-slate-300">{scale}x</span>
+                    <span className="font-mono text-slate-600 dark:text-slate-300">{scale}x</span>
                 </label>
                 <input
                     type="range"
@@ -518,15 +518,15 @@ export const DeflectionControls: FC<DeflectionControlsProps> = ({
                     max="200"
                     value={scale}
                     onChange={(e) => onScaleChange(Number(e.target.value))}
-                    className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
                 />
             </div>
 
             {/* Speed control */}
             <div>
-                <label className="flex items-center justify-between text-xs text-slate-400 mb-1">
+                <label className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
                     <span>Animation Speed</span>
-                    <span className="font-mono text-slate-300">{speed.toFixed(1)}x</span>
+                    <span className="font-mono text-slate-600 dark:text-slate-300">{speed.toFixed(1)}x</span>
                 </label>
                 <input
                     type="range"
@@ -535,36 +535,36 @@ export const DeflectionControls: FC<DeflectionControlsProps> = ({
                     step="0.1"
                     value={speed}
                     onChange={(e) => onSpeedChange(Number(e.target.value))}
-                    className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
                 />
             </div>
 
             {/* Toggle options */}
             <div className="flex flex-col gap-2">
-                <label className="flex items-center gap-2 text-xs text-slate-400 cursor-pointer">
+                <label className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 cursor-pointer">
                     <input
                         type="checkbox"
                         checked={showOriginal}
                         onChange={(e) => onShowOriginalChange(e.target.checked)}
-                        className="rounded bg-slate-700 border-slate-600"
+                        className="rounded bg-slate-200 dark:bg-slate-700 border-slate-600"
                     />
                     Show Original Shape
                 </label>
 
-                <label className="flex items-center gap-2 text-xs text-slate-400 cursor-pointer">
+                <label className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 cursor-pointer">
                     <input
                         type="checkbox"
                         checked={showLabels}
                         onChange={(e) => onShowLabelsChange(e.target.checked)}
-                        className="rounded bg-slate-700 border-slate-600"
+                        className="rounded bg-slate-200 dark:bg-slate-700 border-slate-600"
                     />
                     Show Displacement Labels
                 </label>
             </div>
 
             {/* Max displacement info */}
-            <div className="pt-2 border-t border-slate-700">
-                <div className="text-xs text-slate-400">
+            <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
+                <div className="text-xs text-slate-500 dark:text-slate-400">
                     Max Displacement: <span className="text-cyan-400 font-mono">{(maxDisplacement * 1000).toFixed(4)} mm</span>
                 </div>
             </div>

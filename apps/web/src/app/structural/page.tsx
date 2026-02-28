@@ -12,7 +12,6 @@
  * @author BeamLab Engineering
  */
 
-'use client';
 
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -267,7 +266,7 @@ function CalculationTypeSelector({
                 </span>
               </div>
               <ChevronDown className={cn(
-                "h-4 w-4 text-gray-400 transition-transform",
+                "h-4 w-4 text-gray-500 dark:text-gray-400 transition-transform",
                 isExpanded && "rotate-180"
               )} />
             </button>
@@ -299,7 +298,7 @@ function CalculationTypeSelector({
                         >
                           <CircleDot className={cn(
                             "h-4 w-4 mt-0.5 flex-shrink-0",
-                            isSelected ? "text-blue-600" : "text-gray-400"
+                            isSelected ? "text-blue-600" : "text-gray-500 dark:text-gray-400"
                           )} />
                           <div>
                             <p className={cn(

@@ -132,12 +132,12 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
                 <div className="flex items-center gap-3">
                     <button
                         onClick={handleGoHome}
-                        className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                        className="flex items-center gap-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-900 dark:text-white transition-colors"
                     >
                         <Home className="w-4 h-4" />
                         <span className="text-sm font-medium">BeamLab</span>
                     </button>
-                    <span className="text-zinc-300 dark:text-zinc-700">/</span>
+                    <span className="text-zinc-600 dark:text-zinc-700">/</span>
                     <span className="text-sm text-zinc-700 dark:text-zinc-300">Untitled Project</span>
                 </div>
 
@@ -147,14 +147,14 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
                         onClick={() => setIsChatOpen(!isChatOpen)}
                         className={`p-1.5 rounded transition-colors ${isChatOpen
                             ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600'
-                            : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
+                            : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
                             }`}
                     >
                         <MessageSquare className="w-4 h-4" />
                     </button>
                     <button
                         onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                        className="p-1.5 rounded text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
+                        className="p-1.5 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
                     >
                         {isSidebarCollapsed ? (
                             <PanelLeftOpen className="w-4 h-4" />

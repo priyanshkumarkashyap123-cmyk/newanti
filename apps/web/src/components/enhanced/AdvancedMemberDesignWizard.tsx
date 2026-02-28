@@ -15,7 +15,6 @@
  * @version 4.0.0
  */
 
-'use client';
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -170,7 +169,7 @@ const StepIndicator: React.FC<{
               className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold transition-all ${
                 step.isComplete ? 'bg-emerald-500 text-white' :
                 step.isActive ? 'bg-blue-600 text-white ring-4 ring-blue-500/30' :
-                'bg-zinc-800 text-zinc-400 group-hover:bg-zinc-700'
+                'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 group-hover:bg-zinc-700'
               }`}
               animate={step.isActive ? { scale: [1, 1.1, 1] } : {}}
               transition={{ duration: 0.5, repeat: step.isActive ? Infinity : 0, repeatDelay: 2 }}
@@ -178,7 +177,7 @@ const StepIndicator: React.FC<{
               {step.isComplete ? <Check className="w-6 h-6" /> : index + 1}
             </motion.div>
             <div className="text-center">
-              <p className={`text-sm font-medium ${step.isActive ? 'text-white' : 'text-zinc-400'}`}>
+              <p className={`text-sm font-medium ${step.isActive ? 'text-zinc-900 dark:text-white' : 'text-zinc-500 dark:text-zinc-400'}`}>
                 {step.title}
               </p>
               <p className="text-xs text-zinc-500 hidden md:block">{step.description}</p>
@@ -186,7 +185,7 @@ const StepIndicator: React.FC<{
           </button>
           
           {index < steps.length - 1 && (
-            <div className="flex-1 h-0.5 bg-zinc-800 mx-4 relative">
+            <div className="flex-1 h-0.5 bg-zinc-100 dark:bg-zinc-800 mx-4 relative">
               <motion.div
                 className="absolute inset-y-0 left-0 bg-blue-500"
                 initial={{ width: 0 }}
@@ -227,8 +226,8 @@ const DesignCheckItem: React.FC<{
         <div className="flex items-center gap-2">
           <span className={`text-${config.color}-400`}>{config.icon}</span>
           <div>
-            <h4 className="font-medium text-white">{check.name}</h4>
-            <p className="text-xs text-zinc-400">{check.description}</p>
+            <h4 className="font-medium text-zinc-900 dark:text-white">{check.name}</h4>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">{check.description}</p>
           </div>
         </div>
         <span className={`px-2 py-1 text-xs font-bold rounded-lg bg-${config.color}-500/20 text-${config.color}-400`}>
@@ -238,17 +237,17 @@ const DesignCheckItem: React.FC<{
       
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
-          <span className="text-zinc-400">Required</span>
-          <span className="text-white font-mono">{check.required.toFixed(2)}</span>
+          <span className="text-zinc-500 dark:text-zinc-400">Required</span>
+          <span className="text-zinc-900 dark:text-white font-mono">{check.required.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-zinc-400">Provided</span>
-          <span className="text-white font-mono">{check.provided.toFixed(2)}</span>
+          <span className="text-zinc-500 dark:text-zinc-400">Provided</span>
+          <span className="text-zinc-900 dark:text-white font-mono">{check.provided.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-sm items-center">
-          <span className="text-zinc-400">Utilization</span>
+          <span className="text-zinc-500 dark:text-zinc-400">Utilization</span>
           <div className="flex items-center gap-2">
-            <div className="w-24 h-2 bg-zinc-800 rounded-full overflow-hidden">
+            <div className="w-24 h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
               <motion.div
                 className={`h-full bg-${config.color}-500`}
                 initial={{ width: 0 }}
@@ -261,7 +260,7 @@ const DesignCheckItem: React.FC<{
             </span>
           </div>
         </div>
-        <p className="text-xs text-zinc-500 pt-1 border-t border-zinc-800">
+        <p className="text-xs text-zinc-500 pt-1 border-t border-zinc-200 dark:border-zinc-800">
           Reference: {check.code}
         </p>
       </div>
@@ -284,10 +283,10 @@ const SectionPreview3D: React.FC<{
   const cover = geometry.cover * scale;
   
   return (
-    <div className="bg-zinc-900/50 rounded-xl p-4">
+    <div className="bg-white/50 dark:bg-zinc-900/50 rounded-xl p-4">
       <div className="flex items-center gap-2 mb-4">
         <Box className="w-4 h-4 text-blue-400" />
-        <span className="text-sm font-medium text-white">Section Preview</span>
+        <span className="text-sm font-medium text-zinc-900 dark:text-white">Section Preview</span>
       </div>
       
       <svg width="200" height="220" viewBox="0 0 200 220" className="mx-auto">
@@ -417,17 +416,17 @@ const SectionPreview3D: React.FC<{
         <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-blue-500" />
-            <span className="text-zinc-400">Main bars: {reinforcement.mainBars.count}T{reinforcement.mainBars.diameter}</span>
+            <span className="text-zinc-500 dark:text-zinc-400">Main bars: {reinforcement.mainBars.count}T{reinforcement.mainBars.diameter}</span>
           </div>
           {reinforcement.compression && (
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-purple-500" />
-              <span className="text-zinc-400">Comp bars: {reinforcement.compression.count}T{reinforcement.compression.diameter}</span>
+              <span className="text-zinc-500 dark:text-zinc-400">Comp bars: {reinforcement.compression.count}T{reinforcement.compression.diameter}</span>
             </div>
           )}
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded border-2 border-emerald-500" />
-            <span className="text-zinc-400">Stirrups: T{reinforcement.stirrups.diameter}@{reinforcement.stirrups.spacing}</span>
+            <span className="text-zinc-500 dark:text-zinc-400">Stirrups: T{reinforcement.stirrups.diameter}@{reinforcement.stirrups.spacing}</span>
           </div>
         </div>
       )}
@@ -453,7 +452,7 @@ const AIRecommendation: React.FC<{
         <div className="p-2 rounded-lg bg-violet-500/20">
           <Brain className="w-4 h-4 text-violet-400" />
         </div>
-        <span className="font-medium text-white">AI Design Recommendations</span>
+        <span className="font-medium text-zinc-900 dark:text-white">AI Design Recommendations</span>
         {isLoading && (
           <RefreshCw className="w-4 h-4 text-violet-400 animate-spin ml-auto" />
         )}
@@ -462,7 +461,7 @@ const AIRecommendation: React.FC<{
       {isLoading ? (
         <div className="space-y-2">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-4 bg-zinc-800 rounded animate-pulse" style={{ width: `${100 - i * 20}%` }} />
+            <div key={i} className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded animate-pulse" style={{ width: `${100 - i * 20}%` }} />
           ))}
         </div>
       ) : (
@@ -473,7 +472,7 @@ const AIRecommendation: React.FC<{
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="flex items-start gap-2 text-sm text-zinc-300"
+              className="flex items-start gap-2 text-sm text-zinc-600 dark:text-zinc-300"
             >
               <Sparkles className="w-4 h-4 text-violet-400 mt-0.5 shrink-0" />
               {rec}
@@ -696,7 +695,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
         return (
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-zinc-400 mb-3">Select Member Type</label>
+              <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-3">Select Member Type</label>
               <div className="grid grid-cols-3 gap-4">
                 {[
                   { type: 'beam' as MemberType, icon: <Minus className="w-6 h-6" />, label: 'Beam' },
@@ -709,7 +708,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
                     className={`flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all ${
                       memberType === type
                         ? 'bg-blue-500/10 border-blue-500 text-blue-400'
-                        : 'bg-zinc-800/50 border-zinc-700 text-zinc-400 hover:border-zinc-600'
+                        : 'bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-600'
                     }`}
                   >
                     {icon}
@@ -720,7 +719,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-zinc-400 mb-3">Design Code</label>
+              <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-3">Design Code</label>
               <div className="grid grid-cols-2 gap-3">
                 {DESIGN_CODES.filter(c => c.material.includes('concrete')).map(code => (
                   <button
@@ -729,17 +728,17 @@ export const AdvancedMemberDesignWizard: React.FC<{
                     className={`flex items-center gap-3 p-4 rounded-xl border transition-all ${
                       selectedCode === code.code
                         ? 'bg-blue-500/10 border-blue-500'
-                        : 'bg-zinc-800/50 border-zinc-700 hover:border-zinc-600'
+                        : 'bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600'
                     }`}
                   >
-                    <div className={`p-2 rounded-lg ${selectedCode === code.code ? 'bg-blue-500/20' : 'bg-zinc-700'}`}>
-                      <Building2 className={`w-4 h-4 ${selectedCode === code.code ? 'text-blue-400' : 'text-zinc-400'}`} />
+                    <div className={`p-2 rounded-lg ${selectedCode === code.code ? 'bg-blue-500/20' : 'bg-zinc-200 dark:bg-zinc-700'}`}>
+                      <Building2 className={`w-4 h-4 ${selectedCode === code.code ? 'text-blue-400' : 'text-zinc-500 dark:text-zinc-400'}`} />
                     </div>
                     <div className="text-left">
-                      <p className={`font-medium ${selectedCode === code.code ? 'text-white' : 'text-zinc-300'}`}>
+                      <p className={`font-medium ${selectedCode === code.code ? 'text-zinc-900 dark:text-white' : 'text-zinc-600 dark:text-zinc-300'}`}>
                         {code.name}
                       </p>
-                      <p className="text-xs text-zinc-400">{code.country}</p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">{code.country}</p>
                     </div>
                   </button>
                 ))}
@@ -753,39 +752,39 @@ export const AdvancedMemberDesignWizard: React.FC<{
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-2">Width (mm)</label>
+                <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">Width (mm)</label>
                 <input
                   type="number"
                   value={geometry.width}
                   onChange={(e) => setGeometry(g => ({ ...g, width: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-2">Depth (mm)</label>
+                <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">Depth (mm)</label>
                 <input
                   type="number"
                   value={geometry.depth}
                   onChange={(e) => setGeometry(g => ({ ...g, depth: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-2">Length (mm)</label>
+                <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">Length (mm)</label>
                 <input
                   type="number"
                   value={geometry.length}
                   onChange={(e) => setGeometry(g => ({ ...g, length: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-2">Clear Cover (mm)</label>
+                <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">Clear Cover (mm)</label>
                 <input
                   type="number"
                   value={geometry.cover}
                   onChange={(e) => setGeometry(g => ({ ...g, cover: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -798,7 +797,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
         return (
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-zinc-400 mb-3">Concrete Grade</label>
+              <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-3">Concrete Grade</label>
               <div className="grid grid-cols-4 gap-3">
                 {CONCRETE_GRADES.map(({ grade, fck }) => (
                   <button
@@ -807,20 +806,20 @@ export const AdvancedMemberDesignWizard: React.FC<{
                     className={`p-4 rounded-xl border text-center transition-all ${
                       material.grade === grade
                         ? 'bg-blue-500/10 border-blue-500'
-                        : 'bg-zinc-800/50 border-zinc-700 hover:border-zinc-600'
+                        : 'bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600'
                     }`}
                   >
-                    <p className={`font-bold ${material.grade === grade ? 'text-blue-400' : 'text-white'}`}>
+                    <p className={`font-bold ${material.grade === grade ? 'text-blue-400' : 'text-zinc-900 dark:text-white'}`}>
                       {grade}
                     </p>
-                    <p className="text-xs text-zinc-400">fck = {fck} MPa</p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">fck = {fck} MPa</p>
                   </button>
                 ))}
               </div>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-zinc-400 mb-3">Steel Grade</label>
+              <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-3">Steel Grade</label>
               <div className="grid grid-cols-4 gap-3">
                 {STEEL_GRADES.map(({ grade, fy }) => (
                   <button
@@ -829,32 +828,32 @@ export const AdvancedMemberDesignWizard: React.FC<{
                     className={`p-4 rounded-xl border text-center transition-all ${
                       material.fy === fy
                         ? 'bg-purple-500/10 border-purple-500'
-                        : 'bg-zinc-800/50 border-zinc-700 hover:border-zinc-600'
+                        : 'bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600'
                     }`}
                   >
-                    <p className={`font-bold ${material.fy === fy ? 'text-purple-400' : 'text-white'}`}>
+                    <p className={`font-bold ${material.fy === fy ? 'text-purple-400' : 'text-zinc-900 dark:text-white'}`}>
                       {grade}
                     </p>
-                    <p className="text-xs text-zinc-400">fy = {fy} MPa</p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">fy = {fy} MPa</p>
                   </button>
                 ))}
               </div>
             </div>
             
-            <div className="p-4 bg-zinc-800/50 rounded-xl">
-              <h4 className="font-medium text-white mb-3">Material Summary</h4>
+            <div className="p-4 bg-zinc-100/50 dark:bg-zinc-800/50 rounded-xl">
+              <h4 className="font-medium text-zinc-900 dark:text-white mb-3">Material Summary</h4>
               <div className="grid grid-cols-3 gap-4 text-sm">
                 <div>
-                  <span className="text-zinc-400">Concrete:</span>
-                  <p className="text-white font-mono">{material.grade} (fck = {material.fck} MPa)</p>
+                  <span className="text-zinc-500 dark:text-zinc-400">Concrete:</span>
+                  <p className="text-zinc-900 dark:text-white font-mono">{material.grade} (fck = {material.fck} MPa)</p>
                 </div>
                 <div>
-                  <span className="text-zinc-400">Steel:</span>
-                  <p className="text-white font-mono">fy = {material.fy} MPa</p>
+                  <span className="text-zinc-500 dark:text-zinc-400">Steel:</span>
+                  <p className="text-zinc-900 dark:text-white font-mono">fy = {material.fy} MPa</p>
                 </div>
                 <div>
-                  <span className="text-zinc-400">Elastic Modulus:</span>
-                  <p className="text-white font-mono">E = {5000 * Math.sqrt(material.fck || 30)} MPa</p>
+                  <span className="text-zinc-500 dark:text-zinc-400">Elastic Modulus:</span>
+                  <p className="text-zinc-900 dark:text-white font-mono">E = {5000 * Math.sqrt(material.fck || 30)} MPa</p>
                 </div>
               </div>
             </div>
@@ -866,45 +865,45 @@ export const AdvancedMemberDesignWizard: React.FC<{
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-2">Bending Moment My (kN·m)</label>
+                <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">Bending Moment My (kN·m)</label>
                 <input
                   type="number"
                   value={loads.momentY}
                   onChange={(e) => setLoads(l => ({ ...l, momentY: parseFloat(e.target.value) || 0 }))}
-                  className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-2">Shear Force Vy (kN)</label>
+                <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">Shear Force Vy (kN)</label>
                 <input
                   type="number"
                   value={loads.shearY}
                   onChange={(e) => setLoads(l => ({ ...l, shearY: parseFloat(e.target.value) || 0 }))}
-                  className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-2">Axial Force P (kN)</label>
+                <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">Axial Force P (kN)</label>
                 <input
                   type="number"
                   value={loads.axial}
                   onChange={(e) => setLoads(l => ({ ...l, axial: parseFloat(e.target.value) || 0 }))}
-                  className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-2">Torsion T (kN·m)</label>
+                <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">Torsion T (kN·m)</label>
                 <input
                   type="number"
                   value={loads.torsion}
                   onChange={(e) => setLoads(l => ({ ...l, torsion: parseFloat(e.target.value) || 0 }))}
-                  className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
             
-            <div className="bg-zinc-900/50 rounded-xl p-4">
-              <h4 className="font-medium text-white mb-4 flex items-center gap-2">
+            <div className="bg-white/50 dark:bg-zinc-900/50 rounded-xl p-4">
+              <h4 className="font-medium text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                 <Activity className="w-4 h-4 text-blue-400" />
                 Load Visualization
               </h4>
@@ -962,8 +961,8 @@ export const AdvancedMemberDesignWizard: React.FC<{
             {isDesigning ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <RefreshCw className="w-12 h-12 text-blue-400 animate-spin mb-4" />
-                <p className="text-lg font-medium text-white">Running Design Calculations...</p>
-                <p className="text-sm text-zinc-400">Checking per {selectedCode}</p>
+                <p className="text-lg font-medium text-zinc-900 dark:text-white">Running Design Calculations...</p>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">Checking per {selectedCode}</p>
               </div>
             ) : designChecks.length > 0 ? (
               <div className="grid grid-cols-2 gap-4">
@@ -974,8 +973,8 @@ export const AdvancedMemberDesignWizard: React.FC<{
             ) : (
               <div className="text-center py-12">
                 <Target className="w-12 h-12 text-zinc-500 mx-auto mb-4" />
-                <p className="text-lg font-medium text-white mb-2">Ready to Design</p>
-                <p className="text-sm text-zinc-400 mb-6">Click the button below to run design checks</p>
+                <p className="text-lg font-medium text-zinc-900 dark:text-white mb-2">Ready to Design</p>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">Click the button below to run design checks</p>
                 <button
                   onClick={runDesign}
                   className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl transition-colors"
@@ -993,15 +992,15 @@ export const AdvancedMemberDesignWizard: React.FC<{
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-4">
               {/* Design checks summary */}
-              <div className="bg-zinc-900/50 rounded-xl p-4">
-                <h4 className="font-medium text-white mb-3 flex items-center gap-2">
+              <div className="bg-white/50 dark:bg-zinc-900/50 rounded-xl p-4">
+                <h4 className="font-medium text-zinc-900 dark:text-white mb-3 flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                   Design Status
                 </h4>
                 <div className="space-y-2">
                   {designChecks.map(check => (
                     <div key={check.id} className="flex items-center justify-between">
-                      <span className="text-sm text-zinc-400">{check.name}</span>
+                      <span className="text-sm text-zinc-500 dark:text-zinc-400">{check.name}</span>
                       <span className={`text-sm font-bold ${
                         check.status === 'pass' ? 'text-emerald-400' :
                         check.status === 'warning' ? 'text-amber-400' : 'text-red-400'
@@ -1015,29 +1014,29 @@ export const AdvancedMemberDesignWizard: React.FC<{
               
               {/* Reinforcement summary */}
               {reinforcement && (
-                <div className="bg-zinc-900/50 rounded-xl p-4">
-                  <h4 className="font-medium text-white mb-3 flex items-center gap-2">
+                <div className="bg-white/50 dark:bg-zinc-900/50 rounded-xl p-4">
+                  <h4 className="font-medium text-zinc-900 dark:text-white mb-3 flex items-center gap-2">
                     <Grid3X3 className="w-4 h-4 text-blue-400" />
                     Reinforcement Details
                   </h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-zinc-400">Main Steel:</span>
-                      <span className="text-white font-mono">
+                      <span className="text-zinc-500 dark:text-zinc-400">Main Steel:</span>
+                      <span className="text-zinc-900 dark:text-white font-mono">
                         {reinforcement.mainBars.count}T{reinforcement.mainBars.diameter} ({reinforcement.mainBars.area.toFixed(0)} mm²)
                       </span>
                     </div>
                     {reinforcement.compression && (
                       <div className="flex justify-between">
-                        <span className="text-zinc-400">Compression Steel:</span>
-                        <span className="text-white font-mono">
+                        <span className="text-zinc-500 dark:text-zinc-400">Compression Steel:</span>
+                        <span className="text-zinc-900 dark:text-white font-mono">
                           {reinforcement.compression.count}T{reinforcement.compression.diameter}
                         </span>
                       </div>
                     )}
                     <div className="flex justify-between">
-                      <span className="text-zinc-400">Stirrups:</span>
-                      <span className="text-white font-mono">
+                      <span className="text-zinc-500 dark:text-zinc-400">Stirrups:</span>
+                      <span className="text-zinc-900 dark:text-white font-mono">
                         T{reinforcement.stirrups.diameter} @ {reinforcement.stirrups.spacing}mm c/c
                       </span>
                     </div>
@@ -1062,20 +1061,20 @@ export const AdvancedMemberDesignWizard: React.FC<{
   };
   
   return (
-    <div className={`bg-zinc-950 rounded-2xl overflow-hidden ${className}`}>
+    <div className={`bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden ${className}`}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-zinc-900 to-zinc-800 p-6 border-b border-zinc-800">
+      <div className="bg-gradient-to-r from-zinc-50 dark:from-zinc-900 to-zinc-800 p-6 border-b border-zinc-200 dark:border-zinc-800">
         <h2 className="text-xl font-bold text-white flex items-center gap-3">
           <div className="p-2 rounded-xl bg-blue-500/20">
             <Sparkles className="w-5 h-5 text-blue-400" />
           </div>
           Advanced Member Design Wizard
         </h2>
-        <p className="text-zinc-400 mt-1">Intelligent step-by-step structural member design</p>
+        <p className="text-zinc-500 dark:text-zinc-400 mt-1">Intelligent step-by-step structural member design</p>
       </div>
       
       {/* Step Indicator */}
-      <div className="p-6 border-b border-zinc-800">
+      <div className="p-6 border-b border-zinc-200 dark:border-zinc-800">
         <StepIndicator steps={steps} currentStep={currentStep} onStepClick={goToStep} />
       </div>
       
@@ -1095,11 +1094,11 @@ export const AdvancedMemberDesignWizard: React.FC<{
       </div>
       
       {/* Footer */}
-      <div className="p-6 border-t border-zinc-800 flex items-center justify-between">
+      <div className="p-6 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
         <button
           onClick={prevStep}
           disabled={currentStep === 0}
-          className="flex items-center gap-2 px-4 py-2 text-zinc-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center gap-2 px-4 py-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <ChevronLeft className="w-5 h-5" />
           Previous
@@ -1108,11 +1107,11 @@ export const AdvancedMemberDesignWizard: React.FC<{
         <div className="flex items-center gap-3">
           {currentStep === 5 && (
             <>
-              <button className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-colors">
+              <button className="flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white rounded-xl transition-colors">
                 <Download className="w-4 h-4" />
                 Export PDF
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-colors">
+              <button className="flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white rounded-xl transition-colors">
                 <Save className="w-4 h-4" />
                 Save Design
               </button>

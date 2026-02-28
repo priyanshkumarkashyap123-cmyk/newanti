@@ -7,16 +7,16 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className = "", variant = 'default', ...props }, ref) => {
     const variants = {
-      default: 'bg-slate-900 border-slate-800',
-      elevated: 'bg-slate-900 border-slate-700 shadow-lg shadow-black/20',
-      interactive: 'bg-slate-900 border-slate-800 hover:border-blue-500/30 hover:bg-slate-800/80 cursor-pointer',
-      outlined: 'bg-transparent border-slate-700',
+      default: 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800',
+      elevated: 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 shadow-lg shadow-black/20',
+      interactive: 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-blue-500/30 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 cursor-pointer',
+      outlined: 'bg-transparent border-slate-200 dark:border-slate-700',
     };
     
     return (
       <div
         ref={ref}
-        className={`rounded-xl border text-slate-100 transition-all duration-200 ${variants[variant]} ${className}`}
+        className={`rounded-xl border text-slate-800 dark:text-slate-100 transition-all duration-200 ${variants[variant]} ${className}`}
         {...props}
       />
     );
@@ -30,7 +30,7 @@ const CardHeader = React.forwardRef<
 >(({ className = "", ...props }, ref) => (
   <div
     ref={ref}
-    className={`flex flex-col space-y-1.5 p-5 border-b border-slate-800 ${className}`}
+    className={`flex flex-col space-y-1.5 p-5 border-b border-slate-200 dark:border-slate-800 ${className}`}
     {...props}
   />
 ));
@@ -42,7 +42,7 @@ const CardTitle = React.forwardRef<
 >(({ className = "", ...props }, ref) => (
   <h3
     ref={ref}
-    className={`text-lg font-semibold leading-none tracking-tight text-white ${className}`}
+    className={`text-lg font-semibold leading-none tracking-tight text-zinc-900 dark:text-white ${className}`}
     {...props}
   />
 ));
@@ -54,7 +54,7 @@ const CardDescription = React.forwardRef<
 >(({ className = "", ...props }, ref) => (
   <p
     ref={ref}
-    className={`text-sm text-slate-400 ${className}`}
+    className={`text-sm text-slate-500 dark:text-slate-400 ${className}`}
     {...props}
   />
 ));

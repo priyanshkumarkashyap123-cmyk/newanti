@@ -65,22 +65,22 @@ export const Phase52Benchmark: React.FC = () => {
     };
 
     return (
-        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6 space-y-6">
+        <div className="bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-6 space-y-6">
             <div className="flex justify-between items-center">
-                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <h3 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                     <Activity className="w-6 h-6 text-purple-400" />
                     Phase 52: Industry Parity Verification
                 </h3>
-                <div className="text-slate-400 text-sm">
+                <div className="text-slate-500 dark:text-slate-400 text-sm">
                     Modules: HHT-α, Sparse, MacNeal-Harder
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-4">
-                    <div className="bg-slate-900 border border-slate-700 rounded p-4">
-                        <h4 className="font-semibold text-slate-200 mb-2">Validation Suite</h4>
-                        <p className="text-sm text-slate-400 mb-4">
+                    <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-4">
+                        <h4 className="font-semibold text-slate-700 dark:text-slate-200 mb-2">Validation Suite</h4>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
                             Run NAFEMS standard benchmarks to verify element formulation and solver accuracy.
                         </p>
                         <button 
@@ -92,9 +92,9 @@ export const Phase52Benchmark: React.FC = () => {
                         </button>
                     </div>
 
-                    <div className="bg-slate-900 border border-slate-700 rounded p-4">
-                        <h4 className="font-semibold text-slate-200 mb-2">Dynamic Analysis</h4>
-                        <p className="text-sm text-slate-400 mb-4">
+                    <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-4">
+                        <h4 className="font-semibold text-slate-700 dark:text-slate-200 mb-2">Dynamic Analysis</h4>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
                             Test HHT-α implicit integrator with numerical damping on SDOF system.
                         </p>
                         <button 
@@ -107,9 +107,9 @@ export const Phase52Benchmark: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="bg-black/50 rounded-lg p-4 font-mono text-xs text-green-400 h-[300px] overflow-y-auto border border-slate-700">
+                <div className="bg-black/50 rounded-lg p-4 font-mono text-xs text-green-400 h-[300px] overflow-y-auto border border-slate-200 dark:border-slate-700">
                     {log.length === 0 ? (
-                        <span className="text-slate-400 opacity-50">Log output will appear here...</span>
+                        <span className="text-slate-500 dark:text-slate-400 opacity-50">Log output will appear here...</span>
                     ) : (
                         log.map((line, i) => <div key={i}>{line}</div>)
                     )}

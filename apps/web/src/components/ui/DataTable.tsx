@@ -12,7 +12,6 @@
  * - Keyboard navigation
  */
 
-'use client';
 
 import React, { useState, useMemo, useCallback, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -96,7 +95,7 @@ const SortIcon: React.FC<{ direction: SortDirection; active: boolean }> = ({
   active,
 }) => {
   if (!active || !direction) {
-    return <ChevronsUpDown className="w-4 h-4 text-slate-400" />;
+    return <ChevronsUpDown className="w-4 h-4 text-slate-500 dark:text-slate-400" />;
   }
   return direction === 'asc' ? (
     <ChevronUp className="w-4 h-4 text-blue-400" />
@@ -277,29 +276,29 @@ export function DataTable<T extends Record<string, unknown>>({
       {searchable && (
         <div className="mb-4 flex items-center gap-4">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={searchPlaceholder}
               className={cn(
-                'w-full pl-9 pr-9 py-2 bg-slate-800 border border-slate-600 rounded-lg',
-                'text-sm text-white placeholder:text-slate-400',
+                'w-full pl-9 pr-9 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg',
+                'text-sm text-zinc-900 dark:text-white placeholder:text-slate-400',
                 'focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500'
               )}
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white"
               >
                 <X className="w-4 h-4" />
               </button>
             )}
           </div>
           {selectedRows.length > 0 && (
-            <span className="text-sm text-slate-400">
+            <span className="text-sm text-slate-500 dark:text-slate-400">
               {selectedRows.length} selected
             </span>
           )}
@@ -307,12 +306,12 @@ export function DataTable<T extends Record<string, unknown>>({
       )}
 
       {/* Table Container */}
-      <div className="relative overflow-x-auto rounded-lg border border-slate-700">
+      <div className="relative overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
         <table className="w-full text-left">
           {/* Header */}
           <thead
             className={cn(
-              'bg-slate-800/80 text-xs uppercase text-slate-400 border-b border-slate-700',
+              'bg-slate-100/80 dark:bg-slate-800/80 text-xs uppercase text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700',
               stickyHeader && 'sticky top-0 z-10'
             )}
           >
@@ -335,7 +334,7 @@ export function DataTable<T extends Record<string, unknown>>({
                   className={cn(
                     'px-4',
                     compact ? 'py-2' : 'py-3',
-                    column.sortable && 'cursor-pointer hover:bg-slate-700/50',
+                    column.sortable && 'cursor-pointer hover:bg-slate-200/50 dark:hover:bg-slate-700/50',
                     column.width && `w-[${column.width}]`,
                     column.headerClassName
                   )}
@@ -365,12 +364,12 @@ export function DataTable<T extends Record<string, unknown>>({
           </thead>
 
           {/* Body */}
-          <tbody className="divide-y divide-slate-700">
+          <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
             <AnimatePresence mode="popLayout">
               {loading ? (
                 // Loading skeleton
                 Array.from({ length: pageSize }).map((_, i) => (
-                  <tr key={`skeleton-${i}`} className="bg-slate-900">
+                  <tr key={`skeleton-${i}`} className="bg-slate-50 dark:bg-slate-900">
                     {selectable && (
                       <td className="px-4 py-3">
                         <Skeleton className="w-5 h-5" />
@@ -413,8 +412,8 @@ export function DataTable<T extends Record<string, unknown>>({
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     className={cn(
-                      striped && rowIndex % 2 === 1 && 'bg-slate-800/30',
-                      hoverable && 'hover:bg-slate-800/50',
+                      striped && rowIndex % 2 === 1 && 'bg-slate-100/30 dark:bg-slate-800/30',
+                      hoverable && 'hover:bg-slate-200/50 dark:hover:bg-slate-800/50',
                       onRowClick && 'cursor-pointer',
                       selectedRows.includes(rowKey) && 'bg-blue-500/10'
                     )}
@@ -449,7 +448,7 @@ export function DataTable<T extends Record<string, unknown>>({
                         <td
                           key={colId}
                           className={cn(
-                            'px-4 text-sm text-slate-300',
+                            'px-4 text-sm text-slate-600 dark:text-slate-300',
                             compact ? 'py-2' : 'py-3',
                             column.align === 'center' && 'text-center',
                             column.align === 'right' && 'text-right',
@@ -480,12 +479,12 @@ export function DataTable<T extends Record<string, unknown>>({
       {/* Pagination */}
       {pagination && !loading && sortedData.length > 0 && (
         <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-sm text-slate-400">
+          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
             <span>Show</span>
             <select
               value={pageSize}
               onChange={(e) => setPageSize(Number(e.target.value))}
-              className="bg-slate-800 border border-slate-600 rounded px-2 py-1 text-white"
+              className="bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded px-2 py-1 text-zinc-900 dark:text-white"
             >
               {pageSizeOptions.map((size) => (
                 <option key={size} value={size}>
@@ -514,7 +513,7 @@ export function DataTable<T extends Record<string, unknown>>({
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <span className="px-4 text-sm text-slate-400">
+            <span className="px-4 text-sm text-slate-500 dark:text-slate-400">
               Page {currentPage} of {totalPages}
             </span>
             <Button

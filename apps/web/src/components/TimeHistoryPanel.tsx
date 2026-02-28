@@ -178,7 +178,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
             <h3 className="font-semibold text-sm mb-4 flex items-center gap-2">
                 <Clock className="w-4 h-4" />
                 Dynamic Time History Analysis
-                <span className="text-[10px] text-gray-400 font-normal ml-auto">IS 1893 / ASCE 7</span>
+                <span className="text-[10px] text-gray-500 dark:text-gray-400 font-normal ml-auto">IS 1893 / ASCE 7</span>
             </h3>
 
             {/* Ground Motion Selection */}
@@ -211,7 +211,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                         </option>
                     ))}
                 </select>
-                <div className="text-xs text-gray-400 mt-1">
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     {STRUCTURE_DAMPING[structureType]?.description}
                 </div>
             </div>
@@ -228,7 +228,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                         onChange={(e) => setScaleFactor(parseFloat(e.target.value) || 1.0)}
                         className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
                     />
-                    <div className="text-xs text-gray-400 mt-1">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         Scaled PGA: {((selectedEq?.pga || 0) * scaleFactor).toFixed(2)} m/s² ({(((selectedEq?.pga || 0) * scaleFactor) / 9.81).toFixed(2)}g)
                     </div>
                 </div>
@@ -245,7 +245,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                         onChange={(e) => setDampingRatio(parseFloat(e.target.value) || 0.05)}
                         className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
                     />
-                    <div className="text-xs text-gray-400 mt-1">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         {(dampingRatio * 100).toFixed(1)}% critical damping
                     </div>
                 </div>
@@ -262,7 +262,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                         <option value={0.01}>0.01 s (Standard)</option>
                         <option value={0.02}>0.02 s (Coarse — low frequency)</option>
                     </select>
-                    <div className="text-xs text-gray-400 mt-1">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         Steps: ~{Math.ceil((selectedEq?.duration || 40) / dt).toLocaleString()}
                     </div>
                 </div>
@@ -279,7 +279,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                             onChange={(e) => setNumModes(parseInt(e.target.value) || 12)}
                             className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
                         />
-                        <div className="text-xs text-gray-400 mt-1">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             IS 1893 Cl.7.8.4.2: ≥90% mass participation
                         </div>
                     </div>
@@ -324,7 +324,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
             >
                 {isRunning ? (
                     <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <div className="w-4 h-4 border-2 border-zinc-200 dark:border-white border-t-transparent rounded-full animate-spin" />
                         Running...
                     </>
                 ) : (

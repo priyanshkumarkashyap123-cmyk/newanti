@@ -371,7 +371,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                             <FileText className="w-5 h-5 text-blue-400" />
                         </div>
                         <div>
-                            <h2 className="text-lg font-black text-white tracking-tight">Report Generation Centre</h2>
+                            <h2 className="text-lg font-black text-zinc-900 dark:text-white tracking-tight">Report Generation Centre</h2>
                             <p className="text-zinc-500 dark:text-zinc-400 text-[12px] font-medium">
                                 <span className="text-zinc-500 dark:text-zinc-400">Project:</span> {projectName} &nbsp;•&nbsp;
                                 <span className="text-zinc-500 dark:text-zinc-400">No:</span> {projectNumber}
@@ -406,7 +406,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                         className={`flex items-center space-x-2 px-6 py-3 text-[12px] font-bold uppercase tracking-wider transition-colors ${
                             activeTab === tab.id
                                 ? 'text-blue-400 border-b-2 border-blue-500 bg-zinc-100 dark:bg-zinc-800'
-                                : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:bg-zinc-800/50'
+                                : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:bg-zinc-800/50'
                         }`}
                     >
                         <tab.icon className="w-4 h-4" />
@@ -433,14 +433,14 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                                         className={`group relative p-4 rounded-lg border-2 transition-all ${
                                             selectedType === type
                                                 ? 'border-blue-500 bg-blue-50 shadow-lg shadow-blue-100'
-                                                : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:border-zinc-600 hover:bg-zinc-50 dark:bg-zinc-800/50'
+                                                : 'border-zinc-200 hover:border-zinc-300 dark:border-zinc-600 hover:bg-zinc-50 dark:bg-zinc-800/50'
                                         }`}
                                     >
                                         {selectedType === type && (
                                             <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-blue-500" />
                                         )}
                                         <info.icon className={`w-7 h-7 mx-auto mb-2 transition-colors ${
-                                            selectedType === type ? 'text-blue-600' : 'text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-500 dark:text-zinc-400'
+                                            selectedType === type ? 'text-blue-600' : 'text-zinc-700 group-hover:text-zinc-500 dark:text-zinc-400'
                                         }`} />
                                         <p className={`text-[11px] font-bold text-center leading-tight ${
                                             selectedType === type ? 'text-blue-700' : 'text-zinc-700 dark:text-zinc-300'
@@ -761,7 +761,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                                 {generatedReports.map(report => (
                                     <div
                                         key={report.id}
-                                        className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg hover:bg-zinc-100 dark:bg-zinc-800 transition-colors"
+                                        className="flex items-center justify-between p-4 bg-zinc-50 rounded-lg hover:bg-zinc-100 dark:bg-zinc-800 transition-colors"
                                     >
                                         <div className="flex items-center space-x-4">
                                             {report.status === 'ready' ? (

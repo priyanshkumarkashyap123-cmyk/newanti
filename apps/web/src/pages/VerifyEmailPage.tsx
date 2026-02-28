@@ -88,10 +88,10 @@ export const VerifyEmailPage: React.FC = () => {
 
     if (isVerified) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 via-purple-100 dark:via-purple-900 to-slate-50 dark:to-slate-900 flex items-center justify-center p-4">
                 <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-8 max-w-md w-full text-center">
                     <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
-                    <h2 className="text-2xl font-bold text-white mb-2">Email Verified!</h2>
+                    <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">Email Verified!</h2>
                     <p className="text-slate-700 dark:text-slate-300 mb-6">Your email has been successfully verified.</p>
                     <p className="text-sm text-slate-600 dark:text-slate-400">Redirecting to dashboard...</p>
                 </div>
@@ -100,17 +100,17 @@ export const VerifyEmailPage: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 via-purple-100 dark:via-purple-900 to-slate-50 dark:to-slate-900 flex items-center justify-center p-4">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-8 max-w-md w-full">
                 {/* Header */}
                 <div className="text-center mb-8">
                     <div className="flex justify-center mb-4">
                         <Mail className="w-12 h-12 text-purple-400" />
                     </div>
-                    <h1 className="text-3xl font-bold text-white mb-2">Verify Email</h1>
+                    <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">Verify Email</h1>
                     <p className="text-slate-700 dark:text-slate-300">
                         We sent a verification code to<br />
-                        <span className="font-semibold text-white">{email}</span>
+                        <span className="font-semibold text-zinc-900 dark:text-white">{email}</span>
                     </p>
                 </div>
 
@@ -124,7 +124,7 @@ export const VerifyEmailPage: React.FC = () => {
 
                 {/* Code Input */}
                 <div className="mb-6">
-                    <label className="block text-sm font-medium text-slate-200 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                         Verification Code
                     </label>
                     <input
@@ -136,7 +136,7 @@ export const VerifyEmailPage: React.FC = () => {
                             const value = e.target.value.replace(/\D/g, '').slice(0, 6);
                             setCode(value);
                         }}
-                        className="w-full px-4 py-3 text-center text-2xl tracking-widest bg-white/5 border border-white/20 rounded-lg text-white placeholder-slate-500 focus:border-purple-500 focus:outline-none transition-colors"
+                        className="w-full px-4 py-3 text-center text-2xl tracking-widest bg-white/5 border border-white/20 rounded-lg text-zinc-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-purple-500 focus:outline-none transition-colors"
                     />
                     <p className="text-xs text-slate-600 dark:text-slate-400 mt-2">
                         Enter the 6-digit code from your email

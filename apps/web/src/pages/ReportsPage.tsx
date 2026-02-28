@@ -330,9 +330,9 @@ export const ReportsPage = () => {
 
     /* ──────────────────────── RENDER ──────────────────────── */
     return (
-        <div className="min-h-screen bg-slate-100 dark:bg-white dark:bg-slate-950 flex flex-col font-sans selection:bg-blue-500/30 print:bg-white print:text-black">
+        <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col font-sans selection:bg-blue-500/30 print:bg-white print:text-black">
             {/* ━━━ App header (hidden in print) ━━━ */}
-            <header className="sticky top-0 z-50 flex items-center justify-between border-b border-slate-200 dark:border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-white dark:bg-slate-950/90 backdrop-blur-md px-6 py-3 print:hidden">
+            <header className="sticky top-0 z-50 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-950/90 backdrop-blur-md px-6 py-3 print:hidden">
                 <div className="flex items-center gap-4">
                     <Link to="/" className="flex items-center gap-3 group">
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-blue-500/25 transition-all overflow-hidden">
@@ -342,15 +342,15 @@ export const ReportsPage = () => {
                     </Link>
                 </div>
                 <div className="hidden md:flex flex-1 justify-center">
-                    <nav className="flex items-center gap-1 bg-slate-100 dark:bg-slate-50 dark:bg-slate-900 px-2 py-1 rounded-full border border-slate-200 dark:border-slate-200 dark:border-slate-800">
+                    <nav className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 px-2 py-1 rounded-full border border-slate-200 dark:border-slate-800">
                         <Link to="/stream" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors px-4 py-1.5 rounded-full hover:bg-white dark:hover:bg-slate-100 dark:bg-slate-800">Projects</Link>
                         <Link to="/app" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors px-4 py-1.5 rounded-full hover:bg-white dark:hover:bg-slate-100 dark:bg-slate-800">Design</Link>
-                        <span className="text-blue-600 dark:text-white text-sm font-bold bg-white dark:bg-slate-100 dark:bg-slate-800 shadow-sm px-4 py-1.5 rounded-full border border-slate-200 dark:border-slate-300 dark:border-slate-700">Reports</span>
+                        <span className="text-blue-600 dark:text-white text-sm font-bold bg-white dark:bg-slate-800 shadow-sm px-4 py-1.5 rounded-full border border-slate-200 dark:border-slate-700">Reports</span>
                         <Link to="/settings" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors px-4 py-1.5 rounded-full hover:bg-white dark:hover:bg-slate-100 dark:bg-slate-800">Settings</Link>
                     </nav>
                 </div>
                 <div className="flex items-center gap-4">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 border-2 border-white dark:border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-center text-white font-bold text-sm">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 border-2 border-zinc-200 dark:border-slate-800 shadow-sm flex items-center justify-center text-white font-bold text-sm">
                         {userName.charAt(0)}
                     </div>
                 </div>
@@ -376,7 +376,7 @@ export const ReportsPage = () => {
                     {!analysisResults && (
                         <div className="absolute inset-0 overflow-hidden pointer-events-none select-none print:hidden z-0">
                             <span
-                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[120px] font-black text-slate-100 tracking-[0.3em] whitespace-nowrap"
+                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[120px] font-black text-slate-800 dark:text-slate-100 tracking-[0.3em] whitespace-nowrap"
                                 style={{ transform: 'translate(-50%,-50%) rotate(-35deg)' }}
                             >
                                 DRAFT
@@ -489,7 +489,7 @@ export const ReportsPage = () => {
                         <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
                             <table className="w-full text-left">
                                 <thead>
-                                    <tr className="bg-slate-100 dark:bg-slate-800 text-white">
+                                    <tr className="bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white">
                                         <th className="px-3 py-2 font-bold">Rev</th>
                                         <th className="px-3 py-2 font-bold">Date</th>
                                         <th className="px-3 py-2 font-bold">Description</th>
@@ -709,7 +709,7 @@ export const ReportsPage = () => {
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-100 dark:bg-slate-800 text-white">
+                                            <tr className="bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white">
                                                 <th className="px-3 py-2 font-bold">ID</th>
                                                 <th className="px-3 py-2 font-bold">Combination Name</th>
                                                 <th className="px-3 py-2 font-bold">Code Ref.</th>
@@ -789,7 +789,7 @@ export const ReportsPage = () => {
                                     <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-2">
                                         <table className="w-full text-left">
                                             <thead>
-                                                <tr className="bg-slate-100 dark:bg-slate-800 text-white">
+                                                <tr className="bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white">
                                                     <th className="px-3 py-2 font-bold w-16">Node</th>
                                                     <th className="px-3 py-2 font-bold text-right">X (m)</th>
                                                     <th className="px-3 py-2 font-bold text-right">Y (m)</th>
@@ -868,7 +868,7 @@ export const ReportsPage = () => {
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-4">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-100 dark:bg-slate-800 text-white">
+                                            <tr className="bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white">
                                                 <th className="px-3 py-2 font-bold w-16">ID</th>
                                                 <th className="px-3 py-2 font-bold text-center">Start Node</th>
                                                 <th className="px-3 py-2 font-bold text-center">End Node</th>
@@ -907,7 +907,7 @@ export const ReportsPage = () => {
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-100 dark:bg-slate-800 text-white">
+                                            <tr className="bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white">
                                                 <th className="px-3 py-2 font-bold">Section ID</th>
                                                 <th className="px-3 py-2 font-bold text-right">A (mm²)</th>
                                                 <th className="px-3 py-2 font-bold text-right">I<sub>y</sub> (mm⁴)</th>
@@ -958,7 +958,7 @@ export const ReportsPage = () => {
                                             <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px]">
                                                 <table className="w-full text-left">
                                                     <thead>
-                                                        <tr className="bg-slate-100 dark:bg-slate-800 text-white">
+                                                        <tr className="bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white">
                                                             <th className="px-3 py-2 font-bold">Node</th>
                                                             <th className="px-3 py-2 font-bold text-right">F<sub>x</sub> (kN)</th>
                                                             <th className="px-3 py-2 font-bold text-right">F<sub>y</sub> (kN)</th>
@@ -998,7 +998,7 @@ export const ReportsPage = () => {
                                             <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px]">
                                                 <table className="w-full text-left">
                                                     <thead>
-                                                        <tr className="bg-slate-100 dark:bg-slate-800 text-white">
+                                                        <tr className="bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white">
                                                             <th className="px-3 py-2 font-bold">Member</th>
                                                             <th className="px-3 py-2 font-bold">Type</th>
                                                             <th className="px-3 py-2 font-bold text-right">w₁ / P (kN/m or kN)</th>
@@ -1069,7 +1069,7 @@ export const ReportsPage = () => {
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-4">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-100 dark:bg-slate-800 text-white">
+                                            <tr className="bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white">
                                                 <th className="px-3 py-2 font-bold">Member</th>
                                                 <th className="px-3 py-2 font-bold text-center">Start Node</th>
                                                 <th className="px-3 py-2 font-bold text-center">End Node</th>
@@ -1146,7 +1146,7 @@ export const ReportsPage = () => {
                                     <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-3">
                                         <table className="w-full text-left">
                                             <thead>
-                                                <tr className="bg-slate-100 dark:bg-slate-800 text-white">
+                                                <tr className="bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white">
                                                     <th className="px-3 py-2 font-bold">Component</th>
                                                     <th className="px-3 py-2 font-bold text-right">ΣApplied</th>
                                                     <th className="px-3 py-2 font-bold text-right">ΣReactions</th>
@@ -1240,7 +1240,7 @@ export const ReportsPage = () => {
                                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-2">
                                                     <table className="w-full text-left">
                                                         <thead>
-                                                            <tr className="bg-slate-100 dark:bg-slate-800 text-white">
+                                                            <tr className="bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white">
                                                                 <th className="px-2 py-2 font-bold w-14" rowSpan={2}>Member</th>
                                                                 <th className="px-2 py-2 font-bold text-center" rowSpan={2}>End</th>
                                                                 <th className="px-2 py-2 font-bold text-right">N (kN)</th>
@@ -1289,7 +1289,7 @@ export const ReportsPage = () => {
                                             <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-2">
                                                 <table className="w-full text-left">
                                                     <thead>
-                                                        <tr className="bg-slate-100 dark:bg-slate-800 text-white">
+                                                        <tr className="bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white">
                                                             <th className="px-3 py-2 font-bold w-16">Member</th>
                                                             <th className="px-3 py-2 font-bold text-right">N (kN)</th>
                                                             <th className="px-3 py-2 font-bold text-right">V<sub>y</sub> (kN)</th>
@@ -1355,7 +1355,7 @@ export const ReportsPage = () => {
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-100 dark:bg-slate-800 text-white">
+                                            <tr className="bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white">
                                                 <th className="px-3 py-2 font-bold">Action</th>
                                                 <th className="px-3 py-2 font-bold text-center">Governing Member</th>
                                                 <th className="px-3 py-2 font-bold text-right">Value</th>
@@ -1392,7 +1392,7 @@ export const ReportsPage = () => {
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-100 dark:bg-slate-800 text-white">
+                                            <tr className="bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white">
                                                 <th className="px-3 py-2 font-bold">Node</th>
                                                 <th className="px-3 py-2 font-bold text-right">R<sub>x</sub> (kN)</th>
                                                 <th className="px-3 py-2 font-bold text-right">R<sub>y</sub> (kN)</th>
@@ -1430,7 +1430,7 @@ export const ReportsPage = () => {
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-100 dark:bg-slate-800 text-white">
+                                            <tr className="bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white">
                                                 <th className="px-3 py-2 font-bold">Node</th>
                                                 <th className="px-3 py-2 font-bold text-right">δ<sub>x</sub> (mm)</th>
                                                 <th className="px-3 py-2 font-bold text-right">δ<sub>y</sub> (mm)</th>
@@ -1478,7 +1478,7 @@ export const ReportsPage = () => {
                                     <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px]">
                                         <table className="w-full text-left">
                                             <thead>
-                                                <tr className="bg-slate-100 dark:bg-slate-800 text-white">
+                                                <tr className="bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white">
                                                     <th className="px-3 py-2 font-bold text-center">Mode</th>
                                                     <th className="px-3 py-2 font-bold text-right">Frequency (Hz)</th>
                                                     <th className="px-3 py-2 font-bold text-right">Period (s)</th>
@@ -1523,7 +1523,7 @@ export const ReportsPage = () => {
                             <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-4">
                                 <table className="w-full text-left">
                                     <thead>
-                                        <tr className="bg-slate-100 dark:bg-slate-800 text-white">
+                                        <tr className="bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white">
                                             <th className="px-3 py-2 font-bold">Check</th>
                                             <th className="px-3 py-2 font-bold">Code Ref.</th>
                                             <th className="px-3 py-2 font-bold text-right">Demand</th>
@@ -1702,7 +1702,7 @@ export const ReportsPage = () => {
 
             {/* ━━━ Floating Action Bar (hidden in print) ━━━ */}
             <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 print:hidden">
-                <div className="flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-slate-100 dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-slate-300 dark:border-slate-700">
+                <div className="flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-slate-700">
                     <button
                         onClick={handleExportPDF}
                         className="flex items-center gap-2 px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all shadow-lg shadow-blue-500/20"
@@ -1713,12 +1713,12 @@ export const ReportsPage = () => {
                     <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1" />
                     <button
                         onClick={handlePrint}
-                        className="flex items-center gap-2 px-6 py-3 rounded-lg text-slate-500 dark:text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-200 dark:hover:bg-slate-700 font-medium text-sm transition-colors"
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium text-sm transition-colors"
                     >
                         <Printer className="w-5 h-5" />
                         Print
                     </button>
-                    <button className="flex items-center gap-2 px-6 py-3 rounded-lg text-slate-500 dark:text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-200 dark:hover:bg-slate-700 font-medium text-sm transition-colors">
+                    <button className="flex items-center gap-2 px-6 py-3 rounded-lg text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium text-sm transition-colors">
                         <Share2 className="w-5 h-5" />
                         Share
                     </button>
@@ -1729,7 +1729,7 @@ export const ReportsPage = () => {
             <div className="fixed bottom-6 right-6 z-40 print:hidden flex flex-col gap-3">
                 <button
                     onClick={handleExportDXF}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-zinc-100 dark:bg-zinc-800 border border-slate-200 dark:border-slate-300 dark:border-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-gray-700 dark:text-gray-300 font-medium text-sm"
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-gray-300 font-medium text-sm"
                     title="Export DXF (AutoCAD)"
                 >
                     <Layout className="w-5 h-5 text-fuchsia-600" />
@@ -1737,7 +1737,7 @@ export const ReportsPage = () => {
                 </button>
                 <button
                     onClick={handleExportIFC}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-zinc-100 dark:bg-zinc-800 border border-slate-200 dark:border-slate-300 dark:border-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-gray-700 dark:text-gray-300 font-medium text-sm"
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-gray-300 font-medium text-sm"
                     title="Export IFC (BIM)"
                 >
                     <FileCode className="w-5 h-5 text-amber-600" />
@@ -1745,7 +1745,7 @@ export const ReportsPage = () => {
                 </button>
                 <button
                     onClick={handleExportExcel}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-zinc-100 dark:bg-zinc-800 border border-slate-200 dark:border-slate-300 dark:border-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-gray-700 dark:text-gray-300 font-medium text-sm"
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-gray-300 font-medium text-sm"
                     title="Export Results to Excel (CSV)"
                 >
                     <TableProperties className="w-5 h-5 text-green-600" />

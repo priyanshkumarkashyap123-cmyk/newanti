@@ -485,7 +485,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                                 variant={materialType === type ? 'default' : 'secondary'}
                                                 onClick={() => setMaterialType(type)}
                                                 className={`flex-1 py-2 text-xs font-medium rounded-lg transition-all ${materialType === type
-                                                        ? 'bg-primary text-white'
+                                                        ? 'bg-primary text-zinc-900 dark:text-white'
                                                         : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                                                     }`}
                                             >

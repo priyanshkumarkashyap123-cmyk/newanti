@@ -164,9 +164,9 @@ export default function RCBeamDesigner() {
   }, [formData, concreteGrades, steelGrades]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 via-slate-100 dark:via-slate-800 to-slate-50 dark:to-slate-900">
       {/* Header */}
-      <header className="bg-slate-800/50 backdrop-blur-xl border-b border-slate-700/50">
+      <header className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -174,17 +174,17 @@ export default function RCBeamDesigner() {
                 <Layers className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">
+                <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
                   RC Beam Designer
                 </h1>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
                   Multi-code reinforced concrete beam design
                 </p>
               </div>
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex items-center gap-2 bg-slate-700/50 rounded-xl p-1">
+            <div className="flex items-center gap-2 bg-slate-200/50 dark:bg-slate-700/50 rounded-xl p-1">
               {(["input", "results", "drawing"] as const).map((tab) => (
                 <button
                   key={tab}
@@ -192,7 +192,7 @@ export default function RCBeamDesigner() {
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     activeTab === tab
                       ? "bg-blue-500 text-white shadow-lg"
-                      : "text-slate-400 hover:text-white hover:bg-slate-600/50"
+                      : "text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-600/50"
                   }`}
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -229,7 +229,7 @@ export default function RCBeamDesigner() {
                           className={`py-3 rounded-lg text-sm font-medium transition-all ${
                             formData.code === code
                               ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white"
-                              : "bg-slate-700/50 text-slate-300 hover:bg-slate-600/50"
+                              : "bg-slate-200/50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-slate-600/50"
                           }`}
                         >
                           {code}
@@ -254,7 +254,7 @@ export default function RCBeamDesigner() {
                         className={`py-3 rounded-lg text-sm font-medium transition-all ${
                           formData.beamType === type
                             ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white"
-                            : "bg-slate-700/50 text-slate-300 hover:bg-slate-600/50"
+                            : "bg-slate-200/50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-slate-600/50"
                         }`}
                       >
                         {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -354,7 +354,7 @@ export default function RCBeamDesigner() {
                 >
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm text-slate-400 mb-2">
+                      <label className="block text-sm text-slate-500 dark:text-slate-400 mb-2">
                         Concrete Grade
                       </label>
                       <select
@@ -362,7 +362,7 @@ export default function RCBeamDesigner() {
                         onChange={(e) =>
                           handleChange("concreteGrade", e.target.value)
                         }
-                        className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         {concreteGrades.map((grade) => (
                           <option key={grade.grade} value={grade.grade}>
@@ -372,7 +372,7 @@ export default function RCBeamDesigner() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-400 mb-2">
+                      <label className="block text-sm text-slate-500 dark:text-slate-400 mb-2">
                         Steel Grade
                       </label>
                       <select
@@ -380,7 +380,7 @@ export default function RCBeamDesigner() {
                         onChange={(e) =>
                           handleChange("steelGrade", e.target.value)
                         }
-                        className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         {steelGrades.map((grade) => (
                           <option key={grade.grade} value={grade.grade}>
@@ -404,7 +404,7 @@ export default function RCBeamDesigner() {
                   whileTap={{ scale: 0.98 }}
                   onClick={runDesign}
                   disabled={isCalculating}
-                  className="w-full py-4 bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 rounded-xl text-white font-bold text-lg shadow-lg shadow-blue-500/25 flex items-center justify-center gap-3 disabled:opacity-50"
+                  className="w-full py-4 bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 rounded-xl text-zinc-900 dark:text-white font-bold text-lg shadow-lg shadow-blue-500/25 flex items-center justify-center gap-3 disabled:opacity-50"
                 >
                   {isCalculating ? (
                     <>
@@ -467,10 +467,10 @@ function InputCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-6">
+    <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
       <div className="flex items-center gap-3 mb-4">
         <div className="text-blue-400">{icon}</div>
-        <h3 className="text-lg font-semibold text-white">{title}</h3>
+        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">{title}</h3>
       </div>
       {children}
     </div>
@@ -491,19 +491,19 @@ function CollapsibleSection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-700/50 overflow-hidden">
+    <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
       <button
         onClick={onToggle}
         className="w-full flex items-center justify-between p-6 hover:bg-slate-700/20 transition-colors"
       >
         <div className="flex items-center gap-3">
           <div className="text-blue-400">{icon}</div>
-          <h3 className="text-lg font-semibold text-white">{title}</h3>
+          <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">{title}</h3>
         </div>
         {isExpanded ? (
-          <ChevronUp className="w-5 h-5 text-slate-400" />
+          <ChevronUp className="w-5 h-5 text-slate-500 dark:text-slate-400" />
         ) : (
-          <ChevronDown className="w-5 h-5 text-slate-400" />
+          <ChevronDown className="w-5 h-5 text-slate-500 dark:text-slate-400" />
         )}
       </button>
       <AnimatePresence>
@@ -537,18 +537,18 @@ function InputField({
 }) {
   return (
     <div>
-      <label className="block text-sm text-slate-400 mb-2">{label}</label>
+      <label className="block text-sm text-slate-500 dark:text-slate-400 mb-2">{label}</label>
       <div className="relative">
         <input
           type="number"
           value={value}
           onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
           disabled={disabled}
-          className={`w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 pr-16 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+          className={`w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 pr-16 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
             disabled ? "opacity-50 cursor-not-allowed" : ""
           }`}
         />
-        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
+        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 text-sm">
           {unit}
         </span>
       </div>
@@ -587,8 +587,8 @@ function BeamPreview({ formData }: { formData: BeamFormData }) {
   const nTop: number = 2;
 
   return (
-    <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-6">
-      <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+    <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
+      <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
         <svg className="w-4 h-4" viewBox="0 0 16 16">
           <rect
             x="2"
@@ -605,7 +605,7 @@ function BeamPreview({ formData }: { formData: BeamFormData }) {
       </h3>
       <svg
         viewBox={`0 0 ${svgW} ${svgH}`}
-        className="w-full h-72 bg-slate-900/50 rounded-xl"
+        className="w-full h-72 bg-slate-50/50 dark:bg-slate-900/50 rounded-xl"
         style={{ fontFamily: "'JetBrains Mono', monospace" }}
       >
         <defs>
@@ -938,13 +938,13 @@ function QuickSummary({ formData }: { formData: BeamFormData }) {
   const isRatioOk = spanDepthRatio <= 20;
 
   return (
-    <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-6">
-      <h3 className="text-lg font-semibold text-white mb-4">Quick Checks</h3>
+    <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
+      <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Quick Checks</h3>
       <div className="space-y-3">
         <div className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
-          <span className="text-slate-400">Span/Depth Ratio</span>
+          <span className="text-slate-500 dark:text-slate-400">Span/Depth Ratio</span>
           <div className="flex items-center gap-2">
-            <span className="text-white font-medium">
+            <span className="text-zinc-900 dark:text-white font-medium">
               {spanDepthRatio.toFixed(1)}
             </span>
             {isRatioOk ? (
@@ -955,12 +955,12 @@ function QuickSummary({ formData }: { formData: BeamFormData }) {
           </div>
         </div>
         <div className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
-          <span className="text-slate-400">Design Code</span>
-          <span className="text-white font-medium">{formData.code}</span>
+          <span className="text-slate-500 dark:text-slate-400">Design Code</span>
+          <span className="text-zinc-900 dark:text-white font-medium">{formData.code}</span>
         </div>
         <div className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
-          <span className="text-slate-400">Beam Type</span>
-          <span className="text-white font-medium capitalize">
+          <span className="text-slate-500 dark:text-slate-400">Beam Type</span>
+          <span className="text-zinc-900 dark:text-white font-medium capitalize">
             {formData.beamType}
           </span>
         </div>
@@ -990,10 +990,10 @@ function ResultsPanel({ result }: { result: BeamDesignResult }) {
             <AlertTriangle className="w-12 h-12 text-red-400" />
           )}
           <div>
-            <h2 className="text-2xl font-bold text-white">
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
               {isDesignOk ? "Design OK" : "Design Needs Revision"}
             </h2>
-            <p className="text-slate-300">
+            <p className="text-slate-600 dark:text-slate-300">
               {isDesignOk
                 ? "All checks passed. Beam is safe for the applied loads."
                 : "One or more checks failed. Please review and modify design."}
@@ -1122,7 +1122,7 @@ function ResultsPanel({ result }: { result: BeamDesignResult }) {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="px-6 py-3 bg-slate-700 rounded-xl text-white font-medium flex items-center gap-2"
+          className="px-6 py-3 bg-slate-200 dark:bg-slate-700 rounded-xl text-zinc-900 dark:text-white font-medium flex items-center gap-2"
         >
           <FileText className="w-5 h-5" />
           Export Report
@@ -1150,9 +1150,9 @@ function ResultCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-6">
+    <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-white">{title}</h3>
+        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">{title}</h3>
         <span
           className={`px-3 py-1 rounded-full text-xs font-medium ${
             status === "pass"
@@ -1171,8 +1171,8 @@ function ResultCard({
 function ResultRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-slate-400 text-sm">{label}</span>
-      <span className="text-white font-medium">{value}</span>
+      <span className="text-slate-500 dark:text-slate-400 text-sm">{label}</span>
+      <span className="text-zinc-900 dark:text-white font-medium">{value}</span>
     </div>
   );
 }
@@ -1259,17 +1259,17 @@ function ReinforcementDrawing({ result }: { result: BeamDesignResult }) {
   const totalH = Math.max(csH, lsH) + 200; // extra for bar schedule
 
   return (
-    <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-6">
-      <h3 className="text-xl font-bold text-white mb-2">
+    <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
+      <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">
         Reinforcement Detailing
       </h3>
-      <p className="text-sm text-slate-400 mb-4">
+      <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
         IS 456:2000 / SP 34:1987 compliant detailing
       </p>
 
       <svg
         viewBox={`0 0 ${totalW} ${totalH}`}
-        className="w-full bg-slate-900/50 rounded-xl"
+        className="w-full bg-slate-50/50 dark:bg-slate-900/50 rounded-xl"
         style={{
           fontFamily: "'JetBrains Mono', 'Consolas', monospace",
           minHeight: "500px",
@@ -2328,49 +2328,49 @@ function ReinforcementDrawing({ result }: { result: BeamDesignResult }) {
 
       {/* Bar Bend Schedule Table */}
       <div className="mt-6 overflow-x-auto">
-        <h4 className="text-lg font-semibold text-white mb-3">
+        <h4 className="text-lg font-semibold text-zinc-900 dark:text-white mb-3">
           Bar Bending Schedule
         </h4>
-        <table className="w-full text-sm border border-slate-700 rounded-lg overflow-hidden">
+        <table className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
           <thead>
             <tr className="bg-slate-700/60">
-              <th className="text-left py-3 px-4 text-slate-300 font-medium">
+              <th className="text-left py-3 px-4 text-slate-600 dark:text-slate-300 font-medium">
                 Bar Mark
               </th>
-              <th className="text-left py-3 px-4 text-slate-300 font-medium">
+              <th className="text-left py-3 px-4 text-slate-600 dark:text-slate-300 font-medium">
                 Type
               </th>
-              <th className="text-center py-3 px-4 text-slate-300 font-medium">
+              <th className="text-center py-3 px-4 text-slate-600 dark:text-slate-300 font-medium">
                 Dia (mm)
               </th>
-              <th className="text-center py-3 px-4 text-slate-300 font-medium">
+              <th className="text-center py-3 px-4 text-slate-600 dark:text-slate-300 font-medium">
                 No.
               </th>
-              <th className="text-center py-3 px-4 text-slate-300 font-medium">
+              <th className="text-center py-3 px-4 text-slate-600 dark:text-slate-300 font-medium">
                 Cutting Length (mm)
               </th>
-              <th className="text-center py-3 px-4 text-slate-300 font-medium">
+              <th className="text-center py-3 px-4 text-slate-600 dark:text-slate-300 font-medium">
                 Shape (IS 2502)
               </th>
-              <th className="text-center py-3 px-4 text-slate-300 font-medium">
+              <th className="text-center py-3 px-4 text-slate-600 dark:text-slate-300 font-medium">
                 Total Wt (kg)
               </th>
             </tr>
           </thead>
           <tbody>
             {/* Mark A — Main tension bars */}
-            <tr className="border-b border-slate-700/50 hover:bg-slate-700/30">
+            <tr className="border-b border-slate-200/50 dark:border-slate-700/50 hover:bg-slate-700/30">
               <td className="py-3 px-4 font-bold text-red-400">A</td>
-              <td className="py-3 px-4 text-white">Main Tension</td>
-              <td className="py-3 px-4 text-center text-white">{mainDia}</td>
-              <td className="py-3 px-4 text-center text-white">
+              <td className="py-3 px-4 text-zinc-900 dark:text-white">Main Tension</td>
+              <td className="py-3 px-4 text-center text-zinc-900 dark:text-white">{mainDia}</td>
+              <td className="py-3 px-4 text-center text-zinc-900 dark:text-white">
                 {totalTensionCount}
               </td>
-              <td className="py-3 px-4 text-center text-white">
+              <td className="py-3 px-4 text-center text-zinc-900 dark:text-white">
                 {L + 2 * (40 * mainDia) - 2 * cover}
               </td>
-              <td className="py-3 px-4 text-center text-white">Straight</td>
-              <td className="py-3 px-4 text-center text-white">
+              <td className="py-3 px-4 text-center text-zinc-900 dark:text-white">Straight</td>
+              <td className="py-3 px-4 text-center text-zinc-900 dark:text-white">
                 {(
                   (((totalTensionCount *
                     (L + 2 * 40 * mainDia - 2 * cover) *
@@ -2384,20 +2384,20 @@ function ReinforcementDrawing({ result }: { result: BeamDesignResult }) {
               </td>
             </tr>
             {/* Mark B — Compression / hanger bars */}
-            <tr className="border-b border-slate-700/50 hover:bg-slate-700/30">
+            <tr className="border-b border-slate-200/50 dark:border-slate-700/50 hover:bg-slate-700/30">
               <td className="py-3 px-4 font-bold text-orange-400">B</td>
-              <td className="py-3 px-4 text-white">
+              <td className="py-3 px-4 text-zinc-900 dark:text-white">
                 {totalCompCount > 0 ? "Compression" : "Hanger"}
               </td>
-              <td className="py-3 px-4 text-center text-white">{compDia}</td>
-              <td className="py-3 px-4 text-center text-white">
+              <td className="py-3 px-4 text-center text-zinc-900 dark:text-white">{compDia}</td>
+              <td className="py-3 px-4 text-center text-zinc-900 dark:text-white">
                 {totalCompCount > 0 ? totalCompCount : 2}
               </td>
-              <td className="py-3 px-4 text-center text-white">
+              <td className="py-3 px-4 text-center text-zinc-900 dark:text-white">
                 {L - 2 * cover}
               </td>
-              <td className="py-3 px-4 text-center text-white">Straight</td>
-              <td className="py-3 px-4 text-center text-white">
+              <td className="py-3 px-4 text-center text-zinc-900 dark:text-white">Straight</td>
+              <td className="py-3 px-4 text-center text-zinc-900 dark:text-white">
                 {(
                   ((((totalCompCount || 2) *
                     (L - 2 * cover) *
@@ -2411,24 +2411,24 @@ function ReinforcementDrawing({ result }: { result: BeamDesignResult }) {
               </td>
             </tr>
             {/* Mark C — Stirrups */}
-            <tr className="border-b border-slate-700/50 hover:bg-slate-700/30">
+            <tr className="border-b border-slate-200/50 dark:border-slate-700/50 hover:bg-slate-700/30">
               <td className="py-3 px-4 font-bold text-blue-400">C</td>
-              <td className="py-3 px-4 text-white">{stirLegs}L Stirrup</td>
-              <td className="py-3 px-4 text-center text-white">{stirDia}</td>
-              <td className="py-3 px-4 text-center text-white">
+              <td className="py-3 px-4 text-zinc-900 dark:text-white">{stirLegs}L Stirrup</td>
+              <td className="py-3 px-4 text-center text-zinc-900 dark:text-white">{stirDia}</td>
+              <td className="py-3 px-4 text-center text-zinc-900 dark:text-white">
                 {Math.ceil(L / stirSpacing) + 1}
               </td>
-              <td className="py-3 px-4 text-center text-white">
+              <td className="py-3 px-4 text-center text-zinc-900 dark:text-white">
                 {Math.round(
                   2 * (b - 2 * cover + 2 * stirDia) +
                     2 * (D - 2 * cover + 2 * stirDia) +
                     2 * 10 * stirDia,
                 )}
               </td>
-              <td className="py-3 px-4 text-center text-white">
+              <td className="py-3 px-4 text-center text-zinc-900 dark:text-white">
                 2L Stirrup (135° hooks)
               </td>
-              <td className="py-3 px-4 text-center text-white">
+              <td className="py-3 px-4 text-center text-zinc-900 dark:text-white">
                 {(
                   ((((Math.ceil(L / stirSpacing) + 1) *
                     (2 * (b - 2 * cover + 2 * stirDia) +
@@ -2445,18 +2445,18 @@ function ReinforcementDrawing({ result }: { result: BeamDesignResult }) {
             </tr>
             {/* Bent-up bars if any */}
             {totalTensionCount > 2 && (
-              <tr className="border-b border-slate-700/50 hover:bg-slate-700/30">
+              <tr className="border-b border-slate-200/50 dark:border-slate-700/50 hover:bg-slate-700/30">
                 <td className="py-3 px-4 font-bold text-red-300">D</td>
-                <td className="py-3 px-4 text-white">Bent-up Bar</td>
-                <td className="py-3 px-4 text-center text-white">{mainDia}</td>
-                <td className="py-3 px-4 text-center text-white">2</td>
-                <td className="py-3 px-4 text-center text-white">
+                <td className="py-3 px-4 text-zinc-900 dark:text-white">Bent-up Bar</td>
+                <td className="py-3 px-4 text-center text-zinc-900 dark:text-white">{mainDia}</td>
+                <td className="py-3 px-4 text-center text-zinc-900 dark:text-white">2</td>
+                <td className="py-3 px-4 text-center text-zinc-900 dark:text-white">
                   {Math.round(L * 0.75)}
                 </td>
-                <td className="py-3 px-4 text-center text-white">
+                <td className="py-3 px-4 text-center text-zinc-900 dark:text-white">
                   Bent-up (45°)
                 </td>
-                <td className="py-3 px-4 text-center text-white">
+                <td className="py-3 px-4 text-center text-zinc-900 dark:text-white">
                   {(
                     (((2 * L * 0.75 * Math.PI * mainDia * mainDia) / 4) *
                       7850) /
@@ -2467,10 +2467,10 @@ function ReinforcementDrawing({ result }: { result: BeamDesignResult }) {
             )}
             {/* Total row */}
             <tr className="bg-slate-700/40 font-semibold">
-              <td colSpan={6} className="py-3 px-4 text-right text-slate-300">
+              <td colSpan={6} className="py-3 px-4 text-right text-slate-600 dark:text-slate-300">
                 Total Steel Weight
               </td>
-              <td className="py-3 px-4 text-center text-white">
+              <td className="py-3 px-4 text-center text-zinc-900 dark:text-white">
                 {(() => {
                   const Abar = (dia: number) => (Math.PI * dia * dia) / 4;
                   const rho = 7850 / 1e9; // kg/mm³

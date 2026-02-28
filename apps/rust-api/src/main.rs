@@ -125,7 +125,8 @@ async fn main() -> anyhow::Result<()> {
             http::header::HeaderName::from_static("sentry-trace"),
             http::header::HeaderName::from_static("baggage"),
         ])
-        .allow_credentials(true);
+        .allow_credentials(true)
+        .max_age(std::time::Duration::from_secs(86400));
 
     // Build the router
     let app = Router::new()
@@ -164,7 +165,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/structures", get(handlers::structures::list_structures))
         .route("/api/structures", post(handlers::structures::create_structure))
         .route("/api/structures/:id", get(handlers::structures::get_structure))
-        .route("/api/structures/:id", post(handlers::structures::update_structure))
+        .route("/api/structures/:id", axum::routing::put(handlers::structures::update_structure))
         .route("/api/structures/:id", axum::routing::delete(handlers::structures::delete_structure))
         
         // Section database

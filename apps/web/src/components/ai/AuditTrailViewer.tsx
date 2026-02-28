@@ -55,7 +55,7 @@ const AuditEntryRow: React.FC<{ entry: AuditEntry }> = ({ entry }) => {
             case 'ai_recommendation': return 'text-cyan-400';
             case 'user_override': return 'text-orange-400';
             case 'export': return 'text-pink-400';
-            case 'session': return 'text-slate-400';
+            case 'session': return 'text-slate-500 dark:text-slate-400';
             default: return 'text-zinc-500 dark:text-zinc-400';
         }
     };

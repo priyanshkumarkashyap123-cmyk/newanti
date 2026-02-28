@@ -246,7 +246,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 via-slate-100 dark:via-slate-800 to-slate-50 dark:to-slate-900">
       {/* Header */}
       <header className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-300 dark:border-slate-700/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -259,7 +259,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                 <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
               </Link>
               <div>
-                <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+                <h1 className="text-2xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                   <Grid className="w-7 h-7 text-cyan-400" />
                   Advanced Meshing
                 </h1>
@@ -297,10 +297,10 @@ const AdvancedMeshingDashboard: React.FC = () => {
         {isMeshing && (
           <div className="mb-6 bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-300 dark:border-slate-700/50">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-white font-medium">Generating mesh...</span>
+              <span className="text-zinc-900 dark:text-white font-medium">Generating mesh...</span>
               <span className="text-cyan-400">{Math.round(meshProgress)}%</span>
             </div>
-            <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+            <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-200"
                 style={{ width: `${meshProgress}%` }}
@@ -320,7 +320,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
           <div className="space-y-6">
             {/* Global Mesh Settings */}
             <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                 <Settings className="w-5 h-5 text-cyan-400" />
                 Mesh Settings
               </h3>
@@ -338,7 +338,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                         elementType: e.target.value as ElementType,
                       })
                     }
-                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
+                    className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-zinc-900 dark:text-white"
                   >
                     <option value="quadrilateral">
                       Quadrilateral (QUAD4/8)
@@ -363,7 +363,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                         method: e.target.value as MeshMethod,
                       })
                     }
-                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
+                    className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-zinc-900 dark:text-white"
                   >
                     <option value="mapped">Mapped Meshing</option>
                     <option value="free">Free Meshing</option>
@@ -387,7 +387,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                         globalSize: parseInt(e.target.value),
                       })
                     }
-                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                    className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
                   />
                   <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400 mt-1">
                     <span>Fine (10mm)</span>
@@ -409,7 +409,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                           minSize: parseInt(e.target.value),
                         })
                       }
-                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
+                      className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-zinc-900 dark:text-white"
                     />
                   </div>
                   <div>
@@ -425,7 +425,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                           maxSize: parseInt(e.target.value),
                         })
                       }
-                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
+                      className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-zinc-900 dark:text-white"
                     />
                   </div>
                 </div>
@@ -446,7 +446,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                         growthRate: parseFloat(e.target.value),
                       })
                     }
-                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                    className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
                   />
                 </div>
               </div>
@@ -454,9 +454,9 @@ const AdvancedMeshingDashboard: React.FC = () => {
               {/* Advanced Settings Toggle */}
               <button
                 onClick={() => setShowAdvanced(!showAdvanced)}
-                className="mt-4 w-full flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                className="mt-4 w-full flex items-center justify-between p-3 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
               >
-                <span className="text-white text-sm">Advanced Settings</span>
+                <span className="text-zinc-900 dark:text-white text-sm">Advanced Settings</span>
                 {showAdvanced ? (
                   <ChevronDown className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                 ) : (
@@ -478,7 +478,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                           refinement: e.target.value as RefinementType,
                         })
                       }
-                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
+                      className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-zinc-900 dark:text-white"
                     >
                       <option value="uniform">Uniform</option>
                       <option value="curvature">Curvature-based</option>
@@ -503,7 +503,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                           curvatureAngle: parseInt(e.target.value),
                         })
                       }
-                      className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                      className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
                     />
                   </div>
 
@@ -522,7 +522,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                           smoothingIterations: parseInt(e.target.value),
                         })
                       }
-                      className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                      className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
                     />
                   </div>
 
@@ -543,7 +543,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                           qualityTarget: parseFloat(e.target.value),
                         })
                       }
-                      className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                      className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
                     />
                   </div>
                 </div>
@@ -560,7 +560,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                   <span className="text-slate-600 dark:text-slate-400 text-sm">Elements</span>
                   <Layers className="w-4 h-4 text-cyan-400" />
                 </div>
-                <p className="text-2xl font-bold text-white">
+                <p className="text-2xl font-bold text-zinc-900 dark:text-white">
                   {metrics.totalElements.toLocaleString()}
                 </p>
               </div>
@@ -570,7 +570,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                   <span className="text-slate-600 dark:text-slate-400 text-sm">Nodes</span>
                   <Target className="w-4 h-4 text-blue-400" />
                 </div>
-                <p className="text-2xl font-bold text-white">
+                <p className="text-2xl font-bold text-zinc-900 dark:text-white">
                   {metrics.totalNodes.toLocaleString()}
                 </p>
               </div>
@@ -613,7 +613,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
 
             {/* Mesh Regions */}
             <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                 <Layers className="w-5 h-5 text-cyan-400" />
                 Mesh Regions
               </h3>
@@ -660,7 +660,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                             : "hover:bg-slate-200 dark:hover:bg-slate-700/30"
                         }`}
                       >
-                        <td className="p-3 text-white font-medium">
+                        <td className="p-3 text-zinc-900 dark:text-white font-medium">
                           {region.name}
                         </td>
                         <td className="p-3 text-center text-slate-600 dark:text-slate-400 capitalize">
@@ -698,7 +698,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                 onClick={() => setShowQualityDetails(!showQualityDetails)}
                 className="w-full flex items-center justify-between"
               >
-                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
                   <BarChart3 className="w-5 h-5 text-cyan-400" />
                   Quality Metrics
                 </h3>
@@ -800,19 +800,19 @@ const AdvancedMeshingDashboard: React.FC = () => {
 
             {/* Actions */}
             <div className="flex flex-wrap gap-3">
-              <button className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors">
+              <button className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white rounded-lg transition-colors">
                 <Download className="w-4 h-4" />
                 Export Mesh
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors">
+              <button className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white rounded-lg transition-colors">
                 <RefreshCw className="w-4 h-4" />
                 Remesh Failed
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors">
+              <button className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white rounded-lg transition-colors">
                 <Sliders className="w-4 h-4" />
                 Local Refinement
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors">
+              <button className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white rounded-lg transition-colors">
                 <TrendingUp className="w-4 h-4" />
                 Mesh Sensitivity
               </button>

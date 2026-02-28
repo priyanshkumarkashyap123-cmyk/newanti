@@ -393,15 +393,15 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-white">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-900 to-slate-800">
+      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4 mb-4">
             <Link to="/stream" className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors">
               <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
             </Link>
-            <div className="h-6 w-px bg-slate-700" />
+            <div className="h-6 w-px bg-slate-200 dark:bg-slate-700" />
             <Link to="/" className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors">
               <Home className="w-5 h-5 text-slate-600 dark:text-slate-400" />
             </Link>
@@ -437,7 +437,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                 className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
                   activeTab === id
                     ? 'border-blue-500 text-blue-400'
-                    : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-white'
+                    : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -480,7 +480,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                       className={`py-3 px-4 rounded-lg font-medium transition-all flex flex-col items-center gap-1 ${
                         input.method === value
                           ? 'bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-lg ring-2 ring-blue-500/50'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-white hover:bg-slate-750'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-750'
                       }`}
                     >
                       <span className="text-sm">{label}</span>
@@ -500,7 +500,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                           step="0.01"
                           value={input.gamma}
                           onChange={(e) => updateInput('gamma', parseFloat(e.target.value))}
-                          className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm"
                         />
                         <span className="text-xs text-slate-600 dark:text-slate-400">≥ 0.5 for stability</span>
                       </div>
@@ -511,7 +511,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                           step="0.01"
                           value={input.beta}
                           onChange={(e) => updateInput('beta', parseFloat(e.target.value))}
-                          className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm"
                         />
                         <span className="text-xs text-slate-600 dark:text-slate-400">0.25 = avg accel</span>
                       </div>
@@ -527,7 +527,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                         max="0"
                         value={input.alphaHHT}
                         onChange={(e) => updateInput('alphaHHT', parseFloat(e.target.value))}
-                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm"
                       />
                       <span className="text-xs text-slate-600 dark:text-slate-400">-1/3 to 0</span>
                     </div>
@@ -541,7 +541,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                         min="1.0"
                         value={input.theta}
                         onChange={(e) => updateInput('theta', parseFloat(e.target.value))}
-                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm"
                       />
                       <span className="text-xs text-slate-600 dark:text-slate-400">≥ 1.37 recommended</span>
                     </div>
@@ -553,7 +553,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                       step="0.001"
                       value={input.dt}
                       onChange={(e) => updateInput('dt', parseFloat(e.target.value))}
-                      className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                      className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm"
                     />
                   </div>
                   <div>
@@ -563,7 +563,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                       step="1"
                       value={input.duration}
                       onChange={(e) => updateInput('duration', parseFloat(e.target.value))}
-                      className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                      className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm"
                     />
                   </div>
                 </div>
@@ -587,7 +587,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                       className={`py-2 px-3 rounded-lg text-sm transition-all ${
                         input.dampingType === value
                           ? 'bg-green-600 text-white'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-white'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'
                       }`}
                     >
                       <div className="font-medium">{label}</div>
@@ -603,7 +603,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                       step="0.01"
                       value={input.dampingRatio}
                       onChange={(e) => updateInput('dampingRatio', parseFloat(e.target.value))}
-                      className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                      className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm"
                     />
                     <span className="text-xs text-slate-600 dark:text-slate-400">5% typical for RC</span>
                   </div>
@@ -616,7 +616,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                           step="0.01"
                           value={input.rayleighAlpha}
                           onChange={(e) => updateInput('rayleighAlpha', parseFloat(e.target.value))}
-                          className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm"
                         />
                       </div>
                       <div>
@@ -626,7 +626,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                           step="0.001"
                           value={input.rayleighBeta}
                           onChange={(e) => updateInput('rayleighBeta', parseFloat(e.target.value))}
-                          className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
+                          className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm"
                         />
                       </div>
                     </>
@@ -661,7 +661,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-slate-600 dark:text-slate-400">Record:</span>
-                    <span className="text-white font-medium">{selectedMotion.name}</span>
+                    <span className="text-zinc-900 dark:text-white font-medium">{selectedMotion.name}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600 dark:text-slate-400">Event:</span>
@@ -739,10 +739,10 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                     className={`p-4 rounded-xl text-left transition-all ${
                       selectedMotion.id === motion.id
                         ? 'bg-gradient-to-br from-amber-600/20 to-orange-600/20 border-2 border-amber-500'
-                        : 'bg-slate-100 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 hover:border-slate-600'
+                        : 'bg-slate-100 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                     }`}
                   >
-                    <div className="font-medium text-white mb-1">{motion.name}</div>
+                    <div className="font-medium text-zinc-900 dark:text-white mb-1">{motion.name}</div>
                     <div className="text-sm text-slate-600 dark:text-slate-400">{motion.event} ({motion.year})</div>
                     <div className="mt-2 flex justify-between text-xs">
                       <span className="text-slate-600 dark:text-slate-400">M{motion.magnitude || 'N/A'}</span>
@@ -765,7 +765,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                     step="0.1"
                     value={input.scaleFactor}
                     onChange={(e) => updateInput('scaleFactor', parseFloat(e.target.value))}
-                    className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-white"
+                    className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-zinc-900 dark:text-white"
                   />
                   <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
                     Scaled PGA: {(selectedMotion.pga * input.scaleFactor).toFixed(3)}g
@@ -776,7 +776,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                   <select
                     value={input.direction}
                     onChange={(e) => updateInput('direction', e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-white"
+                    className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-zinc-900 dark:text-white"
                   >
                     <option value="X">X Direction</option>
                     <option value="Y">Y Direction</option>
@@ -793,7 +793,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                     min="1"
                     value={input.outputInterval}
                     onChange={(e) => updateInput('outputInterval', parseInt(e.target.value))}
-                    className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-white"
+                    className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-zinc-900 dark:text-white"
                   />
                   <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
                     Save every {input.outputInterval} step(s)
@@ -840,29 +840,29 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="bg-gradient-to-br from-blue-900/50 to-blue-800/30 rounded-xl p-4 border border-blue-700/50">
                     <div className="text-xs text-blue-300 mb-1">Max Displacement</div>
-                    <div className="text-2xl font-bold text-white">{results.maxDisplacement.toFixed(4)}</div>
+                    <div className="text-2xl font-bold text-zinc-900 dark:text-white">{results.maxDisplacement.toFixed(4)}</div>
                     <div className="text-xs text-slate-600 dark:text-slate-400">m</div>
                   </div>
                   <div className="bg-gradient-to-br from-green-900/50 to-green-800/30 rounded-xl p-4 border border-green-700/50">
                     <div className="text-xs text-green-300 mb-1">Max Velocity</div>
-                    <div className="text-2xl font-bold text-white">{results.maxVelocity.toFixed(4)}</div>
+                    <div className="text-2xl font-bold text-zinc-900 dark:text-white">{results.maxVelocity.toFixed(4)}</div>
                     <div className="text-xs text-slate-600 dark:text-slate-400">m/s</div>
                   </div>
                   <div className="bg-gradient-to-br from-amber-900/50 to-amber-800/30 rounded-xl p-4 border border-amber-700/50">
                     <div className="text-xs text-amber-300 mb-1">Max Acceleration</div>
-                    <div className="text-2xl font-bold text-white">{results.maxAcceleration.toFixed(4)}</div>
+                    <div className="text-2xl font-bold text-zinc-900 dark:text-white">{results.maxAcceleration.toFixed(4)}</div>
                     <div className="text-xs text-slate-600 dark:text-slate-400">m/s²</div>
                   </div>
                   <div className="bg-gradient-to-br from-purple-900/50 to-purple-800/30 rounded-xl p-4 border border-purple-700/50">
                     <div className="text-xs text-purple-300 mb-1">Performance</div>
-                    <div className="text-2xl font-bold text-white">{results.performanceMs.toFixed(1)}</div>
+                    <div className="text-2xl font-bold text-zinc-900 dark:text-white">{results.performanceMs.toFixed(1)}</div>
                     <div className="text-xs text-slate-600 dark:text-slate-400">ms</div>
                   </div>
                 </div>
 
                 {/* Response Charts */}
                 <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
-                  <h3 className="text-sm font-semibold text-white mb-4">Response Time Histories</h3>
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4">Response Time Histories</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <ResponseChart
                       data={results.displacement[0] || []}

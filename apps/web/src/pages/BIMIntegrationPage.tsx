@@ -98,7 +98,7 @@ export default function BIMIntegrationPage() {
   }, [parsedMembers, ifcFile]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-100 p-6">
+    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         <header className="flex items-center justify-between">
           <div>
@@ -205,7 +205,7 @@ export default function BIMIntegrationPage() {
           <h2 className="text-lg font-semibold mb-2">Supported IFC Structural Types</h2>
           <div className="flex flex-wrap gap-2">
             {supportedTypes.map(type => (
-              <span key={type} className="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 text-xs text-slate-200 border border-slate-300 dark:border-slate-700">
+              <span key={type} className="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 text-xs text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700">
                 {type}
               </span>
             ))}

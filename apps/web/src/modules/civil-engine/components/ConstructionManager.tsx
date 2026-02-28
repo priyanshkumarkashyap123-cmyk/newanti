@@ -191,7 +191,7 @@ function SchedulePanel() {
                                 <div className="w-48 shrink-0"></div>
                                 <div className="flex-1 flex relative">
                                     {Array.from({ length: schedule.projectDuration + 2 }).map((_, i) => (
-                                        <div key={i} className="absolute text-[10px] text-gray-400 border-l h-full pl-1" style={{ left: `${(i / schedule.projectDuration) * 100}%` }}>
+                                        <div key={i} className="absolute text-[10px] text-gray-500 dark:text-gray-400 border-l h-full pl-1" style={{ left: `${(i / schedule.projectDuration) * 100}%` }}>
                                             {i}
                                         </div>
                                     ))}
@@ -218,11 +218,11 @@ function SchedulePanel() {
                                             <div className="flex-1 relative h-full">
                                                 {/* Task Bar */}
                                                 <div
-                                                    className={`absolute top-1.5 h-5 rounded ${color} shadow-sm border border-white transition-all`}
+                                                    className={`absolute top-1.5 h-5 rounded ${color} shadow-sm border border-zinc-200 dark:border-white transition-all`}
                                                     style={{ left: `${left}%`, width: `${width}%` }}
                                                     title={`Start: ${s.ES}, Fin: ${s.EF}, Dur: ${act.duration}`}
                                                 >
-                                                    <span className="text-[10px] text-white px-1 ml-1 truncate absolute inset-0 flex items-center">{act.duration}d</span>
+                                                    <span className="text-[10px] text-zinc-900 dark:text-white px-1 ml-1 truncate absolute inset-0 flex items-center">{act.duration}d</span>
                                                 </div>
 
                                                 {/* Float Bar (if any) */}
@@ -326,10 +326,10 @@ function CostPanel() {
             <div className="space-y-6">
                 {estimate && (
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                        <div className="p-6 bg-gray-900 text-white">
-                            <div className="text-sm text-gray-400">Total Project Estimate</div>
+                        <div className="p-6 bg-gray-50 dark:bg-gray-900 text-zinc-900 dark:text-white">
+                            <div className="text-sm text-gray-500 dark:text-gray-400">Total Project Estimate</div>
                             <div className="text-3xl font-bold">₹ {estimate.grandTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
-                            <div className="text-xs text-gray-400 mt-1">Includes {(estimate.totalIndirect / estimate.totalDirect * 100).toFixed(0)}% overheads & contingencies</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Includes {(estimate.totalIndirect / estimate.totalDirect * 100).toFixed(0)}% overheads & contingencies</div>
                         </div>
 
                         <div className="p-0">

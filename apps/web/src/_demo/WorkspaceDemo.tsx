@@ -48,11 +48,11 @@ export const WorkspaceDemo: FC = () => {
                             content: (
                                 <div className="space-y-3">
                                     <div>
-                                        <label className="text-xs text-zinc-400 block mb-1">Material</label>
+                                        <label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Material</label>
                                         <select
                                             value={selectedMaterial}
                                             onChange={(e) => setSelectedMaterial(e.target.value)}
-                                            className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-white focus:border-blue-500 focus:outline-none"
+                                            className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded px-2 py-1.5 text-sm text-zinc-900 dark:text-white focus:border-blue-500 focus:outline-none"
                                         >
                                             <option value="A992">Steel A992</option>
                                             <option value="A36">Steel A36</option>
@@ -60,11 +60,11 @@ export const WorkspaceDemo: FC = () => {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="text-xs text-zinc-400 block mb-1">Section</label>
+                                        <label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Section</label>
                                         <select
                                             value={selectedSection}
                                             onChange={(e) => setSelectedSection(e.target.value)}
-                                            className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-white focus:border-blue-500 focus:outline-none"
+                                            className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded px-2 py-1.5 text-sm text-zinc-900 dark:text-white focus:border-blue-500 focus:outline-none"
                                         >
                                             <option value="W12x26">W12x26</option>
                                             <option value="W14x22">W14x22</option>
@@ -72,20 +72,20 @@ export const WorkspaceDemo: FC = () => {
                                             <option value="W18x35">W18x35</option>
                                         </select>
                                     </div>
-                                    <div className="pt-2 border-t border-zinc-700">
-                                        <div className="text-xs text-zinc-400 mb-2">Properties</div>
+                                    <div className="pt-2 border-t border-zinc-200 dark:border-zinc-700">
+                                        <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">Properties</div>
                                         <div className="space-y-1 text-xs font-mono">
                                             <div className="flex justify-between">
-                                                <span className="text-zinc-400">A:</span>
-                                                <span className="text-white">7.65 in²</span>
+                                                <span className="text-zinc-500 dark:text-zinc-400">A:</span>
+                                                <span className="text-zinc-900 dark:text-white">7.65 in²</span>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span className="text-zinc-400">I<sub>x</sub>:</span>
-                                                <span className="text-white">204 in⁴</span>
+                                                <span className="text-zinc-500 dark:text-zinc-400">I<sub>x</sub>:</span>
+                                                <span className="text-zinc-900 dark:text-white">204 in⁴</span>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span className="text-zinc-400">S<sub>x</sub>:</span>
-                                                <span className="text-white">33.4 in³</span>
+                                                <span className="text-zinc-500 dark:text-zinc-400">S<sub>x</sub>:</span>
+                                                <span className="text-zinc-900 dark:text-white">33.4 in³</span>
                                             </div>
                                         </div>
                                     </div>
@@ -100,16 +100,16 @@ export const WorkspaceDemo: FC = () => {
                             content: (
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between text-xs">
-                                        <span className="text-zinc-300">DL (Dead Load)</span>
+                                        <span className="text-zinc-600 dark:text-zinc-300">DL (Dead Load)</span>
                                         <span className="text-green-400">Active</span>
                                     </div>
                                     <div className="flex items-center justify-between text-xs">
-                                        <span className="text-zinc-300">LL (Live Load)</span>
+                                        <span className="text-zinc-600 dark:text-zinc-300">LL (Live Load)</span>
                                         <span className="text-green-400">Active</span>
                                     </div>
                                     <div className="flex items-center justify-between text-xs">
-                                        <span className="text-zinc-300">EQ (Earthquake)</span>
-                                        <span className="text-zinc-400">Inactive</span>
+                                        <span className="text-zinc-600 dark:text-zinc-300">EQ (Earthquake)</span>
+                                        <span className="text-zinc-500 dark:text-zinc-400">Inactive</span>
                                     </div>
                                 </div>
                             ),
@@ -121,15 +121,15 @@ export const WorkspaceDemo: FC = () => {
                             content: (
                                 <div className="space-y-2 text-xs">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-zinc-400">Type:</span>
-                                        <span className="text-white">Linear Static</span>
+                                        <span className="text-zinc-500 dark:text-zinc-400">Type:</span>
+                                        <span className="text-zinc-900 dark:text-white">Linear Static</span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-zinc-400">Solver:</span>
-                                        <span className="text-white">Direct</span>
+                                        <span className="text-zinc-500 dark:text-zinc-400">Solver:</span>
+                                        <span className="text-zinc-900 dark:text-white">Direct</span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-zinc-400">P-Delta:</span>
+                                        <span className="text-zinc-500 dark:text-zinc-400">P-Delta:</span>
                                         <span className="text-blue-400">Enabled</span>
                                     </div>
                                 </div>
@@ -155,7 +155,7 @@ export const WorkspaceDemo: FC = () => {
                                                 accessor: 'fx',
                                                 header: 'FX (kN)',
                                                 cell: ({ row }: any) => (
-                                                    <span className={row.original.fx === 0 ? 'text-zinc-500' : 'text-white'}>
+                                                    <span className={row.original.fx === 0 ? 'text-zinc-500' : 'text-zinc-900 dark:text-white'}>
                                                         {row.original.fx.toFixed(1)}
                                                     </span>
                                                 ),
@@ -164,14 +164,14 @@ export const WorkspaceDemo: FC = () => {
                                                 accessor: 'fy',
                                                 header: 'FY (kN)',
                                                 cell: ({ row }: any) => (
-                                                    <span className="text-white font-semibold">{row.original.fy.toFixed(1)}</span>
+                                                    <span className="text-zinc-900 dark:text-white font-semibold">{row.original.fy.toFixed(1)}</span>
                                                 ),
                                             },
                                             {
                                                 accessor: 'fz',
                                                 header: 'FZ (kN)',
                                                 cell: ({ row }: any) => (
-                                                    <span className={row.original.fz === 0 ? 'text-zinc-500' : 'text-white'}>
+                                                    <span className={row.original.fz === 0 ? 'text-zinc-500' : 'text-zinc-900 dark:text-white'}>
                                                         {row.original.fz.toFixed(1)}
                                                     </span>
                                                 ),
@@ -234,7 +234,7 @@ export const WorkspaceDemo: FC = () => {
                             id: 'report',
                             label: 'Report',
                             content: (
-                                <div className="p-4 text-center text-zinc-400">
+                                <div className="p-4 text-center text-zinc-500 dark:text-zinc-400">
                                     <div className="flex flex-col items-center gap-3">
                                         <span className="material-symbols-outlined text-5xl text-zinc-700">description</span>
                                         <p className="text-sm">Report generation coming soon</p>
@@ -263,7 +263,7 @@ export const WorkspaceDemo: FC = () => {
                 <div className="w-full h-full flex flex-col items-center justify-center gap-6">
                     <span className="material-symbols-outlined text-[120px] text-zinc-700">deployed_code</span>
                     <div className="text-center">
-                        <h2 className="text-2xl font-bold tracking-tight text-zinc-400 mb-2">
+                        <h2 className="text-2xl font-bold tracking-tight text-zinc-500 dark:text-zinc-400 mb-2">
                             3D Viewport Ready
                         </h2>
                         <p className="text-sm text-zinc-500 max-w-md">
@@ -278,7 +278,7 @@ export const WorkspaceDemo: FC = () => {
                     </div>
                     <button
                         onClick={() => setShowTutorial(true)}
-                        className="text-xs text-zinc-400 hover:text-zinc-300 underline"
+                        className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 underline"
                     >
                         Show Tutorial Modal
                     </button>

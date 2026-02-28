@@ -182,13 +182,13 @@ export function DesignSettingsPanel({ onRunDesign, results, loading = false }: D
                                                     }
                                                 </div>
                                                 <div className="text-xs text-gray-500">{res.governing}</div>
-                                                {isClient && <div className="text-[10px] text-gray-400 font-mono">Pn_c: {res.capacity?.Pn_compression?.toFixed(0)}</div>}
+                                                {isClient && <div className="text-[10px] text-gray-500 dark:text-gray-400 font-mono">Pn_c: {res.capacity?.Pn_compression?.toFixed(0)}</div>}
                                             </div>
                                             <div className="text-right">
                                                 <div className={`font-bold ${res.ratio > 1.0 ? 'text-red-600' : 'text-green-600'}`}>
                                                     {res.ratio.toFixed(2)}
                                                 </div>
-                                                <div className="text-xs text-gray-400">Ratio</div>
+                                                <div className="text-xs text-gray-500 dark:text-gray-400">Ratio</div>
                                             </div>
                                         </div>
                                     ))}

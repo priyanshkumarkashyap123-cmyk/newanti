@@ -3,7 +3,6 @@
  * Comprehensive RC detailing tools - Stirrups, Development Length, Lap Splices
  */
 
-'use client';
 
 import React, { useState, useMemo } from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
@@ -86,8 +85,8 @@ export function ReinforcementDesignPage() {
               <Tabs.Trigger 
                 value="stirrups"
                 className="flex items-center gap-2 px-4 py-3 text-sm font-medium 
-                           text-gray-600 dark:text-gray-400 border-b-2 border-transparent
-                           hover:text-gray-900 dark:hover:text-white
+                           text-gray-600 border-b-2 border-transparent
+                           hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white
                            data-[state=active]:text-orange-600 data-[state=active]:border-orange-600"
               >
                 <ArrowLeftRight className="w-4 h-4" />
@@ -96,8 +95,8 @@ export function ReinforcementDesignPage() {
               <Tabs.Trigger 
                 value="development"
                 className="flex items-center gap-2 px-4 py-3 text-sm font-medium 
-                           text-gray-600 dark:text-gray-400 border-b-2 border-transparent
-                           hover:text-gray-900 dark:hover:text-white
+                           text-gray-600 border-b-2 border-transparent
+                           hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white
                            data-[state=active]:text-orange-600 data-[state=active]:border-orange-600"
               >
                 <Ruler className="w-4 h-4" />
@@ -106,8 +105,8 @@ export function ReinforcementDesignPage() {
               <Tabs.Trigger 
                 value="lapsplice"
                 className="flex items-center gap-2 px-4 py-3 text-sm font-medium 
-                           text-gray-600 dark:text-gray-400 border-b-2 border-transparent
-                           hover:text-gray-900 dark:hover:text-white
+                           text-gray-600 border-b-2 border-transparent
+                           hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white
                            data-[state=active]:text-orange-600 data-[state=active]:border-orange-600"
               >
                 <Link2 className="w-4 h-4" />
@@ -264,20 +263,17 @@ function LapSplicePanel() {
       
       <Tabs.Root defaultValue="input" className="w-full">
         <Tabs.List className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
-          <Tabs.Trigger value="input" className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 
-                     hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent
+          <Tabs.Trigger value="input" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white border-b-2 border-transparent
                      data-[state=active]:text-purple-600 data-[state=active]:border-purple-600">
             <Calculator className="w-4 h-4 inline mr-2" />
             Input
           </Tabs.Trigger>
-          <Tabs.Trigger value="results" className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 
-                     hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent
+          <Tabs.Trigger value="results" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white border-b-2 border-transparent
                      data-[state=active]:text-purple-600 data-[state=active]:border-purple-600">
             <FileText className="w-4 h-4 inline mr-2" />
             Results
           </Tabs.Trigger>
-          <Tabs.Trigger value="table" className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 
-                     hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent
+          <Tabs.Trigger value="table" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white border-b-2 border-transparent
                      data-[state=active]:text-purple-600 data-[state=active]:border-purple-600">
             <Table className="w-4 h-4 inline mr-2" />
             Quick Reference
@@ -540,7 +536,7 @@ function LapSplicePanel() {
             </>
           ) : (
             <div className="text-center py-12">
-              <Link2 className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+              <Link2 className="w-16 h-16 mx-auto text-gray-500 dark:text-gray-400 mb-4" />
               <p className="text-gray-500 dark:text-gray-400">Enter parameters and calculate</p>
             </div>
           )}
@@ -590,7 +586,7 @@ function LapSplicePanel() {
             </div>
           ) : (
             <div className="text-center py-12 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
-              <Table className="w-12 h-12 mx-auto text-gray-400 mb-3" />
+              <Table className="w-12 h-12 mx-auto text-gray-500 dark:text-gray-400 mb-3" />
               <p className="text-gray-500 dark:text-gray-400">Click "Generate Table" for quick reference</p>
             </div>
           )}

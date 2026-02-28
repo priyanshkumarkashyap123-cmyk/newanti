@@ -20,7 +20,6 @@
  * @version 1.0.0
  */
 
-'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
 import {

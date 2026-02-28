@@ -163,7 +163,7 @@ export const ProductTour: FC<ProductTourProps> = ({ isOpen, onClose, onComplete 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
+          className="absolute inset-0 bg-slate-100/80 dark:bg-slate-950/80 backdrop-blur-sm"
           onClick={handleSkip}
         />
 
@@ -188,7 +188,7 @@ export const ProductTour: FC<ProductTourProps> = ({ isOpen, onClose, onComplete 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
-          className={`absolute bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl max-w-md p-6 ${
+          className={`absolute bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl max-w-md p-6 ${
             highlightRect 
               ? 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'
               : 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'
@@ -204,7 +204,7 @@ export const ProductTour: FC<ProductTourProps> = ({ isOpen, onClose, onComplete 
                     ? 'w-6 bg-blue-500' 
                     : i < currentStep 
                     ? 'bg-blue-500/50' 
-                    : 'bg-slate-700'
+                    : 'bg-slate-200 dark:bg-slate-700'
                 }`}
               />
             ))}
@@ -216,10 +216,10 @@ export const ProductTour: FC<ProductTourProps> = ({ isOpen, onClose, onComplete 
           </div>
 
           {/* Content */}
-          <h3 className="text-xl font-bold text-white text-center mb-2">
+          <h3 className="text-xl font-bold text-zinc-900 dark:text-white text-center mb-2">
             {step.title}
           </h3>
-          <p className="text-slate-400 text-center mb-4 leading-relaxed">
+          <p className="text-slate-500 dark:text-slate-400 text-center mb-4 leading-relaxed">
             {step.description}
           </p>
 
@@ -236,7 +236,7 @@ export const ProductTour: FC<ProductTourProps> = ({ isOpen, onClose, onComplete 
           <div className="flex items-center justify-between gap-4">
             <button
               onClick={handleSkip}
-              className="text-sm text-slate-400 hover:text-slate-300 transition-colors"
+              className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
             >
               Skip tour
             </button>
@@ -245,7 +245,7 @@ export const ProductTour: FC<ProductTourProps> = ({ isOpen, onClose, onComplete 
               {!isFirstStep && (
                 <button
                   onClick={handlePrevious}
-                  className="p-2 rounded-lg border border-slate-700 text-slate-400 hover:bg-slate-800 transition-colors"
+                  className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
@@ -263,7 +263,7 @@ export const ProductTour: FC<ProductTourProps> = ({ isOpen, onClose, onComplete 
           {/* Close button */}
           <button
             onClick={handleSkip}
-            className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white transition-colors"
+            className="absolute top-4 right-4 p-2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

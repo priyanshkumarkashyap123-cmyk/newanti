@@ -19,7 +19,7 @@ VERSION=$(node -p "require('./package.json').version")
 
 # Create git tag
 echo "Creating git tag v$VERSION..."
-git add package.json package-lock.json
+git add package.json pnpm-lock.yaml
 git commit -m "chore: release v$VERSION"
 git tag -a "v$VERSION" -m "Release v$VERSION"
 

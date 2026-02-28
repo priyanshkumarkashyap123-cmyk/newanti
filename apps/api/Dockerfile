@@ -1,7 +1,7 @@
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 # Install pnpm (matches workspace package manager)
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.25.0 --activate
 
 WORKDIR /app
 
@@ -11,10 +11,10 @@ RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY . .
 RUN pnpm run build
 
-FROM node:18-alpine
+FROM node:20-alpine
 
 # Install pnpm in production image
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.25.0 --activate
 
 # Security: run as non-root user
 RUN addgroup -S app && adduser -S app -G app

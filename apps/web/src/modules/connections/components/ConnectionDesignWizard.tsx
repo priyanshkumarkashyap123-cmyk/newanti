@@ -210,7 +210,7 @@ const StepTemplate: React.FC<{
                 </div>
                 {state.template?.id === template.id && (
                   <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                    <Check className="w-4 h-4 text-white" />
+                    <Check className="w-4 h-4 text-zinc-900 dark:text-white" />
                   </div>
                 )}
               </div>
@@ -759,7 +759,7 @@ export const ConnectionDesignWizard: React.FC<ConnectionDesignWizardProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
+              <Sparkles className="w-5 h-5 text-zinc-900 dark:text-white" />
             </div>
             <div>
               <CardTitle className="text-base">Connection Design Wizard</CardTitle>
@@ -778,7 +778,7 @@ export const ConnectionDesignWizard: React.FC<ConnectionDesignWizardProps> = ({
                 disabled={index > currentStep}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                   index === currentStep
-                    ? 'bg-primary text-white'
+                    ? 'bg-primary text-zinc-900 dark:text-white'
                     : index < currentStep
                     ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
                     : 'bg-muted text-muted-foreground'

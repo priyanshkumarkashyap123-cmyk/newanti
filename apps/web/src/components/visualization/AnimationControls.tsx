@@ -169,12 +169,12 @@ const PlaybackControlBar: React.FC<PlaybackControlBarProps> = ({
     const SPEED_OPTIONS = [0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 4.0];
     
     return (
-        <div className="bg-slate-800/90 backdrop-blur-sm rounded-xl p-3 border border-slate-700">
+        <div className="bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-xl p-3 border border-slate-200 dark:border-slate-700">
             {/* Progress Bar */}
             <div
                 ref={progressBarRef}
                 onClick={handleProgressClick}
-                className="h-2 bg-slate-700 rounded-full cursor-pointer mb-3 relative overflow-hidden group"
+                className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full cursor-pointer mb-3 relative overflow-hidden group"
             >
                 {/* Buffer indicator */}
                 <div 
@@ -211,7 +211,7 @@ const PlaybackControlBar: React.FC<PlaybackControlBarProps> = ({
                     {/* Stop */}
                     <button
                         onClick={onStop}
-                        className="p-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 hover:text-white transition-colors"
+                        className="p-2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-600 hover:text-zinc-900 dark:hover:text-white transition-colors"
                     >
                         <Square className="w-4 h-4" />
                     </button>
@@ -219,7 +219,7 @@ const PlaybackControlBar: React.FC<PlaybackControlBarProps> = ({
                     {/* Step Backward */}
                     <button
                         onClick={onStepBackward}
-                        className="p-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 hover:text-white transition-colors"
+                        className="p-2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-600 hover:text-zinc-900 dark:hover:text-white transition-colors"
                         title="Previous Frame"
                     >
                         <SkipBack className="w-4 h-4" />
@@ -228,7 +228,7 @@ const PlaybackControlBar: React.FC<PlaybackControlBarProps> = ({
                     {/* Step Forward */}
                     <button
                         onClick={onStepForward}
-                        className="p-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 hover:text-white transition-colors"
+                        className="p-2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-600 hover:text-zinc-900 dark:hover:text-white transition-colors"
                         title="Next Frame"
                     >
                         <SkipForward className="w-4 h-4" />
@@ -237,14 +237,14 @@ const PlaybackControlBar: React.FC<PlaybackControlBarProps> = ({
                 
                 {/* Center - Time Display */}
                 <div className="flex items-center gap-3 text-sm">
-                    <span className="text-white font-mono">
+                    <span className="text-zinc-900 dark:text-white font-mono">
                         {formatTime(currentFrame)}
                     </span>
-                    <span className="text-slate-400">/</span>
-                    <span className="text-slate-400 font-mono">
+                    <span className="text-slate-500 dark:text-slate-400">/</span>
+                    <span className="text-slate-500 dark:text-slate-400 font-mono">
                         {formatTime(totalFrames)}
                     </span>
-                    <span className="text-slate-400 text-xs ml-2">
+                    <span className="text-slate-500 dark:text-slate-400 text-xs ml-2">
                         Frame {currentFrame} / {totalFrames}
                     </span>
                 </div>
@@ -252,15 +252,15 @@ const PlaybackControlBar: React.FC<PlaybackControlBarProps> = ({
                 {/* Right Controls */}
                 <div className="flex items-center gap-2">
                     {/* Speed Control */}
-                    <div className="flex items-center gap-1 bg-slate-700 rounded-lg p-1">
-                        <FastForward className="w-4 h-4 text-slate-400 ml-1" />
+                    <div className="flex items-center gap-1 bg-slate-200 dark:bg-slate-700 rounded-lg p-1">
+                        <FastForward className="w-4 h-4 text-slate-500 dark:text-slate-400 ml-1" />
                         <select
                             value={speed}
                             onChange={(e) => onSpeedChange(parseFloat(e.target.value))}
-                            className="bg-transparent text-white text-sm px-2 py-1 focus:outline-none cursor-pointer"
+                            className="bg-transparent text-zinc-900 dark:text-white text-sm px-2 py-1 focus:outline-none cursor-pointer"
                         >
                             {SPEED_OPTIONS.map(s => (
-                                <option key={s} value={s} className="bg-slate-800">
+                                <option key={s} value={s} className="bg-slate-100 dark:bg-slate-800">
                                     {s}x
                                 </option>
                             ))}
@@ -273,7 +273,7 @@ const PlaybackControlBar: React.FC<PlaybackControlBarProps> = ({
                         className={`p-2 rounded-lg transition-colors ${
                             loop 
                                 ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' 
-                                : 'bg-slate-700 text-slate-400 hover:text-white'
+                                : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'
                         }`}
                         title={loop ? 'Loop: On' : 'Loop: Off'}
                     >
@@ -307,8 +307,8 @@ const ModeShapeSelector: React.FC<ModeShapeSelectorProps> = ({
     onSelectMode
 }) => {
     return (
-        <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-            <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+        <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+            <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3 flex items-center gap-2">
                 <Activity className="w-4 h-4 text-cyan-400" />
                 Mode Shapes
             </h4>
@@ -321,15 +321,15 @@ const ModeShapeSelector: React.FC<ModeShapeSelectorProps> = ({
                         className={`
                             w-full flex items-center justify-between p-3 rounded-lg text-left transition-all
                             ${selectedMode === mode.number
-                                ? 'bg-cyan-500/10 border border-cyan-500/30 text-white'
-                                : 'bg-slate-700/50 hover:bg-slate-700 text-slate-300 border border-transparent'
+                                ? 'bg-cyan-500/10 border border-cyan-500/30 text-zinc-900 dark:text-white'
+                                : 'bg-slate-200/50 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-transparent'
                             }
                         `}
                     >
                         <div className="flex items-center gap-3">
                             <div className={`
                                 w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm
-                                ${selectedMode === mode.number ? 'bg-cyan-500 text-white' : 'bg-slate-600 text-slate-300'}
+                                ${selectedMode === mode.number ? 'bg-cyan-500 text-white' : 'bg-slate-600 text-slate-600 dark:text-slate-300'}
                             `}>
                                 {mode.number}
                             </div>
@@ -337,10 +337,10 @@ const ModeShapeSelector: React.FC<ModeShapeSelectorProps> = ({
                                 <div className="text-sm font-medium">
                                     Mode {mode.number}
                                     {mode.description && (
-                                        <span className="text-xs text-slate-400 ml-2">({mode.description})</span>
+                                        <span className="text-xs text-slate-500 dark:text-slate-400 ml-2">({mode.description})</span>
                                     )}
                                 </div>
-                                <div className="text-xs text-slate-400">
+                                <div className="text-xs text-slate-500 dark:text-slate-400">
                                     f = {mode.frequency.toFixed(3)} Hz • T = {mode.period.toFixed(3)} s
                                 </div>
                             </div>
@@ -349,11 +349,11 @@ const ModeShapeSelector: React.FC<ModeShapeSelectorProps> = ({
                             <div className={`text-sm font-medium ${
                                 mode.participationMass > 0.7 ? 'text-green-400' :
                                 mode.participationMass > 0.3 ? 'text-yellow-400' :
-                                'text-slate-400'
+                                'text-slate-500 dark:text-slate-400'
                             }`}>
                                 {(mode.participationMass * 100).toFixed(1)}%
                             </div>
-                            <div className="text-[10px] text-slate-400">Mass Part.</div>
+                            <div className="text-[10px] text-slate-500 dark:text-slate-400">Mass Part.</div>
                         </div>
                     </button>
                 ))}
@@ -380,8 +380,8 @@ const AnimationSettingsPanel: React.FC<AnimationSettingsPanelProps> = ({
     };
     
     return (
-        <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-            <h4 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+        <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+            <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                 <Sliders className="w-4 h-4 text-cyan-400" />
                 Animation Settings
             </h4>
@@ -389,7 +389,7 @@ const AnimationSettingsPanel: React.FC<AnimationSettingsPanelProps> = ({
             <div className="space-y-4">
                 {/* Scale Factor */}
                 <div>
-                    <label className="block text-xs text-slate-400 mb-1">
+                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
                         Scale Factor: {config.scaleFactor.toFixed(1)}x
                     </label>
                     <input
@@ -401,7 +401,7 @@ const AnimationSettingsPanel: React.FC<AnimationSettingsPanelProps> = ({
                         onChange={(e) => updateConfig('scaleFactor', parseFloat(e.target.value))}
                         className="w-full"
                     />
-                    <div className="flex justify-between text-[10px] text-slate-400">
+                    <div className="flex justify-between text-[10px] text-slate-500 dark:text-slate-400">
                         <span>1x</span>
                         <span>50x</span>
                         <span>100x</span>
@@ -410,11 +410,11 @@ const AnimationSettingsPanel: React.FC<AnimationSettingsPanelProps> = ({
                 
                 {/* FPS */}
                 <div>
-                    <label className="block text-xs text-slate-400 mb-1">Target FPS</label>
+                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Target FPS</label>
                     <select
                         value={config.fps}
                         onChange={(e) => updateConfig('fps', parseInt(e.target.value))}
-                        className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm"
+                        className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm"
                     >
                         <option value={24}>24 fps (Film)</option>
                         <option value={30}>30 fps (Standard)</option>
@@ -425,11 +425,11 @@ const AnimationSettingsPanel: React.FC<AnimationSettingsPanelProps> = ({
                 
                 {/* Smoothing */}
                 <div>
-                    <label className="block text-xs text-slate-400 mb-1">Smoothing</label>
+                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Smoothing</label>
                     <select
                         value={config.smoothing}
                         onChange={(e) => updateConfig('smoothing', e.target.value as any)}
-                        className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm"
+                        className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm"
                     >
                         <option value="none">None (Discrete)</option>
                         <option value="linear">Linear</option>
@@ -446,12 +446,12 @@ const AnimationSettingsPanel: React.FC<AnimationSettingsPanelProps> = ({
                             onChange={(e) => updateConfig('showTrail', e.target.checked)}
                             className="rounded bg-slate-600 border-slate-500 text-cyan-500"
                         />
-                        <span className="text-sm text-slate-300">Show motion trail</span>
+                        <span className="text-sm text-slate-600 dark:text-slate-300">Show motion trail</span>
                     </label>
                     
                     {config.showTrail && (
                         <div className="ml-6">
-                            <label className="block text-xs text-slate-400 mb-1">
+                            <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
                                 Trail Length: {config.trailLength} frames
                             </label>
                             <input
@@ -472,7 +472,7 @@ const AnimationSettingsPanel: React.FC<AnimationSettingsPanelProps> = ({
                             onChange={(e) => updateConfig('colorByValue', e.target.checked)}
                             className="rounded bg-slate-600 border-slate-500 text-cyan-500"
                         />
-                        <span className="text-sm text-slate-300">Color by displacement</span>
+                        <span className="text-sm text-slate-600 dark:text-slate-300">Color by displacement</span>
                     </label>
                     
                     <label className="flex items-center gap-2 cursor-pointer">
@@ -482,7 +482,7 @@ const AnimationSettingsPanel: React.FC<AnimationSettingsPanelProps> = ({
                             onChange={(e) => updateConfig('reverse', e.target.checked)}
                             className="rounded bg-slate-600 border-slate-500 text-cyan-500"
                         />
-                        <span className="text-sm text-slate-300">Reverse direction</span>
+                        <span className="text-sm text-slate-600 dark:text-slate-300">Reverse direction</span>
                     </label>
                 </div>
             </div>
@@ -512,8 +512,8 @@ const RecordingPanel: React.FC<RecordingPanelProps> = ({
     recordingProgress
 }) => {
     return (
-        <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-            <h4 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+        <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+            <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                 <Film className="w-4 h-4 text-red-400" />
                 Recording
                 {isRecording && (
@@ -528,14 +528,14 @@ const RecordingPanel: React.FC<RecordingPanelProps> = ({
                 <div className="space-y-4">
                     {/* Format */}
                     <div>
-                        <label className="block text-xs text-slate-400 mb-1">Format</label>
+                        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Format</label>
                         <select
                             value={recordingConfig.format}
                             onChange={(e) => onRecordingConfigChange({
                                 ...recordingConfig,
                                 format: e.target.value as RecordingConfig['format']
                             })}
-                            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm"
+                            className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm"
                         >
                             <option value="webm">WebM Video</option>
                             <option value="gif">Animated GIF</option>
@@ -546,7 +546,7 @@ const RecordingPanel: React.FC<RecordingPanelProps> = ({
                     
                     {/* Quality */}
                     <div>
-                        <label className="block text-xs text-slate-400 mb-1">Quality</label>
+                        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Quality</label>
                         <div className="flex gap-2">
                             {(['low', 'medium', 'high'] as const).map(q => (
                                 <button
@@ -559,7 +559,7 @@ const RecordingPanel: React.FC<RecordingPanelProps> = ({
                                         flex-1 py-2 rounded-lg text-sm font-medium transition-colors
                                         ${recordingConfig.quality === q
                                             ? 'bg-cyan-500 text-white'
-                                            : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                                            : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-600'
                                         }
                                     `}
                                 >
@@ -572,7 +572,7 @@ const RecordingPanel: React.FC<RecordingPanelProps> = ({
                     {/* Resolution */}
                     <div className="grid grid-cols-2 gap-2">
                         <div>
-                            <label className="block text-xs text-slate-400 mb-1">Width</label>
+                            <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Width</label>
                             <input
                                 type="number"
                                 value={recordingConfig.width}
@@ -580,11 +580,11 @@ const RecordingPanel: React.FC<RecordingPanelProps> = ({
                                     ...recordingConfig,
                                     width: parseInt(e.target.value)
                                 })}
-                                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm"
+                                className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs text-slate-400 mb-1">Height</label>
+                            <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Height</label>
                             <input
                                 type="number"
                                 value={recordingConfig.height}
@@ -592,14 +592,14 @@ const RecordingPanel: React.FC<RecordingPanelProps> = ({
                                     ...recordingConfig,
                                     height: parseInt(e.target.value)
                                 })}
-                                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm"
+                                className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm"
                             />
                         </div>
                     </div>
                     
                     {/* Duration */}
                     <div>
-                        <label className="block text-xs text-slate-400 mb-1">
+                        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
                             Duration: {recordingConfig.duration} seconds
                         </label>
                         <input
@@ -629,12 +629,12 @@ const RecordingPanel: React.FC<RecordingPanelProps> = ({
                     {/* Recording Progress */}
                     <div>
                         <div className="flex items-center justify-between text-sm mb-2">
-                            <span className="text-slate-400">Recording...</span>
-                            <span className="text-white font-medium">
+                            <span className="text-slate-500 dark:text-slate-400">Recording...</span>
+                            <span className="text-zinc-900 dark:text-white font-medium">
                                 {Math.round(recordingProgress * 100)}%
                             </span>
                         </div>
-                        <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                        <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                             <div 
                                 className="h-full bg-red-500 transition-all"
                                 style={{ width: `${recordingProgress * 100}%` }}
@@ -645,7 +645,7 @@ const RecordingPanel: React.FC<RecordingPanelProps> = ({
                     {/* Stop Recording Button */}
                     <button
                         onClick={onStopRecording}
-                        className="w-full py-3 bg-slate-700 text-white font-semibold rounded-lg hover:bg-slate-600 transition-colors flex items-center justify-center gap-2"
+                        className="w-full py-3 bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white font-semibold rounded-lg hover:bg-slate-600 transition-colors flex items-center justify-center gap-2"
                     >
                         <Square className="w-4 h-4" />
                         Stop Recording
@@ -841,19 +841,19 @@ export const AnimationControls: React.FC<AnimationControlsProps> = ({
     
     return (
         <div className={`
-            bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden
+            bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden
             ${isFullscreen ? 'fixed inset-4 z-50' : ''}
         `}>
             {/* Header */}
-            <div className="px-4 py-3 bg-slate-800/50 border-b border-slate-800 flex items-center justify-between">
+            <div className="px-4 py-3 bg-slate-100/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-cyan-500/10 rounded-lg">
                         <Zap className="w-5 h-5 text-cyan-400" />
                     </div>
                     <div>
-                        <h3 className="font-semibold text-white">Animation Controls</h3>
+                        <h3 className="font-semibold text-zinc-900 dark:text-white">Animation Controls</h3>
                         {selectedModeData && (
-                            <p className="text-xs text-slate-400">
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
                                 Mode {selectedMode} • {selectedModeData.frequency.toFixed(3)} Hz
                             </p>
                         )}
@@ -864,7 +864,7 @@ export const AnimationControls: React.FC<AnimationControlsProps> = ({
                     <button
                         onClick={() => setShowSettings(!showSettings)}
                         className={`p-2 rounded-lg transition-colors ${
-                            showSettings ? 'bg-cyan-500 text-white' : 'bg-slate-700 text-slate-400 hover:text-white'
+                            showSettings ? 'bg-cyan-500 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-white'
                         }`}
                     >
                         <Settings className="w-4 h-4" />
@@ -872,7 +872,7 @@ export const AnimationControls: React.FC<AnimationControlsProps> = ({
                     
                     <button
                         onClick={() => {}}
-                        className="p-2 bg-slate-700 text-slate-400 hover:text-white rounded-lg"
+                        className="p-2 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded-lg"
                         title="Take Screenshot"
                     >
                         <Camera className="w-4 h-4" />
@@ -880,7 +880,7 @@ export const AnimationControls: React.FC<AnimationControlsProps> = ({
                     
                     <button
                         onClick={() => setIsFullscreen(!isFullscreen)}
-                        className="p-2 bg-slate-700 text-slate-400 hover:text-white rounded-lg"
+                        className="p-2 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded-lg"
                     >
                         {isFullscreen ? (
                             <Minimize2 className="w-4 h-4" />
@@ -924,7 +924,7 @@ export const AnimationControls: React.FC<AnimationControlsProps> = ({
                 
                 {/* Settings Sidebar */}
                 {showSettings && (
-                    <div className="w-72 border-l border-slate-800 p-4 space-y-4">
+                    <div className="w-72 border-l border-slate-200 dark:border-slate-800 p-4 space-y-4">
                         <AnimationSettingsPanel
                             config={config}
                             onConfigChange={handleConfigChange}

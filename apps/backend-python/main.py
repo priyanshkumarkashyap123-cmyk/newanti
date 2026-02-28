@@ -26,6 +26,9 @@ import os
 from datetime import datetime
 import asyncio
 import importlib
+import importlib.util
+import traceback
+import json
 from request_logging import RequestLoggingMiddleware
 
 # Security middleware — rate limiting, auth verification, security headers
@@ -211,11 +214,15 @@ class BodySizeLimitMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request, call_next):
         content_length = request.headers.get("content-length")
-        if content_length and int(content_length) > MAX_BODY_SIZE_BYTES:
-            return JSONResponse(
-                status_code=413,
-                content={"success": False, "error": f"Request body too large (max {MAX_BODY_SIZE_BYTES // (1024*1024)} MB)"},
-            )
+        if content_length:
+            try:
+                if int(content_length) > MAX_BODY_SIZE_BYTES:
+                    return JSONResponse(
+                        status_code=413,
+                        content={"success": False, "error": f"Request body too large (max {MAX_BODY_SIZE_BYTES // (1024*1024)} MB)"},
+                    )
+            except (ValueError, TypeError):
+                pass  # Non-numeric Content-Length — let downstream handle it
         return await call_next(request)
 
 app.add_middleware(BodySizeLimitMiddleware)
@@ -227,7 +234,6 @@ app.add_middleware(BodySizeLimitMiddleware)
 
 IS_PRODUCTION = os.getenv("ENVIRONMENT", "development").lower() in ("production", "prod")
 
-from fastapi.responses import JSONResponse
 from starlette.requests import Request
 
 @app.exception_handler(HTTPException)
@@ -269,7 +275,7 @@ async def root():
     return {
         "status": "healthy",
         "service": "BeamLab Structural Engine",
-        "version": "2.0.0",
+        "version": "2.1.0",
         "components": {
             "models": "ok" if HAS_MODELS else "degraded",
             "factory": "ok" if HAS_FACTORY else "degraded",
@@ -987,11 +993,12 @@ class ReportRequest(BaseModel):
     settings: Dict[str, Any]
     analysis_data: Dict[str, Any]
 
-@app.post("/reports/generate", tags=["Reports"])
+@app.post("/reports/generate-simple", tags=["Reports"])
 async def generate_report_endpoint(request: ReportRequest):
     """
-    Generate professional PDF report using ReportLab.
+    Generate simple PDF report using ReportLab.
     Returns base64 encoded PDF string.
+    For the full-featured report with customization, use POST /reports/generate.
     """
     try:
         import tempfile
@@ -2128,13 +2135,6 @@ async def time_history_analysis(request: TimeHistoryRequest):
 # AI GENERATION ENDPOINT (HARDENED)
 # ============================================
 
-import json
-import asyncio
-import os
-import traceback
-from pydantic import BaseModel
-from typing import List, Optional
-
 class AIGenerateRequest(BaseModel):
     prompt: str
 
@@ -2147,11 +2147,6 @@ class AIChatResponse(BaseModel):
     success: bool
     response: Optional[str] = None
     error: Optional[str] = None
-
-# Configuration flags
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", None)
-# Use real AI by default if API key is available, otherwise use mock
-USE_MOCK_AI = os.getenv("USE_MOCK_AI", "false" if GEMINI_API_KEY else "true").lower() == "true"
 
 # Mock response for testing
 MOCK_BEAM_RESPONSE = {
@@ -2594,8 +2589,8 @@ def _get_engineering_response(message: str, context: str = "") -> str:
 
 
 @app.get("/ai/status", tags=["AI Chat"])
-async def ai_status():
-    """Check the status of AI capabilities"""
+async def ai_chat_status():
+    """Check the status of AI chat capabilities (supplementary to ai_routes.py /ai/status)"""
     return {
         "gemini_configured": bool(GEMINI_API_KEY),
         "mock_mode": USE_MOCK_AI,
@@ -2614,161 +2609,9 @@ async def ai_status():
 
 # ============================================
 # AI MODEL ASSISTANT ENDPOINTS
+# NOTE: /ai/diagnose, /ai/fix, /ai/modify, /ai/smart-modify
+# are served by ai_routes.py (included via include_router above).
 # ============================================
-
-class ModelDiagnoseRequest(BaseModel):
-    """Request to diagnose a structural model"""
-    nodes: List[Dict]
-    members: List[Dict]
-    loads: Optional[List[Dict]] = []
-    memberLoads: Optional[List[Dict]] = []
-
-class ModelModifyRequest(BaseModel):
-    """Request to modify a model via natural language"""
-    command: str
-    nodes: List[Dict]
-    members: List[Dict]
-    loads: Optional[List[Dict]] = []
-
-
-@app.post("/ai/diagnose", tags=["AI Assistant"])
-async def diagnose_model(request: ModelDiagnoseRequest):
-    """
-    Diagnose a structural model for issues.
-    
-    Returns a list of detected issues with severity and suggested fixes.
-    """
-    try:
-        from ai_assistant import AIModelAssistant
-        
-        model_data = {
-            'nodes': request.nodes,
-            'members': request.members,
-            'loads': request.loads or [],
-            'memberLoads': request.memberLoads or []
-        }
-        
-        assistant = AIModelAssistant()
-        result = assistant.diagnose(model_data)
-        
-        print(f"[AI ASSISTANT] Diagnosed model: {result['summary']}")
-        return {"success": True, **result}
-        
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/ai/fix", tags=["AI Assistant"])
-async def fix_model(request: ModelDiagnoseRequest):
-    """
-    Auto-fix common issues in a structural model.
-    
-    Returns the fixed model and list of changes made.
-    """
-    try:
-        from ai_assistant import AIModelAssistant
-        
-        model_data = {
-            'nodes': request.nodes,
-            'members': request.members,
-            'loads': request.loads or [],
-            'memberLoads': request.memberLoads or []
-        }
-        
-        assistant = AIModelAssistant()
-        result = assistant.fix(model_data)
-        
-        print(f"[AI ASSISTANT] Fixed model: {result['message']}")
-        return {"success": True, **result}
-        
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/ai/modify", tags=["AI Assistant"])
-async def modify_model(request: ModelModifyRequest):
-    """
-    Modify a structural model using natural language commands.
-    
-    Examples:
-    - "Change columns to ISMB500"
-    - "Add support at N5"
-    - "Remove member M3"
-    - "Add member from N1 to N8"
-    - "Set span to 15m"
-    """
-    try:
-        from ai_assistant import AIModelAssistant
-        
-        model_data = {
-            'nodes': request.nodes,
-            'members': request.members,
-            'loads': request.loads or []
-        }
-        
-        assistant = AIModelAssistant()
-        result = assistant.modify(model_data, request.command)
-        
-        print(f"[AI ASSISTANT] Modified model: {result['message']}")
-        return result
-        
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-class SmartModifyRequest(BaseModel):
-    """Smart modify request - accepts model as nested object"""
-    model: Dict[str, Any]
-    command: str
-
-
-@app.post("/ai/smart-modify", tags=["AI Assistant"])
-async def smart_modify_model(request: SmartModifyRequest):
-    """
-    Smart modify - enhanced AI model modification with Gemini.
-    
-    This endpoint accepts the model as a nested object and command.
-    Uses Gemini AI for intelligent command interpretation.
-    
-    Examples:
-    - "Change all columns to ISMB500"
-    - "Add pinned support at node N1"
-    - "Remove member M5"
-    - "Make the structure 20m span"
-    - "Add a new story on top"
-    """
-    try:
-        from ai_assistant import AIModelAssistant
-        
-        model_data = request.model
-        command = request.command
-        
-        print(f"[SMART MODIFY] Command: {command}")
-        print(f"[SMART MODIFY] Model has {len(model_data.get('nodes', []))} nodes, {len(model_data.get('members', []))} members")
-        
-        # Use Gemini for intelligent command parsing if available
-        use_gemini = bool(GEMINI_API_KEY and not USE_MOCK_AI)
-        
-        assistant = AIModelAssistant(use_gemini=use_gemini, gemini_key=GEMINI_API_KEY if use_gemini else None)
-        result = assistant.smart_modify(model_data, command)
-        
-        print(f"[SMART MODIFY] Result: {result.get('message', 'Unknown')}")
-        return result
-        
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        return {
-            "success": False,
-            "message": f"Error: {str(e)}",
-            "suggestions": ["Try a simpler command", "Check if nodes/members exist"]
-        }
 
 
 # ============================================

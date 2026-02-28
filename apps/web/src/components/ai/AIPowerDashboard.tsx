@@ -70,7 +70,7 @@ const MetricCardDisplay: FC<{ metric: MetricCard }> = ({ metric }) => {
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
-      className={`bg-slate-800/50 rounded-xl border border-slate-700/50 p-4 hover:border-${metric.color}-500/50 transition-all`}
+      className={`bg-slate-100/50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 p-4 hover:border-${metric.color}-500/50 transition-all`}
     >
       <div className="flex items-start justify-between">
         <div className={`w-10 h-10 rounded-lg bg-${metric.color}-500/20 flex items-center justify-center`}>
@@ -84,10 +84,10 @@ const MetricCardDisplay: FC<{ metric: MetricCard }> = ({ metric }) => {
         )}
       </div>
       <div className="mt-3">
-        <div className="text-2xl font-bold text-white">{metric.value}</div>
-        <div className="text-xs text-slate-400 mt-0.5">{metric.label}</div>
+        <div className="text-2xl font-bold text-zinc-900 dark:text-white">{metric.value}</div>
+        <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{metric.label}</div>
         {metric.changeLabel && (
-          <div className="text-[10px] text-slate-400 mt-1">{metric.changeLabel}</div>
+          <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">{metric.changeLabel}</div>
         )}
       </div>
     </motion.div>
@@ -109,10 +109,10 @@ const ProgressBar: FC<{ value: number; max: number; color: string; label: string
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-xs">
-        <span className="text-slate-400">{label}</span>
+        <span className="text-slate-500 dark:text-slate-400">{label}</span>
         <span className={`text-${color}-400 font-medium`}>{value}/{max}</span>
       </div>
-      <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
+      <div className="h-2 bg-slate-200/50 dark:bg-slate-700/50 rounded-full overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${percentage}%` }}
@@ -207,16 +207,16 @@ export const AIPowerDashboard: FC = () => {
   ];
 
   return (
-    <div className="bg-slate-900/95 backdrop-blur-xl rounded-2xl border border-slate-700/50 overflow-hidden">
+    <div className="bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-slate-700/50 bg-gradient-to-r from-violet-600/10 to-cyan-600/10">
+      <div className="flex items-center justify-between p-4 border-b border-slate-200/50 dark:border-slate-700/50 bg-gradient-to-r from-violet-600/10 to-cyan-600/10">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center">
             <BarChart3 className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white">AI Performance Dashboard</h2>
-            <p className="text-xs text-slate-400">Real-time analytics and insights</p>
+            <h2 className="text-lg font-bold text-zinc-900 dark:text-white">AI Performance Dashboard</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Real-time analytics and insights</p>
           </div>
         </div>
 
@@ -225,7 +225,7 @@ export const AIPowerDashboard: FC = () => {
             setMetrics(aiPowerEngine.getPerformanceMetrics());
             setRefreshKey(k => k + 1);
           }}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 rounded-lg text-xs text-slate-300 hover:bg-slate-700 transition-all"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
         >
           <RefreshCw className="w-3 h-3" />
           Refresh
@@ -241,23 +241,23 @@ export const AIPowerDashboard: FC = () => {
         </div>
 
         {/* Model Status */}
-        <div className="bg-slate-800/30 rounded-xl border border-slate-700/50 p-4">
-          <h3 className="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
+        <div className="bg-slate-100/30 dark:bg-slate-800/30 rounded-xl border border-slate-200/50 dark:border-slate-700/50 p-4">
+          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2">
             <Building2 className="w-4 h-4 text-violet-400" />
             Current Model Status
           </h3>
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-violet-400">{nodes.size}</div>
-              <div className="text-xs text-slate-400">Nodes</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">Nodes</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-400">{members.size}</div>
-              <div className="text-xs text-slate-400">Members</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">Members</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-cyan-400">{loads?.length || 0}</div>
-              <div className="text-xs text-slate-400">Loads</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">Loads</div>
             </div>
           </div>
 
@@ -271,16 +271,16 @@ export const AIPowerDashboard: FC = () => {
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Usage Breakdown */}
-          <div className="bg-slate-800/30 rounded-xl border border-slate-700/50 p-4">
-            <h3 className="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
+          <div className="bg-slate-100/30 dark:bg-slate-800/30 rounded-xl border border-slate-200/50 dark:border-slate-700/50 p-4">
+            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2">
               <Activity className="w-4 h-4 text-green-400" />
               Usage Breakdown
             </h3>
             <div className="space-y-3">
               {usageBreakdown.map((item, idx) => (
                 <div key={idx} className="flex items-center gap-3">
-                  <div className="w-20 text-xs text-slate-400 truncate">{item.category}</div>
-                  <div className="flex-1 h-2 bg-slate-700/50 rounded-full overflow-hidden">
+                  <div className="w-20 text-xs text-slate-500 dark:text-slate-400 truncate">{item.category}</div>
+                  <div className="flex-1 h-2 bg-slate-200/50 dark:bg-slate-700/50 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${item.percentage}%` }}
@@ -288,15 +288,15 @@ export const AIPowerDashboard: FC = () => {
                       className={`h-full bg-gradient-to-r from-${item.color}-500 to-${item.color}-400`}
                     />
                   </div>
-                  <div className="w-12 text-xs text-slate-400 text-right">{item.percentage}%</div>
+                  <div className="w-12 text-xs text-slate-500 dark:text-slate-400 text-right">{item.percentage}%</div>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Code References */}
-          <div className="bg-slate-800/30 rounded-xl border border-slate-700/50 p-4">
-            <h3 className="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
+          <div className="bg-slate-100/30 dark:bg-slate-800/30 rounded-xl border border-slate-200/50 dark:border-slate-700/50 p-4">
+            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-cyan-400" />
               Code References Used
             </h3>
@@ -305,11 +305,11 @@ export const AIPowerDashboard: FC = () => {
                 <div key={idx} className="flex items-center justify-between p-2 bg-slate-700/30 rounded-lg">
                   <div className="flex items-center gap-2">
                     <Code className={`w-4 h-4 text-${ref.color}-400`} />
-                    <span className="text-sm text-slate-200">{ref.code}</span>
+                    <span className="text-sm text-slate-700 dark:text-slate-200">{ref.code}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-400">{ref.count} references</span>
-                    <ChevronRight className="w-3 h-3 text-slate-400" />
+                    <span className="text-xs text-slate-500 dark:text-slate-400">{ref.count} references</span>
+                    <ChevronRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
                   </div>
                 </div>
               ))}
@@ -319,7 +319,7 @@ export const AIPowerDashboard: FC = () => {
 
         {/* Trust Indicators */}
         <div className="bg-gradient-to-r from-violet-600/10 to-cyan-600/10 rounded-xl border border-violet-500/30 p-4">
-          <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3 flex items-center gap-2">
             <Award className="w-4 h-4 text-amber-400" />
             AI Trust Score
           </h3>
@@ -328,32 +328,32 @@ export const AIPowerDashboard: FC = () => {
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-500/20 mb-2">
                 <span className="text-lg font-bold text-green-400">A</span>
               </div>
-              <div className="text-xs text-slate-400">Code Compliance</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">Code Compliance</div>
             </div>
             <div className="text-center">
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-500/20 mb-2">
                 <span className="text-lg font-bold text-blue-400">A-</span>
               </div>
-              <div className="text-xs text-slate-400">Engineering Logic</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">Engineering Logic</div>
             </div>
             <div className="text-center">
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-cyan-500/20 mb-2">
                 <span className="text-lg font-bold text-cyan-400">B+</span>
               </div>
-              <div className="text-xs text-slate-400">Accuracy</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">Accuracy</div>
             </div>
             <div className="text-center">
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-500/20 mb-2">
                 <span className="text-lg font-bold text-amber-400">A</span>
               </div>
-              <div className="text-xs text-slate-400">Context Aware</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">Context Aware</div>
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-700/50 flex items-center justify-between">
+          <div className="mt-4 pt-3 border-t border-slate-200/50 dark:border-slate-700/50 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Star className="w-4 h-4 text-amber-400" />
-              <span className="text-sm text-slate-300">Overall Trust Rating</span>
+              <span className="text-sm text-slate-600 dark:text-slate-300">Overall Trust Rating</span>
             </div>
             <div className="flex items-center gap-1">
               {[1, 2, 3, 4, 5].map(star => (
@@ -368,7 +368,7 @@ export const AIPowerDashboard: FC = () => {
         </div>
 
         {/* Quick Stats Footer */}
-        <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-slate-700/50">
+        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200/50 dark:border-slate-700/50">
           <div className="flex items-center gap-4">
             <span>🟢 AI System Healthy</span>
             <span>•</span>

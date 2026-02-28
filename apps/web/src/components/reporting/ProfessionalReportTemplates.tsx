@@ -254,16 +254,16 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ selected, onSelect 
                         p-4 rounded-xl border transition-all text-left shadow-sm hover:shadow-md
                         ${selected === key 
                             ? 'border-cyan-500 bg-cyan-500/10 ring-1 ring-cyan-500/30'
-                            : 'border-slate-700 bg-slate-900/60 hover:border-slate-600'
+                            : 'border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-900/60 hover:border-slate-300 dark:hover:border-slate-600'
                         }
                     `}
                 >
-                    <div className={`mb-2 ${selected === key ? 'text-cyan-400' : 'text-slate-400'}`}>
+                    <div className={`mb-2 ${selected === key ? 'text-cyan-400' : 'text-slate-500 dark:text-slate-400'}`}>
                         {template.icon}
                     </div>
-                    <h4 className="font-medium text-white text-sm mb-1">{template.name}</h4>
-                    <p className="text-xs text-slate-400 line-clamp-2">{template.description}</p>
-                    <div className="mt-3 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-slate-800 text-slate-300 border border-slate-700/70">
+                    <h4 className="font-medium text-zinc-900 dark:text-white text-sm mb-1">{template.name}</h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">{template.description}</p>
+                    <div className="mt-3 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-300/70 dark:border-slate-700/70">
                         ~{template.estimatedPages} pages
                     </div>
                 </button>
@@ -319,7 +319,7 @@ const SectionConfigurator: React.FC<SectionConfiguratorProps> = ({
     return (
         <div className="space-y-3">
             <div className="flex items-center justify-between">
-                <span className="text-[11px] text-slate-400 uppercase tracking-wider">
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                     {includedCount} of {sections.length} sections included
                 </span>
                 <div className="flex items-center gap-2">
@@ -332,7 +332,7 @@ const SectionConfigurator: React.FC<SectionConfiguratorProps> = ({
                     <span className="text-slate-500">|</span>
                     <button
                         onClick={selectNone}
-                        className="text-xs text-slate-400 hover:text-slate-300 font-medium"
+                        className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-medium"
                     >
                         Clear
                     </button>
@@ -346,8 +346,8 @@ const SectionConfigurator: React.FC<SectionConfiguratorProps> = ({
                         className={`
                             rounded-lg border transition-colors
                             ${section.included 
-                                ? 'border-slate-700 bg-slate-800/60' 
-                                : 'border-slate-800 bg-slate-900/50 opacity-60'
+                                ? 'border-slate-200 dark:border-slate-700 bg-slate-100/60 dark:bg-slate-800/60' 
+                                : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 opacity-60'
                             }
                         `}
                     >
@@ -358,7 +358,7 @@ const SectionConfigurator: React.FC<SectionConfiguratorProps> = ({
                                     w-5 h-5 rounded flex items-center justify-center mr-3 transition-colors
                                     ${section.included 
                                         ? 'bg-cyan-500 text-white' 
-                                        : 'bg-slate-700 text-slate-400'
+                                        : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
                                     }
                                 `}
                             >
@@ -366,14 +366,14 @@ const SectionConfigurator: React.FC<SectionConfiguratorProps> = ({
                             </button>
                             
                             <div className="flex-1">
-                                <h4 className="text-sm font-medium text-white">{section.title}</h4>
-                                <p className="text-xs text-slate-400">{section.description}</p>
+                                <h4 className="text-sm font-medium text-zinc-900 dark:text-white">{section.title}</h4>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">{section.description}</p>
                             </div>
                             
                             {section.subsections && section.subsections.length > 0 && (
                                 <button
                                     onClick={() => toggleExpanded(section.id)}
-                                    className="p-1 text-slate-400 hover:text-white"
+                                    className="p-1 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white"
                                 >
                                     {expandedSections.has(section.id) 
                                         ? <ChevronDown className="w-4 h-4" />
@@ -389,13 +389,13 @@ const SectionConfigurator: React.FC<SectionConfiguratorProps> = ({
                                 {section.subsections.map(sub => (
                                     <label
                                         key={sub.id}
-                                        className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer"
+                                        className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 cursor-pointer"
                                     >
                                         <input
                                             type="checkbox"
                                             checked={sub.included}
                                             onChange={() => {/* Handle subsection toggle */}}
-                                            className="rounded bg-slate-700 border-slate-600 text-cyan-500"
+                                            className="rounded bg-slate-200 dark:bg-slate-700 border-slate-600 text-cyan-500"
                                         />
                                         {sub.title}
                                     </label>
@@ -426,44 +426,44 @@ const ProjectInfoForm: React.FC<ProjectInfoFormProps> = ({ projectInfo, onChange
     return (
         <div className="grid grid-cols-2 gap-4">
             <div>
-                <label className="block text-xs text-slate-400 mb-1">Project Name *</label>
+                <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Project Name *</label>
                 <input
                     type="text"
                     value={projectInfo.projectName}
                     onChange={(e) => updateField('projectName', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                     placeholder="Enter project name"
                 />
             </div>
             
             <div>
-                <label className="block text-xs text-slate-400 mb-1">Project Number</label>
+                <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Project Number</label>
                 <input
                     type="text"
                     value={projectInfo.projectNumber || ''}
                     onChange={(e) => updateField('projectNumber', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                     placeholder="e.g., PRJ-2026-001"
                 />
             </div>
             
             <div>
-                <label className="block text-xs text-slate-400 mb-1">Client Name</label>
+                <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Client Name</label>
                 <input
                     type="text"
                     value={projectInfo.clientName || ''}
                     onChange={(e) => updateField('clientName', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                     placeholder="Client organization"
                 />
             </div>
             
             <div>
-                <label className="block text-xs text-slate-400 mb-1">Design Code</label>
+                <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Design Code</label>
                 <select
                     value={projectInfo.designCode}
                     onChange={(e) => updateField('designCode', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                 >
                     <option value="IS 456:2000">IS 456:2000 (Concrete)</option>
                     <option value="IS 800:2007">IS 800:2007 (Steel)</option>
@@ -476,34 +476,34 @@ const ProjectInfoForm: React.FC<ProjectInfoFormProps> = ({ projectInfo, onChange
             </div>
             
             <div>
-                <label className="block text-xs text-slate-400 mb-1">Design Engineer</label>
+                <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Design Engineer</label>
                 <input
                     type="text"
                     value={projectInfo.engineerName || ''}
                     onChange={(e) => updateField('engineerName', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                     placeholder="Engineer name"
                 />
             </div>
             
             <div>
-                <label className="block text-xs text-slate-400 mb-1">Checker</label>
+                <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Checker</label>
                 <input
                     type="text"
                     value={projectInfo.checkerName || ''}
                     onChange={(e) => updateField('checkerName', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                     placeholder="Checker name"
                 />
             </div>
             
             <div className="col-span-2">
-                <label className="block text-xs text-slate-400 mb-1">Project Description</label>
+                <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Project Description</label>
                 <textarea
                     value={projectInfo.description || ''}
                     onChange={(e) => updateField('description', e.target.value)}
                     rows={3}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 resize-none"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 resize-none"
                     placeholder="Brief project description..."
                 />
             </div>
@@ -531,7 +531,7 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({ config }) => {
                     {config.includeCompanyLogo ? (
                         <div className="w-32 h-10 bg-gray-200 rounded" />
                     ) : (
-                        <div className="text-xs text-gray-400 uppercase tracking-wider">Company Logo</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Company Logo</div>
                     )}
                     <div className="text-[10px] text-gray-500">
                         Doc Ref: RPT-{config.projectInfo.projectNumber || '0001'}
@@ -547,22 +547,22 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({ config }) => {
                 <div className="grid grid-cols-2 gap-3 text-xs text-gray-600">
                     {config.projectInfo.projectNumber && (
                         <div>
-                            <span className="text-gray-400">Project No:</span>
+                            <span className="text-gray-500 dark:text-gray-400">Project No:</span>
                             <span className="ml-2">{config.projectInfo.projectNumber}</span>
                         </div>
                     )}
                     {config.projectInfo.clientName && (
                         <div>
-                            <span className="text-gray-400">Client:</span>
+                            <span className="text-gray-500 dark:text-gray-400">Client:</span>
                             <span className="ml-2">{config.projectInfo.clientName}</span>
                         </div>
                     )}
                     <div>
-                        <span className="text-gray-400">Design Code:</span>
+                        <span className="text-gray-500 dark:text-gray-400">Design Code:</span>
                         <span className="ml-2">{config.projectInfo.designCode}</span>
                     </div>
                     <div>
-                        <span className="text-gray-400">Date:</span>
+                        <span className="text-gray-500 dark:text-gray-400">Date:</span>
                         <span className="ml-2">{config.projectInfo.dateCreated.toLocaleDateString()}</span>
                     </div>
                 </div>
@@ -598,8 +598,8 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({ config }) => {
                             <span className="text-gray-700">
                                 {index + 1}. {section.title}
                             </span>
-                            <span className="text-gray-300 border-b border-dotted border-gray-300 flex-1 mx-2" />
-                            <span className="text-gray-400 tabular-nums">{index + 2}</span>
+                            <span className="text-gray-600 dark:text-gray-300 border-b border-dotted border-gray-300 flex-1 mx-2" />
+                            <span className="text-gray-500 dark:text-gray-400 tabular-nums">{index + 2}</span>
                         </div>
                     ))}
                 </div>
@@ -684,20 +684,20 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
     ];
     
     return (
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
+        <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
             {/* Header */}
-            <div className="px-6 py-4 bg-slate-800/50 border-b border-slate-800">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <div className="px-6 py-4 bg-slate-100/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                <h2 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                     <FileText className="w-6 h-6 text-cyan-400" />
                     Professional Report Generator
                 </h2>
-                <p className="text-sm text-slate-400 mt-1">
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                     Create comprehensive analysis reports with customizable templates
                 </p>
             </div>
             
             {/* Progress Steps */}
-            <div className="px-6 py-4 border-b border-slate-800">
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
                 <div className="flex items-center justify-between">
                     {steps.map((step, index) => (
                         <React.Fragment key={step.number}>
@@ -709,13 +709,13 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                                         ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/20' 
                                         : activeStep > step.number
                                             ? 'bg-green-500/20 text-green-400'
-                                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                                     }
                                 `}
                             >
                                 <span className={`
                                     w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold
-                                    ${activeStep > step.number ? 'bg-green-500 text-white' : 'bg-slate-700'}
+                                    ${activeStep > step.number ? 'bg-green-500 text-white' : 'bg-slate-200 dark:bg-slate-700'}
                                 `}>
                                     {activeStep > step.number ? <Check className="w-3 h-3" /> : step.number}
                                 </span>
@@ -736,7 +736,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                 {/* Step 1: Template Selection */}
                 {activeStep === 1 && (
                     <div className="space-y-6">
-                        <h3 className="text-lg font-semibold text-white">Select Report Template</h3>
+                        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Select Report Template</h3>
                         <TemplateSelector
                             selected={config.template}
                             onSelect={handleTemplateChange}
@@ -747,7 +747,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                 {/* Step 2: Project Info */}
                 {activeStep === 2 && (
                     <div className="space-y-6">
-                        <h3 className="text-lg font-semibold text-white">Project Information</h3>
+                        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Project Information</h3>
                         <ProjectInfoForm
                             projectInfo={config.projectInfo}
                             onChange={(info) => setConfig(prev => ({ ...prev, projectInfo: info }))}
@@ -758,7 +758,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                 {/* Step 3: Section Configuration */}
                 {activeStep === 3 && (
                     <div className="space-y-6">
-                        <h3 className="text-lg font-semibold text-white">Configure Sections</h3>
+                        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Configure Sections</h3>
                         <SectionConfigurator
                             sections={config.sections}
                             onSectionsChange={(sections) => setConfig(prev => ({ ...prev, sections }))}
@@ -770,11 +770,11 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                 {activeStep === 4 && (
                     <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-6">
-                            <h3 className="text-lg font-semibold text-white">Output Options</h3>
+                            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Output Options</h3>
                             
                             {/* Format Selection */}
                             <div>
-                                <label className="block text-sm text-slate-400 mb-2">Output Format</label>
+                                <label className="block text-sm text-slate-500 dark:text-slate-400 mb-2">Output Format</label>
                                 <div className="grid grid-cols-4 gap-2">
                                     {(['pdf', 'docx', 'html', 'print'] as const).map(type => (
                                         <button
@@ -784,7 +784,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                                                 px-3 py-2 rounded-lg text-sm uppercase font-medium transition-colors
                                                 ${output.type === type 
                                                     ? 'bg-cyan-500 text-white' 
-                                                    : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                                                 }
                                             `}
                                         >
@@ -796,7 +796,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                             
                             {/* Quality */}
                             <div>
-                                <label className="block text-sm text-slate-400 mb-2">Quality</label>
+                                <label className="block text-sm text-slate-500 dark:text-slate-400 mb-2">Quality</label>
                                 <div className="grid grid-cols-3 gap-2">
                                     {(['draft', 'standard', 'high'] as const).map(quality => (
                                         <button
@@ -806,7 +806,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                                                 px-3 py-2 rounded-lg text-sm capitalize transition-colors
                                                 ${output.quality === quality 
                                                     ? 'bg-cyan-500 text-white' 
-                                                    : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                                                 }
                                             `}
                                         >
@@ -818,7 +818,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                             
                             {/* Additional Options */}
                             <div className="space-y-2">
-                                <label className="block text-sm text-slate-400 mb-2">Additional Options</label>
+                                <label className="block text-sm text-slate-500 dark:text-slate-400 mb-2">Additional Options</label>
                                 {[
                                     { key: 'includeSignatures', label: 'Include Signature Blocks' },
                                     { key: 'includeDisclaimer', label: 'Include Disclaimer' },
@@ -833,9 +833,9 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                                                 ...prev, 
                                                 [key]: e.target.checked 
                                             }))}
-                                            className="rounded bg-slate-700 border-slate-600 text-cyan-500"
+                                            className="rounded bg-slate-200 dark:bg-slate-700 border-slate-600 text-cyan-500"
                                         />
-                                        <span className="text-sm text-slate-300">{label}</span>
+                                        <span className="text-sm text-slate-600 dark:text-slate-300">{label}</span>
                                     </label>
                                 ))}
                             </div>
@@ -862,7 +862,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                         
                         {/* Preview */}
                         <div>
-                            <h3 className="text-lg font-semibold text-white mb-4">Preview</h3>
+                            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Preview</h3>
                             <ReportPreview config={config} />
                         </div>
                     </div>
@@ -870,11 +870,11 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
             </div>
             
             {/* Navigation */}
-            <div className="px-6 py-4 bg-slate-800/30 border-t border-slate-800 flex justify-between">
+            <div className="px-6 py-4 bg-slate-100/30 dark:bg-slate-800/30 border-t border-slate-200 dark:border-slate-800 flex justify-between">
                 <button
                     onClick={() => setActiveStep(Math.max(1, activeStep - 1))}
                     disabled={activeStep === 1}
-                    className="px-4 py-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                     Previous
                 </button>

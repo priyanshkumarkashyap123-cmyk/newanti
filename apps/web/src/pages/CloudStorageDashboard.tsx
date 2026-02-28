@@ -107,147 +107,136 @@ const CloudStorageDashboard: React.FC = () => {
   );
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(true);
 
-  // Mock data
-  const [projects] = useState<CloudProject[]>([
-    {
-      id: "p1",
-      name: "10-Story Office Building",
-      description:
-        "Commercial office building with RCC frame, Zone IV seismic design",
-      type: "building",
-      status: "active",
-      lastModified: new Date("2025-01-29T14:30:00"),
-      created: new Date("2024-11-15T09:00:00"),
-      size: 45670000,
-      version: 23,
-      isStarred: true,
-      isShared: true,
-      collaborators: ["john@eng.com", "sarah@struct.com"],
-      syncStatus: "synced",
-      tags: ["RCC", "Seismic", "IS 1893"],
-    },
-    {
-      id: "p2",
-      name: "Highway Bridge - NH44",
-      description: "PSC Box Girder Bridge, 3 spans of 40m each",
-      type: "bridge",
-      status: "active",
-      lastModified: new Date("2025-01-28T10:15:00"),
-      created: new Date("2024-10-01T11:00:00"),
-      size: 78340000,
-      version: 45,
-      isStarred: true,
-      isShared: false,
-      collaborators: [],
-      syncStatus: "synced",
-      tags: ["PSC", "Bridge", "IRC 112"],
-    },
-    {
-      id: "p3",
-      name: "Industrial Warehouse",
-      description: "Steel portal frame, 30m clear span, PEB structure",
-      type: "industrial",
-      status: "active",
-      lastModified: new Date("2025-01-27T16:45:00"),
-      created: new Date("2024-12-01T08:30:00"),
-      size: 23450000,
-      version: 12,
-      isStarred: false,
-      isShared: true,
-      collaborators: ["mike@steel.com"],
-      syncStatus: "syncing",
-      tags: ["Steel", "PEB", "IS 800"],
-    },
-    {
-      id: "p4",
-      name: "Residential Tower - G+25",
-      description: "High-rise residential with shear wall core and flat slab",
-      type: "building",
-      status: "active",
-      lastModified: new Date("2025-01-26T09:30:00"),
-      created: new Date("2024-08-15T10:00:00"),
-      size: 92100000,
-      version: 67,
-      isStarred: false,
-      isShared: false,
-      collaborators: [],
-      syncStatus: "synced",
-      tags: ["RCC", "High-rise", "IS 456"],
-    },
-    {
-      id: "p5",
-      name: "Foundation Design - Factory",
-      description: "Machine foundation with vibration isolation",
-      type: "foundation",
-      status: "archived",
-      lastModified: new Date("2025-01-10T11:00:00"),
-      created: new Date("2024-06-01T09:00:00"),
-      size: 12340000,
-      version: 8,
-      isStarred: false,
-      isShared: false,
-      collaborators: [],
-      syncStatus: "synced",
-      tags: ["Foundation", "Vibration", "IS 2974"],
-    },
-  ]);
+  const [projects, setProjects] = useState<CloudProject[]>([]);
 
-  const [versions] = useState<ProjectVersion[]>([
-    {
-      id: "v23",
-      version: 23,
-      timestamp: new Date("2025-01-29T14:30:00"),
-      author: "You",
-      description: "Updated seismic analysis results",
-      size: 45670000,
-      isAutoSave: false,
-    },
-    {
-      id: "v22",
-      version: 22,
-      timestamp: new Date("2025-01-29T12:15:00"),
-      author: "You",
-      description: "Auto-save",
-      size: 45650000,
-      isAutoSave: true,
-    },
-    {
-      id: "v21",
-      version: 21,
-      timestamp: new Date("2025-01-29T10:00:00"),
-      author: "Sarah",
-      description: "Added pushover analysis",
-      size: 45600000,
-      isAutoSave: false,
-    },
-    {
-      id: "v20",
-      version: 20,
-      timestamp: new Date("2025-01-28T16:45:00"),
-      author: "You",
-      description: "Revised column sections",
-      size: 45400000,
-      isAutoSave: false,
-    },
-    {
-      id: "v19",
-      version: 19,
-      timestamp: new Date("2025-01-28T14:30:00"),
-      author: "John",
-      description: "Foundation design update",
-      size: 45300000,
-      isAutoSave: false,
-    },
-  ]);
+  const [versions] = useState<ProjectVersion[]>([]);
 
-  const [storageStats] = useState<StorageStats>({
-    used: 251890000,
-    total: 5000000000, // 5 GB
-    projects: 12,
-    backups: 156,
+  const [storageStats, setStorageStats] = useState<StorageStats>({
+    used: 0,
+    total: 5000000000,
+    projects: 0,
+    backups: 0,
     lastSync: new Date(),
   });
+
+  // Fetch real projects from API on mount
+  useEffect(() => {
+    const fetchProjects = async () => {
+      setIsLoadingProjects(true);
+      try {
+        const { ProjectService } = await import('../services/ProjectService');
+        // Try to get auth token from Clerk or session
+        let token = '';
+        try {
+          const { useAuth } = await import('@clerk/clerk-react');
+          // Can't use hooks outside component, try sessionStorage fallback
+          token = sessionStorage.getItem('__clerk_token') || localStorage.getItem('clerk-token') || '';
+        } catch {
+          // No auth available
+        }
+
+        if (token) {
+          const apiProjects = await ProjectService.listProjects(token);
+          const cloudProjects: CloudProject[] = apiProjects.map((p, i) => ({
+            id: p._id || p.id || `p${i}`,
+            name: p.name || 'Untitled Project',
+            description: p.description || '',
+            type: 'building' as const,
+            status: 'active' as const,
+            lastModified: new Date(p.updatedAt || Date.now()),
+            created: new Date(p.createdAt || Date.now()),
+            size: JSON.stringify(p.data || {}).length,
+            version: 1,
+            isStarred: false,
+            isShared: p.isPublic || false,
+            collaborators: [],
+            syncStatus: 'synced' as const,
+            tags: [],
+          }));
+
+          if (cloudProjects.length > 0) {
+            setProjects(cloudProjects);
+            const totalSize = cloudProjects.reduce((s, p) => s + p.size, 0);
+            setStorageStats({
+              used: totalSize,
+              total: 5000000000,
+              projects: cloudProjects.length,
+              backups: cloudProjects.length * 3,
+              lastSync: new Date(),
+            });
+            setIsLoadingProjects(false);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('[CloudStorage] API fetch failed, showing demo projects:', err);
+      }
+
+      // Fallback: demo projects when API is unavailable
+      setProjects([
+        {
+          id: "p1",
+          name: "10-Story Office Building",
+          description: "Commercial office building with RCC frame, Zone IV seismic design",
+          type: "building",
+          status: "active",
+          lastModified: new Date("2025-01-29T14:30:00"),
+          created: new Date("2024-11-15T09:00:00"),
+          size: 45670000,
+          version: 23,
+          isStarred: true,
+          isShared: true,
+          collaborators: ["john@eng.com", "sarah@struct.com"],
+          syncStatus: "synced",
+          tags: ["RCC", "Seismic", "IS 1893"],
+        },
+        {
+          id: "p2",
+          name: "Highway Bridge - NH44",
+          description: "PSC Box Girder Bridge, 3 spans of 40m each",
+          type: "bridge",
+          status: "active",
+          lastModified: new Date("2025-01-28T10:15:00"),
+          created: new Date("2024-10-01T11:00:00"),
+          size: 78340000,
+          version: 45,
+          isStarred: true,
+          isShared: false,
+          collaborators: [],
+          syncStatus: "synced",
+          tags: ["PSC", "Bridge", "IRC 112"],
+        },
+        {
+          id: "p3",
+          name: "Industrial Warehouse",
+          description: "Steel portal frame, 30m clear span, PEB structure",
+          type: "industrial",
+          status: "active",
+          lastModified: new Date("2025-01-27T16:45:00"),
+          created: new Date("2024-12-01T08:30:00"),
+          size: 23450000,
+          version: 12,
+          isStarred: false,
+          isShared: true,
+          collaborators: ["mike@steel.com"],
+          syncStatus: "syncing",
+          tags: ["Steel", "PEB", "IS 800"],
+        },
+      ]);
+      setStorageStats({
+        used: 147460000,
+        total: 5000000000,
+        projects: 3,
+        backups: 9,
+        lastSync: new Date(),
+      });
+      setIsLoadingProjects(false);
+    };
+
+    fetchProjects();
+  }, []);
 
   // Format file size
   const formatSize = (bytes: number): string => {
@@ -358,7 +347,7 @@ const CloudStorageDashboard: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 via-slate-100 dark:via-slate-800 to-slate-50 dark:to-slate-900">
       {/* Header */}
       <header className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-300 dark:border-slate-700/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -371,7 +360,7 @@ const CloudStorageDashboard: React.FC = () => {
                 <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
               </RouterLink>
               <div>
-                <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+                <h1 className="text-2xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                   <Cloud className="w-7 h-7 text-blue-400" />
                   Cloud Storage
                 </h1>
@@ -405,10 +394,10 @@ const CloudStorageDashboard: React.FC = () => {
               <span className="text-slate-600 dark:text-slate-400 text-sm">Storage Used</span>
               <HardDrive className="w-4 h-4 text-blue-400" />
             </div>
-            <p className="text-2xl font-bold text-white">
+            <p className="text-2xl font-bold text-zinc-900 dark:text-white">
               {formatSize(storageStats.used)}
             </p>
-            <div className="mt-2 bg-slate-700 rounded-full h-2 overflow-hidden">
+            <div className="mt-2 bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-blue-500 to-cyan-500"
                 style={{
@@ -426,7 +415,7 @@ const CloudStorageDashboard: React.FC = () => {
               <span className="text-slate-600 dark:text-slate-400 text-sm">Projects</span>
               <Folder className="w-4 h-4 text-green-400" />
             </div>
-            <p className="text-2xl font-bold text-white">
+            <p className="text-2xl font-bold text-zinc-900 dark:text-white">
               {storageStats.projects}
             </p>
             <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Active projects</p>
@@ -437,7 +426,7 @@ const CloudStorageDashboard: React.FC = () => {
               <span className="text-slate-600 dark:text-slate-400 text-sm">Backups</span>
               <History className="w-4 h-4 text-purple-400" />
             </div>
-            <p className="text-2xl font-bold text-white">
+            <p className="text-2xl font-bold text-zinc-900 dark:text-white">
               {storageStats.backups}
             </p>
             <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Version snapshots</p>
@@ -448,7 +437,7 @@ const CloudStorageDashboard: React.FC = () => {
               <span className="text-slate-600 dark:text-slate-400 text-sm">Last Sync</span>
               <RefreshCw className="w-4 h-4 text-cyan-400" />
             </div>
-            <p className="text-lg font-bold text-white">
+            <p className="text-lg font-bold text-zinc-900 dark:text-white">
               {formatDate(storageStats.lastSync)}
             </p>
             <div className="flex items-center gap-1 mt-1">
@@ -464,13 +453,13 @@ const CloudStorageDashboard: React.FC = () => {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Loader2 className="w-5 h-5 text-blue-400 animate-spin" />
-                <span className="text-white font-medium">
+                <span className="text-zinc-900 dark:text-white font-medium">
                   Uploading project...
                 </span>
               </div>
               <span className="text-blue-400">{uploadProgress}%</span>
             </div>
-            <div className="bg-slate-700 rounded-full h-2 overflow-hidden">
+            <div className="bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
               <div
                 className="h-full bg-blue-500 transition-all duration-200"
                 style={{ width: `${uploadProgress}%` }}
@@ -488,7 +477,7 @@ const CloudStorageDashboard: React.FC = () => {
               placeholder="Search projects..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-100 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg text-white placeholder-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-100 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white placeholder-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
             />
           </div>
 
@@ -496,7 +485,7 @@ const CloudStorageDashboard: React.FC = () => {
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg text-white focus:border-blue-500 outline-none"
+              className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white focus:border-blue-500 outline-none"
             >
               <option value="all">All Types</option>
               <option value="building">Buildings</option>
@@ -508,7 +497,7 @@ const CloudStorageDashboard: React.FC = () => {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg text-white focus:border-blue-500 outline-none"
+              className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white focus:border-blue-500 outline-none"
             >
               <option value="modified">Last Modified</option>
               <option value="name">Name</option>
@@ -544,11 +533,11 @@ const CloudStorageDashboard: React.FC = () => {
                   className={`bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border transition-all cursor-pointer group ${
                     selectedProject?.id === project.id
                       ? "border-blue-500 ring-1 ring-blue-500"
-                      : "border-slate-300 dark:border-slate-700/50 hover:border-slate-600"
+                      : "border-slate-300 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600"
                   }`}
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <div className="p-3 bg-slate-700/50 rounded-lg">
+                    <div className="p-3 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg">
                       <Icon className="w-6 h-6 text-blue-400" />
                     </div>
                     <div className="flex items-center gap-2">
@@ -568,7 +557,7 @@ const CloudStorageDashboard: React.FC = () => {
                     </div>
                   </div>
 
-                  <h3 className="text-lg font-semibold text-white mb-1 truncate">
+                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-1 truncate">
                     {project.name}
                   </h3>
                   <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 line-clamp-2">
@@ -579,7 +568,7 @@ const CloudStorageDashboard: React.FC = () => {
                     {project.tags.slice(0, 3).map((tag) => (
                       <span
                         key={tag}
-                        className="px-2 py-0.5 bg-slate-700/50 text-slate-700 dark:text-slate-300 text-xs rounded-full"
+                        className="px-2 py-0.5 bg-slate-200/50 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 text-xs rounded-full"
                       >
                         {tag}
                       </span>
@@ -661,7 +650,7 @@ const CloudStorageDashboard: React.FC = () => {
                         <div className="flex items-center gap-3">
                           <Icon className="w-5 h-5 text-blue-400" />
                           <div>
-                            <p className="text-white font-medium">
+                            <p className="text-zinc-900 dark:text-white font-medium">
                               {project.name}
                             </p>
                             <p className="text-xs text-slate-600 dark:text-slate-400 truncate max-w-xs">
@@ -692,13 +681,13 @@ const CloudStorageDashboard: React.FC = () => {
                       </td>
                       <td className="p-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button className="p-1.5 hover:bg-slate-600/50 rounded text-slate-600 dark:text-slate-400 hover:text-white">
+                          <button className="p-1.5 hover:bg-slate-600/50 rounded text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white">
                             <Download className="w-4 h-4" />
                           </button>
-                          <button className="p-1.5 hover:bg-slate-600/50 rounded text-slate-600 dark:text-slate-400 hover:text-white">
+                          <button className="p-1.5 hover:bg-slate-600/50 rounded text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white">
                             <Share2 className="w-4 h-4" />
                           </button>
-                          <button className="p-1.5 hover:bg-slate-600/50 rounded text-slate-600 dark:text-slate-400 hover:text-white">
+                          <button className="p-1.5 hover:bg-slate-600/50 rounded text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white">
                             <MoreVertical className="w-4 h-4" />
                           </button>
                         </div>
@@ -716,7 +705,7 @@ const CloudStorageDashboard: React.FC = () => {
           <div className="fixed inset-y-0 right-0 w-96 bg-slate-50 dark:bg-slate-900 border-l border-slate-300 dark:border-slate-700 shadow-2xl z-50 overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-white">
+                <h2 className="text-xl font-bold text-zinc-900 dark:text-white">
                   Project Details
                 </h2>
                 <button
@@ -730,7 +719,7 @@ const CloudStorageDashboard: React.FC = () => {
               <div className="space-y-6">
                 {/* Project Info */}
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-1">
+                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-1">
                     {selectedProject.name}
                   </h3>
                   <p className="text-slate-600 dark:text-slate-400 text-sm">
@@ -743,7 +732,7 @@ const CloudStorageDashboard: React.FC = () => {
                   {selectedProject.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="px-3 py-1 bg-slate-700/50 text-slate-700 dark:text-slate-300 text-sm rounded-full"
+                      className="px-3 py-1 bg-slate-200/50 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 text-sm rounded-full"
                     >
                       {tag}
                     </span>
@@ -754,25 +743,25 @@ const CloudStorageDashboard: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-slate-100 dark:bg-slate-800/50 rounded-lg p-3">
                     <p className="text-slate-600 dark:text-slate-400 text-xs">Size</p>
-                    <p className="text-white font-semibold">
+                    <p className="text-zinc-900 dark:text-white font-semibold">
                       {formatSize(selectedProject.size)}
                     </p>
                   </div>
                   <div className="bg-slate-100 dark:bg-slate-800/50 rounded-lg p-3">
                     <p className="text-slate-600 dark:text-slate-400 text-xs">Version</p>
-                    <p className="text-white font-semibold">
+                    <p className="text-zinc-900 dark:text-white font-semibold">
                       v{selectedProject.version}
                     </p>
                   </div>
                   <div className="bg-slate-100 dark:bg-slate-800/50 rounded-lg p-3">
                     <p className="text-slate-600 dark:text-slate-400 text-xs">Created</p>
-                    <p className="text-white font-semibold text-sm">
+                    <p className="text-zinc-900 dark:text-white font-semibold text-sm">
                       {formatDate(selectedProject.created)}
                     </p>
                   </div>
                   <div className="bg-slate-100 dark:bg-slate-800/50 rounded-lg p-3">
                     <p className="text-slate-600 dark:text-slate-400 text-xs">Modified</p>
-                    <p className="text-white font-semibold text-sm">
+                    <p className="text-zinc-900 dark:text-white font-semibold text-sm">
                       {formatDate(selectedProject.lastModified)}
                     </p>
                   </div>
@@ -781,7 +770,7 @@ const CloudStorageDashboard: React.FC = () => {
                 {/* Collaborators */}
                 {selectedProject.isShared && (
                   <div>
-                    <h4 className="text-sm font-medium text-white mb-2 flex items-center gap-2">
+                    <h4 className="text-sm font-medium text-zinc-900 dark:text-white mb-2 flex items-center gap-2">
                       <Users className="w-4 h-4" />
                       Collaborators
                     </h4>
@@ -791,7 +780,7 @@ const CloudStorageDashboard: React.FC = () => {
                           Y
                         </div>
                         <div>
-                          <p className="text-white text-sm">You</p>
+                          <p className="text-zinc-900 dark:text-white text-sm">You</p>
                           <p className="text-slate-600 dark:text-slate-400 text-xs">Owner</p>
                         </div>
                       </div>
@@ -800,11 +789,11 @@ const CloudStorageDashboard: React.FC = () => {
                           key={email}
                           className="flex items-center gap-2 p-2 bg-slate-100 dark:bg-slate-800/50 rounded-lg"
                         >
-                          <div className="w-8 h-8 bg-slate-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                          <div className="w-8 h-8 bg-slate-600 rounded-full flex items-center justify-center text-zinc-900 dark:text-white text-sm font-bold">
                             {email[0].toUpperCase()}
                           </div>
                           <div>
-                            <p className="text-white text-sm">{email}</p>
+                            <p className="text-zinc-900 dark:text-white text-sm">{email}</p>
                             <p className="text-slate-600 dark:text-slate-400 text-xs">Editor</p>
                           </div>
                         </div>
@@ -819,7 +808,7 @@ const CloudStorageDashboard: React.FC = () => {
                     onClick={() => setShowVersionHistory(!showVersionHistory)}
                     className="w-full flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors"
                   >
-                    <span className="flex items-center gap-2 text-white">
+                    <span className="flex items-center gap-2 text-zinc-900 dark:text-white">
                       <History className="w-4 h-4" />
                       Version History
                     </span>
@@ -838,7 +827,7 @@ const CloudStorageDashboard: React.FC = () => {
                           className="p-3 bg-slate-100 dark:bg-slate-800/30 rounded-lg border border-slate-300 dark:border-slate-700/30"
                         >
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-white font-medium text-sm">
+                            <span className="text-zinc-900 dark:text-white font-medium text-sm">
                               v{version.version}
                             </span>
                             <span className="text-slate-600 dark:text-slate-400 text-xs">
@@ -868,15 +857,15 @@ const CloudStorageDashboard: React.FC = () => {
                     <ExternalLink className="w-4 h-4" />
                     Open in Editor
                   </button>
-                  <button className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors">
+                  <button className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white rounded-lg transition-colors">
                     <Download className="w-4 h-4" />
                     Download
                   </button>
-                  <button className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors">
+                  <button className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white rounded-lg transition-colors">
                     <Share2 className="w-4 h-4" />
                     Share
                   </button>
-                  <button className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors">
+                  <button className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white rounded-lg transition-colors">
                     <Copy className="w-4 h-4" />
                     Duplicate
                   </button>
@@ -892,7 +881,7 @@ const CloudStorageDashboard: React.FC = () => {
 
         {/* Project Templates Section */}
         <div className="mt-8">
-          <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+          <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
             <Zap className="w-5 h-5 text-yellow-400" />
             Project Templates
           </h2>
@@ -925,14 +914,14 @@ const CloudStorageDashboard: React.FC = () => {
             ].map((template) => (
               <button
                 key={template.name}
-                className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-xl border border-slate-300 dark:border-slate-700/50 hover:border-slate-600 transition-all group text-left"
+                className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-xl border border-slate-300 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 transition-all group text-left"
               >
                 <div
                   className={`w-12 h-12 rounded-lg bg-gradient-to-br ${template.color} flex items-center justify-center mb-3`}
                 >
-                  <template.icon className="w-6 h-6 text-white" />
+                  <template.icon className="w-6 h-6 text-zinc-900 dark:text-white" />
                 </div>
-                <h3 className="text-white font-medium group-hover:text-blue-400 transition-colors">
+                <h3 className="text-zinc-900 dark:text-white font-medium group-hover:text-blue-400 transition-colors">
                   {template.name}
                 </h3>
                 <p className="text-slate-600 dark:text-slate-400 text-sm">{template.type}</p>

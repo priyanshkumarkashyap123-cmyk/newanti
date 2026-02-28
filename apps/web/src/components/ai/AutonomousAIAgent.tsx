@@ -747,17 +747,17 @@ ${apiStatus}
         className="fixed bottom-6 right-6 z-50 p-4 bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-600 rounded-full shadow-2xl shadow-purple-500/30 hover:shadow-purple-500/50 transition-all group"
       >
         <div className="relative">
-          <Bot className="w-7 h-7 text-white" />
+          <Bot className="w-7 h-7 text-zinc-900 dark:text-white" />
           <motion.div
             animate={{ scale: [1, 1.2, 1] }}
             transition={{ repeat: Infinity, duration: 2 }}
-            className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white"
+            className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-zinc-200 dark:border-white"
           />
         </div>
         <motion.span
           initial={{ opacity: 0, x: 10 }}
           whileHover={{ opacity: 1, x: 0 }}
-          className="absolute right-full mr-3 px-4 py-2 bg-slate-800/95 text-white text-sm font-medium rounded-xl whitespace-nowrap backdrop-blur-sm border border-slate-700/50"
+          className="absolute right-full mr-3 px-4 py-2 bg-white/95 dark:bg-slate-800/95 text-zinc-900 dark:text-white text-sm font-medium rounded-xl whitespace-nowrap backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50"
         >
           <span className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-yellow-400" />
@@ -777,14 +777,14 @@ ${apiStatus}
       initial={{ opacity: 0, scale: 0.9, y: 20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.9, y: 20 }}
-      className={`fixed z-50 bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 shadow-2xl shadow-black/50 flex flex-col overflow-hidden ${
+      className={`fixed z-50 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-2xl shadow-black/50 flex flex-col overflow-hidden ${
         isFullscreen
           ? 'inset-4 rounded-2xl'
           : 'bottom-6 right-6 w-[440px] h-[600px] rounded-2xl'
       }`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-slate-700/50 bg-gradient-to-r from-violet-600/20 to-purple-600/20">
+      <div className="flex items-center justify-between p-4 border-b border-slate-200/50 dark:border-slate-700/50 bg-gradient-to-r from-violet-600/20 to-purple-600/20">
         <div className="flex items-center gap-3">
           <div className="relative">
             <div className="p-2 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl">
@@ -797,13 +797,13 @@ ${apiStatus}
             />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-white flex items-center gap-2">
+            <h3 className="font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
               BeamLab AI Agent
               <span className="px-2 py-0.5 text-[10px] font-bold bg-gradient-to-r from-violet-500 to-purple-500 text-white rounded-full">
                 ADVANCED
               </span>
             </h3>
-            <div className="text-xs text-slate-400">
+            <div className="text-xs text-slate-500 dark:text-slate-400">
               {processingState.status === 'idle' 
                 ? `${nodes.size} nodes • ${members.size} members`
                 : (
@@ -816,7 +816,7 @@ ${apiStatus}
                       {processingState.message}
                     </span>
                     {processingState.details && processingState.details.length > 0 && (
-                      <span className="text-[10px] text-slate-400">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400">
                         {processingState.details.join(' → ')}
                       </span>
                     )}
@@ -829,21 +829,21 @@ ${apiStatus}
         <div className="flex items-center gap-1">
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className={`p-2 rounded-lg transition-colors ${showSettings ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+            className={`p-2 rounded-lg transition-colors ${showSettings ? 'bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'}`}
             title="Settings"
           >
             <Settings className="w-4 h-4" />
           </button>
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
             title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
           >
             {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
           <button
             onClick={() => setIsExpanded(false)}
-            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
             title="Minimize"
           >
             <X className="w-4 h-4" />
@@ -858,11 +858,11 @@ ${apiStatus}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="border-b border-slate-700/50 bg-slate-800/50 overflow-hidden"
+            className="border-b border-slate-200/50 dark:border-slate-700/50 bg-slate-100/50 dark:bg-slate-800/50 overflow-hidden"
           >
             <div className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2 flex items-center gap-2">
+                <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2 flex items-center gap-2">
                   <Key className="w-4 h-4" />
                   Gemini API Key
                   {hasApiKey && <CheckCircle2 className="w-4 h-4 text-green-400" />}
@@ -873,7 +873,7 @@ ${apiStatus}
                     value={apiKey}
                     onChange={e => setApiKey(e.target.value)}
                     placeholder={hasApiKey ? '••••••••••••••••' : 'Enter your API key'}
-                    className="flex-1 px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm placeholder:text-slate-400 focus:outline-none focus:border-purple-500"
+                    className="flex-1 px-3 py-2 bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm placeholder:text-slate-400 focus:outline-none focus:border-purple-500"
                   />
                   <button
                     onClick={handleSaveApiKey}
@@ -883,7 +883,7 @@ ${apiStatus}
                     Save
                   </button>
                 </div>
-                <p className="mt-2 text-xs text-slate-400">
+                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
                   Get your API key from{' '}
                   <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:underline">
                     Google AI Studio
@@ -892,10 +892,10 @@ ${apiStatus}
               </div>
               
               <div className="flex items-center justify-between">
-                <label className="text-sm text-slate-300">Auto-execute plans</label>
+                <label className="text-sm text-slate-600 dark:text-slate-300">Auto-execute plans</label>
                 <button
                   onClick={() => setAutoExecute(!autoExecute)}
-                  className={`relative w-11 h-6 rounded-full transition-colors ${autoExecute ? 'bg-purple-600' : 'bg-slate-700'}`}
+                  className={`relative w-11 h-6 rounded-full transition-colors ${autoExecute ? 'bg-purple-600' : 'bg-slate-200 dark:bg-slate-700'}`}
                 >
                   <motion.div
                     animate={{ x: autoExecute ? 20 : 2 }}
@@ -918,14 +918,14 @@ ${apiStatus}
             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             {message.role === 'thinking' ? (
-              <div className="flex items-center gap-3 px-4 py-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
+              <div className="flex items-center gap-3 px-4 py-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50">
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
                 >
                   <Cpu className="w-4 h-4 text-purple-400" />
                 </motion.div>
-                <span className="text-sm text-slate-400">{message.content}</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400">{message.content}</span>
               </div>
             ) : message.type === 'decomposed' ? (
               <div className="max-w-[85%] px-4 py-3 rounded-2xl bg-amber-900/20 border border-amber-700/50 text-amber-100 flex items-start gap-2">
@@ -943,23 +943,23 @@ ${apiStatus}
                   message.role === 'user'
                     ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white'
                     : message.role === 'system'
-                    ? 'bg-slate-800/80 border border-slate-700/50 text-slate-200'
+                    ? 'bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/50 dark:border-slate-700/50 text-slate-200'
                     : message.type === 'error'
                     ? 'bg-red-900/30 border border-red-700/50 text-red-200'
-                    : 'bg-slate-800/80 border border-slate-700/50 text-slate-200'
+                    : 'bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/50 dark:border-slate-700/50 text-slate-200'
                 }`}
               >
                 <div className="prose prose-sm prose-invert max-w-none [&>h1]:text-lg [&>h2]:text-base [&>h3]:text-sm [&>h1]:mt-2 [&>h2]:mt-2 [&>ul]:my-2 [&>p]:my-2">
                   {/* Simple markdown rendering */}
                   {message.content.split('\n').map((line, i) => {
                     if (line.startsWith('# ')) {
-                      return <h1 key={i} className="text-lg font-bold text-white">{line.slice(2)}</h1>;
+                      return <h1 key={i} className="text-lg font-bold text-zinc-900 dark:text-white">{line.slice(2)}</h1>;
                     }
                     if (line.startsWith('## ')) {
-                      return <h2 key={i} className="text-base font-semibold text-white mt-3">{line.slice(3)}</h2>;
+                      return <h2 key={i} className="text-base font-semibold text-zinc-900 dark:text-white mt-3">{line.slice(3)}</h2>;
                     }
                     if (line.startsWith('### ')) {
-                      return <h3 key={i} className="text-sm font-semibold text-slate-200 mt-2">{line.slice(4)}</h3>;
+                      return <h3 key={i} className="text-sm font-semibold text-slate-700 dark:text-slate-200 mt-2">{line.slice(4)}</h3>;
                     }
                     if (line.startsWith('- ') || line.startsWith('• ')) {
                       return <li key={i} className="text-sm ml-4">{line.slice(2)}</li>;
@@ -971,7 +971,7 @@ ${apiStatus}
                       return <p key={i} className="font-bold">{line.slice(2, -2)}</p>;
                     }
                     if (line.startsWith('---')) {
-                      return <hr key={i} className="border-slate-700 my-3" />;
+                      return <hr key={i} className="border-slate-200 dark:border-slate-700 my-3" />;
                     }
                     if (line.trim() === '') {
                       return <br key={i} />;
@@ -988,7 +988,7 @@ ${apiStatus}
                           const codeParts = part.split(/(`.*?`)/g);
                           return codeParts.map((codePart, k) => {
                             if (codePart.startsWith('`') && codePart.endsWith('`')) {
-                              return <code key={k} className="px-1 py-0.5 bg-slate-700 rounded text-purple-300 text-xs">{codePart.slice(1, -1)}</code>;
+                              return <code key={k} className="px-1 py-0.5 bg-slate-200 dark:bg-slate-700 rounded text-purple-300 text-xs">{codePart.slice(1, -1)}</code>;
                             }
                             return codePart;
                           });
@@ -1000,7 +1000,7 @@ ${apiStatus}
                 
                 {/* Action buttons for plans */}
                 {message.plan && message.actions && message.actions.length > 0 && (
-                  <div className="mt-4 pt-3 border-t border-slate-700/50">
+                  <div className="mt-4 pt-3 border-t border-slate-200/50 dark:border-slate-700/50">
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => {
@@ -1014,7 +1014,7 @@ ${apiStatus}
                       </button>
                       <button
                         onClick={() => setInput('Modify the plan to...')}
-                        className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm transition-colors"
+                        className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white rounded-lg text-sm transition-colors"
                       >
                         Modify
                       </button>
@@ -1043,14 +1043,14 @@ ${apiStatus}
               <p className="text-sm text-purple-200">{processingState.message}</p>
               {processingState.currentStep && processingState.totalSteps && (
                 <div className="mt-2">
-                  <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${(processingState.currentStep / processingState.totalSteps) * 100}%` }}
                       className="h-full bg-gradient-to-r from-purple-500 to-violet-500"
                     />
                   </div>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     Step {processingState.currentStep} of {processingState.totalSteps}
                   </p>
                 </div>
@@ -1065,7 +1065,7 @@ ${apiStatus}
       {/* Quick Actions & Smart Suggestions */}
       {messages.length <= 3 && (
         <div className="px-4 pb-3">
-          <p className="text-xs text-slate-400 mb-2 flex items-center gap-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1">
             <Sparkles className="w-3 h-3 text-purple-400" />
             {nodes.size === 0 ? 'Get started:' : 'Suggested actions:'}
           </p>
@@ -1077,7 +1077,7 @@ ${apiStatus}
                   setInput(action.text);
                   inputRef.current?.focus();
                 }}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/80 hover:bg-slate-700 border border-slate-700/50 rounded-lg text-xs text-slate-300 hover:text-white transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200/50 dark:border-slate-700/50 rounded-lg text-xs text-slate-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white transition-colors"
               >
                 {action.icon}
                 {action.text}
@@ -1090,7 +1090,7 @@ ${apiStatus}
       {/* Conversation Starters - For new conversations */}
       {messages.length <= 1 && (
         <div className="px-4 pb-3">
-          <p className="text-xs text-slate-400 mb-2">Or start a conversation:</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Or start a conversation:</p>
           <div className="flex flex-wrap gap-2">
             {conversationStarters.map((starter, i) => (
               <button
@@ -1099,7 +1099,7 @@ ${apiStatus}
                   setInput(starter);
                   inputRef.current?.focus();
                 }}
-                className="px-3 py-1.5 bg-gradient-to-r from-purple-900/30 to-violet-900/30 hover:from-purple-800/40 hover:to-violet-800/40 border border-purple-700/30 rounded-lg text-xs text-purple-200 hover:text-white transition-all"
+                className="px-3 py-1.5 bg-gradient-to-r from-purple-900/30 to-violet-900/30 hover:from-purple-800/40 hover:to-violet-800/40 border border-purple-700/30 rounded-lg text-xs text-purple-200 hover:text-zinc-900 dark:hover:text-white transition-all"
               >
                 {starter}
               </button>
@@ -1109,7 +1109,7 @@ ${apiStatus}
       )}
 
       {/* Input */}
-      <div className="p-4 border-t border-slate-700/50 bg-slate-800/30">
+      <div className="p-4 border-t border-slate-200/50 dark:border-slate-700/50 bg-slate-100/30 dark:bg-slate-800/30">
         <div className="flex items-end gap-2">
           <div className="flex-1 relative">
             <textarea
@@ -1119,7 +1119,7 @@ ${apiStatus}
               onKeyDown={handleKeyDown}
               placeholder="Describe what you want to build or analyze..."
               rows={1}
-              className="w-full px-4 py-3 bg-slate-800/80 border border-slate-700 rounded-xl text-white placeholder:text-slate-400 resize-none focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+              className="w-full px-4 py-3 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-zinc-900 dark:text-white placeholder:text-slate-400 resize-none focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
               style={{ minHeight: '48px', maxHeight: '120px' }}
             />
           </div>
@@ -1129,7 +1129,7 @@ ${apiStatus}
             className={`p-3 rounded-xl transition-all ${
               isListening
                 ? 'bg-red-600 text-white animate-pulse'
-                : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
             title={isListening ? 'Stop listening' : 'Voice input'}
           >
@@ -1150,7 +1150,7 @@ ${apiStatus}
           </button>
         </div>
         
-        <div className="flex items-center justify-between mt-2 text-xs text-slate-400">
+        <div className="flex items-center justify-between mt-2 text-xs text-slate-500 dark:text-slate-400">
           <span>Press Enter to send • Shift+Enter for new line</span>
           {hasApiKey && (
             <span className="flex items-center gap-1">

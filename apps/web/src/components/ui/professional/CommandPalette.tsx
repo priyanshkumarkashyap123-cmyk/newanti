@@ -174,9 +174,9 @@ const CATEGORY_CONFIG: Record<CommandCategory, { icon: React.ElementType; color:
   results: { icon: Zap, color: 'text-orange-400', label: 'Results' },
   design: { icon: Shield, color: 'text-pink-400', label: 'Design' },
   tools: { icon: Settings, color: 'text-teal-400', label: 'Tools' },
-  settings: { icon: Settings, color: 'text-zinc-400', label: 'Settings' },
+  settings: { icon: Settings, color: 'text-zinc-500 dark:text-zinc-400', label: 'Settings' },
   help: { icon: Command, color: 'text-indigo-400', label: 'Help' },
-  recent: { icon: Clock, color: 'text-zinc-400', label: 'Recent' },
+  recent: { icon: Clock, color: 'text-zinc-500 dark:text-zinc-400', label: 'Recent' },
 };
 
 // ============================================
@@ -332,7 +332,7 @@ const FileItem: FC<{
         <div className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{file.path}</div>
       </div>
       {file.modified && (
-        <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+        <span className="text-[10px] text-zinc-500 dark:text-zinc-500">
           {file.modified.toLocaleDateString()}
         </span>
       )}
@@ -646,7 +646,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                   }
                 `}
               >
-                {tab.prefix && <span className="text-zinc-400 dark:text-zinc-500 mr-1">{tab.prefix}</span>}
+                {tab.prefix && <span className="text-zinc-500 dark:text-zinc-500 mr-1">{tab.prefix}</span>}
                 {tab.label}
               </button>
             ))}

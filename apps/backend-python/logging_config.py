@@ -130,5 +130,6 @@ def get_logger(name: str) -> logging.Logger:
     return logging.getLogger(name)
 
 
-# Auto-configure on import so any module can just `from logging_config import get_logger`
-setup_logging()
+# Auto-configure only if no handlers have been configured yet
+if not logging.getLogger().handlers:
+    setup_logging()

@@ -45,7 +45,7 @@ const ToolBtn = memo<ToolBtnProps>(({
     const variantClasses: Record<string, string> = {
         default: isActive
             ? 'bg-blue-600/20 text-blue-300 border-blue-500/40 shadow-sm shadow-blue-500/10'
-            : 'bg-slate-800/60 text-slate-300 border-slate-700/50 hover:bg-slate-700/60 hover:text-white hover:border-slate-600/60',
+            : 'bg-slate-100/60 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50 hover:bg-slate-700/60 hover:text-zinc-900 dark:hover:text-white hover:border-slate-600/60',
         primary: isActive
             ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
             : 'bg-blue-600/80 text-white border-blue-500/60 hover:bg-blue-500 hover:shadow-md hover:shadow-blue-500/30',
@@ -80,7 +80,7 @@ ToolBtn.displayName = 'ToolBtn';
 // SEPARATOR
 // ============================================
 const ToolSep: FC = () => (
-    <div className="w-px h-7 bg-slate-700/50 mx-0.5 flex-shrink-0" />
+    <div className="w-px h-7 bg-slate-200/50 dark:bg-slate-700/50 mx-0.5 flex-shrink-0" />
 );
 
 // ============================================
@@ -239,7 +239,7 @@ export const Toolbar: FC = () => {
                         ? 'bg-emerald-900/90 text-emerald-200 border-emerald-700/50'
                         : isError
                             ? 'bg-red-900/90 text-red-200 border-red-700/50'
-                            : 'bg-slate-800/90 text-slate-200 border-slate-700/50'
+                            : 'bg-slate-100/90 dark:bg-slate-800/90 text-slate-200 border-slate-200/50 dark:border-slate-700/50'
                     }
                 `}>
                     {message}
@@ -248,9 +248,9 @@ export const Toolbar: FC = () => {
 
             {/* Displacement Scale Slider */}
             {analysisResults && (
-                <div className="absolute bottom-20 right-5 z-[200] bg-slate-900/95 backdrop-blur-sm p-3.5 rounded-xl border border-slate-700/50 shadow-xl flex flex-col gap-2.5">
+                <div className="absolute bottom-20 right-5 z-[200] bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-sm p-3.5 rounded-xl border border-slate-200/50 dark:border-slate-700/50 shadow-xl flex flex-col gap-2.5">
                     <div className="flex items-center justify-between">
-                        <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                        <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
                             <SlidersHorizontal className="w-3.5 h-3.5 text-blue-400" />
                             Deflection Scale
                         </label>
@@ -264,7 +264,7 @@ export const Toolbar: FC = () => {
                         max="500"
                         value={displacementScale}
                         onChange={(e) => setDisplacementScale(Number(e.target.value))}
-                        className="w-40 h-1.5 bg-slate-700 rounded-full appearance-none cursor-pointer
+                        className="w-40 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full appearance-none cursor-pointer
                                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5
                                    [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-500
                                    [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:shadow-blue-500/30
@@ -278,10 +278,10 @@ export const Toolbar: FC = () => {
             <div className="
                 absolute bottom-5 left-1/2 -translate-x-1/2 z-[200]
                 flex items-center gap-1.5
-                bg-slate-900/95 backdrop-blur-md
+                bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-md
                 px-4 py-2.5 rounded-2xl
                 shadow-2xl shadow-black/40
-                border border-slate-700/40
+                border border-slate-200/40 dark:border-slate-700/40
                 ring-1 ring-white/[0.03]
             ">
                 {/* Undo / Redo */}
@@ -290,7 +290,7 @@ export const Toolbar: FC = () => {
                         onClick={() => undo()}
                         disabled={pastStates.length === 0}
                         title="Undo (Ctrl+Z)"
-                        className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/60 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-700/60 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                     >
                         <Undo2 className="w-4 h-4" />
                     </button>
@@ -298,7 +298,7 @@ export const Toolbar: FC = () => {
                         onClick={() => redo()}
                         disabled={futureStates.length === 0}
                         title="Redo (Ctrl+Shift+Z)"
-                        className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/60 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-700/60 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                     >
                         <Redo2 className="w-4 h-4" />
                     </button>

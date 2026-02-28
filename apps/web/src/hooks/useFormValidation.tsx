@@ -458,7 +458,7 @@ export function FormField({
       {label && (
         <label
           htmlFor={name}
-          className="block text-sm font-medium text-slate-300"
+          className="block text-sm font-medium text-slate-600 dark:text-slate-300"
         >
           {label}
           {required && <span className="text-red-400 ml-1" aria-hidden="true">*</span>}
@@ -468,7 +468,7 @@ export function FormField({
       {children(fieldProps)}
       
       {hint && !error && (
-        <p className="text-sm text-slate-400" id={`${name}-hint`}>
+        <p className="text-sm text-slate-500 dark:text-slate-400" id={`${name}-hint`}>
           {hint}
         </p>
       )}

@@ -47,51 +47,51 @@ export const FoundationDesignPanel: React.FC = () => {
     };
 
     return (
-        <div className="space-y-6 p-6 bg-zinc-900 min-h-screen text-white">
+        <div className="space-y-6 p-6 bg-white dark:bg-zinc-900 min-h-screen text-zinc-900 dark:text-white">
             <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
                 Foundation Design (IS 456)
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Input Panel */}
-                <div className="space-y-4 bg-zinc-800/50 p-6 rounded-xl border border-zinc-700">
+                <div className="space-y-4 bg-zinc-100/50 dark:bg-zinc-800/50 p-6 rounded-xl border border-zinc-200 dark:border-zinc-700">
                     <h3 className="text-lg font-semibold text-blue-300">Design Parameters</h3>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm text-zinc-400 mb-1">Axial Load (kN)</label>
+                            <label className="block text-sm text-zinc-500 dark:text-zinc-400 mb-1">Axial Load (kN)</label>
                             <input
                                 type="number"
                                 value={formData.load_p}
                                 onChange={e => setFormData({ ...formData, load_p: parseFloat(e.target.value) })}
-                                className="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-white"
+                                className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded p-2 text-zinc-900 dark:text-white"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm text-zinc-400 mb-1">Checking SBC (kPa)</label>
+                            <label className="block text-sm text-zinc-500 dark:text-zinc-400 mb-1">Checking SBC (kPa)</label>
                             <input
                                 type="number"
                                 value={formData.sbc}
                                 onChange={e => setFormData({ ...formData, sbc: parseFloat(e.target.value) })}
-                                className="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-white"
+                                className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded p-2 text-zinc-900 dark:text-white"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm text-zinc-400 mb-1">Moment Mx (kNm)</label>
+                            <label className="block text-sm text-zinc-500 dark:text-zinc-400 mb-1">Moment Mx (kNm)</label>
                             <input
                                 type="number"
                                 value={formData.load_mx}
                                 onChange={e => setFormData({ ...formData, load_mx: parseFloat(e.target.value) })}
-                                className="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-white"
+                                className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded p-2 text-zinc-900 dark:text-white"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm text-zinc-400 mb-1">Moment My (kNm)</label>
+                            <label className="block text-sm text-zinc-500 dark:text-zinc-400 mb-1">Moment My (kNm)</label>
                             <input
                                 type="number"
                                 value={formData.load_my}
                                 onChange={e => setFormData({ ...formData, load_my: parseFloat(e.target.value) })}
-                                className="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-white"
+                                className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded p-2 text-zinc-900 dark:text-white"
                             />
                         </div>
                     </div>
@@ -106,12 +106,12 @@ export const FoundationDesignPanel: React.FC = () => {
                 </div>
 
                 {/* Results Panel */}
-                <div className="bg-zinc-800/50 p-6 rounded-xl border border-zinc-700">
+                <div className="bg-zinc-100/50 dark:bg-zinc-800/50 p-6 rounded-xl border border-zinc-200 dark:border-zinc-700">
                     <h3 className="text-lg font-semibold text-purple-300 mb-4">Design Results</h3>
 
                     {result ? (
                         <div className="space-y-4">
-                            <div className="flex items-center justify-between p-3 bg-zinc-900 rounded-lg border border-zinc-700">
+                            <div className="flex items-center justify-between p-3 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-700">
                                 <span>Status</span>
                                 <span className={`font-bold ${result.status === 'PASS' ? 'text-green-500' : 'text-red-500'
                                     }`}>
@@ -120,42 +120,42 @@ export const FoundationDesignPanel: React.FC = () => {
                             </div>
 
                             <div className="grid grid-cols-3 gap-2">
-                                <div className="p-3 bg-zinc-900 rounded border border-zinc-700 text-center">
-                                    <div className="text-xs text-zinc-400">Length</div>
+                                <div className="p-3 bg-white dark:bg-zinc-900 rounded border border-zinc-200 dark:border-zinc-700 text-center">
+                                    <div className="text-xs text-zinc-500 dark:text-zinc-400">Length</div>
                                     <div className="text-xl font-mono">{result.dimensions.length}m</div>
                                 </div>
-                                <div className="p-3 bg-zinc-900 rounded border border-zinc-700 text-center">
-                                    <div className="text-xs text-zinc-400">Width</div>
+                                <div className="p-3 bg-white dark:bg-zinc-900 rounded border border-zinc-200 dark:border-zinc-700 text-center">
+                                    <div className="text-xs text-zinc-500 dark:text-zinc-400">Width</div>
                                     <div className="text-xl font-mono">{result.dimensions.width}m</div>
                                 </div>
-                                <div className="p-3 bg-zinc-900 rounded border border-zinc-700 text-center">
-                                    <div className="text-xs text-zinc-400">Depth</div>
+                                <div className="p-3 bg-white dark:bg-zinc-900 rounded border border-zinc-200 dark:border-zinc-700 text-center">
+                                    <div className="text-xs text-zinc-500 dark:text-zinc-400">Depth</div>
                                     <div className="text-xl font-mono">{result.dimensions.depth}m</div>
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <h4 className="text-sm font-medium text-zinc-400">Reinforcement</h4>
-                                <div className="p-3 bg-zinc-900 rounded border border-zinc-700 font-mono text-sm">
+                                <h4 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Reinforcement</h4>
+                                <div className="p-3 bg-white dark:bg-zinc-900 rounded border border-zinc-200 dark:border-zinc-700 font-mono text-sm">
                                     <div>X: {result.reinforcement.bottom_x}</div>
                                     <div>Y: {result.reinforcement.bottom_y}</div>
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <h4 className="text-sm font-medium text-zinc-400">Checks</h4>
+                                <h4 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Checks</h4>
                                 <div className="space-y-1">
                                     {result.checks.map((check, i) => (
-                                        <div key={i} className="text-xs text-zinc-400 flex justify-between">
+                                        <div key={i} className="text-xs text-zinc-500 dark:text-zinc-400 flex justify-between">
                                             <span>{check.split('=')[0]}</span>
-                                            <span className="text-white">{check.split('=')[1]}</span>
+                                            <span className="text-zinc-900 dark:text-white">{check.split('=')[1]}</span>
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         </div>
                     ) : (
-                        <div className="h-full flex items-center justify-center text-zinc-400">
+                        <div className="h-full flex items-center justify-center text-zinc-500 dark:text-zinc-400">
                             Run design to see results
                         </div>
                     )}

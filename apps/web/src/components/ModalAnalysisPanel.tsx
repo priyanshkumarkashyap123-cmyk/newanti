@@ -99,19 +99,19 @@ const ModeCard: FC<{
                             <div className="font-medium text-red-500">
                                 {(mode.participationX * 100).toFixed(1)}%
                             </div>
-                            <div className="text-gray-400">X</div>
+                            <div className="text-gray-500 dark:text-gray-400">X</div>
                         </div>
                         <div className="text-center">
                             <div className="font-medium text-green-500">
                                 {(mode.participationY * 100).toFixed(1)}%
                             </div>
-                            <div className="text-gray-400">Y</div>
+                            <div className="text-gray-500 dark:text-gray-400">Y</div>
                         </div>
                         <div className="text-center">
                             <div className="font-medium text-blue-500">
                                 {(mode.participationZ * 100).toFixed(1)}%
                             </div>
-                            <div className="text-gray-400">Z</div>
+                            <div className="text-gray-500 dark:text-gray-400">Z</div>
                         </div>
                     </div>
 
@@ -309,24 +309,24 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isPro = false 
     }
 
     return (
-        <div className="flex flex-col h-full bg-zinc-900 text-white rounded-lg overflow-hidden">
+        <div className="flex flex-col h-full bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white rounded-lg overflow-hidden">
             {/* Header */}
-            <div className="p-3 border-b border-zinc-800 bg-zinc-900">
+            <div className="p-3 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
                 <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-sm flex items-center gap-2 text-zinc-100">
+                    <h3 className="font-semibold text-sm flex items-center gap-2 text-zinc-800 dark:text-zinc-100">
                         <Activity className="w-4 h-4 text-blue-400" />
                         Modal Analysis
                     </h3>
                     <div className="flex gap-2 text-xs">
                         <button
                             onClick={() => setViewMode('cards')}
-                            className={`px-2 py-1 rounded ${viewMode === 'cards' ? 'bg-zinc-700 text-white' : 'text-zinc-400 hover:text-white'}`}
+                            className={`px-2 py-1 rounded ${viewMode === 'cards' ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'}`}
                         >
                             Cards
                         </button>
                         <button
                             onClick={() => setViewMode('table')}
-                            className={`px-2 py-1 rounded ${viewMode === 'table' ? 'bg-zinc-700 text-white' : 'text-zinc-400 hover:text-white'}`}
+                            className={`px-2 py-1 rounded ${viewMode === 'table' ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'}`}
                         >
                             Table
                         </button>
@@ -336,14 +336,14 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isPro = false 
                 {/* Settings */}
                 <div className="flex items-center gap-3 text-xs">
                     <label className="flex items-center gap-2">
-                        <span className="text-zinc-400">Modes:</span>
+                        <span className="text-zinc-500 dark:text-zinc-400">Modes:</span>
                         <input
                             type="number"
                             min={1}
                             max={50}
                             value={numModes}
                             onChange={(e) => setNumModes(parseInt(e.target.value) || 6)}
-                            className="w-16 px-2 py-1 border border-zinc-700 rounded bg-zinc-800 text-white focus:outline-none focus:border-blue-500"
+                            className="w-16 px-2 py-1 border border-zinc-200 dark:border-zinc-700 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:border-blue-500"
                         />
                     </label>
                     <button
@@ -368,7 +368,7 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isPro = false 
             {/* Content */}
             <div className="flex-1 overflow-auto p-3">
                 {modes.length === 0 ? (
-                    <div className="text-center text-zinc-400 py-8">
+                    <div className="text-center text-zinc-500 dark:text-zinc-400 py-8">
                         <Zap className="w-8 h-8 mx-auto mb-2 opacity-50" />
                         <p className="text-sm">Run modal analysis to see natural frequencies.</p>
                     </div>
@@ -376,24 +376,24 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isPro = false 
                     <>
                         {/* Summary */}
                         <div className="grid grid-cols-3 gap-2 mb-4 text-center text-xs">
-                            <div className="p-2 bg-zinc-800 rounded border border-zinc-700">
+                            <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded border border-zinc-200 dark:border-zinc-700">
                                 <div className="text-lg font-bold text-blue-400">{modes[0]?.frequency.toFixed(2)}</div>
-                                <div className="text-zinc-400">1st Freq (Hz)</div>
+                                <div className="text-zinc-500 dark:text-zinc-400">1st Freq (Hz)</div>
                             </div>
-                            <div className="p-2 bg-zinc-800 rounded border border-zinc-700">
+                            <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded border border-zinc-200 dark:border-zinc-700">
                                 <div className="text-lg font-bold text-green-400">{modes[0]?.period.toFixed(3)}</div>
-                                <div className="text-zinc-400">1st Period (s)</div>
+                                <div className="text-zinc-500 dark:text-zinc-400">1st Period (s)</div>
                             </div>
-                            <div className="p-2 bg-zinc-800 rounded border border-zinc-700">
-                                <div className="text-lg font-bold text-zinc-200">{modes.length}</div>
-                                <div className="text-zinc-400">Modes</div>
+                            <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded border border-zinc-200 dark:border-zinc-700">
+                                <div className="text-lg font-bold text-zinc-700 dark:text-zinc-200">{modes.length}</div>
+                                <div className="text-zinc-500 dark:text-zinc-400">Modes</div>
                             </div>
                         </div>
 
                         {viewMode === 'table' ? (
-                            <div className="bg-zinc-800 rounded-lg overflow-hidden text-xs border border-zinc-700">
+                            <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden text-xs border border-zinc-200 dark:border-zinc-700">
                                 <table className="w-full text-left">
-                                    <thead className="bg-zinc-700 text-zinc-300">
+                                    <thead className="bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300">
                                         <tr>
                                             <th className="p-2 font-medium">Mode</th>
                                             <th className="p-2 font-medium">Freq (Hz)</th>
@@ -401,20 +401,20 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isPro = false 
                                             <th className="p-2 font-medium text-center">Action</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-zinc-700">
+                                    <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
                                         {modes.map((mode, index) => (
                                             <tr
                                                 key={mode.modeNumber}
-                                                className={`hover:bg-zinc-700/50 cursor-pointer ${activeModeIndex === index ? 'bg-blue-900/20' : ''}`}
+                                                className={`hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 cursor-pointer ${activeModeIndex === index ? 'bg-blue-900/20' : ''}`}
                                                 onClick={() => handleSelect(index)}
                                             >
                                                 <td className="p-2">{mode.modeNumber}</td>
-                                                <td className="p-2 font-mono text-zinc-300">{mode.frequency.toFixed(3)}</td>
-                                                <td className="p-2 font-mono text-zinc-300">{mode.period.toFixed(4)}</td>
+                                                <td className="p-2 font-mono text-zinc-600 dark:text-zinc-300">{mode.frequency.toFixed(3)}</td>
+                                                <td className="p-2 font-mono text-zinc-600 dark:text-zinc-300">{mode.period.toFixed(4)}</td>
                                                 <td className="p-2 text-center">
                                                     <button
                                                         onClick={(e) => { e.stopPropagation(); handleAnimate(index); }}
-                                                        className="text-zinc-400 hover:text-blue-400"
+                                                        className="text-zinc-500 dark:text-zinc-400 hover:text-blue-400"
                                                     >
                                                         {activeModeIndex === index && isAnimating ? (
                                                             <PauseCircle className="w-4 h-4" />
@@ -449,11 +449,11 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isPro = false 
 
             {/* Footer */}
             {modes.length > 0 && (
-                <div className="p-3 border-t border-zinc-800 bg-zinc-900 flex justify-between items-center text-xs">
-                    <div className="text-zinc-400">
+                <div className="p-3 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex justify-between items-center text-xs">
+                    <div className="text-zinc-500 dark:text-zinc-400">
                         {isAnimating ? `Animating Mode ${activeModeIndex + 1}...` : 'Select a mode to view shape'}
                     </div>
-                    <div className="text-zinc-400">
+                    <div className="text-zinc-500 dark:text-zinc-400">
                         Total Mass: {modalResults?.totalMass?.toFixed(1) || '-'} kg
                     </div>
                 </div>

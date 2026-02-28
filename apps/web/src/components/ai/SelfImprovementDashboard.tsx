@@ -53,21 +53,21 @@ export const SelfImprovementDashboard: React.FC = () => {
             case 'completed': return 'text-green-400';
             case 'failed': return 'text-red-400';
             case 'in_progress': return 'text-yellow-400';
-            default: return 'text-gray-400';
+            default: return 'text-gray-500 dark:text-gray-400';
         }
     };
 
     return (
-        <div className="bg-gray-900 rounded-xl border border-gray-700 overflow-hidden">
+        <div className="bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-700 overflow-hidden">
             {/* Header */}
-            <div className="px-4 py-3 bg-gray-800 border-b border-gray-700 flex items-center justify-between">
+            <div className="px-4 py-3 bg-gray-100 dark:bg-gray-800 border-b border-gray-700 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <svg className="w-5 h-5 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                             d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
                         />
                     </svg>
-                    <h3 className="font-semibold text-white">AI Self-Improvement</h3>
+                    <h3 className="font-semibold text-zinc-900 dark:text-white">AI Self-Improvement</h3>
                     {isMonitoring && (
                         <span className="animate-pulse text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded">
                             Monitoring
@@ -92,14 +92,14 @@ export const SelfImprovementDashboard: React.FC = () => {
                         <div
                             key={m.feature}
                             onClick={() => setSelectedFeature(m.feature)}
-                            className={`bg-gray-800 rounded-lg p-3 cursor-pointer transition-colors ${selectedFeature === m.feature ? 'ring-2 ring-purple-500' : 'hover:bg-gray-750'
+                            className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-3 cursor-pointer transition-colors ${selectedFeature === m.feature ? 'ring-2 ring-purple-500' : 'hover:bg-gray-750'
                                 }`}
                         >
                             <div className="flex items-center justify-between mb-1">
-                                <span className="text-gray-400 text-xs capitalize">{m.feature.replace('_', ' ')}</span>
+                                <span className="text-gray-500 dark:text-gray-400 text-xs capitalize">{m.feature.replace('_', ' ')}</span>
                                 <span>{getTrendIcon(m.ratingTrend)}</span>
                             </div>
-                            <div className="text-xl font-bold text-white">
+                            <div className="text-xl font-bold text-zinc-900 dark:text-white">
                                 {m.avgRating.toFixed(1)}
                                 <span className="text-sm text-gray-500">/5</span>
                             </div>
@@ -112,34 +112,34 @@ export const SelfImprovementDashboard: React.FC = () => {
 
                 {/* Selected Feature Details */}
                 {selectedFeature && (
-                    <div className="bg-gray-800 rounded-lg p-4">
-                        <h4 className="text-white font-medium mb-3 capitalize">
+                    <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+                        <h4 className="text-zinc-900 dark:text-white font-medium mb-3 capitalize">
                             {selectedFeature.replace('_', ' ')} Details
                         </h4>
                         {metrics.filter(m => m.feature === selectedFeature).map(m => (
                             <div key={m.feature} className="grid grid-cols-4 gap-4 text-sm">
                                 <div>
-                                    <span className="text-gray-400">Avg Rating</span>
+                                    <span className="text-gray-500 dark:text-gray-400">Avg Rating</span>
                                     <div className={`font-bold ${m.avgRating >= 4 ? 'text-green-400' : 'text-yellow-400'}`}>
                                         {m.avgRating.toFixed(2)}/5
                                     </div>
                                 </div>
                                 <div>
-                                    <span className="text-gray-400">Correction Rate</span>
+                                    <span className="text-gray-500 dark:text-gray-400">Correction Rate</span>
                                     <div className={`font-bold ${m.correctionRate < 0.15 ? 'text-green-400' : 'text-red-400'}`}>
                                         {(m.correctionRate * 100).toFixed(1)}%
                                     </div>
                                 </div>
                                 <div>
-                                    <span className="text-gray-400">Error Rate</span>
+                                    <span className="text-gray-500 dark:text-gray-400">Error Rate</span>
                                     <div className={`font-bold ${m.errorRate < 0.05 ? 'text-green-400' : 'text-red-400'}`}>
                                         {(m.errorRate * 100).toFixed(1)}%
                                     </div>
                                 </div>
                                 <div>
-                                    <span className="text-gray-400">Trend</span>
+                                    <span className="text-gray-500 dark:text-gray-400">Trend</span>
                                     <div className={`font-bold ${m.ratingTrend === 'improving' ? 'text-green-400' :
-                                            m.ratingTrend === 'declining' ? 'text-red-400' : 'text-gray-400'
+                                            m.ratingTrend === 'declining' ? 'text-red-400' : 'text-gray-500 dark:text-gray-400'
                                         }`}>
                                         {m.ratingTrend}
                                     </div>
@@ -151,21 +151,21 @@ export const SelfImprovementDashboard: React.FC = () => {
 
                 {/* Knowledge Graph Stats */}
                 {knowledgeStats && (
-                    <div className="bg-gray-800 rounded-lg p-4">
-                        <h4 className="text-white font-medium mb-2">Knowledge Graph</h4>
+                    <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+                        <h4 className="text-zinc-900 dark:text-white font-medium mb-2">Knowledge Graph</h4>
                         <div className="flex gap-4 text-sm">
                             <div>
-                                <span className="text-gray-400">Nodes:</span>
-                                <span className="ml-2 text-white font-bold">{knowledgeStats.nodeCount}</span>
+                                <span className="text-gray-500 dark:text-gray-400">Nodes:</span>
+                                <span className="ml-2 text-zinc-900 dark:text-white font-bold">{knowledgeStats.nodeCount}</span>
                             </div>
                             <div>
-                                <span className="text-gray-400">Edges:</span>
-                                <span className="ml-2 text-white font-bold">{knowledgeStats.edgeCount}</span>
+                                <span className="text-gray-500 dark:text-gray-400">Edges:</span>
+                                <span className="ml-2 text-zinc-900 dark:text-white font-bold">{knowledgeStats.edgeCount}</span>
                             </div>
                             {Object.entries(knowledgeStats.byType).map(([type, count]) => (
                                 <div key={type}>
-                                    <span className="text-gray-400 capitalize">{type}:</span>
-                                    <span className="ml-1 text-white">{count as number}</span>
+                                    <span className="text-gray-500 dark:text-gray-400 capitalize">{type}:</span>
+                                    <span className="ml-1 text-zinc-900 dark:text-white">{count as number}</span>
                                 </div>
                             ))}
                         </div>
@@ -173,8 +173,8 @@ export const SelfImprovementDashboard: React.FC = () => {
                 )}
 
                 {/* Recent Actions */}
-                <div className="bg-gray-800 rounded-lg p-4">
-                    <h4 className="text-white font-medium mb-3">Recent Optimization Actions</h4>
+                <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+                    <h4 className="text-zinc-900 dark:text-white font-medium mb-3">Recent Optimization Actions</h4>
                     <div className="space-y-2 max-h-48 overflow-y-auto">
                         {actions.length === 0 ? (
                             <p className="text-gray-500 text-sm">No actions yet. Start monitoring to enable auto-optimization.</p>
@@ -188,7 +188,7 @@ export const SelfImprovementDashboard: React.FC = () => {
                                             }`}>
                                             {action.type}
                                         </span>
-                                        <span className="text-gray-300 text-sm">{action.feature}</span>
+                                        <span className="text-gray-600 dark:text-gray-300 text-sm">{action.feature}</span>
                                         <span className="text-gray-500 text-xs">{action.reason.substring(0, 40)}...</span>
                                     </div>
                                     <span className={`text-sm font-medium ${getStatusColor(action.status)}`}>
@@ -214,7 +214,7 @@ export const SelfImprovementDashboard: React.FC = () => {
 // console.log('Improvement Report:', report);
                             alert(`Report generated with ${report.recommendations.length} recommendations`);
                         }}
-                        className="flex-1 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 font-medium text-sm"
+                        className="flex-1 py-2 bg-gray-700 text-zinc-900 dark:text-white rounded-lg hover:bg-gray-600 font-medium text-sm"
                     >
                         Generate Report
                     </button>

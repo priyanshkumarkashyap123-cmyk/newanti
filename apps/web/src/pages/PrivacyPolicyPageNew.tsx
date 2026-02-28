@@ -93,7 +93,7 @@ export const PrivacyPolicyPageNew = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-gradient-to-b from-white dark:from-slate-950 via-slate-100 dark:via-slate-900 to-white dark:to-slate-950">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-slate-50 dark:bg-slate-900/80 backdrop-blur-xl border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -110,7 +110,7 @@ export const PrivacyPolicyPageNew = () => {
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 text-white/70 hover:text-white"
+              className="lg:hidden p-2 text-zinc-900/70 dark:text-white/70 hover:text-zinc-900 dark:hover:text-white"
             >
               {mobileMenuOpen ? (
                 <X className="w-6 h-6" />
@@ -122,7 +122,7 @@ export const PrivacyPolicyPageNew = () => {
             <nav className="hidden lg:flex items-center gap-6">
               <Link
                 to="/terms-and-conditions"
-                className="text-white/70 hover:text-white transition-colors"
+                className="text-zinc-900/70 dark:text-white/70 hover:text-zinc-900 dark:hover:text-white transition-colors"
               >
                 Terms and Conditions
               </Link>
@@ -150,12 +150,12 @@ export const PrivacyPolicyPageNew = () => {
               {mobileMenuOpen && (
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className="lg:hidden mb-4 p-2 text-white/70 hover:text-white"
+                  className="lg:hidden mb-4 p-2 text-zinc-900/70 dark:text-white/70 hover:text-zinc-900 dark:hover:text-white"
                 >
                   <X className="w-6 h-6" />
                 </button>
               )}
-              <h3 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4">
+              <h3 className="text-sm font-semibold text-zinc-900/50 dark:text-white/50 uppercase tracking-wider mb-4">
                 Table of Contents
               </h3>
               <nav className="space-y-1 max-h-[70vh] overflow-y-auto pr-2">
@@ -166,7 +166,7 @@ export const PrivacyPolicyPageNew = () => {
                     className={`w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center gap-2 group ${
                       activeSection === section.id
                         ? "bg-blue-500/20 text-blue-300"
-                        : "text-white/70 hover:text-white hover:bg-white/5"
+                        : "text-zinc-900/70 dark:text-white/70 hover:text-zinc-900 dark:hover:text-white hover:bg-white/5"
                     }`}
                   >
                     <ChevronRight
@@ -186,20 +186,20 @@ export const PrivacyPolicyPageNew = () => {
 
               {/* Quick Links */}
               <div className="mt-8 pt-6 border-t border-white/10">
-                <h4 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-3">
+                <h4 className="text-sm font-semibold text-zinc-900/50 dark:text-white/50 uppercase tracking-wider mb-3">
                   Related Documents
                 </h4>
                 <div className="space-y-2">
                   <Link
                     to="/terms-and-conditions"
-                    className="flex items-center gap-2 text-sm text-white/60 hover:text-blue-400 transition-colors"
+                    className="flex items-center gap-2 text-sm text-zinc-900/60 dark:text-white/60 hover:text-blue-400 transition-colors"
                   >
                     <Scale className="w-4 h-4" />
                     Terms and Conditions
                   </Link>
                   <Link
                     to="/contact"
-                    className="flex items-center gap-2 text-sm text-white/60 hover:text-blue-400 transition-colors"
+                    className="flex items-center gap-2 text-sm text-zinc-900/60 dark:text-white/60 hover:text-blue-400 transition-colors"
                   >
                     <Mail className="w-4 h-4" />
                     Contact Us
@@ -215,15 +215,15 @@ export const PrivacyPolicyPageNew = () => {
             <div className="mb-12">
               <div className="flex items-center gap-3 mb-4">
                 <Shield className="w-8 h-8 text-blue-400" />
-                <h1 className="text-4xl font-bold text-white">
+                <h1 className="text-4xl font-bold text-zinc-900 dark:text-white">
                   Privacy Policy
                 </h1>
               </div>
-              <p className="text-white/60">
+              <p className="text-zinc-900/60 dark:text-white/60">
                 Last Updated: February 24, 2026 | Effective Date: February 24,
                 2026
               </p>
-              <p className="text-white/50 text-sm mt-1">
+              <p className="text-zinc-900/50 dark:text-white/50 text-sm mt-1">
                 Domain: beamlabultimate.tech
               </p>
 
@@ -251,10 +251,10 @@ export const PrivacyPolicyPageNew = () => {
             <div className="prose prose-invert prose-lg max-w-none">
               {/* Introduction */}
               <section id="introduction" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   Introduction
                 </h2>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   This Privacy Policy describes how{" "}
                   <strong>Rakshit Tiwari</strong> trading as{" "}
                   <strong>Beamlab Ultimate</strong> and its affiliates
@@ -273,7 +273,7 @@ export const PrivacyPolicyPageNew = () => {
                   (hereinafter referred to as the &quot;
                   <strong>Platform</strong>&quot;).
                 </p>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   Please note that you may be able to browse certain sections of
                   the Platform without registering with us.
                 </p>
@@ -315,16 +315,16 @@ export const PrivacyPolicyPageNew = () => {
 
               {/* 1. Collection */}
               <section id="collection" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">1.</span> Collection
                 </h2>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   We collect your personal data when you use our Platform,
                   services, or otherwise interact with us during the course of
                   providing our services. Some of the information that we may
                   collect includes but is not limited to:
                 </p>
-                <ul className="space-y-2 text-white/80 mt-4">
+                <ul className="space-y-2 text-zinc-900/80 dark:text-white/80 mt-4">
                   <li>Your name</li>
                   <li>Date of birth</li>
                   <li>Address</li>
@@ -335,7 +335,7 @@ export const PrivacyPolicyPageNew = () => {
                     verification
                   </li>
                 </ul>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   All data collection is in accordance with applicable Indian
                   laws. You always have the option to not provide information by
                   choosing not to use a particular service, product, or feature
@@ -368,14 +368,14 @@ export const PrivacyPolicyPageNew = () => {
 
               {/* 2. Usage */}
               <section id="usage" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">2.</span> Usage
                 </h2>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   We use personal data to provide the services you request. This
                   includes but is not limited to:
                 </p>
-                <ul className="space-y-2 text-white/80 mt-4">
+                <ul className="space-y-2 text-zinc-900/80 dark:text-white/80 mt-4">
                   <li>
                     Providing and fulfilling the services you request on the
                     Platform.
@@ -399,7 +399,7 @@ export const PrivacyPolicyPageNew = () => {
                     Platform and Services.
                   </li>
                 </ul>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   To the extent we use your personal data to market to you, we
                   will provide you the ability to opt-out of such uses. You may
                   opt out of marketing communications by using the unsubscribe
@@ -409,19 +409,19 @@ export const PrivacyPolicyPageNew = () => {
 
               {/* 3. Sharing */}
               <section id="sharing" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">3.</span> Sharing
                 </h2>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   We may share personal data internally within our group
                   entities and affiliates to provide you access to the services
                   and products offered by them.
                 </p>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   We may also disclose personal data to third parties, including
                   but not limited to:
                 </p>
-                <ul className="space-y-2 text-white/80 mt-4">
+                <ul className="space-y-2 text-zinc-900/80 dark:text-white/80 mt-4">
                   <li>
                     <strong>Business partners and affiliates</strong> — to
                     jointly provide services and fulfill product/service
@@ -441,12 +441,12 @@ export const PrivacyPolicyPageNew = () => {
                     public.
                   </li>
                 </ul>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   These entities and affiliates may market to you as a result of
                   such sharing unless you explicitly opt-out.
                 </p>
                 <div className="mt-4 p-4 bg-white/5 border border-white/10 rounded-xl">
-                  <p className="text-white/70 text-sm">
+                  <p className="text-zinc-900/70 dark:text-white/70 text-sm">
                     <strong>Note:</strong> We do not sell your personal data to
                     any unaffiliated third parties for their marketing purposes
                     without your explicit consent.
@@ -456,17 +456,17 @@ export const PrivacyPolicyPageNew = () => {
 
               {/* 4. Security Precautions */}
               <section id="security" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <Key className="w-6 h-6 text-blue-400" />
                   <span className="text-blue-400">4.</span> Security Precautions
                 </h2>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   To protect your personal data from unauthorised access or
                   disclosure, loss or misuse, we adopt reasonable security
                   practices and procedures, in line with industry standards.
                   These include but are not limited to:
                 </p>
-                <ul className="space-y-2 text-white/80 mt-4">
+                <ul className="space-y-2 text-zinc-900/80 dark:text-white/80 mt-4">
                   <li>
                     <strong>Encryption:</strong> TLS/SSL encryption for all data
                     in transit.
@@ -513,15 +513,15 @@ export const PrivacyPolicyPageNew = () => {
 
               {/* 5. Data Deletion and Retention */}
               <section id="deletion-retention" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <Trash2 className="w-6 h-6 text-blue-400" />
                   <span className="text-blue-400">5.</span> Data Deletion and
                   Retention
                 </h2>
-                <h3 className="text-xl font-semibold text-white/90 mt-6 mb-3">
+                <h3 className="text-xl font-semibold text-zinc-900/90 dark:text-white/90 mt-6 mb-3">
                   5.1 Account Deletion
                 </h3>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   You have the option to delete your account by visiting your
                   profile and settings on the Platform. Please note that upon
                   deletion of your account, you will lose all information
@@ -530,16 +530,16 @@ export const PrivacyPolicyPageNew = () => {
                   irreversible.
                 </p>
 
-                <h3 className="text-xl font-semibold text-white/90 mt-6 mb-3">
+                <h3 className="text-xl font-semibold text-zinc-900/90 dark:text-white/90 mt-6 mb-3">
                   5.2 Retention Policy
                 </h3>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   We retain your personal data for a period no longer than is
                   required for the purpose for which it was collected or as
                   required under any applicable law. However, we may retain data
                   beyond this period if necessary for the following purposes:
                 </p>
-                <ul className="space-y-2 text-white/80 mt-4">
+                <ul className="space-y-2 text-zinc-900/80 dark:text-white/80 mt-4">
                   <li>
                     Preventing fraud and investigating suspected illegal
                     activities.
@@ -551,7 +551,7 @@ export const PrivacyPolicyPageNew = () => {
                   </li>
                   <li>Protecting legitimate legal or business interests.</li>
                 </ul>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   Once the retention period expires or the purpose is fulfilled,
                   your personal data will be securely deleted or anonymised in
                   accordance with applicable laws.
@@ -560,25 +560,25 @@ export const PrivacyPolicyPageNew = () => {
 
               {/* 6. Your Rights & Consent */}
               <section id="rights-consent" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <UserCheck className="w-6 h-6 text-blue-400" />
                   <span className="text-blue-400">6.</span> Your Rights &amp;
                   Consent
                 </h2>
 
-                <h3 className="text-xl font-semibold text-white/90 mt-6 mb-3">
+                <h3 className="text-xl font-semibold text-zinc-900/90 dark:text-white/90 mt-6 mb-3">
                   6.1 Access & Rectification
                 </h3>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   You may access, rectify, and update your personal data
                   directly through the functionalities provided on the Platform
                   (for example, through your profile and settings pages).
                 </p>
 
-                <h3 className="text-xl font-semibold text-white/90 mt-6 mb-3">
+                <h3 className="text-xl font-semibold text-zinc-900/90 dark:text-white/90 mt-6 mb-3">
                   6.2 Consent
                 </h3>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   By visiting our Platform or by providing your information, you
                   consent to the collection, use, storage, disclosure, and
                   otherwise processing of your information on the Platform in
@@ -588,10 +588,10 @@ export const PrivacyPolicyPageNew = () => {
                   information in accordance with this Privacy Policy.
                 </p>
 
-                <h3 className="text-xl font-semibold text-white/90 mt-6 mb-3">
+                <h3 className="text-xl font-semibold text-zinc-900/90 dark:text-white/90 mt-6 mb-3">
                   6.3 Withdrawal of Consent
                 </h3>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   You have the option to withdraw your consent that you have
                   already provided by writing to the Grievance Officer at the
                   contact information provided below. Please mention{" "}
@@ -602,7 +602,7 @@ export const PrivacyPolicyPageNew = () => {
                   in your communication&apos;s subject line.
                 </p>
                 <div className="mt-4 p-4 bg-white/5 border border-white/10 rounded-xl">
-                  <p className="text-white/70 text-sm">
+                  <p className="text-zinc-900/70 dark:text-white/70 text-sm">
                     <strong>Please note:</strong> Withdrawal of consent will not
                     be retrospective and will be in accordance with the Terms of
                     Use, this Privacy Policy, and applicable laws. In the event
@@ -616,16 +616,16 @@ export const PrivacyPolicyPageNew = () => {
 
               {/* 7. Cookies & Tracking */}
               <section id="cookies" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <Eye className="w-6 h-6 text-blue-400" />
                   <span className="text-blue-400">7.</span> Cookies &amp;
                   Tracking Technologies
                 </h2>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   We use cookies and similar tracking technologies to enhance
                   your experience on the Platform. These include:
                 </p>
-                <ul className="space-y-3 text-white/80 mt-4">
+                <ul className="space-y-3 text-zinc-900/80 dark:text-white/80 mt-4">
                   <li>
                     <strong>Essential Cookies:</strong> Required for
                     authentication, security, and core functionality of the
@@ -644,7 +644,7 @@ export const PrivacyPolicyPageNew = () => {
                     and session information during your visit.
                   </li>
                 </ul>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   You can control cookies through your browser settings. Please
                   note that disabling certain cookies may limit the
                   functionality and features of the Platform.
@@ -653,16 +653,16 @@ export const PrivacyPolicyPageNew = () => {
 
               {/* 8. Children's Privacy */}
               <section id="children" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">8.</span> Children&apos;s
                   Privacy
                 </h2>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   The Platform and Services are not intended for use by
                   individuals under the age of 18. We do not knowingly collect
                   personal information from children.
                 </p>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   If we become aware that we have inadvertently collected
                   personal information from a child under 18 without verified
                   parental consent, we will take reasonable steps to delete that
@@ -675,11 +675,11 @@ export const PrivacyPolicyPageNew = () => {
 
               {/* 9. Changes to This Policy */}
               <section id="changes" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">9.</span> Changes to This
                   Privacy Policy
                 </h2>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   Please check our Privacy Policy periodically for changes. We
                   may update this Privacy Policy to reflect changes to our
                   information practices. We may alert you to significant changes
@@ -687,7 +687,7 @@ export const PrivacyPolicyPageNew = () => {
                   your account, by placing a prominent notice on our Platform,
                   or by updating the date at the top of this policy.
                 </p>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   Your continued use of the Platform after any modifications to
                   this Privacy Policy will constitute your acknowledgment of the
                   modifications and your consent to abide and be bound by the
@@ -697,25 +697,25 @@ export const PrivacyPolicyPageNew = () => {
 
               {/* 10. Grievance Officer */}
               <section id="grievance-officer" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <Scale className="w-6 h-6 text-blue-400" />
                   <span className="text-blue-400">10.</span> Grievance Officer
                 </h2>
-                <p className="text-white/80 leading-relaxed mb-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mb-4">
                   In accordance with the{" "}
                   <strong>Information Technology Act 2000</strong> and rules
                   made thereunder, the name and contact details of the Grievance
                   Officer are provided below:
                 </p>
                 <div className="p-5 bg-white/5 border border-white/10 rounded-xl">
-                  <h3 className="text-lg font-semibold text-white mb-4">
+                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
                     Grievance Officer Details
                   </h3>
-                  <div className="space-y-4 text-white/80">
+                  <div className="space-y-4 text-zinc-900/80 dark:text-white/80">
                     <div className="flex items-center gap-3">
                       <Shield className="w-5 h-5 text-blue-400 flex-shrink-0" />
                       <div>
-                        <p className="text-white/50 text-xs uppercase tracking-wider">
+                        <p className="text-zinc-900/50 dark:text-white/50 text-xs uppercase tracking-wider">
                           Name
                         </p>
                         <p className="font-medium">Rakshit Tiwari</p>
@@ -724,7 +724,7 @@ export const PrivacyPolicyPageNew = () => {
                     <div className="flex items-center gap-3">
                       <FileText className="w-5 h-5 text-blue-400 flex-shrink-0" />
                       <div>
-                        <p className="text-white/50 text-xs uppercase tracking-wider">
+                        <p className="text-zinc-900/50 dark:text-white/50 text-xs uppercase tracking-wider">
                           Designation
                         </p>
                         <p className="font-medium">
@@ -735,7 +735,7 @@ export const PrivacyPolicyPageNew = () => {
                     <div className="flex items-center gap-3">
                       <MapPin className="w-5 h-5 text-blue-400 flex-shrink-0" />
                       <div>
-                        <p className="text-white/50 text-xs uppercase tracking-wider">
+                        <p className="text-zinc-900/50 dark:text-white/50 text-xs uppercase tracking-wider">
                           Company Address
                         </p>
                         <p>Rajapur Teonthar, Rewa, Madhya Pradesh 486220</p>
@@ -744,7 +744,7 @@ export const PrivacyPolicyPageNew = () => {
                     <div className="flex items-center gap-3">
                       <Mail className="w-5 h-5 text-blue-400 flex-shrink-0" />
                       <div>
-                        <p className="text-white/50 text-xs uppercase tracking-wider">
+                        <p className="text-zinc-900/50 dark:text-white/50 text-xs uppercase tracking-wider">
                           Email
                         </p>
                         <a
@@ -758,7 +758,7 @@ export const PrivacyPolicyPageNew = () => {
                     <div className="flex items-center gap-3">
                       <Clock className="w-5 h-5 text-blue-400 flex-shrink-0" />
                       <div>
-                        <p className="text-white/50 text-xs uppercase tracking-wider">
+                        <p className="text-zinc-900/50 dark:text-white/50 text-xs uppercase tracking-wider">
                           Availability
                         </p>
                         <p>Monday – Friday (9:00 AM – 6:00 PM IST)</p>
@@ -770,19 +770,19 @@ export const PrivacyPolicyPageNew = () => {
 
               {/* 11. Contact Us */}
               <section id="contact" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">11.</span> Contact Us
                 </h2>
-                <p className="text-white/80 leading-relaxed mb-6">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mb-6">
                   If you have any questions, concerns, or requests regarding
                   this Privacy Policy or how your personal data is handled,
                   please contact us using the information provided below:
                 </p>
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 text-white/80">
+                  <div className="flex items-center gap-3 text-zinc-900/80 dark:text-white/80">
                     <Mail className="w-5 h-5 text-blue-400" />
                     <div>
-                      <p className="text-white/50 text-xs uppercase tracking-wider">
+                      <p className="text-zinc-900/50 dark:text-white/50 text-xs uppercase tracking-wider">
                         Email
                       </p>
                       <a
@@ -793,10 +793,10 @@ export const PrivacyPolicyPageNew = () => {
                       </a>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 text-white/80">
+                  <div className="flex items-center gap-3 text-zinc-900/80 dark:text-white/80">
                     <Globe className="w-5 h-5 text-blue-400" />
                     <div>
-                      <p className="text-white/50 text-xs uppercase tracking-wider">
+                      <p className="text-zinc-900/50 dark:text-white/50 text-xs uppercase tracking-wider">
                         Website
                       </p>
                       <a
@@ -809,10 +809,10 @@ export const PrivacyPolicyPageNew = () => {
                       </a>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 text-white/80">
+                  <div className="flex items-center gap-3 text-zinc-900/80 dark:text-white/80">
                     <MapPin className="w-5 h-5 text-blue-400" />
                     <div>
-                      <p className="text-white/50 text-xs uppercase tracking-wider">
+                      <p className="text-zinc-900/50 dark:text-white/50 text-xs uppercase tracking-wider">
                         Registered Office
                       </p>
                       <p>
@@ -859,32 +859,32 @@ export const PrivacyPolicyPageNew = () => {
       <footer className="border-t border-white/10 py-8 mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-white/50 text-sm">
+            <p className="text-zinc-900/50 dark:text-white/50 text-sm">
               © 2026 BeamLab Ultimate. All rights reserved.
             </p>
             <div className="flex gap-6">
               <Link
                 to="/privacy-policy"
-                className="text-white/50 hover:text-white text-sm transition-colors"
+                className="text-zinc-900/50 dark:text-white/50 hover:text-zinc-900 dark:hover:text-white text-sm transition-colors"
               >
                 Privacy Policy
               </Link>
               <Link
                 to="/terms-and-conditions"
-                className="text-white/50 hover:text-white text-sm transition-colors"
+                className="text-zinc-900/50 dark:text-white/50 hover:text-zinc-900 dark:hover:text-white text-sm transition-colors"
               >
                 Terms and Conditions
               </Link>
               <a
                 href="mailto:decodedoffice@gmail.com"
-                className="text-white/50 hover:text-white text-sm transition-colors"
+                className="text-zinc-900/50 dark:text-white/50 hover:text-zinc-900 dark:hover:text-white text-sm transition-colors"
               >
                 Contact
               </a>
             </div>
           </div>
           <div className="mt-4 text-center">
-            <p className="text-white/30 text-xs">
+            <p className="text-zinc-900/30 dark:text-white/30 text-xs">
               Rakshit Tiwari trading as Beamlab Ultimate | Rajapur Teonthar,
               Rewa, Madhya Pradesh 486220
             </p>

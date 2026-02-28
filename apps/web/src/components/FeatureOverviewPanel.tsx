@@ -153,7 +153,7 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
                                     w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all
                                     ${activeSection === section.title.toLowerCase().replace(' ', '-')
                                         ? `${section.bgColor} ${section.color} border ${section.borderColor}`
-                                        : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-200'
+                                        : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-700 dark:text-zinc-200'
                                     }
                                 `}
                             >
@@ -208,7 +208,7 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
                                                 <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">{item.description}</p>
                                             </div>
                                             {item.action && (
-                                                <ChevronRight className="w-4 h-4 text-zinc-400 dark:text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                <ChevronRight className="w-4 h-4 text-zinc-500 dark:text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                                             )}
                                         </button>
                                     ))}
@@ -218,7 +218,7 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
 
                         {!activeSection && (
                             <div className="flex flex-col items-center justify-center h-full text-center">
-                                <Sparkles className="w-16 h-16 text-zinc-400 dark:text-zinc-500 mb-4" />
+                                <Sparkles className="w-16 h-16 text-zinc-500 dark:text-zinc-500 mb-4" />
                                 <h3 className="text-lg font-semibold text-zinc-600 dark:text-zinc-300 mb-2">
                                     Select a Category
                                 </h3>

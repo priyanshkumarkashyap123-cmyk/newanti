@@ -45,7 +45,7 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
                 onClick={() => voiceInput.toggleListening()}
                 className={`relative p-3 rounded-full transition-all ${state.isListening
                     ? 'bg-red-500 text-white animate-pulse'
-                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-zinc-900 dark:hover:text-white'
                     } ${className}`}
                 title={state.isListening ? 'Stop listening' : 'Start voice input'}
                 aria-label={state.isListening ? 'Stop listening' : 'Start voice input'}
@@ -71,7 +71,7 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
 
             {/* Command feedback */}
             {showFeedback && lastCommand && (
-                <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-gray-800 text-white text-sm px-3 py-1 rounded-lg shadow-lg">
+                <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-gray-100 dark:bg-gray-800 text-zinc-900 dark:text-white text-sm px-3 py-1 rounded-lg shadow-lg">
                     "{lastCommand}"
                 </div>
             )}
@@ -107,22 +107,22 @@ export const VoiceCommandPanel: React.FC<{
 
     if (!voiceInput.isVoiceSupported()) {
         return (
-            <div className="bg-gray-800 rounded-lg p-4 text-center text-gray-400">
+            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 text-center text-gray-500 dark:text-gray-400">
                 Voice input not supported in this browser
             </div>
         );
     }
 
     return (
-        <div className="bg-gray-900 rounded-xl border border-gray-700 overflow-hidden">
-            <div className="px-4 py-3 bg-gray-800 border-b border-gray-700 flex items-center justify-between">
+        <div className="bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-700 overflow-hidden">
+            <div className="px-4 py-3 bg-gray-100 dark:bg-gray-800 border-b border-gray-700 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                             d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
                         />
                     </svg>
-                    <span className="font-semibold text-white">Voice Commands</span>
+                    <span className="font-semibold text-zinc-900 dark:text-white">Voice Commands</span>
                     {state.isListening && (
                         <span className="text-xs bg-red-500 text-white px-2 py-0.5 rounded animate-pulse">
                             Listening...
@@ -143,7 +143,7 @@ export const VoiceCommandPanel: React.FC<{
             <div className="p-4">
                 {/* Quick commands */}
                 <div className="mb-4">
-                    <h4 className="text-gray-400 text-sm mb-2">Try saying:</h4>
+                    <h4 className="text-gray-500 dark:text-gray-400 text-sm mb-2">Try saying:</h4>
                     <div className="flex flex-wrap gap-2">
                         {[
                             'Add a 6 meter beam',
@@ -152,7 +152,7 @@ export const VoiceCommandPanel: React.FC<{
                             'Run analysis',
                             'Check design'
                         ].map((cmd, i) => (
-                            <span key={i} className="text-xs bg-gray-800 text-gray-300 px-2 py-1 rounded">
+                            <span key={i} className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-1 rounded">
                                 "{cmd}"
                             </span>
                         ))}
@@ -161,7 +161,7 @@ export const VoiceCommandPanel: React.FC<{
 
                 {/* Command history */}
                 <div>
-                    <h4 className="text-gray-400 text-sm mb-2">Recent Commands</h4>
+                    <h4 className="text-gray-500 dark:text-gray-400 text-sm mb-2">Recent Commands</h4>
                     <div className="space-y-2 max-h-48 overflow-y-auto">
                         {history.length === 0 ? (
                             <p className="text-gray-500 text-sm">No commands yet</p>

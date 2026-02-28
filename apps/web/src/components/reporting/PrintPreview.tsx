@@ -213,7 +213,7 @@ const PagePreview: React.FC<PagePreviewProps> = ({
                         className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden"
                     >
                         <span 
-                            className="text-slate-300 font-bold whitespace-nowrap"
+                            className="text-slate-600 dark:text-slate-300 font-bold whitespace-nowrap"
                             style={{
                                 fontSize: watermark.fontSize * scale,
                                 opacity: watermark.opacity,
@@ -265,15 +265,15 @@ const PagePreview: React.FC<PagePreviewProps> = ({
                                 {new Date().toLocaleDateString()}
                             </div>
                             <div className="mt-6 grid grid-cols-2 gap-2 text-left text-[8px] text-slate-500" style={{ fontSize: 8 * scale }}>
-                                <div className="font-medium text-slate-400">Document Ref</div>
+                                <div className="font-medium text-slate-500 dark:text-slate-400">Document Ref</div>
                                 <div className="text-slate-700">RPT-{pageNumber.toString().padStart(3, '0')}</div>
-                                <div className="font-medium text-slate-400">Revision</div>
+                                <div className="font-medium text-slate-500 dark:text-slate-400">Revision</div>
                                 <div className="text-slate-700">A</div>
                             </div>
                         </div>
                     ) : isToc ? (
                         <div>
-                            <div className="text-[9px] uppercase tracking-wider text-slate-400 mb-2" style={{ fontSize: 9 * scale }}>
+                            <div className="text-[9px] uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2" style={{ fontSize: 9 * scale }}>
                                 Table of Contents
                             </div>
                             <div className="space-y-1">
@@ -282,14 +282,14 @@ const PagePreview: React.FC<PagePreviewProps> = ({
                                         <div key={label} className="flex items-center gap-2">
                                             <span className="text-slate-700" style={{ fontSize: 9 * scale }}>{i + 1}. {label}</span>
                                             <span className="flex-1 border-b border-dotted border-slate-300" />
-                                            <span className="text-slate-400" style={{ fontSize: 9 * scale }}>{i + 2}</span>
+                                            <span className="text-slate-500 dark:text-slate-400" style={{ fontSize: 9 * scale }}>{i + 2}</span>
                                         </div>
                                     ))}
                             </div>
                         </div>
                     ) : (
                         <div>
-                            <div className="text-[9px] uppercase tracking-wider text-slate-400" style={{ fontSize: 9 * scale }}>
+                            <div className="text-[9px] uppercase tracking-wider text-slate-500 dark:text-slate-400" style={{ fontSize: 9 * scale }}>
                                 {isAppendix ? 'Appendix' : `Section ${pageNumber}`}
                             </div>
                             <div className="font-semibold mb-2 text-slate-800" style={{ fontSize: 12 * scale }}>
@@ -340,7 +340,7 @@ const PagePreview: React.FC<PagePreviewProps> = ({
             </div>
             
             {/* Page Number Badge */}
-            <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-slate-400">
+            <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-slate-500 dark:text-slate-400">
                 {pageNumber}
             </div>
         </div>
@@ -369,20 +369,20 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
     };
     
     return (
-        <div className="absolute right-0 top-0 bottom-0 w-80 bg-slate-900 border-l border-slate-700 flex flex-col z-50">
+        <div className="absolute right-0 top-0 bottom-0 w-80 bg-slate-50 dark:bg-slate-900 border-l border-slate-200 dark:border-slate-700 flex flex-col z-50">
             {/* Header */}
-            <div className="px-4 py-3 border-b border-slate-700 flex items-center justify-between">
-                <h3 className="font-semibold text-white flex items-center gap-2">
-                    <Settings className="w-4 h-4 text-slate-400" />
+            <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <h3 className="font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                    <Settings className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                     Print Settings
                 </h3>
-                <button onClick={onClose} className="p-1 text-slate-400 hover:text-white">
+                <button onClick={onClose} className="p-1 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white">
                     <X className="w-4 h-4" />
                 </button>
             </div>
             
             {/* Tabs */}
-            <div className="flex border-b border-slate-700">
+            <div className="flex border-b border-slate-200 dark:border-slate-700">
                 {[
                     { id: 'layout', label: 'Layout', icon: <Layout className="w-4 h-4" /> },
                     { id: 'header', label: 'Header/Footer', icon: <Type className="w-4 h-4" /> },
@@ -395,7 +395,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                             flex-1 py-2 text-[10px] font-semibold uppercase tracking-wider flex items-center justify-center gap-1 transition-colors
                             ${activeTab === tab.id 
                                 ? 'text-cyan-400 border-b-2 border-cyan-400' 
-                                : 'text-slate-400 hover:text-white'
+                                : 'text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'
                             }
                         `}
                     >
@@ -411,11 +411,11 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     <>
                         {/* Page Size */}
                         <div>
-                            <label className="block text-xs text-slate-400 mb-1">Page Size</label>
+                            <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Page Size</label>
                             <select
                                 value={settings.pageSize}
                                 onChange={(e) => updateSettings('pageSize', e.target.value as PageSize)}
-                                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm"
                             >
                                 {Object.keys(PAGE_SIZES).map(size => (
                                     <option key={size} value={size}>{size}</option>
@@ -425,7 +425,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         
                         {/* Orientation */}
                         <div>
-                            <label className="block text-xs text-slate-400 mb-1">Orientation</label>
+                            <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Orientation</label>
                             <div className="flex gap-2">
                                 {(['portrait', 'landscape'] as const).map(orient => (
                                     <button
@@ -435,7 +435,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                             flex-1 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2
                                             ${settings.orientation === orient
                                                 ? 'bg-cyan-500 text-white'
-                                                : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                                             }
                                         `}
                                     >
@@ -448,11 +448,11 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         
                         {/* Margins */}
                         <div>
-                            <label className="block text-xs text-slate-400 mb-2">Margins (mm)</label>
+                            <label className="block text-xs text-slate-500 dark:text-slate-400 mb-2">Margins (mm)</label>
                             <div className="grid grid-cols-2 gap-2">
                                 {(['top', 'right', 'bottom', 'left'] as const).map(side => (
                                     <div key={side}>
-                                        <label className="block text-[10px] text-slate-400 mb-0.5 capitalize">{side}</label>
+                                        <label className="block text-[10px] text-slate-500 dark:text-slate-400 mb-0.5 capitalize">{side}</label>
                                         <input
                                             type="number"
                                             value={settings.margins[side]}
@@ -460,7 +460,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                                 ...settings.margins,
                                                 [side]: parseInt(e.target.value) || 0
                                             })}
-                                            className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                                            className="w-full px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-zinc-900 dark:text-white text-sm"
                                         />
                                     </div>
                                 ))}
@@ -469,11 +469,11 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         
                         {/* Quality */}
                         <div>
-                            <label className="block text-xs text-slate-400 mb-1">Print Quality</label>
+                            <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Print Quality</label>
                             <select
                                 value={settings.quality}
                                 onChange={(e) => updateSettings('quality', e.target.value as PrintQuality)}
-                                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm"
                             >
                                 <option value="draft">Draft (Fast)</option>
                                 <option value="normal">Normal</option>
@@ -487,9 +487,9 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                 type="checkbox"
                                 checked={settings.color}
                                 onChange={(e) => updateSettings('color', e.target.checked)}
-                                className="rounded bg-slate-700 border-slate-600 text-cyan-500"
+                                className="rounded bg-slate-200 dark:bg-slate-700 border-slate-600 text-cyan-500"
                             />
-                            <span className="text-sm text-slate-300">Print in color</span>
+                            <span className="text-sm text-slate-600 dark:text-slate-300">Print in color</span>
                         </label>
                     </>
                 )}
@@ -499,97 +499,97 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         {/* Header Settings */}
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium text-white">Header</span>
+                                <span className="text-sm font-medium text-zinc-900 dark:text-white">Header</span>
                                 <button
                                     onClick={() => updateSettings('header', {
                                         ...settings.header,
                                         enabled: !settings.header.enabled
                                     })}
-                                    className={`p-1.5 rounded ${settings.header.enabled ? 'bg-cyan-500 text-white' : 'bg-slate-700 text-slate-400'}`}
+                                    className={`p-1.5 rounded ${settings.header.enabled ? 'bg-cyan-500 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}
                                 >
                                     {settings.header.enabled ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                                 </button>
                             </div>
                             
                             {settings.header.enabled && (
-                                <div className="space-y-2 pl-2 border-l-2 border-slate-700">
+                                <div className="space-y-2 pl-2 border-l-2 border-slate-200 dark:border-slate-700">
                                     <input
                                         type="text"
                                         value={settings.header.left}
                                         onChange={(e) => updateSettings('header', { ...settings.header, left: e.target.value })}
                                         placeholder="Left text"
-                                        className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                                        className="w-full px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-zinc-900 dark:text-white text-sm"
                                     />
                                     <input
                                         type="text"
                                         value={settings.header.center}
                                         onChange={(e) => updateSettings('header', { ...settings.header, center: e.target.value })}
                                         placeholder="Center text"
-                                        className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                                        className="w-full px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-zinc-900 dark:text-white text-sm"
                                     />
                                     <input
                                         type="text"
                                         value={settings.header.right}
                                         onChange={(e) => updateSettings('header', { ...settings.header, right: e.target.value })}
                                         placeholder="Right text"
-                                        className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                                        className="w-full px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-zinc-900 dark:text-white text-sm"
                                     />
                                 </div>
                             )}
                         </div>
                         
                         {/* Footer Settings */}
-                        <div className="space-y-3 pt-4 border-t border-slate-700">
+                        <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-700">
                             <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium text-white">Footer</span>
+                                <span className="text-sm font-medium text-zinc-900 dark:text-white">Footer</span>
                                 <button
                                     onClick={() => updateSettings('footer', {
                                         ...settings.footer,
                                         enabled: !settings.footer.enabled
                                     })}
-                                    className={`p-1.5 rounded ${settings.footer.enabled ? 'bg-cyan-500 text-white' : 'bg-slate-700 text-slate-400'}`}
+                                    className={`p-1.5 rounded ${settings.footer.enabled ? 'bg-cyan-500 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}
                                 >
                                     {settings.footer.enabled ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                                 </button>
                             </div>
                             
                             {settings.footer.enabled && (
-                                <div className="space-y-2 pl-2 border-l-2 border-slate-700">
+                                <div className="space-y-2 pl-2 border-l-2 border-slate-200 dark:border-slate-700">
                                     <input
                                         type="text"
                                         value={settings.footer.left}
                                         onChange={(e) => updateSettings('footer', { ...settings.footer, left: e.target.value })}
                                         placeholder="Left text"
-                                        className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                                        className="w-full px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-zinc-900 dark:text-white text-sm"
                                     />
                                     <input
                                         type="text"
                                         value={settings.footer.center}
                                         onChange={(e) => updateSettings('footer', { ...settings.footer, center: e.target.value })}
                                         placeholder="Center text"
-                                        className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                                        className="w-full px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-zinc-900 dark:text-white text-sm"
                                     />
                                     <input
                                         type="text"
                                         value={settings.footer.right}
                                         onChange={(e) => updateSettings('footer', { ...settings.footer, right: e.target.value })}
                                         placeholder="Right text"
-                                        className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-white text-sm"
+                                        className="w-full px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-zinc-900 dark:text-white text-sm"
                                     />
                                 </div>
                             )}
                         </div>
                         
                         {/* Page Numbers */}
-                        <div className="pt-4 border-t border-slate-700">
+                        <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
                             <label className="flex items-center gap-2 cursor-pointer mb-3">
                                 <input
                                     type="checkbox"
                                     checked={settings.showPageNumbers}
                                     onChange={(e) => updateSettings('showPageNumbers', e.target.checked)}
-                                    className="rounded bg-slate-700 border-slate-600 text-cyan-500"
+                                    className="rounded bg-slate-200 dark:bg-slate-700 border-slate-600 text-cyan-500"
                                 />
-                                <span className="text-sm text-slate-300">Show page numbers</span>
+                                <span className="text-sm text-slate-600 dark:text-slate-300">Show page numbers</span>
                             </label>
                             
                             {settings.showPageNumbers && (
@@ -597,7 +597,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                     <select
                                         value={settings.pageNumberFormat}
                                         onChange={(e) => updateSettings('pageNumberFormat', e.target.value as any)}
-                                        className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm"
                                     >
                                         <option value="number">1, 2, 3...</option>
                                         <option value="x-of-y">Page 1 of N</option>
@@ -607,9 +607,9 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         </div>
                         
                         {/* Variables Help */}
-                        <div className="p-3 bg-slate-800/50 rounded-lg">
-                            <div className="text-xs font-medium text-slate-400 mb-2">Available Variables:</div>
-                            <div className="text-xs text-slate-400 space-y-1">
+                        <div className="p-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg">
+                            <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Available Variables:</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400 space-y-1">
                                 <div><code className="text-cyan-400">{'{page}'}</code> - Current page</div>
                                 <div><code className="text-cyan-400">{'{pages}'}</code> - Total pages</div>
                                 <div><code className="text-cyan-400">{'{date}'}</code> - Current date</div>
@@ -629,15 +629,15 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                     ...settings.watermark,
                                     enabled: e.target.checked
                                 })}
-                                className="rounded bg-slate-700 border-slate-600 text-cyan-500"
+                                className="rounded bg-slate-200 dark:bg-slate-700 border-slate-600 text-cyan-500"
                             />
-                            <span className="text-sm text-slate-300">Enable watermark</span>
+                            <span className="text-sm text-slate-600 dark:text-slate-300">Enable watermark</span>
                         </label>
                         
                         {settings.watermark.enabled && (
                             <div className="space-y-4 pt-2">
                                 <div>
-                                    <label className="block text-xs text-slate-400 mb-1">Watermark Text</label>
+                                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Watermark Text</label>
                                     <input
                                         type="text"
                                         value={settings.watermark.text}
@@ -645,12 +645,12 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                             ...settings.watermark,
                                             text: e.target.value
                                         })}
-                                        className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm"
                                     />
                                 </div>
                                 
                                 <div>
-                                    <label className="block text-xs text-slate-400 mb-1">
+                                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
                                         Opacity: {Math.round(settings.watermark.opacity * 100)}%
                                     </label>
                                     <input
@@ -668,7 +668,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                 </div>
                                 
                                 <div>
-                                    <label className="block text-xs text-slate-400 mb-1">
+                                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
                                         Angle: {settings.watermark.angle}°
                                     </label>
                                     <input
@@ -686,14 +686,14 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                 </div>
                                 
                                 <div>
-                                    <label className="block text-xs text-slate-400 mb-1">Font Size</label>
+                                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Font Size</label>
                                     <select
                                         value={settings.watermark.fontSize}
                                         onChange={(e) => updateSettings('watermark', {
                                             ...settings.watermark,
                                             fontSize: parseInt(e.target.value)
                                         })}
-                                        className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm"
                                     >
                                         <option value={36}>Small (36pt)</option>
                                         <option value={48}>Medium (48pt)</option>
@@ -776,27 +776,27 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
     }, [onClose]);
     
     return (
-        <div className="fixed inset-0 bg-slate-950 z-50 flex flex-col">
+        <div className="fixed inset-0 bg-white dark:bg-slate-950 z-50 flex flex-col">
             {/* Header */}
-            <div className="h-14 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4">
+            <div className="h-14 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4">
                 <div className="flex items-center gap-4">
                     <button
                         onClick={onClose}
-                        className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"
+                        className="p-2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800"
                     >
                         <X className="w-5 h-5" />
                     </button>
                     
                     <div className="flex items-center gap-2">
                         <FileText className="w-5 h-5 text-cyan-400" />
-                        <span className="font-semibold text-white">{projectName}</span>
+                        <span className="font-semibold text-zinc-900 dark:text-white">{projectName}</span>
                         <span className="text-slate-500">• Print Preview</span>
                     </div>
-                    <div className="hidden md:flex items-center gap-2 text-[10px] text-slate-400">
-                        <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700/70">
+                    <div className="hidden md:flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400">
+                        <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-300/70 dark:border-slate-700/70">
                             {settings.pageSize} · {settings.orientation}
                         </span>
-                        <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700/70 uppercase">
+                        <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-300/70 dark:border-slate-700/70 uppercase">
                             {settings.quality}
                         </span>
                     </div>
@@ -804,28 +804,28 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
                 
                 <div className="flex items-center gap-2">
                     {/* Zoom Controls */}
-                    <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-1">
-                        <button onClick={handleZoomOut} aria-label="Zoom out" title="Zoom out" className="p-1.5 text-slate-400 hover:text-white rounded">
+                    <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+                        <button onClick={handleZoomOut} aria-label="Zoom out" title="Zoom out" className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded">
                             <ZoomOut className="w-4 h-4" />
                         </button>
-                        <span className="text-sm text-white px-2 min-w-[50px] text-center">
+                        <span className="text-sm text-zinc-900 dark:text-white px-2 min-w-[50px] text-center">
                             {Math.round(zoom * 100)}%
                         </span>
-                        <button onClick={handleZoomIn} aria-label="Zoom in" title="Zoom in" className="p-1.5 text-slate-400 hover:text-white rounded">
+                        <button onClick={handleZoomIn} aria-label="Zoom in" title="Zoom in" className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded">
                             <ZoomIn className="w-4 h-4" />
                         </button>
-                        <button onClick={handleZoomReset} aria-label="Reset zoom" title="Reset zoom" className="p-1.5 text-slate-400 hover:text-white rounded">
+                        <button onClick={handleZoomReset} aria-label="Reset zoom" title="Reset zoom" className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded">
                             <RotateCw className="w-4 h-4" />
                         </button>
                     </div>
                     
                     {/* View Mode */}
-                    <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-1">
+                    <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
                         {(['single', 'double', 'overview'] as const).map(mode => (
                             <button
                                 key={mode}
                                 onClick={() => setViewMode(mode)}
-                                className={`p-1.5 rounded ${viewMode === mode ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'}`}
+                                className={`p-1.5 rounded ${viewMode === mode ? 'bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'}`}
                                 title={mode === 'single' ? 'Single Page' : mode === 'double' ? 'Two Pages' : 'Overview'}
                             >
                                 {mode === 'overview' ? (
@@ -841,7 +841,7 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
                     <button
                         onClick={() => setShowSettings(!showSettings)}
                         className={`p-2 rounded-lg transition-colors ${
-                            showSettings ? 'bg-cyan-500 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'
+                            showSettings ? 'bg-cyan-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-white'
                         }`}
                     >
                         <Settings className="w-5 h-5" />
@@ -850,7 +850,7 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
                     {/* Actions */}
                     <button
                         onClick={onExportPDF}
-                        className="px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 flex items-center gap-2"
+                        className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center gap-2"
                     >
                         <Download className="w-4 h-4" />
                         Export PDF
@@ -870,7 +870,7 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
             <div className="flex-1 relative overflow-hidden">
                 <div 
                     ref={containerRef}
-                    className="absolute inset-0 overflow-auto bg-slate-800"
+                    className="absolute inset-0 overflow-auto bg-slate-100 dark:bg-slate-800"
                     style={{ marginRight: showSettings ? '320px' : '0' }}
                 >
                     <div className={`
@@ -952,25 +952,25 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
             </div>
             
             {/* Footer - Page Navigation */}
-            <div className="h-12 bg-slate-900 border-t border-slate-800 flex items-center justify-center gap-4">
+            <div className="h-12 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center justify-center gap-4">
                 <button
                     onClick={handlePrevPage}
                     disabled={currentPage === 1}
-                    className="p-2 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="p-2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                     <ChevronLeft className="w-5 h-5" />
                 </button>
                 
                 <div className="flex items-center gap-2">
-                    <span className="text-white font-medium">{currentPage}</span>
-                    <span className="text-slate-400">of</span>
-                    <span className="text-slate-400">{totalPages}</span>
+                    <span className="text-zinc-900 dark:text-white font-medium">{currentPage}</span>
+                    <span className="text-slate-500 dark:text-slate-400">of</span>
+                    <span className="text-slate-500 dark:text-slate-400">{totalPages}</span>
                 </div>
                 
                 <button
                     onClick={handleNextPage}
                     disabled={currentPage === totalPages}
-                    className="p-2 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="p-2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                     <ChevronRight className="w-5 h-5" />
                 </button>
@@ -984,12 +984,12 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
                             className={`w-6 h-8 rounded border transition-colors ${
                                 currentPage === index + 1
                                     ? 'bg-cyan-500 border-cyan-400'
-                                    : 'bg-slate-800 border-slate-700 hover:border-slate-500'
+                                    : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-slate-500'
                             }`}
                         />
                     ))}
                     {totalPages > 10 && (
-                        <span className="text-slate-400 text-sm ml-1">+{totalPages - 10}</span>
+                        <span className="text-slate-500 dark:text-slate-400 text-sm ml-1">+{totalPages - 10}</span>
                     )}
                 </div>
             </div>

@@ -6,6 +6,7 @@
 import {
   useState,
   useEffect,
+  useCallback,
   createContext,
   useContext,
   ReactNode,
@@ -109,7 +110,7 @@ export const SubscriptionProvider = ({
   // Use unified auth hook
   const { isSignedIn, userId, getToken, user } = useAuth();
 
-  const fetchSubscription = async () => {
+  const fetchSubscription = useCallback(async (signal?: AbortSignal) => {
     if (!isSignedIn || !userId) {
       setSubscription({
         tier: "free",
@@ -138,6 +139,7 @@ export const SubscriptionProvider = ({
         method: "GET",
         headers,
         credentials: "include",
+        signal,
       });
 
       if (response.ok) {
@@ -182,17 +184,17 @@ export const SubscriptionProvider = ({
         features: TIER_FEATURES.free,
       });
     }
-  };
+  }, [isSignedIn, userId, getToken]);
 
   useEffect(() => {
     const controller = new AbortController();
     queueMicrotask(() => {
       if (!controller.signal.aborted) {
-        fetchSubscription();
+        fetchSubscription(controller.signal);
       }
     });
     return () => controller.abort();
-  }, [isSignedIn, userId]);
+  }, [isSignedIn, userId, fetchSubscription]);
 
   const canAccess = (
     feature: keyof SubscriptionStatus["features"],

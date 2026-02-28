@@ -299,12 +299,12 @@ const AnnotationMarker: React.FC<AnnotationMarkerProps> = ({ annotation, onClick
                 className="cursor-pointer group"
             >
                 <div 
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg group-hover:scale-110 transition-transform"
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-zinc-900 dark:text-white text-xs font-bold shadow-lg group-hover:scale-110 transition-transform"
                     style={{ backgroundColor: annotation.color }}
                 >
                     !
                 </div>
-                <div className="absolute left-8 top-0 bg-slate-800 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute left-8 top-0 bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                     {annotation.text}
                 </div>
             </div>
@@ -356,7 +356,7 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({
             p-2 rounded-lg transition-all duration-200
             ${active 
                 ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/30' 
-                : 'bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white'
+                : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-600 hover:text-zinc-900 dark:hover:text-white'
             }
             ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
         `}
@@ -392,7 +392,7 @@ const ViewSelector: React.FC<ViewSelectorProps> = ({ currentView, onViewChange }
         <div className="relative">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 px-3 py-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors"
             >
                 <Eye className="w-4 h-4" />
                 <span className="text-sm">{views.find(v => v.id === currentView)?.label}</span>
@@ -400,7 +400,7 @@ const ViewSelector: React.FC<ViewSelectorProps> = ({ currentView, onViewChange }
             </button>
             
             {isOpen && (
-                <div className="absolute top-full left-0 mt-1 w-40 bg-slate-800 rounded-lg shadow-xl border border-slate-700 py-1 z-50">
+                <div className="absolute top-full left-0 mt-1 w-40 bg-slate-100 dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 py-1 z-50">
                     {views.map(view => (
                         <button
                             key={view.id}
@@ -412,7 +412,7 @@ const ViewSelector: React.FC<ViewSelectorProps> = ({ currentView, onViewChange }
                                 w-full px-3 py-2 text-left text-sm transition-colors
                                 ${currentView === view.id 
                                     ? 'bg-cyan-500/20 text-cyan-400' 
-                                    : 'text-slate-300 hover:bg-slate-700'
+                                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                                 }
                             `}
                         >
@@ -449,13 +449,13 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
     };
     
     return (
-        <div className="absolute right-4 top-16 w-72 bg-slate-800 rounded-xl shadow-2xl border border-slate-700 overflow-hidden z-50">
-            <div className="flex items-center justify-between px-4 py-3 bg-slate-700/50 border-b border-slate-700">
-                <h3 className="font-semibold text-white flex items-center gap-2">
+        <div className="absolute right-4 top-16 w-72 bg-slate-100 dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50">
+            <div className="flex items-center justify-between px-4 py-3 bg-slate-200/50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
+                <h3 className="font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
                     <Settings className="w-4 h-4 text-cyan-400" />
                     Display Settings
                 </h3>
-                <button onClick={onClose} className="text-slate-400 hover:text-white">
+                <button onClick={onClose} className="text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white">
                     ×
                 </button>
             </div>
@@ -463,7 +463,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
             <div className="p-4 space-y-4 max-h-[60vh] overflow-y-auto">
                 {/* Render Mode */}
                 <div>
-                    <label className="text-xs text-slate-400 uppercase tracking-wider">Render Mode</label>
+                    <label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Render Mode</label>
                     <div className="grid grid-cols-2 gap-2 mt-2">
                         {(['shaded', 'wireframe', 'shaded-wireframe', 'hidden-line'] as RenderMode[]).map(mode => (
                             <button
@@ -472,7 +472,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                 className={`px-3 py-2 text-xs rounded-lg transition-colors ${
                                     settings.renderMode === mode
                                         ? 'bg-cyan-500 text-white'
-                                        : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                                        : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-600'
                                 }`}
                             >
                                 {mode.replace('-', ' ')}
@@ -483,11 +483,11 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 
                 {/* Color Scheme */}
                 <div>
-                    <label className="text-xs text-slate-400 uppercase tracking-wider">Color Scheme</label>
+                    <label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Color Scheme</label>
                     <select
                         value={settings.colorScheme}
                         onChange={(e) => updateSetting('colorScheme', e.target.value as ColorScheme)}
-                        className="w-full mt-2 px-3 py-2 bg-slate-700 rounded-lg text-sm text-white border-none focus:ring-2 focus:ring-cyan-500"
+                        className="w-full mt-2 px-3 py-2 bg-slate-200 dark:bg-slate-700 rounded-lg text-sm text-zinc-900 dark:text-white border-none focus:ring-2 focus:ring-cyan-500"
                     >
                         <option value="material">By Material</option>
                         <option value="section">By Section</option>
@@ -499,7 +499,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 
                 {/* Toggles */}
                 <div className="space-y-2">
-                    <label className="text-xs text-slate-400 uppercase tracking-wider">Display Options</label>
+                    <label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Display Options</label>
                     {[
                         { key: 'showGrid' as const, label: 'Grid' },
                         { key: 'showAxes' as const, label: 'Axes' },
@@ -511,12 +511,12 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         { key: 'shadows' as const, label: 'Shadows' }
                     ].map(({ key, label }) => (
                         <label key={key} className="flex items-center justify-between cursor-pointer">
-                            <span className="text-sm text-slate-300">{label}</span>
+                            <span className="text-sm text-slate-600 dark:text-slate-300">{label}</span>
                             <input
                                 type="checkbox"
                                 checked={settings[key]}
                                 onChange={(e) => updateSetting(key, e.target.checked)}
-                                className="w-4 h-4 rounded bg-slate-700 border-slate-600 text-cyan-500 focus:ring-cyan-500"
+                                className="w-4 h-4 rounded bg-slate-200 dark:bg-slate-700 border-slate-600 text-cyan-500 focus:ring-cyan-500"
                             />
                         </label>
                     ))}
@@ -526,8 +526,8 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 <div className="space-y-3">
                     <div>
                         <div className="flex justify-between text-xs mb-1">
-                            <span className="text-slate-400">Explode Factor</span>
-                            <span className="text-slate-300">{settings.explodeFactor.toFixed(1)}</span>
+                            <span className="text-slate-500 dark:text-slate-400">Explode Factor</span>
+                            <span className="text-slate-600 dark:text-slate-300">{settings.explodeFactor.toFixed(1)}</span>
                         </div>
                         <input
                             type="range"
@@ -536,14 +536,14 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                             step="0.1"
                             value={settings.explodeFactor}
                             onChange={(e) => updateSetting('explodeFactor', parseFloat(e.target.value))}
-                            className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                            className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
                         />
                     </div>
                     
                     <div>
                         <div className="flex justify-between text-xs mb-1">
-                            <span className="text-slate-400">Node Size</span>
-                            <span className="text-slate-300">{settings.nodeSize.toFixed(2)}</span>
+                            <span className="text-slate-500 dark:text-slate-400">Node Size</span>
+                            <span className="text-slate-600 dark:text-slate-300">{settings.nodeSize.toFixed(2)}</span>
                         </div>
                         <input
                             type="range"
@@ -552,14 +552,14 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                             step="0.05"
                             value={settings.nodeSize}
                             onChange={(e) => updateSetting('nodeSize', parseFloat(e.target.value))}
-                            className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                            className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
                         />
                     </div>
                     
                     <div>
                         <div className="flex justify-between text-xs mb-1">
-                            <span className="text-slate-400">Member Thickness</span>
-                            <span className="text-slate-300">{settings.memberThickness.toFixed(1)}x</span>
+                            <span className="text-slate-500 dark:text-slate-400">Member Thickness</span>
+                            <span className="text-slate-600 dark:text-slate-300">{settings.memberThickness.toFixed(1)}x</span>
                         </div>
                         <input
                             type="range"
@@ -568,14 +568,14 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                             step="0.1"
                             value={settings.memberThickness}
                             onChange={(e) => updateSetting('memberThickness', parseFloat(e.target.value))}
-                            className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                            className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
                         />
                     </div>
                 </div>
                 
                 {/* Background Color */}
                 <div>
-                    <label className="text-xs text-slate-400 uppercase tracking-wider">Background</label>
+                    <label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Background</label>
                     <div className="flex gap-2 mt-2">
                         {['#1e293b', '#0f172a', '#18181b', '#1c1917', '#0c4a6e'].map(color => (
                             <button
@@ -652,7 +652,7 @@ export const ModelVisualizationDashboard: React.FC<ModelVisualizationDashboardPr
     return (
         <div 
             ref={containerRef}
-            className={`relative w-full h-full bg-slate-900 rounded-xl overflow-hidden ${
+            className={`relative w-full h-full bg-slate-50 dark:bg-slate-900 rounded-xl overflow-hidden ${
                 isFullscreen ? 'fixed inset-0 z-50' : ''
             }`}
         >
@@ -685,7 +685,7 @@ export const ModelVisualizationDashboard: React.FC<ModelVisualizationDashboardPr
                 </div>
                 
                 {/* Center: Tools */}
-                <div className="flex items-center gap-2 bg-slate-800/80 backdrop-blur rounded-lg p-1">
+                <div className="flex items-center gap-2 bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur rounded-lg p-1">
                     <ToolbarButton
                         icon={<Move3d className="w-4 h-4" />}
                         label="Select"
@@ -827,7 +827,7 @@ export const ModelVisualizationDashboard: React.FC<ModelVisualizationDashboardPr
             </Canvas>
             
             {/* Bottom Status Bar */}
-            <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-xs text-slate-400">
+            <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                 <div className="flex items-center gap-4">
                     <span>View: {settings.viewPreset}</span>
                     <span>Render: {settings.renderMode}</span>

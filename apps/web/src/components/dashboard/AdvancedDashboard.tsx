@@ -168,7 +168,7 @@ const StatCard: React.FC<{
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className={`relative overflow-hidden rounded-xl bg-gradient-to-br ${color} p-5 text-white shadow-lg`}
+    className={`relative overflow-hidden rounded-xl bg-gradient-to-br ${color} p-5 text-zinc-900 dark:text-white shadow-lg`}
   >
     <div className="flex items-center justify-between">
       <div>
@@ -201,7 +201,7 @@ const ProjectCard: React.FC<{
   }[project.type];
 
   const statusColors = {
-    draft: 'bg-slate-700 text-slate-300',
+    draft: 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300',
     analyzing: 'bg-blue-900/50 text-blue-400',
     complete: 'bg-green-900/50 text-green-400',
     failed: 'bg-red-900/50 text-red-400',
@@ -212,7 +212,7 @@ const ProjectCard: React.FC<{
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       whileHover={{ y: -4 }}
-      className="group relative overflow-hidden rounded-xl border border-slate-700 bg-slate-800 shadow-sm transition-shadow hover:shadow-lg"
+      className="group relative overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shadow-sm transition-shadow hover:shadow-lg"
     >
       {/* Thumbnail / Preview */}
       <div className="relative h-32 bg-gradient-to-br from-slate-700 to-slate-800 p-4">
@@ -234,15 +234,15 @@ const ProjectCard: React.FC<{
                 transition={{ duration: 0.5 }}
               />
             </div>
-            <p className="mt-1 text-xs text-slate-400">{project.progress}% complete</p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{project.progress}% complete</p>
           </div>
         )}
       </div>
 
       {/* Content */}
       <div className="p-4">
-        <h3 className="font-semibold text-slate-200 truncate">{project.name}</h3>
-        <div className="mt-2 flex items-center gap-4 text-sm text-slate-400">
+        <h3 className="font-semibold text-slate-700 dark:text-slate-200 truncate">{project.name}</h3>
+        <div className="mt-2 flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
           <span>{project.members} members</span>
           <span>{project.nodes} nodes</span>
         </div>
@@ -252,14 +252,14 @@ const ProjectCard: React.FC<{
       </div>
 
       {/* Actions */}
-      <div className="flex border-t border-slate-700">
+      <div className="flex border-t border-slate-200 dark:border-slate-700">
         <button
           onClick={onOpen}
-          className="flex-1 py-2 text-sm font-medium text-slate-400 hover:bg-slate-700 hover:text-slate-200 transition-colors"
+          className="flex-1 py-2 text-sm font-medium text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-700 dark:text-slate-200 transition-colors"
         >
           Open
         </button>
-        <div className="w-px bg-slate-700" />
+        <div className="w-px bg-slate-200 dark:bg-slate-700" />
         <button
           onClick={onAnalyze}
           className="flex-1 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition-colors"
@@ -273,7 +273,7 @@ const ProjectCard: React.FC<{
 
 const AnalysisJobRow: React.FC<{ job: AnalysisJob }> = ({ job }) => {
   const statusColors = {
-    queued: 'text-slate-400',
+    queued: 'text-slate-500 dark:text-slate-400',
     running: 'text-blue-500',
     complete: 'text-green-500',
     failed: 'text-red-500',
@@ -283,12 +283,12 @@ const AnalysisJobRow: React.FC<{ job: AnalysisJob }> = ({ job }) => {
     <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      className="flex items-center gap-4 rounded-lg border border-slate-700 bg-slate-800 p-3 hover:bg-slate-700"
+      className="flex items-center gap-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-3 hover:bg-slate-200 dark:hover:bg-slate-700"
     >
       <div className={`h-2 w-2 rounded-full ${job.status === 'running' ? 'animate-pulse bg-blue-500' : job.status === 'complete' ? 'bg-green-500' : 'bg-slate-600'}`} />
       <div className="flex-1 min-w-0">
         <p className="font-medium text-slate-200 truncate">{job.projectName}</p>
-        <p className="text-sm text-slate-400">{job.type}</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{job.type}</p>
       </div>
       {job.status === 'running' && (
         <div className="w-24">
@@ -299,11 +299,11 @@ const AnalysisJobRow: React.FC<{ job: AnalysisJob }> = ({ job }) => {
               animate={{ width: `${job.progress}%` }}
             />
           </div>
-          <p className="mt-0.5 text-xs text-slate-400 text-center">{job.progress}%</p>
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 text-center">{job.progress}%</p>
         </div>
       )}
       {job.status === 'complete' && job.duration && (
-        <span className="text-sm text-slate-400">{job.duration}s</span>
+        <span className="text-sm text-slate-500 dark:text-slate-400">{job.duration}s</span>
       )}
       <span className={`text-sm font-medium ${statusColors[job.status]}`}>
         {job.status.charAt(0).toUpperCase() + job.status.slice(1)}
@@ -328,10 +328,10 @@ const NotificationItem: React.FC<{ notification: Notification; onRead: () => voi
       className={`cursor-pointer border-l-4 rounded-r-lg p-3 ${typeStyles[notification.type]} ${!notification.read ? 'ring-2 ring-blue-700' : ''}`}
     >
       <div className="flex justify-between items-start">
-        <h4 className="font-medium text-slate-200">{notification.title}</h4>
+        <h4 className="font-medium text-slate-700 dark:text-slate-200">{notification.title}</h4>
         {!notification.read && <div className="h-2 w-2 rounded-full bg-blue-500" />}
       </div>
-      <p className="mt-1 text-sm text-slate-300">{notification.message}</p>
+      <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{notification.message}</p>
       <p className="mt-1 text-xs text-slate-500">
         {new Date(notification.timestamp).toLocaleTimeString()}
       </p>
@@ -350,7 +350,7 @@ const QuickActionButton: React.FC<{
     whileHover={{ scale: 1.02 }}
     whileTap={{ scale: 0.98 }}
     onClick={onClick}
-    className={`flex items-center gap-4 w-full rounded-xl border-2 border-transparent bg-gradient-to-r ${color} p-4 text-left text-white shadow-md transition-all hover:shadow-lg`}
+    className={`flex items-center gap-4 w-full rounded-xl border-2 border-transparent bg-gradient-to-r ${color} p-4 text-left text-zinc-900 dark:text-white shadow-md transition-all hover:shadow-lg`}
   >
     <div className="rounded-lg bg-white/20 p-3">
       {icon}
@@ -392,22 +392,22 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       {/* Header */}
-      <header className="bg-slate-800 border-b border-slate-700 sticky top-0 z-10">
+      <header className="bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-slate-100">Dashboard</h1>
-              <p className="text-sm text-slate-400">Welcome back! Here's your engineering overview.</p>
+              <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Dashboard</h1>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Welcome back! Here's your engineering overview.</p>
             </div>
             <div className="flex items-center gap-4">
               {/* Tab Switcher */}
-              <div className="flex rounded-lg bg-slate-700 p-1">
+              <div className="flex rounded-lg bg-slate-200 dark:bg-slate-700 p-1">
                 <button
                   onClick={() => setActiveTab('projects')}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    activeTab === 'projects' ? 'bg-slate-600 text-slate-100 shadow-sm' : 'text-slate-400 hover:text-slate-200'
+                    activeTab === 'projects' ? 'bg-slate-600 text-slate-800 dark:text-slate-100 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-200'
                   }`}
                 >
                   Projects
@@ -415,15 +415,15 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                 <button
                   onClick={() => setActiveTab('analytics')}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    activeTab === 'analytics' ? 'bg-slate-600 text-slate-100 shadow-sm' : 'text-slate-400 hover:text-slate-200'
+                    activeTab === 'analytics' ? 'bg-slate-600 text-slate-800 dark:text-slate-100 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-200'
                   }`}
                 >
                   Analytics
                 </button>
               </div>
               {/* Notification Badge */}
-              <button className="relative rounded-full p-2 hover:bg-slate-700">
-                <svg className="w-6 h-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <button className="relative rounded-full p-2 hover:bg-slate-200 dark:hover:bg-slate-700">
+                <svg className="w-6 h-6 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
                 {unreadCount > 0 && (
@@ -473,7 +473,7 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
           <div className="lg:col-span-2 space-y-8">
             {/* Quick Actions */}
             <section>
-              <h2 className="text-lg font-semibold text-slate-200 mb-4">Quick Actions</h2>
+              <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-4">Quick Actions</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <QuickActionButton
                   icon={icons.plus}
@@ -509,7 +509,7 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
             {/* Projects Grid */}
             <section>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-slate-200">Recent Projects</h2>
+                <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-200">Recent Projects</h2>
                 <button className="text-sm font-medium text-blue-600 hover:text-blue-700">
                   View All →
                 </button>
@@ -529,15 +529,15 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
             {/* Active Analyses */}
             <section>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-slate-200">Analysis Queue</h2>
-                <span className="text-sm text-slate-400">{analysisJobs.length} jobs</span>
+                <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-200">Analysis Queue</h2>
+                <span className="text-sm text-slate-500 dark:text-slate-400">{analysisJobs.length} jobs</span>
               </div>
               <div className="space-y-3">
                 {analysisJobs.map(job => (
                   <AnalysisJobRow key={job.id} job={job} />
                 ))}
                 {analysisJobs.length === 0 && (
-                  <div className="text-center py-8 text-slate-400">
+                  <div className="text-center py-8 text-slate-500 dark:text-slate-400">
                     No active analyses. Start a new one!
                   </div>
                 )}
@@ -550,7 +550,7 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
             {/* Notifications */}
             <section>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-slate-200">Notifications</h2>
+                <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-200">Notifications</h2>
                 {unreadCount > 0 && (
                   <button
                     onClick={() => setNotifications(prev => prev.map(n => ({ ...n, read: true })))}
@@ -572,13 +572,13 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
             </section>
 
             {/* Resource Usage */}
-            <section className="rounded-xl border border-slate-700 bg-slate-800 p-5">
-              <h2 className="text-lg font-semibold text-slate-200 mb-4">Resource Usage</h2>
+            <section className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-5">
+              <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-4">Resource Usage</h2>
               
               {/* Storage */}
               <div className="mb-4">
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-slate-400">Storage</span>
+                  <span className="text-slate-500 dark:text-slate-400">Storage</span>
                   <span className="font-medium">{stats.storageUsed} / {stats.storageLimit} GB</span>
                 </div>
                 <div className="h-2 rounded-full bg-slate-600">
@@ -592,7 +592,7 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
               {/* Compute Hours */}
               <div className="mb-4">
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-slate-400">Compute Hours</span>
+                  <span className="text-slate-500 dark:text-slate-400">Compute Hours</span>
                   <span className="font-medium">{stats.computeHours} hrs used</span>
                 </div>
                 <div className="h-2 rounded-full bg-slate-600">

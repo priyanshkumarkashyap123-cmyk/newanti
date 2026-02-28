@@ -68,7 +68,7 @@ export function PlateResultsVisualization({ resultType = 'von_mises', scale = 1.
  */
 export function StressLegend({ min, max, title }: { min: number, max: number, title: string }) {
     return (
-        <div className="absolute bottom-4 right-4 bg-slate-800/90 p-3 rounded shadow-lg border backdrop-blur">
+        <div className="absolute bottom-4 right-4 bg-slate-100/90 dark:bg-slate-800/90 p-3 rounded shadow-lg border backdrop-blur">
             <h4 className="text-xs font-bold mb-2">{title}</h4>
             <div className="flex items-center gap-2 text-xs">
                 <div className="h-32 w-4 rounded bg-gradient-to-t from-blue-600 via-green-500 to-red-600"></div>

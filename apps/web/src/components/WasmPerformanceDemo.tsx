@@ -142,20 +142,20 @@ export function WasmPerformanceDemo() {
     };
 
     return (
-        <div className="p-6 bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg shadow-xl">
+        <div className="p-6 bg-gradient-to-br from-slate-50 dark:from-slate-900 to-slate-800 rounded-lg shadow-xl">
             <div className="mb-6">
                 <h2 className="text-2xl font-bold text-white mb-2">
                     🦀 Rust WASM Performance Demo
                 </h2>
-                <p className="text-slate-300">
+                <p className="text-slate-600 dark:text-slate-300">
                     Client-side structural analysis powered by Rust + WebAssembly
                 </p>
             </div>
 
             {/* Status */}
-            <div className="mb-4 p-4 bg-slate-800 rounded-lg">
+            <div className="mb-4 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
                 <div className="flex items-center justify-between">
-                    <span className="text-slate-300">WASM Solver Status:</span>
+                    <span className="text-slate-600 dark:text-slate-300">WASM Solver Status:</span>
                     <span className={`font-semibold ${isInitialized ? 'text-green-400' : 'text-yellow-400'}`}>
                         {isInitialized ? '✅ Ready' : '⏳ Not Initialized'}
                     </span>
@@ -195,34 +195,34 @@ export function WasmPerformanceDemo() {
 
             {/* Results Table */}
             {results.length > 0 && (
-                <div className="mt-6 overflow-hidden rounded-lg border border-slate-700">
+                <div className="mt-6 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
                     <table className="w-full">
-                        <thead className="bg-slate-800">
+                        <thead className="bg-slate-100 dark:bg-slate-800">
                             <tr>
-                                <th className="px-4 py-3 text-left text-slate-300 font-semibold">
+                                <th className="px-4 py-3 text-left text-slate-600 dark:text-slate-300 font-semibold">
                                     Degrees of Freedom
                                 </th>
-                                <th className="px-4 py-3 text-left text-slate-300 font-semibold">
+                                <th className="px-4 py-3 text-left text-slate-600 dark:text-slate-300 font-semibold">
                                     Analysis Time
                                 </th>
-                                <th className="px-4 py-3 text-left text-slate-300 font-semibold">
+                                <th className="px-4 py-3 text-left text-slate-600 dark:text-slate-300 font-semibold">
                                     Performance
                                 </th>
-                                <th className="px-4 py-3 text-left text-slate-300 font-semibold">
+                                <th className="px-4 py-3 text-left text-slate-600 dark:text-slate-300 font-semibold">
                                     Status
                                 </th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-700">
+                        <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                             {results.map((result, idx) => (
-                                <tr key={idx} className="bg-slate-900/50 hover:bg-slate-800/50 transition-colors">
-                                    <td className="px-4 py-3 text-white font-mono">
+                                <tr key={idx} className="bg-slate-50/50 dark:bg-slate-900/50 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors">
+                                    <td className="px-4 py-3 text-zinc-900 dark:text-white font-mono">
                                         {result.dof} DOF
                                     </td>
-                                    <td className="px-4 py-3 text-white font-mono">
+                                    <td className="px-4 py-3 text-zinc-900 dark:text-white font-mono">
                                         {result.time.toFixed(2)} ms
                                     </td>
-                                    <td className="px-4 py-3 text-white">
+                                    <td className="px-4 py-3 text-zinc-900 dark:text-white">
                                         {getPerformanceRating(result.time)}
                                     </td>
                                     <td className="px-4 py-3">
@@ -240,9 +240,9 @@ export function WasmPerformanceDemo() {
             )}
 
             {/* Info Box */}
-            <div className="mt-6 p-4 bg-slate-800/50 border border-slate-700 rounded-lg">
-                <h3 className="text-white font-semibold mb-2">💡 Why This Matters</h3>
-                <ul className="text-slate-300 space-y-2 text-sm">
+            <div className="mt-6 p-4 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg">
+                <h3 className="text-zinc-900 dark:text-white font-semibold mb-2">💡 Why This Matters</h3>
+                <ul className="text-slate-600 dark:text-slate-300 space-y-2 text-sm">
                     <li>✅ <strong>Zero Server Load:</strong> All computation happens in your browser</li>
                     <li>✅ <strong>Instant Results:</strong> No network latency, no queuing</li>
                     <li>✅ <strong>Memory Safe:</strong> Rust guarantees no crashes from buffer overflows</li>
@@ -253,24 +253,24 @@ export function WasmPerformanceDemo() {
 
             {/* Technical Details */}
             {isInitialized && (
-                <div className="mt-4 p-4 bg-slate-900/50 border border-slate-700 rounded-lg">
-                    <h3 className="text-white font-semibold mb-2">🔧 Technical Stack</h3>
+                <div className="mt-4 p-4 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg">
+                    <h3 className="text-zinc-900 dark:text-white font-semibold mb-2">🔧 Technical Stack</h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                            <p className="text-slate-400">Solver:</p>
-                            <p className="text-white font-mono">Rust + nalgebra</p>
+                            <p className="text-slate-500 dark:text-slate-400">Solver:</p>
+                            <p className="text-zinc-900 dark:text-white font-mono">Rust + nalgebra</p>
                         </div>
                         <div>
-                            <p className="text-slate-400">Parallelism:</p>
-                            <p className="text-white font-mono">Rayon (multi-core)</p>
+                            <p className="text-slate-500 dark:text-slate-400">Parallelism:</p>
+                            <p className="text-zinc-900 dark:text-white font-mono">Rayon (multi-core)</p>
                         </div>
                         <div>
-                            <p className="text-slate-400">Runtime:</p>
-                            <p className="text-white font-mono">WebAssembly</p>
+                            <p className="text-slate-500 dark:text-slate-400">Runtime:</p>
+                            <p className="text-zinc-900 dark:text-white font-mono">WebAssembly</p>
                         </div>
                         <div>
-                            <p className="text-slate-400">Graphics:</p>
-                            <p className="text-white font-mono">WebGPU ready</p>
+                            <p className="text-slate-500 dark:text-slate-400">Graphics:</p>
+                            <p className="text-zinc-900 dark:text-white font-mono">WebGPU ready</p>
                         </div>
                     </div>
                 </div>

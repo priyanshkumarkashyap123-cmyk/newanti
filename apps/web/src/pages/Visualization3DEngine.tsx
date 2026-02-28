@@ -256,14 +256,14 @@ const Visualization3DEngine: React.FC = () => {
           )}
           <div className="flex items-center gap-2">
             <Box className="w-6 h-6 text-blue-400" />
-            <span className="text-white font-semibold">
+            <span className="text-zinc-900 dark:text-white font-semibold">
               3D Visualization Engine
             </span>
           </div>
         </div>
 
         {/* Center Toolbar */}
-        <div className="flex items-center gap-1 bg-slate-700/50 rounded-lg p-1">
+        <div className="flex items-center gap-1 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg p-1">
           {/* View Modes */}
           <div className="flex items-center gap-1 pr-2 border-r border-slate-600">
             <button
@@ -461,10 +461,10 @@ const Visualization3DEngine: React.FC = () => {
         {showLeftPanel && (
           <div className="w-64 bg-slate-100 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700 flex flex-col">
             <div className="p-3 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
-              <span className="text-white font-medium">Layers</span>
+              <span className="text-zinc-900 dark:text-white font-medium">Layers</span>
               <button
                 onClick={() => setShowLeftPanel(false)}
-                className="text-slate-600 dark:text-slate-400 hover:text-white"
+                className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -477,7 +477,7 @@ const Visualization3DEngine: React.FC = () => {
                   onClick={() => toggleLayer(key as keyof LayerVisibility)}
                   className={`w-full flex items-center gap-3 p-2 rounded-lg transition-colors ${
                     visible
-                      ? "bg-slate-700 text-white"
+                      ? "bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white"
                       : "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/50"
                   }`}
                 >
@@ -504,7 +504,7 @@ const Visualization3DEngine: React.FC = () => {
                     className={`p-2 rounded text-center ${
                       settings.viewMode === preset.id
                         ? "bg-blue-600 text-white"
-                        : "bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-600"
+                        : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-600"
                     }`}
                     title={preset.label}
                   >
@@ -528,11 +528,11 @@ const Visualization3DEngine: React.FC = () => {
                           ),
                         )
                       }
-                      className={`p-1.5 rounded ${cut.enabled ? "bg-orange-600" : "bg-slate-700"}`}
+                      className={`p-1.5 rounded ${cut.enabled ? "bg-orange-600" : "bg-slate-200 dark:bg-slate-700"}`}
                     >
                       <Scissors className="w-3 h-3 text-white" />
                     </button>
-                    <span className="text-white text-sm">{cut.plane}</span>
+                    <span className="text-zinc-900 dark:text-white text-sm">{cut.plane}</span>
                     <input
                       type="range"
                       min={0}
@@ -666,7 +666,7 @@ const Visualization3DEngine: React.FC = () => {
           {/* Stress Legend (when in stress display mode) */}
           {settings.displayMode === "stress" && (
             <div className="absolute top-4 right-4 bg-slate-100 dark:bg-slate-800/90 rounded-lg p-3 w-48">
-              <p className="text-white font-medium text-sm mb-2">
+              <p className="text-zinc-900 dark:text-white font-medium text-sm mb-2">
                 Stress ({stressRange.unit})
               </p>
               <div
@@ -689,7 +689,7 @@ const Visualization3DEngine: React.FC = () => {
               <select
                 value={colorScheme}
                 onChange={(e) => setColorScheme(e.target.value as ColorScheme)}
-                className="w-full mt-2 px-2 py-1 bg-slate-700 border border-slate-600 rounded text-white text-sm"
+                className="w-full mt-2 px-2 py-1 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
               >
                 <option value="rainbow">Rainbow</option>
                 <option value="thermal">Thermal</option>
@@ -743,10 +743,10 @@ const Visualization3DEngine: React.FC = () => {
         {showRightPanel && (
           <div className="w-72 bg-slate-100 dark:bg-slate-800 border-l border-slate-300 dark:border-slate-700 overflow-y-auto">
             <div className="p-3 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
-              <span className="text-white font-medium">Settings</span>
+              <span className="text-zinc-900 dark:text-white font-medium">Settings</span>
               <button
                 onClick={() => setShowRightPanel(false)}
-                className="text-slate-600 dark:text-slate-400 hover:text-white"
+                className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white"
               >
                 <ChevronRight className="w-4 h-4 rotate-180" />
               </button>
@@ -771,7 +771,7 @@ const Visualization3DEngine: React.FC = () => {
                       key={option.key}
                       className="flex items-center justify-between"
                     >
-                      <span className="text-white text-sm">{option.label}</span>
+                      <span className="text-zinc-900 dark:text-white text-sm">{option.label}</span>
                       <input
                         type="checkbox"
                         checked={(settings as any)[option.key]}
@@ -781,7 +781,7 @@ const Visualization3DEngine: React.FC = () => {
                             [option.key]: !(prev as any)[option.key],
                           }))
                         }
-                        className="w-4 h-4 rounded bg-slate-700 border-slate-600"
+                        className="w-4 h-4 rounded bg-slate-200 dark:bg-slate-700 border-slate-600"
                       />
                     </label>
                   ))}
@@ -796,7 +796,7 @@ const Visualization3DEngine: React.FC = () => {
                 <div className="space-y-3">
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-white text-sm">Ambient</span>
+                      <span className="text-zinc-900 dark:text-white text-sm">Ambient</span>
                       <span className="text-slate-600 dark:text-slate-400 text-xs">
                         {Math.round(settings.ambientLight * 100)}%
                       </span>
@@ -854,7 +854,7 @@ const Visualization3DEngine: React.FC = () => {
                 </h4>
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-white text-sm">Speed</span>
+                    <span className="text-zinc-900 dark:text-white text-sm">Speed</span>
                     <span className="text-slate-600 dark:text-slate-400 text-xs">
                       {animationSpeed}x
                     </span>
@@ -879,15 +879,15 @@ const Visualization3DEngine: React.FC = () => {
                   Export
                 </h4>
                 <div className="space-y-2">
-                  <button className="w-full flex items-center gap-2 px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm">
+                  <button className="w-full flex items-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white rounded-lg text-sm">
                     <Camera className="w-4 h-4" />
                     Screenshot (PNG)
                   </button>
-                  <button className="w-full flex items-center gap-2 px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm">
+                  <button className="w-full flex items-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white rounded-lg text-sm">
                     <Video className="w-4 h-4" />
                     Record Video (MP4)
                   </button>
-                  <button className="w-full flex items-center gap-2 px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm">
+                  <button className="w-full flex items-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white rounded-lg text-sm">
                     <Download className="w-4 h-4" />
                     Export 3D Model
                   </button>

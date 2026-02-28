@@ -132,11 +132,11 @@ function TableHeader<T>({
   onSort,
 }: TableHeaderProps<T>) {
   return (
-    <tr className="bg-slate-800 text-slate-300">
+    <tr className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
       {columns.map((col) => (
         <th
           key={String(col.key)}
-          className="px-3 py-2 text-xs font-semibold cursor-pointer hover:bg-slate-700 transition-colors whitespace-nowrap border-b border-slate-600"
+          className="px-3 py-2 text-xs font-semibold cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors whitespace-nowrap border-b border-slate-600"
           style={{ width: col.width, textAlign: col.align || "right" }}
           onClick={() => onSort(col.key)}
         >
@@ -144,7 +144,7 @@ function TableHeader<T>({
             <span>
               {col.label}
               {col.unit && (
-                <span className="text-slate-400 ml-1">({col.unit})</span>
+                <span className="text-slate-500 dark:text-slate-400 ml-1">({col.unit})</span>
               )}
             </span>
             {sortColumn === col.key ? (
@@ -285,11 +285,11 @@ const NodeResultsTable: FC<NodeResultsTableProps> = ({ searchQuery }) => {
             return (
               <tr
                 key={row.nodeId}
-                className={`border-b border-slate-700 hover:bg-slate-700/50 ${
-                  idx % 2 === 0 ? "bg-slate-800/30" : "bg-slate-800/50"
+                className={`border-b border-slate-200 dark:border-slate-700 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 ${
+                  idx % 2 === 0 ? "bg-slate-100/30 dark:bg-slate-800/30" : "bg-slate-100/50 dark:bg-slate-800/50"
                 } ${isMax ? "bg-red-900/30" : ""}`}
               >
-                <td className="px-3 py-1.5 text-left font-mono text-slate-400">
+                <td className="px-3 py-1.5 text-left font-mono text-slate-500 dark:text-slate-400">
                   {row.nodeId}
                 </td>
                 <td className="px-3 py-1.5 text-right font-mono">
@@ -331,7 +331,7 @@ const NodeResultsTable: FC<NodeResultsTableProps> = ({ searchQuery }) => {
         </tbody>
       </table>
       {sortedData.length === 0 && (
-        <div className="text-center py-8 text-slate-400">
+        <div className="text-center py-8 text-slate-500 dark:text-slate-400">
           {analysisResults
             ? "No node results available"
             : "Run analysis to see results"}
@@ -494,17 +494,17 @@ const MemberResultsTable: FC<MemberResultsTableProps> = ({ searchQuery }) => {
             return (
               <tr
                 key={row.memberId}
-                className={`border-b border-slate-700 hover:bg-slate-700/50 ${
-                  idx % 2 === 0 ? "bg-slate-800/30" : "bg-slate-800/50"
+                className={`border-b border-slate-200 dark:border-slate-700 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 ${
+                  idx % 2 === 0 ? "bg-slate-100/30 dark:bg-slate-800/30" : "bg-slate-100/50 dark:bg-slate-800/50"
                 } ${isOverUtilized ? "bg-red-900/30" : isWarning ? "bg-amber-900/20" : ""}`}
               >
-                <td className="px-3 py-1.5 text-left font-mono text-slate-400">
+                <td className="px-3 py-1.5 text-left font-mono text-slate-500 dark:text-slate-400">
                   {row.memberId}
                 </td>
-                <td className="px-3 py-1.5 text-left font-mono text-slate-400">
+                <td className="px-3 py-1.5 text-left font-mono text-slate-500 dark:text-slate-400">
                   {row.startNode}
                 </td>
-                <td className="px-3 py-1.5 text-left font-mono text-slate-400">
+                <td className="px-3 py-1.5 text-left font-mono text-slate-500 dark:text-slate-400">
                   {row.endNode}
                 </td>
                 <td className="px-3 py-1.5 text-right font-mono">
@@ -559,7 +559,7 @@ const MemberResultsTable: FC<MemberResultsTableProps> = ({ searchQuery }) => {
         </tbody>
       </table>
       {sortedData.length === 0 && (
-        <div className="text-center py-8 text-slate-400">
+        <div className="text-center py-8 text-slate-500 dark:text-slate-400">
           {analysisResults
             ? "No member results available"
             : "Run analysis to see results"}
@@ -687,11 +687,11 @@ const ReactionsTable: FC<ReactionsTableProps> = ({ searchQuery }) => {
           {sortedData.map((row, idx) => (
             <tr
               key={row.nodeId}
-              className={`border-b border-slate-700 hover:bg-slate-700/50 ${
-                idx % 2 === 0 ? "bg-slate-800/30" : "bg-slate-800/50"
+              className={`border-b border-slate-200 dark:border-slate-700 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 ${
+                idx % 2 === 0 ? "bg-slate-100/30 dark:bg-slate-800/30" : "bg-slate-100/50 dark:bg-slate-800/50"
               }`}
             >
-              <td className="px-3 py-1.5 text-left font-mono text-slate-400">
+              <td className="px-3 py-1.5 text-left font-mono text-slate-500 dark:text-slate-400">
                 {row.nodeId}
               </td>
               <td className="px-3 py-1.5 text-right font-mono">
@@ -704,17 +704,17 @@ const ReactionsTable: FC<ReactionsTableProps> = ({ searchQuery }) => {
                 {formatNumber(row.z)}
               </td>
               <td
-                className={`px-3 py-1.5 text-right font-mono ${Math.abs(row.Fx) > 0.01 ? "text-red-400" : "text-slate-400"}`}
+                className={`px-3 py-1.5 text-right font-mono ${Math.abs(row.Fx) > 0.01 ? "text-red-400" : "text-slate-500 dark:text-slate-400"}`}
               >
                 {formatNumber(row.Fx)}
               </td>
               <td
-                className={`px-3 py-1.5 text-right font-mono ${Math.abs(row.Fy) > 0.01 ? "text-green-400" : "text-slate-400"}`}
+                className={`px-3 py-1.5 text-right font-mono ${Math.abs(row.Fy) > 0.01 ? "text-green-400" : "text-slate-500 dark:text-slate-400"}`}
               >
                 {formatNumber(row.Fy)}
               </td>
               <td
-                className={`px-3 py-1.5 text-right font-mono ${Math.abs(row.Fz) > 0.01 ? "text-blue-400" : "text-slate-400"}`}
+                className={`px-3 py-1.5 text-right font-mono ${Math.abs(row.Fz) > 0.01 ? "text-blue-400" : "text-slate-500 dark:text-slate-400"}`}
               >
                 {formatNumber(row.Fz)}
               </td>
@@ -735,7 +735,7 @@ const ReactionsTable: FC<ReactionsTableProps> = ({ searchQuery }) => {
         </tbody>
       </table>
       {sortedData.length === 0 && (
-        <div className="text-center py-8 text-slate-400">
+        <div className="text-center py-8 text-slate-500 dark:text-slate-400">
           {analysisResults
             ? "No reactions available"
             : "Run analysis to see results"}
@@ -795,13 +795,13 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = ({
 
   return (
     <div
-      className={`bg-slate-900 rounded-lg border border-slate-700 overflow-hidden ${className}`}
+      className={`bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden ${className}`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700 bg-slate-800/50">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-100/50 dark:bg-slate-800/50">
         <div className="flex items-center gap-2">
-          <Table size={18} className="text-slate-400" />
-          <h3 className="font-semibold text-slate-200">Results Table</h3>
+          <Table size={18} className="text-slate-500 dark:text-slate-400" />
+          <h3 className="font-semibold text-slate-700 dark:text-slate-200">Results Table</h3>
         </div>
 
         <div className="flex items-center gap-2">
@@ -809,29 +809,29 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = ({
           <div className="relative">
             <Search
               size={14}
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400"
             />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Filter..."
-              className="pl-8 pr-3 py-1.5 text-sm bg-slate-700 border border-slate-600 rounded-md 
-                                     text-slate-200 placeholder-slate-500 focus:border-cyan-500 focus:outline-none w-32"
+              className="pl-8 pr-3 py-1.5 text-sm bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-md 
+                                     text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:border-cyan-500 focus:outline-none w-32"
             />
           </div>
 
           {/* Export buttons */}
           <button
             onClick={handleCopyTable}
-            className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-700 rounded transition-colors"
+            className="p-1.5 text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
             title="Copy table"
           >
             <Copy size={16} />
           </button>
           <button
             onClick={handleExportCSV}
-            className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-700 rounded transition-colors"
+            className="p-1.5 text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
             title="Export to CSV"
           >
             <FileSpreadsheet size={16} />
@@ -840,7 +840,7 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = ({
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-700">
+      <div className="flex border-b border-slate-200 dark:border-slate-700">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -848,8 +848,8 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = ({
             className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors
                                   ${
                                     activeTab === tab.id
-                                      ? "text-cyan-400 border-b-2 border-cyan-400 bg-slate-800/30"
-                                      : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
+                                      ? "text-cyan-400 border-b-2 border-cyan-400 bg-slate-100/30 dark:bg-slate-800/30"
+                                      : "text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
                                   }`}
           >
             {tab.icon}
@@ -873,7 +873,7 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = ({
 
       {/* Footer with summary */}
       {analysisResults && (
-        <div className="px-4 py-2 border-t border-slate-700 bg-slate-800/30 text-xs text-slate-400">
+        <div className="px-4 py-2 border-t border-slate-200 dark:border-slate-700 bg-slate-100/30 dark:bg-slate-800/30 text-xs text-slate-500 dark:text-slate-400">
           <div className="flex justify-between">
             <span>
               {activeTab === "nodes" &&

@@ -247,12 +247,12 @@ const APIIntegrationDashboard: React.FC = () => {
           <div key={idx} className={`p-4 rounded-lg bg-gradient-to-r ${stat.color}`}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-white/80 text-sm">{stat.label}</p>
-                <p className="text-2xl font-bold text-white">
+                <p className="text-zinc-900/80 dark:text-white/80 text-sm">{stat.label}</p>
+                <p className="text-2xl font-bold text-zinc-900 dark:text-white">
                   {stat.value}
-                  {stat.total && <span className="text-lg text-white/60">{stat.total}</span>}
+                  {stat.total && <span className="text-lg text-zinc-900/60 dark:text-white/60">{stat.total}</span>}
                 </p>
-                {stat.change && <p className="text-white/60 text-sm">{stat.change}</p>}
+                {stat.change && <p className="text-zinc-900/60 dark:text-white/60 text-sm">{stat.change}</p>}
               </div>
               <span className="text-3xl">{stat.icon}</span>
             </div>
@@ -262,7 +262,7 @@ const APIIntegrationDashboard: React.FC = () => {
 
       {/* API Usage Chart */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">📈</span>
           API Usage (Last 7 Days)
         </h3>
@@ -295,14 +295,14 @@ const APIIntegrationDashboard: React.FC = () => {
             className="p-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors text-center"
           >
             <span className="text-3xl">{action.icon}</span>
-            <p className="text-white mt-2">{action.label}</p>
+            <p className="text-zinc-900 dark:text-white mt-2">{action.label}</p>
           </button>
         ))}
       </div>
 
       {/* Recent API Calls */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">📜</span>
           Recent API Calls
         </h3>
@@ -315,7 +315,7 @@ const APIIntegrationDashboard: React.FC = () => {
             { method: 'POST', path: '/api/v1/projects/121/export/ifc', status: 202, time: '1.2s', when: '1 hour ago' },
           ].map((call, idx) => (
             <div key={idx} className="flex items-center gap-4 p-3 bg-gray-700/50 rounded-lg">
-              <span className={`px-2 py-1 text-xs font-bold text-white rounded ${methodColors[call.method]}`}>
+              <span className={`px-2 py-1 text-xs font-bold text-zinc-900 dark:text-white rounded ${methodColors[call.method]}`}>
                 {call.method}
               </span>
               <span className="flex-1 text-gray-700 dark:text-gray-300 font-mono text-sm">{call.path}</span>
@@ -337,7 +337,7 @@ const APIIntegrationDashboard: React.FC = () => {
     <div className="space-y-6">
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-bold text-white flex items-center gap-2">
+          <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
             <span className="text-2xl">🔑</span>
             API Keys
           </h3>
@@ -357,7 +357,7 @@ const APIIntegrationDashboard: React.FC = () => {
                 <div className="flex items-center gap-4">
                   <span className="text-2xl">🔐</span>
                   <div>
-                    <h4 className="text-white font-medium">{key.name}</h4>
+                    <h4 className="text-zinc-900 dark:text-white font-medium">{key.name}</h4>
                     <div className="flex items-center gap-2 mt-1">
                       <code className="text-gray-600 dark:text-gray-400 text-sm bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
                         {key.key.slice(0, 20)}...
@@ -374,7 +374,7 @@ const APIIntegrationDashboard: React.FC = () => {
                   }`}>
                     {key.status}
                   </span>
-                  <button className="p-2 text-gray-600 dark:text-gray-400 hover:text-white hover:bg-gray-600 rounded">
+                  <button className="p-2 text-gray-600 dark:text-gray-400 hover:text-zinc-900 dark:hover:text-white hover:bg-gray-600 rounded">
                     ⚙️
                   </button>
                 </div>
@@ -383,15 +383,15 @@ const APIIntegrationDashboard: React.FC = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
                   <p className="text-gray-600 dark:text-gray-400">Created</p>
-                  <p className="text-white">{key.created}</p>
+                  <p className="text-zinc-900 dark:text-white">{key.created}</p>
                 </div>
                 <div>
                   <p className="text-gray-600 dark:text-gray-400">Last Used</p>
-                  <p className="text-white">{key.lastUsed}</p>
+                  <p className="text-zinc-900 dark:text-white">{key.lastUsed}</p>
                 </div>
                 <div>
                   <p className="text-gray-600 dark:text-gray-400">Requests Today</p>
-                  <p className="text-white">{key.requestsToday.toLocaleString()} / {key.rateLimit.toLocaleString()}</p>
+                  <p className="text-zinc-900 dark:text-white">{key.requestsToday.toLocaleString()} / {key.rateLimit.toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-gray-600 dark:text-gray-400">Permissions</p>
@@ -424,7 +424,7 @@ const APIIntegrationDashboard: React.FC = () => {
 
       {/* API Key Settings */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">⚙️</span>
           Rate Limiting & Security
         </h3>
@@ -432,7 +432,7 @@ const APIIntegrationDashboard: React.FC = () => {
           <div className="space-y-4">
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">Rate Limit (requests/day)</label>
-              <select className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white">
+              <select className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white">
                 <option value="1000">1,000 (Free tier)</option>
                 <option value="5000">5,000 (Starter)</option>
                 <option value="10000" selected>10,000 (Professional)</option>
@@ -444,7 +444,7 @@ const APIIntegrationDashboard: React.FC = () => {
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">IP Whitelist</label>
               <textarea
                 placeholder="192.168.1.1&#10;10.0.0.0/24"
-                className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400"
+                className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white placeholder-gray-400"
                 rows={3}
               />
             </div>
@@ -473,7 +473,7 @@ const APIIntegrationDashboard: React.FC = () => {
     <div className="space-y-6">
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-bold text-white flex items-center gap-2">
+          <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
             <span className="text-2xl">🔗</span>
             Webhooks
           </h3>
@@ -493,7 +493,7 @@ const APIIntegrationDashboard: React.FC = () => {
                 <div className="flex items-center gap-4">
                   <span className="text-2xl">📡</span>
                   <div>
-                    <h4 className="text-white font-medium">{webhook.name}</h4>
+                    <h4 className="text-zinc-900 dark:text-white font-medium">{webhook.name}</h4>
                     <code className="text-gray-600 dark:text-gray-400 text-sm">{webhook.url}</code>
                   </div>
                 </div>
@@ -505,7 +505,7 @@ const APIIntegrationDashboard: React.FC = () => {
                   }`}>
                     {webhook.status}
                   </span>
-                  <button className="p-2 text-gray-600 dark:text-gray-400 hover:text-white hover:bg-gray-600 rounded">
+                  <button className="p-2 text-gray-600 dark:text-gray-400 hover:text-zinc-900 dark:hover:text-white hover:bg-gray-600 rounded">
                     ⚙️
                   </button>
                 </div>
@@ -521,7 +521,7 @@ const APIIntegrationDashboard: React.FC = () => {
                   ))}
                 </div>
                 <div className="text-gray-600 dark:text-gray-400">
-                  Last triggered: <span className="text-white">{webhook.lastTriggered}</span>
+                  Last triggered: <span className="text-zinc-900 dark:text-white">{webhook.lastTriggered}</span>
                 </div>
                 <div className="text-gray-600 dark:text-gray-400">
                   Success rate: <span className={webhook.successRate >= 95 ? 'text-green-400' : 'text-yellow-400'}>{webhook.successRate}%</span>
@@ -534,7 +534,7 @@ const APIIntegrationDashboard: React.FC = () => {
 
       {/* Available Events */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">📋</span>
           Available Events
         </h3>
@@ -548,7 +548,7 @@ const APIIntegrationDashboard: React.FC = () => {
             { category: 'User', events: ['user.joined', 'user.left', 'user.role_changed'] },
           ].map((cat, idx) => (
             <div key={idx} className="p-4 bg-gray-700 rounded-lg">
-              <h4 className="text-white font-medium mb-2">{cat.category}</h4>
+              <h4 className="text-zinc-900 dark:text-white font-medium mb-2">{cat.category}</h4>
               <div className="space-y-1">
                 {cat.events.map((event, eIdx) => (
                   <div key={eIdx} className="text-sm text-cyan-400 font-mono">{event}</div>
@@ -564,7 +564,7 @@ const APIIntegrationDashboard: React.FC = () => {
   const renderDocs = () => (
     <div className="space-y-6">
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">📖</span>
           API Documentation
         </h3>
@@ -586,7 +586,7 @@ const APIIntegrationDashboard: React.FC = () => {
         {/* Endpoints by Category */}
         {['Projects', 'Model', 'Analysis', 'Design', 'Export'].map((category) => (
           <div key={category} className="mb-6">
-            <h4 className="text-lg font-medium text-white mb-3 flex items-center gap-2">
+            <h4 className="text-lg font-medium text-zinc-900 dark:text-white mb-3 flex items-center gap-2">
               <span className="text-xl">
                 {category === 'Projects' ? '📁' : 
                  category === 'Model' ? '🏗️' :
@@ -603,7 +603,7 @@ const APIIntegrationDashboard: React.FC = () => {
                     key={idx}
                     className="flex items-center gap-4 p-3 bg-gray-700/50 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
                   >
-                    <span className={`px-2 py-1 text-xs font-bold text-white rounded min-w-16 text-center ${methodColors[endpoint.method]}`}>
+                    <span className={`px-2 py-1 text-xs font-bold text-zinc-900 dark:text-white rounded min-w-16 text-center ${methodColors[endpoint.method]}`}>
                       {endpoint.method}
                     </span>
                     <code className="text-cyan-400 font-mono text-sm flex-1">{endpoint.path}</code>
@@ -620,7 +620,7 @@ const APIIntegrationDashboard: React.FC = () => {
 
       {/* Example Code */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">💻</span>
           Example Code
         </h3>
@@ -653,7 +653,7 @@ const results = await response.json();
   const renderIntegrations = () => (
     <div className="space-y-6">
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-6 flex items-center gap-2">
           <span className="text-2xl">🔌</span>
           Available Integrations
         </h3>
@@ -673,7 +673,7 @@ const results = await response.json();
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-3xl">{integration.icon}</span>
                 <div>
-                  <h4 className="text-white font-medium">{integration.name}</h4>
+                  <h4 className="text-zinc-900 dark:text-white font-medium">{integration.name}</h4>
                   <span className={`text-xs capitalize ${
                     integration.status === 'connected' ? 'text-green-400' :
                     integration.status === 'available' ? 'text-cyan-400' :
@@ -714,7 +714,7 @@ const results = await response.json();
 
       {/* Plugin Downloads */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">📥</span>
           Desktop Plugins
         </h3>
@@ -726,7 +726,7 @@ const results = await response.json();
           ].map((plugin, idx) => (
             <div key={idx} className="p-4 bg-gray-700 rounded-lg flex items-center justify-between">
               <div>
-                <h4 className="text-white font-medium">{plugin.name}</h4>
+                <h4 className="text-zinc-900 dark:text-white font-medium">{plugin.name}</h4>
                 <p className="text-gray-600 dark:text-gray-400 text-sm">v{plugin.version} • {plugin.size}</p>
                 <p className="text-gray-500 text-xs">{plugin.platform}</p>
               </div>

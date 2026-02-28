@@ -1,4 +1,4 @@
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth } from "../../providers/AuthProvider";
 import { Navigate, useLocation } from "react-router-dom";
 import React from "react";
 
@@ -12,7 +12,7 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
 
     if (!isLoaded) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-zinc-950">
+            <div className="flex items-center justify-center min-h-screen bg-white dark:bg-zinc-950">
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
             </div>
         );

@@ -47,9 +47,9 @@ export const SeismicAnalysisPanel: React.FC = () => {
   };
 
   return (
-    <div className="min-h-full bg-slate-950 text-slate-100 p-6 space-y-6">
+    <div className="min-h-full bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 p-6 space-y-6">
       {/* Header */}
-      <div className="border-b border-slate-700/50 pb-4">
+      <div className="border-b border-slate-200/50 dark:border-slate-700/50 pb-4">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center">
             <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -57,8 +57,8 @@ export const SeismicAnalysisPanel: React.FC = () => {
             </svg>
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">Seismic Response Spectrum</h2>
-            <p className="text-sm text-slate-400">IS 1893 / Eurocode 8 code-based seismic response analysis</p>
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Seismic Response Spectrum</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">IS 1893 / Eurocode 8 code-based seismic response analysis</p>
           </div>
         </div>
       </div>
@@ -66,11 +66,11 @@ export const SeismicAnalysisPanel: React.FC = () => {
       {/* Parameters Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Seismic Zone</label>
+          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Seismic Zone</label>
           <select
             value={zone}
             onChange={(e) => setZone(e.target.value)}
-            className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-red-500 focus:border-transparent"
           >
             <option value="Zone2">Zone II (Low)</option>
             <option value="Zone3">Zone III (Moderate)</option>
@@ -80,11 +80,11 @@ export const SeismicAnalysisPanel: React.FC = () => {
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Soil Type</label>
+          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Soil Type</label>
           <select
             value={soilType}
             onChange={(e) => setSoilType(e.target.value)}
-            className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-red-500 focus:border-transparent"
           >
             <option value="TypeI">Type I (Rock/Hard Soil)</option>
             <option value="TypeII">Type II (Medium Soil)</option>
@@ -93,11 +93,11 @@ export const SeismicAnalysisPanel: React.FC = () => {
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Importance</label>
+          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Importance</label>
           <select
             value={importance}
             onChange={(e) => setImportance(e.target.value)}
-            className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-red-500 focus:border-transparent"
           >
             <option value="Ordinary">Ordinary (I=1.0)</option>
             <option value="Important">Important (I=1.2)</option>
@@ -106,11 +106,11 @@ export const SeismicAnalysisPanel: React.FC = () => {
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Response Reduction</label>
+          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Response Reduction</label>
           <select
             value={rFactor}
             onChange={(e) => setRFactor(e.target.value)}
-            className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-red-500 focus:border-transparent"
           >
             <option value="SMRF">SMRF (R=5.0)</option>
             <option value="OMRF">OMRF (R=3.0)</option>
@@ -120,11 +120,11 @@ export const SeismicAnalysisPanel: React.FC = () => {
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Combination Method</label>
+          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Combination Method</label>
           <select
             value={combMethod}
             onChange={(e) => setCombMethod(e.target.value as 'CQC' | 'SRSS' | 'ABS')}
-            className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-red-500 focus:border-transparent"
           >
             <option value="CQC">CQC (Complete Quadratic)</option>
             <option value="SRSS">SRSS (Square Root Sum)</option>
@@ -137,9 +137,9 @@ export const SeismicAnalysisPanel: React.FC = () => {
       <button
         onClick={runAnalysis}
         disabled={loading}
-        className={`w-full py-3 px-6 rounded-lg font-semibold text-white transition-all duration-200 ${
+        className={`w-full py-3 px-6 rounded-lg font-semibold text-zinc-900 dark:text-white transition-all duration-200 ${
           loading
-            ? 'bg-slate-700 cursor-not-allowed opacity-60'
+            ? 'bg-slate-200 dark:bg-slate-700 cursor-not-allowed opacity-60'
             : 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 shadow-lg shadow-red-900/30 hover:shadow-red-800/40'
         }`}
       >
@@ -171,42 +171,42 @@ export const SeismicAnalysisPanel: React.FC = () => {
       {/* Results */}
       {result && (
         <div className="space-y-4">
-          <h3 className="text-lg font-bold text-white border-b border-slate-700/50 pb-2">Analysis Results</h3>
+          <h3 className="text-lg font-bold text-zinc-900 dark:text-white border-b border-slate-200/50 dark:border-slate-700/50 pb-2">Analysis Results</h3>
 
           {/* Key Metrics */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4">
-              <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Max Base Shear</p>
-              <p className="text-2xl font-bold text-red-400">{result.max_base_shear_kn.toFixed(1)} <span className="text-sm text-slate-400">kN</span></p>
+            <div className="bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-lg p-4">
+              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Max Base Shear</p>
+              <p className="text-2xl font-bold text-red-400">{result.max_base_shear_kn.toFixed(1)} <span className="text-sm text-slate-500 dark:text-slate-400">kN</span></p>
             </div>
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4">
-              <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Code Base Shear</p>
-              <p className="text-2xl font-bold text-orange-400">{result.code_base_shear_kn.toFixed(1)} <span className="text-sm text-slate-400">kN</span></p>
+            <div className="bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-lg p-4">
+              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Code Base Shear</p>
+              <p className="text-2xl font-bold text-orange-400">{result.code_base_shear_kn.toFixed(1)} <span className="text-sm text-slate-500 dark:text-slate-400">kN</span></p>
             </div>
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4">
-              <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Max Displacement</p>
-              <p className="text-2xl font-bold text-amber-400">{result.max_displacement_m.toFixed(4)} <span className="text-sm text-slate-400">m</span></p>
+            <div className="bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-lg p-4">
+              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Max Displacement</p>
+              <p className="text-2xl font-bold text-amber-400">{result.max_displacement_m.toFixed(4)} <span className="text-sm text-slate-500 dark:text-slate-400">m</span></p>
             </div>
           </div>
 
           {/* Detailed Table */}
-          <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg overflow-hidden">
+          <div className="bg-slate-100/40 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50 rounded-lg overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-800/80">
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Mode</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">Period (s)</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">Sa/g</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">Base Shear (kN)</th>
+                <tr className="bg-slate-100/80 dark:bg-slate-800/80">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Mode</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Period (s)</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Sa/g</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Base Shear (kN)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/30">
                 {result.periods_s.map((T, i) => (
                   <tr key={i} className="hover:bg-slate-700/20 transition-colors">
-                    <td className="px-4 py-3 text-slate-300 font-medium">Mode {i + 1}</td>
-                    <td className="px-4 py-3 text-right text-slate-200">{T.toFixed(3)}</td>
-                    <td className="px-4 py-3 text-right text-slate-200">{result.spectral_accelerations_g[i]?.toFixed(3) ?? '-'}</td>
-                    <td className="px-4 py-3 text-right text-slate-200 font-mono">{result.modal_base_shears_kn[i]?.toFixed(1) ?? '-'}</td>
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300 font-medium">Mode {i + 1}</td>
+                    <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-200">{T.toFixed(3)}</td>
+                    <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-200">{result.spectral_accelerations_g[i]?.toFixed(3) ?? '-'}</td>
+                    <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-200 font-mono">{result.modal_base_shears_kn[i]?.toFixed(1) ?? '-'}</td>
                   </tr>
                 ))}
               </tbody>

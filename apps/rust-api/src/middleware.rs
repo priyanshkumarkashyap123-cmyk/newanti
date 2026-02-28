@@ -289,10 +289,30 @@ pub async fn api_key_middleware(
 /// CORS preflight handler
 /// Note: The CorsLayer in main.rs handles OPTIONS automatically.
 /// This handler is kept as a fallback with matching allowed headers.
-pub async fn cors_preflight() -> impl IntoResponse {
+pub async fn cors_preflight(request: Request) -> impl IntoResponse {
+    let origin = request
+        .headers()
+        .get(header::ORIGIN)
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("");
+    
+    let allowed_origins = [
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://beamlabultimate.tech",
+        "https://www.beamlabultimate.tech",
+        "https://brave-mushroom-0eae8ec00.4.azurestaticapps.net",
+    ];
+    
+    let allow_origin = if allowed_origins.contains(&origin) {
+        origin
+    } else {
+        "https://beamlabultimate.tech"
+    };
+    
     Response::builder()
         .status(StatusCode::NO_CONTENT)
-        .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "https://beamlabultimate.tech")
+        .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, allow_origin)
         .header(header::ACCESS_CONTROL_ALLOW_METHODS, "GET, POST, PUT, DELETE, OPTIONS, PATCH")
         .header(header::ACCESS_CONTROL_ALLOW_HEADERS, "Content-Type, Authorization, Accept, Origin, Cache-Control, X-API-Key, X-Requested-With, X-Request-ID, sentry-trace, baggage")
         .header(header::ACCESS_CONTROL_ALLOW_CREDENTIALS, "true")

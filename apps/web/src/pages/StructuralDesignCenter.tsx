@@ -14,7 +14,6 @@
  * @author Head of Engineering
  */
 
-'use client';
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -305,7 +304,7 @@ export default function StructuralDesignCenter() {
                 <Calculator className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="font-bold text-white">Design Center</h1>
+                <h1 className="font-bold text-zinc-900 dark:text-white">Design Center</h1>
                 <p className="text-xs text-slate-600 dark:text-slate-400">Structural Engineering</p>
               </div>
             </div>
@@ -328,7 +327,7 @@ export default function StructuralDesignCenter() {
                 placeholder="Search modules..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                className="w-full pl-10 pr-4 py-2 bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600/50 rounded-lg text-sm text-zinc-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
               />
             </div>
           </div>
@@ -343,7 +342,7 @@ export default function StructuralDesignCenter() {
               "w-full flex items-center gap-3 px-3 py-2 rounded-lg mb-2 transition-colors",
               activeModule === 'dashboard' 
                 ? "bg-blue-500/20 text-blue-400" 
-                : "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 hover:text-white"
+                : "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 hover:text-zinc-900 dark:hover:text-white"
             )}
           >
             <Home className="w-5 h-5 flex-shrink-0" />
@@ -357,7 +356,7 @@ export default function StructuralDesignCenter() {
                 onClick={() => toggleCategory(category.id)}
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
-                  "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 hover:text-white"
+                  "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 hover:text-zinc-900 dark:hover:text-white"
                 )}
               >
                 <category.icon className="w-5 h-5 flex-shrink-0" style={{ color: category.color }} />
@@ -389,8 +388,8 @@ export default function StructuralDesignCenter() {
                         className={cn(
                           "w-full flex items-center gap-3 px-3 py-2 pl-11 rounded-lg transition-colors text-left",
                           activeModule === item.id 
-                            ? "bg-slate-700/70 text-white" 
-                            : "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/30 hover:text-slate-200"
+                            ? "bg-slate-700/70 text-zinc-900 dark:text-white" 
+                            : "text-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700/30 hover:text-slate-700 dark:text-slate-200"
                         )}
                       >
                         <div className="flex-1 min-w-0">
@@ -442,19 +441,19 @@ export default function StructuralDesignCenter() {
             {activeModule !== 'dashboard' && (
               <button
                 onClick={() => navigateToModule('dashboard')}
-                className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-white transition-colors"
+                className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span className="text-sm">Back</span>
               </button>
             )}
-            <h2 className="text-lg font-semibold text-white">
+            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
               {activeModule === 'dashboard' ? 'Structural Design Dashboard' : getModuleLabel(activeModule)}
             </h2>
           </div>
           
           <div className="flex items-center gap-3">
-            <button className="px-4 py-2 bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-300 transition-colors flex items-center gap-2">
+            <button className="px-4 py-2 bg-slate-200/50 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-300 transition-colors flex items-center gap-2">
               <BookOpen className="w-4 h-4" />
               Docs
             </button>
@@ -533,7 +532,7 @@ function DashboardContent({
       {/* Recent Projects */}
       <div className="bg-slate-100 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-300 dark:border-slate-700/50 p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
             <Clock className="w-5 h-5 text-slate-600 dark:text-slate-400" />
             Recent Designs
           </h3>
@@ -560,7 +559,7 @@ function DashboardContent({
                 {project.status === 'unsafe' && <AlertTriangle className="w-5 h-5 text-red-400" />}
               </div>
               <div className="flex-1 text-left">
-                <p className="text-white font-medium">{project.name}</p>
+                <p className="text-zinc-900 dark:text-white font-medium">{project.name}</p>
                 <p className="text-sm text-slate-600 dark:text-slate-400">{getModuleLabel(project.module)}</p>
               </div>
               <span className="text-xs text-slate-600 dark:text-slate-400">
@@ -574,7 +573,7 @@ function DashboardContent({
       
       {/* All Modules Grid */}
       <div className="bg-slate-100 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-300 dark:border-slate-700/50 p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">All Design Modules</h3>
+        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">All Design Modules</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
           {NAVIGATION.flatMap(category => 
             category.items.map(item => (
@@ -584,7 +583,7 @@ function DashboardContent({
                 className="p-4 bg-slate-700/30 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-xl transition-all hover:scale-105 text-left group"
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-medium text-white group-hover:text-blue-400 transition-colors">
+                  <span className="text-sm font-medium text-zinc-900 dark:text-white group-hover:text-blue-400 transition-colors">
                     {item.label}
                   </span>
                   {item.badge && (
@@ -637,7 +636,7 @@ function StatCard({
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-slate-600 dark:text-slate-400">{title}</p>
-          <p className="text-3xl font-bold text-white mt-1">{value}</p>
+          <p className="text-3xl font-bold text-zinc-900 dark:text-white mt-1">{value}</p>
           <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{subtitle}</p>
         </div>
         <div className={cn("p-3 rounded-xl bg-gradient-to-br", colorClasses)}>
@@ -663,9 +662,9 @@ function QuickAccessCard({
       <div className="bg-slate-100 dark:bg-slate-800/95 backdrop-blur-xl rounded-2xl p-5 h-full">
         <div className="flex items-center gap-3 mb-4">
           <div className={cn("p-2 rounded-lg bg-gradient-to-br", category.gradient)}>
-            <category.icon className="w-5 h-5 text-white" />
+            <category.icon className="w-5 h-5 text-zinc-900 dark:text-white" />
           </div>
-          <h3 className="text-lg font-semibold text-white">{category.label}</h3>
+          <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">{category.label}</h3>
         </div>
         
         <div className="space-y-2">
@@ -675,16 +674,16 @@ function QuickAccessCard({
               onClick={() => onSelect(item.id)}
               className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors group"
             >
-              <span className="text-sm text-slate-700 dark:text-slate-300 group-hover:text-white transition-colors">
+              <span className="text-sm text-slate-700 dark:text-slate-300 group-hover:text-zinc-900 dark:hover:text-white transition-colors">
                 {item.label}
               </span>
-              <ChevronRight className="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:text-white transition-colors" />
+              <ChevronRight className="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:text-zinc-900 dark:hover:text-white transition-colors" />
             </button>
           ))}
         </div>
         
         {category.items.length > 4 && (
-          <button className="w-full mt-3 text-sm text-slate-600 dark:text-slate-400 hover:text-white transition-colors">
+          <button className="w-full mt-3 text-sm text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
             +{category.items.length - 4} more modules
           </button>
         )}

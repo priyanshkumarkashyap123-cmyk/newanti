@@ -34,6 +34,7 @@ export interface PESignatureData {
     engineerName: string;
     licenseNumber: string;
     signedAt: Date;
+    signatureHash?: string;
 }
 
 // ============================================
@@ -148,7 +149,8 @@ export class DatabaseAuditService {
             data: {
                 signedBy: signature.engineerName,
                 licenseNo: signature.licenseNumber,
-                signedAt: signature.signedAt
+                signedAt: signature.signedAt,
+                ...(signature.signatureHash ? { signatureHash: signature.signatureHash } : {})
             }
         });
         return result.count;

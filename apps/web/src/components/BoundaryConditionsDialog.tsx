@@ -153,7 +153,7 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
                 <div className="flex-1 overflow-y-auto space-y-6 py-4">
                     {!hasSelection ? (
                         <div className="text-center py-12">
-                            <CircleDot className="w-16 h-16 mx-auto text-zinc-400 dark:text-slate-500 mb-4" />
+                            <CircleDot className="w-16 h-16 mx-auto text-zinc-500 dark:text-slate-500 mb-4" />
                             <p className="text-zinc-500 dark:text-slate-400 text-lg">No nodes selected</p>
                             <p className="text-zinc-500 dark:text-slate-400 text-sm mt-2">
                                 Please select one or more nodes to assign boundary conditions
@@ -213,7 +213,7 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
                                                             onChange={() => toggleCustomRestraint(dof)}
                                                             className="w-5 h-5 rounded border-2 border-zinc-300 dark:border-slate-600 bg-zinc-50 dark:bg-slate-700 checked:bg-blue-500 checked:border-blue-500 cursor-pointer"
                                                         />
-                                                        <span className="text-zinc-700 dark:text-slate-300 group-hover:text-zinc-900 dark:group-hover:text-white font-mono text-sm">
+                                                        <span className="text-zinc-700 dark:text-slate-300 group-hover:text-zinc-900 dark:group-hover:text-zinc-900 dark:hover:text-white font-mono text-sm">
                                                             {dof.toUpperCase()}
                                                             <span className="text-zinc-500 dark:text-slate-400 ml-2">
                                                                 ({dof === 'fx' ? 'X-axis' : dof === 'fy' ? 'Y-axis' : 'Z-axis'})
@@ -234,7 +234,7 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
                                                             onChange={() => toggleCustomRestraint(dof)}
                                                             className="w-5 h-5 rounded border-2 border-zinc-300 dark:border-slate-600 bg-zinc-50 dark:bg-slate-700 checked:bg-blue-500 checked:border-blue-500 cursor-pointer"
                                                         />
-                                                        <span className="text-zinc-700 dark:text-slate-300 group-hover:text-zinc-900 dark:group-hover:text-white font-mono text-sm">
+                                                        <span className="text-zinc-700 dark:text-slate-300 group-hover:text-zinc-900 dark:group-hover:text-zinc-900 dark:hover:text-white font-mono text-sm">
                                                             {dof.toUpperCase()}
                                                             <span className="text-zinc-500 dark:text-slate-400 ml-2">
                                                                 ({dof === 'mx' ? 'About X' : dof === 'my' ? 'About Y' : 'About Z'})

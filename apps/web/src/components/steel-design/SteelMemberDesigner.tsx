@@ -9,7 +9,6 @@
  * @version 1.0.0
  */
 
-'use client';
 
 import React, { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -254,9 +253,9 @@ export default function SteelMemberDesigner() {
   }, [formData, selectedSection]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 via-blue-100 dark:via-blue-950 to-slate-50 dark:to-slate-900">
       {/* Header */}
-      <header className="bg-slate-800/50 backdrop-blur-xl border-b border-slate-700/50">
+      <header className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -264,13 +263,13 @@ export default function SteelMemberDesigner() {
                 <Ruler className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">Steel Member Designer</h1>
-                <p className="text-sm text-slate-400">Beams, columns, tension & compression members</p>
+                <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Steel Member Designer</h1>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Beams, columns, tension & compression members</p>
               </div>
             </div>
             
             {/* Tab Navigation */}
-            <div className="flex items-center gap-2 bg-slate-700/50 rounded-xl p-1">
+            <div className="flex items-center gap-2 bg-slate-200/50 dark:bg-slate-700/50 rounded-xl p-1">
               {(['input', 'results', 'drawing'] as const).map((tab) => (
                 <button
                   key={tab}
@@ -278,7 +277,7 @@ export default function SteelMemberDesigner() {
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     activeTab === tab
                       ? 'bg-blue-500 text-white'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-600/50'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-600/50'
                   }`}
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -303,8 +302,8 @@ export default function SteelMemberDesigner() {
               {/* Input Form */}
               <div className="lg:col-span-2 space-y-4">
                 {/* Member Type */}
-                <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-6">
-                  <h3 className="text-lg font-semibold text-white mb-4">Member Type</h3>
+                <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
+                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Member Type</h3>
                   <div className="grid grid-cols-4 gap-3">
                     {(['beam', 'column', 'tension', 'strut'] as MemberType[]).map((type) => (
                       <button
@@ -317,7 +316,7 @@ export default function SteelMemberDesigner() {
                         }`}
                       >
                         <div className={`w-12 h-12 mx-auto mb-2 rounded-lg flex items-center justify-center ${
-                          formData.memberType === type ? 'bg-blue-500/20' : 'bg-slate-700'
+                          formData.memberType === type ? 'bg-blue-500/20' : 'bg-slate-200 dark:bg-slate-700'
                         }`}>
                           {type === 'beam' && <Minus className="w-6 h-6 text-blue-400" />}
                           {type === 'column' && <Maximize2 className="w-6 h-6 text-blue-400 rotate-90" />}
@@ -325,7 +324,7 @@ export default function SteelMemberDesigner() {
                           {type === 'strut' && <RotateCw className="w-6 h-6 text-blue-400" />}
                         </div>
                         <p className={`text-sm font-medium text-center ${
-                          formData.memberType === type ? 'text-blue-400' : 'text-slate-400'
+                          formData.memberType === type ? 'text-blue-400' : 'text-slate-500 dark:text-slate-400'
                         }`}>
                           {type.charAt(0).toUpperCase() + type.slice(1)}
                         </p>
@@ -344,11 +343,11 @@ export default function SteelMemberDesigner() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm text-slate-400 mb-1">Section Type</label>
+                        <label className="block text-sm text-slate-500 dark:text-slate-400 mb-1">Section Type</label>
                         <select
                           value={formData.sectionType}
                           onChange={(e) => handleChange('sectionType', e.target.value)}
-                          className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white"
+                          className="w-full px-3 py-2 bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg text-zinc-900 dark:text-white"
                         >
                           <option value="I-section">I-Section (ISMB)</option>
                           <option value="channel">Channel (ISMC)</option>
@@ -358,11 +357,11 @@ export default function SteelMemberDesigner() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm text-slate-400 mb-1">Section</label>
+                        <label className="block text-sm text-slate-500 dark:text-slate-400 mb-1">Section</label>
                         <select
                           value={formData.section}
                           onChange={(e) => handleChange('section', e.target.value)}
-                          className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white"
+                          className="w-full px-3 py-2 bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg text-zinc-900 dark:text-white"
                         >
                           {INDIAN_SECTIONS.map((s) => (
                             <option key={s.name} value={s.name}>{s.name}</option>
@@ -453,11 +452,11 @@ export default function SteelMemberDesigner() {
                 >
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm text-slate-400 mb-1">Steel Grade</label>
+                      <label className="block text-sm text-slate-500 dark:text-slate-400 mb-1">Steel Grade</label>
                       <select
                         value={formData.steelGrade}
                         onChange={(e) => handleChange('steelGrade', e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white"
+                        className="w-full px-3 py-2 bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg text-zinc-900 dark:text-white"
                       >
                         {STEEL_GRADES.map((g) => (
                           <option key={g.grade} value={g.grade}>{g.grade}</option>
@@ -556,13 +555,13 @@ function CollapsibleSection({
   accentColor?: 'blue' | 'emerald';
 }) {
   return (
-    <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-700/50 overflow-hidden">
+    <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
       <button
         onClick={onToggle}
         className="w-full flex items-center justify-between p-4 hover:bg-slate-700/30 transition-colors"
       >
-        <h3 className="text-lg font-semibold text-white">{title}</h3>
-        {expanded ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
+        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">{title}</h3>
+        {expanded ? <ChevronUp className="w-5 h-5 text-slate-500 dark:text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-500 dark:text-slate-400" />}
       </button>
       <AnimatePresence>
         {expanded && (
@@ -598,15 +597,15 @@ function InputField({
   
   return (
     <div>
-      <label className="block text-sm text-slate-400 mb-1">{label}</label>
+      <label className="block text-sm text-slate-500 dark:text-slate-400 mb-1">{label}</label>
       <div className="relative">
         <input
           type="number"
           value={value}
           onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
-          className={`w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white pr-12 focus:outline-none focus:ring-2 ${ringColor}`}
+          className={`w-full px-3 py-2 bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg text-zinc-900 dark:text-white pr-12 focus:outline-none focus:ring-2 ${ringColor}`}
         />
-        {unit && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">{unit}</span>}
+        {unit && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 dark:text-slate-400">{unit}</span>}
       </div>
     </div>
   );
@@ -615,9 +614,9 @@ function InputField({
 function PropertyCard({ label, value, unit }: { label: string; value: number | string; unit: string }) {
   return (
     <div className="text-center">
-      <p className="text-xs text-slate-400">{label}</p>
+      <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
       <p className="text-lg font-bold text-blue-400">{value}</p>
-      <p className="text-xs text-slate-400">{unit}</p>
+      <p className="text-xs text-slate-500 dark:text-slate-400">{unit}</p>
     </div>
   );
 }
@@ -635,9 +634,9 @@ function SectionPreview({ section }: { section: SteelSection }) {
   const tw = section.tw * scale;
 
   return (
-    <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-6">
-      <h3 className="text-lg font-semibold text-white mb-4">{section.name}</h3>
-      <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full bg-slate-900/50 rounded-xl">
+    <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
+      <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">{section.name}</h3>
+      <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full bg-slate-50/50 dark:bg-slate-900/50 rounded-xl">
         {/* Grid */}
         <defs>
           <pattern id="grid-steel" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -675,20 +674,20 @@ function MemberSummary({ formData, section }: { formData: SteelFormData; section
   const slendernessY = formData.effectiveLength / section.ryy;
 
   return (
-    <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-6">
-      <h3 className="text-lg font-semibold text-white mb-4">Quick Summary</h3>
+    <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
+      <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Quick Summary</h3>
       <div className="space-y-3">
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
-          <span className="text-slate-400">Effective Length</span>
-          <span className="text-white font-medium">{formData.effectiveLength} mm</span>
+          <span className="text-slate-500 dark:text-slate-400">Effective Length</span>
+          <span className="text-zinc-900 dark:text-white font-medium">{formData.effectiveLength} mm</span>
         </div>
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
-          <span className="text-slate-400">Slenderness (λx)</span>
-          <span className="text-white font-medium">{slendernessX.toFixed(1)}</span>
+          <span className="text-slate-500 dark:text-slate-400">Slenderness (λx)</span>
+          <span className="text-zinc-900 dark:text-white font-medium">{slendernessX.toFixed(1)}</span>
         </div>
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
-          <span className="text-slate-400">Slenderness (λy)</span>
-          <span className="text-white font-medium">{slendernessY.toFixed(1)}</span>
+          <span className="text-slate-500 dark:text-slate-400">Slenderness (λy)</span>
+          <span className="text-zinc-900 dark:text-white font-medium">{slendernessY.toFixed(1)}</span>
         </div>
         <div className={`flex justify-between p-3 rounded-lg border ${
           slendernessY <= 180 
@@ -723,23 +722,23 @@ function SteelResultsPanel({ result }: { result: any }) {
             <AlertTriangle className="w-12 h-12 text-red-400" />
           )}
           <div>
-            <h2 className="text-2xl font-bold text-white">
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
               {isDesignOk ? 'Design OK' : 'Design Needs Revision'}
             </h2>
-            <p className="text-slate-300">
+            <p className="text-slate-600 dark:text-slate-300">
               {result.section.name} - {result.classification.overall} section
             </p>
           </div>
           <div className="ml-auto text-right">
-            <p className="text-sm text-slate-400">Interaction Ratio</p>
-            <p className="text-3xl font-bold text-white">{result.interaction.ratio}%</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Interaction Ratio</p>
+            <p className="text-3xl font-bold text-zinc-900 dark:text-white">{result.interaction.ratio}%</p>
           </div>
         </div>
       </div>
 
       {/* Section Classification */}
-      <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">Section Classification</h3>
+      <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
+        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Section Classification</h3>
         <div className="space-y-2">
           <ResultRow label="Flange" value={result.classification.flange} />
           <ResultRow label="Web" value={result.classification.web} />
@@ -748,8 +747,8 @@ function SteelResultsPanel({ result }: { result: any }) {
       </div>
 
       {/* Slenderness */}
-      <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">Slenderness</h3>
+      <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
+        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Slenderness</h3>
         <div className="space-y-2">
           <ResultRow label="λx" value={result.slenderness.x} />
           <ResultRow label="λy" value={result.slenderness.y} />
@@ -759,8 +758,8 @@ function SteelResultsPanel({ result }: { result: any }) {
       </div>
 
       {/* Capacity Checks */}
-      <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">Capacity Checks</h3>
+      <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
+        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Capacity Checks</h3>
         <div className="space-y-2">
           <ResultRow 
             label="Moment" 
@@ -781,8 +780,8 @@ function SteelResultsPanel({ result }: { result: any }) {
       </div>
 
       {/* Detailed Capacities */}
-      <div className="col-span-1 lg:col-span-3 bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">Detailed Capacities</h3>
+      <div className="col-span-1 lg:col-span-3 bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
+        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Detailed Capacities</h3>
         <div className="grid grid-cols-3 gap-6">
           <CapacityCard
             title="Moment Capacity"
@@ -813,7 +812,7 @@ function SteelResultsPanel({ result }: { result: any }) {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="px-6 py-3 bg-slate-700 rounded-xl text-white font-medium flex items-center gap-2"
+          className="px-6 py-3 bg-slate-200 dark:bg-slate-700 rounded-xl text-zinc-900 dark:text-white font-medium flex items-center gap-2"
         >
           <FileText className="w-5 h-5" />
           Export Report
@@ -842,12 +841,12 @@ function ResultRow({
 }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-slate-400 text-sm">{label}</span>
+      <span className="text-slate-500 dark:text-slate-400 text-sm">{label}</span>
       <span className={`font-medium ${
         status === 'safe' ? 'text-blue-400' : 
         status === 'unsafe' ? 'text-red-400' : 
         status === 'warning' ? 'text-yellow-400' :
-        'text-white'
+        'text-zinc-900 dark:text-white'
       }`}>
         {value}
       </span>
@@ -870,14 +869,14 @@ function CapacityCard({
 }) {
   return (
     <div className="p-4 bg-slate-700/30 rounded-xl">
-      <h4 className="text-sm text-slate-400 mb-3">{title}</h4>
+      <h4 className="text-sm text-slate-500 dark:text-slate-400 mb-3">{title}</h4>
       <div className="flex items-end justify-between mb-2">
         <div>
-          <p className="text-xs text-slate-400">Applied</p>
-          <p className="text-xl font-bold text-white">{applied} {unit}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Applied</p>
+          <p className="text-xl font-bold text-zinc-900 dark:text-white">{applied} {unit}</p>
         </div>
         <div className="text-right">
-          <p className="text-xs text-slate-400">Design</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Design</p>
           <p className="text-xl font-bold text-blue-400">{design} {unit}</p>
         </div>
       </div>
@@ -891,7 +890,7 @@ function CapacityCard({
           style={{ width: `${Math.min(utilization, 100)}%` }}
         />
       </div>
-      <p className="text-xs text-slate-400 mt-1 text-right">{utilization}% utilized</p>
+      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 text-right">{utilization}% utilized</p>
     </div>
   );
 }
@@ -900,12 +899,12 @@ function SteelDrawing({ formData, result }: { formData: SteelFormData; result: a
   const section = result.section;
   
   return (
-    <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-6">
-      <h3 className="text-xl font-bold text-white mb-6">Member Drawing</h3>
+    <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
+      <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-6">Member Drawing</h3>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Cross Section */}
-        <div className="bg-slate-900/50 rounded-xl p-4">
+        <div className="bg-slate-50/50 dark:bg-slate-900/50 rounded-xl p-4">
           <h4 className="text-lg font-semibold text-blue-400 mb-4">Cross Section</h4>
           <svg viewBox="0 0 400 350" className="w-full h-80">
             <defs>
@@ -948,7 +947,7 @@ function SteelDrawing({ formData, result }: { formData: SteelFormData; result: a
         </div>
         
         {/* Elevation */}
-        <div className="bg-slate-900/50 rounded-xl p-4">
+        <div className="bg-slate-50/50 dark:bg-slate-900/50 rounded-xl p-4">
           <h4 className="text-lg font-semibold text-blue-400 mb-4">Elevation</h4>
           <svg viewBox="0 0 400 350" className="w-full h-80">
             <rect width="100%" height="100%" fill="#0f172a" />
@@ -980,7 +979,7 @@ function SteelDrawing({ formData, result }: { formData: SteelFormData; result: a
       </div>
       
       {/* Section Properties Table */}
-      <div className="mt-6 p-4 bg-slate-900/50 rounded-xl">
+      <div className="mt-6 p-4 bg-slate-50/50 dark:bg-slate-900/50 rounded-xl">
         <h4 className="text-lg font-semibold text-blue-400 mb-4">Section Properties</h4>
         <div className="grid grid-cols-6 gap-4">
           <PropertyTableCell label="Area" value={section.area} unit="mm²" />
@@ -998,9 +997,9 @@ function SteelDrawing({ formData, result }: { formData: SteelFormData; result: a
 function PropertyTableCell({ label, value, unit }: { label: string; value: number; unit: string }) {
   return (
     <div className="text-center p-3 bg-slate-700/30 rounded-lg">
-      <p className="text-xs text-slate-400">{label}</p>
-      <p className="text-lg font-bold text-white">{value}</p>
-      <p className="text-xs text-slate-400">{unit}</p>
+      <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
+      <p className="text-lg font-bold text-zinc-900 dark:text-white">{value}</p>
+      <p className="text-xs text-slate-500 dark:text-slate-400">{unit}</p>
     </div>
   );
 }

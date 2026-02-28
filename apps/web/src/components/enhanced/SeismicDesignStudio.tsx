@@ -16,7 +16,6 @@
  * @version 4.0.0
  */
 
-'use client';
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -157,7 +156,7 @@ const ResponseSpectrumChart: React.FC<{
   ).join(' ');
   
   return (
-    <svg width={width} height={height} className="bg-zinc-900/50 rounded-xl">
+    <svg width={width} height={height} className="bg-white/50 dark:bg-zinc-900/50 rounded-xl">
       {/* Grid */}
       <defs>
         <pattern id="seismicGrid" width="40" height="40" patternUnits="userSpaceOnUse">
@@ -250,10 +249,10 @@ const StoryDriftVisualization: React.FC<{
   const maxDrift = Math.max(...stories.map(s => Math.abs(s.drift)));
   
   return (
-    <div className="bg-zinc-900/50 rounded-xl p-4">
+    <div className="bg-white/50 dark:bg-zinc-900/50 rounded-xl p-4">
       <div className="flex items-center gap-2 mb-4">
         <ArrowUpDown className="w-4 h-4 text-blue-400" />
-        <span className="text-sm font-medium text-white">Inter-Story Drift</span>
+        <span className="text-sm font-medium text-zinc-900 dark:text-white">Inter-Story Drift</span>
       </div>
       
       <div className="flex gap-4">
@@ -270,12 +269,12 @@ const StoryDriftVisualization: React.FC<{
                 marginLeft: `${(story.displacement / maxDrift) * 20}px`,
               }}
             >
-              <span className="absolute -left-8 top-1/2 -translate-y-1/2 text-xs text-zinc-400">
+              <span className="absolute -left-8 top-1/2 -translate-y-1/2 text-xs text-zinc-500 dark:text-zinc-400">
                 L{story.level}
               </span>
             </motion.div>
           ))}
-          <div className="h-2 bg-zinc-700 rounded-sm" />
+          <div className="h-2 bg-zinc-200 dark:bg-zinc-700 rounded-sm" />
         </div>
         
         {/* Drift bars */}
@@ -292,7 +291,7 @@ const StoryDriftVisualization: React.FC<{
                 transition={{ delay: i * 0.1 }}
                 className="flex items-center gap-3"
               >
-                <div className="flex-1 h-6 bg-zinc-800 rounded-lg overflow-hidden relative">
+                <div className="flex-1 h-6 bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden relative">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${Math.min(100, driftRatio * 100)}%` }}
@@ -306,7 +305,7 @@ const StoryDriftVisualization: React.FC<{
                   />
                 </div>
                 <span className={`text-sm font-mono w-16 text-right ${
-                  isExceed ? 'text-red-400' : 'text-zinc-300'
+                  isExceed ? 'text-red-400' : 'text-zinc-600 dark:text-zinc-300'
                 }`}>
                   {(story.drift * 100).toFixed(2)}%
                 </span>
@@ -317,22 +316,22 @@ const StoryDriftVisualization: React.FC<{
       </div>
       
       {/* Legend */}
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-zinc-800 text-xs">
-        <span className="text-zinc-400">
+      <div className="flex items-center justify-between mt-4 pt-3 border-t border-zinc-200 dark:border-zinc-800 text-xs">
+        <span className="text-zinc-500 dark:text-zinc-400">
           Allowable: {(allowableDrift * 100).toFixed(2)}%
         </span>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded bg-emerald-500" />
-            <span className="text-zinc-400">&lt;80%</span>
+            <span className="text-zinc-500 dark:text-zinc-400">&lt;80%</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded bg-amber-500" />
-            <span className="text-zinc-400">80-100%</span>
+            <span className="text-zinc-500 dark:text-zinc-400">80-100%</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded bg-red-500" />
-            <span className="text-zinc-400">&gt;100%</span>
+            <span className="text-zinc-500 dark:text-zinc-400">&gt;100%</span>
           </div>
         </div>
       </div>
@@ -369,11 +368,11 @@ const ModeShapeVisualization: React.FC<{
   const modeShape = generateModeShape(selectedMode);
   
   return (
-    <div className="bg-zinc-900/50 rounded-xl p-4">
+    <div className="bg-white/50 dark:bg-zinc-900/50 rounded-xl p-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Waves className="w-4 h-4 text-purple-400" />
-          <span className="text-sm font-medium text-white">Mode Shapes</span>
+          <span className="text-sm font-medium text-zinc-900 dark:text-white">Mode Shapes</span>
         </div>
         
         {/* Mode selector */}
@@ -385,7 +384,7 @@ const ModeShapeVisualization: React.FC<{
               className={`w-8 h-8 rounded-lg text-sm font-bold transition-all ${
                 selectedMode === m.mode
                   ? 'bg-purple-500 text-white'
-                  : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                  : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
               }`}
             >
               {m.mode}
@@ -396,7 +395,7 @@ const ModeShapeVisualization: React.FC<{
       
       <div className="flex gap-6">
         {/* Mode shape visualization */}
-        <svg width="120" height="200" viewBox="-1 0 2 1" className="bg-zinc-800/50 rounded-lg">
+        <svg width="120" height="200" viewBox="-1 0 2 1" className="bg-zinc-100/50 dark:bg-zinc-800/50 rounded-lg">
           {/* Building outline (undeformed) */}
           <line x1="0" y1="0" x2="0" y2="1" stroke="#3f3f46" strokeWidth="0.02" strokeDasharray="0.02" />
           
@@ -433,22 +432,22 @@ const ModeShapeVisualization: React.FC<{
         {currentMode && (
           <div className="flex-1 space-y-3">
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-zinc-800/50 rounded-lg p-3">
-                <p className="text-xs text-zinc-400 mb-1">Period</p>
-                <p className="text-lg font-bold text-white font-mono">{currentMode.period.toFixed(3)} s</p>
+              <div className="bg-zinc-100/50 dark:bg-zinc-800/50 rounded-lg p-3">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Period</p>
+                <p className="text-lg font-bold text-zinc-900 dark:text-white font-mono">{currentMode.period.toFixed(3)} s</p>
               </div>
-              <div className="bg-zinc-800/50 rounded-lg p-3">
-                <p className="text-xs text-zinc-400 mb-1">Frequency</p>
-                <p className="text-lg font-bold text-white font-mono">{currentMode.frequency.toFixed(2)} Hz</p>
+              <div className="bg-zinc-100/50 dark:bg-zinc-800/50 rounded-lg p-3">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Frequency</p>
+                <p className="text-lg font-bold text-zinc-900 dark:text-white font-mono">{currentMode.frequency.toFixed(2)} Hz</p>
               </div>
             </div>
             
-            <div className="bg-zinc-800/50 rounded-lg p-3">
+            <div className="bg-zinc-100/50 dark:bg-zinc-800/50 rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs text-zinc-400">Mass Participation ({currentMode.direction})</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">Mass Participation ({currentMode.direction})</p>
                 <p className="text-sm font-bold text-purple-400">{(currentMode.massParticipation * 100).toFixed(1)}%</p>
               </div>
-              <div className="h-2 bg-zinc-700 rounded-full overflow-hidden">
+              <div className="h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${currentMode.massParticipation * 100}%` }}
@@ -479,25 +478,25 @@ const SeismicHazardMap: React.FC<{
   ];
   
   return (
-    <div className="bg-zinc-900/50 rounded-xl p-4">
+    <div className="bg-white/50 dark:bg-zinc-900/50 rounded-xl p-4">
       <div className="flex items-center gap-2 mb-4">
         <Map className="w-4 h-4 text-red-400" />
-        <span className="text-sm font-medium text-white">Seismic Hazard Zone</span>
+        <span className="text-sm font-medium text-zinc-900 dark:text-white">Seismic Hazard Zone</span>
       </div>
       
       {/* Simplified map representation */}
-      <div className="relative h-32 bg-zinc-800 rounded-lg overflow-hidden mb-4">
+      <div className="relative h-32 bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden mb-4">
         {/* Zone regions */}
         <div className="absolute inset-0 flex">
           {zones.map((zone, i) => (
             <motion.button
               key={zone.id}
               onClick={() => onZoneSelect(zone.id)}
-              className={`flex-1 transition-all ${selectedZone === zone.id ? 'ring-2 ring-white' : ''}`}
+              className={`flex-1 transition-all ${selectedZone === zone.id ? 'ring-2 ring-zinc-300 dark:ring-white' : ''}`}
               style={{ backgroundColor: zone.color + '40' }}
               whileHover={{ scale: 1.02 }}
             >
-              <span className="text-white text-sm font-bold">{zone.id}</span>
+              <span className="text-zinc-900 dark:text-white text-sm font-bold">{zone.id}</span>
             </motion.button>
           ))}
         </div>
@@ -511,7 +510,7 @@ const SeismicHazardMap: React.FC<{
           }}
           transition={{ type: 'spring', damping: 20 }}
         >
-          <MapPin className="w-6 h-6 text-white drop-shadow-lg" fill="currentColor" />
+          <MapPin className="w-6 h-6 text-zinc-900 dark:text-white drop-shadow-lg" fill="currentColor" />
         </motion.div>
       </div>
       
@@ -523,13 +522,13 @@ const SeismicHazardMap: React.FC<{
             onClick={() => onZoneSelect(zone.id)}
             className={`p-2 rounded-lg text-center transition-all ${
               selectedZone === zone.id
-                ? 'ring-2 ring-white bg-zinc-700'
-                : 'bg-zinc-800 hover:bg-zinc-700'
+                ? 'ring-2 ring-zinc-300 dark:ring-white bg-zinc-200 dark:bg-zinc-700'
+                : 'bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700'
             }`}
           >
             <div className="w-4 h-4 rounded-full mx-auto mb-1" style={{ backgroundColor: zone.color }} />
-            <p className="text-xs font-bold text-white">{zone.id}</p>
-            <p className="text-xs text-zinc-400">PGA {zone.pga}g</p>
+            <p className="text-xs font-bold text-zinc-900 dark:text-white">{zone.id}</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">PGA {zone.pga}g</p>
           </button>
         ))}
       </div>
@@ -614,20 +613,20 @@ export const SeismicDesignStudio: React.FC<{
   }, [onAnalysisComplete]);
   
   return (
-    <div className={`bg-zinc-950 rounded-2xl overflow-hidden ${className}`}>
+    <div className={`bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden ${className}`}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-red-900/30 via-orange-900/20 to-zinc-900 p-6 border-b border-zinc-800">
+      <div className="bg-gradient-to-r from-red-100/30 dark:from-red-900/30 via-orange-100/20 dark:via-orange-900/20 to-zinc-50 dark:to-zinc-900 p-6 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-gradient-to-br from-red-500 to-orange-600">
               <Activity className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                 Seismic Design Studio
                 <Sparkles className="w-4 h-4 text-amber-400" />
               </h2>
-              <p className="text-zinc-400 text-sm">Multi-code earthquake engineering analysis</p>
+              <p className="text-zinc-500 dark:text-zinc-400 text-sm">Multi-code earthquake engineering analysis</p>
             </div>
           </div>
           
@@ -661,7 +660,7 @@ export const SeismicDesignStudio: React.FC<{
                 className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
                   selectedCode === code
                     ? 'bg-red-500/20 border border-red-500 text-red-400'
-                    : 'bg-zinc-800 border border-zinc-700 text-zinc-400 hover:border-zinc-600'
+                    : 'bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-600'
                 }`}
               >
                 {name}
@@ -669,7 +668,7 @@ export const SeismicDesignStudio: React.FC<{
             ))}
           </div>
           
-          <div className="w-px bg-zinc-700" />
+          <div className="w-px bg-zinc-200 dark:bg-zinc-700" />
           
           {/* Analysis Method */}
           <div className="flex gap-2">
@@ -680,7 +679,7 @@ export const SeismicDesignStudio: React.FC<{
                 className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
                   analysisMethod === method
                     ? 'bg-orange-500/20 border border-orange-500 text-orange-400'
-                    : 'bg-zinc-800 border border-zinc-700 text-zinc-400 hover:border-zinc-600'
+                    : 'bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-600'
                 }`}
               >
                 {name}
@@ -692,7 +691,7 @@ export const SeismicDesignStudio: React.FC<{
       
       <div className="flex h-[650px]">
         {/* Left Panel - Parameters */}
-        <div className="w-80 border-r border-zinc-800 p-4 space-y-4 overflow-y-auto">
+        <div className="w-80 border-r border-zinc-200 dark:border-zinc-800 p-4 space-y-4 overflow-y-auto">
           {/* Hazard Map */}
           <SeismicHazardMap
             selectedZone={selectedZone}
@@ -703,8 +702,8 @@ export const SeismicDesignStudio: React.FC<{
           />
           
           {/* Soil Type */}
-          <div className="bg-zinc-900/50 rounded-xl p-4">
-            <label className="block text-sm font-medium text-zinc-400 mb-3">Soil Type</label>
+          <div className="bg-white/50 dark:bg-zinc-900/50 rounded-xl p-4">
+            <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-3">Soil Type</label>
             <div className="space-y-2">
               {SOIL_TYPES.map(soil => (
                 <button
@@ -713,69 +712,69 @@ export const SeismicDesignStudio: React.FC<{
                   className={`w-full flex items-center justify-between p-3 rounded-lg transition-all ${
                     parameters.soilType === soil.type
                       ? 'bg-blue-500/20 border border-blue-500'
-                      : 'bg-zinc-800 border border-zinc-700 hover:border-zinc-600'
+                      : 'bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600'
                   }`}
                 >
                   <div className="text-left">
-                    <p className={`font-medium ${parameters.soilType === soil.type ? 'text-blue-400' : 'text-white'}`}>
+                    <p className={`font-medium ${parameters.soilType === soil.type ? 'text-blue-400' : 'text-zinc-900 dark:text-white'}`}>
                       Type {soil.type} - {soil.name}
                     </p>
-                    <p className="text-xs text-zinc-400">{soil.description}</p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">{soil.description}</p>
                   </div>
-                  <span className="text-xs text-zinc-400">×{soil.factor}</span>
+                  <span className="text-xs text-zinc-500 dark:text-zinc-400">×{soil.factor}</span>
                 </button>
               ))}
             </div>
           </div>
           
           {/* Parameters */}
-          <div className="bg-zinc-900/50 rounded-xl p-4 space-y-4">
-            <h4 className="text-sm font-medium text-white flex items-center gap-2">
-              <Settings className="w-4 h-4 text-zinc-400" />
+          <div className="bg-white/50 dark:bg-zinc-900/50 rounded-xl p-4 space-y-4">
+            <h4 className="text-sm font-medium text-zinc-900 dark:text-white flex items-center gap-2">
+              <Settings className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
               Design Parameters
             </h4>
             
             <div>
-              <label className="block text-xs text-zinc-400 mb-1">Importance Factor (I)</label>
+              <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Importance Factor (I)</label>
               <input
                 type="number"
                 value={parameters.importance}
                 onChange={(e) => setParameters(p => ({ ...p, importance: parseFloat(e.target.value) || 1 }))}
                 step="0.1"
-                className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm"
+                className="w-full px-3 py-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm"
               />
             </div>
             
             <div>
-              <label className="block text-xs text-zinc-400 mb-1">Response Reduction Factor (R)</label>
+              <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Response Reduction Factor (R)</label>
               <input
                 type="number"
                 value={parameters.responseReduction}
                 onChange={(e) => setParameters(p => ({ ...p, responseReduction: parseFloat(e.target.value) || 1 }))}
                 step="0.5"
-                className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm"
+                className="w-full px-3 py-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm"
               />
             </div>
             
             <div>
-              <label className="block text-xs text-zinc-400 mb-1">Damping Ratio (ξ)</label>
+              <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Damping Ratio (ξ)</label>
               <input
                 type="number"
                 value={parameters.dampingRatio}
                 onChange={(e) => setParameters(p => ({ ...p, dampingRatio: parseFloat(e.target.value) || 0.05 }))}
                 step="0.01"
-                className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm"
+                className="w-full px-3 py-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm"
               />
             </div>
             
             <div>
-              <label className="block text-xs text-zinc-400 mb-1">Fundamental Period T (s)</label>
+              <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Fundamental Period T (s)</label>
               <input
                 type="number"
                 value={parameters.fundamentalPeriod}
                 onChange={(e) => setParameters(p => ({ ...p, fundamentalPeriod: parseFloat(e.target.value) || 0.5 }))}
                 step="0.01"
-                className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm"
+                className="w-full px-3 py-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm"
               />
             </div>
           </div>
@@ -784,13 +783,13 @@ export const SeismicDesignStudio: React.FC<{
         {/* Right Panel - Results */}
         <div className="flex-1 p-4 space-y-4 overflow-y-auto">
           {/* Response Spectrum */}
-          <div className="bg-zinc-900/50 rounded-xl p-4">
+          <div className="bg-white/50 dark:bg-zinc-900/50 rounded-xl p-4">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <LineChart className="w-4 h-4 text-blue-400" />
-                <span className="text-sm font-medium text-white">Design Response Spectrum</span>
+                <span className="text-sm font-medium text-zinc-900 dark:text-white">Design Response Spectrum</span>
               </div>
-              <span className="text-xs text-zinc-400">{selectedCode}</span>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400">{selectedCode}</span>
             </div>
             <ResponseSpectrumChart
               spectrum={responseSpectrum}
@@ -816,30 +815,30 @@ export const SeismicDesignStudio: React.FC<{
           </div>
           
           {/* Summary */}
-          <div className="bg-gradient-to-r from-zinc-800/50 to-zinc-900/50 rounded-xl p-4 border border-zinc-700">
-            <h4 className="text-sm font-medium text-white mb-4 flex items-center gap-2">
+          <div className="bg-gradient-to-r from-zinc-100/50 dark:from-zinc-800/50 to-zinc-50/50 dark:to-zinc-900/50 rounded-xl p-4 border border-zinc-200 dark:border-zinc-700">
+            <h4 className="text-sm font-medium text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
               <Shield className="w-4 h-4 text-emerald-400" />
               Seismic Analysis Summary
             </h4>
             
             <div className="grid grid-cols-4 gap-4">
               <div className="text-center">
-                <p className="text-xs text-zinc-400 mb-1">Base Shear</p>
-                <p className="text-2xl font-bold text-white">750</p>
-                <p className="text-xs text-zinc-400">kN</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Base Shear</p>
+                <p className="text-2xl font-bold text-zinc-900 dark:text-white">750</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">kN</p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-zinc-400 mb-1">Max Drift</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Max Drift</p>
                 <p className="text-2xl font-bold text-amber-400">1.8%</p>
-                <p className="text-xs text-zinc-400">&lt;2% ✓</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">&lt;2% ✓</p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-zinc-400 mb-1">Modes &gt;90%</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Modes &gt;90%</p>
                 <p className="text-2xl font-bold text-blue-400">5</p>
-                <p className="text-xs text-zinc-400">modes required</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">modes required</p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-zinc-400 mb-1">Status</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Status</p>
                 <div className="flex items-center justify-center gap-1">
                   <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                   <span className="text-lg font-bold text-emerald-400">PASS</span>

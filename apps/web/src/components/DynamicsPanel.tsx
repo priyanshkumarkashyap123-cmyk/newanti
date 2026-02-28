@@ -204,7 +204,7 @@ export function DynamicsPanel() {
                                         <span className="text-gray-600">Base Shear Z:</span>
                                         <span className="font-bold">{seismicResult.base_shear_z.toFixed(2)} kN</span>
                                     </div>
-                                    <div className="text-xs text-gray-400 mt-1 pt-1 border-t">
+                                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 pt-1 border-t">
                                         Governing Period: {seismicResult.periods[0].toFixed(3)}s
                                     </div>
                                 </div>

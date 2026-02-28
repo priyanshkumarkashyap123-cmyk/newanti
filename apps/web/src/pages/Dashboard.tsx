@@ -119,7 +119,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                                 w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
                                 ${activeTab === tab.id
                                     ? 'bg-blue-500/[0.12] text-blue-400 border border-blue-500/20 shadow-sm'
-                                    : 'text-slate-600 dark:text-slate-400 hover:bg-white/[0.04] hover:text-slate-200 border border-transparent'
+                                    : 'text-slate-600 dark:text-slate-400 hover:bg-white/[0.04] hover:text-slate-700 dark:hover:text-slate-200 border border-transparent'
                                 }
                             `}
                         >
@@ -128,11 +128,11 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                         </button>
                     ))}
                     <div className="pt-4 mt-4 border-t border-white/[0.06]">
-                        <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800 hover:text-white transition-colors">
+                        <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800 hover:text-zinc-900 dark:hover:text-white transition-colors">
                             <Settings className="w-4 h-4" />
                             Settings
                         </button>
-                        <Link to="/ui-showcase" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800 hover:text-white transition-colors">
+                        <Link to="/ui-showcase" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800 hover:text-zinc-900 dark:hover:text-white transition-colors">
                             <Layout className="w-4 h-4" />
                             UI Showcase
                         </Link>
@@ -149,7 +149,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                         {isSignedIn && !isClerkEnabled && (
                             <button
                                 onClick={() => signOut()}
-                                className="text-slate-600 dark:text-slate-400 hover:text-white p-1 rounded-md hover:bg-slate-100 dark:bg-slate-800"
+                                className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white p-1 rounded-md hover:bg-slate-100 dark:bg-slate-800"
                                 title="Sign Out"
                             >
                                 <LogOut className="w-4 h-4" />
@@ -174,7 +174,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                                 placeholder="Search projects..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full h-10 pl-10 pr-4 bg-white dark:bg-slate-950/60 border border-white/[0.08] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                                className="w-full h-10 pl-10 pr-4 bg-white dark:bg-slate-950/60 border border-white/[0.08] rounded-xl text-sm text-zinc-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 transition-all"
                             />
                         </div>
                     </div>
@@ -193,7 +193,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                 <PageTransition className="flex-1 overflow-auto p-6">
                     {/* Welcome Section */}
                     <div className="mb-8">
-                        <h1 className="text-3xl font-bold text-white mb-2">
+                        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">
                             {getGreeting()}, {userName}
                         </h1>
                         <p className="text-slate-600 dark:text-slate-400">Here's what's happening with your projects today.</p>
@@ -235,7 +235,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${module.bgColor} group-hover:scale-105 transition-transform duration-300`}>
                                         <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>{module.icon}</span>
                                     </div>
-                                    <h3 className="font-bold text-white mb-1 group-hover:text-blue-400 transition-colors">
+                                    <h3 className="font-bold text-zinc-900 dark:text-white mb-1 group-hover:text-blue-400 transition-colors">
                                         {module.title}
                                     </h3>
                                     <p className="text-sm text-slate-600 dark:text-slate-400">{module.subtitle}</p>
@@ -278,10 +278,10 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                                             </div>
                                         </div>
                                         <div className="p-4">
-                                            <h3 className="font-bold text-white truncate mb-1 group-hover:text-blue-400 transition-colors">{project.name}</h3>
+                                            <h3 className="font-bold text-zinc-900 dark:text-white truncate mb-1 group-hover:text-blue-400 transition-colors">{project.name}</h3>
                                             <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-400">
                                                 <span>{project.nodeCount} Nodes</span>
-                                                <span className="w-1 h-1 bg-slate-700 rounded-full" />
+                                                <span className="w-1 h-1 bg-slate-200 dark:bg-slate-700 rounded-full" />
                                                 <span>{project.memberCount} Members</span>
                                             </div>
                                             <p className="text-xs text-slate-500 mt-3 flex items-center gap-1">
@@ -332,7 +332,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                                         </div>
                                     </div>
                                     <div className="p-4">
-                                        <h3 className="font-bold text-white truncate mb-1 group-hover:text-blue-400 transition-colors">{tpl.name}</h3>
+                                        <h3 className="font-bold text-zinc-900 dark:text-white truncate mb-1 group-hover:text-blue-400 transition-colors">{tpl.name}</h3>
                                         <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">{tpl.description}</p>
                                     </div>
                                 </button>
@@ -358,10 +358,10 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                                         </div>
                                     </div>
                                     <div className="p-4">
-                                        <h3 className="font-bold text-white truncate mb-1 group-hover:text-blue-400 transition-colors">{project.name}</h3>
+                                        <h3 className="font-bold text-zinc-900 dark:text-white truncate mb-1 group-hover:text-blue-400 transition-colors">{project.name}</h3>
                                         <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-400">
                                             <span>{project.nodeCount} Nodes</span>
-                                            <span className="w-1 h-1 bg-slate-700 rounded-full" />
+                                            <span className="w-1 h-1 bg-slate-200 dark:bg-slate-700 rounded-full" />
                                             <span>{project.memberCount} Members</span>
                                         </div>
                                         <p className="text-xs text-slate-500 mt-3 flex items-center gap-1">

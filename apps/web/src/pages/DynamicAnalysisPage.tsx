@@ -125,15 +125,15 @@ const analysisTypes: AnalysisCard[] = [
 
 export const DynamicAnalysisPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-white">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-900 via-indigo-900/30 to-slate-900">
+      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 via-indigo-900/30 to-slate-50 dark:to-slate-900">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex items-center gap-4 mb-6">
             <Link to="/stream" className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors">
               <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
             </Link>
-            <div className="h-6 w-px bg-slate-700" />
+            <div className="h-6 w-px bg-slate-200 dark:bg-slate-700" />
             <Link to="/" className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors">
               <Home className="w-5 h-5 text-slate-600 dark:text-slate-400" />
             </Link>
@@ -156,7 +156,7 @@ export const DynamicAnalysisPage: React.FC = () => {
           {/* Quick Stats */}
           <div className="mt-8 grid grid-cols-4 gap-4">
             <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-300 dark:border-slate-700">
-              <div className="text-2xl font-bold text-white">8</div>
+              <div className="text-2xl font-bold text-zinc-900 dark:text-white">8</div>
               <div className="text-xs text-slate-600 dark:text-slate-400">Analysis Types</div>
             </div>
             <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-300 dark:border-slate-700">
@@ -184,13 +184,13 @@ export const DynamicAnalysisPage: React.FC = () => {
               <Link
                 key={analysis.id}
                 to={analysis.status === 'coming' ? '#' : analysis.link}
-                className={`group relative bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-300 dark:border-slate-700 overflow-hidden transition-all hover:border-slate-600 hover:shadow-xl ${
+                className={`group relative bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-300 dark:border-slate-700 overflow-hidden transition-all hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-xl ${
                   analysis.status === 'coming' ? 'opacity-60 cursor-not-allowed' : ''
                 }`}
               >
                 {/* Gradient Header */}
                 <div className={`h-24 bg-gradient-to-br ${analysis.color} flex items-center justify-center relative`}>
-                  <Icon className="w-12 h-12 text-white/90" />
+                  <Icon className="w-12 h-12 text-zinc-900/90 dark:text-white/90" />
                   {analysis.status !== 'ready' && (
                     <span className={`absolute top-2 right-2 text-xs px-2 py-0.5 rounded-full ${
                       analysis.status === 'beta' 
@@ -204,7 +204,7 @@ export const DynamicAnalysisPage: React.FC = () => {
 
                 {/* Content */}
                 <div className="p-5">
-                  <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">
+                  <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2 group-hover:text-blue-400 transition-colors">
                     {analysis.title}
                   </h3>
                   <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">
@@ -237,7 +237,7 @@ export const DynamicAnalysisPage: React.FC = () => {
         </div>
 
         {/* Additional Info Section */}
-        <div className="mt-12 bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-8 border border-slate-300 dark:border-slate-700">
+        <div className="mt-12 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800 rounded-2xl p-8 border border-slate-300 dark:border-slate-700">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <h3 className="text-lg font-bold text-white mb-3">Industry-Standard Methods</h3>
@@ -249,7 +249,7 @@ export const DynamicAnalysisPage: React.FC = () => {
               </ul>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white mb-3">Supported Codes</h3>
+              <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-3">Supported Codes</h3>
               <ul className="text-sm text-slate-600 dark:text-slate-400 space-y-2">
                 <li>• IS 1893:2016 (India)</li>
                 <li>• ASCE 7-22 (USA)</li>
@@ -258,7 +258,7 @@ export const DynamicAnalysisPage: React.FC = () => {
               </ul>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white mb-3">Performance</h3>
+              <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-3">Performance</h3>
               <ul className="text-sm text-slate-600 dark:text-slate-400 space-y-2">
                 <li>• Rust-powered WASM solver</li>
                 <li>• 20-100x faster than competitors</li>

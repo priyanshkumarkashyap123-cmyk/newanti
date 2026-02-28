@@ -24,7 +24,7 @@ export const ViewportPanel: FC<ViewportPanelProps> = ({
     overlayInfo,
 }) => {
     return (
-        <div className="relative h-full w-full bg-zinc-900 overflow-hidden group">
+        <div className="relative h-full w-full bg-white dark:bg-zinc-900 overflow-hidden group">
             {/* Grid Background Pattern */}
             {showGrid && (
                 <div
@@ -40,16 +40,16 @@ export const ViewportPanel: FC<ViewportPanelProps> = ({
             )}
 
             {/* Coordinates Overlay (Top Left) */}
-            <div className="absolute top-4 left-4 bg-zinc-800/80 backdrop-blur-sm border border-zinc-700 px-3 py-1 rounded text-xs font-mono text-zinc-300 pointer-events-none z-10">
+            <div className="absolute top-4 left-4 bg-zinc-100/80 dark:bg-zinc-800/80 backdrop-blur-sm border border-zinc-200 dark:border-zinc-700 px-3 py-1 rounded text-xs font-mono text-zinc-600 dark:text-zinc-300 pointer-events-none z-10">
                 X: {coordinates.x.toFixed(2)} Y: {coordinates.y.toFixed(2)} Z: {coordinates.z.toFixed(2)}
             </div>
 
             {/* View Controls (Top Right) */}
             <div className="absolute top-4 right-4 flex gap-2 z-10">
-                <button className="bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-zinc-200 rounded p-1.5 shadow-sm">
+                <button className="bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded p-1.5 shadow-sm">
                     <span className="material-symbols-outlined text-[18px]">square</span>
                 </button>
-                <button className="bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-zinc-200 rounded p-1.5 shadow-sm">
+                <button className="bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded p-1.5 shadow-sm">
                     <span className="material-symbols-outlined text-[18px]">videocam</span>
                 </button>
             </div>
@@ -65,10 +65,10 @@ export const ViewportPanel: FC<ViewportPanelProps> = ({
                     {overlayInfo.map((info, idx) => (
                         <div
                             key={idx}
-                            className="bg-zinc-800/90 backdrop-blur-sm border border-zinc-700 px-3 py-2 rounded shadow-sm"
+                            className="bg-zinc-100/90 dark:bg-zinc-800/90 backdrop-blur-sm border border-zinc-200 dark:border-zinc-700 px-3 py-2 rounded shadow-sm"
                         >
-                            <div className="text-xs text-zinc-400">{info.label}</div>
-                            <div className="text-sm font-mono text-white font-bold">{info.value}</div>
+                            <div className="text-xs text-zinc-500 dark:text-zinc-400">{info.label}</div>
+                            <div className="text-sm font-mono text-zinc-900 dark:text-white font-bold">{info.value}</div>
                         </div>
                     ))}
                 </div>
@@ -99,7 +99,7 @@ export const ViewportPanel: FC<ViewportPanelProps> = ({
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
                     <div className="flex flex-col items-center gap-4">
                         <span className="material-symbols-outlined text-[64px] text-zinc-500">deployed_code</span>
-                        <h2 className="text-xl font-bold tracking-tight text-zinc-400">3D Viewport</h2>
+                        <h2 className="text-xl font-bold tracking-tight text-zinc-500 dark:text-zinc-400">3D Viewport</h2>
                         <p className="text-sm text-zinc-500">Model Space ready for input</p>
                     </div>
                 </div>

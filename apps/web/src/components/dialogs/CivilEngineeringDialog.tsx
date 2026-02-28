@@ -101,18 +101,18 @@ export const CivilEngineeringDialog: FC<CivilEngineeringDialogProps> = ({
       />
 
       {/* Dialog */}
-      <div className="relative w-[95vw] max-w-6xl h-[90vh] bg-slate-900 border border-slate-700 rounded-xl shadow-2xl flex flex-col overflow-hidden">
+      <div className="relative w-[95vw] max-w-6xl h-[90vh] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700 bg-gradient-to-r from-green-600/10 to-teal-600/10">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-green-600/10 to-teal-600/10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-green-600/20 flex items-center justify-center">
               <Globe className="w-5 h-5 text-green-400" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">
+              <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
                 Civil Engineering Hub
               </h2>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Geotechnical · Hydraulics · Transportation · Construction
                 Management
               </p>
@@ -120,14 +120,14 @@ export const CivilEngineeringDialog: FC<CivilEngineeringDialogProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-slate-400" />
+            <X className="w-5 h-5 text-slate-500 dark:text-slate-400" />
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-slate-700 bg-slate-800/50 overflow-x-auto">
+        <div className="flex border-b border-slate-200 dark:border-slate-700 bg-slate-100/50 dark:bg-slate-800/50 overflow-x-auto">
           {TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -139,7 +139,7 @@ export const CivilEngineeringDialog: FC<CivilEngineeringDialogProps> = ({
                   ${
                     isActive
                       ? "text-green-400 border-b-2 border-green-500 bg-green-600/10"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-slate-700/50"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
                   }`}
               >
                 <Icon className="w-4 h-4" />

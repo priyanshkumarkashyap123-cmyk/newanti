@@ -341,7 +341,7 @@ export function CivilEngineeringDesignCenter() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-64 px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
-                <span className="absolute left-3 top-2.5 text-gray-400">
+                <span className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400">
                   🔍
                 </span>
               </div>
@@ -2934,7 +2934,7 @@ function ResultsVisualizationPanel({
           />
         ) : (
           <div className="h-64 flex items-center justify-center bg-gray-50 rounded">
-            <span className="text-gray-400">
+            <span className="text-gray-500 dark:text-gray-400">
               Visualization will appear here
             </span>
           </div>

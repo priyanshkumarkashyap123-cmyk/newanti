@@ -415,7 +415,7 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
                                                 {option.codes.join(', ')}
                                             </div>
                                         </div>
-                                        <ChevronRight className={`w-4 h-4 ${isActive ? 'text-blue-500' : 'text-zinc-300 dark:text-zinc-500'}`} />
+                                        <ChevronRight className={`w-4 h-4 ${isActive ? 'text-blue-500' : 'text-zinc-600 dark:text-zinc-500'}`} />
                                     </button>
                                 );
                             })}

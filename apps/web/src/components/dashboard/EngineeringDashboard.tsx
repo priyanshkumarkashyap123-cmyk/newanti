@@ -15,7 +15,6 @@
  * @version 3.0.0
  */
 
-'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -184,7 +183,7 @@ const ProgressRing: React.FC<{
     <div className="relative" style={{ width: size, height: size }}>
       <svg className="transform -rotate-90" width={size} height={size}>
         <circle
-          className="text-gray-200 dark:text-gray-700"
+          className="text-gray-700 dark:text-gray-700"
           strokeWidth={strokeWidth}
           stroke="currentColor"
           fill="transparent"
@@ -412,7 +411,7 @@ const DesignChecksPanel: React.FC<{ checks: DesignCheck[] }> = ({ checks }) => {
                     {passed}/{total}
                   </span>
                 </div>
-                <ChevronRight className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                <ChevronRight className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
               </button>
               
               <AnimatePresence>

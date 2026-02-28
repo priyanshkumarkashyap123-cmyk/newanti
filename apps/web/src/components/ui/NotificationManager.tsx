@@ -164,7 +164,7 @@ const NotificationToast: FC<NotificationToastProps> = ({
         error: 'bg-red-500/10 border-red-500/30',
         warning: 'bg-yellow-500/10 border-yellow-500/30',
         info: 'bg-blue-500/10 border-blue-500/30',
-        loading: 'bg-slate-800 border-slate-700',
+        loading: 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700',
     };
 
     return (
@@ -182,11 +182,11 @@ const NotificationToast: FC<NotificationToastProps> = ({
             <div className="flex gap-3">
                 {icons[notification.type]}
                 <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-white text-sm">
+                    <p className="font-semibold text-zinc-900 dark:text-white text-sm">
                         {notification.title}
                     </p>
                     {notification.message && (
-                        <p className="text-sm text-slate-400 mt-0.5">
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
                             {notification.message}
                         </p>
                     )}
@@ -202,7 +202,7 @@ const NotificationToast: FC<NotificationToastProps> = ({
                 {notification.dismissible && notification.type !== 'loading' && (
                     <button
                         onClick={onDismiss}
-                        className="text-slate-400 hover:text-white transition-colors"
+                        className="text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
                     >
                         <X className="w-4 h-4" />
                     </button>

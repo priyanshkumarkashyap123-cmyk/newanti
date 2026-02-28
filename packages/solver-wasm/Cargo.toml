@@ -12,6 +12,7 @@ crate-type = ["cdylib", "rlib"]
 
 [features]
 default = ["console_error_panic_hook"]
+parallel = ["rayon"]
 
 [dependencies]
 # WebAssembly bindings
@@ -26,8 +27,8 @@ nalgebra = { version = "0.32", features = ["serde-serialize"] }
 # Sparse matrix support
 nalgebra-sparse = "0.9"
 
-# Parallel processing - Rayon for multi-threading
-rayon = "1.8"
+# Parallel processing - Rayon (not compatible with wasm32, gated behind 'parallel' feature)
+rayon = { version = "1.8", optional = true }
 
 # Advanced structural analysis - Petgraph for connectivity
 petgraph = "0.6"

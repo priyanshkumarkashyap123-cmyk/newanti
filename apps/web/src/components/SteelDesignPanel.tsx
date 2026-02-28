@@ -187,9 +187,9 @@ const MemberRow: FC<{
                         </div>
                     </div>
                     {expanded ? (
-                        <ChevronUp className="w-4 h-4 text-gray-400" />
+                        <ChevronUp className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                     ) : (
-                        <ChevronDown className="w-4 h-4 text-gray-400" />
+                        <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                     )}
                 </div>
             </button>
@@ -235,7 +235,7 @@ const MemberRow: FC<{
                     {/* Clause Reference */}
                     {result.checks.some(c => c.clause) && (
                         <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                            <div className="text-xs text-gray-400">
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
                                 References: {result.checks.filter(c => c.clause).map(c => c.clause).join(', ')}
                             </div>
                         </div>

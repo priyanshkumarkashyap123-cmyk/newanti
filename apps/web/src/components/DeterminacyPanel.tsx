@@ -177,7 +177,7 @@ export const DeterminacyPanel: React.FC<DeterminacyPanelProps> = ({ result }) =>
             {/* Theory Reference */}
             <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
                 <details className="text-sm text-gray-600 dark:text-gray-400">
-                    <summary className="cursor-pointer font-medium hover:text-gray-900 dark:hover:text-gray-100">
+                    <summary className="cursor-pointer font-medium hover:text-gray-900 dark:hover:text-gray-800 dark:text-gray-100">
                         📚 Theory Reference
                     </summary>
                     <div className="mt-3 space-y-2 pl-4">

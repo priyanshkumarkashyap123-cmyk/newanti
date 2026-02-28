@@ -169,6 +169,12 @@ export function solve_p_delta(nodes_val: any, elements_val: any, point_loads_val
 export function solve_p_delta_extended(nodes_val: any, elements_val: any, point_loads_val: any, member_loads_val: any, temperature_loads_val: any, point_loads_on_members_val: any, config_val: any, max_iterations: number, tolerance: number): any;
 
 /**
+ * Nonlinear static pushover analysis — capacity curve generation
+ * Returns base shear vs. roof displacement with hinge states
+ */
+export function solve_pushover(input_val: any): any;
+
+/**
  * Response Spectrum Analysis (Seismic)
  */
 export function solve_response_spectrum(modal_result_val: any, zone_factor: number, importance_factor: number, response_reduction: number, soil_type: number): any;
@@ -231,6 +237,7 @@ export interface InitOutput {
   readonly solve_2d_frame_with_loads: (a: number, b: number, c: number) => number;
   readonly solve_3d_frame_extended: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
   readonly solve_p_delta_extended: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => number;
+  readonly solve_pushover: (a: number) => number;
   readonly solve_response_spectrum: (a: number, b: number, c: number, d: number, e: number) => number;
   readonly solve_sparse_system_json: (a: number, b: number, c: number) => void;
   readonly solve_structure_wasm: (a: number, b: number) => number;

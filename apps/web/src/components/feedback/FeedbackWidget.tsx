@@ -144,18 +144,18 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className={`fixed ${positionClasses} z-50 w-96 max-w-[calc(100vw-3rem)] bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden`}
+            className={`fixed ${positionClasses} z-50 w-96 max-w-[calc(100vw-3rem)] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl overflow-hidden`}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800">
-              <h3 className="font-semibold text-white">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+              <h3 className="font-semibold text-zinc-900 dark:text-white">
                 {step === 'type' && 'Send Feedback'}
                 {step === 'form' && feedbackTypes.find(t => t.id === feedbackType)?.label}
                 {step === 'success' && 'Thank You!'}
               </h3>
               <button
                 onClick={handleClose}
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+                className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -170,7 +170,7 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
                     <button
                       key={type.id}
                       onClick={() => handleSelectType(type.id)}
-                      className="flex flex-col items-center gap-3 p-4 rounded-xl border border-slate-700 hover:border-blue-500/50 hover:bg-slate-800/50 transition-all group"
+                      className="flex flex-col items-center gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500/50 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-all group"
                     >
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
                         type.color === 'red' ? 'bg-red-500/10 text-red-400 group-hover:bg-red-500/20' :
@@ -180,7 +180,7 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
                       }`}>
                         <type.icon className="w-6 h-6" />
                       </div>
-                      <span className="text-sm font-medium text-slate-300">{type.label}</span>
+                      <span className="text-sm font-medium text-slate-600 dark:text-slate-300">{type.label}</span>
                     </button>
                   ))}
                 </div>
@@ -191,7 +191,7 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
                 <div className="space-y-4">
                   {/* Message */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-400 mb-2">
+                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
                       {feedbackType === 'bug' ? 'Describe the issue' : 
                        feedbackType === 'feature' ? 'Describe your idea' :
                        feedbackType === 'question' ? 'What would you like to know?' :
@@ -206,14 +206,14 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
                         feedbackType === 'question' ? 'Type your question here...' :
                         'Share your thoughts...'
                       }
-                      className="w-full h-28 px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-500 resize-none"
+                      className="w-full h-28 px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-zinc-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-500 resize-none"
                     />
                   </div>
 
                   {/* Rating (for feature/other) */}
                   {(feedbackType === 'feature' || feedbackType === 'other') && (
                     <div>
-                      <label className="block text-sm font-medium text-slate-400 mb-2">
+                      <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
                         How important is this to you?
                       </label>
                       <div className="flex gap-2">
@@ -238,7 +238,7 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
 
                   {/* Email (optional) */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-400 mb-2">
+                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
                       Email (optional, for follow-up)
                     </label>
                     <input
@@ -246,7 +246,7 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
-                      className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-zinc-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-500"
                     />
                   </div>
 
@@ -254,7 +254,7 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
                   <div className="flex gap-3 pt-2">
                     <button
                       onClick={() => setStep('type')}
-                      className="flex-1 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors"
+                      className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
                     >
                       Back
                     </button>
@@ -281,15 +281,15 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
                   <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <CheckCircle className="w-8 h-8 text-green-400" />
                   </div>
-                  <h4 className="text-lg font-semibold text-white mb-2">
+                  <h4 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">
                     Feedback Received!
                   </h4>
-                  <p className="text-slate-400 text-sm mb-6">
+                  <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
                     Thanks for helping us improve BeamLab. We read every piece of feedback.
                   </p>
                   <button
                     onClick={handleClose}
-                    className="px-6 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-medium transition-colors"
+                    className="px-6 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-zinc-900 dark:text-white font-medium transition-colors"
                   >
                     Close
                   </button>

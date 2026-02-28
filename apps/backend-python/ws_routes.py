@@ -74,9 +74,9 @@ ws_manager = AnalysisConnectionManager()
 # Original collaboration WebSocket (preserved)
 # ============================================
 
-@router.websocket("/ws/{client_id}")
+@router.websocket("/ws/collab/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: str):
-    """Original collaboration WebSocket - backward compatible"""
+    """Collaboration WebSocket - connect at /ws/collab/{client_id}"""
     if collab_manager:
         await collab_manager.connect(client_id, websocket)
         await collab_manager.broadcast({

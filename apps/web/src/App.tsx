@@ -3,7 +3,7 @@
  * Routes between Landing, Dashboard, and Workspace
  */
 
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { Component, ReactNode, ErrorInfo, Suspense, lazy } from "react";
 
 // Eagerly loaded critical components (Landing, Auth)
@@ -233,6 +233,13 @@ const ModalAnalysisPanel = lazy(() =>
     default: module.ModalAnalysisPanel,
   })),
 );
+
+// Wrapper to provide navigateBack as onClose for ModalAnalysisPanel route
+function ModalAnalysisRouteWrapper() {
+  const navigate = useNavigate();
+  return <ModalAnalysisPanel isOpen={true} onClose={() => navigate(-1)} />;
+}
+
 const TimeHistoryPanel = lazy(() =>
   import("./components/analysis/TimeHistoryPanel").then((module) => ({
     default: module.TimeHistoryPanel,
@@ -268,10 +275,10 @@ import { AnalyticsProvider } from "./providers/AnalyticsProvider";
 // Loading Component
 import { DashboardSkeleton } from "./components/ui/DashboardSkeleton";
 const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-screen bg-slate-900">
+  <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900">
     <div className="flex flex-col items-center gap-4">
       <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
-      <p className="text-slate-400 text-sm font-medium animate-pulse">
+      <p className="text-slate-500 dark:text-slate-400 text-sm font-medium animate-pulse">
         Loading Module...
       </p>
     </div>
@@ -557,7 +564,7 @@ function App() {
               <Route
                 path="/analysis/modal"
                 element={
-                  <ModalAnalysisPanel isOpen={true} onClose={() => {}} />
+                  <ModalAnalysisRouteWrapper />
                 }
               />
               <Route

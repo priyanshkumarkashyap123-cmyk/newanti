@@ -315,7 +315,7 @@ export const AICommandCenter: FC = () => {
     };
 
     return (
-        <div className="p-4 bg-zinc-900 border-t border-zinc-800">
+        <div className="p-4 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800">
             {/* Header */}
             <div className="flex items-center gap-2 mb-3">
                 <div className="p-1 rounded bg-gradient-to-br from-blue-500 to-purple-500">
@@ -329,25 +329,25 @@ export const AICommandCenter: FC = () => {
             {/* Code & Complexity Selection */}
             <div className="flex gap-2 mb-2">
                 <select
-                    className="flex-1 bg-zinc-800 text-xs text-zinc-300 border border-zinc-700 rounded p-1.5 focus:border-blue-500 outline-none"
+                    className="flex-1 bg-zinc-100 dark:bg-zinc-800 text-xs text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 rounded p-1.5 focus:border-blue-500 outline-none"
                     disabled={isLoading}
                 >
                     <option value="IS800">IS 800:2007 (Steel)</option>
                     <option value="IS456">IS 456:2000 (Concrete)</option>
                     <option value="AISC360">AISC 360-16 (US)</option>
                 </select>
-                <div className="flex-1 flex items-center gap-1 bg-zinc-800 border border-zinc-700 rounded p-1.5" title="Predicted Model Complexity">
+                <div className="flex-1 flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded p-1.5" title="Predicted Model Complexity">
                     <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                    <span className="text-xs text-zinc-400">Standard</span>
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400">Standard</span>
                 </div>
             </div>
 
             {/* Prompt Input */}
             <textarea
                 className="
-                    w-full h-24 bg-zinc-800 p-3 text-sm text-white
-                    rounded-lg border border-zinc-700
-                    placeholder-zinc-500
+                    w-full h-24 bg-zinc-100 dark:bg-zinc-800 p-3 text-sm text-zinc-900 dark:text-white
+                    rounded-lg border border-zinc-200 dark:border-zinc-700
+                    placeholder-zinc-400 dark:placeholder-zinc-500
                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
                     resize-none mb-1
                 "
@@ -363,7 +363,7 @@ export const AICommandCenter: FC = () => {
                     <button
                         key={template}
                         onClick={() => setPrompt(template)}
-                        className="px-2 py-0.5 text-[10px] text-zinc-400 bg-zinc-800 hover:bg-zinc-700 rounded border border-zinc-700 transition-colors"
+                        className="px-2 py-0.5 text-[10px] text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded border border-zinc-200 dark:border-zinc-700 transition-colors"
                     >
                         {template}
                     </button>
@@ -381,7 +381,7 @@ export const AICommandCenter: FC = () => {
                     bg-gradient-to-r from-blue-600 to-blue-500
                     hover:from-blue-500 hover:to-blue-400
                     disabled:from-zinc-700 disabled:to-zinc-700 disabled:cursor-not-allowed
-                    text-white transition-all
+                    text-zinc-900 dark:text-white transition-all
                     shadow-lg shadow-blue-500/20
                 "
             >

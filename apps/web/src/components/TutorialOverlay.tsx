@@ -106,7 +106,7 @@ const StepCard: FC<{ step: TutorialStep; isActive: boolean }> = ({ step, isActiv
             <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-600/30 mb-6">
                 <Icon className="w-10 h-10 text-white" />
             </div>
-            <h2 className="text-2xl md:text-3xl font-bold text-zinc-900 dark:text-white mb-4">
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
                 {step.title}
             </h2>
             <p className="text-zinc-500 dark:text-zinc-400 text-base md:text-lg max-w-md leading-relaxed">

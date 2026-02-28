@@ -189,7 +189,7 @@ export const Ribbon: FC<RibbonProps> = ({ activeWorkflow, activeTool, onToolSele
                             })}
                         </div>
                         {/* Group Label */}
-                        <span className="text-[9px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+                        <span className="text-[9px] text-zinc-500 dark:text-zinc-500 mt-0.5">
                             {group.label}
                         </span>
                     </div>

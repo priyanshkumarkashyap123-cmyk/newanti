@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from design.concrete.is456 import IS456Designer, BeamSection, ColumnSection
 
-router = APIRouter(prefix="/design", tags=["Design"])
+router = APIRouter(tags=["Design"])
 
 # Request Models
 class MemberForces(BaseModel):

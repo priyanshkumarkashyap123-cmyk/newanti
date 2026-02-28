@@ -514,7 +514,7 @@ export function FrameAnalysisUI() {
                         <option key={n.id} value={n.id}>N{n.id}</option>
                       ))}
                     </select>
-                    <span className="text-gray-400">→</span>
+                    <span className="text-gray-500 dark:text-gray-400">→</span>
                     <select
                       value={member.endNode}
                       onChange={(e) => {
@@ -547,7 +547,7 @@ export function FrameAnalysisUI() {
                       }}
                       className="w-14 px-1 py-0.5 border rounded"
                     />
-                    <span className="text-gray-400">GPa</span>
+                    <span className="text-gray-500 dark:text-gray-400">GPa</span>
                     <span className="text-gray-500 ml-2">A:</span>
                     <input
                       type="number"
@@ -560,7 +560,7 @@ export function FrameAnalysisUI() {
                       }}
                       className="w-14 px-1 py-0.5 border rounded"
                     />
-                    <span className="text-gray-400">m²</span>
+                    <span className="text-gray-500 dark:text-gray-400">m²</span>
                   </div>
                 </div>
               ))}
@@ -677,7 +677,7 @@ export function FrameAnalysisUI() {
                       }}
                       className="w-16 px-1 py-0.5 border rounded"
                     />
-                    <span className="text-gray-400">kN</span>
+                    <span className="text-gray-500 dark:text-gray-400">kN</span>
                   </div>
                 </div>
               ))}
@@ -1199,7 +1199,7 @@ export function ContinuousBeamUI() {
                       }}
                       className="w-16 px-2 py-1 border rounded text-center"
                     />
-                    {idx < spans.length - 1 && <span className="text-gray-400">-</span>}
+                    {idx < spans.length - 1 && <span className="text-gray-500 dark:text-gray-400">-</span>}
                   </div>
                 ))}
                 <button

@@ -735,7 +735,7 @@ const MovingLoadDialog: React.FC = () => {
                                 />
                                 
                                 {/* Supports */}
-                                <g className="text-slate-400">
+                                <g className="text-slate-500 dark:text-slate-400">
                                     <polygon points="-2,45 2,45 0,50" fill="currentColor" />
                                     <polygon 
                                         points={`${params.spanLength-2},45 ${params.spanLength+2},45 ${params.spanLength},50`} 

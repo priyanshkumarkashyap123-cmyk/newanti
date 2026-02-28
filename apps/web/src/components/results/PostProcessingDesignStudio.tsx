@@ -728,7 +728,7 @@ const SummaryTab: FC<{
   }) => (
     <th
       onClick={() => toggleSort(k)}
-      className={`px-3 py-2 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-zinc-800 dark:text-zinc-200 select-none whitespace-nowrap ${className ?? ""}`}
+      className={`px-3 py-2 text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider cursor-pointer hover:text-zinc-800 dark:text-zinc-200 select-none whitespace-nowrap ${className ?? ""}`}
     >
       <span className="inline-flex items-center gap-1">
         {label}
@@ -773,7 +773,7 @@ const SummaryTab: FC<{
             placeholder="Search members..."
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 text-sm bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-md text-zinc-800 dark:text-zinc-200 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full pl-8 pr-3 py-1.5 text-sm bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-md text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>
         <select
@@ -814,7 +814,7 @@ const SummaryTab: FC<{
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-800">
+          <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
             {sorted.map((row) => {
               const sc = statusColors[row.status];
               const isSelected = selectedId === row.id;
@@ -822,7 +822,7 @@ const SummaryTab: FC<{
                 <tr
                   key={row.id}
                   onClick={() => onSelectMember(row.id)}
-                  className={`cursor-pointer transition-colors ${isSelected ? "bg-blue-900/30 border-l-2 border-l-blue-500" : "hover:bg-zinc-800/60"}`}
+                  className={`cursor-pointer transition-colors ${isSelected ? "bg-blue-100/30 dark:bg-blue-900/30 border-l-2 border-l-blue-500" : "hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60"}`}
                 >
                   <td className="px-3 py-2.5 font-mono font-medium text-zinc-800 dark:text-zinc-200">
                     {row.label}
@@ -844,7 +844,7 @@ const SummaryTab: FC<{
                   </td>
                   <td className="px-3 py-2.5">
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 bg-zinc-700 rounded-full overflow-hidden">
+                      <div className="flex-1 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full ${utilizationColor(row.utilization)}`}
                           style={{
@@ -1005,7 +1005,7 @@ const RCBeamTab: FC<{
             </div>
 
             {/* Input Parameters */}
-            <div className="bg-zinc-800/60 rounded-xl p-4 border border-zinc-300/40 dark:border-zinc-700/40">
+            <div className="bg-zinc-100/60 dark:bg-zinc-800/60 rounded-xl p-4 border border-zinc-300/40 dark:border-zinc-700/40">
               <h4 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
                 Material & Section Parameters
               </h4>
@@ -1075,26 +1075,26 @@ const RCBeamTab: FC<{
             </div>
 
             {/* Applied Forces */}
-            <div className="bg-zinc-800/60 rounded-xl p-4 border border-zinc-300/40 dark:border-zinc-700/40">
+            <div className="bg-zinc-100/60 dark:bg-zinc-800/60 rounded-xl p-4 border border-zinc-300/40 dark:border-zinc-700/40">
               <h4 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
                 Applied Forces (Factored)
               </h4>
               <div className="grid grid-cols-3 gap-4">
-                <div className="bg-zinc-900 rounded-lg p-3 text-center">
+                <div className="bg-white dark:bg-zinc-900 rounded-lg p-3 text-center">
                   <div className="text-xs text-zinc-500 mb-1">Mu (Moment)</div>
                   <div className="text-xl font-bold font-mono text-purple-400">
                     {Math.abs(activeMember.maxMomentZ).toFixed(2)}
                   </div>
                   <div className="text-xs text-zinc-500">kN·m</div>
                 </div>
-                <div className="bg-zinc-900 rounded-lg p-3 text-center">
+                <div className="bg-white dark:bg-zinc-900 rounded-lg p-3 text-center">
                   <div className="text-xs text-zinc-500 mb-1">Vu (Shear)</div>
                   <div className="text-xl font-bold font-mono text-blue-400">
                     {Math.abs(activeMember.maxShearY).toFixed(2)}
                   </div>
                   <div className="text-xs text-zinc-500">kN</div>
                 </div>
-                <div className="bg-zinc-900 rounded-lg p-3 text-center">
+                <div className="bg-white dark:bg-zinc-900 rounded-lg p-3 text-center">
                   <div className="text-xs text-zinc-500 mb-1">Nu (Axial)</div>
                   <div
                     className={`text-xl font-bold font-mono ${activeMember.maxAxial >= 0 ? "text-green-400" : "text-red-400"}`}
@@ -1109,7 +1109,7 @@ const RCBeamTab: FC<{
             {rcResult && (
               <>
                 {/* Flexure Design Results */}
-                <div className="bg-zinc-800/60 rounded-xl p-4 border border-zinc-300/40 dark:border-zinc-700/40">
+                <div className="bg-zinc-100/60 dark:bg-zinc-800/60 rounded-xl p-4 border border-zinc-300/40 dark:border-zinc-700/40">
                   <h4 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                     Flexure Design
                     <span
@@ -1227,7 +1227,7 @@ const RCBeamTab: FC<{
                 </div>
 
                 {/* Shear Design Results */}
-                <div className="bg-zinc-800/60 rounded-xl p-4 border border-zinc-300/40 dark:border-zinc-700/40">
+                <div className="bg-zinc-100/60 dark:bg-zinc-800/60 rounded-xl p-4 border border-zinc-300/40 dark:border-zinc-700/40">
                   <h4 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                     Shear Design
                     <span
@@ -1293,7 +1293,7 @@ const RCBeamTab: FC<{
                       </div>
                     </div>
                     {/* Shear capacity visual */}
-                    <div className="bg-zinc-900/50 rounded-lg p-4 flex flex-col justify-center">
+                    <div className="bg-white/50 dark:bg-zinc-900/50 rounded-lg p-4 flex flex-col justify-center">
                       <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
                         Shear Capacity Breakdown
                       </div>
@@ -1305,7 +1305,7 @@ const RCBeamTab: FC<{
                               {rcResult.shear.phi_Vc.toFixed(1)} kN
                             </span>
                           </div>
-                          <div className="h-3 bg-zinc-700 rounded-full overflow-hidden">
+                          <div className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
                             <div
                               className="h-full bg-cyan-500 rounded-full"
                               style={{
@@ -1322,7 +1322,7 @@ const RCBeamTab: FC<{
                               kN
                             </span>
                           </div>
-                          <div className="h-3 bg-zinc-700 rounded-full overflow-hidden">
+                          <div className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
                             <div
                               className="h-full bg-blue-500 rounded-full"
                               style={{
@@ -1338,7 +1338,7 @@ const RCBeamTab: FC<{
                               {rcResult.shear.Vu.toFixed(1)} kN
                             </span>
                           </div>
-                          <div className="h-3 bg-zinc-700 rounded-full overflow-hidden">
+                          <div className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
                             <div
                               className="h-full bg-amber-500/60 rounded-full"
                               style={{ width: "100%" }}
@@ -1443,7 +1443,7 @@ const SteelDesignTab: FC<{
                     {(r.utilization * 100).toFixed(0)}%
                   </span>
                 </div>
-                <div className="mt-0.5 h-1.5 bg-zinc-700 rounded-full overflow-hidden">
+                <div className="mt-0.5 h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full ${utilizationColor(r.utilization)}`}
                     style={{ width: `${Math.min(r.utilization * 100, 100)}%` }}
@@ -1510,7 +1510,7 @@ const SteelDesignTab: FC<{
               ].map((f) => (
                 <div
                   key={f.label}
-                  className="bg-zinc-800/60 rounded-xl p-3 text-center border border-zinc-300/40 dark:border-zinc-700/40"
+                  className="bg-zinc-100/60 dark:bg-zinc-800/60 rounded-xl p-3 text-center border border-zinc-300/40 dark:border-zinc-700/40"
                 >
                   <div className="text-xs text-zinc-500">{f.label}</div>
                   <div className={`text-xl font-bold font-mono ${f.color}`}>
@@ -1524,7 +1524,7 @@ const SteelDesignTab: FC<{
             </div>
 
             {/* Design Checks */}
-            <div className="bg-zinc-800/60 rounded-xl p-4 border border-zinc-300/40 dark:border-zinc-700/40">
+            <div className="bg-zinc-100/60 dark:bg-zinc-800/60 rounded-xl p-4 border border-zinc-300/40 dark:border-zinc-700/40">
               <h4 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
                 Design Checks
               </h4>
@@ -1534,7 +1534,7 @@ const SteelDesignTab: FC<{
                   return (
                     <div
                       key={i}
-                      className="bg-zinc-900 rounded-lg p-3 border-l-[3px]"
+                      className="bg-white dark:bg-zinc-900 rounded-lg p-3 border-l-[3px]"
                       style={{
                         borderLeftColor:
                           check.status === "PASS"
@@ -1556,7 +1556,7 @@ const SteelDesignTab: FC<{
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="w-28 h-2 bg-zinc-700 rounded-full overflow-hidden">
+                          <div className="w-28 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
                             <div
                               className={`h-full rounded-full ${utilizationColor(check.utilization)}`}
                               style={{
@@ -1676,14 +1676,14 @@ const SectionPropertiesTab: FC<{
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-800">
+        <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
           {memberList.map(({ id, m, length }) => {
             const isExpanded = expandedId === id;
             return (
               <Fragment key={id}>
                 <tr
                   onClick={() => setExpandedId(isExpanded ? null : id)}
-                  className="cursor-pointer hover:bg-zinc-800/60 transition-colors"
+                  className="cursor-pointer hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60 transition-colors"
                 >
                   <td className="px-3 py-2.5 text-zinc-500">
                     {isExpanded ? (
@@ -1724,7 +1724,7 @@ const SectionPropertiesTab: FC<{
                 </tr>
                 {/* Expanded detail row */}
                 {isExpanded && (
-                  <tr className="bg-zinc-800/40">
+                  <tr className="bg-zinc-100/40 dark:bg-zinc-800/40">
                     <td colSpan={9} className="px-6 py-4">
                       <div className="grid grid-cols-3 gap-6">
                         {/* Geometric Properties */}
@@ -2064,13 +2064,13 @@ const DeflectionCheckTab: FC<{
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-800">
+          <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
             {deflectionData.map((d) => {
               const sc = statusColors[d.status];
               return (
                 <tr
                   key={d.id}
-                  className="hover:bg-zinc-800/60 transition-colors"
+                  className="hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60 transition-colors"
                 >
                   <td className="px-3 py-2.5 font-mono text-zinc-800 dark:text-zinc-200">
                     {d.label}
@@ -2091,7 +2091,7 @@ const DeflectionCheckTab: FC<{
                   </td>
                   <td className="px-3 py-2.5">
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 bg-zinc-700 rounded-full overflow-hidden">
+                      <div className="flex-1 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full ${utilizationColor(d.ratio)}`}
                           style={{ width: `${Math.min(d.ratio * 100, 100)}%` }}
@@ -2367,7 +2367,7 @@ export const PostProcessingDesignStudio: FC<DesignStudioProps> = ({
           </DialogHeader>
           <div className="text-center py-4">
             <AlertTriangle className="w-12 h-12 mx-auto text-amber-400 mb-4" />
-            <p className="text-zinc-700 dark:text-zinc-700 dark:text-zinc-300 mb-2">No analysis results available.</p>
+            <p className="text-zinc-700 dark:text-zinc-300 mb-2">No analysis results available.</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={onClose}>Close</Button>
@@ -2384,10 +2384,10 @@ export const PostProcessingDesignStudio: FC<DesignStudioProps> = ({
           <DialogTitle>Post-Processing Design Studio</DialogTitle>
         </DialogHeader>
         {/* Title Bar */}
-        <div className="flex items-center justify-between px-5 py-3 bg-zinc-100 dark:bg-zinc-800 border-b border-zinc-300 dark:border-zinc-300/60 dark:border-zinc-700/60 shrink-0">
+        <div className="flex items-center justify-between px-5 py-3 bg-zinc-100 dark:bg-zinc-800 border-b border-zinc-300 dark:border-zinc-700/60 shrink-0">
           <div className="flex items-center gap-3">
             <Shield className="w-5 h-5 text-blue-400" />
-            <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
               Post-Processing Design Studio
             </h2>
             <span className="text-xs text-zinc-500 bg-zinc-200 dark:bg-zinc-700/50 px-2 py-0.5 rounded-full">
@@ -2397,7 +2397,7 @@ export const PostProcessingDesignStudio: FC<DesignStudioProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={handleExport}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-300 dark:hover:bg-zinc-600 rounded-lg text-zinc-700 dark:text-zinc-800 dark:text-zinc-200 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 rounded-lg text-zinc-700 dark:text-zinc-200 transition-colors"
             >
               <Download className="w-4 h-4" />
               Export Report
@@ -2414,7 +2414,7 @@ export const PostProcessingDesignStudio: FC<DesignStudioProps> = ({
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
               activeTab === tab.id
                 ? "bg-blue-600 text-white shadow"
-                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50"
+                : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50"
             }`}
           >
             {tab.icon}

@@ -227,7 +227,7 @@ export default function BackendHealthDashboard() {
               )}
 
               {svc.lastChecked && (
-                <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                   Checked: {svc.lastChecked.toLocaleTimeString()}
                 </div>
               )}
@@ -261,7 +261,7 @@ export default function BackendHealthDashboard() {
             <div key={i} className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
               <span className={`${statusIcon(svc.status)} text-sm`}>{statusIcon(svc.status)}</span>
               <span className="w-24 font-sans font-medium">{svc.name}</span>
-              <span className="text-gray-400">{svc.url}</span>
+              <span className="text-gray-500 dark:text-gray-400">{svc.url}</span>
             </div>
           ))}
         </div>

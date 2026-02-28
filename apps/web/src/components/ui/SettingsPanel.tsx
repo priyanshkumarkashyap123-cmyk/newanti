@@ -9,7 +9,6 @@
  * @version 1.0.0
  */
 
-'use client';
 
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -476,7 +475,7 @@ export default function SettingsPanel({
                               onClick={() => updateSetting('accentColor', value)}
                               className={`w-8 h-8 rounded-full transition-all ${
                                 localSettings.accentColor === value 
-                                  ? 'ring-2 ring-white ring-offset-2 ring-offset-zinc-100 dark:ring-offset-zinc-800' 
+                                  ? 'ring-2 ring-zinc-300 ring-offset-2 ring-offset-zinc-100 dark:ring-offset-zinc-800' 
                                   : 'hover:scale-110'
                               }`}
                               style={{ backgroundColor: color }}

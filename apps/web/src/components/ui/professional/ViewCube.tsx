@@ -141,7 +141,7 @@ const CubeFaceComponent: FC<{
           ? 'bg-blue-500/40 text-blue-200 border-blue-400' 
           : isHovered 
             ? 'bg-zinc-600/60 text-zinc-100' 
-            : 'bg-zinc-800/80 text-zinc-400'
+            : 'bg-zinc-100/80 dark:bg-zinc-800/80 text-zinc-500 dark:text-zinc-400'
         }
       `}
       style={{ 
@@ -227,7 +227,7 @@ const CompassRing: FC<{
           <div
             key={dir.label}
             className={`absolute text-[10px] font-bold transform -translate-x-1/2 -translate-y-1/2 ${
-              dir.label === 'N' ? 'text-red-400' : 'text-zinc-400'
+              dir.label === 'N' ? 'text-red-400' : 'text-zinc-500 dark:text-zinc-400'
             }`}
             style={{ left: x, top: y }}
           >
@@ -333,7 +333,7 @@ const ViewPresetsDropdown: FC<{
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-1 text-zinc-400 hover:text-zinc-300 hover:bg-zinc-700/50 rounded transition-colors"
+        className="p-1 text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 rounded transition-colors"
         title="View Presets"
       >
         <ChevronDown className="w-4 h-4" />
@@ -345,11 +345,11 @@ const ViewPresetsDropdown: FC<{
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            className="absolute top-full right-0 mt-1 w-52 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl overflow-hidden z-50"
+            className="absolute top-full right-0 mt-1 w-52 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-xl overflow-hidden z-50"
           >
             {VIEW_PRESETS.map((preset, index) => {
               if (preset.id === 'divider') {
-                return <div key={index} className="h-px bg-zinc-700 my-1" />;
+                return <div key={index} className="h-px bg-zinc-200 dark:bg-zinc-700 my-1" />;
               }
               return (
                 <button
@@ -358,11 +358,11 @@ const ViewPresetsDropdown: FC<{
                     onViewChange(preset.id as ViewOrientation);
                     setIsOpen(false);
                   }}
-                  className="w-full flex items-center justify-between px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-800 transition-colors"
+                  className="w-full flex items-center justify-between px-3 py-2 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
                 >
                   <span>{preset.label}</span>
                   {preset.shortcut && (
-                    <kbd className="px-1.5 py-0.5 text-[10px] bg-zinc-700 text-zinc-400 rounded">
+                    <kbd className="px-1.5 py-0.5 text-[10px] bg-zinc-200 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400 rounded">
                       {preset.shortcut}
                     </kbd>
                   )}
@@ -519,7 +519,7 @@ export const ViewCube: FC<ViewCubeProps> = ({
         {/* Home View */}
         <button
           onClick={onHomeView || (() => handleFaceClick('iso-front-right'))}
-          className="p-1.5 text-zinc-400 hover:text-zinc-300 hover:bg-zinc-700/50 rounded transition-colors"
+          className="p-1.5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 rounded transition-colors"
           title="Home View"
         >
           <Home className="w-4 h-4" />
@@ -528,7 +528,7 @@ export const ViewCube: FC<ViewCubeProps> = ({
         {/* Fit All */}
         <button
           onClick={onFitAll}
-          className="p-1.5 text-zinc-400 hover:text-zinc-300 hover:bg-zinc-700/50 rounded transition-colors"
+          className="p-1.5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 rounded transition-colors"
           title="Fit All"
         >
           <Maximize2 className="w-4 h-4" />
@@ -584,7 +584,7 @@ export const MiniViewCube: FC<{
           return (
             <div
               key={face}
-              className="absolute bg-zinc-800 border border-zinc-600/50 text-[8px] text-zinc-400 flex items-center justify-center cursor-pointer hover:bg-zinc-700 hover:text-zinc-200"
+              className="absolute bg-zinc-100 dark:bg-zinc-800 border border-zinc-600/50 text-[8px] text-zinc-500 flex items-center justify-center cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:text-zinc-200"
               style={{
                 width: size,
                 height: size,

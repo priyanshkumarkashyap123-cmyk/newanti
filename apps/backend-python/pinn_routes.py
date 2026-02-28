@@ -11,22 +11,32 @@ Endpoints:
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any, List
-import jax.numpy as jnp
 import uuid
 import asyncio
 from dataclasses import asdict
 
-from pinn_solver import (
-    EulerBernoulliConfig,
-    TimoshenkoConfig,
-    LoadConfig,
-    BoundaryCondition,
-    LoadType,
-    PINNTrainer,
-    TrainingConfig,
-    PINNPredictor,
-)
-from pinn_solver.inference import compare_with_analytical
+try:
+    import jax.numpy as jnp
+    HAS_JAX = True
+except ImportError:
+    jnp = None
+    HAS_JAX = False
+
+try:
+    from pinn_solver import (
+        EulerBernoulliConfig,
+        TimoshenkoConfig,
+        LoadConfig,
+        BoundaryCondition,
+        LoadType,
+        PINNTrainer,
+        TrainingConfig,
+        PINNPredictor,
+    )
+    from pinn_solver.inference import compare_with_analytical
+    HAS_PINN = True
+except ImportError:
+    HAS_PINN = False
 
 router = APIRouter()
 
@@ -223,6 +233,8 @@ async def train_pinn(request: BeamTrainRequest, background_tasks: BackgroundTask
     Returns:
         Job ID for tracking training progress
     """
+    if not HAS_JAX or not HAS_PINN:
+        raise HTTPException(status_code=503, detail="PINN solver not available (JAX not installed)")
     job_id = str(uuid.uuid4())[:8]
     
     # Create configurations

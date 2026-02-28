@@ -78,14 +78,14 @@ export const CoordinateInputBar: FC<CoordinateInputBarProps> = memo(({
       <button
         onClick={() => onSystemChange?.(coordinateSystem === 'cartesian' ? 'cylindrical' : 'cartesian')}
         className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold 
-                   text-slate-500 hover:text-slate-300 hover:bg-slate-800/50 transition-colors"
+                   text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors"
         title={`Switch to ${coordinateSystem === 'cartesian' ? 'Cylindrical' : 'Cartesian'} coordinates`}
       >
         <Navigation className="w-3 h-3" />
         {coordinateSystem === 'cartesian' ? 'XYZ' : 'RθZ'}
       </button>
 
-      <span className="h-3.5 w-px bg-slate-800" />
+      <span className="h-3.5 w-px bg-slate-100 dark:bg-slate-800" />
 
       {/* Coordinate Display / Input */}
       <div
@@ -135,18 +135,18 @@ export const CoordinateInputBar: FC<CoordinateInputBarProps> = memo(({
         ) : (
           <>
             <label>X:</label>
-            <span className="text-slate-400 font-mono w-14 text-right tabular-nums">{fmt(x)}</span>
+            <span className="text-slate-500 dark:text-slate-400 font-mono w-14 text-right tabular-nums">{fmt(x)}</span>
             <span className="text-slate-700">|</span>
             <label>Y:</label>
-            <span className="text-slate-400 font-mono w-14 text-right tabular-nums">{fmt(y)}</span>
+            <span className="text-slate-500 dark:text-slate-400 font-mono w-14 text-right tabular-nums">{fmt(y)}</span>
             <span className="text-slate-700">|</span>
             <label>Z:</label>
-            <span className="text-slate-400 font-mono w-14 text-right tabular-nums">{fmt(z)}</span>
+            <span className="text-slate-500 dark:text-slate-400 font-mono w-14 text-right tabular-nums">{fmt(z)}</span>
           </>
         )}
       </div>
 
-      <span className="h-3.5 w-px bg-slate-800" />
+      <span className="h-3.5 w-px bg-slate-100 dark:bg-slate-800" />
 
       {/* Snap & Grid Info */}
       <div className="flex items-center gap-1.5 text-[9px]">

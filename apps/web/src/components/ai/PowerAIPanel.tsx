@@ -127,12 +127,12 @@ const ConfidenceIndicator: FC<{ score: AIConfidenceScore; compact?: boolean }> =
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50"
+      className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg p-3 border border-slate-200/50 dark:border-slate-700/50"
     >
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <Shield className={`w-4 h-4 ${score.overall >= 70 ? 'text-green-400' : 'text-amber-400'}`} />
-          <span className="text-sm font-medium text-slate-200">
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
             {getConfidenceLabel(score.overall)}
           </span>
         </div>
@@ -143,25 +143,25 @@ const ConfidenceIndicator: FC<{ score: AIConfidenceScore; compact?: boolean }> =
       
       <div className="grid grid-cols-2 gap-2 text-xs">
         <div className="flex items-center justify-between">
-          <span className="text-slate-400">Code Compliance</span>
+          <span className="text-slate-500 dark:text-slate-400">Code Compliance</span>
           <span className={score.codeCompliance >= 70 ? 'text-green-400' : 'text-amber-400'}>
             {score.codeCompliance}%
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-slate-400">Engineering Logic</span>
+          <span className="text-slate-500 dark:text-slate-400">Engineering Logic</span>
           <span className={score.engineeringLogic >= 70 ? 'text-green-400' : 'text-amber-400'}>
             {score.engineeringLogic}%
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-slate-400">Calculation Accuracy</span>
+          <span className="text-slate-500 dark:text-slate-400">Calculation Accuracy</span>
           <span className={score.calculationAccuracy >= 70 ? 'text-green-400' : 'text-amber-400'}>
             {score.calculationAccuracy}%
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-slate-400">Context Relevance</span>
+          <span className="text-slate-500 dark:text-slate-400">Context Relevance</span>
           <span className={score.contextRelevance >= 70 ? 'text-green-400' : 'text-amber-400'}>
             {score.contextRelevance}%
           </span>
@@ -204,8 +204,8 @@ const SmartSuggestionCard: FC<{
       <div className="flex items-start gap-2">
         {typeIcons[suggestion.type]}
         <div className="flex-1">
-          <div className="text-sm font-medium text-slate-200">{suggestion.title}</div>
-          <div className="text-xs text-slate-400 mt-0.5">{suggestion.description}</div>
+          <div className="text-sm font-medium text-slate-700 dark:text-slate-200">{suggestion.title}</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{suggestion.description}</div>
         </div>
         {suggestion.contextMatch > 80 && (
           <Star className="w-3 h-3 text-amber-400" />
@@ -248,7 +248,7 @@ const QuickActionsGrid: FC<{
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
               activeCategory === cat.id
                 ? 'bg-violet-600 text-white'
-                : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700 hover:text-slate-200'
+                : 'bg-slate-200/50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200'
             }`}
           >
             {cat.icon}
@@ -265,11 +265,11 @@ const QuickActionsGrid: FC<{
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onSelect(action.command)}
-            className="flex flex-col items-center p-3 bg-slate-800/50 rounded-lg border border-slate-700/50 hover:border-violet-500/50 hover:bg-slate-800 transition-all"
+            className="flex flex-col items-center p-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200/50 dark:border-slate-700/50 hover:border-violet-500/50 hover:bg-slate-200 dark:hover:bg-slate-800 transition-all"
           >
             <span className="text-2xl mb-1">{action.icon}</span>
-            <span className="text-xs font-medium text-slate-200">{action.label}</span>
-            <span className="text-[10px] text-slate-400 mt-0.5">{action.description}</span>
+            <span className="text-xs font-medium text-slate-700 dark:text-slate-200">{action.label}</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{action.description}</span>
           </motion.button>
         ))}
       </div>
@@ -301,7 +301,7 @@ const ExpertModeToggle: FC<{
             className={`flex-1 flex flex-col items-center p-2 rounded-lg transition-all ${
               settings.mode === mode.id
                 ? 'bg-violet-600/20 border border-violet-500/50 text-violet-400'
-                : 'bg-slate-800/50 border border-slate-700/50 text-slate-400 hover:text-slate-200'
+                : 'bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
             }`}
           >
             {mode.icon}
@@ -313,30 +313,30 @@ const ExpertModeToggle: FC<{
       {/* Options */}
       <div className="space-y-2">
         <label className="flex items-center justify-between text-xs">
-          <span className="text-slate-400">Show Calculations</span>
+          <span className="text-slate-500 dark:text-slate-400">Show Calculations</span>
           <input
             type="checkbox"
             checked={settings.showCalculations}
             onChange={(e) => onChange({ showCalculations: e.target.checked })}
-            className="rounded border-slate-600 bg-slate-800 text-violet-500"
+            className="rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-violet-500"
           />
         </label>
         <label className="flex items-center justify-between text-xs">
-          <span className="text-slate-400">Show Code References</span>
+          <span className="text-slate-500 dark:text-slate-400">Show Code References</span>
           <input
             type="checkbox"
             checked={settings.showCodeReferences}
             onChange={(e) => onChange({ showCodeReferences: e.target.checked })}
-            className="rounded border-slate-600 bg-slate-800 text-violet-500"
+            className="rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-violet-500"
           />
         </label>
         <label className="flex items-center justify-between text-xs">
-          <span className="text-slate-400">Auto-Execute Actions</span>
+          <span className="text-slate-500 dark:text-slate-400">Auto-Execute Actions</span>
           <input
             type="checkbox"
             checked={settings.autoExecute}
             onChange={(e) => onChange({ autoExecute: e.target.checked })}
-            className="rounded border-slate-600 bg-slate-800 text-violet-500"
+            className="rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-violet-500"
           />
         </label>
       </div>
@@ -366,7 +366,7 @@ const MessageBubble: FC<{
           className={`p-3 rounded-2xl ${
             isUser
               ? 'bg-violet-600 text-white rounded-br-sm'
-              : 'bg-slate-800 text-slate-200 rounded-bl-sm border border-slate-700/50'
+              : 'bg-slate-100 dark:bg-slate-800 text-slate-200 rounded-bl-sm border border-slate-200/50 dark:border-slate-700/50'
           }`}
         >
           <div className="text-sm whitespace-pre-wrap">{message.content}</div>
@@ -385,7 +385,7 @@ const MessageBubble: FC<{
               <div>
                 <button
                   onClick={() => setShowDetails(!showDetails)}
-                  className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-300"
+                  className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                 >
                   {showDetails ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                   <span>View reasoning ({message.reasoning.steps.length} steps)</span>
@@ -400,18 +400,18 @@ const MessageBubble: FC<{
                       className="mt-2 space-y-1"
                     >
                       {message.reasoning.steps.map((step, idx) => (
-                        <div key={idx} className="flex items-start gap-2 text-xs text-slate-400">
+                        <div key={idx} className="flex items-start gap-2 text-xs text-slate-500 dark:text-slate-400">
                           <span className="text-violet-400 font-mono">{idx + 1}.</span>
                           <span>{step}</span>
                         </div>
                       ))}
                       
                       {message.reasoning.codeReferences.length > 0 && (
-                        <div className="mt-2 pt-2 border-t border-slate-700/50">
-                          <span className="text-xs text-slate-400">📚 Code References:</span>
+                        <div className="mt-2 pt-2 border-t border-slate-200/50 dark:border-slate-700/50">
+                          <span className="text-xs text-slate-500 dark:text-slate-400">📚 Code References:</span>
                           <div className="flex flex-wrap gap-1 mt-1">
                             {message.reasoning.codeReferences.map((ref, idx) => (
-                              <span key={idx} className="px-2 py-0.5 bg-slate-700/50 rounded text-xs text-cyan-400">
+                              <span key={idx} className="px-2 py-0.5 bg-slate-200/50 dark:bg-slate-700/50 rounded text-xs text-cyan-400">
                                 {ref}
                               </span>
                             ))}
@@ -427,16 +427,16 @@ const MessageBubble: FC<{
             {/* Feedback Buttons */}
             {message.wasHelpful === undefined && (
               <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-400">Was this helpful?</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400">Was this helpful?</span>
                 <button
                   onClick={() => onFeedback(message.id, true)}
-                  className="p-1 rounded hover:bg-green-500/20 text-slate-400 hover:text-green-400"
+                  className="p-1 rounded hover:bg-green-500/20 text-slate-500 dark:text-slate-400 hover:text-green-400"
                 >
                   <ThumbsUp className="w-3 h-3" />
                 </button>
                 <button
                   onClick={() => onFeedback(message.id, false)}
-                  className="p-1 rounded hover:bg-red-500/20 text-slate-400 hover:text-red-400"
+                  className="p-1 rounded hover:bg-red-500/20 text-slate-500 dark:text-slate-400 hover:text-red-400"
                 >
                   <ThumbsDown className="w-3 h-3" />
                 </button>
@@ -446,7 +446,7 @@ const MessageBubble: FC<{
         )}
 
         {/* Timestamp */}
-        <div className={`text-[10px] text-slate-400 mt-1 ${isUser ? 'text-right' : 'text-left'}`}>
+        <div className={`text-[10px] text-slate-500 dark:text-slate-400 mt-1 ${isUser ? 'text-right' : 'text-left'}`}>
           {message.timestamp.toLocaleTimeString()}
         </div>
       </div>
@@ -657,23 +657,23 @@ Welcome to the **most powerful AI** in structural engineering!
   return (
     <motion.div
       layout
-      className={`bg-slate-900/95 backdrop-blur-xl rounded-2xl border border-slate-700/50 shadow-2xl overflow-hidden flex flex-col ${panelClasses}`}
+      className={`bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 shadow-2xl overflow-hidden flex flex-col ${panelClasses}`}
       style={{ maxHeight: isFullscreen ? 'calc(100vh - 32px)' : '700px' }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-slate-700/50 bg-gradient-to-r from-violet-600/20 to-cyan-600/20">
+      <div className="flex items-center justify-between p-4 border-b border-slate-200/50 dark:border-slate-700/50 bg-gradient-to-r from-violet-600/20 to-cyan-600/20">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center">
             <Brain className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
               Power AI
               <span className="px-2 py-0.5 bg-gradient-to-r from-violet-500 to-cyan-500 rounded text-[10px] font-bold">
                 PRO
               </span>
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               {expertSettings.mode === 'expert' ? 'Expert Mode' : 
                expertSettings.mode === 'mentor' ? 'Mentor Mode' : 'Assistant Mode'}
             </p>
@@ -684,14 +684,14 @@ Welcome to the **most powerful AI** in structural engineering!
           <button
             onClick={() => setShowSettings(!showSettings)}
             className={`p-2 rounded-lg transition-all ${
-              showSettings ? 'bg-violet-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'
+              showSettings ? 'bg-violet-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
             <Settings className="w-5 h-5" />
           </button>
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-all"
+            className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
           >
             {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
           </button>
@@ -705,10 +705,10 @@ Welcome to the **most powerful AI** in structural engineering!
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="border-b border-slate-700/50 bg-slate-800/50 overflow-hidden"
+            className="border-b border-slate-200/50 dark:border-slate-700/50 bg-slate-100/50 dark:bg-slate-800/50 overflow-hidden"
           >
             <div className="p-4">
-              <h3 className="text-sm font-semibold text-slate-200 mb-3">AI Mode</h3>
+              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">AI Mode</h3>
               <ExpertModeToggle
                 settings={expertSettings}
                 onChange={handleExpertSettingsChange}
@@ -720,10 +720,10 @@ Welcome to the **most powerful AI** in structural engineering!
 
       {/* Smart Suggestions */}
       {suggestions.length > 0 && messages.length <= 1 && (
-        <div className="p-3 border-b border-slate-700/50 bg-slate-800/30">
+        <div className="p-3 border-b border-slate-200/50 dark:border-slate-700/50 bg-slate-100/30 dark:bg-slate-800/30">
           <div className="flex items-center gap-2 mb-2">
             <Lightbulb className="w-4 h-4 text-amber-400" />
-            <span className="text-xs font-medium text-slate-300">Smart Suggestions</span>
+            <span className="text-xs font-medium text-slate-600 dark:text-slate-300">Smart Suggestions</span>
           </div>
           <div className="space-y-2 max-h-48 overflow-y-auto">
             {suggestions.slice(0, 3).map(suggestion => (
@@ -749,7 +749,7 @@ Welcome to the **most powerful AI** in structural engineering!
 
         {isProcessing && (
           <div className="flex justify-start">
-            <div className="bg-slate-800 text-slate-200 rounded-2xl rounded-bl-sm border border-slate-700/50 p-3">
+            <div className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-2xl rounded-bl-sm border border-slate-200/50 dark:border-slate-700/50 p-3">
               <div className="flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin text-violet-400" />
                 <span className="text-sm">Thinking with engineering precision...</span>
@@ -763,15 +763,15 @@ Welcome to the **most powerful AI** in structural engineering!
 
       {/* Quick Actions Toggle */}
       {showQuickActions && messages.length <= 2 && (
-        <div className="p-3 border-t border-slate-700/50 bg-slate-800/30">
+        <div className="p-3 border-t border-slate-200/50 dark:border-slate-700/50 bg-slate-100/30 dark:bg-slate-800/30">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-violet-400" />
-              <span className="text-xs font-medium text-slate-300">Quick Actions</span>
+              <span className="text-xs font-medium text-slate-600 dark:text-slate-300">Quick Actions</span>
             </div>
             <button
               onClick={() => setShowQuickActions(false)}
-              className="text-slate-400 hover:text-slate-300"
+              className="text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
             >
               <X className="w-4 h-4" />
             </button>
@@ -786,7 +786,7 @@ Welcome to the **most powerful AI** in structural engineering!
       )}
 
       {/* Input Area */}
-      <div className="p-4 border-t border-slate-700/50 bg-slate-800/50">
+      <div className="p-4 border-t border-slate-200/50 dark:border-slate-700/50 bg-slate-100/50 dark:bg-slate-800/50">
         <div className="flex items-end gap-2">
           <div className="flex-1 relative">
             <textarea
@@ -801,7 +801,7 @@ Welcome to the **most powerful AI** in structural engineering!
               }}
               placeholder="Ask anything about structural engineering..."
               rows={1}
-              className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500 resize-none"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-violet-500 resize-none"
               style={{ minHeight: '44px', maxHeight: '120px' }}
             />
           </div>
@@ -819,7 +819,7 @@ Welcome to the **most powerful AI** in structural engineering!
         </div>
 
         {/* Performance indicator */}
-        <div className="flex items-center justify-between mt-2 text-[10px] text-slate-400">
+        <div className="flex items-center justify-between mt-2 text-[10px] text-slate-500 dark:text-slate-400">
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />

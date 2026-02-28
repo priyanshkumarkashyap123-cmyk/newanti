@@ -226,7 +226,7 @@ export const ResultsTable: FC = () => {
 
     if (!analysisResults) {
         return (
-            <div className="absolute top-16 right-4 w-80 p-6 bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl shadow-2xl flex items-center justify-center text-slate-400 z-50">
+            <div className="absolute top-16 right-4 w-80 p-6 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl flex items-center justify-center text-slate-500 dark:text-slate-400 z-50">
                 Run analysis to see results
             </div>
         );
@@ -242,7 +242,7 @@ export const ResultsTable: FC = () => {
                                 key={header.id}
                                 onClick={header.column.getToggleSortingHandler()}
                                 style={{ width: header.getSize() }}
-                                className="bg-slate-900 p-3 font-semibold text-slate-300 border-b border-slate-700 cursor-pointer hover:text-white transition-colors flex-1"
+                                className="bg-slate-50 dark:bg-slate-900 p-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:text-zinc-900 dark:hover:text-white transition-colors flex-1"
                             >
                                 <div className="flex items-center gap-1">
                                     {flexRender(header.column.columnDef.header, header.getContext())}
@@ -285,7 +285,7 @@ export const ResultsTable: FC = () => {
                             className="hover:bg-blue-600/10 cursor-pointer transition-colors border-b border-slate-800/50"
                         >
                             {row.getVisibleCells().map((cell: any) => (
-                                <td key={cell.id} className="p-2.5 font-mono text-slate-200 flex-1 truncate">
+                                <td key={cell.id} className="p-2.5 font-mono text-slate-700 dark:text-slate-200 flex-1 truncate">
                                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                 </td>
                             ))}
@@ -297,10 +297,10 @@ export const ResultsTable: FC = () => {
     );
 
     return (
-        <div className="absolute top-16 right-4 w-[500px] max-h-[calc(100vh-160px)] bg-slate-900 border border-slate-800 rounded-xl shadow-2xl flex flex-col z-40 overflow-hidden ring-1 ring-white/10">
+        <div className="absolute top-16 right-4 w-[500px] max-h-[calc(100vh-160px)] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl flex flex-col z-40 overflow-hidden ring-1 ring-white/10">
             {/* Header */}
-            <div className="flex justify-between items-center px-4 py-3 bg-slate-950 border-b border-slate-800">
-                <h3 className="flex items-center gap-2 font-bold text-slate-100 text-sm">
+            <div className="flex justify-between items-center px-4 py-3 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
+                <h3 className="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-100 text-sm">
                     <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                     Analysis Results
                 </h3>
@@ -313,7 +313,7 @@ export const ResultsTable: FC = () => {
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-slate-800 bg-slate-900">
+            <div className="flex border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
                 {[
                     { id: 'displacements', label: 'Displacements' },
                     { id: 'reactions', label: 'Reactions' },
@@ -326,7 +326,7 @@ export const ResultsTable: FC = () => {
                             flex-1 py-2.5 text-xs font-medium transition-all border-b-2
                             ${activeTab === tab.id
                                 ? 'border-blue-500 text-blue-400 bg-blue-500/5'
-                                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                                : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800'
                             }
                         `}
                     >
@@ -336,14 +336,14 @@ export const ResultsTable: FC = () => {
             </div>
 
             {/* Table Area */}
-            <div ref={parentRef} className="flex-1 overflow-auto custom-scrollbar bg-slate-900">
+            <div ref={parentRef} className="flex-1 overflow-auto custom-scrollbar bg-slate-50 dark:bg-slate-900">
                 {activeTab === 'displacements' && renderTable(displacementTable)}
                 {activeTab === 'reactions' && renderTable(reactionTable)}
                 {activeTab === 'forces' && renderTable(forceTable)}
             </div>
 
             {/* Footer Summary */}
-            <div className="px-4 py-2 bg-slate-950 border-t border-slate-800 text-xs text-slate-400 flex justify-between items-center">
+            <div className="px-4 py-2 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 flex justify-between items-center">
                 <span>
                     {activeTab === 'displacements' && `Showing ${displacementData.length} Nodes`}
                     {activeTab === 'reactions' && `Showing ${reactionData.length} Supports`}

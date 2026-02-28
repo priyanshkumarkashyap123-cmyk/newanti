@@ -10,7 +10,6 @@
  * - Multi-select support
  */
 
-'use client';
 
 import React, {
   useState,
@@ -352,7 +351,7 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
                     }}
                     className={cn(
                       'py-1 rounded-lg shadow-xl',
-                      'bg-slate-800 border border-slate-700',
+                      'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700',
                       'max-h-80 overflow-y-auto',
                       menuClassName
                     )}
@@ -361,9 +360,9 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
                   >
                     {/* Search */}
                     {searchable && (
-                      <div className="px-2 pb-2 pt-1 border-b border-slate-700">
+                      <div className="px-2 pb-2 pt-1 border-b border-slate-200 dark:border-slate-700">
                         <div className="relative">
-                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400" />
                           <input
                             ref={searchInputRef}
                             type="text"
@@ -372,7 +371,7 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
                             placeholder={searchPlaceholder}
                             className={cn(
                               'w-full pl-8 pr-3 py-1.5 text-sm rounded-md',
-                              'bg-slate-900 border border-slate-700 text-white',
+                              'bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-zinc-900 dark:text-white',
                               'placeholder:text-slate-400',
                               'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                             )}
@@ -392,7 +391,7 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
                         />
                       ))
                     ) : (
-                      <div className="px-3 py-6 text-center text-sm text-slate-400">
+                      <div className="px-3 py-6 text-center text-sm text-slate-500 dark:text-slate-400">
                         {emptyText}
                       </div>
                     )}
@@ -463,7 +462,7 @@ const DropdownMenuItem: React.FC<DropdownMenuItemProps> = ({
         className={cn(
           'flex items-center gap-2 px-3 py-2 mx-1 rounded-md cursor-pointer',
           'text-sm transition-colors',
-          focused && 'bg-slate-700',
+          focused && 'bg-slate-200 dark:bg-slate-700',
           isSelected && !multiSelect && 'text-blue-400',
           item.disabled && 'opacity-50 cursor-not-allowed',
           item.danger && 'text-red-400 hover:bg-red-500/10'
@@ -479,7 +478,7 @@ const DropdownMenuItem: React.FC<DropdownMenuItemProps> = ({
                 : 'border-slate-500'
             )}
           >
-            {isSelected && <Check className="w-3 h-3 text-white" />}
+            {isSelected && <Check className="w-3 h-3 text-zinc-900 dark:text-white" />}
           </span>
         )}
 
@@ -488,7 +487,7 @@ const DropdownMenuItem: React.FC<DropdownMenuItemProps> = ({
           <Icon
             className={cn(
               'w-4 h-4 flex-shrink-0',
-              item.danger ? 'text-red-400' : 'text-slate-400'
+              item.danger ? 'text-red-400' : 'text-slate-500 dark:text-slate-400'
             )}
           />
         )}
@@ -498,11 +497,11 @@ const DropdownMenuItem: React.FC<DropdownMenuItemProps> = ({
           <div className="flex items-center justify-between">
             <span className="truncate">{item.label}</span>
             {item.shortcut && (
-              <span className="ml-2 text-xs text-slate-400">{item.shortcut}</span>
+              <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">{item.shortcut}</span>
             )}
           </div>
           {item.description && (
-            <p className="text-xs text-slate-400 mt-0.5 truncate">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
               {item.description}
             </p>
           )}
@@ -510,7 +509,7 @@ const DropdownMenuItem: React.FC<DropdownMenuItemProps> = ({
 
         {/* Submenu indicator */}
         {hasChildren && (
-          <ChevronRight className="w-4 h-4 text-slate-400" />
+          <ChevronRight className="w-4 h-4 text-slate-500 dark:text-slate-400" />
         )}
       </div>
 
@@ -521,7 +520,7 @@ const DropdownMenuItem: React.FC<DropdownMenuItemProps> = ({
           animate={{ opacity: 1, x: 0 }}
           className={cn(
             'absolute left-full top-0 ml-1 py-1 rounded-lg shadow-xl',
-            'bg-slate-800 border border-slate-700',
+            'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700',
             'min-w-40'
           )}
         >
@@ -556,8 +555,8 @@ export const DropdownTriggerButton = forwardRef<HTMLButtonElement, DropdownTrigg
         ref={ref}
         className={cn(
           'flex items-center gap-2 px-3 py-2 rounded-lg',
-          'bg-slate-800 border border-slate-700 text-white',
-          'hover:bg-slate-700 transition-colors',
+          'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-zinc-900 dark:text-white',
+          'hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors',
           'focus:outline-none focus:ring-2 focus:ring-blue-500',
           className
         )}
@@ -567,7 +566,7 @@ export const DropdownTriggerButton = forwardRef<HTMLButtonElement, DropdownTrigg
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
         >
-          <ChevronDown className="w-4 h-4 text-slate-400" />
+          <ChevronDown className="w-4 h-4 text-slate-500 dark:text-slate-400" />
         </motion.span>
       </button>
     );
@@ -581,7 +580,7 @@ DropdownTriggerButton.displayName = 'DropdownTriggerButton';
 // ============================================================================
 
 export const DropdownDivider: React.FC = () => (
-  <div className="h-px my-1 bg-slate-700" />
+  <div className="h-px my-1 bg-slate-200 dark:bg-slate-700" />
 );
 
 // ============================================================================
@@ -599,7 +598,7 @@ export const DropdownLabel: React.FC<DropdownLabelProps> = ({
 }) => (
   <div
     className={cn(
-      'px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-slate-400',
+      'px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400',
       className
     )}
   >

@@ -280,7 +280,7 @@ export function OptimizedImage({
       {/* Error State */}
       {isError && (
         <div
-          className="flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-400"
+          className="flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
           style={{ width: '100%', height: '100%' }}
         >
           <svg
@@ -382,7 +382,7 @@ export function BackgroundImage({
       {/* Overlay */}
       {overlay && (
         <div
-          className="absolute inset-0 bg-black"
+          className="absolute inset-0 bg-white dark:bg-black"
           style={{ opacity: overlayOpacity }}
         />
       )}

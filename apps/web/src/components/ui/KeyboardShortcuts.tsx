@@ -146,7 +146,7 @@ export const KeyboardShortcuts: FC<KeyboardShortcutsProps> = ({ isOpen, onClose 
                                                     <span key={i} className="flex items-center gap-1">
                                                         <KeyBadge keyName={key} />
                                                         {i < shortcut.keys.length - 1 && (
-                                                            <span className="text-zinc-400 dark:text-zinc-500 text-xs">+</span>
+                                                            <span className="text-zinc-500 dark:text-zinc-500 text-xs">+</span>
                                                         )}
                                                     </span>
                                                 ))}

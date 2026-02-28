@@ -37,9 +37,9 @@ export const TimeHistoryPanel: React.FC = () => {
   };
 
   return (
-    <div className="min-h-full bg-slate-950 text-slate-100 p-6 space-y-6">
+    <div className="min-h-full bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 p-6 space-y-6">
       {/* Header */}
-      <div className="border-b border-slate-700/50 pb-4">
+      <div className="border-b border-slate-200/50 dark:border-slate-700/50 pb-4">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
             <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -47,8 +47,8 @@ export const TimeHistoryPanel: React.FC = () => {
             </svg>
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">Time-History Analysis</h2>
-            <p className="text-sm text-slate-400">Newmark-beta / Wilson-theta integration for dynamic response</p>
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Time-History Analysis</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Newmark-beta / Wilson-theta integration for dynamic response</p>
           </div>
         </div>
       </div>
@@ -56,11 +56,11 @@ export const TimeHistoryPanel: React.FC = () => {
       {/* Parameters Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Integration Method</label>
+          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Integration Method</label>
           <select
             value={integrationMethod}
             onChange={(e) => setIntegrationMethod(e.target.value as 'newmark' | 'central_difference' | 'wilson')}
-            className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="newmark">Newmark-Beta</option>
             <option value="wilson_theta">Wilson-Theta</option>
@@ -69,36 +69,36 @@ export const TimeHistoryPanel: React.FC = () => {
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Time Step (s)</label>
+          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Time Step (s)</label>
           <input
             type="number"
             value={dt}
             onChange={(e) => setDt(parseFloat(e.target.value) || 0.1)}
             step="0.01"
             min="0.001"
-            className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Damping Alpha</label>
+          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Damping Alpha</label>
           <input
             type="number"
             value={dampingAlpha}
             onChange={(e) => setDampingAlpha(parseFloat(e.target.value) || 0)}
             step="0.01"
-            className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Damping Beta</label>
+          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Damping Beta</label>
           <input
             type="number"
             value={dampingBeta}
             onChange={(e) => setDampingBeta(parseFloat(e.target.value) || 0)}
             step="0.001"
-            className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
       </div>
@@ -107,9 +107,9 @@ export const TimeHistoryPanel: React.FC = () => {
       <button
         onClick={runAnalysis}
         disabled={loading}
-        className={`w-full py-3 px-6 rounded-lg font-semibold text-white transition-all duration-200 ${
+        className={`w-full py-3 px-6 rounded-lg font-semibold text-zinc-900 dark:text-white transition-all duration-200 ${
           loading
-            ? 'bg-slate-700 cursor-not-allowed opacity-60'
+            ? 'bg-slate-200 dark:bg-slate-700 cursor-not-allowed opacity-60'
             : 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 shadow-lg shadow-blue-900/30 hover:shadow-blue-800/40'
         }`}
       >
@@ -141,44 +141,44 @@ export const TimeHistoryPanel: React.FC = () => {
       {/* Results */}
       {result && (
         <div className="space-y-4">
-          <h3 className="text-lg font-bold text-white border-b border-slate-700/50 pb-2">Dynamic Response Results</h3>
+          <h3 className="text-lg font-bold text-zinc-900 dark:text-white border-b border-slate-200/50 dark:border-slate-700/50 pb-2">Dynamic Response Results</h3>
 
           {/* Key Metrics */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4">
-              <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Max Displacement</p>
-              <p className="text-2xl font-bold text-blue-400">{result.max_displacement.toFixed(4)} <span className="text-sm text-slate-400">m</span></p>
+            <div className="bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-lg p-4">
+              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Max Displacement</p>
+              <p className="text-2xl font-bold text-blue-400">{result.max_displacement.toFixed(4)} <span className="text-sm text-slate-500 dark:text-slate-400">m</span></p>
             </div>
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4">
-              <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Max Velocity</p>
-              <p className="text-2xl font-bold text-cyan-400">{result.max_velocity.toFixed(4)} <span className="text-sm text-slate-400">m/s</span></p>
+            <div className="bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-lg p-4">
+              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Max Velocity</p>
+              <p className="text-2xl font-bold text-cyan-400">{result.max_velocity.toFixed(4)} <span className="text-sm text-slate-500 dark:text-slate-400">m/s</span></p>
             </div>
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4">
-              <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Max Acceleration</p>
-              <p className="text-2xl font-bold text-emerald-400">{result.max_acceleration.toFixed(4)} <span className="text-sm text-slate-400">m/s²</span></p>
+            <div className="bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-lg p-4">
+              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Max Acceleration</p>
+              <p className="text-2xl font-bold text-emerald-400">{result.max_acceleration.toFixed(4)} <span className="text-sm text-slate-500 dark:text-slate-400">m/s²</span></p>
             </div>
           </div>
 
           {/* Time Step Table */}
-          <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg overflow-hidden">
+          <div className="bg-slate-100/40 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50 rounded-lg overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-800/80">
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Step</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">Time (s)</th>
+                <tr className="bg-slate-100/80 dark:bg-slate-800/80">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Step</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Time (s)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/30">
                 {result.time.slice(0, 10).map((t, i) => (
                   <tr key={i} className="hover:bg-slate-700/20 transition-colors">
-                    <td className="px-4 py-2 text-slate-300">Step {i + 1}</td>
-                    <td className="px-4 py-2 text-right text-slate-200 font-mono">{t.toFixed(3)}</td>
+                    <td className="px-4 py-2 text-slate-600 dark:text-slate-300">Step {i + 1}</td>
+                    <td className="px-4 py-2 text-right text-slate-700 dark:text-slate-200 font-mono">{t.toFixed(3)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
             {result.time.length > 10 && (
-              <div className="px-4 py-2 text-xs text-slate-500 border-t border-slate-700/30">
+              <div className="px-4 py-2 text-xs text-slate-500 border-t border-slate-300/30 dark:border-slate-700/30">
                 Showing first 10 of {result.time.length} time steps
               </div>
             )}

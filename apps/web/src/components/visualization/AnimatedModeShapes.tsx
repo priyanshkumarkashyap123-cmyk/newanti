@@ -315,10 +315,10 @@ export const AnimatedModeShapes: React.FC<{
   };
 
   return (
-    <div className="bg-gray-900 rounded-xl overflow-hidden">
+    <div className="bg-gray-50 dark:bg-gray-900 rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 bg-gray-800 border-b border-gray-700 flex items-center justify-between">
-        <h3 className="font-semibold text-white flex items-center gap-2">
+      <div className="px-4 py-3 bg-gray-100 dark:bg-gray-800 border-b border-gray-700 flex items-center justify-between">
+        <h3 className="font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
           <span>🎬</span>
           Animated Mode Shapes
         </h3>
@@ -333,7 +333,7 @@ export const AnimatedModeShapes: React.FC<{
           </button>
           <button
             onClick={exportImage}
-            className="px-3 py-1 bg-gray-700 text-white rounded text-sm hover:bg-gray-600"
+            className="px-3 py-1 bg-gray-700 text-zinc-900 dark:text-white rounded text-sm hover:bg-gray-600"
           >
             📷 Export
           </button>
@@ -351,10 +351,10 @@ export const AnimatedModeShapes: React.FC<{
       </div>
 
       {/* Controls */}
-      <div className="p-4 bg-gray-800 border-t border-gray-700 space-y-3">
+      <div className="p-4 bg-gray-100 dark:bg-gray-800 border-t border-gray-700 space-y-3">
         {/* Mode Selection */}
         <div className="flex items-center gap-4">
-          <label className="text-gray-400 text-sm">Mode:</label>
+          <label className="text-gray-500 dark:text-gray-400 text-sm">Mode:</label>
           <div className="flex gap-1">
             {modeShapes.slice(0, 10).map((mode, i) => (
               <button
@@ -363,7 +363,7 @@ export const AnimatedModeShapes: React.FC<{
                 className={`w-8 h-8 rounded text-sm font-medium ${
                   selectedMode === i
                     ? "bg-blue-500 text-white"
-                    : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                    : "bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-600"
                 }`}
               >
                 {mode.modeNumber}
@@ -374,7 +374,7 @@ export const AnimatedModeShapes: React.FC<{
 
         {/* Amplitude */}
         <div className="flex items-center gap-4">
-          <label className="text-gray-400 text-sm w-20">Amplitude:</label>
+          <label className="text-gray-500 dark:text-gray-400 text-sm w-20">Amplitude:</label>
           <input
             type="range"
             min="1"
@@ -388,14 +388,14 @@ export const AnimatedModeShapes: React.FC<{
             }
             className="flex-1"
           />
-          <span className="text-white text-sm w-10">
+          <span className="text-zinc-900 dark:text-white text-sm w-10">
             {settings.amplitudeScale}x
           </span>
         </div>
 
         {/* Speed */}
         <div className="flex items-center gap-4">
-          <label className="text-gray-400 text-sm w-20">Speed:</label>
+          <label className="text-gray-500 dark:text-gray-400 text-sm w-20">Speed:</label>
           <input
             type="range"
             min="0.1"
@@ -407,12 +407,12 @@ export const AnimatedModeShapes: React.FC<{
             }
             className="flex-1"
           />
-          <span className="text-white text-sm w-10">{settings.speed}x</span>
+          <span className="text-zinc-900 dark:text-white text-sm w-10">{settings.speed}x</span>
         </div>
 
         {/* Options */}
         <div className="flex items-center gap-6">
-          <label className="flex items-center gap-2 text-sm text-gray-300">
+          <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
             <input
               type="checkbox"
               checked={settings.showUndeformed}
@@ -423,7 +423,7 @@ export const AnimatedModeShapes: React.FC<{
             />
             Show undeformed
           </label>
-          <label className="flex items-center gap-2 text-sm text-gray-300">
+          <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
             <select
               value={settings.colorScale}
               onChange={(e) =>

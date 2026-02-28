@@ -171,7 +171,7 @@ const EulerCalculator: FC = () => {
 
             <div className="grid grid-cols-2 gap-2 mb-3">
                 <div>
-                    <label className="text-xs text-gray-400">Length (mm)</label>
+                    <label className="text-xs text-gray-500 dark:text-gray-400">Length (mm)</label>
                     <input
                         type="number"
                         value={length}
@@ -180,7 +180,7 @@ const EulerCalculator: FC = () => {
                     />
                 </div>
                 <div>
-                    <label className="text-xs text-gray-400">K factor</label>
+                    <label className="text-xs text-gray-500 dark:text-gray-400">K factor</label>
                     <select
                         value={K}
                         onChange={(e) => setK(parseFloat(e.target.value))}
@@ -194,7 +194,7 @@ const EulerCalculator: FC = () => {
                     </select>
                 </div>
                 <div>
-                    <label className="text-xs text-gray-400">E (MPa)</label>
+                    <label className="text-xs text-gray-500 dark:text-gray-400">E (MPa)</label>
                     <input
                         type="number"
                         value={E}
@@ -203,7 +203,7 @@ const EulerCalculator: FC = () => {
                     />
                 </div>
                 <div>
-                    <label className="text-xs text-gray-400">I (mm⁴)</label>
+                    <label className="text-xs text-gray-500 dark:text-gray-400">I (mm⁴)</label>
                     <input
                         type="number"
                         value={I}
@@ -218,7 +218,7 @@ const EulerCalculator: FC = () => {
                 <span className="font-bold text-lg text-blue-500">{Pcr.toFixed(1)} kN</span>
             </div>
 
-            <div className="mt-2 text-xs text-gray-400 text-center">
+            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
                 P_cr = π²EI / (KL)²
             </div>
         </div>
@@ -469,7 +469,7 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
                             <div className="grid grid-cols-2 gap-1 text-xs">
                                 {EFFECTIVE_LENGTH_FACTORS.map((f) => (
                                     <div key={f.K} className="flex justify-between">
-                                        <span className="text-gray-400">{f.case}</span>
+                                        <span className="text-gray-500 dark:text-gray-400">{f.case}</span>
                                         <span className="font-medium">{f.K}</span>
                                     </div>
                                 ))}
@@ -486,7 +486,7 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
                         <Download className="w-4 h-4" />
                         Export Results
                     </button>
-                    <div className="text-xs text-gray-400">
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
                         {result?.is_stable ? '✓ Structure is stable' : '✗ Buckling detected'}
                     </div>
                 </div>

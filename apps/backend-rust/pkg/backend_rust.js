@@ -943,6 +943,17 @@ export function solve_p_delta_extended(nodes_val, elements_val, point_loads_val,
 }
 
 /**
+ * Nonlinear static pushover analysis — capacity curve generation
+ * Returns base shear vs. roof displacement with hinge states
+ * @param {any} input_val
+ * @returns {any}
+ */
+export function solve_pushover(input_val) {
+    const ret = wasm.solve_pushover(addHeapObject(input_val));
+    return takeObject(ret);
+}
+
+/**
  * Response Spectrum Analysis (Seismic)
  * @param {any} modal_result_val
  * @param {number} zone_factor

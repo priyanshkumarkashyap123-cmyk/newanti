@@ -411,30 +411,30 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
                 ${
                   isSelected
                     ? "bg-cyan-500/10 border-2 border-cyan-500"
-                    : "bg-slate-800/50 border border-slate-700 hover:border-slate-600"
+                    : "bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
                 }
             `}
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div
-            className={`p-2 rounded-lg ${isSelected ? "bg-cyan-500/20 text-cyan-400" : "bg-slate-700 text-slate-400"}`}
+            className={`p-2 rounded-lg ${isSelected ? "bg-cyan-500/20 text-cyan-400" : "bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400"}`}
           >
             {summary.icon}
           </div>
           <div>
-            <h4 className="font-semibold text-white">{summary.label}</h4>
-            <p className="text-xs text-slate-400">{summary.description}</p>
+            <h4 className="font-semibold text-zinc-900 dark:text-white">{summary.label}</h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{summary.description}</p>
           </div>
         </div>
         <ChevronRight
-          className={`w-5 h-5 ${isSelected ? "text-cyan-400" : "text-slate-400"}`}
+          className={`w-5 h-5 ${isSelected ? "text-cyan-400" : "text-slate-500 dark:text-slate-400"}`}
         />
       </div>
 
       {/* Stats Bar */}
       <div className="mb-3">
-        <div className="h-2 bg-slate-700 rounded-full overflow-hidden flex">
+        <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden flex">
           <div
             className="bg-green-500 transition-all"
             style={{ width: `${(stats.passed / stats.total) * 100}%` }}
@@ -459,7 +459,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
       <div className="space-y-1">
         {keyMetrics.slice(0, 2).map((metric, idx) => (
           <div key={idx} className="flex items-center justify-between text-xs">
-            <span className="text-slate-400">{metric.name}</span>
+            <span className="text-slate-500 dark:text-slate-400">{metric.name}</span>
             <span className={getStatusColor(metric.status)}>
               {typeof metric.value === "number" &&
               metric.value < 1 &&
@@ -512,14 +512,14 @@ const KPICard: React.FC<KPICardProps> = ({
       className={`p-4 rounded-xl bg-gradient-to-br ${statusColors[status]} border`}
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm text-slate-400">{title}</span>
+        <span className="text-sm text-slate-500 dark:text-slate-400">{title}</span>
         <div className={textColors[status]}>{icon}</div>
       </div>
       <div className="flex items-baseline gap-1">
         <span className={`text-2xl font-bold ${textColors[status]}`}>
           {value}
         </span>
-        {unit && <span className="text-sm text-slate-400">{unit}</span>}
+        {unit && <span className="text-sm text-slate-500 dark:text-slate-400">{unit}</span>}
       </div>
       {change !== undefined && (
         <div className="flex items-center gap-1 mt-1 text-xs">
@@ -620,26 +620,26 @@ const MemberResultsTable: React.FC<MemberResultsTableProps> = ({
   };
 
   return (
-    <div className="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden">
+    <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
       {/* Filters */}
-      <div className="p-4 border-b border-slate-700 flex items-center gap-4">
+      <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-4">
         <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400" />
           <input
             type="text"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             placeholder="Search members..."
-            className="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:border-cyan-500"
+            className="w-full pl-10 pr-4 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500"
           />
         </div>
 
         <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-slate-400" />
+          <Filter className="w-4 h-4 text-slate-500 dark:text-slate-400" />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as any)}
-            className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm"
+            className="px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm"
           >
             <option value="all">All Status</option>
             <option value="pass">Passed</option>
@@ -648,7 +648,7 @@ const MemberResultsTable: React.FC<MemberResultsTableProps> = ({
           </select>
         </div>
 
-        <span className="text-sm text-slate-400 ml-auto">
+        <span className="text-sm text-slate-500 dark:text-slate-400 ml-auto">
           {sortedResults.length} of {results.length} members
         </span>
       </div>
@@ -657,7 +657,7 @@ const MemberResultsTable: React.FC<MemberResultsTableProps> = ({
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-slate-800/80">
+            <tr className="bg-slate-100/80 dark:bg-slate-800/80">
               {[
                 { key: "name", label: "Member" },
                 { key: "type", label: "Type" },
@@ -670,7 +670,7 @@ const MemberResultsTable: React.FC<MemberResultsTableProps> = ({
                 <th
                   key={col.key}
                   onClick={() => toggleSort(col.key as keyof MemberResult)}
-                  className="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider cursor-pointer hover:text-white"
+                  className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:text-zinc-900 dark:hover:text-white"
                 >
                   <div className="flex items-center gap-1">
                     {col.label}
@@ -686,29 +686,29 @@ const MemberResultsTable: React.FC<MemberResultsTableProps> = ({
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-700">
+          <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
             {sortedResults.map((member) => (
               <tr
                 key={member.id}
-                className="hover:bg-slate-800/50 transition-colors"
+                className="hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors"
               >
                 <td className="px-4 py-3">
-                  <div className="font-medium text-white">{member.name}</div>
+                  <div className="font-medium text-zinc-900 dark:text-white">{member.name}</div>
                   {member.criticalCheck && (
                     <div className="text-xs text-red-400">
                       {member.criticalCheck}
                     </div>
                   )}
                 </td>
-                <td className="px-4 py-3 text-sm text-slate-300">
+                <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
                   {member.type}
                 </td>
-                <td className="px-4 py-3 text-sm text-slate-300">
+                <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
                   {member.section}
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <div className="w-16 h-2 bg-slate-700 rounded-full overflow-hidden">
+                    <div className="w-16 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                       <div
                         className={`h-full ${
                           member.utilizationRatio > 1
@@ -729,17 +729,17 @@ const MemberResultsTable: React.FC<MemberResultsTableProps> = ({
                     </span>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-sm text-slate-300">
+                <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
                   {member.maxStress.toFixed(0)} MPa
                 </td>
-                <td className="px-4 py-3 text-sm text-slate-300">
+                <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
                   {member.maxDeflection.toFixed(1)} mm
                 </td>
                 <td className="px-4 py-3">{getStatusBadge(member.status)}</td>
                 <td className="px-4 py-3">
                   <button
                     onClick={() => onViewDetails(member)}
-                    className="p-2 text-slate-400 hover:text-cyan-400 hover:bg-slate-700 rounded-lg transition-colors"
+                    className="p-2 text-slate-500 dark:text-slate-400 hover:text-cyan-400 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
                   >
                     <Eye className="w-4 h-4" />
                   </button>
@@ -801,7 +801,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-950 p-6">
+    <div className="min-h-screen bg-white dark:bg-slate-950 p-6">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
@@ -810,22 +810,22 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
               <LayoutDashboard className="w-8 h-8 text-cyan-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">
+              <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
                 Analysis Results
               </h1>
-              <p className="text-slate-400">{projectName}</p>
+              <p className="text-slate-500 dark:text-slate-400">{projectName}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-sm text-slate-400">
+            <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
               <Clock className="w-4 h-4" />
               Last analyzed: {analysisDate.toLocaleString()}
             </div>
 
             <button
               onClick={onRefresh}
-              className="p-2 bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors"
+              className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded-lg transition-colors"
             >
               <RefreshCw className="w-5 h-5" />
             </button>
@@ -882,19 +882,19 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
         {/* Category Sidebar */}
         <div className="col-span-4 space-y-3">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white">
+            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
               Result Categories
             </h2>
-            <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-1">
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
               <button
                 onClick={() => setViewMode("grid")}
-                className={`p-1.5 rounded ${viewMode === "grid" ? "bg-slate-700 text-white" : "text-slate-400"}`}
+                className={`p-1.5 rounded ${viewMode === "grid" ? "bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white" : "text-slate-500 dark:text-slate-400"}`}
               >
                 <Grid3X3 className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setViewMode("list")}
-                className={`p-1.5 rounded ${viewMode === "list" ? "bg-slate-700 text-white" : "text-slate-400"}`}
+                className={`p-1.5 rounded ${viewMode === "list" ? "bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white" : "text-slate-500 dark:text-slate-400"}`}
               >
                 <List className="w-4 h-4" />
               </button>
@@ -919,23 +919,23 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
           {selectedSummary && (
             <div className="space-y-6">
               {/* Category Header */}
-              <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
+              <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div className="p-3 bg-cyan-500/10 rounded-xl text-cyan-400">
                       {selectedSummary.icon}
                     </div>
                     <div>
-                      <h2 className="text-xl font-bold text-white">
+                      <h2 className="text-xl font-bold text-zinc-900 dark:text-white">
                         {selectedSummary.label}
                       </h2>
-                      <p className="text-slate-400">
+                      <p className="text-slate-500 dark:text-slate-400">
                         {selectedSummary.description}
                       </p>
                     </div>
                   </div>
 
-                  <button aria-label="Maximize" title="Maximize" className="p-2 bg-slate-700 text-slate-400 hover:text-white rounded-lg">
+                  <button aria-label="Maximize" title="Maximize" className="p-2 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded-lg">
                     <Maximize2 className="w-5 h-5" />
                   </button>
                 </div>
@@ -943,8 +943,8 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
                 {/* Key Metrics */}
                 <div className="grid grid-cols-3 gap-4">
                   {selectedSummary.keyMetrics.map((metric, idx) => (
-                    <div key={idx} className="p-4 bg-slate-900/50 rounded-xl">
-                      <div className="text-sm text-slate-400 mb-1">
+                    <div key={idx} className="p-4 bg-slate-50/50 dark:bg-slate-900/50 rounded-xl">
+                      <div className="text-sm text-slate-500 dark:text-slate-400 mb-1">
                         {metric.name}
                       </div>
                       <div
@@ -963,7 +963,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
                           : `${metric.value} ${metric.unit}`}
                       </div>
                       {metric.location && (
-                        <div className="text-xs text-slate-400 mt-1">
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                           {metric.location}
                         </div>
                       )}

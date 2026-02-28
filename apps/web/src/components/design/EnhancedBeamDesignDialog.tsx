@@ -13,7 +13,6 @@
  * @version 3.0.0
  */
 
-'use client';
 
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -151,7 +150,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
   onChange
 }) => (
   <div className="space-y-1">
-    <label className="text-sm font-medium text-slate-300">{label}</label>
+    <label className="text-sm font-medium text-slate-600 dark:text-slate-300">{label}</label>
     <select
       value={value}
       onChange={e => onChange(name, e.target.value)}
@@ -214,12 +213,12 @@ const InputField: React.FC<InputFieldProps> = ({
   onChange
 }) => (
   <div className="space-y-1">
-    <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
+    <label className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
       {label}
       {tooltip && (
         <div className="group relative">
-          <Info className="w-3.5 h-3.5 text-slate-400" />
-          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 p-2 bg-slate-800 text-white text-xs rounded-lg z-50">
+          <Info className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 p-2 bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white text-xs rounded-lg z-50">
             {tooltip}
           </div>
         </div>
@@ -238,7 +237,7 @@ const InputField: React.FC<InputFieldProps> = ({
         }`}
       />
       {unit && (
-        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 dark:text-slate-400">
           {unit}
         </span>
       )}
@@ -265,7 +264,7 @@ const CheckItem: React.FC<CheckItemProps> = ({ check }) => (
       {check.status === 'pass' && <Check className="w-5 h-5 text-green-600" />}
       {check.status === 'fail' && <X className="w-5 h-5 text-red-600" />}
       {check.status === 'warning' && <AlertTriangle className="w-5 h-5 text-amber-600" />}
-      <span className="text-sm font-medium text-slate-300">{check.name}</span>
+      <span className="text-sm font-medium text-slate-600 dark:text-slate-300">{check.name}</span>
     </div>
     <div className="text-right">
       <div className="text-sm text-slate-500">
@@ -563,7 +562,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto bg-slate-900 rounded-2xl shadow-xl overflow-hidden">
+    <div className="w-full max-w-4xl mx-auto bg-slate-50 dark:bg-slate-900 rounded-2xl shadow-xl overflow-hidden">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
         <div className="flex items-center justify-between">
@@ -579,10 +578,10 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
           <select
             value={code}
             onChange={e => setCode(e.target.value as DesignCode)}
-            className="px-4 py-2 bg-white/20 text-white rounded-lg text-sm font-medium border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50"
+            className="px-4 py-2 bg-white/20 text-zinc-900 dark:text-white rounded-lg text-sm font-medium border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50"
           >
             {CODE_OPTIONS.map(opt => (
-              <option key={opt.value} value={opt.value} className="text-slate-200">
+              <option key={opt.value} value={opt.value} className="text-slate-700 dark:text-slate-200">
                 {opt.label}
               </option>
             ))}
@@ -604,7 +603,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
               className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-colors ${
                 activeTab === tab.id
                   ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50'
-                  : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800'
+                  : 'text-slate-500 hover:text-slate-800 dark:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-800'
               }`}
             >
               <tab.icon className="w-4 h-4" />
@@ -629,7 +628,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
               {/* Section Geometry */}
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-slate-200 flex items-center gap-2">
+                  <h3 className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2">
                     <Box className="w-5 h-5 text-blue-600" />
                     Section Geometry
                   </h3>
@@ -676,7 +675,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                   </div>
                   
                   {/* Visual representation */}
-                  <div className="bg-slate-800 rounded-xl p-4">
+                  <div className="bg-slate-100 dark:bg-slate-800 rounded-xl p-4">
                     <svg viewBox="0 0 200 120" className="w-full h-24">
                       {/* Section outline */}
                       <rect
@@ -715,7 +714,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
 
                 {/* Materials & Loads */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-slate-200 flex items-center gap-2">
+                  <h3 className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2">
                     <Layers className="w-5 h-5 text-blue-600" />
                     Materials
                   </h3>
@@ -736,7 +735,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                     />
                   </div>
                   
-                  <h3 className="font-semibold text-slate-200 flex items-center gap-2 mt-6">
+                  <h3 className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2 mt-6">
                     <BarChart2 className="w-5 h-5 text-blue-600" />
                     Design Forces
                   </h3>
@@ -778,7 +777,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
               <div>
                 <button
                   onClick={() => setShowAdvanced(!showAdvanced)}
-                  className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-100"
+                  className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800 dark:text-slate-100"
                 >
                   {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   Advanced Options
@@ -852,19 +851,19 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
               className="space-y-6"
             >
               {/* Status Header */}
-              <div className="flex items-center justify-between bg-slate-800 rounded-xl p-4">
+              <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-800 rounded-xl p-4">
                 <div>
                   <p className="text-sm text-slate-500">Design Status</p>
                   <div className="flex items-center gap-3 mt-1">
                     <StatusBadge status={result.status} />
-                    <span className="text-slate-300 font-medium">
+                    <span className="text-slate-600 dark:text-slate-300 font-medium">
                       {result.section.type === 'singly' ? 'Singly' : 'Doubly'} Reinforced Section
                     </span>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-slate-500">xu/d ratio</p>
-                  <p className="text-lg font-bold text-slate-200">
+                  <p className="text-lg font-bold text-slate-700 dark:text-slate-200">
                     {(result.section.xu / result.section.effectiveDepth).toFixed(3)}
                   </p>
                 </div>
@@ -966,7 +965,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
 
               {/* Design Checks */}
               <div>
-                <h4 className="font-semibold text-slate-200 mb-4">Design Checks</h4>
+                <h4 className="font-semibold text-slate-700 dark:text-slate-200 mb-4">Design Checks</h4>
                 <div className="space-y-2">
                   {result.checks.map((check, index) => (
                     <CheckItem key={index} check={check} />
@@ -987,8 +986,8 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
             >
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Spacing Requirements */}
-                <div className="bg-slate-800 rounded-xl p-5">
-                  <h4 className="font-semibold text-slate-200 mb-4 flex items-center gap-2">
+                <div className="bg-slate-100 dark:bg-slate-800 rounded-xl p-5">
+                  <h4 className="font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
                     <Ruler className="w-5 h-5 text-blue-600" />
                     Spacing Requirements
                   </h4>
@@ -1001,15 +1000,15 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                       <span className="text-slate-500">Maximum Spacing</span>
                       <span className="font-medium">{result.detailing.maxSpacing} mm</span>
                     </div>
-                    <p className="text-xs text-slate-400 mt-2">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
                       As per {code === 'IS456' ? 'IS 456 Cl. 26.3' : code === 'ACI318' ? 'ACI 318 Cl. 7.6' : 'EC2 Cl. 8.2'}
                     </p>
                   </div>
                 </div>
 
                 {/* Development Length */}
-                <div className="bg-slate-800 rounded-xl p-5">
-                  <h4 className="font-semibold text-slate-200 mb-4 flex items-center gap-2">
+                <div className="bg-slate-100 dark:bg-slate-800 rounded-xl p-5">
+                  <h4 className="font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
                     <Grid3X3 className="w-5 h-5 text-blue-600" />
                     Anchorage & Lap
                   </h4>
@@ -1022,7 +1021,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                       <span className="text-slate-500">Lap Length</span>
                       <span className="font-medium">{result.detailing.lapLength} mm</span>
                     </div>
-                    <p className="text-xs text-slate-400 mt-2">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
                       For {input.steelGrade} steel in {input.concreteGrade} concrete
                     </p>
                   </div>
@@ -1030,8 +1029,8 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
               </div>
 
               {/* Cross-section sketch */}
-              <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
-                <h4 className="font-semibold text-slate-200 mb-4">Cross-Section Detail</h4>
+              <div className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
+                <h4 className="font-semibold text-slate-700 dark:text-slate-200 mb-4">Cross-Section Detail</h4>
                 <div className="flex justify-center">
                   <svg viewBox="0 0 300 250" className="w-full max-w-md">
                     {/* Section outline */}
@@ -1128,11 +1127,11 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
 
               {/* Export buttons */}
               <div className="flex justify-end gap-3">
-                <button className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-slate-300 hover:bg-slate-800">
+                <button className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800">
                   <FileText className="w-4 h-4" />
                   Export Report
                 </button>
-                <button className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-slate-300 hover:bg-slate-800">
+                <button className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800">
                   <Download className="w-4 h-4" />
                   Download DXF
                 </button>
@@ -1151,8 +1150,8 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
               animate={{ opacity: 1 }}
               className="text-center py-12"
             >
-              <Calculator className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-400">
+              <Calculator className="w-12 h-12 text-slate-600 dark:text-slate-300 mx-auto mb-4" />
+              <p className="text-slate-500 dark:text-slate-400">
                 Run the design calculation first to see results
               </p>
               <button

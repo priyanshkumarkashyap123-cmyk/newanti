@@ -14,7 +14,6 @@
  * @version 1.0.0
  */
 
-'use client';
 
 import React, { useState, useMemo } from 'react';
 import {
@@ -163,8 +162,8 @@ const DiagramRenderer: React.FC<DiagramRendererProps> = ({ diagram }) => {
   };
 
   return (
-    <div className="mt-4 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-      <h4 className="text-sm font-semibold text-slate-300 mb-3">{diagram.title}</h4>
+    <div className="mt-4 p-4 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+      <h4 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">{diagram.title}</h4>
       <div className="flex justify-center">
         {renderDiagramPlaceholder()}
       </div>
@@ -181,7 +180,7 @@ const CrossSectionDiagram: React.FC<{ data: any }> = ({ data }) => {
   const scale = 0.4;
   
   return (
-    <svg width={b * scale + 40} height={D * scale + 40} className="bg-slate-900">
+    <svg width={b * scale + 40} height={D * scale + 40} className="bg-slate-50 dark:bg-slate-900">
       {/* Concrete section */}
       <rect 
         x={20} y={20} 
@@ -216,7 +215,7 @@ const CrossSectionDiagram: React.FC<{ data: any }> = ({ data }) => {
 
 const StressDiagram: React.FC<{ data: any }> = ({ data }) => {
   return (
-    <svg width={300} height={200} className="bg-slate-900">
+    <svg width={300} height={200} className="bg-slate-50 dark:bg-slate-900">
       {/* Section outline */}
       <rect x={50} y={20} width={60} height={160} fill="none" stroke="#333" strokeWidth={2} />
       
@@ -245,7 +244,7 @@ const StressDiagram: React.FC<{ data: any }> = ({ data }) => {
 
 const MomentDiagram: React.FC<{ data: any }> = ({ data }) => {
   return (
-    <svg width={300} height={150} className="bg-slate-900">
+    <svg width={300} height={150} className="bg-slate-50 dark:bg-slate-900">
       {/* Beam line */}
       <line x1={30} y1={75} x2={270} y2={75} stroke="#333" strokeWidth={2} />
       
@@ -269,7 +268,7 @@ const MomentDiagram: React.FC<{ data: any }> = ({ data }) => {
 
 const ShearDiagram: React.FC<{ data: any }> = ({ data }) => {
   return (
-    <svg width={300} height={150} className="bg-slate-900">
+    <svg width={300} height={150} className="bg-slate-50 dark:bg-slate-900">
       {/* Beam line */}
       <line x1={30} y1={75} x2={270} y2={75} stroke="#333" strokeWidth={2} />
       
@@ -295,7 +294,7 @@ const ShearDiagram: React.FC<{ data: any }> = ({ data }) => {
 
 const ReinforcementLayout: React.FC<{ data: any }> = ({ data }) => {
   return (
-    <svg width={350} height={200} className="bg-slate-900">
+    <svg width={350} height={200} className="bg-slate-50 dark:bg-slate-900">
       {/* Beam elevation */}
       <rect x={25} y={50} width={300} height={100} fill="#e0e0e0" stroke="#333" strokeWidth={2} />
       
@@ -321,7 +320,7 @@ const ReinforcementLayout: React.FC<{ data: any }> = ({ data }) => {
 
 const LoadingDiagram: React.FC<{ data: any }> = ({ data }) => {
   return (
-    <svg width={300} height={180} className="bg-slate-900">
+    <svg width={300} height={180} className="bg-slate-50 dark:bg-slate-900">
       {/* Building outline */}
       <rect x={100} y={30} width={100} height={120} fill="none" stroke="#333" strokeWidth={2} />
       
@@ -347,8 +346,8 @@ const LoadingDiagram: React.FC<{ data: any }> = ({ data }) => {
 
 const GenericDiagram: React.FC<{ data: any; title: string }> = ({ data, title }) => {
   return (
-    <div className="w-full h-40 bg-slate-800 border-2 border-dashed border-slate-600 rounded-lg flex items-center justify-center">
-      <div className="text-center text-slate-400">
+    <div className="w-full h-40 bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-600 rounded-lg flex items-center justify-center">
+      <div className="text-center text-slate-500 dark:text-slate-400">
         <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
             d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7" 
@@ -393,13 +392,13 @@ const CalculationStepCard: React.FC<CalculationStepCardProps> = ({
   return (
     <div className={`border rounded-lg mb-3 overflow-hidden ${
       step.status === 'FAIL' ? 'border-red-700' : 
-      step.status === 'WARNING' ? 'border-yellow-700' : 'border-slate-700'
+      step.status === 'WARNING' ? 'border-yellow-700' : 'border-slate-200 dark:border-slate-700'
     }`}>
       {/* Header */}
       <div 
-        className={`px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-slate-700 ${
+        className={`px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 ${
           step.status === 'FAIL' ? 'bg-red-900/30' : 
-          step.status === 'WARNING' ? 'bg-yellow-900/30' : 'bg-slate-800'
+          step.status === 'WARNING' ? 'bg-yellow-900/30' : 'bg-slate-100 dark:bg-slate-800'
         }`}
         onClick={onToggle}
       >
@@ -408,8 +407,8 @@ const CalculationStepCard: React.FC<CalculationStepCardProps> = ({
             {step.step}
           </span>
           <div>
-            <h3 className="font-semibold text-slate-200">{step.title}</h3>
-            <p className="text-sm text-slate-400">{step.description}</p>
+            <h3 className="font-semibold text-slate-700 dark:text-slate-200">{step.title}</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{step.description}</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -417,7 +416,7 @@ const CalculationStepCard: React.FC<CalculationStepCardProps> = ({
             {statusIcons[step.status || 'INFO']} {step.status || 'INFO'}
           </span>
           <svg 
-            className={`w-5 h-5 text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+            className={`w-5 h-5 text-slate-500 dark:text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
             fill="none" stroke="currentColor" viewBox="0 0 24 24"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -427,29 +426,29 @@ const CalculationStepCard: React.FC<CalculationStepCardProps> = ({
       
       {/* Expanded Content */}
       {isExpanded && (
-        <div className="px-4 py-4 bg-slate-800/50 border-t border-slate-700">
+        <div className="px-4 py-4 bg-slate-100/50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700">
           {/* Code Reference */}
           {step.reference?.code && (
             <div className="mb-3 flex items-center gap-2 text-sm">
-              <span className="font-medium text-slate-300">Reference:</span>
+              <span className="font-medium text-slate-600 dark:text-slate-300">Reference:</span>
               <span className="px-2 py-0.5 bg-blue-900/50 text-blue-300 rounded text-xs">
                 {CODE_NAMES[step.reference.code]}
               </span>
               {step.reference?.clause && (
-                <span className="text-slate-400">Clause {step.reference.clause}</span>
+                <span className="text-slate-500 dark:text-slate-400">Clause {step.reference.clause}</span>
               )}
               {step.reference?.table && (
-                <span className="text-slate-400">| {step.reference.table}</span>
+                <span className="text-slate-500 dark:text-slate-400">| {step.reference.table}</span>
               )}
               {step.reference?.figure && (
-                <span className="text-slate-400">| {step.reference.figure}</span>
+                <span className="text-slate-500 dark:text-slate-400">| {step.reference.figure}</span>
               )}
             </div>
           )}
           
           {/* Formula */}
-          <div className="mb-4 p-3 bg-slate-900 rounded border border-slate-700">
-            <p className="text-xs text-slate-400 mb-1">Formula:</p>
+          <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-700">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Formula:</p>
             {step.formulaLatex ? (
               <LaTeXRenderer formula={step.formulaLatex} display />
             ) : (
@@ -460,17 +459,17 @@ const CalculationStepCard: React.FC<CalculationStepCardProps> = ({
           {/* Input Values */}
           {step.values && Object.keys(step.values).length > 0 && (
             <div className="mb-4">
-              <p className="text-xs text-slate-400 mb-2">Input Values:</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Input Values:</p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {Object.entries(step.values).map(([key, val]) => {
                   if (!val) return null;
                   const value = typeof val === 'object' ? val : { value: val };
                   return (
-                    <div key={key} className="p-2 bg-slate-900 rounded border border-slate-700">
-                      <p className="text-xs text-slate-400">{key}</p>
-                      <p className="font-mono font-medium text-slate-200">
+                    <div key={key} className="p-2 bg-slate-50 dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-700">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{key}</p>
+                      <p className="font-mono font-medium text-slate-700 dark:text-slate-200">
                         {typeof value.value === 'number' ? value.value.toString() : value.value}
-                        {value.unit && <span className="text-slate-400 text-sm ml-1">{value.unit}</span>}
+                        {value.unit && <span className="text-slate-500 dark:text-slate-400 text-sm ml-1">{value.unit}</span>}
                       </p>
                       {value.description && (
                         <p className="text-xs text-slate-500">{value.description}</p>
@@ -483,18 +482,18 @@ const CalculationStepCard: React.FC<CalculationStepCardProps> = ({
           )}
           
           {/* Result */}
-          <div className="p-3 bg-slate-900 rounded border-2 border-blue-700">
-            <p className="text-xs text-slate-400 mb-1">Result:</p>
+          <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded border-2 border-blue-700">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Result:</p>
             <p className="text-xl font-bold text-blue-400">
               {typeof step.result.value === 'number' 
                 ? step.result.value.toString() 
                 : step.result.value}
               {step.result.unit && (
-                <span className="text-sm font-normal text-slate-400 ml-2">{step.result.unit}</span>
+                <span className="text-sm font-normal text-slate-500 dark:text-slate-400 ml-2">{step.result.unit}</span>
               )}
             </p>
             {step.result.description && (
-              <p className="text-sm text-slate-400 mt-1">{step.result.description}</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{step.result.description}</p>
             )}
           </div>
           
@@ -558,7 +557,7 @@ export const DetailedCalculationView: React.FC<DetailedCalculationViewProps> = (
   };
 
   return (
-    <div className="bg-slate-900 rounded-xl shadow-lg overflow-hidden">
+    <div className="bg-slate-50 dark:bg-slate-900 rounded-xl shadow-lg overflow-hidden">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-4 text-white">
         <div className="flex items-center justify-between">
@@ -616,7 +615,7 @@ export const DetailedCalculationView: React.FC<DetailedCalculationViewProps> = (
       </div>
       
       {/* Tab Navigation */}
-      <div className="border-b border-slate-700">
+      <div className="border-b border-slate-200 dark:border-slate-700">
         <nav className="flex">
           {['calculations', 'diagrams', 'summary'].map((tab) => (
             <button
@@ -625,7 +624,7 @@ export const DetailedCalculationView: React.FC<DetailedCalculationViewProps> = (
               className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === tab
                   ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-200'
               }`}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -705,15 +704,15 @@ export const DetailedCalculationView: React.FC<DetailedCalculationViewProps> = (
               }`}>
                 {summary.status}
               </h2>
-              <p className="text-slate-400 mt-2">
+              <p className="text-slate-500 dark:text-slate-400 mt-2">
                 Governing Condition: {summary.governingCondition}
               </p>
             </div>
             
             {/* Utilization Ratio */}
             <div className="mb-6">
-              <h3 className="text-sm font-medium text-slate-300 mb-2">Utilization Ratio</h3>
-              <div className="relative h-8 bg-slate-700 rounded-full overflow-hidden">
+              <h3 className="text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">Utilization Ratio</h3>
+              <div className="relative h-8 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                 <div 
                   className={`absolute inset-y-0 left-0 rounded-full ${
                     summary.utilizationRatio <= 0.8 ? 'bg-green-500' :
@@ -722,11 +721,11 @@ export const DetailedCalculationView: React.FC<DetailedCalculationViewProps> = (
                   }`}
                   style={{ width: `${Math.min(summary.utilizationRatio * 100, 100)}%` }}
                 />
-                <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-slate-200">
+                <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-slate-700 dark:text-slate-200">
                   {(summary.utilizationRatio * 100).toFixed(1)}%
                 </div>
               </div>
-              <div className="flex justify-between text-xs text-slate-400 mt-1">
+              <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mt-1">
                 <span>0%</span>
                 <span>80%</span>
                 <span>100%</span>

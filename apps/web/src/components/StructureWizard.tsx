@@ -1087,7 +1087,7 @@ export const StructureWizard: FC<StructureWizardProps> = ({ isOpen, onClose, onG
                                             : 'border-zinc-200 dark:border-zinc-700/50 bg-zinc-50 dark:bg-zinc-800/40 hover:border-zinc-300 dark:hover:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800/70')
                                     }
                                 >
-                                    <Icon className={'w-6 h-6 mb-2 ' + (active ? tmpl.color : 'text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-600 dark:group-hover:text-zinc-300')} />
+                                    <Icon className={'w-6 h-6 mb-2 ' + (active ? tmpl.color : 'text-zinc-500 dark:text-zinc-500 group-hover:text-zinc-600 dark:group-hover:text-zinc-300')} />
                                     <h4 className="text-zinc-900 dark:text-white font-semibold text-sm">{tmpl.name}</h4>
                                     <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 leading-tight">{tmpl.description}</p>
                                     {active && (
@@ -1124,7 +1124,7 @@ export const StructureWizard: FC<StructureWizardProps> = ({ isOpen, onClose, onG
                                             onChange={e => handleParamChange(p.key, parseFloat(e.target.value))}
                                             className="w-full h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full appearance-none cursor-pointer accent-emerald-500"
                                         />
-                                        <div className="flex justify-between text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+                                        <div className="flex justify-between text-[10px] text-zinc-500 dark:text-zinc-500 mt-0.5">
                                             <span>{p.min}{p.unit ? (' ' + p.unit) : ''}</span>
                                             <span>{p.max}{p.unit ? (' ' + p.unit) : ''}</span>
                                         </div>

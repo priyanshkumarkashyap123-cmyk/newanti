@@ -37,7 +37,7 @@ export const ActionToast: FC<ToastProps> = ({
         error: 'bg-red-500/10 border-red-500/20 text-red-400',
         warning: 'bg-amber-500/10 border-amber-500/20 text-amber-400',
         info: 'bg-blue-500/10 border-blue-500/20 text-blue-400',
-        loading: 'bg-zinc-800 border-zinc-700 text-zinc-300'
+        loading: 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300'
     };
 
     const icons = {

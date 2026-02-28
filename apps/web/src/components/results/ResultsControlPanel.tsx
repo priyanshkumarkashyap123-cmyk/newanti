@@ -183,8 +183,8 @@ const ScaleSlider: FC<ScaleSliderProps> = ({
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <span className="text-xs text-slate-400">{label}</span>
-        <span className="text-xs font-mono text-slate-300">
+        <span className="text-xs text-slate-500 dark:text-slate-400">{label}</span>
+        <span className="text-xs font-mono text-slate-600 dark:text-slate-300">
           {displayValue}
           {unit}
         </span>
@@ -192,7 +192,7 @@ const ScaleSlider: FC<ScaleSliderProps> = ({
       <div className="flex items-center gap-2">
         <button
           onClick={() => onChange(Math.max(min, value - step * 5))}
-          className="p-1 text-slate-400 hover:text-slate-200 hover:bg-slate-700 rounded"
+          className="p-1 text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
         >
           <ZoomOut size={14} />
         </button>
@@ -203,12 +203,12 @@ const ScaleSlider: FC<ScaleSliderProps> = ({
           step={step}
           value={value}
           onChange={(e) => onChange(parseFloat(e.target.value))}
-          className="flex-1 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer
+          className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer
                              accent-cyan-500"
         />
         <button
           onClick={() => onChange(Math.min(max, value + step * 5))}
-          className="p-1 text-slate-400 hover:text-slate-200 hover:bg-slate-700 rounded"
+          className="p-1 text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
         >
           <ZoomIn size={14} />
         </button>
@@ -240,7 +240,7 @@ const ToggleButton: FC<ToggleButtonProps> = ({
                   ${
                     active
                       ? "bg-cyan-600/30 text-cyan-300 border border-cyan-500/50"
-                      : "bg-slate-700/50 text-slate-400 border border-slate-600 hover:border-slate-500"
+                      : "bg-slate-200/50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 border border-slate-600 hover:border-slate-500"
                   }`}
     style={
       active ? { borderColor: color + "80", backgroundColor: color + "20" } : {}
@@ -282,17 +282,17 @@ const SummaryCard: FC<SummaryCardProps> = ({
 
   return (
     <div
-      className={`p-3 rounded-lg border ${status ? statusColors[status] : "border-slate-700 bg-slate-800/50"}`}
+      className={`p-3 rounded-lg border ${status ? statusColors[status] : "border-slate-200 dark:border-slate-700 bg-slate-100/50 dark:bg-slate-800/50"}`}
     >
       <div className="flex items-center justify-between mb-1">
-        <span className="text-xs text-slate-400">{label}</span>
+        <span className="text-xs text-slate-500 dark:text-slate-400">{label}</span>
         {status ? statusIcons[status] : icon}
       </div>
       <div className="flex items-baseline gap-1">
-        <span className="text-lg font-bold text-slate-200 font-mono">
+        <span className="text-lg font-bold text-slate-700 dark:text-slate-200 font-mono">
           {typeof value === "number" ? value.toFixed(3) : value}
         </span>
-        {unit && <span className="text-xs text-slate-400">{unit}</span>}
+        {unit && <span className="text-xs text-slate-500 dark:text-slate-400">{unit}</span>}
       </div>
     </div>
   );
@@ -318,10 +318,10 @@ const CollapsibleSection: FC<CollapsibleSectionProps> = ({
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="border-b border-slate-700">
+    <div className="border-b border-slate-200 dark:border-slate-700">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-slate-300 
+        className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-300 
                          hover:bg-slate-700/30 transition-colors"
       >
         {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -430,12 +430,12 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = ({
 
   return (
     <div
-      className={`bg-slate-900 rounded-lg border border-slate-700 overflow-hidden min-h-0 flex flex-col ${className}`}
+      className={`bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden min-h-0 flex flex-col ${className}`}
     >
       {/* Header */}
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-700 bg-slate-800/50">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-100/50 dark:bg-slate-800/50">
         <Sliders size={18} className="text-cyan-400" />
-        <h3 className="font-semibold text-slate-200">Results Display</h3>
+        <h3 className="font-semibold text-slate-700 dark:text-slate-200">Results Display</h3>
 
         {analysisResults ? (
           <span className="ml-auto px-2 py-0.5 text-xs bg-emerald-900/50 text-emerald-400 rounded-full border border-emerald-500/30">
@@ -495,7 +495,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = ({
                                               ${
                                                 settings.showDiagram === opt.id
                                                   ? "border-cyan-500/50 bg-cyan-900/20 text-cyan-300"
-                                                  : "border-slate-600 bg-slate-800/30 text-slate-400 hover:border-slate-500"
+                                                  : "border-slate-600 bg-slate-100/30 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 hover:border-slate-500"
                                               }`}
                   style={
                     settings.showDiagram === opt.id
@@ -623,7 +623,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = ({
                                           ${
                                             settings.colorMode === mode.id
                                               ? "bg-cyan-900/20 border border-cyan-500/30"
-                                              : "hover:bg-slate-800/50 border border-transparent"
+                                              : "hover:bg-slate-200/50 dark:hover:bg-slate-800/50 border border-transparent"
                                           }`}
               >
                 <input
@@ -636,8 +636,8 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = ({
                   className="mt-1 accent-cyan-500"
                 />
                 <div>
-                  <div className="text-sm text-slate-200">{mode.label}</div>
-                  <div className="text-xs text-slate-400">{mode.desc}</div>
+                  <div className="text-sm text-slate-700 dark:text-slate-200">{mode.label}</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">{mode.desc}</div>
                 </div>
               </label>
             ))}
@@ -652,7 +652,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = ({
         >
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-400">Animate Deflection</span>
+              <span className="text-sm text-slate-500 dark:text-slate-400">Animate Deflection</span>
               <button
                 onClick={() =>
                   updateSettings({
@@ -685,7 +685,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = ({
               />
             )}
 
-            <div className="flex items-center gap-2 text-sm text-slate-400">
+            <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
               <Info size={14} />
               <span>Animation shows oscillating deflected shape</span>
             </div>
@@ -699,7 +699,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = ({
           defaultOpen={false}
         >
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+            <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 cursor-pointer">
               <input
                 type="checkbox"
                 checked={settings.showOriginalShape}
@@ -711,18 +711,18 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = ({
               Show original (undeformed) shape
             </label>
 
-            <div className="pt-2 border-t border-slate-700">
-              <div className="text-xs text-slate-400 mb-2">Quick Views</div>
+            <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
+              <div className="text-xs text-slate-500 dark:text-slate-400 mb-2">Quick Views</div>
               <div className="flex flex-wrap gap-2">
-                <button className="px-2 py-1 text-xs bg-slate-700 text-slate-300 rounded hover:bg-slate-600">
+                <button className="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded hover:bg-slate-600">
                   <Grid3X3 size={12} className="inline mr-1" />
                   Quad View
                 </button>
-                <button className="px-2 py-1 text-xs bg-slate-700 text-slate-300 rounded hover:bg-slate-600">
+                <button className="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded hover:bg-slate-600">
                   <Maximize2 size={12} className="inline mr-1" />
                   Full 3D
                 </button>
-                <button className="px-2 py-1 text-xs bg-slate-700 text-slate-300 rounded hover:bg-slate-600">
+                <button className="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded hover:bg-slate-600">
                   <Box size={12} className="inline mr-1" />
                   Isometric
                 </button>
@@ -738,22 +738,22 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = ({
           defaultOpen={false}
         >
           <div className="space-y-1 text-sm">
-            <div className="flex justify-between text-slate-400">
+            <div className="flex justify-between text-slate-500 dark:text-slate-400">
               <span>Nodes</span>
-              <span className="font-mono text-slate-200">{nodes.size}</span>
+              <span className="font-mono text-slate-700 dark:text-slate-200">{nodes.size}</span>
             </div>
-            <div className="flex justify-between text-slate-400">
+            <div className="flex justify-between text-slate-500 dark:text-slate-400">
               <span>Members</span>
-              <span className="font-mono text-slate-200">{members.size}</span>
+              <span className="font-mono text-slate-700 dark:text-slate-200">{members.size}</span>
             </div>
-            <div className="flex justify-between text-slate-400">
+            <div className="flex justify-between text-slate-500 dark:text-slate-400">
               <span>DOFs</span>
-              <span className="font-mono text-slate-200">{nodes.size * 6}</span>
+              <span className="font-mono text-slate-700 dark:text-slate-200">{nodes.size * 6}</span>
             </div>
             {analysisResults && (
               <>
-                <div className="border-t border-slate-700 my-2" />
-                <div className="flex justify-between text-slate-400">
+                <div className="border-t border-slate-200 dark:border-slate-700 my-2" />
+                <div className="flex justify-between text-slate-500 dark:text-slate-400">
                   <span>Analysis Status</span>
                   <span className="text-emerald-400">Complete</span>
                 </div>
@@ -764,7 +764,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = ({
       </div>
 
       {/* Footer Actions */}
-      <div className="px-4 py-3 border-t border-slate-700 bg-slate-800/30">
+      <div className="px-4 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-100/30 dark:bg-slate-800/30">
         <button
           onClick={() => {
             setSettings({
@@ -782,7 +782,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = ({
             });
           }}
           className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm
-                             bg-slate-700 text-slate-300 rounded-md hover:bg-slate-600 transition-colors"
+                             bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-md hover:bg-slate-600 transition-colors"
         >
           <RefreshCw size={14} />
           Reset Display Settings

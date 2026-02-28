@@ -14,7 +14,6 @@
  * @version 1.0.0
  */
 
-'use client';
 
 import React, { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -799,9 +798,9 @@ const InputFieldComponent: React.FC<{
           {field.required && <span className="text-red-500">*</span>}
           {field.tooltip && (
             <div className="group relative">
-              <Info className="h-3.5 w-3.5 text-gray-400 cursor-help" />
+              <Info className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400 cursor-help" />
               <div className="absolute left-0 bottom-full mb-1 hidden group-hover:block z-50">
-                <div className="bg-gray-900 text-white text-xs rounded py-1 px-2 max-w-xs whitespace-normal">
+                <div className="bg-gray-50 dark:bg-gray-900 text-zinc-900 dark:text-white text-xs rounded py-1 px-2 max-w-xs whitespace-normal">
                   {field.tooltip}
                 </div>
               </div>
@@ -902,7 +901,7 @@ const UtilizationGauge: React.FC<{ value: number; label?: string }> = ({ value, 
           stroke="currentColor"
           strokeWidth="8"
           fill="none"
-          className="text-gray-200 dark:text-gray-700"
+          className="text-gray-700 dark:text-gray-700"
         />
         {/* Progress circle */}
         <circle
@@ -943,7 +942,7 @@ const CalculationStepDisplay: React.FC<{ step: CalculationStep; index: number }>
           </span>
           <span className="font-medium text-gray-900 dark:text-gray-100">{step.title}</span>
         </div>
-        <ChevronRight className={cn("h-5 w-5 text-gray-400 transition-transform", expanded && "rotate-90")} />
+        <ChevronRight className={cn("h-5 w-5 text-gray-500 dark:text-gray-400 transition-transform", expanded && "rotate-90")} />
       </button>
       
       <AnimatePresence>
@@ -1214,16 +1213,16 @@ export const StructuralCalculator: React.FC<StructuralCalculatorProps> = ({
           <div className="flex items-center gap-3">
             <Calculator className="h-8 w-8 text-white" />
             <div>
-              <h1 className="text-xl font-bold text-white">Structural Calculator</h1>
+              <h1 className="text-xl font-bold text-zinc-900 dark:text-white">Structural Calculator</h1>
               <p className="text-blue-100 text-sm">Industry-grade design calculations</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
-              <Settings className="h-5 w-5 text-white" />
+              <Settings className="h-5 w-5 text-zinc-900 dark:text-white" />
             </button>
             <button className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
-              <Download className="h-5 w-5 text-white" />
+              <Download className="h-5 w-5 text-zinc-900 dark:text-white" />
             </button>
           </div>
         </div>
@@ -1344,7 +1343,7 @@ export const StructuralCalculator: React.FC<StructuralCalculatorProps> = ({
                   onClick={performCalculation}
                   disabled={isCalculating}
                   className={cn(
-                    "flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-white transition-all",
+                    "flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-zinc-900 dark:text-white transition-all",
                     isCalculating
                       ? "bg-blue-400 cursor-wait"
                       : "bg-blue-600 hover:bg-blue-700 hover:shadow-lg"

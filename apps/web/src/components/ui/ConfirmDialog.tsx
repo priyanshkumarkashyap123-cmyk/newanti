@@ -155,7 +155,7 @@ const ConfirmDialogUI: FC<ConfirmDialogUIProps> = ({
                     <Button variant="outline" onClick={onCancel} className="flex-1">
                         {cancelText}
                     </Button>
-                    <Button onClick={onConfirm} className={`flex-1 text-white ${config.buttonBg}`}>
+                    <Button onClick={onConfirm} className={`flex-1 text-zinc-900 dark:text-white ${config.buttonBg}`}>
                         {confirmText}
                     </Button>
                 </DialogFooter>
@@ -243,7 +243,7 @@ export const ConfirmDialog: FC<ConfirmDialogProps> = ({
                     <Button variant="outline" onClick={onCancel} disabled={isLoading} className="flex-1">
                         {cancelText}
                     </Button>
-                    <Button onClick={onConfirm} disabled={isLoading} className={`flex-1 text-white ${config.buttonBg}`}>
+                    <Button onClick={onConfirm} disabled={isLoading} className={`flex-1 text-zinc-900 dark:text-white ${config.buttonBg}`}>
                         {isLoading ? (
                             <span className="flex items-center justify-center gap-2">
                                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

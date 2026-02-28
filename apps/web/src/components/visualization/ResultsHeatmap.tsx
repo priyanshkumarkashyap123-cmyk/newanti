@@ -203,7 +203,7 @@ const ColorScaleLegend: React.FC<ColorScaleLegendProps> = ({
             ${isVertical ? 'flex-row' : 'flex-col'}
         `}>
             {legendConfig.title && (
-                <div className="text-xs font-medium text-slate-400 mb-1">
+                <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
                     {legendConfig.title}
                 </div>
             )}
@@ -245,7 +245,7 @@ const ColorScaleLegend: React.FC<ColorScaleLegendProps> = ({
             {/* Value Labels */}
             {legendConfig.showValues && (
                 <div className={`
-                    flex text-[10px] text-slate-400
+                    flex text-[10px] text-slate-500 dark:text-slate-400
                     ${isVertical ? 'flex-col justify-between h-48' : 'flex-row justify-between w-48'}
                 `}>
                     {values.reverse().map((value, index) => (
@@ -341,17 +341,17 @@ const HeatmapTooltip: React.FC<HeatmapTooltipProps> = ({ data, unit }) => {
     
     return (
         <div
-            className="absolute z-50 px-3 py-2 bg-slate-900/95 border border-slate-700 rounded-lg shadow-xl pointer-events-none"
+            className="absolute z-50 px-3 py-2 bg-slate-50/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl pointer-events-none"
             style={{
                 left: data.x + 10,
                 top: data.y - 10,
                 transform: 'translateY(-100%)'
             }}
         >
-            <div className="text-sm font-semibold text-white">
+            <div className="text-sm font-semibold text-zinc-900 dark:text-white">
                 {data.formattedValue} {unit}
             </div>
-            <div className="text-xs text-slate-400">
+            <div className="text-xs text-slate-500 dark:text-slate-400">
                 {data.percentage.toFixed(1)}% of max
             </div>
             {data.label && (
@@ -379,19 +379,19 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
     onLegendConfigChange
 }) => {
     return (
-        <div className="absolute top-4 right-4 w-64 bg-slate-900/95 border border-slate-700 rounded-xl p-4 space-y-4 z-40">
-            <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-                <Settings className="w-4 h-4 text-slate-400" />
+        <div className="absolute top-4 right-4 w-64 bg-slate-50/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-700 rounded-xl p-4 space-y-4 z-40">
+            <h4 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                <Settings className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                 Heatmap Settings
             </h4>
             
             {/* Color Scale */}
             <div>
-                <label className="block text-xs text-slate-400 mb-1">Color Scale</label>
+                <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Color Scale</label>
                 <select
                     value={config.colorScale}
                     onChange={(e) => onConfigChange({ ...config, colorScale: e.target.value as ColorScale })}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm"
                 >
                     {Object.entries(SCALE_LABELS).map(([key, label]) => (
                         <option key={key} value={key}>{label}</option>
@@ -401,7 +401,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
             
             {/* Opacity */}
             <div>
-                <label className="block text-xs text-slate-400 mb-1">
+                <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
                     Opacity: {Math.round(config.opacity * 100)}%
                 </label>
                 <input
@@ -417,11 +417,11 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
             
             {/* Steps */}
             <div>
-                <label className="block text-xs text-slate-400 mb-1">Legend Steps</label>
+                <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Legend Steps</label>
                 <select
                     value={config.steps}
                     onChange={(e) => onConfigChange({ ...config, steps: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm"
                 >
                     <option value={5}>5 steps</option>
                     <option value={10}>10 steps</option>
@@ -437,9 +437,9 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         type="checkbox"
                         checked={config.showGrid}
                         onChange={(e) => onConfigChange({ ...config, showGrid: e.target.checked })}
-                        className="rounded bg-slate-700 border-slate-600 text-cyan-500"
+                        className="rounded bg-slate-200 dark:bg-slate-700 border-slate-600 text-cyan-500"
                     />
-                    <span className="text-sm text-slate-300">Show grid</span>
+                    <span className="text-sm text-slate-600 dark:text-slate-300">Show grid</span>
                 </label>
                 
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -447,9 +447,9 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         type="checkbox"
                         checked={config.showLabels}
                         onChange={(e) => onConfigChange({ ...config, showLabels: e.target.checked })}
-                        className="rounded bg-slate-700 border-slate-600 text-cyan-500"
+                        className="rounded bg-slate-200 dark:bg-slate-700 border-slate-600 text-cyan-500"
                     />
-                    <span className="text-sm text-slate-300">Show values</span>
+                    <span className="text-sm text-slate-600 dark:text-slate-300">Show values</span>
                 </label>
                 
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -457,9 +457,9 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         type="checkbox"
                         checked={config.showContours}
                         onChange={(e) => onConfigChange({ ...config, showContours: e.target.checked })}
-                        className="rounded bg-slate-700 border-slate-600 text-cyan-500"
+                        className="rounded bg-slate-200 dark:bg-slate-700 border-slate-600 text-cyan-500"
                     />
-                    <span className="text-sm text-slate-300">Show contours</span>
+                    <span className="text-sm text-slate-600 dark:text-slate-300">Show contours</span>
                 </label>
                 
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -467,9 +467,9 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         type="checkbox"
                         checked={legendConfig.visible}
                         onChange={(e) => onLegendConfigChange({ ...legendConfig, visible: e.target.checked })}
-                        className="rounded bg-slate-700 border-slate-600 text-cyan-500"
+                        className="rounded bg-slate-200 dark:bg-slate-700 border-slate-600 text-cyan-500"
                     />
-                    <span className="text-sm text-slate-300">Show legend</span>
+                    <span className="text-sm text-slate-600 dark:text-slate-300">Show legend</span>
                 </label>
             </div>
         </div>
@@ -607,37 +607,37 @@ export const ResultsHeatmap: React.FC<ResultsHeatmapProps> = ({
     const cellHeight = (height - 60) / rows;
     
     return (
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
+        <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
             {/* Header */}
-            <div className="px-4 py-3 bg-slate-800/50 border-b border-slate-800 flex items-center justify-between">
+            <div className="px-4 py-3 bg-slate-100/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <Thermometer className="w-5 h-5 text-cyan-400" />
-                    <h3 className="font-semibold text-white">{title}</h3>
+                    <h3 className="font-semibold text-zinc-900 dark:text-white">{title}</h3>
                 </div>
                 
                 <div className="flex items-center gap-2">
                     {/* Zoom Controls */}
-                    <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-1">
+                    <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
                         <button
                             onClick={handleZoomOut}
-                            className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded"
+                            className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
                             title="Zoom Out"
                         >
                             <ZoomOut className="w-4 h-4" />
                         </button>
-                        <span className="text-xs text-slate-400 px-2 min-w-[50px] text-center">
+                        <span className="text-xs text-slate-500 dark:text-slate-400 px-2 min-w-[50px] text-center">
                             {Math.round(zoom * 100)}%
                         </span>
                         <button
                             onClick={handleZoomIn}
-                            className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded"
+                            className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
                             title="Zoom In"
                         >
                             <ZoomIn className="w-4 h-4" />
                         </button>
                         <button
                             onClick={handleReset}
-                            className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded"
+                            className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
                             title="Reset View"
                         >
                             <RotateCcw className="w-4 h-4" />
@@ -648,7 +648,7 @@ export const ResultsHeatmap: React.FC<ResultsHeatmapProps> = ({
                     <button
                         onClick={() => setShowSettings(!showSettings)}
                         className={`p-2 rounded-lg transition-colors ${
-                            showSettings ? 'bg-cyan-500 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'
+                            showSettings ? 'bg-cyan-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-white'
                         }`}
                     >
                         <Settings className="w-4 h-4" />
@@ -657,7 +657,7 @@ export const ResultsHeatmap: React.FC<ResultsHeatmapProps> = ({
                     {/* Export */}
                     <button
                         onClick={handleExport}
-                        className="p-2 bg-slate-800 text-slate-400 hover:text-white rounded-lg"
+                        className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded-lg"
                         title="Export SVG"
                     >
                         <Download className="w-4 h-4" />
@@ -679,7 +679,7 @@ export const ResultsHeatmap: React.FC<ResultsHeatmapProps> = ({
                 <div className="flex items-start gap-4">
                     {/* SVG Heatmap */}
                     <div 
-                        className="overflow-hidden rounded-xl border border-slate-700"
+                        className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700"
                         style={{ 
                             width, 
                             height,
@@ -690,7 +690,7 @@ export const ResultsHeatmap: React.FC<ResultsHeatmapProps> = ({
                             ref={svgRef}
                             width={width}
                             height={height}
-                            className="bg-slate-950"
+                            className="bg-white dark:bg-slate-950"
                             style={{ 
                                 transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
                                 transformOrigin: 'center'
@@ -809,13 +809,13 @@ export const ResultsHeatmap: React.FC<ResultsHeatmapProps> = ({
             </div>
             
             {/* Footer Stats */}
-            <div className="px-4 py-3 bg-slate-800/30 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <div className="px-4 py-3 bg-slate-100/30 dark:bg-slate-800/30 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                 <div className="flex items-center gap-4">
                     <span>
-                        <strong className="text-white">{data.length}</strong> data points
+                        <strong className="text-zinc-900 dark:text-white">{data.length}</strong> data points
                     </span>
                     <span>
-                        <strong className="text-white">{rows}×{cols}</strong> grid
+                        <strong className="text-zinc-900 dark:text-white">{rows}×{cols}</strong> grid
                     </span>
                 </div>
                 <div className="flex items-center gap-4">
@@ -887,25 +887,25 @@ export const UtilizationHeatmap: React.FC<UtilizationHeatmapProps> = ({
     };
     
     return (
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden" style={{ width }}>
-            <div className="px-4 py-3 bg-slate-800/50 border-b border-slate-800 flex items-center justify-between">
+        <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden" style={{ width }}>
+            <div className="px-4 py-3 bg-slate-100/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <Layers className="w-5 h-5 text-cyan-400" />
-                    <h3 className="font-semibold text-white">Member Utilization Ratios</h3>
+                    <h3 className="font-semibold text-zinc-900 dark:text-white">Member Utilization Ratios</h3>
                 </div>
                 
                 <div className="flex items-center gap-2">
                     <select
                         value={sortBy}
                         onChange={(e) => setSortBy(e.target.value as 'name' | 'utilization')}
-                        className="px-2 py-1 bg-slate-800 border border-slate-700 rounded text-xs text-white"
+                        className="px-2 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-xs text-zinc-900 dark:text-white"
                     >
                         <option value="utilization">Sort by Utilization</option>
                         <option value="name">Sort by Name</option>
                     </select>
                     <button
                         onClick={() => setSortOrder(o => o === 'asc' ? 'desc' : 'asc')}
-                        className="p-1.5 bg-slate-800 text-slate-400 hover:text-white rounded"
+                        className="p-1.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded"
                     >
                         {sortOrder === 'asc' ? '↑' : '↓'}
                     </button>
@@ -918,12 +918,12 @@ export const UtilizationHeatmap: React.FC<UtilizationHeatmapProps> = ({
                         {sortedMembers.map(member => (
                             <div
                                 key={member.memberId}
-                                className="p-3 rounded-xl border border-slate-700 hover:border-slate-600 transition-colors cursor-pointer"
+                                className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-colors cursor-pointer"
                                 style={{
                                     background: `linear-gradient(135deg, ${getUtilizationColor(member.utilization)}15, ${getUtilizationColor(member.utilization)}05)`
                                 }}
                             >
-                                <div className="text-xs text-slate-400 mb-1">{member.memberName}</div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">{member.memberName}</div>
                                 <div 
                                     className="text-2xl font-bold"
                                     style={{ color: getUtilizationColor(member.utilization) }}
@@ -944,13 +944,13 @@ export const UtilizationHeatmap: React.FC<UtilizationHeatmapProps> = ({
                         {sortedMembers.map(member => (
                             <div
                                 key={member.memberId}
-                                className="flex items-center gap-4 p-3 bg-slate-800/50 rounded-lg hover:bg-slate-800 transition-colors"
+                                className="flex items-center gap-4 p-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
                             >
-                                <div className="w-32 text-sm text-white font-medium truncate">
+                                <div className="w-32 text-sm text-zinc-900 dark:text-white font-medium truncate">
                                     {member.memberName}
                                 </div>
                                 <div className="flex-1">
-                                    <div className="h-3 bg-slate-700 rounded-full overflow-hidden">
+                                    <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                                         <div
                                             className="h-full transition-all duration-500"
                                             style={{
@@ -979,7 +979,7 @@ export const UtilizationHeatmap: React.FC<UtilizationHeatmapProps> = ({
             </div>
             
             {/* Legend */}
-            <div className="px-4 py-3 bg-slate-800/30 border-t border-slate-800">
+            <div className="px-4 py-3 bg-slate-100/30 dark:bg-slate-800/30 border-t border-slate-200 dark:border-slate-800">
                 <div className="flex items-center justify-center gap-6 text-xs">
                     {[
                         { label: 'Excellent', range: '≤50%', color: '#22c55e' },
@@ -993,8 +993,8 @@ export const UtilizationHeatmap: React.FC<UtilizationHeatmapProps> = ({
                                 className="w-3 h-3 rounded"
                                 style={{ background: item.color }}
                             />
-                            <span className="text-slate-400">{item.label}</span>
-                            <span className="text-slate-400">({item.range})</span>
+                            <span className="text-slate-500 dark:text-slate-400">{item.label}</span>
+                            <span className="text-slate-500 dark:text-slate-400">({item.range})</span>
                         </div>
                     ))}
                 </div>

@@ -103,7 +103,7 @@ function TermsAndConditionsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-gradient-to-b from-white dark:from-slate-950 via-slate-100 dark:via-slate-900 to-white dark:to-slate-950">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-slate-50 dark:bg-slate-900/80 backdrop-blur-xl border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -118,13 +118,13 @@ function TermsAndConditionsPage() {
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 text-white/70 hover:text-white"
+              className="lg:hidden p-2 text-zinc-900/70 dark:text-white/70 hover:text-zinc-900 dark:hover:text-white"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
 
             <nav className="hidden lg:flex items-center gap-6">
-              <Link to="/privacy-policy" className="text-white/70 hover:text-white transition-colors">
+              <Link to="/privacy-policy" className="text-zinc-900/70 dark:text-white/70 hover:text-zinc-900 dark:hover:text-white transition-colors">
                 Privacy Policy
               </Link>
               <Link to="/" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
@@ -148,12 +148,12 @@ function TermsAndConditionsPage() {
               {mobileMenuOpen && (
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className="lg:hidden mb-4 p-2 text-white/70 hover:text-white"
+                  className="lg:hidden mb-4 p-2 text-zinc-900/70 dark:text-white/70 hover:text-zinc-900 dark:hover:text-white"
                 >
                   <X className="w-6 h-6" />
                 </button>
               )}
-              <h3 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4">
+              <h3 className="text-sm font-semibold text-zinc-900/50 dark:text-white/50 uppercase tracking-wider mb-4">
                 Table of Contents
               </h3>
               <nav className="space-y-1 max-h-[70vh] overflow-y-auto pr-2">
@@ -164,7 +164,7 @@ function TermsAndConditionsPage() {
                     className={`w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center gap-2 group ${
                       activeSection === section.id
                         ? 'bg-blue-500/20 text-blue-300'
-                        : 'text-white/70 hover:text-white hover:bg-white/5'
+                        : 'text-zinc-900/70 dark:text-white/70 hover:text-zinc-900 dark:hover:text-white hover:bg-white/5'
                     }`}
                   >
                     <ChevronRight
@@ -184,20 +184,20 @@ function TermsAndConditionsPage() {
 
               {/* Quick Links */}
               <div className="mt-8 pt-6 border-t border-white/10">
-                <h4 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-3">
+                <h4 className="text-sm font-semibold text-zinc-900/50 dark:text-white/50 uppercase tracking-wider mb-3">
                   Related Documents
                 </h4>
                 <div className="space-y-2">
                   <Link
                     to="/privacy-policy"
-                    className="flex items-center gap-2 text-sm text-white/60 hover:text-blue-400 transition-colors"
+                    className="flex items-center gap-2 text-sm text-zinc-900/60 dark:text-white/60 hover:text-blue-400 transition-colors"
                   >
                     <Shield className="w-4 h-4" />
                     Privacy Policy
                   </Link>
                   <Link
                     to="/contact"
-                    className="flex items-center gap-2 text-sm text-white/60 hover:text-blue-400 transition-colors"
+                    className="flex items-center gap-2 text-sm text-zinc-900/60 dark:text-white/60 hover:text-blue-400 transition-colors"
                   >
                     <Mail className="w-4 h-4" />
                     Contact Us
@@ -213,12 +213,12 @@ function TermsAndConditionsPage() {
             <div className="mb-12">
               <div className="flex items-center gap-3 mb-4">
                 <FileText className="w-8 h-8 text-blue-400" />
-                <h1 className="text-4xl font-bold text-white">Terms and Conditions</h1>
+                <h1 className="text-4xl font-bold text-zinc-900 dark:text-white">Terms and Conditions</h1>
               </div>
-              <p className="text-white/60">
+              <p className="text-zinc-900/60 dark:text-white/60">
                 Last Updated: February 24, 2026 | Effective Date: February 24, 2026
               </p>
-              <p className="text-white/50 text-sm mt-1">
+              <p className="text-zinc-900/50 dark:text-white/50 text-sm mt-1">
                 Domain: beamlabultimate.tech
               </p>
 
@@ -243,13 +243,13 @@ function TermsAndConditionsPage() {
               {/* Preamble */}
               <section id="preamble" className="mb-12 scroll-mt-24">
                 <div className="p-5 bg-white/5 border border-white/10 rounded-xl">
-                  <p className="text-white/80 leading-relaxed text-sm">
+                  <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed text-sm">
                     This document is an electronic record in terms of the <strong>Information Technology Act, 2000</strong> and
                     rules thereunder as applicable and the amended provisions pertaining to electronic records in various
                     statutes as amended by the Information Technology Act, 2000. This electronic record is generated by a
                     computer system and does not require any physical or digital signatures.
                   </p>
-                  <p className="text-white/80 leading-relaxed text-sm mt-4">
+                  <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed text-sm mt-4">
                     This document is published in accordance with the provisions of <strong>Rule 3(1) of the Information
                     Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021</strong> that require
                     publishing the rules and regulations, privacy policy, and Terms of Use for access or usage of domain name{' '}
@@ -261,16 +261,16 @@ function TermsAndConditionsPage() {
 
               {/* 1. Electronic Record */}
               <section id="electronic-record" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">1.</span> Electronic Record
                 </h2>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   This Agreement constitutes an electronic contract within the meaning of the{' '}
                   <strong>Information Technology Act, 2000</strong> (as amended from time to time) and the rules framed
                   thereunder. This electronic record is generated by a computer system and does not require any physical or
                   digital signatures.
                 </p>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   The Platform is owned by <strong>Rakshit Tiwari</strong>, trading as{' '}
                   <strong>Beamlab Ultimate</strong>, an enterprise registered under the Ministry of Micro, Small and Medium
                   Enterprises (Udyam Registration), with its principal place of business at:
@@ -278,7 +278,7 @@ function TermsAndConditionsPage() {
                 <div className="mt-4 p-4 bg-white/5 border border-white/10 rounded-xl">
                   <div className="flex items-start gap-3">
                     <MapPin className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-                    <div className="text-white/80">
+                    <div className="text-zinc-900/80 dark:text-white/80">
                       <p className="font-semibold">Registered Address</p>
                       <p>Rajapur, Teonthar</p>
                       <p>Rewa, Madhya Pradesh — 486220</p>
@@ -286,7 +286,7 @@ function TermsAndConditionsPage() {
                     </div>
                   </div>
                 </div>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   (Hereinafter referred to as &apos;<strong>Platform Owner</strong>&apos;, &apos;<strong>we</strong>&apos;,
                   &apos;<strong>us</strong>&apos;, &apos;<strong>our</strong>&apos;.)
                 </p>
@@ -294,13 +294,13 @@ function TermsAndConditionsPage() {
 
               {/* 2. Definitions */}
               <section id="definitions" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">2.</span> Definitions
                 </h2>
-                <p className="text-white/80 leading-relaxed mb-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mb-4">
                   For the purpose of these Terms and Conditions, wherever the context so requires:
                 </p>
-                <ul className="space-y-3 text-white/80">
+                <ul className="space-y-3 text-zinc-900/80 dark:text-white/80">
                   <li>
                     <strong>&quot;Platform&quot;</strong> means the website at{' '}
                     <a
@@ -344,7 +344,7 @@ function TermsAndConditionsPage() {
 
               {/* 3. Acceptance of Terms */}
               <section id="acceptance" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">3.</span> Acceptance of Terms
                 </h2>
                 <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl mb-6">
@@ -353,21 +353,21 @@ function TermsAndConditionsPage() {
                     CONDITIONS UNDER THESE TERMS OF USE, SO PLEASE READ THE TERMS OF USE CAREFULLY BEFORE PROCEEDING.
                   </p>
                 </div>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   Your use of the Platform and Services and tools are governed by the following Terms and Conditions
                   (&quot;Terms of Use&quot;) as applicable to the Platform including the applicable policies which are
                   incorporated herein by way of reference. If You transact on the Platform, You shall be subject to the
                   policies that are applicable to the Platform for such transaction.
                 </p>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   By mere use of the Platform, You shall be contracting with the Platform Owner and these Terms and Conditions
                   including the policies constitute Your binding obligations with the Platform Owner.
                 </p>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   Any terms and conditions proposed by You which are in addition to or which conflict with these Terms of Use
                   are expressly rejected by the Platform Owner and shall be of no force or effect.
                 </p>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   These Terms of Use can be modified at any time without assigning any reason. It is your responsibility to
                   periodically review these Terms of Use to stay informed of updates.
                 </p>
@@ -375,11 +375,11 @@ function TermsAndConditionsPage() {
 
               {/* 4. Eligibility */}
               <section id="eligibility" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">4.</span> Eligibility
                 </h2>
-                <p className="text-white/80 leading-relaxed">By accessing or using the Platform, you confirm that:</p>
-                <ul className="space-y-2 text-white/80 mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">By accessing or using the Platform, you confirm that:</p>
+                <ul className="space-y-2 text-zinc-900/80 dark:text-white/80 mt-4">
                   <li>You are at least 18 years of age or the age of majority in your jurisdiction.</li>
                   <li>You have the legal capacity to enter into a binding agreement under the Indian Contract Act, 1872.</li>
                   <li>You are not a person barred from receiving Services under the laws of India or other applicable jurisdiction.</li>
@@ -387,22 +387,22 @@ function TermsAndConditionsPage() {
                     If using on behalf of an organization, you have the authority to bind that organization to these Terms.
                   </li>
                 </ul>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   If you do not meet these requirements or do not agree to these Terms, you must not access or use the Platform.
                 </p>
               </section>
 
               {/* 5. Registration & Account */}
               <section id="registration" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">5.</span> User Registration &amp; Account
                 </h2>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   To access and use the Services, you agree to provide true, accurate and complete information to us during and
                   after registration, and you shall be responsible for all acts done through the use of your registered account
                   on the Platform.
                 </p>
-                <ul className="space-y-2 text-white/80 mt-4">
+                <ul className="space-y-2 text-zinc-900/80 dark:text-white/80 mt-4">
                   <li>You must provide accurate, current, and complete registration information.</li>
                   <li>You must maintain and promptly update your account information to keep it accurate and complete.</li>
                   <li>You must maintain the confidentiality of your account credentials and password.</li>
@@ -414,13 +414,13 @@ function TermsAndConditionsPage() {
 
               {/* 6. Service Description */}
               <section id="service-description" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">6.</span> Service Description
                 </h2>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   BeamLab Ultimate is a web-based structural analysis and engineering design software platform that provides:
                 </p>
-                <ul className="space-y-2 text-white/80 mt-4">
+                <ul className="space-y-2 text-zinc-900/80 dark:text-white/80 mt-4">
                   <li>Finite Element Analysis (FEA) capabilities</li>
                   <li>Static and dynamic structural analysis</li>
                   <li>Modal analysis and eigenvalue solutions</li>
@@ -433,7 +433,7 @@ function TermsAndConditionsPage() {
                   <li>3D modeling and rendering capabilities</li>
                   <li>Collaboration and cloud storage tools</li>
                 </ul>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   Your use of our Services and the Platform is solely and entirely at your own risk and discretion, for which
                   we shall not be liable to you in any manner. You are required to independently assess and ensure that the
                   Services meet your requirements.
@@ -474,16 +474,16 @@ function TermsAndConditionsPage() {
 
               {/* 8. No Warranties */}
               <section id="no-warranty" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">8.</span> No Warranties
                 </h2>
                 <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl mb-6">
                   <p className="text-red-200 font-bold">IMPORTANT — PLEASE READ CAREFULLY</p>
                 </div>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   <strong>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW:</strong>
                 </p>
-                <ul className="space-y-3 text-white/80 mt-4">
+                <ul className="space-y-3 text-zinc-900/80 dark:text-white/80 mt-4">
                   <li>
                     The Platform and Services are provided on an <strong>&quot;AS IS&quot;</strong> and{' '}
                     <strong>&quot;AS AVAILABLE&quot;</strong> basis without warranties of any kind, either express or implied.
@@ -510,13 +510,13 @@ function TermsAndConditionsPage() {
 
               {/* 9. User Obligations */}
               <section id="user-obligations" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">9.</span> User Obligations
                 </h2>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   The use of Platform and/or availing of our Services is subject to the following obligations:
                 </p>
-                <ul className="space-y-2 text-white/80 mt-4">
+                <ul className="space-y-2 text-zinc-900/80 dark:text-white/80 mt-4">
                   <li>
                     You agree to provide true, accurate and complete information to us during and after registration, and shall
                     be responsible for all acts done through the use of your registered account.
@@ -543,13 +543,13 @@ function TermsAndConditionsPage() {
 
               {/* 10. Prohibited Conduct */}
               <section id="prohibited-conduct" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">10.</span> Prohibited Conduct
                 </h2>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   You agree NOT to:
                 </p>
-                <ul className="space-y-2 text-white/80 mt-4">
+                <ul className="space-y-2 text-zinc-900/80 dark:text-white/80 mt-4">
                   <li>Use the Platform in any way that violates applicable laws or regulations.</li>
                   <li>Attempt to gain unauthorized access to any part of the Platform or its systems.</li>
                   <li>Interfere with or disrupt the Platform, servers, or networks connected to the Platform.</li>
@@ -565,28 +565,28 @@ function TermsAndConditionsPage() {
 
               {/* 11. Intellectual Property */}
               <section id="intellectual-property" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">11.</span> Intellectual Property
                 </h2>
-                <h3 className="text-xl font-semibold text-white/90 mt-6 mb-3">11.1 Platform Content</h3>
-                <p className="text-white/80 leading-relaxed">
+                <h3 className="text-xl font-semibold text-zinc-900/90 dark:text-white/90 mt-6 mb-3">11.1 Platform Content</h3>
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   The contents of the Platform and the Services are proprietary to us and are licensed to us. You will not have
                   any authority to claim any intellectual property rights, title, or interest in its contents. The contents
                   includes and is not limited to the design, layout, look, graphics, software, algorithms, user interface,
                   documentation, logos, icons, trademarks, and all other material on the Platform.
                 </p>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   All such content is protected under <strong>Indian Copyright Act, 1957</strong>,{' '}
                   <strong>Trade Marks Act, 1999</strong>, and other applicable intellectual property laws.
                 </p>
 
-                <h3 className="text-xl font-semibold text-white/90 mt-6 mb-3">11.2 Your Content</h3>
-                <p className="text-white/80 leading-relaxed">
+                <h3 className="text-xl font-semibold text-zinc-900/90 dark:text-white/90 mt-6 mb-3">11.2 Your Content</h3>
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   You retain ownership of all Content you upload or create using the Platform. By using the Services, you grant
                   us a limited, non-exclusive, non-transferable license to process, store, and display your Content solely for
                   the purpose of providing the Services.
                 </p>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   We will not share your Content with third parties except as described in our{' '}
                   <Link to="/privacy-policy" className="text-blue-400 hover:underline">
                     Privacy Policy
@@ -596,30 +596,30 @@ function TermsAndConditionsPage() {
 
               {/* 12. Payment & Subscriptions */}
               <section id="payment-terms" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">12.</span> Payment &amp; Subscriptions
                 </h2>
-                <h3 className="text-xl font-semibold text-white/90 mt-6 mb-3">12.1 Subscription Plans</h3>
-                <p className="text-white/80 leading-relaxed">
+                <h3 className="text-xl font-semibold text-zinc-900/90 dark:text-white/90 mt-6 mb-3">12.1 Subscription Plans</h3>
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   We offer Free, Pro, and Enterprise subscription plans. Features and pricing are as displayed on our Platform
                   at the time of purchase. You agree to pay us the charges associated with availing the Services.
                 </p>
 
-                <h3 className="text-xl font-semibold text-white/90 mt-6 mb-3">12.2 Billing</h3>
-                <p className="text-white/80 leading-relaxed">
+                <h3 className="text-xl font-semibold text-zinc-900/90 dark:text-white/90 mt-6 mb-3">12.2 Billing</h3>
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   Subscriptions are billed in advance on a monthly or yearly basis. All fees are in Indian Rupees (INR) unless
                   otherwise specified. Payments are processed securely through authorized payment gateways.
                 </p>
 
-                <h3 className="text-xl font-semibold text-white/90 mt-6 mb-3">12.3 Refund Policy</h3>
-                <p className="text-white/80 leading-relaxed">
+                <h3 className="text-xl font-semibold text-zinc-900/90 dark:text-white/90 mt-6 mb-3">12.3 Refund Policy</h3>
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   Refund requests may be considered within 7 days of purchase for annual subscriptions, subject to our
                   discretion. Monthly subscriptions are generally non-refundable. This does not affect your statutory rights
                   under the <strong>Consumer Protection Act, 2019</strong>.
                 </p>
 
-                <h3 className="text-xl font-semibold text-white/90 mt-6 mb-3">12.4 Binding Contract</h3>
-                <p className="text-white/80 leading-relaxed">
+                <h3 className="text-xl font-semibold text-zinc-900/90 dark:text-white/90 mt-6 mb-3">12.4 Binding Contract</h3>
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   You understand that upon initiating a transaction for availing the Services, you are entering into a legally
                   binding and enforceable contract with the Platform Owner for the Services.
                 </p>
@@ -627,15 +627,15 @@ function TermsAndConditionsPage() {
 
               {/* 13. Third-Party Links */}
               <section id="third-party-links" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">13.</span> Third-Party Links
                 </h2>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   You agree and acknowledge that the Platform and the Services may contain links to other third-party websites.
                   On accessing these links, you will be governed by the terms of use, privacy policy, and such other policies
                   of such third-party websites. These links are provided for your convenience to provide further information.
                 </p>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   We have no responsibility for the content, accuracy, or practices of any third-party websites. The inclusion
                   of any link does not imply endorsement by us. You access any third-party websites entirely at your own risk.
                 </p>
@@ -644,13 +644,13 @@ function TermsAndConditionsPage() {
               {/* 14. Limitation of Liability */}
               <section id="limitation-liability" className="mb-12 scroll-mt-24">
                 <div className="p-6 bg-white/5 border border-white/10 rounded-xl">
-                  <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                  <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                     <span className="text-blue-400">14.</span> Limitation of Liability
                   </h2>
-                  <p className="text-white/80 leading-relaxed font-semibold uppercase mb-4">
+                  <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed font-semibold uppercase mb-4">
                     TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW:
                   </p>
-                  <ul className="space-y-3 text-white/80">
+                  <ul className="space-y-3 text-zinc-900/80 dark:text-white/80">
                     <li>
                       The Platform Owner and its officers, directors, employees, affiliates, and agents shall not be liable
                       for any indirect, incidental, special, consequential, or punitive damages.
@@ -671,7 +671,7 @@ function TermsAndConditionsPage() {
                       whichever is greater.
                     </li>
                   </ul>
-                  <p className="text-white/80 leading-relaxed mt-4">
+                  <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                     Nothing in these Terms excludes or limits liability that cannot be excluded or limited under applicable
                     Indian law, including liability for fraud or fraudulent misrepresentation.
                   </p>
@@ -680,15 +680,15 @@ function TermsAndConditionsPage() {
 
               {/* 15. Indemnification */}
               <section id="indemnification" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">15.</span> Indemnification
                 </h2>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   You shall indemnify and hold harmless the Platform Owner, its affiliates, group companies (as applicable) and
                   their respective officers, directors, agents, and employees, from any claim or demand, or actions including
                   reasonable attorney&apos;s fees, made by any third party or penalty imposed due to or arising out of:
                 </p>
-                <ul className="space-y-2 text-white/80 mt-4">
+                <ul className="space-y-2 text-zinc-900/80 dark:text-white/80 mt-4">
                   <li>Your breach of these Terms of Use, Privacy Policy, and other Policies.</li>
                   <li>Your violation of any law, rules, or regulations.</li>
                   <li>
@@ -702,20 +702,20 @@ function TermsAndConditionsPage() {
 
               {/* 16. Force Majeure */}
               <section id="force-majeure" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">16.</span> Force Majeure
                 </h2>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   Notwithstanding anything contained in these Terms of Use, the parties shall not be liable for any failure to
                   perform an obligation under these Terms if performance is prevented or delayed by a Force Majeure Event.
                 </p>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   Force Majeure Events include but are not limited to: acts of God, fire, flood, earthquake, epidemic, pandemic,
                   governmental actions, war, terrorism, riots, embargoes, acts of civil or military authority, strikes, labour
                   disputes, shortages of raw materials or supplies, failure of third-party telecommunications or power supply,
                   or any other event beyond the reasonable control of the affected party.
                 </p>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   The affected party shall use reasonable efforts to mitigate the effect of the Force Majeure Event and shall
                   resume performance as soon as reasonably practicable after the event ceases.
                 </p>
@@ -723,15 +723,15 @@ function TermsAndConditionsPage() {
 
               {/* 17. Termination */}
               <section id="termination" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">17.</span> Termination
                 </h2>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   We may terminate or suspend your access to the Platform immediately, without prior notice or liability, for
                   any reason whatsoever, including but not limited to breach of these Terms.
                 </p>
-                <p className="text-white/80 leading-relaxed mt-4">Upon termination:</p>
-                <ul className="space-y-2 text-white/80 mt-2">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">Upon termination:</p>
+                <ul className="space-y-2 text-zinc-900/80 dark:text-white/80 mt-2">
                   <li>Your right to use the Platform and Services shall immediately cease.</li>
                   <li>You may request export of your data within 30 days of termination.</li>
                   <li>We may delete your Content after a period of 30 days following termination.</li>
@@ -741,27 +741,27 @@ function TermsAndConditionsPage() {
                     dispute resolution clauses.
                   </li>
                 </ul>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   You may terminate your account at any time by contacting us at the email address provided below.
                 </p>
               </section>
 
               {/* 18. Modifications to Terms */}
               <section id="modifications" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">18.</span> Modifications to Terms
                 </h2>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   These Terms of Use can be modified at any time without assigning any reason. It is your responsibility to
                   periodically review these Terms of Use to stay informed of updates.
                 </p>
-                <p className="text-white/80 leading-relaxed mt-4">When we make material changes, we will:</p>
-                <ul className="space-y-2 text-white/80 mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">When we make material changes, we will:</p>
+                <ul className="space-y-2 text-zinc-900/80 dark:text-white/80 mt-4">
                   <li>Update the &quot;Last Updated&quot; date at the top of this page.</li>
                   <li>Send an email notification to your registered email address (where applicable).</li>
                   <li>Display an in-app notification on the Platform.</li>
                 </ul>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   Continued use of the Platform after modifications become effective constitutes acceptance of the revised Terms.
                   If you do not agree to the modified Terms, you must stop using the Platform.
                 </p>
@@ -769,15 +769,15 @@ function TermsAndConditionsPage() {
 
               {/* 19. Governing Law */}
               <section id="governing-law" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <Gavel className="w-6 h-6 text-blue-400" />
                   <span className="text-blue-400">19.</span> Governing Law
                 </h2>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   These Terms and any dispute or claim relating to it, or its enforceability, shall be governed by and construed
                   in accordance with the <strong>laws of India</strong>, including but not limited to:
                 </p>
-                <ul className="space-y-2 text-white/80 mt-4">
+                <ul className="space-y-2 text-zinc-900/80 dark:text-white/80 mt-4">
                   <li>
                     <strong>Information Technology Act, 2000</strong> and its amendments.
                   </li>
@@ -801,7 +801,7 @@ function TermsAndConditionsPage() {
 
               {/* 20. Jurisdiction */}
               <section id="jurisdiction" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <Scale className="w-6 h-6 text-blue-400" />
                   <span className="text-blue-400">20.</span> Jurisdiction
                 </h2>
@@ -811,12 +811,12 @@ function TermsAndConditionsPage() {
                     <strong>exclusive jurisdiction of the Civil Court at Rewa, Madhya Pradesh, India</strong>.
                   </p>
                 </div>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   The parties irrevocably submit to the exclusive jurisdiction of the courts at Rewa, Madhya Pradesh, India
                   for the purpose of any suit, action, or other judicial proceeding arising out of or relating to these Terms,
                   the Platform, or the Services.
                 </p>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   Notwithstanding the foregoing, the Platform Owner reserves the right to seek injunctive or other equitable
                   relief in any court of competent jurisdiction to protect its intellectual property rights or confidential
                   information.
@@ -825,25 +825,25 @@ function TermsAndConditionsPage() {
 
               {/* 21. Dispute Resolution */}
               <section id="dispute-resolution" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">21.</span> Dispute Resolution
                 </h2>
-                <h3 className="text-xl font-semibold text-white/90 mt-6 mb-3">21.1 Amicable Resolution</h3>
-                <p className="text-white/80 leading-relaxed">
+                <h3 className="text-xl font-semibold text-zinc-900/90 dark:text-white/90 mt-6 mb-3">21.1 Amicable Resolution</h3>
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   Parties shall first attempt to resolve any dispute through good-faith negotiation for a period of 30 days
                   from the date of written notice of the dispute.
                 </p>
 
-                <h3 className="text-xl font-semibold text-white/90 mt-6 mb-3">21.2 Arbitration</h3>
-                <p className="text-white/80 leading-relaxed">
+                <h3 className="text-xl font-semibold text-zinc-900/90 dark:text-white/90 mt-6 mb-3">21.2 Arbitration</h3>
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   If negotiation fails, disputes shall be referred to and finally resolved by arbitration in accordance with the{' '}
                   <strong>Arbitration and Conciliation Act, 1996</strong> of India. The seat and venue of arbitration shall be{' '}
                   <strong>Rewa, Madhya Pradesh, India</strong>. The language of arbitration shall be English or Hindi, as
                   mutually agreed. The arbitration shall be conducted by a sole arbitrator mutually appointed by the parties.
                 </p>
 
-                <h3 className="text-xl font-semibold text-white/90 mt-6 mb-3">21.3 Court Jurisdiction</h3>
-                <p className="text-white/80 leading-relaxed">
+                <h3 className="text-xl font-semibold text-zinc-900/90 dark:text-white/90 mt-6 mb-3">21.3 Court Jurisdiction</h3>
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   Subject to the arbitration clause, the{' '}
                   <strong>Civil Court at Rewa, Madhya Pradesh, India</strong> shall have exclusive jurisdiction over any
                   disputes arising from these Terms.
@@ -852,15 +852,15 @@ function TermsAndConditionsPage() {
 
               {/* 22. Severability */}
               <section id="severability" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">22.</span> Severability
                 </h2>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   If any provision of these Terms is held to be invalid, illegal, or unenforceable by a court of competent
                   jurisdiction, such provision shall be severed from the Terms and the remaining provisions shall continue in
                   full force and effect.
                 </p>
-                <p className="text-white/80 leading-relaxed mt-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mt-4">
                   The invalid or unenforceable provision shall be deemed modified to the minimum extent necessary to make it
                   valid, legal, and enforceable while preserving the original intent of the parties.
                 </p>
@@ -868,10 +868,10 @@ function TermsAndConditionsPage() {
 
               {/* 23. Entire Agreement */}
               <section id="entire-agreement" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">23.</span> Entire Agreement
                 </h2>
-                <p className="text-white/80 leading-relaxed">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed">
                   These Terms, together with the{' '}
                   <Link to="/privacy-policy" className="text-blue-400 hover:underline">
                     Privacy Policy
@@ -885,27 +885,27 @@ function TermsAndConditionsPage() {
 
               {/* 24. Grievance Officer */}
               <section id="grievance-officer" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">24.</span> Grievance Officer
                 </h2>
-                <p className="text-white/80 leading-relaxed mb-4">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mb-4">
                   In accordance with the <strong>Information Technology Act, 2000</strong> and rules made thereunder, the name
                   and contact details of the Grievance Officer are provided below:
                 </p>
                 <div className="p-5 bg-white/5 border border-white/10 rounded-xl">
-                  <h3 className="text-lg font-semibold text-white mb-3">Grievance Officer</h3>
-                  <div className="space-y-3 text-white/80">
+                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-3">Grievance Officer</h3>
+                  <div className="space-y-3 text-zinc-900/80 dark:text-white/80">
                     <div className="flex items-center gap-3">
                       <Shield className="w-5 h-5 text-blue-400 flex-shrink-0" />
                       <div>
-                        <p className="text-white/50 text-xs uppercase tracking-wider">Name</p>
+                        <p className="text-zinc-900/50 dark:text-white/50 text-xs uppercase tracking-wider">Name</p>
                         <p className="font-medium">Rakshit Tiwari</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <Mail className="w-5 h-5 text-blue-400 flex-shrink-0" />
                       <div>
-                        <p className="text-white/50 text-xs uppercase tracking-wider">Email</p>
+                        <p className="text-zinc-900/50 dark:text-white/50 text-xs uppercase tracking-wider">Email</p>
                         <a
                           href="mailto:grievance@beamlabultimate.tech"
                           className="text-blue-400 hover:underline"
@@ -917,14 +917,14 @@ function TermsAndConditionsPage() {
                     <div className="flex items-center gap-3">
                       <MapPin className="w-5 h-5 text-blue-400 flex-shrink-0" />
                       <div>
-                        <p className="text-white/50 text-xs uppercase tracking-wider">Address</p>
+                        <p className="text-zinc-900/50 dark:text-white/50 text-xs uppercase tracking-wider">Address</p>
                         <p>Rajapur, Teonthar, Rewa, Madhya Pradesh — 486220, India</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <Clock className="w-5 h-5 text-blue-400 flex-shrink-0" />
                       <div>
-                        <p className="text-white/50 text-xs uppercase tracking-wider">Response Time</p>
+                        <p className="text-zinc-900/50 dark:text-white/50 text-xs uppercase tracking-wider">Response Time</p>
                         <p>Within 24 hours of receipt</p>
                       </div>
                     </div>
@@ -934,18 +934,18 @@ function TermsAndConditionsPage() {
 
               {/* 25. Contact Us */}
               <section id="contact" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                   <span className="text-blue-400">25.</span> Contact Us
                 </h2>
-                <p className="text-white/80 leading-relaxed mb-6">
+                <p className="text-zinc-900/80 dark:text-white/80 leading-relaxed mb-6">
                   All concerns or communications relating to these Terms must be communicated to us using the contact
                   information provided below:
                 </p>
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 text-white/80">
+                  <div className="flex items-center gap-3 text-zinc-900/80 dark:text-white/80">
                     <Mail className="w-5 h-5 text-blue-400" />
                     <div>
-                      <p className="text-white/50 text-xs uppercase tracking-wider">Email</p>
+                      <p className="text-zinc-900/50 dark:text-white/50 text-xs uppercase tracking-wider">Email</p>
                       <a
                         href="mailto:legal@beamlabultimate.tech"
                         className="text-blue-400 hover:underline"
@@ -954,10 +954,10 @@ function TermsAndConditionsPage() {
                       </a>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 text-white/80">
+                  <div className="flex items-center gap-3 text-zinc-900/80 dark:text-white/80">
                     <Globe className="w-5 h-5 text-blue-400" />
                     <div>
-                      <p className="text-white/50 text-xs uppercase tracking-wider">Website</p>
+                      <p className="text-zinc-900/50 dark:text-white/50 text-xs uppercase tracking-wider">Website</p>
                       <a
                         href="https://beamlabultimate.tech"
                         className="text-blue-400 hover:underline"
@@ -968,10 +968,10 @@ function TermsAndConditionsPage() {
                       </a>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 text-white/80">
+                  <div className="flex items-center gap-3 text-zinc-900/80 dark:text-white/80">
                     <MapPin className="w-5 h-5 text-blue-400" />
                     <div>
-                      <p className="text-white/50 text-xs uppercase tracking-wider">Registered Office</p>
+                      <p className="text-zinc-900/50 dark:text-white/50 text-xs uppercase tracking-wider">Registered Office</p>
                       <p>Rajapur, Teonthar, Rewa, Madhya Pradesh — 486220, India</p>
                     </div>
                   </div>
@@ -1008,30 +1008,30 @@ function TermsAndConditionsPage() {
       <footer className="border-t border-white/10 py-8 mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-white/50 text-sm">© 2026 BeamLab Ultimate. All rights reserved.</p>
+            <p className="text-zinc-900/50 dark:text-white/50 text-sm">© 2026 BeamLab Ultimate. All rights reserved.</p>
             <div className="flex gap-6">
               <Link
                 to="/privacy-policy"
-                className="text-white/50 hover:text-white text-sm transition-colors"
+                className="text-zinc-900/50 dark:text-white/50 hover:text-zinc-900 dark:hover:text-white text-sm transition-colors"
               >
                 Privacy Policy
               </Link>
               <Link
                 to="/terms-and-conditions"
-                className="text-white/50 hover:text-white text-sm transition-colors"
+                className="text-zinc-900/50 dark:text-white/50 hover:text-zinc-900 dark:hover:text-white text-sm transition-colors"
               >
                 Terms and Conditions
               </Link>
               <a
                 href="mailto:legal@beamlabultimate.tech"
-                className="text-white/50 hover:text-white text-sm transition-colors"
+                className="text-zinc-900/50 dark:text-white/50 hover:text-zinc-900 dark:hover:text-white text-sm transition-colors"
               >
                 Contact
               </a>
             </div>
           </div>
           <div className="mt-4 text-center">
-            <p className="text-white/30 text-xs">
+            <p className="text-zinc-900/30 dark:text-white/30 text-xs">
               Jurisdiction: Civil Court, Rewa, Madhya Pradesh, India | Udyam Registered Enterprise
             </p>
           </div>

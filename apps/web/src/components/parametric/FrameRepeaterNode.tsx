@@ -20,7 +20,7 @@ const FrameRepeaterNode: FC<NodeProps<FrameRepeaterData>> = ({ data, isConnectab
         >
             {/* Header */}
             <div
-                className="px-3 py-2 text-white text-sm font-medium flex items-center gap-2"
+                className="px-3 py-2 text-zinc-900 dark:text-white text-sm font-medium flex items-center gap-2"
                 style={{ backgroundColor: NODE_COLORS.transform }}
             >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -44,42 +44,42 @@ const FrameRepeaterNode: FC<NodeProps<FrameRepeaterData>> = ({ data, isConnectab
             <div className="p-3 space-y-3">
                 {/* Input indicator */}
                 <div className="flex items-center gap-2">
-                    <span className="text-gray-400 text-xs">Input</span>
-                    <div className="flex-1 px-2 py-1 bg-slate-700/50 text-gray-500 text-xs rounded text-center">
+                    <span className="text-gray-500 dark:text-gray-400 text-xs">Input</span>
+                    <div className="flex-1 px-2 py-1 bg-slate-200/50 dark:bg-slate-700/50 text-gray-500 text-xs rounded text-center">
                         {data.basePoints?.length ? `${data.basePoints.length} points` : 'Connect points'}
                     </div>
                 </div>
 
                 {/* Count */}
                 <div className="flex items-center gap-2">
-                    <label className="text-gray-400 text-xs w-16">Count</label>
+                    <label className="text-gray-500 dark:text-gray-400 text-xs w-16">Count</label>
                     <input
                         type="number"
                         value={data.repeatCount ?? 3}
                         min={1}
                         max={50}
                         onChange={(e) => handleChange('repeatCount', parseInt(e.target.value) || 1)}
-                        className="flex-1 px-2 py-1 bg-slate-700 text-white text-sm rounded border border-slate-600 focus:border-orange-500 focus:outline-none"
+                        className="flex-1 px-2 py-1 bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white text-sm rounded border border-slate-600 focus:border-orange-500 focus:outline-none"
                     />
                 </div>
 
                 {/* Spacing */}
                 <div className="flex items-center gap-2">
-                    <label className="text-gray-400 text-xs w-16">Spacing</label>
+                    <label className="text-gray-500 dark:text-gray-400 text-xs w-16">Spacing</label>
                     <input
                         type="number"
                         value={data.spacing ?? 4}
                         min={0.1}
                         step={0.5}
                         onChange={(e) => handleChange('spacing', parseFloat(e.target.value) || 1)}
-                        className="flex-1 px-2 py-1 bg-slate-700 text-white text-sm rounded border border-slate-600 focus:border-orange-500 focus:outline-none"
+                        className="flex-1 px-2 py-1 bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white text-sm rounded border border-slate-600 focus:border-orange-500 focus:outline-none"
                     />
                     <span className="text-gray-500 text-xs">m</span>
                 </div>
 
                 {/* Direction */}
                 <div className="flex items-center gap-2">
-                    <label className="text-gray-400 text-xs w-16">Direction</label>
+                    <label className="text-gray-500 dark:text-gray-400 text-xs w-16">Direction</label>
                     <div className="flex-1 flex gap-1">
                         {['x', 'y', 'z'].map((dir) => (
                             <button
@@ -87,7 +87,7 @@ const FrameRepeaterNode: FC<NodeProps<FrameRepeaterData>> = ({ data, isConnectab
                                 onClick={() => handleChange('direction', dir)}
                                 className={`flex-1 px-2 py-1 text-xs font-bold rounded transition-colors ${data.direction === dir
                                         ? 'bg-orange-500 text-white'
-                                        : 'bg-slate-700 text-gray-400 hover:bg-slate-600'
+                                        : 'bg-slate-200 dark:bg-slate-700 text-gray-500 dark:text-gray-400 hover:bg-slate-600'
                                     }`}
                             >
                                 {dir.toUpperCase()}
@@ -121,8 +121,8 @@ const FrameRepeaterNode: FC<NodeProps<FrameRepeaterData>> = ({ data, isConnectab
             />
 
             {/* Output Labels */}
-            <div className="absolute right-4 text-gray-400 text-[10px]" style={{ top: '38%' }}>Nodes</div>
-            <div className="absolute right-4 text-gray-400 text-[10px]" style={{ top: '58%' }}>Members</div>
+            <div className="absolute right-4 text-gray-500 dark:text-gray-400 text-[10px]" style={{ top: '38%' }}>Nodes</div>
+            <div className="absolute right-4 text-gray-500 dark:text-gray-400 text-[10px]" style={{ top: '58%' }}>Members</div>
         </div>
     );
 };

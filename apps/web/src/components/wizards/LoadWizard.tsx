@@ -8,7 +8,6 @@
  * - Load combination builder
  */
 
-'use client';
 
 import React, { useState, useCallback, useMemo } from 'react';
 import { useModelStore } from '@/store/model';

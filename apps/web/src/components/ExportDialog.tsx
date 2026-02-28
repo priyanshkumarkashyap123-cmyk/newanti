@@ -83,16 +83,16 @@ export const ExportDialog: FC<{
 
                 <div className="py-6">
                     {!analysisResults ? (
-                        <div className="text-center p-8 bg-zinc-900/50 rounded-lg border border-zinc-800 border-dashed">
-                            <span className="text-zinc-400">
+                        <div className="text-center p-8 bg-white/50 dark:bg-zinc-900/50 rounded-lg border border-zinc-200 dark:border-zinc-800 border-dashed">
+                            <span className="text-zinc-500 dark:text-zinc-400">
                                 No analysis results available. Run visualization first.
                             </span>
                         </div>
                     ) : exportData ? (
                         <div className="space-y-6">
-                            <div className="bg-zinc-900 rounded-lg p-4 border border-zinc-800">
-                                <h3 className="text-sm font-medium text-white mb-2">Project Summary</h3>
-                                <div className="grid grid-cols-2 gap-4 text-sm text-zinc-400">
+                            <div className="bg-white dark:bg-zinc-900 rounded-lg p-4 border border-zinc-200 dark:border-zinc-800">
+                                <h3 className="text-sm font-medium text-zinc-900 dark:text-white mb-2">Project Summary</h3>
+                                <div className="grid grid-cols-2 gap-4 text-sm text-zinc-500 dark:text-zinc-400">
                                     <div>Nodes: {nodes.size}</div>
                                     <div>Members: {members.size}</div>
                                     <div>Results: Ready</div>
@@ -100,7 +100,7 @@ export const ExportDialog: FC<{
                             </div>
 
                             <div className="flex flex-col gap-4">
-                                <h3 className="text-sm font-medium text-white">Generate Reports</h3>
+                                <h3 className="text-sm font-medium text-zinc-900 dark:text-white">Generate Reports</h3>
                                 <div className="grid grid-cols-2 gap-4">
                                     <button
                                         onClick={() => {
@@ -114,14 +114,14 @@ export const ExportDialog: FC<{
                                                 );
                                             }
                                         }}
-                                        className="flex flex-col items-center gap-2 p-4 bg-zinc-800 hover:bg-zinc-700 rounded-lg border border-zinc-700 transition-colors"
+                                        className="flex flex-col items-center gap-2 p-4 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-lg border border-zinc-200 dark:border-zinc-700 transition-colors"
                                     >
                                         <div className="p-3 bg-blue-500/10 rounded-full">
                                             <FileText className="w-6 h-6 text-blue-500" />
                                         </div>
                                         <div className="text-center">
-                                            <div className="font-medium text-sm text-zinc-200">Calculation Book</div>
-                                            <div className="text-xs text-zinc-400">PDF Report</div>
+                                            <div className="font-medium text-sm text-zinc-700 dark:text-zinc-200">Calculation Book</div>
+                                            <div className="text-xs text-zinc-500 dark:text-zinc-400">PDF Report</div>
                                         </div>
                                     </button>
 
@@ -147,20 +147,20 @@ export const ExportDialog: FC<{
                                                 document.body.removeChild(link);
                                             }
                                         }}
-                                        className="flex flex-col items-center gap-2 p-4 bg-zinc-800 hover:bg-zinc-700 rounded-lg border border-zinc-700 transition-colors"
+                                        className="flex flex-col items-center gap-2 p-4 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-lg border border-zinc-200 dark:border-zinc-700 transition-colors"
                                     >
                                         <div className="p-3 bg-emerald-500/10 rounded-full">
                                             <TableProperties className="w-6 h-6 text-emerald-500" />
                                         </div>
                                         <div className="text-center">
-                                            <div className="font-medium text-sm text-zinc-200">Bill of Materials</div>
-                                            <div className="text-xs text-zinc-400">CSV Export</div>
+                                            <div className="font-medium text-sm text-zinc-700 dark:text-zinc-200">Bill of Materials</div>
+                                            <div className="text-xs text-zinc-500 dark:text-zinc-400">CSV Export</div>
                                         </div>
                                     </button>
                                 </div>
 
-                                <h3 className="text-sm font-medium text-white mt-2">Export Data</h3>
-                                <div className="p-4 bg-zinc-900 rounded-lg border border-zinc-800 flex justify-center">
+                                <h3 className="text-sm font-medium text-zinc-900 dark:text-white mt-2">Export Data</h3>
+                                <div className="p-4 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 flex justify-center">
                                     <ExportToolbar
                                         exportData={exportData}
                                         onExportComplete={() => {

@@ -381,7 +381,7 @@ const FeatureCard: FC<FeatureCardProps> = ({ feature, index }) => {
                 </div>
 
                 {/* Title */}
-                <h3 className="text-lg font-bold text-white mb-2 pr-20">
+                <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2 pr-20">
                     {feature.title}
                 </h3>
 
@@ -439,10 +439,10 @@ export const Capabilities: FC = () => {
                         <span className="text-xl font-bold text-white">BeamLab Ultimate</span>
                     </Link>
                     <div className="flex items-center gap-4">
-                        <Link to="/pricing" className="text-zinc-500 dark:text-zinc-400 hover:text-white text-sm font-medium transition-colors">
+                        <Link to="/pricing" className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-sm font-medium transition-colors">
                             Pricing
                         </Link>
-                        <Link to="/help" className="text-zinc-500 dark:text-zinc-400 hover:text-white text-sm font-medium transition-colors">
+                        <Link to="/help" className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-sm font-medium transition-colors">
                             Help
                         </Link>
                         <button
@@ -466,12 +466,12 @@ export const Capabilities: FC = () => {
                     >
                         <Link
                             to="/"
-                            className="inline-flex items-center gap-2 text-zinc-500 dark:text-zinc-400 hover:text-white text-sm mb-6 transition-colors"
+                            className="inline-flex items-center gap-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-sm mb-6 transition-colors"
                         >
                             <ArrowLeft className="w-4 h-4" />
                             Back to Home
                         </Link>
-                        <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                        <h2 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-4">
                             Engineering{' '}
                             <span className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
                                 Superpowers
@@ -499,7 +499,7 @@ export const Capabilities: FC = () => {
                                     transition-all duration-300
                                     ${activeCategory === cat.id
                                         ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                                        : 'bg-zinc-100 dark:bg-zinc-800/50 text-zinc-500 dark:text-zinc-400 hover:text-white hover:bg-zinc-700/50'
+                                        : 'bg-zinc-100 dark:bg-zinc-800/50 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50'
                                     }
                                 `}
                             >
@@ -556,8 +556,8 @@ export const Capabilities: FC = () => {
                                 to="/pricing"
                                 className="
                                     px-8 py-3 
-                                    bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-700
-                                    text-white font-semibold rounded-full
+                                    bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700
+                                    text-zinc-900 dark:text-white font-semibold rounded-full
                                     border border-zinc-300 dark:border-zinc-700
                                     transition-all duration-300
                                     flex items-center justify-center gap-2

@@ -1112,7 +1112,7 @@ export function HydrologyCalculator() {
                       <div className="text-2xl font-bold text-blue-600">{result.rational.Q.toFixed(2)}</div>
                       <div className="text-xs text-gray-500">Rational (m³/s)</div>
                     </div>
-                    <div className="text-gray-400">vs</div>
+                    <div className="text-gray-500 dark:text-gray-400">vs</div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-green-600">{result.scs.Qp.toFixed(2)}</div>
                       <div className="text-xs text-gray-500">SCS (m³/s)</div>

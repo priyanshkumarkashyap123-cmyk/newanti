@@ -20,7 +20,7 @@ export const DragHandle: FC<DragHandleProps> = ({ className = '' }) => (
     <div
         className={`
             flex items-center justify-center w-6 h-6 rounded
-            text-slate-400 hover:text-slate-300 hover:bg-slate-700
+            text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700
             cursor-grab active:cursor-grabbing transition-colors
             ${className}
         `}
@@ -59,7 +59,7 @@ export const DragGhost: FC<DragGhostProps> = ({
                 }}
             >
                 <div className="relative">
-                    <div className="bg-slate-800 border-2 border-blue-500 rounded-lg shadow-2xl shadow-blue-500/20 p-3">
+                    <div className="bg-slate-100 dark:bg-slate-800 border-2 border-blue-500 rounded-lg shadow-2xl shadow-blue-500/20 p-3">
                         {children}
                     </div>
                     {count > 1 && (
@@ -331,14 +331,14 @@ export const CursorIndicator: FC<CursorIndicatorProps> = ({ mode, label }) => {
         move: <Move className="w-4 h-4" />,
         add: <Plus className="w-4 h-4" />,
         delete: <Trash2 className="w-4 h-4" />,
-        crosshair: <div className="w-3 h-3 border-2 border-white rounded-full" />,
+        crosshair: <div className="w-3 h-3 border-2 border-zinc-200 dark:border-white rounded-full" />,
     };
 
     const colors = {
         move: 'bg-blue-500',
         add: 'bg-green-500',
         delete: 'bg-red-500',
-        crosshair: 'bg-slate-700',
+        crosshair: 'bg-slate-200 dark:bg-slate-700',
     };
 
     return (
@@ -348,7 +348,7 @@ export const CursorIndicator: FC<CursorIndicatorProps> = ({ mode, label }) => {
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
         >
-            <div className={`flex items-center gap-2 px-2 py-1 rounded-lg ${colors[mode]} text-white text-xs font-medium shadow-lg`}>
+            <div className={`flex items-center gap-2 px-2 py-1 rounded-lg ${colors[mode]} text-zinc-900 dark:text-white text-xs font-medium shadow-lg`}>
                 {icons[mode]}
                 {label && <span>{label}</span>}
             </div>

@@ -363,7 +363,7 @@ export const InteroperabilityDialog: FC<InteroperabilityDialogProps> = ({ isOpen
                                 className="border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-lg p-8 text-center hover:border-emerald-500 dark:hover:border-emerald-500 transition-colors cursor-pointer bg-zinc-50 dark:bg-transparent"
                                 onClick={() => fileInputRef.current?.click()}
                             >
-                                <Upload className="w-10 h-10 text-zinc-400 mx-auto mb-3" />
+                                <Upload className="w-10 h-10 text-zinc-500 dark:text-zinc-400 mx-auto mb-3" />
                                 <p className="text-zinc-600 dark:text-zinc-400">
                                     Click to select a <span className="font-medium text-zinc-900 dark:text-white">.{format}</span> file
                                 </p>

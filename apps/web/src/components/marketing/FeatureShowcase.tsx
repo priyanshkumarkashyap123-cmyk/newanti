@@ -45,16 +45,16 @@ export const CompetitiveAdvantage: FC = () => {
   ];
 
   return (
-    <section className="py-24 bg-gradient-to-b from-slate-900/30 to-slate-950">
+    <section className="py-24 bg-gradient-to-b from-slate-100/30 dark:from-slate-900/30 to-white dark:to-slate-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <span className="inline-block text-blue-400 text-xs font-semibold uppercase tracking-[0.2em] mb-5">
             Why BeamLab?
           </span>
-          <h2 className="text-3xl md:text-5xl font-bold text-white mb-5 tracking-[-0.02em]">
+          <h2 className="text-3xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-5 tracking-[-0.02em]">
             Built for the Modern Engineer
           </h2>
-          <p className="text-slate-400 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
             Traditional desktop FEA tools haven't changed in decades. We're building something better.
           </p>
         </div>
@@ -62,7 +62,7 @@ export const CompetitiveAdvantage: FC = () => {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Industry pain points — generic, factual */}
           <div className="space-y-6">
-            <h3 className="text-xl font-semibold text-slate-300 mb-6">
+            <h3 className="text-xl font-semibold text-slate-600 dark:text-slate-300 mb-6">
               Common pain points in structural software
             </h3>
             {painPoints.map((item, i) => (
@@ -74,15 +74,15 @@ export const CompetitiveAdvantage: FC = () => {
                 transition={{ delay: i * 0.1 }}
                 className="p-4 rounded-xl bg-red-500/[0.04] border border-red-500/15"
               >
-                <p className="font-medium text-slate-300 mb-1">{item.label}</p>
-                <p className="text-sm text-slate-400">{item.desc}</p>
+                <p className="font-medium text-slate-600 dark:text-slate-300 mb-1">{item.label}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{item.desc}</p>
               </motion.div>
             ))}
           </div>
 
           {/* BeamLab Advantages */}
           <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-white mb-6">
+            <h3 className="text-xl font-semibold text-zinc-900 dark:text-white mb-6">
               BeamLab changes the game
             </h3>
             <div className="grid gap-3">
@@ -98,7 +98,7 @@ export const CompetitiveAdvantage: FC = () => {
                   <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400">
                     {adv.icon}
                   </div>
-                  <span className="text-slate-300">{adv.text}</span>
+                  <span className="text-slate-600 dark:text-slate-300">{adv.text}</span>
                 </motion.div>
               ))}
             </div>
@@ -122,7 +122,7 @@ export const PerformanceMetrics: FC = () => {
   ];
 
   return (
-    <section className="py-20 bg-slate-950">
+    <section className="py-20 bg-white dark:bg-slate-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {metrics.map((metric, i) => (
@@ -132,13 +132,13 @@ export const PerformanceMetrics: FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="text-center p-6 rounded-2xl bg-slate-900/50 border border-white/[0.06] hover:border-white/[0.1] transition-all duration-300"
+              className="text-center p-6 rounded-2xl bg-slate-50/50 dark:bg-slate-900/50 border border-white/[0.06] hover:border-white/[0.1] transition-all duration-300"
             >
               <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent mb-2">
                 {metric.value}
               </div>
               <div className="text-white font-medium mb-1">{metric.label}</div>
-              <div className="text-xs text-slate-400">{metric.comparison}</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">{metric.comparison}</div>
             </motion.div>
           ))}
         </div>
@@ -182,13 +182,13 @@ export const InteractiveDemo: FC = () => {
   ];
 
   return (
-    <section className="py-24 bg-slate-900/50" aria-labelledby="interactive-demo-heading">
+    <section className="py-24 bg-slate-50/50 dark:bg-slate-900/50" aria-labelledby="interactive-demo-heading">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <span className="inline-block text-blue-400 text-sm font-semibold uppercase tracking-wider mb-4">
             See It In Action
           </span>
-          <h2 id="interactive-demo-heading" className="text-3xl md:text-4xl font-bold text-white mb-4">
+          <h2 id="interactive-demo-heading" className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white mb-4">
             Powerful Features, Simple Interface
           </h2>
         </div>
@@ -205,14 +205,14 @@ export const InteractiveDemo: FC = () => {
                 aria-label={`Show ${demo.title} demo`}
                 className={`w-full text-left p-4 rounded-xl transition-all ${activeDemo === demo.id
                     ? 'bg-blue-500/20 border-2 border-blue-500'
-                    : 'bg-slate-900 border-2 border-slate-800 hover:border-slate-700'
+                    : 'bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700'
                   }`}
               >
-                <h4 className={`font-semibold mb-1 ${activeDemo === demo.id ? 'text-blue-400' : 'text-white'
+                <h4 className={`font-semibold mb-1 ${activeDemo === demo.id ? 'text-blue-400' : 'text-zinc-900 dark:text-white'
                   }`}>
                   {demo.title}
                 </h4>
-                <p className="text-sm text-slate-400">{demo.description}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{demo.description}</p>
               </button>
             ))}
           </div>
@@ -225,15 +225,15 @@ export const InteractiveDemo: FC = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="relative rounded-2xl border border-slate-800 bg-slate-900 overflow-hidden aspect-video"
+                className="relative rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 overflow-hidden aspect-video"
               >
                 {/* Placeholder for actual demo */}
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-950">
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-50 dark:from-slate-900 to-white dark:to-slate-950">
                   <div className="text-center">
                     <button type="button" aria-label={`Play ${demos.find(d => d.id === activeDemo)?.title || 'active'} demo video`} className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mb-4 mx-auto hover:bg-blue-500/30 transition-colors">
                       <Play className="w-6 h-6 text-blue-400 ml-1" />
                     </button>
-                    <p className="text-slate-400">
+                    <p className="text-slate-500 dark:text-slate-400">
                       Click to watch {demos.find(d => d.id === activeDemo)?.title} demo
                     </p>
                   </div>
@@ -242,7 +242,7 @@ export const InteractiveDemo: FC = () => {
                 {/* Feature Pills */}
                 <div className="absolute bottom-4 left-4 right-4 flex flex-wrap gap-2">
                   {demos.find(d => d.id === activeDemo)?.features.map((f, i) => (
-                    <span key={i} className="px-3 py-1 rounded-full bg-slate-800/80 backdrop-blur text-xs text-slate-300">
+                    <span key={i} className="px-3 py-1 rounded-full bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur text-xs text-slate-600 dark:text-slate-300">
                       {f}
                     </span>
                   ))}
@@ -289,13 +289,13 @@ export const Testimonials: FC = () => {
   ];
 
   return (
-    <section className="py-24 bg-slate-950">
+    <section className="py-24 bg-white dark:bg-slate-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <span className="inline-block text-blue-400 text-xs font-semibold uppercase tracking-[0.2em] mb-5">
             Testimonials
           </span>
-          <h2 className="text-3xl md:text-5xl font-bold text-white tracking-[-0.02em]">
+          <h2 className="text-3xl md:text-5xl font-bold text-zinc-900 dark:text-white tracking-[-0.02em]">
             Loved by Engineers Worldwide
           </h2>
         </div>
@@ -308,24 +308,24 @@ export const Testimonials: FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="group p-6 rounded-2xl bg-slate-900/60 border border-white/[0.06] hover:border-white/[0.1] hover:bg-slate-800/40 transition-all duration-300 hover-lift"
+              className="group p-6 rounded-2xl bg-slate-100/60 dark:bg-slate-900/60 border border-slate-200/60 dark:border-white/[0.06] hover:border-slate-300 dark:hover:border-white/[0.1] hover:bg-slate-200/40 dark:hover:bg-slate-800/40 transition-all duration-300 hover-lift"
             >
               <div className="flex gap-1 mb-4" aria-label="5 star rating">
                 {[...Array(5)].map((_, j) => (
                   <Sparkles key={j} className="w-4 h-4 text-yellow-400 fill-yellow-400 group-hover:scale-110 transition-transform" style={{ transitionDelay: `${j * 50}ms` }} />
                 ))}
               </div>
-              <p className="text-slate-300 mb-6 leading-relaxed">"{t.quote}"</p>
+              <p className="text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">"{t.quote}"</p>
               <div className="flex items-center gap-3">
                 <div className={`relative w-12 h-12`}>
                   <div className={`absolute inset-0 rounded-full bg-gradient-to-r ${t.gradient} blur-sm opacity-50 group-hover:opacity-100 transition-opacity`} />
-                  <div className={`relative w-12 h-12 rounded-full bg-gradient-to-r ${t.gradient} flex items-center justify-center text-white font-bold text-sm ring-2 ring-slate-800`}>
+                  <div className={`relative w-12 h-12 rounded-full bg-gradient-to-r ${t.gradient} flex items-center justify-center text-zinc-900 dark:text-white font-bold text-sm ring-2 ring-slate-800`}>
                     {t.avatar}
                   </div>
                 </div>
                 <div>
-                  <p className="font-medium text-white">{t.author}</p>
-                  <p className="text-xs text-slate-400">{t.role}, {t.company}</p>
+                  <p className="font-medium text-zinc-900 dark:text-white">{t.author}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{t.role}, {t.company}</p>
                 </div>
               </div>
             </motion.div>
@@ -349,24 +349,24 @@ export const SecurityCompliance: FC = () => {
   ];
 
   return (
-    <section className="py-16 bg-slate-900/20 border-y border-white/[0.06]">
+    <section className="py-16 bg-slate-100/20 dark:bg-slate-900/20 border-y border-slate-200/60 dark:border-white/[0.06]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
           <div>
-            <h3 className="text-xl font-semibold text-white mb-2">
+            <h3 className="text-xl font-semibold text-zinc-900 dark:text-white mb-2">
               Enterprise-Grade Security
             </h3>
-            <p className="text-slate-400 text-sm">
+            <p className="text-slate-500 dark:text-slate-400 text-sm">
               Your data is encrypted at rest and in transit. We take security seriously.
             </p>
           </div>
           <div className="flex flex-wrap gap-4">
             {badges.map((badge, i) => (
-              <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-950/50 border border-white/[0.06]">
-                <div className="text-slate-400">{badge.icon}</div>
+              <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/50 dark:bg-slate-950/50 border border-white/[0.06]">
+                <div className="text-slate-500 dark:text-slate-400">{badge.icon}</div>
                 <div>
-                  <p className="text-sm font-medium text-white">{badge.label}</p>
-                  <p className="text-xs text-slate-400">{badge.desc}</p>
+                  <p className="text-sm font-medium text-zinc-900 dark:text-white">{badge.label}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{badge.desc}</p>
                 </div>
               </div>
             ))}
@@ -391,10 +391,10 @@ export const CTABanner: FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =>
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
       >
-        <h2 id="cta-heading" className="text-4xl md:text-5xl font-bold text-white mb-6 tracking-[-0.02em]">
+        <h2 id="cta-heading" className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-6 tracking-[-0.02em]">
           Ready to modernize your<br />structural workflow?
         </h2>
-        <p className="text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-xl text-slate-500 dark:text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
           Start analyzing structures in your browser today. Free plan, no credit card required.
         </p>
 
@@ -405,7 +405,7 @@ export const CTABanner: FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =>
           >
             Start Free Trial <ChevronRight className="w-5 h-5" />
           </button>
-          <button className="w-full sm:w-auto px-10 py-4 rounded-full border border-white/10 text-white font-medium hover:bg-white/[0.04] hover:border-white/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.98]">
+          <button className="w-full sm:w-auto px-10 py-4 rounded-full border border-white/10 text-zinc-900 dark:text-white font-medium hover:bg-white/[0.04] hover:border-white/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.98]">
             Schedule Demo
           </button>
         </div>

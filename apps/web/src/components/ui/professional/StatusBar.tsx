@@ -172,7 +172,7 @@ const StatusIndicator: FC<{
       default:
         return {
           icon: Circle,
-          color: 'text-zinc-400',
+          color: 'text-zinc-500 dark:text-zinc-400',
           bgColor: 'bg-zinc-500/20',
           label: 'Ready',
           animate: false
@@ -195,7 +195,7 @@ const StatusIndicator: FC<{
         {config.label}
       </span>
       {status === 'running' && progress > 0 && (
-        <span className="text-xs text-zinc-400">
+        <span className="text-xs text-zinc-500 dark:text-zinc-400">
           {progress.toFixed(0)}%
         </span>
       )}
@@ -216,18 +216,18 @@ const CoordinateDisplay: FC<{
 }> = memo(({ coordinates, unit, onClick }) => (
   <button
     onClick={onClick}
-    className="flex items-center gap-2 px-2 py-1 hover:bg-zinc-800 rounded transition-colors"
+    className="flex items-center gap-2 px-2 py-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors"
     title="Click to input coordinates"
   >
-    <Crosshair className="w-3.5 h-3.5 text-zinc-400" />
+    <Crosshair className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />
     <div className="flex items-center gap-1.5 text-xs font-mono">
       <span className="text-red-400">X:</span>
-      <span className="text-zinc-300 w-16 text-right">{coordinates.x.toFixed(3)}</span>
+      <span className="text-zinc-600 dark:text-zinc-300 w-16 text-right">{coordinates.x.toFixed(3)}</span>
       <span className="text-emerald-400">Y:</span>
-      <span className="text-zinc-300 w-16 text-right">{coordinates.y.toFixed(3)}</span>
+      <span className="text-zinc-600 dark:text-zinc-300 w-16 text-right">{coordinates.y.toFixed(3)}</span>
       <span className="text-blue-400">Z:</span>
-      <span className="text-zinc-300 w-16 text-right">{coordinates.z.toFixed(3)}</span>
-      <span className="text-zinc-400 text-[10px]">{unit}</span>
+      <span className="text-zinc-600 dark:text-zinc-300 w-16 text-right">{coordinates.z.toFixed(3)}</span>
+      <span className="text-zinc-500 dark:text-zinc-400 text-[10px]">{unit}</span>
     </div>
   </button>
 ));
@@ -239,7 +239,7 @@ CoordinateDisplay.displayName = 'CoordinateDisplay';
 // ============================================
 
 const ModelStatsDisplay: FC<{ stats: ModelStatistics }> = memo(({ stats }) => (
-  <div className="flex items-center gap-3 text-xs text-zinc-400">
+  <div className="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
     <div className="flex items-center gap-1" title="Nodes">
       <Circle className="w-3 h-3" />
       <span>{stats.nodes}</span>
@@ -283,7 +283,7 @@ const QuickToggleButton: FC<{
       className={`flex items-center gap-1 px-1.5 py-1 rounded text-xs transition-all ${
         toggle.enabled
           ? 'bg-blue-500/30 text-blue-300'
-          : 'text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800'
+          : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800'
       }`}
       title={`${toggle.label}${toggle.shortcut ? ` (${toggle.shortcut})` : ''}`}
     >
@@ -322,7 +322,7 @@ const UnitSystemSelector: FC<{
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1 px-2 py-1 text-xs text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded transition-colors"
+        className="flex items-center gap-1 px-2 py-1 text-xs text-zinc-500 hover:text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors"
       >
         <Ruler className="w-3.5 h-3.5" />
         <span>{currentSystem.length} / {currentSystem.force}</span>
@@ -334,9 +334,9 @@ const UnitSystemSelector: FC<{
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 4 }}
-            className="absolute bottom-full left-0 mb-1 w-48 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl overflow-hidden"
+            className="absolute bottom-full left-0 mb-1 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-xl overflow-hidden"
           >
-            <div className="px-3 py-2 border-b border-zinc-800 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+            <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
               Unit System
             </div>
             {UNIT_SYSTEMS.map(system => (
@@ -346,12 +346,12 @@ const UnitSystemSelector: FC<{
                   onChange(system.id);
                   setIsOpen(false);
                 }}
-                className={`w-full flex items-center justify-between px-3 py-2 text-xs hover:bg-zinc-800 transition-colors ${
-                  system.id === currentUnit ? 'bg-blue-500/20 text-blue-300' : 'text-zinc-300'
+                className={`w-full flex items-center justify-between px-3 py-2 text-xs hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors ${
+                  system.id === currentUnit ? 'bg-blue-500/20 text-blue-300' : 'text-zinc-600 dark:text-zinc-300'
                 }`}
               >
                 <span>{system.label}</span>
-                <span className="text-zinc-400">{system.length}, {system.force}</span>
+                <span className="text-zinc-500 dark:text-zinc-400">{system.length}, {system.force}</span>
               </button>
             ))}
           </motion.div>
@@ -388,7 +388,7 @@ const ZoomSelector: FC<{
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1 px-2 py-1 text-xs text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded transition-colors min-w-[60px] justify-center"
+        className="flex items-center gap-1 px-2 py-1 text-xs text-zinc-500 hover:text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors min-w-[60px] justify-center"
       >
         <ZoomIn className="w-3.5 h-3.5" />
         <span>{zoom}%</span>
@@ -400,7 +400,7 @@ const ZoomSelector: FC<{
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 4 }}
-            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 w-24 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl overflow-hidden"
+            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 w-24 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-xl overflow-hidden"
           >
             {ZOOM_PRESETS.map(preset => (
               <button
@@ -409,8 +409,8 @@ const ZoomSelector: FC<{
                   onChange(preset);
                   setIsOpen(false);
                 }}
-                className={`w-full px-3 py-1.5 text-xs text-center hover:bg-zinc-800 transition-colors ${
-                  preset === zoom ? 'bg-blue-500/20 text-blue-300' : 'text-zinc-300'
+                className={`w-full px-3 py-1.5 text-xs text-center hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors ${
+                  preset === zoom ? 'bg-blue-500/20 text-blue-300' : 'text-zinc-600 dark:text-zinc-300'
                 }`}
               >
                 {preset}%
@@ -473,7 +473,7 @@ const NotificationBadge: FC<{
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1 px-2 py-1 hover:bg-zinc-800 rounded transition-colors"
+        className="flex items-center gap-1 px-2 py-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors"
       >
         {errorCount > 0 && (
           <span className="flex items-center gap-1 text-red-400">
@@ -501,9 +501,9 @@ const NotificationBadge: FC<{
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 4 }}
-            className="absolute bottom-full right-0 mb-1 w-80 max-h-64 overflow-auto bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl"
+            className="absolute bottom-full right-0 mb-1 w-80 max-h-64 overflow-auto bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-xl"
           >
-            <div className="px-3 py-2 border-b border-zinc-800 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+            <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
               Notifications
             </div>
             {notifications.map(notification => {
@@ -511,19 +511,19 @@ const NotificationBadge: FC<{
               return (
                 <div
                   key={notification.id}
-                  className="flex items-start gap-2 px-3 py-2 border-b border-zinc-800 last:border-0 hover:bg-zinc-800/50"
+                  className="flex items-start gap-2 px-3 py-2 border-b border-zinc-200 dark:border-zinc-800 last:border-0 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
                 >
                   <Icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${getColor(notification.type)}`} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-zinc-300">{notification.message}</p>
-                    <p className="text-[10px] text-zinc-400 mt-0.5">
+                    <p className="text-xs text-zinc-600 dark:text-zinc-300">{notification.message}</p>
+                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
                       {notification.timestamp.toLocaleTimeString()}
                     </p>
                   </div>
                   {!notification.persistent && (
                     <button
                       onClick={() => onDismiss(notification.id)}
-                      className="text-zinc-400 hover:text-zinc-300"
+                      className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
                     >
                       <XCircle className="w-3.5 h-3.5" />
                     </button>
@@ -583,7 +583,7 @@ const PerformanceIndicator: FC = memo(() => {
   }, []);
 
   return (
-    <div className="flex items-center gap-2 text-xs text-zinc-400">
+    <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
       <div className="flex items-center gap-1" title="FPS">
         <Activity className="w-3 h-3" />
         <span className={fps < 30 ? 'text-amber-400' : fps < 15 ? 'text-red-400' : ''}>
@@ -666,7 +666,7 @@ export const StatusBar: FC<StatusBarProps> = ({
   };
 
   return (
-    <div className="h-7 bg-zinc-950 border-t border-zinc-800 flex items-center justify-between px-2 text-xs select-none">
+    <div className="h-7 bg-white dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between px-2 text-xs select-none">
       {/* Left Section - Status & Model Stats */}
       <div className="flex items-center gap-3">
         <StatusIndicator
@@ -676,7 +676,7 @@ export const StatusBar: FC<StatusBarProps> = ({
           onClick={onAnalysisClick}
         />
         
-        <div className="h-4 w-px bg-zinc-800" />
+        <div className="h-4 w-px bg-zinc-100 dark:bg-zinc-800" />
         
         <ModelStatsDisplay stats={modelStats} />
       </div>
@@ -703,7 +703,7 @@ export const StatusBar: FC<StatusBarProps> = ({
           ))}
         </div>
 
-        <div className="h-4 w-px bg-zinc-800" />
+        <div className="h-4 w-px bg-zinc-100 dark:bg-zinc-800" />
 
         {/* Unit System */}
         <UnitSystemSelector
@@ -717,7 +717,7 @@ export const StatusBar: FC<StatusBarProps> = ({
           onChange={onZoomChange || (() => {})}
         />
 
-        <div className="h-4 w-px bg-zinc-800" />
+        <div className="h-4 w-px bg-zinc-100 dark:bg-zinc-800" />
 
         {/* Notifications */}
         <NotificationBadge
@@ -751,19 +751,19 @@ export const ExtendedStatusBar: FC<StatusBarProps & {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="bg-zinc-900 border-t border-zinc-800 overflow-hidden"
+            className="bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 overflow-hidden"
           >
             <div className="px-4 py-2 flex items-center gap-4">
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-zinc-300 font-medium">
+                  <span className="text-xs text-zinc-600 dark:text-zinc-300 font-medium">
                     {analysisProgress.currentStep || 'Running analysis...'}
                   </span>
-                  <span className="text-xs text-zinc-400">
+                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
                     {analysisProgress.progress?.toFixed(1)}%
                   </span>
                 </div>
-                <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-blue-500 rounded-full"
                     initial={{ width: 0 }}
@@ -773,7 +773,7 @@ export const ExtendedStatusBar: FC<StatusBarProps & {
                 </div>
               </div>
               {analysisProgress.elapsedTime !== undefined && (
-                <div className="flex items-center gap-1 text-xs text-zinc-400">
+                <div className="flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
                   <Clock className="w-3.5 h-3.5" />
                   <span>{Math.floor(analysisProgress.elapsedTime)}s</span>
                 </div>

@@ -106,13 +106,13 @@ const ToolButton = memo<ToolButtonProps>(
           className={`
                   flex flex-col items-center justify-center gap-0.5 px-1.5 py-1 rounded-md
                   border border-transparent transition-all duration-150
-                  hover:bg-slate-700/50 hover:border-slate-600/30
+                  hover:bg-slate-200/50 dark:hover:bg-slate-700/50 hover:border-slate-600/30
                   active:scale-[0.96] active:bg-slate-700/70
                   ${isActive
                     ? "bg-blue-600/15 border-blue-500/30 text-blue-300 shadow-sm shadow-blue-500/5"
                     : accent
                       ? `${accent}`
-                      : "text-slate-400 hover:text-slate-200"
+                      : "text-slate-500 hover:text-slate-700 dark:text-slate-200"
                   }
                   ${disabled ? "opacity-40 cursor-not-allowed active:scale-100" : "cursor-pointer"}
                   ${sizeClasses[size]}
@@ -137,7 +137,7 @@ ToolButton.displayName = "ToolButton";
 
 const ToolGroup = memo<{ label: string; children: ReactNode; className?: string }>(
   ({ label, children, className = "" }) => (
-    <div className={`flex flex-col h-full border-r border-slate-700/30 px-1.5 pb-2.5 pt-1 last:border-r-0 ${className}`}>
+    <div className={`flex flex-col h-full border-r border-slate-200/30 dark:border-slate-700/30 px-1.5 pb-2.5 pt-1 last:border-r-0 ${className}`}>
       <div className="flex-1 flex items-center gap-0.5">{children}</div>
       <div className="text-[7px] text-slate-500 text-center uppercase tracking-[0.08em] mt-0.5 select-none font-semibold">
         {label}
@@ -163,7 +163,7 @@ const MiniButton = memo<{
   <Tooltip content={label} shortcut={shortcut}>
     <button
       onClick={onClick}
-      className={`flex items-center gap-1 px-1.5 py-1 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 transition-all text-[9px] ${className}`}
+      className={`flex items-center gap-1 px-1.5 py-1 rounded text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-all text-[9px] ${className}`}
     >
       <Icon className="w-3 h-3 flex-shrink-0" />
       <span className="font-medium">{label}</span>
@@ -520,12 +520,12 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory }) => {
 
   return (
     <div
-      className="w-full bg-slate-900/98 backdrop-blur-md border-b border-slate-700/40 flex flex-col select-none"
+      className="w-full bg-white/98 dark:bg-slate-900/98 backdrop-blur-md border-b border-slate-200/40 dark:border-slate-700/40 flex flex-col select-none"
       role="toolbar"
       aria-label="Engineering Ribbon"
     >
       {/* Title Bar */}
-      <div className="h-8 flex items-center justify-between px-3 border-b border-slate-800/60 bg-slate-950/90">
+      <div className="h-8 flex items-center justify-between px-3 border-b border-slate-800/60 bg-white/90 dark:bg-slate-950/90">
         <Link
           to="/stream"
           className="flex items-center gap-2 group hover:opacity-90 transition-opacity"
@@ -541,7 +541,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory }) => {
 
         {/* Category Tabs */}
         <div
-          className="flex items-center gap-0.5 bg-slate-900/50 rounded-lg p-0.5"
+          className="flex items-center gap-0.5 bg-slate-50/50 dark:bg-slate-900/50 rounded-lg p-0.5"
           role="tablist"
           aria-label="Ribbon categories"
         >
@@ -557,7 +557,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory }) => {
                   px-3 py-1 rounded-md text-[10px] font-bold tracking-wider transition-all duration-150 border
                   ${isActive
                     ? `${TAB_ACTIVE_COLORS[tab.color]} shadow-sm`
-                    : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/40 border-transparent"
+                    : "text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/40 dark:hover:bg-slate-800/40 border-transparent"
                   }
                 `}
               >

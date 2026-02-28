@@ -255,7 +255,7 @@ const UtilizationBar: FC<{ value: number; max?: number; showLabel?: boolean }> =
 
   return (
     <div className="flex items-center gap-3">
-      <div className="flex-1 h-2 bg-zinc-700 rounded-full overflow-hidden">
+      <div className="flex-1 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${Math.min(percentage, 100)}%` }}
@@ -446,7 +446,7 @@ const ResultsSummaryCard: FC<{ result: FootingDesignResult }> = ({ result }) => 
   const { geometry, reinforcement, soilPressure, checksSummary } = result;
 
   return (
-    <div className="bg-gradient-to-br from-zinc-100 dark:from-zinc-800/50 to-zinc-900/50 rounded-2xl border border-zinc-300 dark:border-zinc-700/50 p-6">
+    <div className="bg-gradient-to-br from-zinc-100 dark:from-zinc-800/50 to-zinc-50/50 dark:to-zinc-900/50 rounded-2xl border border-zinc-300 dark:border-zinc-700/50 p-6">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
           <Building2 className="w-5 h-5 text-blue-400" />
@@ -732,7 +732,7 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0">
         {/* Header */}
-        <DialogHeader className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-200 dark:border-zinc-800">
+        <DialogHeader className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
               <Layers className="w-6 h-6 text-white" />
@@ -819,7 +819,7 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                           }}
                           className={`relative p-4 rounded-xl border text-left transition-all group ${selectedSoilId === soil.id && !useCustomSoil
                               ? 'border-blue-500 bg-blue-500/10 ring-2 ring-blue-500/20'
-                              : 'border-zinc-300 dark:border-zinc-700/50 hover:border-zinc-600 bg-zinc-100 dark:bg-zinc-800/30'
+                              : 'border-zinc-300 dark:border-zinc-700/50 hover:border-zinc-300 dark:hover:border-zinc-600 bg-zinc-100 dark:bg-zinc-800/30'
                             }`}
                         >
                           <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${soil.color} flex items-center justify-center text-lg mb-2`}>
@@ -1056,7 +1056,7 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                           key={option.id}
                           className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${option.checked
                               ? 'border-blue-500/50 bg-blue-500/10 text-blue-400'
-                              : 'border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800/30 text-zinc-500 dark:text-zinc-400 hover:border-zinc-600'
+                              : 'border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800/30 text-zinc-500 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-600'
                             }`}
                         >
                           <input
@@ -1198,13 +1198,13 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setExpandedChecks(new Set(designResult.checks.map(c => c.id)))}
-                        className="px-3 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-900 dark:text-white bg-zinc-100 dark:bg-zinc-800 rounded-lg transition-colors"
+                        className="px-3 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-zinc-100 dark:bg-zinc-800 rounded-lg transition-colors"
                       >
                         Expand All
                       </button>
                       <button
                         onClick={() => setExpandedChecks(new Set())}
-                        className="px-3 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-900 dark:text-white bg-zinc-100 dark:bg-zinc-800 rounded-lg transition-colors"
+                        className="px-3 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-zinc-100 dark:bg-zinc-800 rounded-lg transition-colors"
                       >
                         Collapse All
                       </button>
@@ -1227,7 +1227,7 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
           </div>
 
           {/* Footer */}
-          <DialogFooter className="px-6 py-4 border-t border-zinc-200 dark:border-zinc-200 dark:border-zinc-800 flex items-center justify-between sm:justify-between">
+          <DialogFooter className="px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between sm:justify-between">
             <Button variant="ghost" onClick={onClose}>
               Cancel
             </Button>

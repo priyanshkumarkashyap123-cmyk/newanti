@@ -345,7 +345,7 @@ const UtilizationBar = memo<{ ratio: number; wide?: boolean }>(({ ratio, wide })
       className={`h-full rounded-full ${utilizationBg(ratio)}`}
     />
     {wide && (
-      <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white mix-blend-difference">
+      <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-zinc-900 dark:text-white mix-blend-difference">
         {(ratio * 100).toFixed(1)}%
       </span>
     )}
@@ -358,10 +358,10 @@ const StatCard = memo<{ label: string; value: string | number; icon: React.React
   ({ label, value, icon, color }) => (
     <div className={`bg-gradient-to-br ${color} rounded-xl p-4 border border-white/10`}>
       <div className="flex items-center justify-between mb-2">
-        <span className="text-white/70 text-sm">{label}</span>
-        <div className="text-white/50">{icon}</div>
+        <span className="text-zinc-900/70 dark:text-white/70 text-sm">{label}</span>
+        <div className="text-zinc-900/50 dark:text-white/50">{icon}</div>
       </div>
-      <div className="text-2xl font-bold text-white">{value}</div>
+      <div className="text-2xl font-bold text-zinc-900 dark:text-white">{value}</div>
     </div>
   )
 );
@@ -373,7 +373,7 @@ const CheckDetailRow = memo<{ check: { name: string; clause?: string; ratio: num
     <div className="flex items-center justify-between py-2 px-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
       <div className="flex items-center gap-2 flex-1">
         {statusIcon(check.status)}
-        <span className="text-sm text-slate-200">{check.name}</span>
+        <span className="text-sm text-slate-700 dark:text-slate-200">{check.name}</span>
         {check.clause && (
           <span className="text-xs text-slate-500 font-mono">({check.clause})</span>
         )}
@@ -450,7 +450,7 @@ const MemberDesignTable: FC<{
                     className="rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-blue-500 focus:ring-blue-500"
                   />
                 </td>
-                <td className="py-2 px-2 font-medium text-slate-200">{row.label}</td>
+                <td className="py-2 px-2 font-medium text-slate-700 dark:text-slate-200">{row.label}</td>
                 <td className="py-2 px-2 text-slate-600 dark:text-slate-400 font-mono text-xs">{row.sectionName || '—'}</td>
                 <td className="py-2 px-2 text-right text-slate-700 dark:text-slate-300 font-mono">{row.length.toFixed(3)}</td>
                 <td className="py-2 px-2 text-right font-mono text-slate-700 dark:text-slate-300">{formatForce(row.maxAxial)}</td>
@@ -511,7 +511,7 @@ const DesignParametersPanel: FC<{
 
   return (
     <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4">
-      <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+      <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
         <SlidersHorizontal className="w-4 h-4 text-blue-400" />
         Design Parameters
       </h3>
@@ -524,7 +524,7 @@ const DesignParametersPanel: FC<{
             <select
               value={params.steelCode}
               onChange={e => updateParam('steelCode', e.target.value)}
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none"
             >
               {STEEL_CODES.map(c => (
                 <option key={c.id} value={c.id}>{c.icon} {c.name} — {c.region}</option>
@@ -538,7 +538,7 @@ const DesignParametersPanel: FC<{
             <select
               value={params.steelGrade}
               onChange={e => updateParam('steelGrade', e.target.value)}
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none"
             >
               {STEEL_GRADES.map(g => (
                 <option key={g.name} value={g.name}>{g.name} (fy={g.fy} MPa, fu={g.fu} MPa)</option>
@@ -577,7 +577,7 @@ const DesignParametersPanel: FC<{
                 max="2.0"
                 value={params.effectiveLengthFactorY}
                 onChange={e => updateParam('effectiveLengthFactorY', parseFloat(e.target.value) || 1.0)}
-                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
+                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none"
               />
             </div>
             <div>
@@ -589,7 +589,7 @@ const DesignParametersPanel: FC<{
                 max="2.0"
                 value={params.effectiveLengthFactorZ}
                 onChange={e => updateParam('effectiveLengthFactorZ', parseFloat(e.target.value) || 1.0)}
-                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
+                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none"
               />
             </div>
           </div>
@@ -604,7 +604,7 @@ const DesignParametersPanel: FC<{
               max="1.0"
               value={params.unbracedLengthRatio}
               onChange={e => updateParam('unbracedLengthRatio', parseFloat(e.target.value) || 1.0)}
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none"
             />
           </div>
 
@@ -618,7 +618,7 @@ const DesignParametersPanel: FC<{
               max="3.0"
               value={params.Cb}
               onChange={e => updateParam('Cb', parseFloat(e.target.value) || 1.0)}
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none"
             />
           </div>
         </>
@@ -630,7 +630,7 @@ const DesignParametersPanel: FC<{
             <select
               value={params.concreteCode}
               onChange={e => updateParam('concreteCode', e.target.value)}
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none"
             >
               {CONCRETE_CODES.map(c => (
                 <option key={c.id} value={c.id}>{c.icon} {c.name} — {c.region}</option>
@@ -644,7 +644,7 @@ const DesignParametersPanel: FC<{
             <select
               value={params.concreteGrade}
               onChange={e => updateParam('concreteGrade', e.target.value)}
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none"
             >
               {CONCRETE_GRADES.map(g => (
                 <option key={g.name} value={g.name}>{g.name} (f<sub>ck</sub>={g.fck} MPa)</option>
@@ -658,7 +658,7 @@ const DesignParametersPanel: FC<{
             <select
               value={params.rebarGrade}
               onChange={e => updateParam('rebarGrade', e.target.value)}
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none"
             >
               {REBAR_GRADES.map(g => (
                 <option key={g.name} value={g.name}>{g.name} (f<sub>y</sub>={g.fy} MPa)</option>
@@ -706,7 +706,7 @@ const SectionAssignmentPanel: FC<{
     <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between text-sm font-semibold text-white"
+        className="w-full flex items-center justify-between text-sm font-semibold text-zinc-900 dark:text-white"
       >
         <span className="flex items-center gap-2">
           <Layers className="w-4 h-4 text-emerald-400" />
@@ -729,7 +729,7 @@ const SectionAssignmentPanel: FC<{
               placeholder="Search sections (e.g. ISMB 300, W14x22)..."
               value={sectionSearch}
               onChange={e => setSectionSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+              className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:outline-none"
             />
           </div>
           <div className="max-h-48 overflow-y-auto space-y-1">
@@ -772,7 +772,7 @@ const MemberDetailPanel: FC<{
   >
     <div className="sticky top-0 bg-slate-50 dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 px-6 py-4 flex items-center justify-between z-10">
       <div>
-        <h3 className="text-lg font-bold text-white">{result.memberName}</h3>
+        <h3 className="text-lg font-bold text-zinc-900 dark:text-white">{result.memberName}</h3>
         <p className="text-xs text-slate-600 dark:text-slate-400">{result.code} — {result.section}</p>
       </div>
       <button onClick={onClose} aria-label="Close" title="Close" className="p-2 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
@@ -803,7 +803,7 @@ const MemberDetailPanel: FC<{
 
       {/* Member Forces */}
       <div>
-        <h4 className="text-sm font-semibold text-white mb-3">Design Forces</h4>
+        <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">Design Forces</h4>
         <div className="grid grid-cols-2 gap-2">
           {[
             ['Axial (N)', result.forces.N, 'kN'],
@@ -814,7 +814,7 @@ const MemberDetailPanel: FC<{
           ].map(([label, val, unit]) => (
             <div key={label as string} className="bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2">
               <div className="text-xs text-slate-600 dark:text-slate-400">{label as string}</div>
-              <div className="text-sm font-mono text-slate-200">{formatForce(val as number)} {unit as string}</div>
+              <div className="text-sm font-mono text-slate-700 dark:text-slate-200">{formatForce(val as number)} {unit as string}</div>
             </div>
           ))}
         </div>
@@ -823,7 +823,7 @@ const MemberDetailPanel: FC<{
       {/* Capacities */}
       {result.capacities && (
         <div>
-          <h4 className="text-sm font-semibold text-white mb-3">Member Capacities</h4>
+          <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">Member Capacities</h4>
           <div className="grid grid-cols-2 gap-2">
             {[
               ['Tension', result.capacities.tension, 'kN'],
@@ -842,7 +842,7 @@ const MemberDetailPanel: FC<{
 
       {/* Clause-by-Clause Checks */}
       <div>
-        <h4 className="text-sm font-semibold text-white mb-3">
+        <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">
           Clause-by-Clause Checks ({result.checks.length})
         </h4>
         <div className="space-y-2">
@@ -925,14 +925,14 @@ const ConnectionDesignTab: FC<{
         {/* Left: Parameters */}
         <div className="space-y-4">
           <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4">
-            <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
               <Wrench className="w-4 h-4 text-blue-400" />
               Connection Parameters
             </h3>
             <div>
               <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Connection Type</label>
               <select value={connType} onChange={e => setConnType(e.target.value as any)}
-                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none">
+                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none">
                 <option value="bolted_shear">Bolted Shear Connection</option>
                 <option value="bolted_moment">Bolted Moment Connection</option>
                 <option value="welded">Welded Connection</option>
@@ -943,14 +943,14 @@ const ConnectionDesignTab: FC<{
               <div>
                 <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Bolt Grade</label>
                 <select value={boltGrade} onChange={e => setBoltGrade(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none">
+                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none">
                   {BOLT_GRADES.map(b => <option key={b.name} value={b.name}>{b.name}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Bolt Ø (mm)</label>
                 <select value={boltDia} onChange={e => setBoltDia(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none">
+                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none">
                   {[12, 16, 20, 24, 30, 36].map(d => <option key={d} value={d}>{d} mm</option>)}
                 </select>
               </div>
@@ -960,7 +960,7 @@ const ConnectionDesignTab: FC<{
 
         {/* Middle: Support Selection */}
         <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
             <Target className="w-4 h-4 text-amber-400" />
             Support Reactions
           </h3>
@@ -995,7 +995,7 @@ const ConnectionDesignTab: FC<{
 
         {/* Right: Result */}
         <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
             <Shield className="w-4 h-4 text-emerald-400" />
             Design Result
           </h3>
@@ -1013,11 +1013,11 @@ const ConnectionDesignTab: FC<{
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2">
                   <div className="text-xs text-slate-600 dark:text-slate-400">Capacity</div>
-                  <div className="font-mono text-slate-200">{formatForce(result.capacity)} kN</div>
+                  <div className="font-mono text-slate-700 dark:text-slate-200">{formatForce(result.capacity)} kN</div>
                 </div>
                 <div className="bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2">
                   <div className="text-xs text-slate-600 dark:text-slate-400">Demand</div>
-                  <div className="font-mono text-slate-200">{formatForce(result.demand)} kN</div>
+                  <div className="font-mono text-slate-700 dark:text-slate-200">{formatForce(result.demand)} kN</div>
                 </div>
               </div>
               <div className="space-y-1">
@@ -1113,14 +1113,14 @@ const FoundationDesignTab: FC<{
         {/* Parameters */}
         <div className="space-y-4">
           <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4">
-            <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
               <SlidersHorizontal className="w-4 h-4 text-blue-400" />
               Foundation Parameters
             </h3>
             <div>
               <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Footing Type</label>
               <select value={footingType} onChange={e => setFootingType(e.target.value as any)}
-                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none">
+                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none">
                 <option value="isolated">Isolated Footing</option>
                 <option value="combined">Combined Footing</option>
                 <option value="mat">Mat/Raft Foundation</option>
@@ -1129,32 +1129,32 @@ const FoundationDesignTab: FC<{
             <div>
               <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Bearing Capacity (kN/m²)</label>
               <input type="number" value={bearingCapacity} onChange={e => setBearingCapacity(Number(e.target.value))}
-                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none" />
+                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Column Width (mm)</label>
                 <input type="number" value={colWidth} onChange={e => setColWidth(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none" />
+                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none" />
               </div>
               <div>
                 <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Column Depth (mm)</label>
                 <input type="number" value={colDepth} onChange={e => setColDepth(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none" />
+                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">f<sub>ck</sub> (MPa)</label>
                 <select value={fck} onChange={e => setFck(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none">
+                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none">
                   {CONCRETE_GRADES.map(g => <option key={g.fck} value={g.fck}>{g.name} ({g.fck} MPa)</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">f<sub>y</sub> (MPa)</label>
                 <select value={fy} onChange={e => setFy(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none">
+                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none">
                   {REBAR_GRADES.map(g => <option key={g.fy} value={g.fy}>{g.name} ({g.fy} MPa)</option>)}
                 </select>
               </div>
@@ -1164,7 +1164,7 @@ const FoundationDesignTab: FC<{
 
         {/* Support Selection */}
         <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
             <Target className="w-4 h-4 text-amber-400" />
             Select Support Node
           </h3>
@@ -1194,7 +1194,7 @@ const FoundationDesignTab: FC<{
 
         {/* Result */}
         <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
             <Shield className="w-4 h-4 text-emerald-400" />
             Foundation Design
           </h3>
@@ -1209,11 +1209,11 @@ const FoundationDesignTab: FC<{
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2">
                   <div className="text-xs text-slate-600 dark:text-slate-400">Size (L×W)</div>
-                  <div className="font-mono text-slate-200">{result.dimensions.length}×{result.dimensions.width} mm</div>
+                  <div className="font-mono text-slate-700 dark:text-slate-200">{result.dimensions.length}×{result.dimensions.width} mm</div>
                 </div>
                 <div className="bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2">
                   <div className="text-xs text-slate-600 dark:text-slate-400">Depth</div>
-                  <div className="font-mono text-slate-200">{result.dimensions.depth || result.dimensions.thickness} mm</div>
+                  <div className="font-mono text-slate-700 dark:text-slate-200">{result.dimensions.depth || result.dimensions.thickness} mm</div>
                 </div>
               </div>
               <div className="space-y-2">
@@ -1596,7 +1596,7 @@ const PostAnalysisDesignHub: FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950 text-zinc-900 dark:text-white">
       {/* Header */}
       <header className="bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40">
         <div className="max-w-[1600px] mx-auto px-6 py-3">
@@ -1608,7 +1608,7 @@ const PostAnalysisDesignHub: FC = () => {
               <div className="flex items-center gap-3">
                 <img src={beamLabLogo} alt="BeamLab" className="h-7 w-7" />
                 <div>
-                  <h1 className="text-lg font-bold text-white flex items-center gap-2">
+                  <h1 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                     Design Hub
                     <span className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 text-xs font-bold">POST-ANALYSIS</span>
                   </h1>
@@ -1642,7 +1642,7 @@ const PostAnalysisDesignHub: FC = () => {
                 className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                   activeTab === tab.id
                     ? 'border-blue-500 text-blue-400'
-                    : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-200 hover:border-slate-600'
+                    : 'border-transparent text-slate-600 hover:text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'
                 }`}
               >
                 {tab.icon}
@@ -1682,7 +1682,7 @@ const PostAnalysisDesignHub: FC = () => {
 
             {/* Design Codes Available */}
             <div>
-              <h2 className="text-lg font-semibold text-white mb-4">Available Design Codes</h2>
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Available Design Codes</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
                 {DESIGN_CODES.map(code => (
                   <button
@@ -1696,12 +1696,12 @@ const PostAnalysisDesignHub: FC = () => {
                         setActiveTab('concrete');
                       }
                     }}
-                    className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-left hover:border-blue-500/30 hover:bg-slate-100 dark:bg-slate-800/60 transition-all group"
+                    className="bg-slate-50 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-left hover:border-blue-500/30 hover:bg-slate-100 dark:bg-slate-800/60 transition-all group"
                   >
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-2xl">{code.icon}</span>
                       <div>
-                        <h3 className="font-semibold text-slate-200 group-hover:text-blue-400 transition-colors">{code.name}</h3>
+                        <h3 className="font-semibold text-slate-700 dark:text-slate-200 group-hover:text-blue-400 transition-colors">{code.name}</h3>
                         <span className="text-xs text-slate-500">{code.material.toUpperCase()} • {code.region}</span>
                       </div>
                       <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-blue-400 ml-auto transition-colors" />
@@ -1714,38 +1714,38 @@ const PostAnalysisDesignHub: FC = () => {
 
             {/* Quick Actions */}
             <div>
-              <h2 className="text-lg font-semibold text-white mb-4">Quick Actions</h2>
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Quick Actions</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <button onClick={() => { selectAll(true); setActiveTab('steel'); }}
                   className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl p-5 text-left hover:scale-[1.02] transition-transform">
                   <Columns className="w-6 h-6 text-white mb-2" />
                   <h3 className="font-semibold text-white">Design All Steel</h3>
-                  <p className="text-sm text-white/70">Check all members</p>
+                  <p className="text-sm text-zinc-900/70 dark:text-white/70">Check all members</p>
                 </button>
                 <button onClick={() => setActiveTab('connections')}
                   className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl p-5 text-left hover:scale-[1.02] transition-transform">
                   <Wrench className="w-6 h-6 text-white mb-2" />
                   <h3 className="font-semibold text-white">Design Connections</h3>
-                  <p className="text-sm text-white/70">Bolted & welded joints</p>
+                  <p className="text-sm text-zinc-900/70 dark:text-white/70">Bolted & welded joints</p>
                 </button>
                 <button onClick={() => setActiveTab('foundations')}
                   className="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-xl p-5 text-left hover:scale-[1.02] transition-transform">
                   <Building2 className="w-6 h-6 text-white mb-2" />
                   <h3 className="font-semibold text-white">Design Foundations</h3>
-                  <p className="text-sm text-white/70">Footings from reactions</p>
+                  <p className="text-sm text-zinc-900/70 dark:text-white/70">Footings from reactions</p>
                 </button>
                 <button onClick={() => setActiveTab('optimization')}
                   className="bg-gradient-to-br from-orange-600 to-orange-700 rounded-xl p-5 text-left hover:scale-[1.02] transition-transform">
                   <Zap className="w-6 h-6 text-white mb-2" />
                   <h3 className="font-semibold text-white">Optimize Sections</h3>
-                  <p className="text-sm text-white/70">Find lightest passing</p>
+                  <p className="text-sm text-zinc-900/70 dark:text-white/70">Find lightest passing</p>
                 </button>
               </div>
             </div>
 
             {/* Member Table */}
             <div>
-              <h2 className="text-lg font-semibold text-white mb-4">All Members</h2>
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">All Members</h2>
               {hasAnalysis && memberRows.length === 0 ? (
                 <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-8">
                   <div className="space-y-3 animate-pulse">
@@ -1832,7 +1832,7 @@ const PostAnalysisDesignHub: FC = () => {
               <div className="lg:col-span-3">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <h2 className="text-lg font-semibold text-white">Steel Member Design</h2>
+                    <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Steel Member Design</h2>
                     <span className="text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">
                       {STEEL_CODES.find(c => c.id === params.steelCode)?.name}
                     </span>
@@ -1844,7 +1844,7 @@ const PostAnalysisDesignHub: FC = () => {
                       placeholder="Search members..."
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
-                      className="pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-700 dark:text-slate-300 placeholder-slate-500 focus:outline-none focus:border-blue-500 w-64"
+                      className="pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-700 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 w-64"
                     />
                   </div>
                 </div>
@@ -1871,7 +1871,7 @@ const PostAnalysisDesignHub: FC = () => {
                 <DesignParametersPanel params={params} onChange={setParams} material="concrete" />
 
                 <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-3">
-                  <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
                     <Building2 className="w-4 h-4 text-blue-400" />
                     Concrete Section
                   </h3>
@@ -1879,38 +1879,38 @@ const PostAnalysisDesignHub: FC = () => {
                     <div>
                       <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Width (mm)</label>
                       <input type="number" defaultValue={300}
-                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none" />
+                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none" />
                     </div>
                     <div>
                       <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Depth (mm)</label>
                       <input type="number" defaultValue={500}
-                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none" />
+                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none" />
                     </div>
                   </div>
                   <div>
                     <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Cover (mm)</label>
                     <input type="number" defaultValue={40}
-                      className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none" />
+                      className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none" />
                   </div>
                 </div>
 
                 <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-3">
-                  <h3 className="text-sm font-semibold text-white">Quick Design</h3>
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">Quick Design</h3>
                   <div className="space-y-2">
                     <Link to="/structural-design-center" className="w-full flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors group">
-                      <span className="text-sm text-slate-200">RC Beam Designer</span>
+                      <span className="text-sm text-slate-700 dark:text-slate-200">RC Beam Designer</span>
                       <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-blue-400" />
                     </Link>
                     <Link to="/structural-design-center" className="w-full flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors group">
-                      <span className="text-sm text-slate-200">RC Column Designer</span>
+                      <span className="text-sm text-slate-700 dark:text-slate-200">RC Column Designer</span>
                       <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-blue-400" />
                     </Link>
                     <Link to="/structural-design-center" className="w-full flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors group">
-                      <span className="text-sm text-slate-200">Slab Designer</span>
+                      <span className="text-sm text-slate-700 dark:text-slate-200">Slab Designer</span>
                       <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-blue-400" />
                     </Link>
                     <Link to="/structural-design-center" className="w-full flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors group">
-                      <span className="text-sm text-slate-200">Footing Designer</span>
+                      <span className="text-sm text-slate-700 dark:text-slate-200">Footing Designer</span>
                       <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-blue-400" />
                     </Link>
                   </div>
@@ -1919,7 +1919,7 @@ const PostAnalysisDesignHub: FC = () => {
 
               <div className="lg:col-span-3">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-white">Concrete Member Design</h2>
+                  <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Concrete Member Design</h2>
                   <span className="text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">
                     {CONCRETE_CODES.find(c => c.id === params.concreteCode)?.name}
                   </span>
@@ -1966,7 +1966,7 @@ const PostAnalysisDesignHub: FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
                 <Zap className="w-8 h-8 text-amber-400 mb-3" />
-                <h3 className="text-lg font-semibold text-white mb-2">Auto-Optimize</h3>
+                <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">Auto-Optimize</h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
                   Automatically find the lightest section that passes all design checks for each member.
                   Iterates through the section database from lightest to heaviest.
@@ -1989,21 +1989,21 @@ const PostAnalysisDesignHub: FC = () => {
 
               <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
                 <Target className="w-8 h-8 text-blue-400 mb-3" />
-                <h3 className="text-lg font-semibold text-white mb-2">Target Utilization</h3>
+                <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">Target Utilization</h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
                   Set a target utilization ratio (e.g. 0.85) and the optimizer will select sections
                   closest to that ratio for maximum material efficiency.
                 </p>
                 <div className="flex items-center gap-3">
                   <input type="number" step="0.05" min="0.5" max="0.99" defaultValue="0.85"
-                    className="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-200 focus:border-blue-500 focus:outline-none" />
+                    className="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none" />
                   <span className="text-sm text-slate-600 dark:text-slate-400">ratio</span>
                 </div>
               </div>
 
               <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
                 <Award className="w-8 h-8 text-emerald-400 mb-3" />
-                <h3 className="text-lg font-semibold text-white mb-2">Weight Summary</h3>
+                <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">Weight Summary</h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
                   Total structural steel weight based on current section assignments.
                 </p>
@@ -2017,7 +2017,7 @@ const PostAnalysisDesignHub: FC = () => {
             {/* Optimization results table */}
             {designResults.size > 0 && (
               <div>
-                <h2 className="text-lg font-semibold text-white mb-4">Design Results After Optimization</h2>
+                <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Design Results After Optimization</h2>
                 <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
                   <MemberDesignTable
                     rows={memberRows}
@@ -2036,7 +2036,7 @@ const PostAnalysisDesignHub: FC = () => {
         {activeTab === 'report' && (
           <div className="space-y-6">
             <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
-              <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-blue-400" />
                 Design Report
               </h2>
@@ -2048,7 +2048,7 @@ const PostAnalysisDesignHub: FC = () => {
                   {/* Report Header */}
                   <div className="bg-slate-100 dark:bg-slate-800 rounded-xl p-6 font-mono text-sm">
                     <div className="text-center mb-6">
-                      <h3 className="text-lg font-bold text-white">STRUCTURAL DESIGN REPORT</h3>
+                      <h3 className="text-lg font-bold text-zinc-900 dark:text-white">STRUCTURAL DESIGN REPORT</h3>
                       <p className="text-slate-600 dark:text-slate-400">Generated by BeamLab Ultimate</p>
                       <p className="text-slate-500 text-xs">{new Date().toLocaleString()}</p>
                     </div>
@@ -2056,15 +2056,15 @@ const PostAnalysisDesignHub: FC = () => {
                     <div className="grid grid-cols-2 gap-4 mb-6">
                       <div>
                         <div className="text-slate-500">Design Code</div>
-                        <div className="text-slate-200">{STEEL_CODES.find(c => c.id === params.steelCode)?.name}</div>
+                        <div className="text-slate-700 dark:text-slate-200">{STEEL_CODES.find(c => c.id === params.steelCode)?.name}</div>
                       </div>
                       <div>
                         <div className="text-slate-500">Steel Grade</div>
-                        <div className="text-slate-200">{params.steelGrade}</div>
+                        <div className="text-slate-700 dark:text-slate-200">{params.steelGrade}</div>
                       </div>
                       <div>
                         <div className="text-slate-500">Members Checked</div>
-                        <div className="text-slate-200">{designResults.size}</div>
+                        <div className="text-slate-700 dark:text-slate-200">{designResults.size}</div>
                       </div>
                       <div>
                         <div className="text-slate-500">Pass / Fail</div>
@@ -2087,7 +2087,7 @@ const PostAnalysisDesignHub: FC = () => {
                       <tbody>
                         {Array.from(designResults.entries()).map(([id, r]) => (
                           <tr key={id} className="border-b border-slate-300 dark:border-slate-700/50">
-                            <td className="py-1 text-slate-200">{r.memberName}</td>
+                            <td className="py-1 text-slate-700 dark:text-slate-200">{r.memberName}</td>
                             <td className="py-1 text-slate-700 dark:text-slate-300">{r.section}</td>
                             <td className="py-1 text-right text-slate-700 dark:text-slate-300">{formatForce(r.forces.N)}</td>
                             <td className="py-1 text-right text-slate-700 dark:text-slate-300">{formatForce(r.forces.Vy)}</td>

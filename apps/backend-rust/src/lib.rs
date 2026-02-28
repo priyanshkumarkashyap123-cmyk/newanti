@@ -935,6 +935,174 @@ struct SparseSystemOutput {
     solve_time_ms: f64,
 }
 
+// ============================================
+// PUSHOVER ANALYSIS EXPORT
+// ============================================
+
+/// Input structure for pushover analysis via WASM
+#[derive(Deserialize)]
+struct PushoverWasmInput {
+    /// Story heights in meters
+    story_heights: Vec<f64>,
+    /// Story masses in kN (weight)
+    story_masses: Vec<f64>,
+    /// Story stiffness in kN/m
+    story_stiffness: Vec<f64>,
+    /// Optional first-mode shape for load pattern
+    mode_shape: Option<Vec<f64>>,
+    /// Load pattern: "uniform", "triangular", "first-mode", "mass-proportional", "code"
+    load_pattern: Option<String>,
+    /// Target displacement in meters (default 0.5)
+    target_displacement: Option<f64>,
+    /// Number of load steps (default 100)
+    num_steps: Option<usize>,
+    /// Include P-Delta effects (default true)
+    include_pdelta: Option<bool>,
+    /// Convergence tolerance (default 1e-4)
+    tolerance: Option<f64>,
+    /// Max iterations per step (default 50)
+    max_iterations: Option<usize>,
+    /// Material type for auto-generated hinges: "rc_beam", "rc_column", "steel" (default "rc_beam")
+    hinge_material: Option<String>,
+}
+
+/// Nonlinear static pushover analysis — capacity curve generation
+/// Returns base shear vs. roof displacement with hinge states
+#[wasm_bindgen]
+pub fn solve_pushover(input_val: JsValue) -> JsValue {
+    let input: PushoverWasmInput = match serde_wasm_bindgen::from_value(input_val) {
+        Ok(v) => v,
+        Err(e) => return JsValue::from_str(&format!(
+            r#"{{"success":false,"error":"Input parse error: {}"}}"#, e
+        )),
+    };
+
+    let n_stories = input.story_heights.len();
+    if n_stories == 0 || n_stories != input.story_masses.len() || n_stories != input.story_stiffness.len() {
+        return JsValue::from_str(
+            r#"{"success":false,"error":"story_heights, story_masses, and story_stiffness must have equal non-zero length"}"#
+        );
+    }
+
+    // Map load pattern string to enum
+    let load_pattern = match input.load_pattern.as_deref() {
+        Some("uniform") => pushover_analysis::LoadPattern::Uniform,
+        Some("first-mode") | Some("firstMode") => pushover_analysis::LoadPattern::FirstMode,
+        Some("mass-proportional") | Some("massProportional") => pushover_analysis::LoadPattern::MassProportional,
+        Some("code") => pushover_analysis::LoadPattern::CodePattern,
+        _ => pushover_analysis::LoadPattern::Triangular,
+    };
+
+    let config = pushover_analysis::PushoverConfig {
+        load_pattern,
+        target_displacement: input.target_displacement.unwrap_or(0.5),
+        num_steps: input.num_steps.unwrap_or(100),
+        include_pdelta: input.include_pdelta.unwrap_or(true),
+        tolerance: input.tolerance.unwrap_or(1e-4),
+        max_iterations: input.max_iterations.unwrap_or(50),
+    };
+
+    let mut analyzer = pushover_analysis::PushoverAnalyzer::new(config);
+
+    // Auto-generate plastic hinges at each story (beam ends + column bases)
+    let backbone = match input.hinge_material.as_deref() {
+        Some("steel") => pushover_analysis::HingeBackbone::steel_beam_compact(),
+        Some("rc_column") => pushover_analysis::HingeBackbone::rc_column_conforming(0.2),
+        _ => pushover_analysis::HingeBackbone::rc_beam_conforming(),
+    };
+
+    for i in 0..n_stories {
+        let position = (i as f64 + 0.5) / n_stories as f64;
+        analyzer.add_hinge(pushover_analysis::PlasticHinge::new(
+            i,
+            i,
+            position,
+            pushover_analysis::HingeType::Moment,
+            backbone.clone(),
+        ));
+    }
+
+    // Run analysis
+    let mode_shape_ref = input.mode_shape.as_deref();
+    let capacity_curve = analyzer.analyze(
+        &input.story_heights,
+        &input.story_masses,
+        &input.story_stiffness,
+        mode_shape_ref,
+    );
+
+    // Build JSON-friendly result
+    #[derive(Serialize)]
+    struct PushoverResult {
+        success: bool,
+        points: Vec<PushoverPoint>,
+        yield_point: Option<PushoverPoint>,
+        ultimate_point: Option<PushoverPoint>,
+        ductility: f64,
+        effective_period: f64,
+        hinge_summary: Vec<HingeSummary>,
+    }
+
+    #[derive(Serialize)]
+    struct PushoverPoint {
+        step: usize,
+        base_shear: f64,
+        roof_displacement: f64,
+        hinges_yielded: usize,
+    }
+
+    #[derive(Serialize)]
+    struct HingeSummary {
+        id: usize,
+        state: String,
+        deformation: f64,
+        ductility_demand: f64,
+    }
+
+    let points: Vec<PushoverPoint> = capacity_curve.points.iter().map(|p| PushoverPoint {
+        step: p.step,
+        base_shear: p.base_shear,
+        roof_displacement: p.roof_displacement,
+        hinges_yielded: p.hinges_yielded,
+    }).collect();
+
+    let yield_pt = capacity_curve.yield_point.as_ref().map(|p| PushoverPoint {
+        step: p.step,
+        base_shear: p.base_shear,
+        roof_displacement: p.roof_displacement,
+        hinges_yielded: p.hinges_yielded,
+    });
+
+    let ultimate_pt = capacity_curve.ultimate_point.as_ref().map(|p| PushoverPoint {
+        step: p.step,
+        base_shear: p.base_shear,
+        roof_displacement: p.roof_displacement,
+        hinges_yielded: p.hinges_yielded,
+    });
+
+    let hinge_summary: Vec<HingeSummary> = analyzer.hinges.iter().map(|h| HingeSummary {
+        id: h.id,
+        state: h.state.name().to_string(),
+        deformation: h.current_deformation,
+        ductility_demand: h.ductility_demand(),
+    }).collect();
+
+    let result = PushoverResult {
+        success: true,
+        points,
+        yield_point: yield_pt,
+        ultimate_point: ultimate_pt,
+        ductility: capacity_curve.ductility,
+        effective_period: capacity_curve.effective_period,
+        hinge_summary,
+    };
+
+    serde_wasm_bindgen::to_value(&result)
+        .unwrap_or_else(|e| JsValue::from_str(&format!(
+            r#"{{"success":false,"error":"Serialization error: {}"}}"#, e
+        )))
+}
+
 /// Solve sparse system using Conjugate Gradient
 /// This handles large structures (e.g. 10k+ nodes) without OOM.
 #[wasm_bindgen]

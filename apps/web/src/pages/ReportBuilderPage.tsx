@@ -200,7 +200,7 @@ export default function ReportBuilderPage() {
   }, [config, sections]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-100 p-6">
+    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         <header className="flex items-center justify-between">
           <div>
@@ -215,7 +215,7 @@ export default function ReportBuilderPage() {
                 Auto-fill ({members.size} members)
               </button>
             )}
-            <button onClick={() => setShowPreview(!showPreview)} className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors">
+            <button onClick={() => setShowPreview(!showPreview)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors">
               <Eye className="w-4 h-4" />
               {showPreview ? 'Edit' : 'Preview'}
             </button>
@@ -324,13 +324,13 @@ export default function ReportBuilderPage() {
                         <input 
                           value={section.title}
                           onChange={e => updateSection(section.id, { title: e.target.value })}
-                          className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm font-medium"
+                          className="w-full px-2 py-1 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded text-sm font-medium"
                         />
                         <textarea 
                           value={section.content}
                           onChange={e => updateSection(section.id, { content: e.target.value })}
                           rows={2}
-                          className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-xs resize-none"
+                          className="w-full px-2 py-1 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded text-xs resize-none"
                         />
                       </div>
                       <button onClick={() => removeSection(section.id)} className="p-1 text-red-400 hover:text-red-300">

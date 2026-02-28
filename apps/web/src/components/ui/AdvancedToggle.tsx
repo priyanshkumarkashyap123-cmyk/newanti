@@ -25,22 +25,22 @@ export const AdvancedToggle: FC<AdvancedToggleProps> = ({
     disabled = false,
 }) => {
     return (
-        <div className="flex items-center justify-between gap-4 rounded-lg border border-zinc-700 bg-zinc-800 p-5 hover:border-zinc-600 transition-colors">
+        <div className="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 p-5 hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors">
             <div className="flex items-start gap-4">
                 {icon && (
-                    <div className="p-3 rounded bg-zinc-700/30 text-white flex items-center justify-center shrink-0">
+                    <div className="p-3 rounded bg-zinc-200/30 dark:bg-zinc-700/30 text-zinc-900 dark:text-white flex items-center justify-center shrink-0">
                         {icon}
                     </div>
                 )}
                 <div className="flex flex-col gap-1">
-                    <p className="text-white text-base font-bold">{label}</p>
+                    <p className="text-zinc-900 dark:text-white text-base font-bold">{label}</p>
                     {description && (
-                        <p className="text-zinc-400 text-sm">{description}</p>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-sm">{description}</p>
                     )}
                     {statusText && (
                         <div className="flex items-center gap-2 mt-1">
                             <span className={`w-2 h-2 rounded-full ${enabled ? 'bg-green-500' : 'bg-zinc-500'}`} />
-                            <span className="text-xs text-zinc-400">{statusText}</span>
+                            <span className="text-xs text-zinc-500 dark:text-zinc-400">{statusText}</span>
                         </div>
                     )}
                 </div>

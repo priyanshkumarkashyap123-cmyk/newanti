@@ -325,7 +325,7 @@ const CategorySwitcher: FC = memo(() => {
                                 ${
                                   isActive
                                     ? "bg-blue-600/20 text-blue-400 border border-blue-500/30"
-                                    : "text-zinc-400 hover:text-white hover:bg-zinc-800"
+                                    : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800"
                                 }
                             `}
             >
@@ -336,7 +336,7 @@ const CategorySwitcher: FC = memo(() => {
         })}
       </div>
 
-      <div className="mx-2 h-6 w-px bg-zinc-800" />
+      <div className="mx-2 h-6 w-px bg-zinc-100 dark:bg-zinc-800" />
 
       {/* Direct Structure Gallery Button */}
       <button
@@ -364,10 +364,10 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = memo(
 
     if (collapsed) {
       return (
-        <div className="w-10 h-full bg-slate-950 border-l border-slate-800/60 flex flex-col items-center py-2 absolute right-0 z-20 md:relative shadow-lg md:shadow-none">
+        <div className="w-10 h-full bg-white dark:bg-slate-950 border-l border-slate-800/60 flex flex-col items-center py-2 absolute right-0 z-20 md:relative shadow-lg md:shadow-none">
           <button
             onClick={onToggle}
-            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
             title="Show Properties"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -377,14 +377,14 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = memo(
     }
 
     return (
-      <div className="w-72 h-full bg-slate-950/95 backdrop-blur-sm border-l border-slate-800/60 flex flex-col flex-shrink-0 absolute right-0 z-20 md:relative shadow-xl md:shadow-none">
+      <div className="w-72 h-full bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm border-l border-slate-800/60 flex flex-col flex-shrink-0 absolute right-0 z-20 md:relative shadow-xl md:shadow-none">
         <div className="flex items-center justify-between px-3 py-2 border-b border-slate-800/60">
           <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
             Inspector
           </h3>
           <button
             onClick={onToggle}
-            className="p-1 text-slate-500 hover:text-white hover:bg-slate-800 rounded transition-colors"
+            className="p-1 text-slate-500 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
             title="Hide Properties"
           >
             <ChevronRight className="w-4 h-4" />
@@ -455,7 +455,7 @@ const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => void }> =
     const selMembers = Array.from(selectedIds).filter(id => id.startsWith("M")).length;
 
     return (
-      <div className="h-7 bg-slate-950/95 backdrop-blur-sm border-t border-slate-800/60 flex items-center justify-between px-3 text-[10px] text-slate-500 flex-shrink-0 select-none font-medium">
+      <div className="h-7 bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm border-t border-slate-800/60 flex items-center justify-between px-3 text-[10px] text-slate-500 flex-shrink-0 select-none font-medium">
         {/* Left Section — Status + Mode */}
         <div className="flex items-center gap-3">
           {/* Status Indicator */}
@@ -463,20 +463,20 @@ const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => void }> =
             <span
               className={`w-1.5 h-1.5 rounded-full ${isAnalyzing ? "bg-amber-400 animate-pulse" : analysisResults ? "bg-emerald-400" : "bg-blue-400"}`}
             />
-            <span className={isAnalyzing ? "text-amber-400" : analysisResults ? "text-emerald-400" : "text-slate-400"}>
+            <span className={isAnalyzing ? "text-amber-400" : analysisResults ? "text-emerald-400" : "text-slate-500 dark:text-slate-400"}>
               {isAnalyzing ? "Analyzing..." : analysisResults ? "Results Ready" : "Ready"}
             </span>
           </span>
 
-          <span className="h-3 w-px bg-slate-800" />
+          <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
 
           {/* Active Mode */}
           <span>
             <span className="text-slate-600">Mode:</span>{" "}
-            <span className="text-slate-400">{activeCategory}</span>
+            <span className="text-slate-500 dark:text-slate-400">{activeCategory}</span>
           </span>
 
-          <span className="h-3 w-px bg-slate-800" />
+          <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
 
           {/* Active Tool */}
           <span>
@@ -487,7 +487,7 @@ const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => void }> =
           {/* Selection Info */}
           {selCount > 0 && (
             <>
-              <span className="h-3 w-px bg-slate-800" />
+              <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
               <span className="text-cyan-400">
                 Selected: {selCount}
                 {selNodes > 0 && ` (${selNodes}N`}
@@ -522,32 +522,32 @@ const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => void }> =
             </span>
           </span>
 
-          <span className="h-3 w-px bg-slate-800" />
+          <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
 
           {/* Model Statistics */}
           <span>
             <span className="text-slate-600">N:</span>
-            <span className="text-slate-400 font-mono ml-0.5">{nodes.size}</span>
+            <span className="text-slate-500 dark:text-slate-400 font-mono ml-0.5">{nodes.size}</span>
           </span>
           <span>
             <span className="text-slate-600">M:</span>
-            <span className="text-slate-400 font-mono ml-0.5">{members.size}</span>
+            <span className="text-slate-500 dark:text-slate-400 font-mono ml-0.5">{members.size}</span>
           </span>
 
-          <span className="h-3 w-px bg-slate-800" />
+          <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
 
           {/* Units */}
           <span>
             <span className="text-slate-600">Units:</span>{" "}
-            <span className="text-slate-400">kN, m</span>
+            <span className="text-slate-500 dark:text-slate-400">kN, m</span>
           </span>
 
-          <span className="h-3 w-px bg-slate-800" />
+          <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
 
           {/* Backend Health */}
           <button
             onClick={onOpenDiagnostics}
-            className="flex items-center gap-1.5 hover:bg-slate-800/40 rounded px-1.5 py-0.5 -my-0.5 transition cursor-pointer"
+            className="flex items-center gap-1.5 hover:bg-slate-200/40 dark:hover:bg-slate-800/40 rounded px-1.5 py-0.5 -my-0.5 transition cursor-pointer"
             title="Click for integration diagnostics"
           >
             {(["Node", "Python", "Rust"] as const).map((name) => {
@@ -2932,15 +2932,15 @@ export const ModernModeler: FC = () => {
       userName={user?.firstName || "Guest"}
       onServerUpdate={handleServerUpdate}
     >
-      <div className="h-screen w-screen flex flex-col bg-zinc-950 text-white overflow-hidden relative">
+      <div className="h-screen w-screen flex flex-col bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white overflow-hidden relative">
         <MultiplayerUI />
         {/* Top Bar - Compact Header */}
-        <header className="h-9 bg-slate-950/90 backdrop-blur-sm border-b border-slate-800/60 flex items-center justify-between px-4 flex-shrink-0 select-none">
+        <header className="h-9 bg-white/90 dark:bg-slate-950/90 backdrop-blur-sm border-b border-slate-800/60 flex items-center justify-between px-4 flex-shrink-0 select-none">
           {/* Logo Area */}
           <div className="flex items-center gap-3">
             {/* Mobile Menu Button */}
             <button
-              className="md:hidden text-zinc-400 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded p-1 transition-colors"
+              className="md:hidden text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded p-1 transition-colors"
               onClick={() =>
                 document.dispatchEvent(new CustomEvent("toggle-sidebar"))
               }
@@ -2967,7 +2967,7 @@ export const ModernModeler: FC = () => {
 
             <div className="flex items-center gap-2">
               <span className="text-lg text-blue-500">⬡</span>
-              <span className="font-semibold text-sm tracking-tight text-slate-200">
+              <span className="font-semibold text-sm tracking-tight text-slate-700 dark:text-slate-200">
                 BeamLab
               </span>
               <span className="text-[9px] font-bold text-slate-500 tracking-wider">
@@ -2987,7 +2987,7 @@ export const ModernModeler: FC = () => {
           {/* 1. Workflow Sidebar (Left) */}
           <aside
             className={`
-                        w-48 flex-shrink-0 h-full z-30 bg-slate-900/95 backdrop-blur-sm border-r border-slate-800/60
+                        w-48 flex-shrink-0 h-full z-30 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-sm border-r border-slate-800/60
                         transition-transform duration-300 
                         absolute md:relative 
                         ${isSidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full md:translate-x-0"}
@@ -3013,7 +3013,7 @@ export const ModernModeler: FC = () => {
 
             {/* 3D Canvas Area */}
             <div
-              className="flex-1 bg-zinc-950 relative min-h-0"
+              className="flex-1 bg-white dark:bg-zinc-950 relative min-h-0"
               onContextMenu={(e) => {
                 // Determine what was clicked and show appropriate context menu
                 const selectedId =
@@ -3476,7 +3476,7 @@ export const ModernModeler: FC = () => {
               <AIArchitectPanel />
               <button
                 onClick={() => setShowAIArchitect(false)}
-                className="absolute top-3 right-3 p-1 text-zinc-400 hover:text-white bg-zinc-800/80 rounded-lg z-50"
+                className="absolute top-3 right-3 p-1 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-zinc-100/80 dark:bg-zinc-800/80 rounded-lg z-50"
                 title="Close AI Architect"
               >
                 ✕
@@ -3533,22 +3533,22 @@ export const ModernModeler: FC = () => {
                 className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                 onClick={() => closeModal("generativeDesign")}
               />
-              <div className="relative w-[95vw] max-w-5xl h-[85vh] bg-slate-900 border border-slate-700 rounded-xl shadow-2xl flex flex-col overflow-hidden">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700 bg-gradient-to-r from-emerald-600/10 to-cyan-600/10">
+              <div className="relative w-[95vw] max-w-5xl h-[85vh] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl flex flex-col overflow-hidden">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-emerald-600/10 to-cyan-600/10">
                   <div>
-                    <h2 className="text-lg font-bold text-white">
+                    <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
                       Generative Design / Topology Optimization
                     </h2>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       AI-powered structural optimization with density-based
                       topology
                     </p>
                   </div>
                   <button
                     onClick={() => closeModal("generativeDesign")}
-                    className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+                    className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
                   >
-                    <span className="text-slate-400 text-xl">&times;</span>
+                    <span className="text-slate-500 dark:text-slate-400 text-xl">&times;</span>
                   </button>
                 </div>
                 <div className="flex-1 overflow-auto p-6">
@@ -3565,22 +3565,22 @@ export const ModernModeler: FC = () => {
                 className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                 onClick={() => closeModal("seismicStudio")}
               />
-              <div className="relative w-[95vw] max-w-6xl h-[90vh] bg-slate-900 border border-slate-700 rounded-xl shadow-2xl flex flex-col overflow-hidden">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700 bg-gradient-to-r from-red-600/10 to-orange-600/10">
+              <div className="relative w-[95vw] max-w-6xl h-[90vh] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl flex flex-col overflow-hidden">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-red-600/10 to-orange-600/10">
                   <div>
-                    <h2 className="text-lg font-bold text-white">
+                    <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
                       Seismic Design Studio
                     </h2>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       Response Spectrum · Time History · Pushover — IS 1893,
                       ASCE 7, EC8
                     </p>
                   </div>
                   <button
                     onClick={() => closeModal("seismicStudio")}
-                    className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+                    className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
                   >
-                    <span className="text-slate-400 text-xl">&times;</span>
+                    <span className="text-slate-500 dark:text-slate-400 text-xl">&times;</span>
                   </button>
                 </div>
                 <div className="flex-1 overflow-auto p-6">

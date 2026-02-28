@@ -3,7 +3,6 @@
  * Interactive UI for shear reinforcement design
  */
 
-'use client';
 
 import React, { useState, useMemo } from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
@@ -158,8 +157,7 @@ export function StirrupDesignPanel() {
         <Tabs.List className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
           <Tabs.Trigger 
             value="input"
-            className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 
-                       hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent
+            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white border-b-2 border-transparent
                        data-[state=active]:text-blue-600 data-[state=active]:border-blue-600"
           >
             <Settings className="w-4 h-4 inline mr-2" />
@@ -167,8 +165,7 @@ export function StirrupDesignPanel() {
           </Tabs.Trigger>
           <Tabs.Trigger 
             value="results"
-            className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 
-                       hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent
+            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white border-b-2 border-transparent
                        data-[state=active]:text-blue-600 data-[state=active]:border-blue-600"
           >
             <FileText className="w-4 h-4 inline mr-2" />
@@ -670,7 +667,7 @@ export function StirrupDesignPanel() {
             </>
           ) : (
             <div className="text-center py-12">
-              <Calculator className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+              <Calculator className="w-16 h-16 mx-auto text-gray-500 dark:text-gray-400 mb-4" />
               <p className="text-gray-500 dark:text-gray-400">
                 Enter design parameters and click Calculate to see results
               </p>

@@ -40,7 +40,7 @@ import {
 const InfoTip: React.FC<{ text: string }> = ({ text }) => (
   <span className="relative group ml-1 cursor-help">
     <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-500 text-[10px] font-bold">?</span>
-    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-50 max-w-xs">
+    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block bg-gray-100 dark:bg-gray-800 text-zinc-900 dark:text-white text-xs rounded px-2 py-1 whitespace-nowrap z-50 max-w-xs">
       {text}
     </span>
   </span>
@@ -429,7 +429,7 @@ export function PipeNetworkDesigner() {
               {networkSvg}
             </div>
           ) : (
-            <div className="flex items-center justify-center h-64 text-gray-400 text-sm">
+            <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400 text-sm">
               Load a preset or add nodes & pipes to begin
             </div>
           )}
@@ -678,7 +678,7 @@ export function PipeNetworkDesigner() {
                     <option value="linear-theory">Linear Theory (Simultaneous Loop)</option>
                     <option value="newton-raphson">Newton-Raphson (Global)</option>
                   </select>
-                  <p className="text-[10px] text-gray-400 mt-1">
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">
                     {config.method === 'hardy-cross' && 'Classic iterative method. Corrects flows loop-by-loop. Most intuitive, good for hand checks.'}
                     {config.method === 'linear-theory' && 'Solves all loops simultaneously. Faster convergence for large networks.'}
                     {config.method === 'newton-raphson' && 'Global Newton-Raphson on continuity + energy equations. Most robust for complex networks.'}
@@ -697,7 +697,7 @@ export function PipeNetworkDesigner() {
                     <option value="darcy-weisbach">Darcy-Weisbach (ε roughness)</option>
                     <option value="manning">Manning (n roughness)</option>
                   </select>
-                  <p className="text-[10px] text-gray-400 mt-1">
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">
                     {config.frictionModel === 'hazen-williams' && 'Empirical; C = 130-150 for most pipes. Pipe roughness input is the C value. Most common in water distribution.'}
                     {config.frictionModel === 'darcy-weisbach' && 'Theoretical; uses ε (mm) absolute roughness + Colebrook-White. Pipe roughness input is ε in mm.'}
                     {config.frictionModel === 'manning' && 'Empirical; uses Manning\'s n. Pipe roughness input is n value (e.g., 0.011). Common for open channels & gravity mains.'}
@@ -714,7 +714,7 @@ export function PipeNetworkDesigner() {
                     onChange={e => setConfig({ ...config, tolerance: +e.target.value })}
                     className="w-full px-3 py-2 border rounded text-sm"
                   />
-                  <p className="text-[10px] text-gray-400 mt-1">Iteration stops when max flow correction ΔQ falls below this value.</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">Iteration stops when max flow correction ΔQ falls below this value.</p>
                 </div>
 
                 {/* Max Iterations */}
@@ -766,7 +766,7 @@ export function PipeNetworkDesigner() {
           {activePanel === 'results' && (
             <div className="space-y-6">
               {!result ? (
-                <div className="text-center text-gray-400 py-12">
+                <div className="text-center text-gray-500 dark:text-gray-400 py-12">
                   Run analysis to see results
                 </div>
               ) : (
@@ -938,7 +938,7 @@ export function PipeNetworkDesigner() {
           {activePanel === 'design' && (
             <div className="space-y-6">
               {!designResult ? (
-                <div className="text-center text-gray-400 py-12">
+                <div className="text-center text-gray-500 dark:text-gray-400 py-12">
                   Run analysis first, then pipe design
                 </div>
               ) : (
@@ -1043,7 +1043,7 @@ export function PipeNetworkDesigner() {
       </div>
 
       {/* Footer */}
-      <div className="border-t border-gray-200 px-4 py-2 bg-gray-50 text-[10px] text-gray-400 flex justify-between">
+      <div className="border-t border-gray-200 px-4 py-2 bg-gray-50 text-[10px] text-gray-500 dark:text-gray-400 flex justify-between">
         <span>Hardy Cross (1936) · Linear Theory (Wood & Charles, 1972) · Newton-Raphson | IS 783 · IS 2185</span>
         <span>{nodes.length} nodes · {pipes.length} pipes · {loops.length} loops</span>
       </div>

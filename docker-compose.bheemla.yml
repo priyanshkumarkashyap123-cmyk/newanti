@@ -14,10 +14,10 @@ services:
   frontend:
     container_name: beamlab-frontend
     build:
-      context: ./apps/web
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/web/Dockerfile
     ports:
-      - "5173:5173"
+      - "5173:80"
     environment:
       - VITE_API_URL=http://api.beamlabultimate.local:3001
       - VITE_PYTHON_API_URL=http://api.beamlabultimate.local:3002
@@ -51,7 +51,7 @@ services:
       - APP_NAME=BeamLab Ultimate API
       - FRONTEND_URL=http://app.beamlabultimate.local:5173
       - ALLOWED_ORIGINS=http://app.beamlabultimate.local:5173,https://beamlabultimate.tech,https://www.beamlabultimate.tech,http://localhost:5173
-      - MONGODB_URI=mongodb://mongo:27017/beamlab-ultimate
+      - MONGODB_URI=mongodb://admin:beamlab-dev-pass@mongo:27017/beamlab-ultimate?authSource=admin
       - PYTHON_API_URL=http://python-api:3002
     depends_on:
       - mongo
@@ -71,10 +71,10 @@ services:
       context: ./apps/backend-python
       dockerfile: Dockerfile
     ports:
-      - "3002:3002"
+      - "3002:8000"
     environment:
       - HOST=0.0.0.0
-      - PORT=3002
+      - PORT=8000
       - APP_NAME=BeamLab Ultimate Python API
       - FRONTEND_URL=http://app.beamlabultimate.local:5173
       - ALLOWED_ORIGINS=http://app.beamlabultimate.local:5173,https://beamlabultimate.tech,https://www.beamlabultimate.tech,http://localhost:5173
@@ -92,7 +92,7 @@ services:
   # ============================================
   mongo:
     container_name: beamlab-mongo
-    image: mongo:latest
+    image: mongo:7
     ports:
       - "27017:27017"
     environment:
@@ -105,7 +105,7 @@ services:
     networks:
       - beamlab-network
     healthcheck:
-      test: echo 'db.adminCommand("ping")' | mongosh --eval "show dbs"
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 }).ok"]
       interval: 10s
       timeout: 5s
       retries: 5

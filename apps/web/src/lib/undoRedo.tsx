@@ -598,7 +598,7 @@ export function HistoryPanel<TState>({
                 className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${index === currentIndex
                     ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
                     : index > currentIndex
-                      ? 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      ? 'text-gray-500 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
               >
@@ -646,7 +646,7 @@ export function UndoRedoToolbar({
         title={undoDescription ? `Undo: ${undoDescription}` : 'Undo'}
         className={`p-2 rounded transition-colors ${canUndo
             ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-            : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+            : 'text-gray-600 dark:text-gray-600 cursor-not-allowed'
           }`}
         aria-label="Undo"
       >
@@ -666,7 +666,7 @@ export function UndoRedoToolbar({
         title={redoDescription ? `Redo: ${redoDescription}` : 'Redo'}
         className={`p-2 rounded transition-colors ${canRedo
             ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-            : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+            : 'text-gray-600 dark:text-gray-600 cursor-not-allowed'
           }`}
         aria-label="Redo"
       >

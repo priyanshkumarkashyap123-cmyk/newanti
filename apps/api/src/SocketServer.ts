@@ -12,6 +12,7 @@ import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import { verifySocketToken } from './middleware/authMiddleware.js';
 import { env } from './config/env.js';
+import { getAllowedOrigins } from './config/cors.js';
 
 // ============================================
 // TYPES
@@ -111,16 +112,8 @@ export class SocketServer {
     private colorIndex: number = 0;
 
     constructor(httpServer: HTTPServer) {
-        // Build CORS origin list from env + sensible defaults
-        const defaultOrigins = [
-            'http://localhost:5173',
-            'http://localhost:3000',
-            'https://beamlabultimate.tech',
-            'https://www.beamlabultimate.tech',
-            'https://brave-mushroom-0eae8ec00.4.azurestaticapps.net'
-        ];
-        const extraOrigins = (env.CORS_ALLOWED_ORIGINS ?? '').split(',').map(s => s.trim()).filter(Boolean);
-        const allOrigins = [...new Set([...defaultOrigins, ...extraOrigins])];
+        // Build CORS origin list from shared config
+        const allOrigins = getAllowedOrigins();
 
         this.io = new SocketIOServer(httpServer, {
             cors: {

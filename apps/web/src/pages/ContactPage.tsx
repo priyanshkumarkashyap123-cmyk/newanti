@@ -29,7 +29,7 @@ export const ContactPage: FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-50 flex flex-col font-sans selection:bg-blue-500/30">
+    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 flex flex-col font-sans selection:bg-blue-500/30">
       {/* Header - Dark Theme */}
       <nav className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/90 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -49,19 +49,19 @@ export const ContactPage: FC = () => {
             <div className="hidden md:flex items-center gap-8">
               <Link
                 to="/pricing"
-                className="text-slate-600 dark:text-slate-400 hover:text-white text-sm font-medium transition-colors"
+                className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white text-sm font-medium transition-colors"
               >
                 Pricing
               </Link>
               <Link
                 to="/help"
-                className="text-slate-600 dark:text-slate-400 hover:text-white text-sm font-medium transition-colors"
+                className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white text-sm font-medium transition-colors"
               >
                 Help
               </Link>
               <Link
                 to="/sign-in"
-                className="text-slate-700 dark:text-slate-300 hover:text-white text-sm font-medium transition-colors"
+                className="text-slate-700 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white text-sm font-medium transition-colors"
               >
                 Log in
               </Link>
@@ -88,7 +88,7 @@ export const ContactPage: FC = () => {
               <span className="text-blue-400 text-sm font-semibold uppercase tracking-wider">
                 Contact Us
               </span>
-              <h1 className="text-4xl md:text-5xl font-bold text-white mt-2 mb-6">
+              <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mt-2 mb-6">
                 Get in touch
               </h1>
               <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
@@ -103,7 +103,7 @@ export const ContactPage: FC = () => {
                   <Mail className="w-6 h-6 text-blue-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white mb-1">
+                  <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-1">
                     Email Us
                   </h3>
                   <p className="text-slate-600 dark:text-slate-400 mb-2">
@@ -123,7 +123,7 @@ export const ContactPage: FC = () => {
                   <MapPin className="w-6 h-6 text-purple-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white mb-1">Office</h3>
+                  <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-1">Office</h3>
                   <p className="text-slate-600 dark:text-slate-400">
                     Rajapur Teonthar, Rewa
                     <br />
@@ -139,7 +139,7 @@ export const ContactPage: FC = () => {
                   <Phone className="w-6 h-6 text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white mb-1">
+                  <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-1">
                     Call Us
                   </h3>
                   <p className="text-slate-600 dark:text-slate-400 mb-2">
@@ -168,7 +168,7 @@ export const ContactPage: FC = () => {
                 <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mb-6 animate-success">
                   <CheckCircle className="w-8 h-8 text-green-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-2">
+                <h3 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">
                   Message Sent!
                 </h3>
                 <p className="text-slate-600 dark:text-slate-400">
@@ -195,7 +195,7 @@ export const ContactPage: FC = () => {
                       type="text"
                       id="name"
                       required
-                      className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-600 dark:text-slate-400"
+                      className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-zinc-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-600 dark:text-slate-400"
                       placeholder="Your name"
                       value={formState.name}
                       onChange={(e) =>
@@ -214,7 +214,7 @@ export const ContactPage: FC = () => {
                       type="email"
                       id="email"
                       required
-                      className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-600 dark:text-slate-400"
+                      className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-zinc-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-600 dark:text-slate-400"
                       placeholder="you@company.com"
                       value={formState.email}
                       onChange={(e) =>
@@ -233,7 +233,7 @@ export const ContactPage: FC = () => {
                   </label>
                   <select
                     id="subject"
-                    className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                    className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                     value={formState.subject}
                     onChange={(e) =>
                       setFormState({ ...formState, subject: e.target.value })
@@ -258,7 +258,7 @@ export const ContactPage: FC = () => {
                     id="message"
                     required
                     rows={4}
-                    className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none placeholder:text-slate-600 dark:text-slate-400"
+                    className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-zinc-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none placeholder:text-slate-600 dark:text-slate-400"
                     placeholder="How can we help you?"
                     value={formState.message}
                     onChange={(e) =>

@@ -41,13 +41,14 @@ const router: Router = Router();
 // ============================================
 
 // SECURITY: Never fall back to a hardcoded secret. Crash early if misconfigured.
+// Only enforce when in-house auth is active (not Clerk).
 const JWT_SECRET = process.env['JWT_SECRET'];
 const JWT_REFRESH_SECRET = process.env['JWT_REFRESH_SECRET'];
 
-if (!JWT_SECRET || !JWT_REFRESH_SECRET) {
+if (process.env['USE_CLERK'] !== 'true' && (!JWT_SECRET || !JWT_REFRESH_SECRET)) {
     throw new Error(
-        'FATAL: JWT_SECRET and JWT_REFRESH_SECRET environment variables are required. ' +
-        'Refusing to start with insecure defaults.'
+        'FATAL: JWT_SECRET and JWT_REFRESH_SECRET environment variables are required ' +
+        'when USE_CLERK is not enabled. Refusing to start with insecure defaults.'
     );
 }
 

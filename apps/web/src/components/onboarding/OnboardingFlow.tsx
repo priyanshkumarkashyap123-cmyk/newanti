@@ -140,7 +140,7 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 bg-white dark:bg-slate-950 flex items-center justify-center">
       {/* Background Effects */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[120px]" />
@@ -150,7 +150,7 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
       {/* Skip Button */}
       <button
         onClick={handleSkip}
-        className="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors flex items-center gap-2 text-sm"
+        className="absolute top-6 right-6 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors flex items-center gap-2 text-sm"
       >
         Skip for now <X className="w-4 h-4" />
       </button>
@@ -158,7 +158,7 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
       {/* Main Content */}
       <div className="relative w-full max-w-2xl mx-auto px-6">
         {/* Progress Bar */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-slate-800 rounded-full overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
           <motion.div
             className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
             initial={{ width: 0 }}
@@ -177,7 +177,7 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
                   ? 'w-8 bg-blue-500' 
                   : index < currentStep 
                     ? 'bg-blue-500/50' 
-                    : 'bg-slate-700'
+                    : 'bg-slate-200 dark:bg-slate-700'
               }`}
             />
           ))}
@@ -193,10 +193,10 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
             transition={{ duration: 0.3 }}
             className="text-center"
           >
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
+            <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white mb-3">
               {steps[currentStep].title}
             </h1>
-            <p className="text-slate-400 text-lg mb-10">
+            <p className="text-slate-500 dark:text-slate-400 text-lg mb-10">
               {steps[currentStep].subtitle}
             </p>
             
@@ -214,7 +214,7 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
             className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all ${
               currentStep === 0
                 ? 'text-slate-500 cursor-not-allowed'
-                : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                : 'text-slate-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
             }`}
           >
             <ArrowLeft className="w-4 h-4" /> Back
@@ -253,12 +253,12 @@ const WelcomeStep: FC = () => (
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.1 }}
-          className={`flex flex-col items-center gap-3 p-6 rounded-2xl bg-slate-900/50 border border-slate-800`}
+          className={`flex flex-col items-center gap-3 p-6 rounded-2xl bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800`}
         >
           <div className={`p-4 rounded-xl bg-${item.color}-500/20 text-${item.color}-400`}>
             {item.icon}
           </div>
-          <span className="text-sm font-medium text-slate-300">{item.label}</span>
+          <span className="text-sm font-medium text-slate-600 dark:text-slate-300">{item.label}</span>
         </motion.div>
       ))}
     </div>
@@ -297,17 +297,17 @@ const RoleStep: FC<{
           className={`flex items-center gap-4 p-5 rounded-xl border-2 transition-all text-left ${
             preferences.role === role.id
               ? 'border-blue-500 bg-blue-500/10'
-              : 'border-slate-800 bg-slate-900/50 hover:border-slate-700'
+              : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 hover:border-slate-400 dark:hover:border-slate-700'
           }`}
         >
           <div className={`p-3 rounded-lg ${
-            preferences.role === role.id ? 'bg-blue-500/20 text-blue-400' : 'bg-slate-800 text-slate-400'
+            preferences.role === role.id ? 'bg-blue-500/20 text-blue-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
           }`}>
             {role.icon}
           </div>
           <div className="flex-1">
-            <p className="font-semibold text-white">{role.label}</p>
-            <p className="text-sm text-slate-400">{role.desc}</p>
+            <p className="font-semibold text-zinc-900 dark:text-white">{role.label}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{role.desc}</p>
           </div>
           {preferences.role === role.id && (
             <CheckCircle2 className="w-5 h-5 text-blue-500" />
@@ -339,17 +339,17 @@ const ExperienceStep: FC<{
           className={`p-5 rounded-xl border-2 transition-all text-left ${
             preferences.experience === level.id
               ? 'border-blue-500 bg-blue-500/10'
-              : 'border-slate-800 bg-slate-900/50 hover:border-slate-700'
+              : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 hover:border-slate-400 dark:hover:border-slate-700'
           }`}
         >
           <div className="flex justify-between items-start mb-2">
-            <p className="font-semibold text-white">{level.label}</p>
+            <p className="font-semibold text-zinc-900 dark:text-white">{level.label}</p>
             {preferences.experience === level.id && (
               <CheckCircle2 className="w-5 h-5 text-blue-500" />
             )}
           </div>
-          <p className="text-sm text-slate-400 mb-2">{level.desc}</p>
-          <p className="text-xs text-slate-400">{level.features}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">{level.desc}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{level.features}</p>
         </motion.button>
       ))}
     </div>
@@ -385,7 +385,7 @@ const UseCaseStep: FC<{
           className={`px-5 py-3 rounded-full border-2 font-medium transition-all ${
             preferences.primaryUse.includes(useCase)
               ? 'border-blue-500 bg-blue-500/20 text-blue-300'
-              : 'border-slate-700 bg-slate-900/50 text-slate-400 hover:border-slate-600'
+              : 'border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600'
           }`}
         >
           {useCase}
@@ -428,16 +428,16 @@ const DesignCodesStep: FC<{
           className={`p-4 rounded-xl border-2 transition-all text-left ${
             preferences.designCodes.includes(code.id)
               ? 'border-blue-500 bg-blue-500/10'
-              : 'border-slate-800 bg-slate-900/50 hover:border-slate-700'
+              : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 hover:border-slate-400 dark:hover:border-slate-700'
           }`}
         >
           <div className="flex justify-between items-start">
-            <p className="font-semibold text-white text-sm">{code.label}</p>
+            <p className="font-semibold text-zinc-900 dark:text-white text-sm">{code.label}</p>
             {preferences.designCodes.includes(code.id) && (
               <CheckCircle2 className="w-4 h-4 text-blue-500" />
             )}
           </div>
-          <p className="text-xs text-slate-400 mt-1">{code.codes}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{code.codes}</p>
         </motion.button>
       ))}
     </div>
@@ -456,18 +456,18 @@ const ReadyStep: FC = () => (
     </motion.div>
     
     <div className="space-y-2">
-      <p className="text-slate-300">Your workspace is configured and ready.</p>
-      <p className="text-slate-400 text-sm">You can always change these settings later.</p>
+      <p className="text-slate-600 dark:text-slate-300">Your workspace is configured and ready.</p>
+      <p className="text-slate-500 dark:text-slate-400 text-sm">You can always change these settings later.</p>
     </div>
 
     <div className="flex flex-wrap justify-center gap-3 pt-4">
-      <div className="px-4 py-2 rounded-full bg-slate-800/50 text-sm text-slate-400">
+      <div className="px-4 py-2 rounded-full bg-slate-100/50 dark:bg-slate-800/50 text-sm text-slate-500 dark:text-slate-400">
         🎯 Personalized dashboard
       </div>
-      <div className="px-4 py-2 rounded-full bg-slate-800/50 text-sm text-slate-400">
+      <div className="px-4 py-2 rounded-full bg-slate-100/50 dark:bg-slate-800/50 text-sm text-slate-500 dark:text-slate-400">
         📚 Relevant tutorials
       </div>
-      <div className="px-4 py-2 rounded-full bg-slate-800/50 text-sm text-slate-400">
+      <div className="px-4 py-2 rounded-full bg-slate-100/50 dark:bg-slate-800/50 text-sm text-slate-500 dark:text-slate-400">
         ⚙️ Pre-configured codes
       </div>
     </div>

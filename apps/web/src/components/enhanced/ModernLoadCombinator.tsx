@@ -15,7 +15,6 @@
  * @version 4.0.0
  */
 
-'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
@@ -258,8 +257,8 @@ const LoadCaseCard: React.FC<{
       exit={{ opacity: 0, scale: 0.95 }}
       className={`p-4 rounded-xl border transition-all ${
         loadCase.isEnabled
-          ? 'bg-zinc-800/50 border-zinc-700'
-          : 'bg-zinc-900/30 border-zinc-800 opacity-60'
+          ? 'bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700'
+          : 'bg-zinc-100/30 dark:bg-zinc-900/30 border-zinc-200 dark:border-zinc-800 opacity-60'
       }`}
     >
       <div className="flex items-center gap-3">
@@ -273,8 +272,8 @@ const LoadCaseCard: React.FC<{
           onClick={onToggle}
           className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
             loadCase.isEnabled
-              ? 'border-transparent text-white'
-              : 'border-zinc-600 hover:border-zinc-500'
+              ? 'border-transparent text-zinc-900 dark:text-white'
+              : 'border-zinc-600 hover:border-zinc-400 dark:hover:border-zinc-500'
           }`}
           style={{ backgroundColor: loadCase.isEnabled ? loadCase.color : 'transparent' }}
         >
@@ -285,22 +284,22 @@ const LoadCaseCard: React.FC<{
         <div className="flex items-center gap-2 flex-1">
           <span style={{ color: loadCase.color }}>{config.icon}</span>
           <div>
-            <p className={`font-bold ${loadCase.isEnabled ? 'text-white' : 'text-zinc-400'}`}>
+            <p className={`font-bold ${loadCase.isEnabled ? 'text-zinc-900 dark:text-white' : 'text-zinc-500 dark:text-zinc-400'}`}>
               {loadCase.name}
             </p>
-            <p className="text-xs text-zinc-400">{loadCase.description}</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">{loadCase.description}</p>
           </div>
         </div>
         
         {/* Values Preview */}
         <div className="flex items-center gap-2 text-xs">
           {loadCase.values.momentY && (
-            <span className="px-2 py-1 bg-zinc-700/50 rounded text-zinc-400">
+            <span className="px-2 py-1 bg-zinc-200/50 dark:bg-zinc-700/50 rounded text-zinc-500 dark:text-zinc-400">
               My: {loadCase.values.momentY}
             </span>
           )}
           {loadCase.values.shearY && (
-            <span className="px-2 py-1 bg-zinc-700/50 rounded text-zinc-400">
+            <span className="px-2 py-1 bg-zinc-200/50 dark:bg-zinc-700/50 rounded text-zinc-500 dark:text-zinc-400">
               Vy: {loadCase.values.shearY}
             </span>
           )}
@@ -310,19 +309,19 @@ const LoadCaseCard: React.FC<{
         <div className="flex items-center gap-1">
           <button
             onClick={onEdit}
-            className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
+            className="p-1.5 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
           >
             <Edit3 className="w-4 h-4" />
           </button>
           <button
             onClick={onDuplicate}
-            className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
+            className="p-1.5 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
           >
             <Copy className="w-4 h-4" />
           </button>
           <button
             onClick={onDelete}
-            className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-400 hover:text-red-400 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-red-400 transition-colors"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -347,33 +346,33 @@ const CombinationRow: React.FC<{
     <div className={`rounded-xl border transition-all ${
       combination.isGoverning
         ? 'bg-amber-500/10 border-amber-500/50'
-        : 'bg-zinc-800/30 border-zinc-700/50'
+        : 'bg-zinc-100/30 dark:bg-zinc-800/30 border-zinc-200/50 dark:border-zinc-700/50'
     }`}>
       <div
         className="flex items-center gap-4 p-4 cursor-pointer"
         onClick={onToggleExpand}
       >
         {/* Index */}
-        <span className="w-8 h-8 rounded-lg bg-zinc-700 flex items-center justify-center text-sm font-bold text-zinc-300">
+        <span className="w-8 h-8 rounded-lg bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-sm font-bold text-zinc-600 dark:text-zinc-300">
           {index + 1}
         </span>
         
         {/* Name */}
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <p className="font-medium text-white">{combination.name}</p>
+            <p className="font-medium text-zinc-900 dark:text-white">{combination.name}</p>
             {combination.isGoverning && (
               <span className="px-2 py-0.5 text-xs font-bold bg-amber-500/20 text-amber-400 rounded-full">
                 GOVERNING
               </span>
             )}
           </div>
-          <p className="text-xs text-zinc-400 capitalize">{combination.type} combination</p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 capitalize">{combination.type} combination</p>
         </div>
         
         {/* Utilization */}
         <div className="flex items-center gap-3">
-          <div className="w-24 h-2 bg-zinc-700 rounded-full overflow-hidden">
+          <div className="w-24 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${Math.min(100, combination.utilizationRatio * 100)}%` }}
@@ -392,7 +391,7 @@ const CombinationRow: React.FC<{
         </div>
         
         {/* Expand */}
-        <button className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-400">
+        <button className="p-1.5 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 dark:text-zinc-400">
           {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
       </div>
@@ -406,10 +405,10 @@ const CombinationRow: React.FC<{
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4 pt-2 border-t border-zinc-700/50">
+            <div className="px-4 pb-4 pt-2 border-t border-zinc-200/50 dark:border-zinc-700/50">
               {/* Factors */}
               <div className="mb-4">
-                <p className="text-xs text-zinc-400 mb-2">Load Factors:</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">Load Factors:</p>
                 <div className="flex flex-wrap gap-2">
                   {combination.factors.map((f, i) => {
                     const lc = loadCases.find(l => l.id === f.loadId);
@@ -429,24 +428,24 @@ const CombinationRow: React.FC<{
               
               {/* Resultant */}
               <div>
-                <p className="text-xs text-zinc-400 mb-2">Resultant Forces:</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">Resultant Forces:</p>
                 <div className="grid grid-cols-3 gap-2 text-sm">
                   {combination.resultant.momentY && (
-                    <div className="bg-zinc-900/50 rounded-lg p-2">
-                      <span className="text-zinc-400">My = </span>
-                      <span className="text-white font-mono">{combination.resultant.momentY.toFixed(1)} kN·m</span>
+                    <div className="bg-white/50 dark:bg-zinc-900/50 rounded-lg p-2">
+                      <span className="text-zinc-500 dark:text-zinc-400">My = </span>
+                      <span className="text-zinc-900 dark:text-white font-mono">{combination.resultant.momentY.toFixed(1)} kN·m</span>
                     </div>
                   )}
                   {combination.resultant.shearY && (
-                    <div className="bg-zinc-900/50 rounded-lg p-2">
-                      <span className="text-zinc-400">Vy = </span>
-                      <span className="text-white font-mono">{combination.resultant.shearY.toFixed(1)} kN</span>
+                    <div className="bg-white/50 dark:bg-zinc-900/50 rounded-lg p-2">
+                      <span className="text-zinc-500 dark:text-zinc-400">Vy = </span>
+                      <span className="text-zinc-900 dark:text-white font-mono">{combination.resultant.shearY.toFixed(1)} kN</span>
                     </div>
                   )}
                   {combination.resultant.axial && (
-                    <div className="bg-zinc-900/50 rounded-lg p-2">
-                      <span className="text-zinc-400">P = </span>
-                      <span className="text-white font-mono">{combination.resultant.axial.toFixed(1)} kN</span>
+                    <div className="bg-white/50 dark:bg-zinc-900/50 rounded-lg p-2">
+                      <span className="text-zinc-500 dark:text-zinc-400">P = </span>
+                      <span className="text-zinc-900 dark:text-white font-mono">{combination.resultant.axial.toFixed(1)} kN</span>
                     </div>
                   )}
                 </div>
@@ -470,16 +469,16 @@ const EnvelopeChart: React.FC<{
   const maxShear = Math.max(...combinations.map(c => Math.abs(c.resultant.shearY || 0)));
   
   return (
-    <div className="bg-zinc-900/50 rounded-xl p-4">
+    <div className="bg-white/50 dark:bg-zinc-900/50 rounded-xl p-4">
       <div className="flex items-center gap-2 mb-4">
         <BarChart3 className="w-4 h-4 text-blue-400" />
-        <span className="text-sm font-medium text-white">Force Envelope</span>
+        <span className="text-sm font-medium text-zinc-900 dark:text-white">Force Envelope</span>
       </div>
       
       <div className="space-y-4">
         {/* Moment Envelope */}
         <div>
-          <div className="flex justify-between text-xs text-zinc-400 mb-2">
+          <div className="flex justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-2">
             <span>Moment (kN·m)</span>
             <span>Max: {maxMoment.toFixed(1)}</span>
           </div>
@@ -498,7 +497,7 @@ const EnvelopeChart: React.FC<{
         
         {/* Shear Envelope */}
         <div>
-          <div className="flex justify-between text-xs text-zinc-400 mb-2">
+          <div className="flex justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-2">
             <span>Shear (kN)</span>
             <span>Max: {maxShear.toFixed(1)}</span>
           </div>
@@ -520,15 +519,15 @@ const EnvelopeChart: React.FC<{
       <div className="flex gap-4 mt-4 text-xs">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-blue-500" />
-          <span className="text-zinc-400">Moment</span>
+          <span className="text-zinc-500 dark:text-zinc-400">Moment</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-emerald-500" />
-          <span className="text-zinc-400">Shear</span>
+          <span className="text-zinc-500 dark:text-zinc-400">Shear</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-amber-500" />
-          <span className="text-zinc-400">Governing</span>
+          <span className="text-zinc-500 dark:text-zinc-400">Governing</span>
         </div>
       </div>
     </div>
@@ -626,20 +625,20 @@ export const ModernLoadCombinator: React.FC<{
   };
   
   return (
-    <div className={`bg-zinc-950 rounded-2xl overflow-hidden ${className}`}>
+    <div className={`bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden ${className}`}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-zinc-900 to-zinc-800 p-6 border-b border-zinc-800">
+      <div className="bg-gradient-to-r from-zinc-50 dark:from-zinc-900 to-zinc-800 p-6 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600">
               <Layers className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                 Load Combinator
                 <Sparkles className="w-4 h-4 text-amber-400" />
               </h2>
-              <p className="text-zinc-400 text-sm">Multi-code load combination generator</p>
+              <p className="text-zinc-500 dark:text-zinc-400 text-sm">Multi-code load combination generator</p>
             </div>
           </div>
           
@@ -665,19 +664,19 @@ export const ModernLoadCombinator: React.FC<{
       
       <div className="flex h-[600px]">
         {/* Left Panel - Load Cases */}
-        <div className={`border-r border-zinc-800 transition-all ${showLoadCases ? 'w-1/2' : 'w-12'}`}>
+        <div className={`border-r border-zinc-200 dark:border-zinc-800 transition-all ${showLoadCases ? 'w-1/2' : 'w-12'}`}>
           {/* Section Header */}
-          <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+          <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
             <button
               onClick={() => setShowLoadCases(!showLoadCases)}
-              className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors"
+              className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
             >
               {showLoadCases ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-              {showLoadCases && <span className="font-medium text-white">Load Cases</span>}
+              {showLoadCases && <span className="font-medium text-zinc-900 dark:text-white">Load Cases</span>}
             </button>
             
             {showLoadCases && (
-              <button aria-label="Add load case" title="Add load case" className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors">
+              <button aria-label="Add load case" title="Add load case" className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
                 <Plus className="w-4 h-4" />
               </button>
             )}
@@ -688,7 +687,7 @@ export const ModernLoadCombinator: React.FC<{
             <div className="p-4 space-y-3 overflow-y-auto h-[calc(100%-60px)]">
               {/* Code Selection */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-zinc-400 mb-2">Design Code</label>
+                <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">Design Code</label>
                 <div className="grid grid-cols-3 gap-2">
                   {(Object.keys(CODE_COMBINATIONS) as DesignCode[]).map((code) => (
                     <button
@@ -697,7 +696,7 @@ export const ModernLoadCombinator: React.FC<{
                       className={`p-2 rounded-lg text-xs font-medium transition-all ${
                         selectedCode === code
                           ? 'bg-emerald-500/20 border border-emerald-500 text-emerald-400'
-                          : 'bg-zinc-800 border border-zinc-700 text-zinc-400 hover:border-zinc-600'
+                          : 'bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-600'
                       }`}
                     >
                       {CODE_COMBINATIONS[code].name}
@@ -726,20 +725,20 @@ export const ModernLoadCombinator: React.FC<{
         {/* Right Panel - Combinations */}
         <div className="flex-1 flex flex-col">
           {/* Section Header */}
-          <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+          <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
             <div>
-              <span className="font-medium text-white">Load Combinations</span>
-              <span className="text-zinc-400 text-sm ml-2">
+              <span className="font-medium text-zinc-900 dark:text-white">Load Combinations</span>
+              <span className="text-zinc-500 dark:text-zinc-400 text-sm ml-2">
                 ({combinations.length} generated)
               </span>
             </div>
             
             {combinations.length > 0 && (
               <div className="flex items-center gap-2">
-                <button aria-label="Download combinations" title="Download combinations" className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors">
+                <button aria-label="Download combinations" title="Download combinations" className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
                   <Download className="w-4 h-4" />
                 </button>
-                <button aria-label="Settings" title="Settings" className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors">
+                <button aria-label="Settings" title="Settings" className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
                   <Settings className="w-4 h-4" />
                 </button>
               </div>
@@ -751,7 +750,7 @@ export const ModernLoadCombinator: React.FC<{
             {combinations.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center">
                 <Layers className="w-12 h-12 text-zinc-700 mb-4" />
-                <p className="text-lg font-medium text-zinc-400 mb-2">No Combinations Generated</p>
+                <p className="text-lg font-medium text-zinc-500 dark:text-zinc-400 mb-2">No Combinations Generated</p>
                 <p className="text-sm text-zinc-500 mb-4">
                   Select a design code and click Generate to create load combinations
                 </p>
@@ -785,24 +784,24 @@ export const ModernLoadCombinator: React.FC<{
                 </div>
                 
                 {/* Summary */}
-                <div className="p-4 rounded-xl bg-gradient-to-br from-zinc-800/50 to-zinc-900/50 border border-zinc-700">
-                  <h4 className="font-medium text-white mb-3 flex items-center gap-2">
+                <div className="p-4 rounded-xl bg-gradient-to-br from-zinc-100/50 dark:from-zinc-800/50 to-zinc-50/50 dark:to-zinc-900/50 border border-zinc-200 dark:border-zinc-700">
+                  <h4 className="font-medium text-zinc-900 dark:text-white mb-3 flex items-center gap-2">
                     <Target className="w-4 h-4 text-emerald-400" />
                     Summary
                   </h4>
                   <div className="grid grid-cols-3 gap-4 text-sm">
                     <div>
-                      <span className="text-zinc-400">Total Combinations:</span>
-                      <p className="text-white font-bold">{combinations.length}</p>
+                      <span className="text-zinc-500 dark:text-zinc-400">Total Combinations:</span>
+                      <p className="text-zinc-900 dark:text-white font-bold">{combinations.length}</p>
                     </div>
                     <div>
-                      <span className="text-zinc-400">Governing Case:</span>
+                      <span className="text-zinc-500 dark:text-zinc-400">Governing Case:</span>
                       <p className="text-amber-400 font-bold">
                         {combinations.find(c => c.isGoverning)?.name || 'N/A'}
                       </p>
                     </div>
                     <div>
-                      <span className="text-zinc-400">Max Utilization:</span>
+                      <span className="text-zinc-500 dark:text-zinc-400">Max Utilization:</span>
                       <p className="text-emerald-400 font-bold">
                         {(Math.max(...combinations.map(c => c.utilizationRatio)) * 100).toFixed(1)}%
                       </p>

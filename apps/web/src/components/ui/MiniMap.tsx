@@ -82,8 +82,8 @@ export const MiniMap: FC<MiniMapProps> = ({
                 animate={{ opacity: 1 }}
                 onClick={() => setIsExpanded(true)}
                 className={`
-                    w-10 h-10 bg-slate-900/90 backdrop-blur-sm rounded-lg border border-slate-700 
-                    flex items-center justify-center text-slate-400 hover:text-white transition-colors
+                    w-10 h-10 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-lg border border-slate-200 dark:border-slate-700 
+                    flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors
                     ${className}
                 `}
             >
@@ -97,16 +97,16 @@ export const MiniMap: FC<MiniMapProps> = ({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className={`
-                bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-700 shadow-lg overflow-hidden
+                bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg overflow-hidden
                 ${className}
             `}
         >
             {/* Header */}
-            <div className="flex items-center justify-between px-3 py-2 border-b border-slate-700">
-                <span className="text-xs font-medium text-slate-400">MINIMAP</span>
+            <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-slate-700">
+                <span className="text-xs font-medium text-slate-500 dark:text-slate-400">MINIMAP</span>
                 <button
                     onClick={() => setIsExpanded(false)}
-                    className="text-slate-400 hover:text-white transition-colors"
+                    className="text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
                 >
                     <Minimize2 className="w-3 h-3" />
                 </button>
@@ -187,7 +187,7 @@ export const MiniMap: FC<MiniMapProps> = ({
             </div>
 
             {/* Footer - Zoom info */}
-            <div className="px-3 py-1.5 border-t border-slate-700 text-xs text-slate-400 text-center font-mono">
+            <div className="px-3 py-1.5 border-t border-slate-200 dark:border-slate-700 text-xs text-slate-500 dark:text-slate-400 text-center font-mono">
                 Click to navigate
             </div>
         </motion.div>
@@ -217,36 +217,36 @@ export const ViewportStatusBar: FC<ViewportStatusBarProps> = ({
 }) => (
     <div className={`
         flex items-center gap-4 px-4 py-2
-        bg-slate-900/90 backdrop-blur-sm border-t border-slate-700
-        text-xs text-slate-400 font-mono
+        bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm border-t border-slate-200 dark:border-slate-700
+        text-xs text-slate-500 dark:text-slate-400 font-mono
         ${className}
     `}>
         {/* Mode */}
         <div className="flex items-center gap-2">
-            <span className="text-slate-400">Mode:</span>
-            <span className="text-white font-medium">{mode}</span>
+            <span className="text-slate-500 dark:text-slate-400">Mode:</span>
+            <span className="text-zinc-900 dark:text-white font-medium">{mode}</span>
         </div>
 
-        <div className="w-px h-4 bg-slate-700" />
+        <div className="w-px h-4 bg-slate-200 dark:bg-slate-700" />
 
         {/* Selection */}
         <div className="flex items-center gap-2">
-            <span className="text-slate-400">Selected:</span>
-            <span className={selectedCount > 0 ? 'text-blue-400' : 'text-slate-400'}>
+            <span className="text-slate-500 dark:text-slate-400">Selected:</span>
+            <span className={selectedCount > 0 ? 'text-blue-400' : 'text-slate-500 dark:text-slate-400'}>
                 {selectedCount}
             </span>
         </div>
 
-        <div className="w-px h-4 bg-slate-700" />
+        <div className="w-px h-4 bg-slate-200 dark:bg-slate-700" />
 
         {/* Model Stats */}
         <div className="flex items-center gap-4">
             <span>
-                <span className="text-slate-400">Nodes: </span>
+                <span className="text-slate-500 dark:text-slate-400">Nodes: </span>
                 <span className="text-green-400">{nodeCount}</span>
             </span>
             <span>
-                <span className="text-slate-400">Members: </span>
+                <span className="text-slate-500 dark:text-slate-400">Members: </span>
                 <span className="text-purple-400">{memberCount}</span>
             </span>
         </div>
@@ -291,7 +291,7 @@ export const FloatingToolbar: FC<FloatingToolbarProps> = ({
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         className={`
-            flex gap-1 p-1.5 bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-700 shadow-lg
+            flex gap-1 p-1.5 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg
             ${orientation === 'vertical' ? 'flex-col' : 'flex-row'}
             ${className}
         `}
@@ -307,7 +307,7 @@ export const FloatingToolbar: FC<FloatingToolbarProps> = ({
                     w-9 h-9 rounded-lg flex items-center justify-center transition-colors
                     ${item.isActive
                         ? 'bg-blue-600 text-white'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-700'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
                     }
                 `}
             >

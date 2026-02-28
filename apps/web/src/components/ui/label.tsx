@@ -19,7 +19,7 @@ const Label = React.forwardRef<
     <LabelPrimitive.Root
         ref={ref}
         className={cn(
-            'text-xs font-medium text-zinc-400 dark:text-zinc-400',
+            'text-xs font-medium text-zinc-500 dark:text-zinc-400',
             'leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
             className
         )}
@@ -64,7 +64,7 @@ const FormField: React.FC<FormFieldProps> = ({
                 <p className="text-xs text-red-500">{error}</p>
             )}
             {hint && !error && (
-                <p className="text-[11px] text-zinc-400">{hint}</p>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400">{hint}</p>
             )}
         </div>
     );

@@ -116,7 +116,7 @@ export function DemoModelsPanel({ onLoadDemo }: DemoModelsPanelProps) {
                             {filteredModels.map((demo) => (
                                 <div
                                     key={demo.id}
-                                    className="border border-zinc-700 rounded-lg cursor-pointer hover:shadow-lg hover:border-zinc-600 transition-all bg-zinc-800/50"
+                                    className="border border-zinc-200 dark:border-zinc-700 rounded-lg cursor-pointer hover:shadow-lg hover:border-zinc-300 dark:hover:border-zinc-600 transition-all bg-zinc-100/50 dark:bg-zinc-800/50"
                                     onClick={() => setSelectedDemo(demo)}
                                 >
                                     <div className="p-4">
@@ -129,7 +129,7 @@ export function DemoModelsPanel({ onLoadDemo }: DemoModelsPanelProps) {
                                                 {demo.difficulty}
                                             </Badge>
                                         </div>
-                                        <p className="text-sm text-zinc-400 mb-4">{demo.description}</p>
+                                        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">{demo.description}</p>
 
                                         <div className="space-y-2 text-sm">
                                             {demo.metadata.realWorldStructure && (

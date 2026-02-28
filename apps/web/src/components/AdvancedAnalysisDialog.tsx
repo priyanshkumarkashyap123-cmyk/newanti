@@ -300,8 +300,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                             <option value={1.5}>1.5 - Unreinforced Masonry (IS 1893 Table 9)</option>
                             <option value={3.0}>3.0 - Ordinary RC Moment Frame</option>
                             <option value={4.0}>4.0 - Steel OMRF / RC Dual System</option>
-                            <option value={5.0}>5.0 - Special RC Frame / Steel SMRF</option>
-                            <option value={5.0}>5.0 - Steel EBF (IS 800, AISC 341)</option>
+                            <option value={5.0}>5.0 - Special RC Frame / Steel SMRF / Steel EBF</option>
                         </select>
                     </div>
 
@@ -422,7 +421,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
                                     <div className="text-gray-500 text-xs">Base Shear ({direction})</div>
-                                    <div className="font-mono font-bold">{result.base_shear.toFixed(2)} kN</div>
+                                    <div className="font-mono font-bold">{result.base_shear?.toFixed(2) ?? '—'} kN</div>
                                 </div>
                                 <div>
                                     <div className="text-gray-500 text-xs">Modes Used</div>
@@ -446,9 +445,9 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                                     {result.modal_contributions?.slice(0, 5).map((m: any, i: number) => (
                                         <tr key={i} className="border-t border-zinc-200 dark:border-zinc-700">
                                             <td className="p-1.5">{m.mode}</td>
-                                            <td className="p-1.5">{m.period.toFixed(3)}</td>
-                                            <td className="p-1.5">{m.contribution_pct?.toFixed(2)}%</td>
-                                            <td className="p-1.5">{m.base_shear.toFixed(2)}</td>
+                                            <td className="p-1.5">{m.period?.toFixed(3) ?? '—'}</td>
+                                            <td className="p-1.5">{m.contribution_pct?.toFixed(2) ?? '—'}%</td>
+                                            <td className="p-1.5">{m.base_shear?.toFixed(2) ?? '—'}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -498,7 +497,45 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
 // ============================================
 
 const CableAnalysisPanel: FC<{ isPro: boolean }> = ({ isPro: _isPro }) => {
+    const [selfWeight, setSelfWeight] = useState(50);
+    const [pretension, setPretension] = useState(10);
+    const [memberBehavior, setMemberBehavior] = useState<'normal' | 'tension' | 'compression'>('tension');
+    const [cableResult, setCableResult] = useState<any>(null);
+    const [isRunning, setIsRunning] = useState(false);
+    const [cableError, setCableError] = useState<string>('');
 
+    const handleRunCable = async () => {
+        setIsRunning(true);
+        setCableError('');
+        setCableResult(null);
+        try {
+            const { runCableAnalysis } = await import('../api/advancedAnalysis');
+            // Use demo cable structure (span from node 0→1, horizontal cable)
+            const request = {
+                nodes: [
+                    { id: 0, x: 0, y: 0, z: 0 },
+                    { id: 1, x: 20, y: 0, z: 0 },
+                ],
+                members: [
+                    { id: 0, startNode: 0, endNode: 1, E: 200e6, A: 0.001, I: 1e-8 },
+                ],
+                supports: [
+                    { nodeId: 0, fx: true, fy: true, fz: true, mx: false, my: false, mz: false },
+                    { nodeId: 1, fx: true, fy: true, fz: true, mx: false, my: false, mz: false },
+                ],
+                cables: [
+                    { memberId: 0, selfWeight, pretension, behavior: memberBehavior },
+                ],
+                loads: [],
+            };
+            const result = await runCableAnalysis(request);
+            setCableResult(result);
+        } catch (err: any) {
+            setCableError(err.message || 'Cable analysis failed');
+        } finally {
+            setIsRunning(false);
+        }
+    };
 
     return (
         <div className="p-4">
@@ -512,13 +549,13 @@ const CableAnalysisPanel: FC<{ isPro: boolean }> = ({ isPro: _isPro }) => {
                 <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
                     <div className="text-xs font-medium text-zinc-500 mb-2">Member Behavior</div>
                     <div className="grid grid-cols-3 gap-2">
-                        <Button variant="outline" size="sm" className="text-xs">
+                        <Button variant="outline" size="sm" className={`text-xs ${memberBehavior === 'normal' ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700' : ''}`} onClick={() => setMemberBehavior('normal')}>
                             Normal
                         </Button>
-                        <Button variant="outline" size="sm" className="text-xs border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700">
+                        <Button variant="outline" size="sm" className={`text-xs ${memberBehavior === 'tension' ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700' : ''}`} onClick={() => setMemberBehavior('tension')}>
                             Tension Only
                         </Button>
-                        <Button variant="outline" size="sm" className="text-xs">
+                        <Button variant="outline" size="sm" className={`text-xs ${memberBehavior === 'compression' ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700' : ''}`} onClick={() => setMemberBehavior('compression')}>
                             Compression Only
                         </Button>
                     </div>
@@ -532,14 +569,16 @@ const CableAnalysisPanel: FC<{ isPro: boolean }> = ({ isPro: _isPro }) => {
                             <Label>Self-weight (N/m)</Label>
                             <Input
                                 type="number"
-                                defaultValue={50}
+                                value={selfWeight}
+                                onChange={(e) => setSelfWeight(Number(e.target.value))}
                             />
                         </div>
                         <div>
                             <Label>Pretension (kN)</Label>
                             <Input
                                 type="number"
-                                defaultValue={10}
+                                value={pretension}
+                                onChange={(e) => setPretension(Number(e.target.value))}
                             />
                         </div>
                     </div>
@@ -556,10 +595,35 @@ const CableAnalysisPanel: FC<{ isPro: boolean }> = ({ isPro: _isPro }) => {
                     </div>
                 </div>
 
+                {/* Error */}
+                {cableError && (
+                    <div className="p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-xs text-red-600">
+                        {cableError}
+                    </div>
+                )}
+
+                {/* Result */}
+                {cableResult && cableResult.cables && (
+                    <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                        <div className="text-xs font-medium text-green-700 dark:text-green-400 mb-1">Cable Analysis Results</div>
+                        {cableResult.cables.map((c: any, i: number) => (
+                            <div key={i} className="text-xs text-green-600 dark:text-green-400 space-y-0.5">
+                                <div>Span: {c.span?.toFixed(2)} m | Sag: {c.sag?.toFixed(4)} m</div>
+                                <div>Cable Length: {c.cableLength?.toFixed(3)} m | Sag Ratio: {(c.sagRatio * 100)?.toFixed(2)}%</div>
+                                <div>E<sub>eq</sub>: {(c.equivalentModulus / 1e6)?.toFixed(1)} MPa (Reduction: {((1 - c.modulusReduction) * 100)?.toFixed(1)}%)</div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
                 {/* Run Button */}
-                <Button className="w-full bg-teal-500 hover:bg-teal-600 text-white">
+                <Button
+                    className="w-full bg-teal-500 hover:bg-teal-600 text-white"
+                    onClick={handleRunCable}
+                    disabled={isRunning}
+                >
                     <Play className="w-4 h-4" />
-                    Run Cable Analysis
+                    {isRunning ? 'Running Cable Analysis...' : 'Run Cable Analysis'}
                 </Button>
             </div>
         </div>
@@ -612,7 +676,7 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
                     <div className="w-20 h-20 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-6">
                         <Ban className="w-10 h-10 text-red-500" />
                     </div>
-                    <h3 className="text-xl font-bold text-zinc-800 dark:text-zinc-100 mb-2">
+                    <h3 className="text-xl font-bold text-zinc-100 mb-2">
                         Not Applicable to This Structure
                     </h3>
                     <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-md mb-4">
@@ -727,7 +791,7 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
                                     `}
                                 >
                                     <div className="relative">
-                                        <Icon className={`w-5 h-5 flex-shrink-0 ${isActive && isEligible ? colors.text : isEligible ? 'text-zinc-400' : 'text-zinc-300 dark:text-zinc-600'}`} />
+                                        <Icon className={`w-5 h-5 flex-shrink-0 ${isActive && isEligible ? colors.text : isEligible ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-400 dark:text-zinc-600'}`} />
                                         {!isEligible && (
                                             <Ban className="w-3 h-3 text-red-400 absolute -top-1 -right-1" />
                                         )}
@@ -743,11 +807,11 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
                                                 <AlertTriangle className="w-3 h-3 text-amber-400 flex-shrink-0" />
                                             )}
                                         </div>
-                                        <div className={`text-xs truncate mt-0.5 ${isEligible ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-400 dark:text-zinc-600'}`}>
+                                        <div className={`text-xs truncate mt-0.5 ${isEligible ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-500 dark:text-zinc-400'}`}>
                                             {isEligible ? option.description : (elig?.reason.slice(0, 60) + (elig && elig.reason.length > 60 ? '…' : ''))}
                                         </div>
                                     </div>
-                                    <ChevronRight className={`w-4 h-4 flex-shrink-0 ${isActive && isEligible ? colors.text : 'text-zinc-300 dark:text-zinc-600'}`} />
+                                    <ChevronRight className={`w-4 h-4 flex-shrink-0 ${isActive && isEligible ? colors.text : 'text-zinc-400 dark:text-zinc-600'}`} />
                                 </button>
                             );
                         })}

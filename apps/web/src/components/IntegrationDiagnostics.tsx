@@ -174,7 +174,7 @@ export const IntegrationDiagnostics: FC<IntegrationDiagnosticsProps> = memo(({ o
                                             {r.latencyMs !== null ? `${r.latencyMs} ms` : '—'}
                                         </span>
                                         {r.version && (
-                                            <span className="text-[10px] text-zinc-400 dark:text-zinc-500">{r.version}</span>
+                                            <span className="text-[10px] text-zinc-500 dark:text-zinc-500">{r.version}</span>
                                         )}
                                         {r.detail && r.status !== 'healthy' && (
                                             <span className="text-[10px] text-yellow-500 dark:text-yellow-400 max-w-[140px] truncate">
@@ -191,7 +191,7 @@ export const IntegrationDiagnostics: FC<IntegrationDiagnosticsProps> = memo(({ o
                 {/* Dependency cross-check */}
                 {pyDeps && (
                     <div className="px-5 pb-4">
-                        <p className="text-[11px] text-zinc-400 dark:text-zinc-500 mb-1.5">Python → Backends Cross-Check</p>
+                        <p className="text-[11px] text-zinc-500 dark:text-zinc-500 mb-1.5">Python → Backends Cross-Check</p>
                         <div className="flex gap-3 text-xs">
                             <span className="flex items-center gap-1">
                                 <span className={`w-1.5 h-1.5 rounded-full ${pyDeps.node === 'ok' ? 'bg-green-400' : 'bg-red-400'}`} />
@@ -206,7 +206,7 @@ export const IntegrationDiagnostics: FC<IntegrationDiagnosticsProps> = memo(({ o
                 )}
 
                 {/* Footer */}
-                <div className="px-5 py-2.5 border-t border-zinc-200 dark:border-zinc-700 flex items-center justify-between text-[11px] text-zinc-400 dark:text-zinc-500">
+                <div className="px-5 py-2.5 border-t border-zinc-200 dark:border-zinc-700 flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-500">
                     <span>Auto-refresh every 30 s in status bar</span>
                     <span>
                         {overallHealthy
@@ -235,7 +235,7 @@ const StatusIcon: FC<{ status: ServiceResult['status'] }> = ({ status }) => {
 };
 
 function latencyColor(ms: number | null): string {
-    if (ms === null) return 'text-zinc-400 dark:text-zinc-500';
+    if (ms === null) return 'text-zinc-500 dark:text-zinc-500';
     if (ms < 100) return 'text-green-500 dark:text-green-400';
     if (ms < 300) return 'text-yellow-500 dark:text-yellow-400';
     return 'text-red-500 dark:text-red-400';

@@ -158,7 +158,7 @@ export const MobileAIPanel: React.FC<MobileAIPanelProps> = ({
                                 key={i}
                                 className={`p-3 rounded-lg ${msg.role === 'user'
                                         ? 'bg-blue-600 ml-8 text-white'
-                                        : 'bg-zinc-100 dark:bg-zinc-800 mr-8 text-zinc-700 dark:text-zinc-200'
+                                        : 'bg-zinc-100 dark:bg-zinc-800 mr-8 text-zinc-200'
                                     }`}
                             >
                                 {msg.text}

@@ -130,7 +130,7 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
 
   if (!currentResult) {
     return (
-      <div className="p-6 bg-slate-800 rounded-lg shadow-lg">
+      <div className="p-6 bg-slate-100 dark:bg-slate-800 rounded-lg shadow-lg">
         <p className="text-gray-500">No stress data available</p>
       </div>
     );
@@ -139,15 +139,15 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
   const { contours, check } = currentResult;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 bg-slate-800 rounded-lg shadow-2xl border border-zinc-700 max-h-[600px] overflow-y-auto z-50 pointer-events-auto" style={{ contain: 'layout' }}>
+    <div className="fixed bottom-4 left-4 right-4 bg-slate-100 dark:bg-slate-800 rounded-lg shadow-2xl border border-zinc-200 dark:border-zinc-700 max-h-[600px] overflow-y-auto z-50 pointer-events-auto" style={{ contain: 'layout' }}>
       {/* Header */}
-      <div className="p-4 border-b border-zinc-700 bg-gradient-to-r from-blue-900/40 to-purple-900/40 sticky top-0 z-10">
+      <div className="p-4 border-b border-zinc-200 dark:border-zinc-700 bg-gradient-to-r from-blue-900/40 to-purple-900/40 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Activity className="w-6 h-6 text-blue-400" />
             <div>
-              <h3 className="text-lg font-semibold text-zinc-100">Stress Visualization</h3>
-              <p className="text-sm text-zinc-400">
+              <h3 className="text-lg font-semibold text-zinc-800 dark:text-zinc-100">Stress Visualization</h3>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
                 Interactive stress analysis and contour display
               </p>
             </div>
@@ -156,7 +156,7 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
           {onClose && (
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-500 dark:text-gray-400 hover:text-gray-600 transition-colors"
             >
               ✕
             </button>
@@ -290,7 +290,7 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
 
         {/* Color Legend */}
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-2">
+          <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">
             Stress Legend
           </label>
           <div className="space-y-1">
@@ -303,7 +303,7 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
                 />
               ))}
             </div>
-            <div className="flex justify-between text-xs text-zinc-400">
+            <div className="flex justify-between text-xs text-zinc-500 dark:text-zinc-400">
               <span>{contours.min.toFixed(1)} MPa</span>
               <span>{contours.max.toFixed(1)} MPa</span>
             </div>
@@ -352,7 +352,7 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
               </button>
             </div>
             
-            <div className="bg-slate-800 dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+            <div className="bg-slate-100 dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 p-4 shadow-sm">
               <div className="relative h-56">
                 {/* SVG-based chart for better quality */}
                 <svg width="100%" height="100%" viewBox="0 0 600 200" className="overflow-hidden">

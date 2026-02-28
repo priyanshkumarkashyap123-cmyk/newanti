@@ -60,7 +60,7 @@ JSON SCHEMA:
     {"id": "n1", "x": 0, "y": 0, "z": 0, "isSupport": true},
     {"id": "n2", "x": 6, "y": 0, "z": 0, "isSupport": true},
     {"id": "n3", "x": 0, "y": 4, "z": 0},
-    {"id": "n4", "x": 6, "y: 4, "z": 0}
+    {"id": "n4", "x": 6, "y": 4, "z": 0}
   ],
   "members": [
     {"id": "m1", "s": "n1", "e": "n3", "section": "ISMB400"},

@@ -167,14 +167,14 @@ const WindCalculator: FC = () => {
     }, [selectedCity, terrainCategory, height, k1, k3]);
 
     return (
-        <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700">
+        <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-2xl p-6 border border-slate-200 dark:border-slate-700">
             <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
                     <Wind className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                    <h2 className="text-xl font-bold text-white">IS 875 Wind Load</h2>
-                    <p className="text-slate-400 text-sm">Part 3 - Design Wind Pressure</p>
+                    <h2 className="text-xl font-bold text-zinc-900 dark:text-white">IS 875 Wind Load</h2>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">Part 3 - Design Wind Pressure</p>
                 </div>
             </div>
 
@@ -182,14 +182,14 @@ const WindCalculator: FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 {/* City */}
                 <div>
-                    <label className="text-slate-300 text-sm block mb-2">
+                    <label className="text-slate-600 dark:text-slate-300 text-sm block mb-2">
                         <MapPin className="w-4 h-4 inline mr-1" />
                         City
                     </label>
                     <select
                         value={selectedCity.name}
                         onChange={(e) => setSelectedCity(CITIES.find(c => c.name === e.target.value) || CITIES[0])}
-                        className="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2.5 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-zinc-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                     >
                         {CITIES.map(city => (
                             <option key={city.name} value={city.name}>
@@ -201,11 +201,11 @@ const WindCalculator: FC = () => {
 
                 {/* Terrain */}
                 <div>
-                    <label className="text-slate-300 text-sm block mb-2">Terrain Category</label>
+                    <label className="text-slate-600 dark:text-slate-300 text-sm block mb-2">Terrain Category</label>
                     <select
                         value={terrainCategory}
                         onChange={(e) => setTerrainCategory(parseInt(e.target.value))}
-                        className="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2.5 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-zinc-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                     >
                         {TERRAIN_CATEGORIES.map(cat => (
                             <option key={cat.id} value={cat.id}>
@@ -213,31 +213,31 @@ const WindCalculator: FC = () => {
                             </option>
                         ))}
                     </select>
-                    <p className="text-slate-400 text-xs mt-1">
+                    <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">
                         {TERRAIN_CATEGORIES.find(c => c.id === terrainCategory)?.description}
                     </p>
                 </div>
 
                 {/* Height */}
                 <div>
-                    <label className="text-slate-300 text-sm block mb-2">Building Height (m)</label>
+                    <label className="text-slate-600 dark:text-slate-300 text-sm block mb-2">Building Height (m)</label>
                     <input
                         type="number"
                         value={height}
                         onChange={(e) => setHeight(parseFloat(e.target.value) || 10)}
                         min="5"
                         max="200"
-                        className="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2.5 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-zinc-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                     />
                 </div>
 
                 {/* k1 */}
                 <div>
-                    <label className="text-slate-300 text-sm block mb-2">k₁ (Risk Coefficient)</label>
+                    <label className="text-slate-600 dark:text-slate-300 text-sm block mb-2">k₁ (Risk Coefficient)</label>
                     <select
                         value={k1}
                         onChange={(e) => setK1(parseFloat(e.target.value))}
-                        className="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2.5 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-zinc-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                     >
                         <option value="0.82">0.82 - Agricultural</option>
                         <option value="0.90">0.90 - Industrial</option>
@@ -249,14 +249,14 @@ const WindCalculator: FC = () => {
             </div>
 
             {/* Calculation Steps */}
-            <div className="bg-slate-900/50 rounded-xl p-4 mb-6 font-mono text-sm">
-                <div className="text-slate-400 mb-3">Calculation as per IS 875 (Part 3):</div>
-                <div className="space-y-2 text-slate-300">
+            <div className="bg-slate-50/50 dark:bg-slate-900/50 rounded-xl p-4 mb-6 font-mono text-sm">
+                <div className="text-slate-500 dark:text-slate-400 mb-3">Calculation as per IS 875 (Part 3):</div>
+                <div className="space-y-2 text-slate-600 dark:text-slate-300">
                     <div>Vb = <span className="text-blue-400">{calculations.Vb}</span> m/s (Basic wind speed)</div>
                     <div>k₁ = <span className="text-blue-400">{calculations.k1.toFixed(2)}</span> (Risk coefficient)</div>
                     <div>k₂ = <span className="text-blue-400">{calculations.k2.toFixed(3)}</span> (Terrain & height factor at {height}m)</div>
                     <div>k₃ = <span className="text-blue-400">{calculations.k3.toFixed(2)}</span> (Topography factor)</div>
-                    <div className="border-t border-slate-700 pt-2 mt-2">
+                    <div className="border-t border-slate-200 dark:border-slate-700 pt-2 mt-2">
                         Vz = Vb × k₁ × k₂ × k₃
                     </div>
                     <div>
@@ -265,7 +265,7 @@ const WindCalculator: FC = () => {
                     <div className="text-green-400 font-bold">
                         Vz = {calculations.Vz.toFixed(2)} m/s
                     </div>
-                    <div className="border-t border-slate-700 pt-2 mt-2">
+                    <div className="border-t border-slate-200 dark:border-slate-700 pt-2 mt-2">
                         Pz = 0.6 × Vz²
                     </div>
                     <div className="text-green-400 font-bold text-lg">
@@ -277,9 +277,9 @@ const WindCalculator: FC = () => {
             {/* Result */}
             <div className="flex items-center justify-between bg-gradient-to-r from-blue-900/50 to-blue-800/30 rounded-xl p-4">
                 <div>
-                    <div className="text-slate-400 text-sm">Design Wind Pressure</div>
-                    <div className="text-3xl font-bold text-white">
-                        {calculations.Pz.toFixed(3)} <span className="text-lg font-normal text-slate-300">kN/m²</span>
+                    <div className="text-slate-500 dark:text-slate-400 text-sm">Design Wind Pressure</div>
+                    <div className="text-3xl font-bold text-zinc-900 dark:text-white">
+                        {calculations.Pz.toFixed(3)} <span className="text-lg font-normal text-slate-600 dark:text-slate-300">kN/m²</span>
                     </div>
                 </div>
                 <CopyButton value={calculations.Pz.toFixed(3)} label="Copy Pz" />
@@ -327,14 +327,14 @@ const SeismicCalculator: FC = () => {
     }, [zone, importance, responseR, period, soilType]);
 
     return (
-        <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700">
+        <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-2xl p-6 border border-slate-200 dark:border-slate-700">
             <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
                     <Activity className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                    <h2 className="text-xl font-bold text-white">IS 1893 Seismic Load</h2>
-                    <p className="text-slate-400 text-sm">Part 1 - Horizontal Seismic Coefficient</p>
+                    <h2 className="text-xl font-bold text-zinc-900 dark:text-white">IS 1893 Seismic Load</h2>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">Part 1 - Horizontal Seismic Coefficient</p>
                 </div>
             </div>
 
@@ -342,11 +342,11 @@ const SeismicCalculator: FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 {/* Zone */}
                 <div>
-                    <label className="text-slate-300 text-sm block mb-2">Seismic Zone</label>
+                    <label className="text-slate-600 dark:text-slate-300 text-sm block mb-2">Seismic Zone</label>
                     <select
                         value={zone.id}
                         onChange={(e) => setZone(SEISMIC_ZONES.find(z => z.id === e.target.value) || SEISMIC_ZONES[0])}
-                        className="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-red-500"
+                        className="w-full px-3 py-2.5 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-zinc-900 dark:text-white focus:ring-2 focus:ring-red-500"
                     >
                         {SEISMIC_ZONES.map(z => (
                             <option key={z.id} value={z.id}>
@@ -354,16 +354,16 @@ const SeismicCalculator: FC = () => {
                             </option>
                         ))}
                     </select>
-                    <p className="text-slate-400 text-xs mt-1">{zone.description}</p>
+                    <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">{zone.description}</p>
                 </div>
 
                 {/* Soil Type */}
                 <div>
-                    <label className="text-slate-300 text-sm block mb-2">Soil Type</label>
+                    <label className="text-slate-600 dark:text-slate-300 text-sm block mb-2">Soil Type</label>
                     <select
                         value={soilType.id}
                         onChange={(e) => setSoilType(SOIL_TYPES.find(s => s.id === e.target.value) || SOIL_TYPES[0])}
-                        className="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-red-500"
+                        className="w-full px-3 py-2.5 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-zinc-900 dark:text-white focus:ring-2 focus:ring-red-500"
                     >
                         {SOIL_TYPES.map(s => (
                             <option key={s.id} value={s.id}>{s.name}</option>
@@ -373,11 +373,11 @@ const SeismicCalculator: FC = () => {
 
                 {/* Importance Factor */}
                 <div>
-                    <label className="text-slate-300 text-sm block mb-2">Importance Factor</label>
+                    <label className="text-slate-600 dark:text-slate-300 text-sm block mb-2">Importance Factor</label>
                     <select
                         value={importance.id}
                         onChange={(e) => setImportance(IMPORTANCE_FACTORS.find(i => i.id === e.target.value) || IMPORTANCE_FACTORS[0])}
-                        className="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-red-500"
+                        className="w-full px-3 py-2.5 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-zinc-900 dark:text-white focus:ring-2 focus:ring-red-500"
                     >
                         {IMPORTANCE_FACTORS.map(i => (
                             <option key={i.id} value={i.id}>{i.name}</option>
@@ -387,11 +387,11 @@ const SeismicCalculator: FC = () => {
 
                 {/* Response Reduction */}
                 <div>
-                    <label className="text-slate-300 text-sm block mb-2">Response Reduction (R)</label>
+                    <label className="text-slate-600 dark:text-slate-300 text-sm block mb-2">Response Reduction (R)</label>
                     <select
                         value={responseR.id}
                         onChange={(e) => setResponseR(RESPONSE_REDUCTION.find(r => r.id === e.target.value) || RESPONSE_REDUCTION[0])}
-                        className="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-red-500"
+                        className="w-full px-3 py-2.5 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-zinc-900 dark:text-white focus:ring-2 focus:ring-red-500"
                     >
                         {RESPONSE_REDUCTION.map(r => (
                             <option key={r.id} value={r.id}>{r.name}</option>
@@ -401,7 +401,7 @@ const SeismicCalculator: FC = () => {
 
                 {/* Natural Period */}
                 <div className="md:col-span-2">
-                    <label className="text-slate-300 text-sm block mb-2">Natural Period T (seconds)</label>
+                    <label className="text-slate-600 dark:text-slate-300 text-sm block mb-2">Natural Period T (seconds)</label>
                     <div className="flex items-center gap-4">
                         <input
                             type="range"
@@ -417,21 +417,21 @@ const SeismicCalculator: FC = () => {
                             value={period}
                             onChange={(e) => setPeriod(parseFloat(e.target.value) || 0.5)}
                             step="0.1"
-                            className="w-24 px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
+                            className="w-24 px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-zinc-900 dark:text-white"
                         />
                     </div>
                 </div>
             </div>
 
             {/* Calculation Steps */}
-            <div className="bg-slate-900/50 rounded-xl p-4 mb-6 font-mono text-sm">
-                <div className="text-slate-400 mb-3">Calculation as per IS 1893 (Part 1):</div>
-                <div className="space-y-2 text-slate-300">
+            <div className="bg-slate-50/50 dark:bg-slate-900/50 rounded-xl p-4 mb-6 font-mono text-sm">
+                <div className="text-slate-500 dark:text-slate-400 mb-3">Calculation as per IS 1893 (Part 1):</div>
+                <div className="space-y-2 text-slate-600 dark:text-slate-300">
                     <div>Z = <span className="text-red-400">{calculations.Z}</span> (Zone factor)</div>
                     <div>I = <span className="text-red-400">{calculations.I}</span> (Importance factor)</div>
                     <div>R = <span className="text-red-400">{calculations.R}</span> (Response reduction)</div>
                     <div>Sa/g = <span className="text-red-400">{calculations.Sa_g.toFixed(3)}</span> (Spectral acceleration at T = {period}s)</div>
-                    <div className="border-t border-slate-700 pt-2 mt-2">
+                    <div className="border-t border-slate-200 dark:border-slate-700 pt-2 mt-2">
                         Ah = (Z/2) × (I/R) × (Sa/g)
                     </div>
                     <div>
@@ -446,11 +446,11 @@ const SeismicCalculator: FC = () => {
             {/* Result */}
             <div className="flex items-center justify-between bg-gradient-to-r from-red-900/50 to-red-800/30 rounded-xl p-4">
                 <div>
-                    <div className="text-slate-400 text-sm">Horizontal Seismic Coefficient</div>
-                    <div className="text-3xl font-bold text-white">
-                        {calculations.Ah.toFixed(4)} <span className="text-lg font-normal text-slate-300">Ah</span>
+                    <div className="text-slate-500 dark:text-slate-400 text-sm">Horizontal Seismic Coefficient</div>
+                    <div className="text-3xl font-bold text-zinc-900 dark:text-white">
+                        {calculations.Ah.toFixed(4)} <span className="text-lg font-normal text-slate-600 dark:text-slate-300">Ah</span>
                     </div>
-                    <div className="text-slate-400 text-sm mt-1">
+                    <div className="text-slate-500 dark:text-slate-400 text-sm mt-1">
                         Base Shear = {(calculations.Ah * 100).toFixed(2)}% of Seismic Weight
                     </div>
                 </div>
@@ -468,9 +468,9 @@ export const LoadGenerators: FC = () => {
     const [activeTab, setActiveTab] = useState<'wind' | 'seismic'>('wind');
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950">
+        <div className="min-h-screen bg-gradient-to-b from-slate-50 dark:from-slate-900 to-white dark:to-slate-950">
             {/* Header */}
-            <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-xl sticky top-0 z-50">
+            <header className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-xl sticky top-0 z-50">
                 <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <Link to="/" className="flex items-center gap-2">
@@ -480,9 +480,9 @@ export const LoadGenerators: FC = () => {
                             <span className="text-white font-bold">BeamLab</span>
                         </Link>
                         <span className="text-slate-500">/</span>
-                        <Link to="/tools" className="text-slate-400 hover:text-white text-sm">Tools</Link>
+                        <Link to="/tools" className="text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white text-sm">Tools</Link>
                         <span className="text-slate-500">/</span>
-                        <span className="text-white text-sm font-medium">Load Generators</span>
+                        <span className="text-zinc-900 dark:text-white text-sm font-medium">Load Generators</span>
                     </div>
                 </div>
             </header>
@@ -490,8 +490,8 @@ export const LoadGenerators: FC = () => {
             <main className="max-w-5xl mx-auto px-4 py-8">
                 {/* Title */}
                 <div className="mb-8 text-center">
-                    <h1 className="text-3xl font-bold text-white mb-2">Indian Standard Load Calculators</h1>
-                    <p className="text-slate-400 max-w-2xl mx-auto">
+                    <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">Indian Standard Load Calculators</h1>
+                    <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
                         Calculate design wind pressure (IS 875) and seismic coefficients (IS 1893)
                         with full transparency on the calculation steps.
                     </p>
@@ -503,7 +503,7 @@ export const LoadGenerators: FC = () => {
                         onClick={() => setActiveTab('wind')}
                         className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${activeTab === 'wind'
                                 ? 'bg-blue-600 text-white'
-                                : 'bg-slate-800 text-slate-400 hover:text-white'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'
                             }`}
                     >
                         <Wind className="w-5 h-5" />
@@ -513,7 +513,7 @@ export const LoadGenerators: FC = () => {
                         onClick={() => setActiveTab('seismic')}
                         className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${activeTab === 'seismic'
                                 ? 'bg-red-600 text-white'
-                                : 'bg-slate-800 text-slate-400 hover:text-white'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'
                             }`}
                     >
                         <Activity className="w-5 h-5" />
@@ -525,10 +525,10 @@ export const LoadGenerators: FC = () => {
                 {activeTab === 'wind' ? <WindCalculator /> : <SeismicCalculator />}
 
                 {/* Info Box */}
-                <div className="mt-8 bg-slate-800/30 border border-slate-700 rounded-xl p-4 flex items-start gap-3">
+                <div className="mt-8 bg-slate-100/30 dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex items-start gap-3">
                     <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-                    <div className="text-sm text-slate-400">
-                        <strong className="text-white">Note:</strong> These calculators provide quick estimates
+                    <div className="text-sm text-slate-500 dark:text-slate-400">
+                        <strong className="text-zinc-900 dark:text-white">Note:</strong> These calculators provide quick estimates
                         based on IS 875 (Part 3) and IS 1893 (Part 1). For detailed design, consider additional
                         factors like building shape, openings, and site-specific conditions. Always verify with
                         the latest code provisions.

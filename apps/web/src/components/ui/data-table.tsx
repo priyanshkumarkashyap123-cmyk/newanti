@@ -155,7 +155,7 @@ export function DataTable<TData>({
                                                         header.getContext()
                                                     )}
                                                 {canSort && (
-                                                    <span className="text-zinc-400">
+                                                    <span className="text-zinc-500 dark:text-zinc-400">
                                                         {sorted === 'asc' ? (
                                                             <ChevronUp className="w-3 h-3" />
                                                         ) : sorted === 'desc' ? (
@@ -242,14 +242,14 @@ export function DataTable<TData>({
 
                 {/* Empty State */}
                 {rows.length === 0 && (
-                    <div className="flex items-center justify-center h-32 text-zinc-400">
+                    <div className="flex items-center justify-center h-32 text-zinc-500 dark:text-zinc-400">
                         {emptyMessage}
                     </div>
                 )}
             </div>
 
             {/* Footer with row count */}
-            <div className="flex items-center justify-between px-3 py-1.5 border-t border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 text-[11px] text-zinc-400">
+            <div className="flex items-center justify-between px-3 py-1.5 border-t border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 text-[11px] text-zinc-500 dark:text-zinc-400">
                 <span>
                     {rows.length.toLocaleString()} rows
                 </span>
@@ -281,7 +281,7 @@ export function createNumberColumn<TData>(
             return (
                 <span className="font-mono tabular-nums">
                     {typeof value === 'number' ? value.toFixed(precision) : '-'}
-                    {unit && <span className="text-zinc-400 ml-0.5">{unit}</span>}
+                    {unit && <span className="text-zinc-500 dark:text-zinc-400 ml-0.5">{unit}</span>}
                 </span>
             );
         },

@@ -64,7 +64,7 @@ const ControlButton: FC<ControlButtonProps> = ({
             ${size === 'sm' ? 'w-8 h-8' : 'w-10 h-10'}
             ${isActive
                 ? 'bg-blue-600 text-white'
-                : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
             }
             ${disabled ? 'opacity-40 cursor-not-allowed' : ''}
         `}
@@ -82,9 +82,9 @@ export const ZoomControls: FC<{
     onZoomOut?: () => void;
     zoomLevel?: number;
 }> = ({ onZoomIn, onZoomOut, zoomLevel = 100 }) => (
-    <div className="flex flex-col items-center gap-1 p-1 bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-700 shadow-lg">
+    <div className="flex flex-col items-center gap-1 p-1 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg">
         <ControlButton onClick={onZoomIn} icon={<ZoomIn className="w-4 h-4" />} label="Zoom In" />
-        <div className="text-xs text-slate-400 font-mono py-1">
+        <div className="text-xs text-slate-500 dark:text-slate-400 font-mono py-1">
             {Math.round(zoomLevel)}%
         </div>
         <ControlButton onClick={onZoomOut} icon={<ZoomOut className="w-4 h-4" />} label="Zoom Out" />
@@ -99,8 +99,8 @@ export const ViewCube: FC<{
     onSetView?: (view: 'front' | 'top' | 'right' | 'iso') => void;
     currentView?: string;
 }> = ({ onSetView, currentView = 'iso' }) => (
-    <div className="flex flex-col gap-1 p-2 bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-700 shadow-lg">
-        <div className="text-xs text-slate-400 font-medium text-center mb-1">VIEW</div>
+    <div className="flex flex-col gap-1 p-2 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg">
+        <div className="text-xs text-slate-500 dark:text-slate-400 font-medium text-center mb-1">VIEW</div>
         <div className="grid grid-cols-3 gap-1">
             <div />
             <ControlButton
@@ -155,7 +155,7 @@ export const DisplayToggles: FC<{
     axesEnabled = true,
     labelsEnabled = true,
 }) => (
-        <div className="flex flex-col gap-1 p-1 bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-700 shadow-lg">
+        <div className="flex flex-col gap-1 p-1 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg">
             <ControlButton
                 onClick={onToggleGrid}
                 icon={<Grid3x3 className="w-4 h-4" />}
@@ -212,7 +212,7 @@ export const ViewportControls: FC<ViewportControlsProps> = ({
             />
 
             {/* Quick Actions */}
-            <div className="flex flex-col gap-1 p-1 bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-700 shadow-lg">
+            <div className="flex flex-col gap-1 p-1 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg">
                 <ControlButton
                     onClick={onResetView}
                     icon={<Home className="w-4 h-4" />}
@@ -253,7 +253,7 @@ export const ViewportControls: FC<ViewportControlsProps> = ({
             {/* Expand/Collapse */}
             <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="p-2 text-slate-400 hover:text-white text-xs flex items-center justify-center gap-1 bg-slate-900/90 backdrop-blur-sm rounded-lg border border-slate-700"
+                className="p-2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white text-xs flex items-center justify-center gap-1 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-lg border border-slate-200 dark:border-slate-700"
             >
                 {isExpanded ? 'Less' : 'More'}
                 <motion.span
@@ -287,11 +287,11 @@ export const CoordinateDisplay: FC<CoordinateDisplayProps> = ({
 }) => (
     <div className={`
         flex items-center gap-3 px-3 py-2 
-        bg-slate-900/90 backdrop-blur-sm rounded-lg border border-slate-700 shadow-lg
+        bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-lg border border-slate-200 dark:border-slate-700 shadow-lg
         font-mono text-xs
         ${className}
     `}>
-        {label && <span className="text-slate-400">{label}</span>}
+        {label && <span className="text-slate-500 dark:text-slate-400">{label}</span>}
         <span className="text-red-400">X: {x.toFixed(2)}</span>
         <span className="text-green-400">Y: {y.toFixed(2)}</span>
         {z !== undefined && (
@@ -352,7 +352,7 @@ export const ScaleBar: FC<ScaleBarProps> = ({ scale, className = '' }) => {
                 className="h-1 bg-white rounded-full"
                 style={{ width: scaleInfo.pixels }}
             />
-            <span className="text-xs text-slate-400 font-mono">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
                 {scaleInfo.label}
             </span>
         </div>

@@ -17,7 +17,7 @@ const fadeInUp = {
 
 export const AboutPage: FC = () => {
     return (
-        <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-50 flex flex-col font-sans selection:bg-blue-500/30">
+        <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 flex flex-col font-sans selection:bg-blue-500/30">
             {/* Header - Dark Theme */}
             <nav className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/90 backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -31,9 +31,9 @@ export const AboutPage: FC = () => {
                             </span>
                         </Link>
                         <div className="hidden md:flex items-center gap-8">
-                            <Link to="/pricing" className="text-slate-600 dark:text-slate-400 hover:text-white text-sm font-medium transition-colors">Pricing</Link>
-                            <Link to="/contact" className="text-slate-600 dark:text-slate-400 hover:text-white text-sm font-medium transition-colors">Contact</Link>
-                            <Link to="/sign-in" className="text-slate-700 dark:text-slate-300 hover:text-white text-sm font-medium transition-colors">Log in</Link>
+                            <Link to="/pricing" className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white text-sm font-medium transition-colors">Pricing</Link>
+                            <Link to="/contact" className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white text-sm font-medium transition-colors">Contact</Link>
+                            <Link to="/sign-in" className="text-slate-700 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white text-sm font-medium transition-colors">Log in</Link>
                             <Link to="/sign-up" className="px-5 py-2 rounded-full bg-white text-slate-950 text-sm font-bold hover:bg-slate-100 transition-colors">
                                 Get Started
                             </Link>
@@ -55,7 +55,7 @@ export const AboutPage: FC = () => {
                         <span className="text-blue-400 text-sm font-semibold uppercase tracking-wider">
                             About Us
                         </span>
-                        <h1 className="text-4xl md:text-6xl font-bold text-white mt-4 mb-6">
+                        <h1 className="text-4xl md:text-6xl font-bold text-zinc-900 dark:text-white mt-4 mb-6">
                             Building the Future of<br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400">
                                 Structural Engineering
@@ -79,7 +79,7 @@ export const AboutPage: FC = () => {
                             <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center">
                                 <Target className="w-6 h-6 text-blue-400" />
                             </div>
-                            <h3 className="text-xl font-bold text-white">Our Mission</h3>
+                            <h3 className="text-xl font-bold text-zinc-900 dark:text-white">Our Mission</h3>
                             <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                                 To democratize advanced structural analysis tools, removing barriers of cost and complexity for engineers, students, and firms worldwide.
                             </p>
@@ -95,7 +95,7 @@ export const AboutPage: FC = () => {
                             <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center">
                                 <Globe className="w-6 h-6 text-purple-400" />
                             </div>
-                            <h3 className="text-xl font-bold text-white">Global Reach</h3>
+                            <h3 className="text-xl font-bold text-zinc-900 dark:text-white">Global Reach</h3>
                             <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                                 Used by engineers in over 50 countries, supporting international design codes (IS, AISC, Eurocode) to foster global collaboration.
                             </p>
@@ -111,7 +111,7 @@ export const AboutPage: FC = () => {
                             <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center">
                                 <Award className="w-6 h-6 text-emerald-400" />
                             </div>
-                            <h3 className="text-xl font-bold text-white">Excellence</h3>
+                            <h3 className="text-xl font-bold text-zinc-900 dark:text-white">Excellence</h3>
                             <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                                 We combine rigorous engineering standards with cutting-edge web technology (WASM, WebGL, AI) to deliver uncompromised precision.
                             </p>
@@ -131,7 +131,7 @@ export const AboutPage: FC = () => {
                             <span className="text-blue-400 text-sm font-semibold uppercase tracking-wider">
                                 Our Technology
                             </span>
-                            <h2 className="text-3xl font-bold text-white mt-2">
+                            <h2 className="text-3xl font-bold text-zinc-900 dark:text-white mt-2">
                                 Built for the Modern Era
                             </h2>
                         </motion.div>
@@ -146,7 +146,7 @@ export const AboutPage: FC = () => {
                                 <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 flex items-center justify-center">
                                     <Rocket className="w-7 h-7 text-blue-400" />
                                 </div>
-                                <h3 className="text-lg font-bold text-white mb-2">WebAssembly Powered</h3>
+                                <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">WebAssembly Powered</h3>
                                 <p className="text-slate-600 dark:text-slate-400 text-sm">
                                     Near-native performance in the browser using compiled WASM solvers.
                                 </p>
@@ -162,7 +162,7 @@ export const AboutPage: FC = () => {
                                 <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 flex items-center justify-center">
                                     <Code className="w-7 h-7 text-purple-400" />
                                 </div>
-                                <h3 className="text-lg font-bold text-white mb-2">Real-time Collaboration</h3>
+                                <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">Real-time Collaboration</h3>
                                 <p className="text-slate-600 dark:text-slate-400 text-sm">
                                     Work together with your team using live sync and shared sessions.
                                 </p>
@@ -178,7 +178,7 @@ export const AboutPage: FC = () => {
                                 <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 flex items-center justify-center">
                                     <Lightbulb className="w-7 h-7 text-emerald-400" />
                                 </div>
-                                <h3 className="text-lg font-bold text-white mb-2">AI-Assisted Design</h3>
+                                <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">AI-Assisted Design</h3>
                                 <p className="text-slate-600 dark:text-slate-400 text-sm">
                                     Intelligent recommendations powered by machine learning models.
                                 </p>
@@ -192,7 +192,7 @@ export const AboutPage: FC = () => {
                     <div className="max-w-7xl mx-auto">
                         <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
                             <div>
-                                <h2 className="text-3xl font-bold text-white mb-2">Developed By</h2>
+                                <h2 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">Developed By</h2>
                                 <p className="text-slate-600 dark:text-slate-400">The minds behind the platform.</p>
                             </div>
                             <Link to="/contact" className="text-blue-400 font-bold flex items-center gap-2 hover:gap-3 transition-all group">
@@ -207,12 +207,12 @@ export const AboutPage: FC = () => {
                                 viewport={{ once: true }}
                                 className="group"
                             >
-                                <div className="aspect-square bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl mb-4 overflow-hidden relative border border-slate-200 dark:border-slate-800 group-hover:border-blue-500/30 transition-colors">
+                                <div className="aspect-square bg-gradient-to-br from-slate-800 to-slate-50 dark:to-slate-900 rounded-2xl mb-4 overflow-hidden relative border border-slate-200 dark:border-slate-800 group-hover:border-blue-500/30 transition-colors">
                                     <div className="absolute inset-0 flex items-center justify-center">
                                         <Users className="w-16 h-16 text-slate-700 group-hover:text-slate-500 transition-colors" />
                                     </div>
                                 </div>
-                                <h3 className="text-lg font-bold text-white">Rakshit Tiwari</h3>
+                                <h3 className="text-lg font-bold text-zinc-900 dark:text-white">Rakshit Tiwari</h3>
                                 <p className="text-sm text-blue-400 font-medium mb-2">Lead Architect & Developer</p>
                                 <p className="text-sm text-slate-600 dark:text-slate-400">
                                     Full-stack engineer passionate about structural mechanics and high-performance computing.
@@ -225,7 +225,7 @@ export const AboutPage: FC = () => {
                 {/* CTA Section */}
                 <section className="py-20 px-6">
                     <div className="max-w-4xl mx-auto text-center">
-                        <h2 className="text-3xl font-bold text-white mb-4">
+                        <h2 className="text-3xl font-bold text-zinc-900 dark:text-white mb-4">
                             Ready to transform your workflow?
                         </h2>
                         <p className="text-slate-600 dark:text-slate-400 mb-8">
@@ -240,7 +240,7 @@ export const AboutPage: FC = () => {
                             </Link>
                             <Link
                                 to="/demo"
-                                className="px-8 py-3 rounded-full bg-slate-100 dark:bg-slate-800 text-white font-medium border border-slate-300 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                className="px-8 py-3 rounded-full bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white font-medium border border-slate-300 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                             >
                                 View Demo
                             </Link>

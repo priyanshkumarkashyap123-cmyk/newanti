@@ -227,13 +227,13 @@ const CADIntegrationHub: React.FC = () => {
     <div className="space-y-6">
       {/* File Upload */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">📂</span>
           Import CAD File
         </h3>
         <div className="border-2 border-dashed border-gray-600 rounded-lg p-12 text-center hover:border-cyan-500 transition-colors cursor-pointer">
           <div className="text-5xl mb-4">📐</div>
-          <p className="text-white font-medium mb-2">Drop DWG, DXF, or DGN file here</p>
+          <p className="text-zinc-900 dark:text-white font-medium mb-2">Drop DWG, DXF, or DGN file here</p>
           <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">Supports AutoCAD 2024, MicroStation, and legacy formats</p>
           <div className="flex justify-center gap-4">
             {['DWG', 'DXF', 'DGN', 'PDF', 'IGES'].map((fmt) => (
@@ -255,7 +255,7 @@ const CADIntegrationHub: React.FC = () => {
 
       {/* Layer Preview */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">📊</span>
           Layer Selection
         </h3>
@@ -282,7 +282,7 @@ const CADIntegrationHub: React.FC = () => {
                   style={{ backgroundColor: layer.color }}
                 />
                 <div className="flex-1">
-                  <p className="text-white text-sm font-medium">{layer.name}</p>
+                  <p className="text-zinc-900 dark:text-white text-sm font-medium">{layer.name}</p>
                   <p className="text-gray-600 dark:text-gray-400 text-xs">{layer.entityCount} entities</p>
                 </div>
               </div>
@@ -293,7 +293,7 @@ const CADIntegrationHub: React.FC = () => {
 
       {/* Import Settings */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">⚙️</span>
           Import Settings
         </h3>
@@ -303,7 +303,7 @@ const CADIntegrationHub: React.FC = () => {
             <select
               value={importSettings.extractMethod}
               onChange={(e) => setImportSettings({ ...importSettings, extractMethod: e.target.value as any })}
-              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white"
+              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
             >
               <option value="geometry">Geometry Only</option>
               <option value="layers">By Layers</option>
@@ -316,7 +316,7 @@ const CADIntegrationHub: React.FC = () => {
             <select
               value={importSettings.units}
               onChange={(e) => setImportSettings({ ...importSettings, units: e.target.value as any })}
-              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white"
+              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
             >
               <option value="mm">Millimeters (mm)</option>
               <option value="m">Meters (m)</option>
@@ -331,7 +331,7 @@ const CADIntegrationHub: React.FC = () => {
               value={importSettings.scaleFactor}
               onChange={(e) => setImportSettings({ ...importSettings, scaleFactor: parseFloat(e.target.value) })}
               step="0.001"
-              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white"
+              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
             />
           </div>
         </div>
@@ -339,7 +339,7 @@ const CADIntegrationHub: React.FC = () => {
 
       {/* Analytical Model Conversion */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">🔬</span>
           Analytical Model Conversion
         </h3>
@@ -358,7 +358,7 @@ const CADIntegrationHub: React.FC = () => {
         {importSettings.convertToAnalytical && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 p-4 bg-gray-700/50 rounded-lg">
             <div>
-              <h4 className="text-white font-medium mb-3">Member Recognition</h4>
+              <h4 className="text-zinc-900 dark:text-white font-medium mb-3">Member Recognition</h4>
               <div className="space-y-2">
                 {Object.entries(importSettings.memberRecognition).map(([key, value]) => (
                   <label key={key} className="flex items-center gap-3 cursor-pointer">
@@ -377,7 +377,7 @@ const CADIntegrationHub: React.FC = () => {
               </div>
             </div>
             <div>
-              <h4 className="text-white font-medium mb-3">Node Generation</h4>
+              <h4 className="text-zinc-900 dark:text-white font-medium mb-3">Node Generation</h4>
               <div className="space-y-3">
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
@@ -413,7 +413,7 @@ const CADIntegrationHub: React.FC = () => {
                       nodeGeneration: { ...importSettings.nodeGeneration, tolerance: parseFloat(e.target.value) }
                     })}
                     step="0.001"
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white"
+                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-zinc-900 dark:text-white"
                   />
                 </div>
               </div>
@@ -442,7 +442,7 @@ const CADIntegrationHub: React.FC = () => {
     <div className="space-y-6">
       {/* Export Format */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">📤</span>
           Export Format
         </h3>
@@ -468,7 +468,7 @@ const CADIntegrationHub: React.FC = () => {
             <select
               value={exportSettings.version}
               onChange={(e) => setExportSettings({ ...exportSettings, version: e.target.value })}
-              className="w-full md:w-1/3 p-3 bg-gray-700 border border-gray-600 rounded-lg text-white"
+              className="w-full md:w-1/3 p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
             >
               {dwgVersions.map((ver) => (
                 <option key={ver.id} value={ver.id}>{ver.name}</option>
@@ -480,7 +480,7 @@ const CADIntegrationHub: React.FC = () => {
 
       {/* Drawing Type */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">📋</span>
           Drawing Type
         </h3>
@@ -503,7 +503,7 @@ const CADIntegrationHub: React.FC = () => {
               }`}
             >
               <div className="text-3xl mb-2">{type.icon}</div>
-              <p className="text-white text-sm">{type.label}</p>
+              <p className="text-zinc-900 dark:text-white text-sm">{type.label}</p>
             </button>
           ))}
         </div>
@@ -511,7 +511,7 @@ const CADIntegrationHub: React.FC = () => {
 
       {/* Export Settings */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">⚙️</span>
           Export Settings
         </h3>
@@ -521,7 +521,7 @@ const CADIntegrationHub: React.FC = () => {
             <select
               value={exportSettings.scale}
               onChange={(e) => setExportSettings({ ...exportSettings, scale: e.target.value })}
-              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white"
+              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
             >
               {scales.map((scale) => (
                 <option key={scale} value={scale}>{scale}</option>
@@ -533,7 +533,7 @@ const CADIntegrationHub: React.FC = () => {
             <select
               value={exportSettings.paperSize}
               onChange={(e) => setExportSettings({ ...exportSettings, paperSize: e.target.value as CADExportSettings['paperSize'] })}
-              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white"
+              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
             >
               <option value="A0">A0 (841 × 1189 mm)</option>
               <option value="A1">A1 (594 × 841 mm)</option>
@@ -548,7 +548,7 @@ const CADIntegrationHub: React.FC = () => {
             <select
               value={exportSettings.layerOrganization}
               onChange={(e) => setExportSettings({ ...exportSettings, layerOrganization: e.target.value as CADExportSettings['layerOrganization'] })}
-              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white"
+              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
             >
               <option value="by-type">By Element Type</option>
               <option value="by-floor">By Floor Level</option>
@@ -561,7 +561,7 @@ const CADIntegrationHub: React.FC = () => {
             <select
               value={exportSettings.colorScheme}
               onChange={(e) => setExportSettings({ ...exportSettings, colorScheme: e.target.value as CADExportSettings['colorScheme'] })}
-              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white"
+              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
             >
               <option value="standard">Standard Colors</option>
               <option value="by-utilization">By Utilization Ratio</option>
@@ -574,7 +574,7 @@ const CADIntegrationHub: React.FC = () => {
 
       {/* Include Options */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">📋</span>
           Include in Export
         </h3>
@@ -628,7 +628,7 @@ const CADIntegrationHub: React.FC = () => {
     <div className="space-y-6">
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-bold text-white flex items-center gap-2">
+          <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
             <span className="text-2xl">📑</span>
             Drawing Templates
           </h3>
@@ -648,7 +648,7 @@ const CADIntegrationHub: React.FC = () => {
                 <div className="text-5xl mb-2 group-hover:scale-110 transition-transform">
                   {template.preview}
                 </div>
-                <h4 className="text-white font-medium">{template.name}</h4>
+                <h4 className="text-zinc-900 dark:text-white font-medium">{template.name}</h4>
                 <p className="text-gray-600 dark:text-gray-400 text-sm">{template.description}</p>
               </div>
               <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 border-t border-gray-600 pt-3 mt-3">
@@ -666,7 +666,7 @@ const CADIntegrationHub: React.FC = () => {
 
       {/* Standard Details Library */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">📚</span>
           Standard Details Library
         </h3>
@@ -681,7 +681,7 @@ const CADIntegrationHub: React.FC = () => {
           ].map((lib, idx) => (
             <div key={idx} className="p-4 bg-gray-700 rounded-lg text-center hover:bg-gray-600 transition-colors cursor-pointer">
               <div className="text-3xl mb-2">📐</div>
-              <p className="text-white text-sm font-medium">{lib.name}</p>
+              <p className="text-zinc-900 dark:text-white text-sm font-medium">{lib.name}</p>
               <p className="text-gray-600 dark:text-gray-400 text-xs">{lib.code}</p>
               <span className="inline-block mt-2 px-2 py-1 bg-gray-600 text-gray-700 dark:text-gray-300 text-xs rounded">
                 {lib.count} details
@@ -696,7 +696,7 @@ const CADIntegrationHub: React.FC = () => {
   const renderBatchTab = () => (
     <div className="space-y-6">
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">📦</span>
           Batch Export
         </h3>
@@ -704,7 +704,7 @@ const CADIntegrationHub: React.FC = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
-            <h4 className="text-white font-medium">Select Drawing Sets</h4>
+            <h4 className="text-zinc-900 dark:text-white font-medium">Select Drawing Sets</h4>
             {[
               { name: 'All Floor Plans', count: 8 },
               { name: 'All Elevations', count: 4 },
@@ -730,10 +730,10 @@ const CADIntegrationHub: React.FC = () => {
           </div>
           
           <div className="space-y-4">
-            <h4 className="text-white font-medium">Output Settings</h4>
+            <h4 className="text-zinc-900 dark:text-white font-medium">Output Settings</h4>
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">Output Format</label>
-              <select className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white">
+              <select className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white">
                 <option value="dwg">DWG (AutoCAD)</option>
                 <option value="pdf">PDF (Print-ready)</option>
                 <option value="dwg-pdf">DWG + PDF</option>
@@ -741,7 +741,7 @@ const CADIntegrationHub: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">Sheet Numbering</label>
-              <select className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white">
+              <select className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white">
                 <option value="sequential">Sequential (S-01, S-02...)</option>
                 <option value="by-type">By Type (FP-01, EL-01...)</option>
                 <option value="custom">Custom Prefix</option>
@@ -749,7 +749,7 @@ const CADIntegrationHub: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">Title Block</label>
-              <select className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white">
+              <select className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white">
                 <option value="standard">Standard A1</option>
                 <option value="company">Company Template</option>
                 <option value="none">No Title Block</option>
@@ -759,11 +759,11 @@ const CADIntegrationHub: React.FC = () => {
             <div className="pt-4 border-t border-gray-600">
               <div className="flex justify-between text-gray-700 dark:text-gray-300 mb-2">
                 <span>Total Sheets:</span>
-                <span className="text-white font-bold">18 sheets</span>
+                <span className="text-zinc-900 dark:text-white font-bold">18 sheets</span>
               </div>
               <div className="flex justify-between text-gray-700 dark:text-gray-300">
                 <span>Estimated Time:</span>
-                <span className="text-white font-bold">~3 minutes</span>
+                <span className="text-zinc-900 dark:text-white font-bold">~3 minutes</span>
               </div>
             </div>
           </div>
@@ -827,7 +827,7 @@ const CADIntegrationHub: React.FC = () => {
 
         {/* Supported Formats Footer */}
         <div className="mt-8 p-6 bg-gray-100 dark:bg-gray-800/50 rounded-lg border border-gray-300 dark:border-gray-700">
-          <h3 className="text-lg font-bold text-white mb-4 text-center">
+          <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 text-center">
             🔧 Supported CAD Formats
           </h3>
           <div className="grid grid-cols-3 md:grid-cols-6 gap-4 text-center">
@@ -840,7 +840,7 @@ const CADIntegrationHub: React.FC = () => {
               { name: 'IGES', versions: '5.3' },
             ].map((fmt, idx) => (
               <div key={idx} className="p-3 bg-gray-700 rounded-lg">
-                <p className="text-white font-bold">{fmt.name}</p>
+                <p className="text-zinc-900 dark:text-white font-bold">{fmt.name}</p>
                 <p className="text-gray-600 dark:text-gray-400 text-xs">{fmt.versions}</p>
               </div>
             ))}

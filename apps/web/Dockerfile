@@ -1,15 +1,16 @@
 # Build stage
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml ./
+# Copy package files + workspace config
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json apps/web/
+COPY packages/solver-wasm/package.json packages/solver-wasm/
 
 # Install dependencies
-RUN npm install -g pnpm
-RUN pnpm install --frozen-lockfile
+RUN corepack enable && corepack prepare pnpm@10.25.0 --activate
+RUN pnpm install --frozen-lockfile --filter @beamlab/web...
 
 # Copy source
 COPY apps/web apps/web

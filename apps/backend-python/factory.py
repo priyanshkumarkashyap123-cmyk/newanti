@@ -70,7 +70,7 @@ class StructuralFactory:
                 if is_span_start and is_first_span:
                     support = SupportType.PINNED
                 elif is_span_end:
-                    support = SupportType.ROLLER if not is_last_span else SupportType.ROLLER
+                    support = SupportType.ROLLER
                 else:
                     support = SupportType.NONE
                 

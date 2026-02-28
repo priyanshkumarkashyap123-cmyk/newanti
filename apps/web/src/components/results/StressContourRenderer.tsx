@@ -310,7 +310,7 @@ const StressMember: FC<StressMemberProps> = ({
                     center
                     style={{ pointerEvents: 'none' }}
                 >
-                    <div className="bg-black/90 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                    <div className="bg-black/90 text-zinc-900 dark:text-white text-xs px-2 py-1 rounded whitespace-nowrap">
                         <div className="font-bold">{memberId}</div>
                         <div>Max: {maxStress.toFixed(1)} MPa</div>
                         <div>Util: {((maxStress / capacity) * 100).toFixed(1)}%</div>
@@ -354,8 +354,8 @@ const ColorLegend: FC<ColorLegendProps> = ({
     }, [minValue, maxValue, contourIntervals]);
     
     return (
-        <div className="bg-slate-800/95 backdrop-blur rounded-lg p-3 min-w-[180px]">
-            <div className="text-xs font-semibold text-slate-300 mb-2 flex items-center gap-1">
+        <div className="bg-slate-100/95 dark:bg-slate-800/95 backdrop-blur rounded-lg p-3 min-w-[180px]">
+            <div className="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-2 flex items-center gap-1">
                 <Activity size={12} />
                 {STRESS_TYPES.find(s => s.id === stressType)?.label || 'Stress'}
             </div>
@@ -372,7 +372,7 @@ const ColorLegend: FC<ColorLegendProps> = ({
                 {/* Values */}
                 <div className="flex-1 flex flex-col justify-between text-right">
                     {intervals.filter((_, i) => i % 2 === 0).reverse().map((interval, idx) => (
-                        <div key={idx} className="text-xs font-mono text-slate-400">
+                        <div key={idx} className="text-xs font-mono text-slate-500 dark:text-slate-400">
                             {interval.value.toFixed(1)} {unit}
                         </div>
                     ))}
@@ -381,10 +381,10 @@ const ColorLegend: FC<ColorLegendProps> = ({
             
             {/* Allowable stress line */}
             {allowableStress && allowableStress >= minValue && allowableStress <= maxValue && (
-                <div className="border-t border-slate-700 pt-2 mt-2">
+                <div className="border-t border-slate-200 dark:border-slate-700 pt-2 mt-2">
                     <div className="flex items-center gap-2 text-xs">
                         <div className="w-4 h-0.5 bg-red-500" />
-                        <span className="text-slate-400">
+                        <span className="text-slate-500 dark:text-slate-400">
                             Allowable: <span className="text-red-400 font-mono">{allowableStress} {unit}</span>
                         </span>
                     </div>
@@ -412,12 +412,12 @@ export const StressTypeSelector: FC<StressTypeSelectorProps> = ({ selected, onCh
         <div className="relative">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 px-3 py-2 bg-slate-700 hover:bg-slate-600 
+                className="flex items-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 
                          rounded-lg text-sm transition-colors border border-slate-600"
             >
                 <Layers size={14} className="text-cyan-400" />
-                <span className="text-slate-200">{selectedInfo?.label}</span>
-                <ChevronDown size={14} className={`text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                <span className="text-slate-700 dark:text-slate-200">{selectedInfo?.label}</span>
+                <ChevronDown size={14} className={`text-slate-500 dark:text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
             </button>
             
             <AnimatePresence>
@@ -428,7 +428,7 @@ export const StressTypeSelector: FC<StressTypeSelectorProps> = ({ selected, onCh
                             initial={{ opacity: 0, y: -8 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -8 }}
-                            className="absolute left-0 top-full mt-1 w-64 bg-slate-800 border border-slate-700 
+                            className="absolute left-0 top-full mt-1 w-64 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 
                                      rounded-lg shadow-xl z-50 overflow-hidden"
                         >
                             {STRESS_TYPES.map((type) => (
@@ -441,19 +441,19 @@ export const StressTypeSelector: FC<StressTypeSelectorProps> = ({ selected, onCh
                                     className={`w-full flex items-start gap-3 px-3 py-2 text-left transition-colors
                                               ${selected === type.id 
                                                 ? 'bg-cyan-600/20 text-cyan-400' 
-                                                : 'hover:bg-slate-700/50 text-slate-300'
+                                                : 'hover:bg-slate-200/50 dark:hover:bg-slate-700/50 text-slate-600 dark:text-slate-300'
                                               }`}
                                 >
                                     <div className="mt-0.5">
                                         {selected === type.id ? (
                                             <Eye size={14} className="text-cyan-400" />
                                         ) : (
-                                            <EyeOff size={14} className="text-slate-400" />
+                                            <EyeOff size={14} className="text-slate-500 dark:text-slate-400" />
                                         )}
                                     </div>
                                     <div>
                                         <div className="text-sm font-medium">{type.label}</div>
-                                        <div className="text-xs text-slate-400">{type.description}</div>
+                                        <div className="text-xs text-slate-500 dark:text-slate-400">{type.description}</div>
                                     </div>
                                 </button>
                             ))}
@@ -555,14 +555,14 @@ export const StressContourRenderer: FC<StressContourProps> = ({
                     pointerEvents: 'auto',
                     zIndex: 99,
                 }}>
-                    <div className="bg-slate-900/95 backdrop-blur-md rounded-xl border border-slate-700/60 shadow-2xl p-3 w-[200px]">
+                    <div className="bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-md rounded-xl border border-slate-300/60 dark:border-slate-700/60 shadow-2xl p-3 w-[200px]">
                         {/* Stress type selector */}
                         <div className="mb-3">
-                            <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1.5">Stress Type</div>
+                            <div className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold mb-1.5">Stress Type</div>
                             <select
                                 value={stressType}
                                 onChange={(e) => onStressTypeChange(e.target.value as StressType)}
-                                className="w-full text-xs bg-slate-800 border border-slate-600 text-slate-200 rounded-md px-2 py-1.5 cursor-pointer focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500"
+                                className="w-full text-xs bg-slate-100 dark:bg-slate-800 border border-slate-600 text-slate-700 dark:text-slate-200 rounded-md px-2 py-1.5 cursor-pointer focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500"
                             >
                                 {STRESS_TYPES.map(st => (
                                     <option key={st.id} value={st.id}>{st.label} — {st.description}</option>
@@ -571,7 +571,7 @@ export const StressContourRenderer: FC<StressContourProps> = ({
                         </div>
 
                         {/* Color bar + scale */}
-                        <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1.5">
+                        <div className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold mb-1.5">
                             {STRESS_TYPES.find(s => s.id === stressType)?.label || 'Stress'} Scale
                         </div>
                         <div className="flex gap-2 items-stretch">
@@ -595,7 +595,7 @@ export const StressContourRenderer: FC<StressContourProps> = ({
                                         : globalMin + t * (globalMax - globalMin);
                                     const unit = stressType === 'utilization' ? '%' : 'MPa';
                                     return (
-                                        <div key={i} className="text-[10px] font-mono text-slate-300 leading-tight">
+                                        <div key={i} className="text-[10px] font-mono text-slate-600 dark:text-slate-300 leading-tight">
                                             {val.toFixed(stressType === 'utilization' ? 0 : 1)} {unit}
                                         </div>
                                     );
@@ -604,24 +604,24 @@ export const StressContourRenderer: FC<StressContourProps> = ({
                         </div>
 
                         {/* Summary statistics */}
-                        <div className="mt-3 pt-2 border-t border-slate-700/60 space-y-1">
+                        <div className="mt-3 pt-2 border-t border-slate-300/60 dark:border-slate-700/60 space-y-1">
                             <div className="flex justify-between text-[10px]">
-                                <span className="text-slate-400">Members</span>
-                                <span className="text-slate-200 font-mono">{memberStress.length}</span>
+                                <span className="text-slate-500 dark:text-slate-400">Members</span>
+                                <span className="text-slate-700 dark:text-slate-200 font-mono">{memberStress.length}</span>
                             </div>
                             <div className="flex justify-between text-[10px]">
-                                <span className="text-slate-400">Max Stress</span>
+                                <span className="text-slate-500 dark:text-slate-400">Max Stress</span>
                                 <span className="text-red-400 font-mono font-semibold">{globalMax.toFixed(1)} MPa</span>
                             </div>
                             <div className="flex justify-between text-[10px]">
-                                <span className="text-slate-400">Critical ({'>'} 100%)</span>
+                                <span className="text-slate-500 dark:text-slate-400">Critical ({'>'} 100%)</span>
                                 <span className={`font-mono font-semibold ${criticalMembers.length > 0 ? 'text-red-400' : 'text-green-400'}`}>
                                     {criticalMembers.length}
                                 </span>
                             </div>
                             {allowableStress > 0 && (
                                 <div className="flex justify-between text-[10px]">
-                                    <span className="text-slate-400">f_y (yield)</span>
+                                    <span className="text-slate-500 dark:text-slate-400">f_y (yield)</span>
                                     <span className="text-cyan-400 font-mono">{allowableStress} MPa</span>
                                 </div>
                             )}
@@ -719,10 +719,10 @@ export const StressContourPanel: FC<StressContourPanelProps> = ({
     totalMembers
 }) => {
     return (
-        <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+        <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-slate-800/50 border-b border-slate-800">
-                <h3 className="font-semibold text-white flex items-center gap-2">
+            <div className="flex items-center justify-between px-4 py-3 bg-slate-100/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                <h3 className="font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
                     <Layers className="w-5 h-5 text-cyan-500" />
                     Stress Contours
                 </h3>
@@ -745,9 +745,9 @@ export const StressContourPanel: FC<StressContourPanelProps> = ({
                 <div className="space-y-3">
                     {/* Contour intervals */}
                     <div>
-                        <label className="flex items-center justify-between text-xs text-slate-400 mb-1">
+                        <label className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
                             <span>Contour Intervals</span>
-                            <span className="font-mono text-slate-300">{contourIntervals}</span>
+                            <span className="font-mono text-slate-600 dark:text-slate-300">{contourIntervals}</span>
                         </label>
                         <input
                             type="range"
@@ -755,28 +755,28 @@ export const StressContourPanel: FC<StressContourPanelProps> = ({
                             max="20"
                             value={contourIntervals}
                             onChange={(e) => onContourIntervalsChange(Number(e.target.value))}
-                            className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                            className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
                         />
                     </div>
                     
                     {/* Toggle options */}
                     <div className="flex flex-col gap-2">
-                        <label className="flex items-center gap-2 text-xs text-slate-400 cursor-pointer">
+                        <label className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 cursor-pointer">
                             <input
                                 type="checkbox"
                                 checked={showContours}
                                 onChange={(e) => onShowContoursChange(e.target.checked)}
-                                className="rounded bg-slate-700 border-slate-600 text-cyan-500"
+                                className="rounded bg-slate-200 dark:bg-slate-700 border-slate-600 text-cyan-500"
                             />
                             Show Contour Lines
                         </label>
                         
-                        <label className="flex items-center gap-2 text-xs text-slate-400 cursor-pointer">
+                        <label className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 cursor-pointer">
                             <input
                                 type="checkbox"
                                 checked={highlightCritical}
                                 onChange={(e) => onHighlightCriticalChange(e.target.checked)}
-                                className="rounded bg-slate-700 border-slate-600 text-cyan-500"
+                                className="rounded bg-slate-200 dark:bg-slate-700 border-slate-600 text-cyan-500"
                             />
                             Highlight Critical Members
                         </label>
@@ -784,19 +784,19 @@ export const StressContourPanel: FC<StressContourPanelProps> = ({
                 </div>
                 
                 {/* Summary */}
-                <div className="pt-3 border-t border-slate-800 grid grid-cols-2 gap-4">
+                <div className="pt-3 border-t border-slate-200 dark:border-slate-800 grid grid-cols-2 gap-4">
                     <div>
-                        <div className="text-xs text-slate-400">Stress Range</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">Stress Range</div>
                         <div className="text-sm font-mono">
                             <span className="text-blue-400">{minStress.toFixed(1)}</span>
-                            <span className="text-slate-400"> → </span>
+                            <span className="text-slate-500 dark:text-slate-400"> → </span>
                             <span className="text-red-400">{maxStress.toFixed(1)}</span>
-                            <span className="text-slate-400"> MPa</span>
+                            <span className="text-slate-500 dark:text-slate-400"> MPa</span>
                         </div>
                     </div>
                     
                     <div>
-                        <div className="text-xs text-slate-400">Critical Members</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">Critical Members</div>
                         <div className={`text-sm font-bold ${criticalCount > 0 ? 'text-red-400' : 'text-green-400'}`}>
                             {criticalCount} / {totalMembers}
                         </div>

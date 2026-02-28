@@ -332,7 +332,7 @@ export const ReportViewerEnhanced: FC = () => {
                 <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-steel-blue shadow-2xl rounded-full px-6 py-3 flex items-center gap-4 z-50 print:hidden">
                     <button
                         onClick={handlePrint}
-                        className="flex items-center gap-2 text-white hover:text-accent transition-colors"
+                        className="flex items-center gap-2 text-zinc-900 dark:text-white hover:text-accent transition-colors"
                     >
                         <span className="material-symbols-outlined text-[20px]">print</span>
                         <span className="text-sm font-medium">Print</span>
@@ -340,7 +340,7 @@ export const ReportViewerEnhanced: FC = () => {
                     <div className="w-px h-6 bg-white/20"></div>
                     <button
                         onClick={handleDownloadPDF}
-                        className="flex items-center gap-2 text-white hover:text-accent transition-colors"
+                        className="flex items-center gap-2 text-zinc-900 dark:text-white hover:text-accent transition-colors"
                     >
                         <span className="material-symbols-outlined text-[20px]">download</span>
                         <span className="text-sm font-medium">Download PDF</span>
@@ -348,7 +348,7 @@ export const ReportViewerEnhanced: FC = () => {
                     <div className="w-px h-6 bg-white/20"></div>
                     <button
                         onClick={handleShare}
-                        className="flex items-center gap-2 text-white hover:text-accent transition-colors"
+                        className="flex items-center gap-2 text-zinc-900 dark:text-white hover:text-accent transition-colors"
                     >
                         <span className="material-symbols-outlined text-[20px]">share</span>
                         <span className="text-sm font-medium">Share</span>
@@ -356,7 +356,7 @@ export const ReportViewerEnhanced: FC = () => {
                     <div className="w-px h-6 bg-white/20"></div>
                     <button
                         onClick={() => setShowFloatingBar(false)}
-                        className="flex items-center justify-center w-8 h-8 text-white/60 hover:text-white transition-colors"
+                        className="flex items-center justify-center w-8 h-8 text-white/60 hover:text-zinc-900 dark:text-white transition-colors"
                     >
                         <span className="material-symbols-outlined text-[20px]">close</span>
                     </button>

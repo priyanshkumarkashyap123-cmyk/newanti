@@ -79,11 +79,11 @@ export const ProgressRing: FC<ProgressRingProps> = ({
             </svg>
             {showLabel && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-xl font-bold text-white">
+                    <span className="text-xl font-bold text-zinc-900 dark:text-white">
                         {Math.round(animatedProgress)}%
                     </span>
                     {label && (
-                        <span className="text-xs text-slate-400">{label}</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">{label}</span>
                     )}
                 </div>
             )}
@@ -125,13 +125,13 @@ export const ProgressBar: FC<ProgressBarProps> = ({
         <div className={`space-y-1.5 ${className}`}>
             {(label || showValue) && (
                 <div className="flex items-center justify-between text-sm">
-                    {label && <span className="text-slate-400">{label}</span>}
+                    {label && <span className="text-slate-500 dark:text-slate-400">{label}</span>}
                     {showValue && (
-                        <span className="text-white font-medium">{Math.round(progress)}%</span>
+                        <span className="text-zinc-900 dark:text-white font-medium">{Math.round(progress)}%</span>
                     )}
                 </div>
             )}
-            <div className={`w-full bg-slate-700 rounded-full overflow-hidden ${heights[size]}`}>
+            <div className={`w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden ${heights[size]}`}>
                 <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
@@ -188,13 +188,13 @@ export const StatCard: FC<StatCardProps> = ({
             animate={{ opacity: 1, y: 0 }}
             whileHover={{ y: -2 }}
             className={`
-                p-5 bg-slate-900 border border-slate-800 rounded-xl
+                p-5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl
                 transition-shadow hover:shadow-lg hover:shadow-slate-900/50
                 ${className}
             `}
         >
             <div className="flex items-start justify-between mb-3">
-                <span className="text-sm text-slate-400">{title}</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400">{title}</span>
                 {icon && (
                     <div className={`p-2 rounded-lg ${bgColors[color]}`}>
                         <span className={iconColors[color]}>{icon}</span>
@@ -203,14 +203,14 @@ export const StatCard: FC<StatCardProps> = ({
             </div>
 
             <div className="flex items-end gap-2 mb-1">
-                <span className="text-3xl font-bold text-white">{value}</span>
+                <span className="text-3xl font-bold text-zinc-900 dark:text-white">{value}</span>
                 {subtitle && (
-                    <span className="text-sm text-slate-400 mb-1">{subtitle}</span>
+                    <span className="text-sm text-slate-500 dark:text-slate-400 mb-1">{subtitle}</span>
                 )}
             </div>
 
             {trend && (
-                <div className={`flex items-center gap-1 text-sm ${trend.value > 0 ? 'text-green-400' : trend.value < 0 ? 'text-red-400' : 'text-slate-400'
+                <div className={`flex items-center gap-1 text-sm ${trend.value > 0 ? 'text-green-400' : trend.value < 0 ? 'text-red-400' : 'text-slate-500 dark:text-slate-400'
                     }`}>
                     {trend.value > 0 ? (
                         <ArrowUpRight className="w-4 h-4" />
@@ -221,7 +221,7 @@ export const StatCard: FC<StatCardProps> = ({
                     )}
                     <span>{Math.abs(trend.value)}%</span>
                     {trend.label && (
-                        <span className="text-slate-400">{trend.label}</span>
+                        <span className="text-slate-500 dark:text-slate-400">{trend.label}</span>
                     )}
                 </div>
             )}
@@ -343,7 +343,7 @@ export const BarChart: FC<BarChartProps> = ({
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     transition={{ delay: index * 0.1 + 0.5 }}
-                                    className="text-xs text-slate-400 font-mono"
+                                    className="text-xs text-slate-500 dark:text-slate-400 font-mono"
                                 >
                                     {item.value}
                                 </motion.span>
@@ -365,7 +365,7 @@ export const BarChart: FC<BarChartProps> = ({
             {showLabels && (
                 <div className="flex gap-2 mt-2">
                     {data.map((item) => (
-                        <span key={item.label} className="flex-1 text-xs text-slate-400 text-center truncate">
+                        <span key={item.label} className="flex-1 text-xs text-slate-500 dark:text-slate-400 text-center truncate">
                             {item.label}
                         </span>
                     ))}
@@ -442,11 +442,11 @@ export const Gauge: FC<GaugeProps> = ({
 
             {/* Value Display */}
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-center">
-                <div className="text-2xl font-bold text-white">
+                <div className="text-2xl font-bold text-zinc-900 dark:text-white">
                     {value.toFixed(0)}
-                    {unit && <span className="text-sm text-slate-400 ml-1">{unit}</span>}
+                    {unit && <span className="text-sm text-slate-500 dark:text-slate-400 ml-1">{unit}</span>}
                 </div>
-                {label && <div className="text-xs text-slate-400">{label}</div>}
+                {label && <div className="text-xs text-slate-500 dark:text-slate-400">{label}</div>}
             </div>
         </div>
     );

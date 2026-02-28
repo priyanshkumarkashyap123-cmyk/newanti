@@ -348,7 +348,7 @@ export const GenerativeDesignPanel: React.FC<GenerativeDesignPanelProps> = ({
                 ${
                   selectedCase === dc.id
                     ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-400 shadow-lg shadow-emerald-500/5"
-                    : "border-white/[0.06] bg-white/[0.02] text-slate-400 hover:border-white/[0.12] hover:bg-white/[0.04]"
+                    : "border-white/[0.06] bg-white/[0.02] text-slate-500 dark:text-slate-400 hover:border-white/[0.12] hover:bg-white/[0.04]"
                 }
                 disabled:opacity-50 disabled:cursor-not-allowed`}
             >
@@ -412,7 +412,7 @@ export const GenerativeDesignPanel: React.FC<GenerativeDesignPanelProps> = ({
                 max={p.max}
                 step={p.step}
                 disabled={status === "running"}
-                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-slate-200
+                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-200
                   placeholder-slate-600 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20
                   disabled:opacity-40 transition-colors tabular-nums"
               />
@@ -428,7 +428,7 @@ export const GenerativeDesignPanel: React.FC<GenerativeDesignPanelProps> = ({
       {/* Visualization + Controls */}
       <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
         {/* Canvas */}
-        <div className="p-4 flex justify-center bg-slate-950/60">
+        <div className="p-4 flex justify-center bg-white/60 dark:bg-slate-950/60">
           <DensityCanvas densities={liveDensities} width={480} height={240} />
         </div>
 
@@ -460,7 +460,7 @@ export const GenerativeDesignPanel: React.FC<GenerativeDesignPanelProps> = ({
           {status === "running" && (
             <div className="space-y-3">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">
+                <span className="text-slate-500 dark:text-slate-400">
                   Iteration{" "}
                   <span className="text-emerald-400 font-mono">
                     {progress.iter}
@@ -513,7 +513,7 @@ export const GenerativeDesignPanel: React.FC<GenerativeDesignPanelProps> = ({
                     <div className="text-[10px] text-slate-500 mb-0.5">
                       {s.label}
                     </div>
-                    <div className="text-xs font-mono text-slate-200">
+                    <div className="text-xs font-mono text-slate-700 dark:text-slate-200">
                       {s.value}
                     </div>
                   </div>
@@ -561,7 +561,7 @@ export const GenerativeDesignPanel: React.FC<GenerativeDesignPanelProps> = ({
                       link.click();
                     }
                   }}
-                  className="flex-1 py-2 rounded-lg border border-white/[0.08] text-slate-300 text-xs font-medium
+                  className="flex-1 py-2 rounded-lg border border-white/[0.08] text-slate-600 dark:text-slate-300 text-xs font-medium
                     hover:bg-white/[0.04] transition-colors"
                 >
                   Export Image

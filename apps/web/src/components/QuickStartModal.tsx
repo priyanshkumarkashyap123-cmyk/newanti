@@ -255,7 +255,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                                     w-4 h-4 flex-shrink-0
                                     ${selectedSample?.id === sample.id
                                         ? 'text-blue-500'
-                                        : 'text-zinc-300 dark:text-zinc-500'
+                                        : 'text-zinc-600 dark:text-zinc-500'
                                     }
                                 `} />
                             </button>

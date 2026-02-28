@@ -115,7 +115,7 @@ const SPECIAL_LOADS = [
 // ============================================
 
 const LOAD_CATEGORIES = [
-    { id: 'dead' as LoadCategory, name: 'Dead Load', icon: Box, color: 'text-gray-400', bgColor: 'bg-gray-500/10', description: 'IS 875 Part 1 - Self weight' },
+    { id: 'dead' as LoadCategory, name: 'Dead Load', icon: Box, color: 'text-gray-500 dark:text-gray-400', bgColor: 'bg-gray-500/10', description: 'IS 875 Part 1 - Self weight' },
     { id: 'imposed' as LoadCategory, name: 'Imposed Load', icon: Users, color: 'text-blue-400', bgColor: 'bg-blue-500/10', description: 'IS 875 Part 2 - Live loads' },
     { id: 'wind' as LoadCategory, name: 'Wind Load', icon: Wind, color: 'text-cyan-400', bgColor: 'bg-cyan-500/10', description: 'IS 875 Part 3 - Wind pressure' },
     { id: 'snow' as LoadCategory, name: 'Snow Load', icon: Snowflake, color: 'text-indigo-400', bgColor: 'bg-indigo-500/10', description: 'IS 875 Part 4 - Snow' },

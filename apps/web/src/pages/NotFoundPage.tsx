@@ -25,7 +25,7 @@ export function NotFoundPage() {
                 </h1>
 
                 {/* Message */}
-                <h2 className="text-2xl font-semibold text-slate-200 mb-3">
+                <h2 className="text-2xl font-semibold text-slate-700 dark:text-slate-200 mb-3">
                     Page Not Found
                 </h2>
                 <p className="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
@@ -44,14 +44,14 @@ export function NotFoundPage() {
                     </Link>
                     <Link
                         to="/stream"
-                        className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium rounded-lg transition-colors no-underline"
+                        className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium rounded-lg transition-colors no-underline"
                     >
                         <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>dashboard</span>
                         Dashboard
                     </Link>
                     <Link
                         to="/demo"
-                        className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium rounded-lg transition-colors no-underline"
+                        className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium rounded-lg transition-colors no-underline"
                     >
                         <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>play_arrow</span>
                         Try Demo

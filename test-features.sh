@@ -8,7 +8,7 @@ echo "🧪 Testing BeamLab Features"
 echo "============================"
 echo ""
 
-RUST_API="http://localhost:8000"
+RUST_API="http://localhost:${RUST_API_PORT:-8080}"
 
 # Check if Rust API is running
 echo "🔍 Checking Rust API..."

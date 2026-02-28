@@ -114,7 +114,7 @@ const QuickToolButton: FC<{
   const Icon = tool.icon;
   
   const variantClasses = {
-    default: 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/50',
+    default: 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-100 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50',
     primary: 'text-blue-400 hover:text-blue-300 hover:bg-blue-500/20',
     success: 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/20',
     warning: 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/20',
@@ -182,11 +182,11 @@ const SearchBar: FC<{
     <div className={`
       relative flex items-center gap-2 px-2 py-1 rounded-md transition-all
       ${isFocused 
-        ? 'bg-zinc-800 ring-1 ring-blue-500 w-64' 
-        : 'bg-zinc-800/50 w-48 hover:bg-zinc-800'
+        ? 'bg-zinc-100 dark:bg-zinc-800 ring-1 ring-blue-500 w-64' 
+        : 'bg-zinc-100/50 dark:bg-zinc-800/50 w-48 hover:bg-zinc-200 dark:hover:bg-zinc-800'
       }
     `}>
-      <Search className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" />
+      <Search className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 flex-shrink-0" />
       <input
         ref={inputRef}
         type="text"
@@ -196,9 +196,9 @@ const SearchBar: FC<{
         onBlur={() => setIsFocused(false)}
         onKeyDown={handleKeyDown}
         placeholder="Search or type a command..."
-        className="flex-1 bg-transparent text-xs text-zinc-300 placeholder-zinc-500 outline-none"
+        className="flex-1 bg-transparent text-xs text-zinc-600 dark:text-zinc-300 placeholder-zinc-400 dark:placeholder-zinc-500 outline-none"
       />
-      <kbd className="hidden sm:flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] text-zinc-400 bg-zinc-700 rounded">
+      <kbd className="hidden sm:flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] text-zinc-500 dark:text-zinc-400 bg-zinc-200 dark:bg-zinc-700 rounded">
         <Command className="w-2.5 h-2.5" />K
       </kbd>
     </div>
@@ -236,7 +236,7 @@ const RecentFilesDropdown: FC<{
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1 px-2 py-1 text-xs text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700/50 rounded transition-colors"
+        className="flex items-center gap-1 px-2 py-1 text-xs text-zinc-500 hover:text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 rounded transition-colors"
       >
         <Clock className="w-3.5 h-3.5" />
         <span className="hidden sm:inline">Recent</span>
@@ -249,12 +249,12 @@ const RecentFilesDropdown: FC<{
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            className="absolute top-full left-0 mt-1 w-72 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl overflow-hidden z-50"
+            className="absolute top-full left-0 mt-1 w-72 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-xl overflow-hidden z-50"
           >
             {/* Pinned Files */}
             {pinnedFiles.length > 0 && (
               <>
-                <div className="px-3 py-1.5 text-[10px] font-semibold text-zinc-400 uppercase tracking-wider bg-zinc-800/50">
+                <div className="px-3 py-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider bg-zinc-100/50 dark:bg-zinc-800/50">
                   <Pin className="w-3 h-3 inline mr-1" />
                   Pinned
                 </div>
@@ -273,7 +273,7 @@ const RecentFilesDropdown: FC<{
             )}
 
             {/* Recent Files */}
-            <div className="px-3 py-1.5 text-[10px] font-semibold text-zinc-400 uppercase tracking-wider bg-zinc-800/50">
+            <div className="px-3 py-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider bg-zinc-100/50 dark:bg-zinc-800/50">
               <Clock className="w-3 h-3 inline mr-1" />
               Recent
             </div>
@@ -290,17 +290,17 @@ const RecentFilesDropdown: FC<{
                 />
               ))
             ) : (
-              <div className="px-3 py-4 text-xs text-zinc-400 text-center">
+              <div className="px-3 py-4 text-xs text-zinc-500 dark:text-zinc-400 text-center">
                 No recent files
               </div>
             )}
 
             {/* Footer */}
-            <div className="px-3 py-2 border-t border-zinc-800 flex justify-between">
+            <div className="px-3 py-2 border-t border-zinc-200 dark:border-zinc-800 flex justify-between">
               <button className="text-xs text-blue-400 hover:text-blue-300">
                 Open File...
               </button>
-              <button className="text-xs text-zinc-400 hover:text-zinc-400">
+              <button className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-400">
                 Clear Recent
               </button>
             </div>
@@ -334,11 +334,11 @@ const FileListItem: FC<{
   };
 
   return (
-    <div className="flex items-center gap-2 px-3 py-2 hover:bg-zinc-800/50 cursor-pointer group">
-      <FileText className="w-4 h-4 text-zinc-400 flex-shrink-0" />
+    <div className="flex items-center gap-2 px-3 py-2 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 cursor-pointer group">
+      <FileText className="w-4 h-4 text-zinc-500 dark:text-zinc-400 flex-shrink-0" />
       <div className="flex-1 min-w-0" onClick={onClick}>
-        <div className="text-xs text-zinc-300 truncate">{file.name}</div>
-        <div className="text-[10px] text-zinc-400 truncate">{file.path}</div>
+        <div className="text-xs text-zinc-600 dark:text-zinc-300 truncate">{file.name}</div>
+        <div className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">{file.path}</div>
       </div>
       <span className="text-[10px] text-zinc-500">{formatTime(file.timestamp)}</span>
       <button
@@ -347,7 +347,7 @@ const FileListItem: FC<{
           onTogglePinned();
         }}
         className={`p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity ${
-          file.pinned ? 'text-amber-400' : 'text-zinc-400 hover:text-zinc-300'
+          file.pinned ? 'text-amber-400' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'
         }`}
       >
         {file.pinned ? <Star className="w-3 h-3 fill-current" /> : <StarOff className="w-3 h-3" />}
@@ -376,8 +376,8 @@ const Breadcrumbs: FC<{
             onClick={item.onClick}
             className={`flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors ${
               isLast 
-                ? 'text-zinc-200' 
-                : 'text-zinc-400 hover:text-zinc-300 hover:bg-zinc-700/50'
+                ? 'text-zinc-700 dark:text-zinc-200' 
+                : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50'
             }`}
           >
             {Icon && <Icon className="w-3 h-3" />}
@@ -418,7 +418,7 @@ const UserMenu: FC<{
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative flex items-center gap-2 px-2 py-1 rounded hover:bg-zinc-700/50 transition-colors"
+        className="relative flex items-center gap-2 px-2 py-1 rounded hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 transition-colors"
       >
         <div className="relative">
           {userAvatar ? (
@@ -432,7 +432,7 @@ const UserMenu: FC<{
             isOnline ? 'bg-emerald-400' : 'bg-zinc-500'
           }`} />
         </div>
-        {userName && <span className="text-xs text-zinc-300 hidden lg:block">{userName}</span>}
+        {userName && <span className="text-xs text-zinc-600 dark:text-zinc-300 hidden lg:block">{userName}</span>}
       </button>
 
       <AnimatePresence>
@@ -441,27 +441,27 @@ const UserMenu: FC<{
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            className="absolute top-full right-0 mt-1 w-56 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl overflow-hidden z-50"
+            className="absolute top-full right-0 mt-1 w-56 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-xl overflow-hidden z-50"
           >
-            <div className="px-4 py-3 border-b border-zinc-800">
-              <div className="text-sm font-medium text-zinc-200">{userName || 'Guest'}</div>
-              <div className="text-xs text-zinc-400">Free Plan</div>
+            <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+              <div className="text-sm font-medium text-zinc-700 dark:text-zinc-200">{userName || 'Guest'}</div>
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">Free Plan</div>
             </div>
             <div className="py-1">
-              <button className="w-full flex items-center gap-2 px-4 py-2 text-xs text-zinc-300 hover:bg-zinc-800">
-                <User className="w-4 h-4 text-zinc-400" />
+              <button className="w-full flex items-center gap-2 px-4 py-2 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800">
+                <User className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
                 Account Settings
               </button>
-              <button className="w-full flex items-center gap-2 px-4 py-2 text-xs text-zinc-300 hover:bg-zinc-800">
-                <Keyboard className="w-4 h-4 text-zinc-400" />
+              <button className="w-full flex items-center gap-2 px-4 py-2 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800">
+                <Keyboard className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
                 Keyboard Shortcuts
               </button>
-              <button className="w-full flex items-center gap-2 px-4 py-2 text-xs text-zinc-300 hover:bg-zinc-800">
-                <HelpCircle className="w-4 h-4 text-zinc-400" />
+              <button className="w-full flex items-center gap-2 px-4 py-2 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800">
+                <HelpCircle className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
                 Help & Support
               </button>
             </div>
-            <div className="py-1 border-t border-zinc-800">
+            <div className="py-1 border-t border-zinc-200 dark:border-zinc-800">
               <button className="w-full flex items-center gap-2 px-4 py-2 text-xs text-red-400 hover:bg-red-500/10">
                 Sign Out
               </button>
@@ -488,19 +488,19 @@ const WindowControls: FC<{
   <div className="flex items-center ml-2 -mr-1">
     <button
       onClick={onMinimize}
-      className="p-2 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700/50"
+      className="p-2 text-zinc-500 hover:text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50"
     >
       <Minus className="w-3.5 h-3.5" />
     </button>
     <button
       onClick={onMaximize}
-      className="p-2 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700/50"
+      className="p-2 text-zinc-500 hover:text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50"
     >
       {isMaximized ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
     </button>
     <button
       onClick={onClose}
-      className="p-2 text-zinc-400 hover:text-white hover:bg-red-500"
+      className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-white hover:bg-red-500"
     >
       <X className="w-3.5 h-3.5" />
     </button>
@@ -539,15 +539,15 @@ export const QuickAccessToolbar: FC<QuickAccessToolbarProps> = ({
   isMaximized = false
 }) => {
   return (
-    <div className="h-10 bg-zinc-950 border-b border-zinc-800 flex items-center justify-between px-2 select-none app-region-drag">
+    <div className="h-10 bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between px-2 select-none app-region-drag">
       {/* Left Section */}
       <div className="flex items-center gap-2 app-region-no-drag">
         {/* Logo/Home */}
-        <button className="p-1.5 rounded hover:bg-zinc-700/50 transition-colors">
+        <button className="p-1.5 rounded hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 transition-colors">
           <Home className="w-4 h-4 text-blue-400" />
         </button>
 
-        <div className="h-5 w-px bg-zinc-800" />
+        <div className="h-5 w-px bg-zinc-100 dark:bg-zinc-800" />
 
         {/* Quick Tools */}
         <div className="flex items-center gap-0.5">
@@ -563,7 +563,7 @@ export const QuickAccessToolbar: FC<QuickAccessToolbarProps> = ({
           ))}
         </div>
 
-        <div className="h-5 w-px bg-zinc-800" />
+        <div className="h-5 w-px bg-zinc-100 dark:bg-zinc-800" />
 
         {/* Recent Files */}
         {recentFiles.length > 0 && onRecentFileClick && onTogglePinned && (
@@ -577,7 +577,7 @@ export const QuickAccessToolbar: FC<QuickAccessToolbarProps> = ({
         {/* Breadcrumbs */}
         {breadcrumbs.length > 0 && (
           <>
-            <div className="h-5 w-px bg-zinc-800" />
+            <div className="h-5 w-px bg-zinc-100 dark:bg-zinc-800" />
             <Breadcrumbs items={breadcrumbs} />
           </>
         )}
@@ -587,8 +587,8 @@ export const QuickAccessToolbar: FC<QuickAccessToolbarProps> = ({
       <div className="flex items-center gap-2">
         {projectName && (
           <div className="flex items-center gap-2">
-            <FileText className="w-4 h-4 text-zinc-400" />
-            <span className="text-xs text-zinc-300 font-medium">
+            <FileText className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+            <span className="text-xs text-zinc-600 dark:text-zinc-300 font-medium">
               {projectName}
               {hasUnsavedChanges && <span className="text-amber-400 ml-1">•</span>}
             </span>
@@ -601,14 +601,14 @@ export const QuickAccessToolbar: FC<QuickAccessToolbarProps> = ({
         {/* Search */}
         <SearchBar onSearch={onSearch} onCommandPalette={onCommandPalette} />
 
-        <div className="h-5 w-px bg-zinc-800" />
+        <div className="h-5 w-px bg-zinc-100 dark:bg-zinc-800" />
 
         {/* Settings Toggles */}
         <div className="flex items-center gap-1">
           {/* Dark Mode */}
           <button
             onClick={onToggleDarkMode}
-            className="p-1.5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700/50 rounded transition-colors"
+            className="p-1.5 text-zinc-500 hover:text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 rounded transition-colors"
             title={isDarkMode ? 'Light Mode' : 'Dark Mode'}
           >
             {isDarkMode ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
@@ -619,7 +619,7 @@ export const QuickAccessToolbar: FC<QuickAccessToolbarProps> = ({
             onClick={onToggleNotifications}
             className={`p-1.5 rounded transition-colors ${
               notificationsEnabled 
-                ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700/50' 
+                ? 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50' 
                 : 'text-zinc-500'
             }`}
             title={notificationsEnabled ? 'Disable Notifications' : 'Enable Notifications'}
@@ -633,7 +633,7 @@ export const QuickAccessToolbar: FC<QuickAccessToolbarProps> = ({
           </div>
         </div>
 
-        <div className="h-5 w-px bg-zinc-800" />
+        <div className="h-5 w-px bg-zinc-100 dark:bg-zinc-800" />
 
         {/* User Menu */}
         <UserMenu userName={userName} userAvatar={userAvatar} isOnline={isOnline} />

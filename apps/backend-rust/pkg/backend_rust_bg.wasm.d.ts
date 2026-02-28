@@ -32,6 +32,7 @@ export const simulate_hysteresis_response: (a: number, b: number, c: number, d: 
 export const solve_2d_frame_with_loads: (a: number, b: number, c: number) => number;
 export const solve_3d_frame_extended: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
 export const solve_p_delta_extended: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => number;
+export const solve_pushover: (a: number) => number;
 export const solve_response_spectrum: (a: number, b: number, c: number, d: number, e: number) => number;
 export const solve_sparse_system_json: (a: number, b: number, c: number) => void;
 export const solve_structure_wasm: (a: number, b: number) => number;

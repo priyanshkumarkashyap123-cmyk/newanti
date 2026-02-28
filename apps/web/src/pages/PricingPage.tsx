@@ -178,7 +178,7 @@ export const PricingPage: FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30">
+        <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans selection:bg-blue-500/30">
             {/* Navbar - Dark Theme Matching Landing Page */}
             <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/5 bg-white dark:bg-slate-950/90 backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -196,16 +196,16 @@ export const PricingPage: FC = () => {
                         {/* Desktop Links */}
                         <div className="hidden md:flex items-center justify-center flex-1 px-8">
                             <div className="flex items-center gap-8">
-                                <Link to="/#features" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-white transition-colors px-2 py-1">
+                                <Link to="/#features" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors px-2 py-1">
                                     Features
                                 </Link>
-                                <Link to="/pricing" className="text-sm font-bold text-white transition-colors px-2 py-1">
+                                <Link to="/pricing" className="text-sm font-bold text-zinc-900 dark:text-white transition-colors px-2 py-1">
                                     Pricing
                                 </Link>
-                                <Link to="/help" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-white transition-colors px-2 py-1">
+                                <Link to="/help" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors px-2 py-1">
                                     Docs
                                 </Link>
-                                <Link to="/demo" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-white transition-colors px-2 py-1">
+                                <Link to="/demo" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors px-2 py-1">
                                     Demo
                                 </Link>
                             </div>
@@ -213,7 +213,7 @@ export const PricingPage: FC = () => {
 
                         {/* Auth - Right aligned */}
                         <div className="flex items-center gap-4">
-                            <Link to="/sign-in" className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-white transition-colors relative group">
+                            <Link to="/sign-in" className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white transition-colors relative group">
                                 Log in
                                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all group-hover:w-full" />
                             </Link>
@@ -247,7 +247,7 @@ export const PricingPage: FC = () => {
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-4"
+                        className="text-4xl md:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white mb-4"
                     >
                         Engineering-grade precision,<br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400">
@@ -274,8 +274,8 @@ export const PricingPage: FC = () => {
                             <button
                                 onClick={() => setBillingPeriod('monthly')}
                                 className={`flex-1 h-full rounded-lg px-4 text-sm font-bold transition-all ${billingPeriod === 'monthly'
-                                    ? 'bg-slate-100 dark:bg-slate-800 shadow-sm text-white'
-                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300'
+                                    ? 'bg-slate-100 dark:bg-slate-800 shadow-sm text-zinc-900 dark:text-white'
+                                    : 'text-slate-600 hover:text-slate-700 dark:text-slate-300'
                                     }`}
                             >
                                 Monthly
@@ -283,8 +283,8 @@ export const PricingPage: FC = () => {
                             <button
                                 onClick={() => setBillingPeriod('yearly')}
                                 className={`flex-1 h-full rounded-lg px-4 text-sm font-bold transition-all flex items-center justify-center gap-2 ${billingPeriod === 'yearly'
-                                    ? 'bg-slate-100 dark:bg-slate-800 shadow-sm text-white'
-                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300'
+                                    ? 'bg-slate-100 dark:bg-slate-800 shadow-sm text-zinc-900 dark:text-white'
+                                    : 'text-slate-600 hover:text-slate-700 dark:text-slate-300'
                                     }`}
                             >
                                 Yearly
@@ -314,7 +314,7 @@ export const PricingPage: FC = () => {
                                 transition={{ delay: index * 0.1 }}
                                 className={`relative flex flex-col rounded-2xl sm:rounded-3xl p-6 sm:p-8 h-full ${tier.popular
                                     ? 'bg-slate-50 dark:bg-slate-900 border-2 border-blue-500/50 shadow-2xl shadow-blue-500/10 lg:scale-105 z-10'
-                                    : 'bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:border-slate-700 transition-all'
+                                    : 'bg-white dark:bg-slate-950 border border-slate-200 hover:border-slate-300 dark:border-slate-700 transition-all'
                                     }`}
                             >
                                 {/* Badge */}
@@ -328,13 +328,13 @@ export const PricingPage: FC = () => {
 
                                 {/* Header */}
                                 <div className="mb-6">
-                                    <h3 className={`text-xl sm:text-2xl font-bold mb-2 ${tier.popular ? 'text-white' : 'text-slate-200'}`}>
+                                    <h3 className={`text-xl sm:text-2xl font-bold mb-2 ${tier.popular ? 'text-zinc-900 dark:text-white' : 'text-slate-700 dark:text-slate-200'}`}>
                                         {tier.name}
                                     </h3>
                                     <p className="text-sm text-slate-600 dark:text-slate-400">{tier.description}</p>
                                 </div>
                                 <div className="mb-6 sm:mb-8">
-                                    <span className="text-3xl sm:text-4xl font-bold text-white">{getPrice(tier)}</span>
+                                    <span className="text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-white">{getPrice(tier)}</span>
                                     {tier.period && <span className="text-slate-600 dark:text-slate-400 ml-1">{tier.period}</span>}
                                 </div>
 
@@ -386,7 +386,7 @@ export const PricingPage: FC = () => {
                         <span className="inline-block text-blue-400 text-sm font-semibold uppercase tracking-wider mb-4">
                             FAQ
                         </span>
-                        <h2 className="text-3xl font-bold text-white mb-4">Frequently Asked Questions</h2>
+                        <h2 className="text-3xl font-bold text-zinc-900 dark:text-white mb-4">Frequently Asked Questions</h2>
                         <p className="text-slate-600 dark:text-slate-400">Everything you need to know about pricing and billing.</p>
                     </motion.div>
 
@@ -400,7 +400,7 @@ export const PricingPage: FC = () => {
                                 transition={{ delay: i * 0.05 }}
                                 className="flex flex-col gap-2"
                             >
-                                <h5 className="font-bold text-white text-lg flex items-center gap-2">
+                                <h5 className="font-bold text-zinc-900 dark:text-white text-lg flex items-center gap-2">
                                     <HelpCircle className="w-5 h-5 text-blue-400" />
                                     {item.question}
                                 </h5>
@@ -420,12 +420,12 @@ export const PricingPage: FC = () => {
                         <div className="w-9 h-9 flex items-center justify-center rounded-lg overflow-hidden">
                             <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-cover" />
                         </div>
-                        <span className="text-xl font-bold text-white">BeamLab Ultimate</span>
+                        <span className="text-xl font-bold text-zinc-900 dark:text-white">BeamLab Ultimate</span>
                     </div>
                     <div className="flex gap-6 text-sm text-slate-600 dark:text-slate-400">
-                        <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-                        <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
-                        <a href="mailto:support@beamlabultimate.tech" className="hover:text-white transition-colors">Support</a>
+                        <Link to="/privacy" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Privacy Policy</Link>
+                        <Link to="/terms" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Terms of Service</Link>
+                        <a href="mailto:support@beamlabultimate.tech" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Support</a>
                     </div>
                     <p className="text-sm text-slate-600 dark:text-slate-400">© 2026 BeamLab Ultimate. All rights reserved.</p>
                 </div>

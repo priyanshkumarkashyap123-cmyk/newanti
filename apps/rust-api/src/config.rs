@@ -22,7 +22,8 @@ pub enum Environment {
 
 impl Config {
     pub fn from_env() -> Result<Self> {
-        let environment = match std::env::var("NODE_ENV")
+        let environment = match std::env::var("RUST_ENV")
+            .or_else(|_| std::env::var("NODE_ENV"))
             .unwrap_or_else(|_| "development".into())
             .as_str()
         {

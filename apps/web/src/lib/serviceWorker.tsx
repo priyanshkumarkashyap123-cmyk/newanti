@@ -319,7 +319,7 @@ export function UpdateBanner({ onUpdate, onDismiss, className = '' }: UpdateBann
         </div>
         <button
           onClick={onDismiss}
-          className="text-blue-200 hover:text-white"
+          className="text-blue-200 hover:text-zinc-900 dark:text-white"
           aria-label="Dismiss"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

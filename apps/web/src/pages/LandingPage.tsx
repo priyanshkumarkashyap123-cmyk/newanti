@@ -73,7 +73,7 @@ export const LandingPage: FC = () => {
           ) : (
             <button
               onClick={() => signOut()}
-              className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-white transition-colors"
+              className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
             >
               Sign Out
             </button>
@@ -86,7 +86,7 @@ export const LandingPage: FC = () => {
       <div className="flex items-center gap-4">
         <Link
           to="/sign-in"
-          className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-white transition-colors relative group"
+          className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white transition-colors relative group"
         >
           Log in
           <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all group-hover:w-full" />
@@ -102,7 +102,7 @@ export const LandingPage: FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30">
+    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans selection:bg-blue-500/30">
       {/* Skip to main content - Accessibility */}
       <a href="#main-content" className="skip-link">
         Skip to main content
@@ -139,25 +139,25 @@ export const LandingPage: FC = () => {
               <div className="flex items-center gap-8">
                 <a
                   href="#features"
-                  className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-white transition-colors px-2 py-1"
+                  className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors px-2 py-1"
                 >
                   Features
                 </a>
                 <a
                   href="#pricing"
-                  className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-white transition-colors px-2 py-1"
+                  className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors px-2 py-1"
                 >
                   Pricing
                 </a>
                 <Link
                   to="/help"
-                  className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-white transition-colors px-2 py-1"
+                  className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors px-2 py-1"
                 >
                   Docs
                 </Link>
                 <Link
                   to="/demo"
-                  className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-white transition-colors px-2 py-1"
+                  className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors px-2 py-1"
                 >
                   Demo
                 </Link>
@@ -171,7 +171,7 @@ export const LandingPage: FC = () => {
 
             {/* Mobile Menu Button */}
             <button
-              className="md:hidden p-2 text-slate-600 dark:text-slate-400 hover:text-white rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="md:hidden p-2 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label={
                 mobileMenuOpen
@@ -201,28 +201,28 @@ export const LandingPage: FC = () => {
             <a
               href="#features"
               onClick={() => setMobileMenuOpen(false)}
-              className="block text-slate-700 dark:text-slate-300 hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="block text-slate-700 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
               Features
             </a>
             <a
               href="#pricing"
               onClick={() => setMobileMenuOpen(false)}
-              className="block text-slate-700 dark:text-slate-300 hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="block text-slate-700 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
               Pricing
             </a>
             <Link
               to="/help"
               onClick={() => setMobileMenuOpen(false)}
-              className="block text-slate-700 dark:text-slate-300 hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="block text-slate-700 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
               Docs
             </Link>
             <Link
               to="/demo"
               onClick={() => setMobileMenuOpen(false)}
-              className="block text-slate-700 dark:text-slate-300 hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="block text-slate-700 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
               Demo
             </Link>
@@ -230,7 +230,7 @@ export const LandingPage: FC = () => {
             <div className="space-y-3">
               <Link
                 to="/sign-in"
-                className="block text-center text-slate-700 dark:text-slate-300 hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="block text-center text-slate-700 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               >
                 Log in
               </Link>
@@ -340,7 +340,7 @@ export const LandingPage: FC = () => {
               </button>
               <button
                 onClick={() => navigate("/demo")}
-                className="group w-full sm:w-auto h-14 px-8 rounded-full bg-white/[0.04] backdrop-blur-md border border-white/10 text-white font-medium hover:bg-white/[0.08] hover:border-white/20 transition-all flex items-center justify-center gap-2.5 active:scale-[0.98]"
+                className="group w-full sm:w-auto h-14 px-8 rounded-full bg-white/[0.04] backdrop-blur-md border border-white/10 text-zinc-900 dark:text-white font-medium hover:bg-white/[0.08] hover:border-white/20 transition-all flex items-center justify-center gap-2.5 active:scale-[0.98]"
               >
                 <Play className="w-4 h-4 fill-current group-hover:scale-110 transition-transform" />{" "}
                 View Live Demo
@@ -397,7 +397,7 @@ export const LandingPage: FC = () => {
               >
                 Pricing
               </motion.span>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-5 px-4 tracking-[-0.02em]">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-5 px-4 tracking-[-0.02em]">
                 Simple, Transparent Pricing
               </h2>
               <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto text-sm sm:text-base px-4 leading-relaxed">
@@ -427,14 +427,14 @@ export const LandingPage: FC = () => {
                   )}
                   <div className="mb-6">
                     <h3
-                      className={`text-xl sm:text-2xl font-bold mb-2 ${tier.popular ? "text-white" : "text-slate-200"}`}
+                      className={`text-xl sm:text-2xl font-bold mb-2 ${tier.popular ? "text-zinc-900 dark:text-white" : "text-slate-700 dark:text-slate-200"}`}
                     >
                       {tier.name}
                     </h3>
                     <p className="text-sm text-slate-600 dark:text-slate-400">{tier.description}</p>
                   </div>
                   <div className="mb-6 sm:mb-8">
-                    <span className="text-3xl sm:text-4xl font-bold text-white">
+                    <span className="text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-white">
                       {tier.price}
                     </span>
                     {tier.period && (
@@ -449,7 +449,7 @@ export const LandingPage: FC = () => {
                     className={`w-full py-3 rounded-xl font-bold text-sm transition-all mb-6 sm:mb-8 ${
                       tier.popular
                         ? "bg-white text-slate-950 hover:bg-slate-100 shadow-lg"
-                        : "bg-slate-100 dark:bg-slate-800 text-white hover:bg-slate-200 dark:hover:bg-slate-700"
+                        : "bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700"
                     }`}
                   >
                     {tier.cta}
@@ -492,7 +492,7 @@ export const LandingPage: FC = () => {
                     aria-hidden="true"
                   />
                 </div>
-                <span className="text-xl font-bold text-white">
+                <span className="text-xl font-bold text-zinc-900 dark:text-white">
                   BeamLab Ultimate
                 </span>
               </div>
@@ -504,7 +504,7 @@ export const LandingPage: FC = () => {
               <div className="flex gap-4">
                 <a
                   href="https://github.com"
-                  className="text-slate-600 dark:text-slate-400 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg p-1"
+                  className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg p-1"
                   aria-label="GitHub"
                 >
                   <svg
@@ -517,7 +517,7 @@ export const LandingPage: FC = () => {
                 </a>
                 <a
                   href="https://twitter.com"
-                  className="text-slate-600 dark:text-slate-400 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg p-1"
+                  className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg p-1"
                   aria-label="Twitter"
                 >
                   <svg
@@ -532,14 +532,14 @@ export const LandingPage: FC = () => {
             </div>
 
             <div>
-              <h3 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">
+              <h3 className="font-bold text-zinc-900 dark:text-white mb-4 text-sm uppercase tracking-wider">
                 Product
               </h3>
               <ul className="space-y-1 text-sm">
                 <li>
                   <a
                     href="#features"
-                    className="text-slate-600 dark:text-slate-400 hover:text-white transition-colors inline-block py-1.5"
+                    className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors inline-block py-1.5"
                   >
                     Features
                   </a>
@@ -547,7 +547,7 @@ export const LandingPage: FC = () => {
                 <li>
                   <a
                     href="#pricing"
-                    className="text-slate-600 dark:text-slate-400 hover:text-white transition-colors inline-block py-1.5"
+                    className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors inline-block py-1.5"
                   >
                     Pricing
                   </a>
@@ -555,7 +555,7 @@ export const LandingPage: FC = () => {
                 <li>
                   <Link
                     to="/help"
-                    className="text-slate-600 dark:text-slate-400 hover:text-white transition-colors inline-block py-1.5"
+                    className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors inline-block py-1.5"
                   >
                     Documentation
                   </Link>
@@ -563,7 +563,7 @@ export const LandingPage: FC = () => {
                 <li>
                   <Link
                     to="/demo"
-                    className="text-slate-600 dark:text-slate-400 hover:text-white transition-colors inline-block py-1.5"
+                    className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors inline-block py-1.5"
                   >
                     Live Demo
                   </Link>
@@ -572,14 +572,14 @@ export const LandingPage: FC = () => {
             </div>
 
             <div>
-              <h3 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">
+              <h3 className="font-bold text-zinc-900 dark:text-white mb-4 text-sm uppercase tracking-wider">
                 Legal
               </h3>
               <ul className="space-y-1 text-sm">
                 <li>
                   <Link
                     to="/privacy"
-                    className="text-slate-600 dark:text-slate-400 hover:text-white transition-colors inline-block py-1.5"
+                    className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors inline-block py-1.5"
                   >
                     Privacy Policy
                   </Link>
@@ -587,7 +587,7 @@ export const LandingPage: FC = () => {
                 <li>
                   <Link
                     to="/terms"
-                    className="text-slate-600 dark:text-slate-400 hover:text-white transition-colors inline-block py-1.5"
+                    className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors inline-block py-1.5"
                   >
                     Terms of Service
                   </Link>
@@ -595,7 +595,7 @@ export const LandingPage: FC = () => {
                 <li>
                   <Link
                     to="/contact"
-                    className="text-slate-600 dark:text-slate-400 hover:text-white transition-colors inline-block py-1.5"
+                    className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors inline-block py-1.5"
                   >
                     Contact Us
                   </Link>
@@ -641,7 +641,7 @@ const FeatureCard = ({
     <div className="w-11 h-11 rounded-xl bg-blue-500/[0.08] border border-blue-500/10 flex items-center justify-center mb-5 group-hover:bg-blue-500/15 group-hover:border-blue-500/20 group-hover:text-blue-400 text-slate-600 dark:text-slate-400 transition-all duration-300 flex-shrink-0">
       {icon}
     </div>
-    <h3 className="text-lg font-semibold text-white mb-2.5 tracking-[-0.01em]">
+    <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2.5 tracking-[-0.01em]">
       {title}
     </h3>
     <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-[0.8125rem] mb-6 flex-grow">

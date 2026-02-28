@@ -12,7 +12,7 @@ interface CanvasWrapperProps {
 
 export const CanvasWrapper: FC<CanvasWrapperProps> = ({ children }) => {
     return (
-        <div className="relative h-full w-full bg-zinc-950">
+        <div className="relative h-full w-full bg-white dark:bg-zinc-950">
             {/* Canvas Content */}
             {children}
 

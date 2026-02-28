@@ -197,7 +197,7 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
                 className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
                   isActive
                     ? "border-blue-500 text-blue-400"
-                    : "border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:border-gray-500"
+                    : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-700 dark:text-zinc-200 hover:border-gray-500"
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -284,7 +284,7 @@ const InputRow: FC<{
       max={max}
       step={step || 1}
       onChange={(e) => onChange(Number(e.target.value))}
-      className="flex-1 px-2 py-1 text-sm bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-white"
+      className="flex-1 px-2 py-1 text-sm bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-zinc-900 dark:text-white"
     />
     {unit && <span className="text-xs text-zinc-500 dark:text-zinc-400 w-10">{unit}</span>}
   </div>
@@ -322,7 +322,7 @@ const ResultCard: FC<{
   <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden">
     <button
       onClick={() => toggle(id)}
-      className="w-full flex items-center gap-2 px-3 py-2 bg-zinc-100 dark:bg-zinc-800/60 hover:bg-zinc-100 dark:bg-zinc-800 text-sm font-medium text-gray-200 text-left"
+      className="w-full flex items-center gap-2 px-3 py-2 bg-zinc-100 dark:bg-zinc-800/60 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-sm font-medium text-gray-700 dark:text-gray-200 text-left"
     >
       {exp[id] ? (
         <ChevronDown className="w-3.5 h-3.5" />

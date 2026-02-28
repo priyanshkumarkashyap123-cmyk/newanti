@@ -105,25 +105,25 @@ export const SettingsPageEnhanced: FC = () => {
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => navigate(-1)}
-                        className="flex items-center gap-2 text-text-muted hover:text-white transition-colors"
+                        className="flex items-center gap-2 text-text-muted hover:text-zinc-900 dark:hover:text-white transition-colors"
                     >
                         <span className="material-symbols-outlined">arrow_back</span>
                         <span className="text-sm font-medium">Back</span>
                     </button>
                     <div className="h-6 w-px bg-border-dark"></div>
-                    <h1 className="text-xl font-bold text-white">Settings</h1>
+                    <h1 className="text-xl font-bold text-zinc-900 dark:text-white">Settings</h1>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
                         onClick={handleResetSettings}
-                        className="flex items-center gap-2 h-10 px-4 rounded-lg border border-border-dark text-text-muted hover:text-white hover:border-text-muted transition-colors text-sm font-medium"
+                        className="flex items-center gap-2 h-10 px-4 rounded-lg border border-border-dark text-text-muted hover:text-zinc-900 dark:hover:text-white hover:border-text-muted transition-colors text-sm font-medium"
                     >
                         <span className="material-symbols-outlined text-[18px]">restart_alt</span>
                         Reset
                     </button>
                     <button
                         onClick={handleSaveSettings}
-                        className="flex items-center gap-2 h-10 px-5 rounded-lg bg-primary hover:bg-primary/90 text-white text-sm font-bold transition-all shadow-lg shadow-primary/20"
+                        className="flex items-center gap-2 h-10 px-5 rounded-lg bg-primary hover:bg-primary/90 text-zinc-900 dark:text-white text-sm font-bold transition-all shadow-lg shadow-primary/20"
                     >
                         <span className="material-symbols-outlined text-[18px]">save</span>
                         Save Changes
@@ -140,8 +140,8 @@ export const SettingsPageEnhanced: FC = () => {
                                 key={item.id}
                                 onClick={() => setActiveTab(item.id)}
                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === item.id
-                                        ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                                        : 'text-text-muted hover:bg-zinc-100 dark:bg-zinc-800 hover:text-white'
+                                        ? 'bg-primary text-zinc-900 dark:text-white shadow-lg shadow-primary/20'
+                                        : 'text-text-muted hover:bg-zinc-100 dark:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white'
                                     }`}
                             >
                                 <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
@@ -167,7 +167,7 @@ export const SettingsPageEnhanced: FC = () => {
                         {activeTab === 'general' && (
                             <div className="space-y-6">
                                 <div>
-                                    <h2 className="text-2xl font-bold text-white mb-2">General Settings</h2>
+                                    <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">General Settings</h2>
                                     <p className="text-text-muted text-sm">Configure core application behavior and data management</p>
                                 </div>
 
@@ -200,11 +200,11 @@ export const SettingsPageEnhanced: FC = () => {
                                 </div>
 
                                 <div className="pt-4">
-                                    <h3 className="text-sm font-bold text-white mb-3 uppercase tracking-wider">Data Management</h3>
+                                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white mb-3 uppercase tracking-wider">Data Management</h3>
                                     <div className="bg-surface-dark border border-border-dark rounded-lg p-5 space-y-3">
                                         <div className="flex items-center justify-between">
                                             <div>
-                                                <p className="text-white text-sm font-medium">Local Storage Used</p>
+                                                <p className="text-zinc-900 dark:text-white text-sm font-medium">Local Storage Used</p>
                                                 <p className="text-text-muted text-xs">45.2 MB of 500 MB</p>
                                             </div>
                                             <button className="text-xs font-bold text-primary hover:underline">Clear Cache</button>
@@ -221,7 +221,7 @@ export const SettingsPageEnhanced: FC = () => {
                         {activeTab === 'display' && (
                             <div className="space-y-6">
                                 <div>
-                                    <h2 className="text-2xl font-bold text-white mb-2">Display Settings</h2>
+                                    <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">Display Settings</h2>
                                     <p className="text-text-muted text-sm">Customize viewport appearance and visual preferences</p>
                                 </div>
 
@@ -255,7 +255,7 @@ export const SettingsPageEnhanced: FC = () => {
                                     <label className="text-zinc-500 dark:text-zinc-400 text-sm font-medium block mb-2">Grid Spacing</label>
                                     <div className="bg-surface-dark border border-border-dark rounded-lg p-5">
                                         <div className="flex items-center justify-between mb-3">
-                                            <span className="text-white text-sm">Current: {gridSize.toFixed(1)} m</span>
+                                            <span className="text-zinc-900 dark:text-white text-sm">Current: {gridSize.toFixed(1)} m</span>
                                             <input
                                                 type="number"
                                                 value={gridSize}
@@ -263,7 +263,7 @@ export const SettingsPageEnhanced: FC = () => {
                                                 step="0.1"
                                                 min="0.1"
                                                 max="10"
-                                                className="w-24 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded px-3 py-1 text-white text-sm"
+                                                className="w-24 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded px-3 py-1 text-zinc-900 dark:text-white text-sm"
                                             />
                                         </div>
                                         <input
@@ -273,7 +273,7 @@ export const SettingsPageEnhanced: FC = () => {
                                             step="0.1"
                                             value={gridSize}
                                             onChange={(e) => setGridSize(parseFloat(e.target.value))}
-                                            className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-primary"
+                                            className="w-full h-2 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-primary"
                                         />
                                     </div>
                                 </div>
@@ -284,7 +284,7 @@ export const SettingsPageEnhanced: FC = () => {
                         {activeTab === 'analysis' && (
                             <div className="space-y-6">
                                 <div>
-                                    <h2 className="text-2xl font-bold text-white mb-2">Analysis Preferences</h2>
+                                    <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">Analysis Preferences</h2>
                                     <p className="text-text-muted text-sm">Configure solver behavior and computation settings</p>
                                 </div>
 
@@ -347,7 +347,7 @@ export const SettingsPageEnhanced: FC = () => {
                         {activeTab === 'performance' && (
                             <div className="space-y-6">
                                 <div>
-                                    <h2 className="text-2xl font-bold text-white mb-2">Performance Settings</h2>
+                                    <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">Performance Settings</h2>
                                     <p className="text-text-muted text-sm">Optimize application speed and resource usage</p>
                                 </div>
 
@@ -374,23 +374,23 @@ export const SettingsPageEnhanced: FC = () => {
                                 />
 
                                 <div className="bg-surface-dark border border-border-dark rounded-lg p-5 space-y-3">
-                                    <h3 className="text-white text-sm font-bold">System Information</h3>
+                                    <h3 className="text-zinc-900 dark:text-white text-sm font-bold">System Information</h3>
                                     <div className="grid grid-cols-2 gap-3 text-xs">
                                         <div>
                                             <p className="text-text-muted">Browser</p>
-                                            <p className="text-white font-mono">Chrome 120</p>
+                                            <p className="text-zinc-900 dark:text-white font-mono">Chrome 120</p>
                                         </div>
                                         <div>
                                             <p className="text-text-muted">WebGL Version</p>
-                                            <p className="text-white font-mono">2.0</p>
+                                            <p className="text-zinc-900 dark:text-white font-mono">2.0</p>
                                         </div>
                                         <div>
                                             <p className="text-text-muted">Available Memory</p>
-                                            <p className="text-white font-mono">8 GB</p>
+                                            <p className="text-zinc-900 dark:text-white font-mono">8 GB</p>
                                         </div>
                                         <div>
                                             <p className="text-text-muted">GPU</p>
-                                            <p className="text-white font-mono">NVIDIA GTX 1060</p>
+                                            <p className="text-zinc-900 dark:text-white font-mono">NVIDIA GTX 1060</p>
                                         </div>
                                     </div>
                                 </div>
@@ -401,7 +401,7 @@ export const SettingsPageEnhanced: FC = () => {
                         {activeTab === 'profile' && (
                             <div className="space-y-6">
                                 <div>
-                                    <h2 className="text-2xl font-bold text-white mb-2">User Profile</h2>
+                                    <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">User Profile</h2>
                                     <p className="text-text-muted text-sm">Manage your account information and preferences</p>
                                 </div>
 
@@ -412,7 +412,7 @@ export const SettingsPageEnhanced: FC = () => {
                                             type="text"
                                             value={userName}
                                             onChange={(e) => setUserName(e.target.value)}
-                                            className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                                            className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-4 py-3 text-zinc-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                                         />
                                     </div>
 
@@ -422,7 +422,7 @@ export const SettingsPageEnhanced: FC = () => {
                                             type="email"
                                             value={userEmail}
                                             onChange={(e) => setUserEmail(e.target.value)}
-                                            className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                                            className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-4 py-3 text-zinc-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                                         />
                                     </div>
 
@@ -432,19 +432,19 @@ export const SettingsPageEnhanced: FC = () => {
                                             type="text"
                                             value={userOrg}
                                             onChange={(e) => setUserOrg(e.target.value)}
-                                            className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                                            className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-4 py-3 text-zinc-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="bg-surface-dark border border-border-dark rounded-lg p-6">
-                                    <h3 className="text-white text-sm font-bold mb-4">Account Actions</h3>
+                                    <h3 className="text-zinc-900 dark:text-white text-sm font-bold mb-4">Account Actions</h3>
                                     <div className="flex flex-col gap-3">
-                                        <button className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-border-dark hover:border-primary hover:bg-zinc-100 dark:bg-zinc-800 text-white transition-all group">
+                                        <button className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-border-dark hover:border-primary hover:bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white transition-all group">
                                             <span className="text-sm font-medium">Change Password</span>
                                             <span className="material-symbols-outlined text-[18px] text-text-muted group-hover:text-primary">chevron_right</span>
                                         </button>
-                                        <button className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-border-dark hover:border-primary hover:bg-zinc-100 dark:bg-zinc-800 text-white transition-all group">
+                                        <button className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-border-dark hover:border-primary hover:bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white transition-all group">
                                             <span className="text-sm font-medium">Export My Data</span>
                                             <span className="material-symbols-outlined text-[18px] text-text-muted group-hover:text-primary">download</span>
                                         </button>

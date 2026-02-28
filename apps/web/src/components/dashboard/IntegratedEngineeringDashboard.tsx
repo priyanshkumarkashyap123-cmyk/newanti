@@ -13,7 +13,6 @@
  * @version 3.0.0
  */
 
-'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -263,7 +262,7 @@ export function IntegratedEngineeringDashboard({
     const configs = {
       complete: { icon: <CheckCircle2 className="w-3.5 h-3.5" />, class: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
       active: { icon: <RefreshCw className="w-3.5 h-3.5 animate-spin" />, class: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
-      pending: { icon: <Clock className="w-3.5 h-3.5" />, class: 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30' },
+      pending: { icon: <Clock className="w-3.5 h-3.5" />, class: 'bg-zinc-500/20 text-zinc-500 dark:text-zinc-400 border-zinc-500/30' },
       error: { icon: <XCircle className="w-3.5 h-3.5" />, class: 'bg-red-500/20 text-red-400 border-red-500/30' },
     };
     const config = configs[status as keyof typeof configs];
@@ -287,7 +286,7 @@ export function IntegratedEngineeringDashboard({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 text-white p-6">
+    <div className="min-h-screen bg-gradient-to-br from-white dark:from-zinc-950 via-zinc-100 dark:via-zinc-900 to-white dark:to-zinc-950 text-zinc-900 dark:text-white p-6">
       {/* Header */}
       <header className="mb-8">
         <div className="flex items-center justify-between">
@@ -299,7 +298,7 @@ export function IntegratedEngineeringDashboard({
               <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent">
                 Engineering Design Center
               </h1>
-              <p className="text-sm text-zinc-400 mt-0.5">
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
                 {projectName} • {designCode}
               </p>
             </div>
@@ -309,9 +308,9 @@ export function IntegratedEngineeringDashboard({
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="p-2 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700/50 transition-colors disabled:opacity-50"
+              className="p-2 rounded-lg bg-zinc-100/50 dark:bg-zinc-800/50 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 border border-zinc-200/50 dark:border-zinc-700/50 transition-colors disabled:opacity-50"
             >
-              <RefreshCw className={`w-5 h-5 text-zinc-400 ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-5 h-5 text-zinc-500 dark:text-zinc-400 ${refreshing ? 'animate-spin' : ''}`} />
             </button>
             <button
               onClick={onRunAnalysis}
@@ -322,7 +321,7 @@ export function IntegratedEngineeringDashboard({
             </button>
             <button
               onClick={onExportReport}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white font-medium transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white font-medium transition-colors"
             >
               <Download className="w-4 h-4" />
               Export
@@ -339,16 +338,16 @@ export function IntegratedEngineeringDashboard({
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="p-4 rounded-xl bg-zinc-900/50 border border-zinc-800 backdrop-blur-sm"
+              className="p-4 rounded-xl bg-white/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 backdrop-blur-sm"
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-zinc-400 text-sm">Overall Progress</span>
+                <span className="text-zinc-500 dark:text-zinc-400 text-sm">Overall Progress</span>
                 <Target className="w-4 h-4 text-blue-400" />
               </div>
               <div className="flex items-end gap-2">
-                <span className="text-3xl font-bold text-white">{overallProgress}%</span>
+                <span className="text-3xl font-bold text-zinc-900 dark:text-white">{overallProgress}%</span>
               </div>
-              <div className="mt-3 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+              <div className="mt-3 h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${overallProgress}%` }}
@@ -362,17 +361,17 @@ export function IntegratedEngineeringDashboard({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="p-4 rounded-xl bg-zinc-900/50 border border-zinc-800 backdrop-blur-sm"
+              className="p-4 rounded-xl bg-white/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 backdrop-blur-sm"
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-zinc-400 text-sm">Design Checks</span>
+                <span className="text-zinc-500 dark:text-zinc-400 text-sm">Design Checks</span>
                 <Shield className="w-4 h-4 text-emerald-400" />
               </div>
               <div className="flex items-end gap-2">
                 <span className="text-3xl font-bold text-emerald-400">{SAMPLE_METRICS.passedChecks}</span>
                 <span className="text-lg text-red-400 mb-0.5">/{SAMPLE_METRICS.failedChecks}</span>
               </div>
-              <p className="text-xs text-zinc-400 mt-1">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                 {((SAMPLE_METRICS.passedChecks / (SAMPLE_METRICS.passedChecks + SAMPLE_METRICS.failedChecks)) * 100).toFixed(1)}% pass rate
               </p>
             </motion.div>
@@ -381,18 +380,18 @@ export function IntegratedEngineeringDashboard({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="p-4 rounded-xl bg-zinc-900/50 border border-zinc-800 backdrop-blur-sm"
+              className="p-4 rounded-xl bg-white/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 backdrop-blur-sm"
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-zinc-400 text-sm">Max Utilization</span>
+                <span className="text-zinc-500 dark:text-zinc-400 text-sm">Max Utilization</span>
                 <TrendingUp className="w-4 h-4 text-amber-400" />
               </div>
               <div className="flex items-end gap-2">
-                <span className="text-3xl font-bold text-white">
+                <span className="text-3xl font-bold text-zinc-900 dark:text-white">
                   {(SAMPLE_METRICS.utilizationMax * 100).toFixed(0)}%
                 </span>
               </div>
-              <p className="text-xs text-zinc-400 mt-1">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                 Avg: {(SAMPLE_METRICS.utilizationAvg * 100).toFixed(0)}%
               </p>
             </motion.div>
@@ -401,17 +400,17 @@ export function IntegratedEngineeringDashboard({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="p-4 rounded-xl bg-zinc-900/50 border border-zinc-800 backdrop-blur-sm"
+              className="p-4 rounded-xl bg-white/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 backdrop-blur-sm"
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-zinc-400 text-sm">Members</span>
+                <span className="text-zinc-500 dark:text-zinc-400 text-sm">Members</span>
                 <Grid3X3 className="w-4 h-4 text-purple-400" />
               </div>
               <div className="flex items-end gap-2">
-                <span className="text-3xl font-bold text-white">{SAMPLE_METRICS.designedMembers}</span>
-                <span className="text-lg text-zinc-400 mb-0.5">/{SAMPLE_METRICS.totalMembers}</span>
+                <span className="text-3xl font-bold text-zinc-900 dark:text-white">{SAMPLE_METRICS.designedMembers}</span>
+                <span className="text-lg text-zinc-500 dark:text-zinc-400 mb-0.5">/{SAMPLE_METRICS.totalMembers}</span>
               </div>
-              <p className="text-xs text-zinc-400 mt-1">Designed members</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Designed members</p>
             </motion.div>
           </div>
 
@@ -430,7 +429,7 @@ export function IntegratedEngineeringDashboard({
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   selectedCategory === cat.id
                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
-                    : 'bg-zinc-800/50 text-zinc-400 hover:bg-zinc-700/50 hover:text-white border border-zinc-700/50'
+                    : 'bg-zinc-100/50 dark:bg-zinc-800/50 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 hover:text-zinc-900 dark:hover:text-white border border-zinc-200/50 dark:border-zinc-700/50'
                 }`}
               >
                 {cat.icon}
@@ -454,7 +453,7 @@ export function IntegratedEngineeringDashboard({
                   className={`group p-5 rounded-xl border backdrop-blur-sm cursor-pointer transition-all hover:shadow-lg ${
                     selectedModule === module.id
                       ? 'bg-blue-600/10 border-blue-500/50 shadow-lg shadow-blue-500/10'
-                      : 'bg-zinc-900/50 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/50'
+                      : 'bg-white/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-700 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50'
                   }`}
                 >
                   <div className="flex items-start justify-between mb-4">
@@ -469,18 +468,18 @@ export function IntegratedEngineeringDashboard({
                     {renderStatusBadge(module.status)}
                   </div>
                   
-                  <h3 className="text-lg font-semibold text-white mb-1 group-hover:text-blue-400 transition-colors">
+                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-1 group-hover:text-blue-400 transition-colors">
                     {module.name}
                   </h3>
-                  <p className="text-sm text-zinc-400 mb-4">{module.description}</p>
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">{module.description}</p>
                   
                   {/* Progress bar */}
                   <div className="mb-3">
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-zinc-400">Progress</span>
-                      <span className="text-zinc-400">{module.progress}%</span>
+                      <span className="text-zinc-500 dark:text-zinc-400">Progress</span>
+                      <span className="text-zinc-500 dark:text-zinc-400">{module.progress}%</span>
                     </div>
-                    <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${module.progress}%` }}
@@ -517,8 +516,8 @@ export function IntegratedEngineeringDashboard({
                   </div>
                   
                   {/* Action */}
-                  <div className="mt-4 pt-4 border-t border-zinc-800 flex items-center justify-between">
-                    <span className="text-xs text-zinc-400">Click to open</span>
+                  <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400">Click to open</span>
                     <ChevronRight className="w-4 h-4 text-zinc-500 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
                   </div>
                 </motion.div>
@@ -533,9 +532,9 @@ export function IntegratedEngineeringDashboard({
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="p-5 rounded-xl bg-zinc-900/50 border border-zinc-800 backdrop-blur-sm"
+            className="p-5 rounded-xl bg-white/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 backdrop-blur-sm"
           >
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-blue-400" />
               Material Quantities
             </h3>
@@ -543,27 +542,27 @@ export function IntegratedEngineeringDashboard({
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-zinc-400">Concrete</span>
-                  <span className="text-white font-medium">{SAMPLE_METRICS.concreteVolume} m³</span>
+                  <span className="text-zinc-500 dark:text-zinc-400">Concrete</span>
+                  <span className="text-zinc-900 dark:text-white font-medium">{SAMPLE_METRICS.concreteVolume} m³</span>
                 </div>
-                <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                   <div className="h-full w-[65%] bg-gradient-to-r from-amber-500 to-orange-500 rounded-full" />
                 </div>
               </div>
               
               <div>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-zinc-400">Steel Reinforcement</span>
-                  <span className="text-white font-medium">{(SAMPLE_METRICS.steelWeight / 1000).toFixed(2)} MT</span>
+                  <span className="text-zinc-500 dark:text-zinc-400">Steel Reinforcement</span>
+                  <span className="text-zinc-900 dark:text-white font-medium">{(SAMPLE_METRICS.steelWeight / 1000).toFixed(2)} MT</span>
                 </div>
-                <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                   <div className="h-full w-[45%] bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full" />
                 </div>
               </div>
               
-              <div className="pt-4 border-t border-zinc-800">
+              <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800">
                 <div className="flex justify-between items-center">
-                  <span className="text-zinc-400">Estimated Cost</span>
+                  <span className="text-zinc-500 dark:text-zinc-400">Estimated Cost</span>
                   <span className="text-xl font-bold text-emerald-400">
                     ₹{(SAMPLE_METRICS.estimatedCost / 100000).toFixed(2)} L
                   </span>
@@ -577,9 +576,9 @@ export function IntegratedEngineeringDashboard({
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            className="p-5 rounded-xl bg-zinc-900/50 border border-zinc-800 backdrop-blur-sm"
+            className="p-5 rounded-xl bg-white/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 backdrop-blur-sm"
           >
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
               <FileCheck className="w-5 h-5 text-emerald-400" />
               Recent Checks
             </h3>
@@ -588,13 +587,13 @@ export function IntegratedEngineeringDashboard({
               {RECENT_CHECKS.map((check) => (
                 <div
                   key={check.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 transition-colors"
+                  className="flex items-center justify-between p-3 rounded-lg bg-zinc-100/50 dark:bg-zinc-800/50 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     {renderCheckStatus(check.status)}
                     <div>
-                      <p className="text-sm font-medium text-white">{check.component}</p>
-                      <p className="text-xs text-zinc-400">{check.check}</p>
+                      <p className="text-sm font-medium text-zinc-900 dark:text-white">{check.component}</p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">{check.check}</p>
                     </div>
                   </div>
                   <div className="text-right">
@@ -605,7 +604,7 @@ export function IntegratedEngineeringDashboard({
                     }`}>
                       {(check.utilization * 100).toFixed(0)}%
                     </p>
-                    <p className="text-xs text-zinc-400">{check.message}</p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">{check.message}</p>
                   </div>
                 </div>
               ))}
@@ -617,9 +616,9 @@ export function IntegratedEngineeringDashboard({
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="p-5 rounded-xl bg-zinc-900/50 border border-zinc-800 backdrop-blur-sm"
+            className="p-5 rounded-xl bg-white/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 backdrop-blur-sm"
           >
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
               <Zap className="w-5 h-5 text-amber-400" />
               Quick Actions
             </h3>
@@ -637,7 +636,7 @@ export function IntegratedEngineeringDashboard({
                     action.color === 'blue' ? 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 border border-blue-500/30' :
                     action.color === 'emerald' ? 'bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30 border border-emerald-500/30' :
                     action.color === 'purple' ? 'bg-purple-600/20 text-purple-400 hover:bg-purple-600/30 border border-purple-500/30' :
-                    'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 border border-zinc-700'
+                    'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700'
                   }`}
                 >
                   {action.icon}
@@ -657,8 +656,8 @@ export function IntegratedEngineeringDashboard({
             <div className="flex items-start gap-3">
               <Info className="w-5 h-5 text-blue-400 mt-0.5" />
               <div>
-                <h4 className="text-sm font-medium text-white mb-1">Calculation Engine v3.0</h4>
-                <p className="text-xs text-zinc-400">
+                <h4 className="text-sm font-medium text-zinc-900 dark:text-white mb-1">Calculation Engine v3.0</h4>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
                   Using advanced precision mathematics with error-free calculations. 
                   All results validated against international design codes.
                 </p>

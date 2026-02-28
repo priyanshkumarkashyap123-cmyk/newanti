@@ -119,12 +119,12 @@ const VideoCard = ({ tutorial, index }: { tutorial: VideoTutorial; index: number
                     <PlayCircle className="w-8 h-8 text-blue-600 ml-0.5" />
                 </div>
             </div>
-            <span className="absolute bottom-3 right-3 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded backdrop-blur-md">
+            <span className="absolute bottom-3 right-3 bg-black/70 text-zinc-900 dark:text-white text-xs font-bold px-2 py-1 rounded backdrop-blur-md">
                 {tutorial.duration}
             </span>
         </div>
         <div className="p-5 flex flex-col flex-1">
-            <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">
+            <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2 group-hover:text-blue-400 transition-colors">
                 {tutorial.title}
             </h3>
             <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">
@@ -146,7 +146,7 @@ const FAQItem = ({ faq, isOpen, onToggle }: { faq: FAQ; isOpen: boolean; onToggl
             onClick={onToggle}
             className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-100 dark:bg-slate-800/50 transition-colors"
         >
-            <span className="font-bold text-white pr-4">{faq.question}</span>
+            <span className="font-bold text-zinc-900 dark:text-white pr-4">{faq.question}</span>
             {isOpen ? (
                 <ChevronUp className="w-5 h-5 text-slate-600 dark:text-slate-400 flex-shrink-0" />
             ) : (
@@ -170,7 +170,7 @@ export const HelpPage = () => {
     const [openFAQ, setOpenFAQ] = useState<string | null>('1');
 
     return (
-        <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-50 flex flex-col font-sans selection:bg-blue-500/30">
+        <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 flex flex-col font-sans selection:bg-blue-500/30">
             {/* Header - Dark Theme */}
             <nav className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/90 backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -184,9 +184,9 @@ export const HelpPage = () => {
                             </span>
                         </Link>
                         <div className="hidden md:flex items-center gap-8">
-                            <Link to="/dashboard" className="text-slate-600 dark:text-slate-400 hover:text-white text-sm font-medium transition-colors">Dashboard</Link>
-                            <Link to="/app" className="text-slate-600 dark:text-slate-400 hover:text-white text-sm font-medium transition-colors">Projects</Link>
-                            <Link to="/help" className="text-white font-semibold text-sm">Help</Link>
+                            <Link to="/dashboard" className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white text-sm font-medium transition-colors">Dashboard</Link>
+                            <Link to="/app" className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white text-sm font-medium transition-colors">Projects</Link>
+                            <Link to="/help" className="text-zinc-900 dark:text-white font-semibold text-sm">Help</Link>
                             <Link to="/app" className="flex items-center gap-2 rounded-full h-9 px-5 bg-white text-slate-950 text-sm font-bold hover:bg-slate-100 transition-colors">
                                 <Plus className="w-4 h-4" />
                                 New Project
@@ -209,7 +209,7 @@ export const HelpPage = () => {
                             <span className="text-blue-400 text-sm font-semibold uppercase tracking-wider">
                                 Documentation
                             </span>
-                            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
+                            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white">
                                 Help & Tutorials
                             </h1>
                             <p className="text-lg text-slate-600 dark:text-slate-400">
@@ -225,7 +225,7 @@ export const HelpPage = () => {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search for topics, commands, or errors..."
-                                className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 pl-12 pr-4 py-4 text-base text-white shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-slate-600 dark:text-slate-400 transition-all"
+                                className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 pl-12 pr-4 py-4 text-base text-zinc-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-slate-600 dark:text-slate-400 transition-all"
                             />
                             <kbd className="absolute right-4 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center rounded border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-2 py-1 font-sans text-xs text-slate-600 dark:text-slate-400">
                                 ⌘K
@@ -236,7 +236,7 @@ export const HelpPage = () => {
                     {/* Video Tutorials Grid */}
                     <section>
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white flex items-center gap-3">
                                 <div className="p-2 rounded-lg bg-blue-500/10">
                                     <PlayCircle className="w-6 h-6 text-blue-400" />
                                 </div>
@@ -257,7 +257,7 @@ export const HelpPage = () => {
                     {/* FAQ Section */}
                     <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-4">
                         <div className="md:col-span-1">
-                            <h2 className="text-2xl font-bold text-white mb-4">
+                            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">
                                 Frequently Asked Questions
                             </h2>
                             <p className="text-slate-600 dark:text-slate-400 text-sm mb-6">
@@ -285,14 +285,14 @@ export const HelpPage = () => {
 
                     {/* Support CTA */}
                     <section className="mt-4 mb-8">
-                        <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-8 md:p-12 relative overflow-hidden border border-slate-200 dark:border-slate-800">
+                        <div className="bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800 rounded-2xl p-8 md:p-12 relative overflow-hidden border border-slate-200 dark:border-slate-800">
                             {/* Decorative background */}
                             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
                             <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/10 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none" />
 
                             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
                                 <div className="max-w-xl">
-                                    <h3 className="text-2xl font-bold text-white mb-3">Still need help?</h3>
+                                    <h3 className="text-2xl font-bold text-zinc-900 dark:text-white mb-3">Still need help?</h3>
                                     <p className="text-slate-600 dark:text-slate-400">
                                         Our dedicated structural engineering support team is ready to assist you with complex modeling questions or technical issues.
                                     </p>
@@ -302,7 +302,7 @@ export const HelpPage = () => {
                                         <MessageCircle className="w-5 h-5" />
                                         Chat with Support
                                     </button>
-                                    <button className="flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 text-white border border-slate-600 font-bold py-3 px-6 rounded-lg transition-colors w-full sm:w-auto">
+                                    <button className="flex items-center justify-center gap-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white border border-slate-600 font-bold py-3 px-6 rounded-lg transition-colors w-full sm:w-auto">
                                         <Mail className="w-5 h-5" />
                                         Email Us
                                     </button>
@@ -318,9 +318,9 @@ export const HelpPage = () => {
                 <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
                     <p>© 2026 BeamLab Ultimate. All rights reserved.</p>
                     <div className="flex gap-6">
-                        <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-                        <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
-                        <a href="#" className="hover:text-white transition-colors">Status</a>
+                        <Link to="/privacy" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Privacy Policy</Link>
+                        <Link to="/terms" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Terms of Service</Link>
+                        <a href="#" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Status</a>
                     </div>
                 </div>
             </footer>

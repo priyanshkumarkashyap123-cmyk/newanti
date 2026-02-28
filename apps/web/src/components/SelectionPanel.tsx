@@ -56,13 +56,13 @@ export const SelectionPanel: FC<SelectionPanelProps> = ({
                         <span className="material-symbols-outlined text-primary text-[20px]">
                             check_box
                         </span>
-                        <span className="text-white font-bold text-sm">
+                        <span className="text-zinc-900 dark:text-white font-bold text-sm">
                             {totalSelected} item{totalSelected !== 1 ? 's' : ''} selected
                         </span>
                     </div>
                     <button
                         onClick={clearSelection}
-                        className="text-text-muted hover:text-white transition-colors p-1"
+                        className="text-text-muted hover:text-zinc-900 dark:hover:text-white transition-colors p-1"
                         title="Clear Selection"
                     >
                         <span className="material-symbols-outlined text-[18px]">close</span>
@@ -86,7 +86,7 @@ export const SelectionPanel: FC<SelectionPanelProps> = ({
                 </div>
 
                 {/* Selected IDs List (scrollable) */}
-                <div className="bg-zinc-900/50 rounded-lg p-2 mb-3 max-h-24 overflow-y-auto">
+                <div className="bg-white/50 dark:bg-zinc-900/50 rounded-lg p-2 mb-3 max-h-24 overflow-y-auto">
                     <div className="flex flex-wrap gap-1.5">
                         {selectedNodes.map((id) => (
                             <span key={id} className="text-[10px] font-mono bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded">
@@ -142,7 +142,7 @@ export const SelectionPanel: FC<SelectionPanelProps> = ({
                     {onDelete && (
                         <button
                             onClick={onDelete}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-zinc-700/50 text-zinc-400 hover:bg-red-500/20 hover:text-red-400 transition-colors ml-auto"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-zinc-200/50 dark:bg-zinc-700/50 text-zinc-500 dark:text-zinc-400 hover:bg-red-500/20 hover:text-red-400 transition-colors ml-auto"
                         >
                             <span className="material-symbols-outlined text-[14px]">delete</span>
                             Delete
@@ -153,7 +153,7 @@ export const SelectionPanel: FC<SelectionPanelProps> = ({
                 {/* Multi-select hint */}
                 <div className="mt-3 pt-2 border-t border-border-dark">
                     <p className="text-[10px] text-text-muted text-center">
-                        <span className="font-medium">Tip:</span> Hold <kbd className="bg-zinc-700 px-1 rounded">Shift</kbd> or <kbd className="bg-zinc-700 px-1 rounded">Ctrl</kbd> to multi-select
+                        <span className="font-medium">Tip:</span> Hold <kbd className="bg-zinc-200 dark:bg-zinc-700 px-1 rounded">Shift</kbd> or <kbd className="bg-zinc-200 dark:bg-zinc-700 px-1 rounded">Ctrl</kbd> to multi-select
                     </p>
                 </div>
             </div>

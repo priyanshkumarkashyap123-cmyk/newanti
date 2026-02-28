@@ -146,7 +146,7 @@ export const WgpuCanvasOriginal: FC<WgpuCanvasProps> = ({ className }) => {
             />
 
             {!isReady && !error && (
-                <div className="absolute inset-0 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+                <div className="absolute inset-0 flex items-center justify-center bg-slate-50/50 dark:bg-slate-900/50 backdrop-blur-sm">
                     <div className="flex flex-col items-center gap-3">
                         <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
                         <span className="text-emerald-400 font-medium">Initializing WebGPU...</span>
@@ -155,8 +155,8 @@ export const WgpuCanvasOriginal: FC<WgpuCanvasProps> = ({ className }) => {
             )}
 
             {error && (
-                <div className="absolute inset-0 flex items-center justify-center bg-slate-900/95 backdrop-blur-md">
-                    <div className="p-6 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 max-w-lg">
+                <div className="absolute inset-0 flex items-center justify-center bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-md">
+                    <div className="p-6 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 max-w-lg">
                         <div className="flex items-start gap-3">
                             <div className="flex-shrink-0 w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
                                 <svg className="w-6 h-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -165,8 +165,8 @@ export const WgpuCanvasOriginal: FC<WgpuCanvasProps> = ({ className }) => {
                             </div>
                             <div className="flex-1">
                                 <h4 className="font-semibold text-lg mb-2">WebGPU Not Available</h4>
-                                <p className="text-sm text-slate-300 mb-3">{error}</p>
-                                <div className="text-xs text-slate-400 space-y-1">
+                                <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">{error}</p>
+                                <div className="text-xs text-slate-500 dark:text-slate-400 space-y-1">
                                     <p>✓ Automatically switching to WebGL renderer...</p>
                                     <p className="opacity-60">Your browser may not support WebGPU or it may be disabled.</p>
                                 </div>

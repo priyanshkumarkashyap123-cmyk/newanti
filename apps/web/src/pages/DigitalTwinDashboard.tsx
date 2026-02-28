@@ -221,7 +221,7 @@ const HealthGauge: React.FC<{ value: number; label: string }> = ({
         />
       </svg>
       <div className="absolute mt-6 text-center">
-        <span className="text-lg font-bold text-white">{pct.toFixed(0)}%</span>
+        <span className="text-lg font-bold text-zinc-900 dark:text-white">{pct.toFixed(0)}%</span>
       </div>
       <span className="text-slate-600 dark:text-slate-400 text-xs mt-1">{label}</span>
     </div>
@@ -361,7 +361,7 @@ const DigitalTwinDashboard: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-zinc-900 dark:text-white">
       {/* Header */}
       <header className="bg-slate-100 dark:bg-slate-800 border-b border-slate-300 dark:border-slate-700 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -386,7 +386,7 @@ const DigitalTwinDashboard: React.FC = () => {
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
               connected
                 ? "bg-green-500/20 text-green-400"
-                : "bg-slate-700 text-slate-600 dark:text-slate-400"
+                : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400"
             }`}
           >
             {connected ? (
@@ -408,7 +408,7 @@ const DigitalTwinDashboard: React.FC = () => {
           ) : (
             <button
               onClick={disconnect}
-              className="px-4 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg transition-colors"
+              className="px-4 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white text-sm rounded-lg transition-colors"
             >
               Disconnect
             </button>
@@ -633,7 +633,7 @@ const DigitalTwinDashboard: React.FC = () => {
                   {!alert.acknowledged && (
                     <button
                       onClick={() => acknowledgeAlert(alert.id)}
-                      className="text-xs text-slate-600 dark:text-slate-400 hover:text-white px-2 py-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700"
+                      className="text-xs text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white px-2 py-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700"
                     >
                       Ack
                     </button>
@@ -673,13 +673,13 @@ const DigitalTwinDashboard: React.FC = () => {
                 <div className="flex items-center gap-4 text-xs text-slate-600 dark:text-slate-400 mb-2">
                   <span>
                     Remaining life:{" "}
-                    <span className="text-white font-mono">
+                    <span className="text-zinc-900 dark:text-white font-mono">
                       {pm.remainingLife.toFixed(1)}%
                     </span>
                   </span>
                   <span>
                     Confidence:{" "}
-                    <span className="text-white font-mono">
+                    <span className="text-zinc-900 dark:text-white font-mono">
                       {(pm.confidenceLevel * 100).toFixed(0)}%
                     </span>
                   </span>

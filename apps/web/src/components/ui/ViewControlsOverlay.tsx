@@ -49,7 +49,7 @@ const ViewCube: FC<{ activeView: string; onViewChange: (view: string) => void }>
             flex items-center justify-center
             ${activeView === v.id
               ? 'bg-blue-600/20 text-blue-300 border-blue-500/30'
-              : 'bg-slate-800/60 text-slate-400 hover:bg-blue-600/20 hover:text-blue-300 hover:border-blue-500/30 border-slate-700/30'
+              : 'bg-slate-100/60 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-blue-600/20 hover:text-blue-300 hover:border-blue-500/30 border-slate-300/30 dark:border-slate-700/30'
             }
           `}
         >
@@ -82,7 +82,7 @@ const CompactBtn: FC<CompactBtnProps> = memo(({ icon: Icon, label, onClick, isAc
       active:scale-95
       ${isActive
         ? 'bg-blue-600/20 text-blue-300 border-blue-500/30'
-        : 'bg-slate-800/60 text-slate-400 hover:bg-slate-700/60 hover:text-slate-200 border-slate-700/30'
+        : 'bg-slate-100/60 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 hover:text-slate-700 dark:hover:text-slate-200 border-slate-300/30 dark:border-slate-700/30'
       }
     `}
   >
@@ -159,12 +159,12 @@ export const ViewControlsOverlay: FC = memo(() => {
   return (
     <div className="absolute top-3 right-3 z-20 flex flex-col gap-2">
       {/* View Cube */}
-      <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-700/30 p-2 shadow-lg">
+      <div className="bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-200/30 dark:border-slate-700/30 p-2 shadow-lg">
         <ViewCube activeView={activeView} onViewChange={handleViewChange} />
       </div>
 
       {/* Zoom Controls */}
-      <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-700/30 p-1.5 shadow-lg flex flex-col gap-0.5">
+      <div className="bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-200/30 dark:border-slate-700/30 p-1.5 shadow-lg flex flex-col gap-0.5">
         <CompactBtn icon={ZoomIn} label="Zoom In (+)" onClick={handleZoomIn} />
         <CompactBtn icon={ZoomOut} label="Zoom Out (−)" onClick={handleZoomOut} />
         <CompactBtn icon={Maximize2} label="Fit All (F)" onClick={handleFitView} />
@@ -172,7 +172,7 @@ export const ViewControlsOverlay: FC = memo(() => {
       </div>
 
       {/* Display Toggles */}
-      <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-700/30 p-1.5 shadow-lg flex flex-col gap-0.5">
+      <div className="bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-200/30 dark:border-slate-700/30 p-1.5 shadow-lg flex flex-col gap-0.5">
         <CompactBtn icon={Grid3X3} label="Toggle Grid (G)" onClick={toggleGrid} isActive={showGrid} />
         <CompactBtn icon={Axis3D} label="Toggle Axes" onClick={handleToggleAxes} isActive={showAxes} />
         <CompactBtn icon={Box} label="3D Render Mode" onClick={handleToggle3D} isActive={renderMode3D} />

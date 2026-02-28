@@ -499,7 +499,7 @@ export const EnhancedPricingPage: FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950 text-zinc-900 dark:text-white">
       {/* Navigation */}
       <nav className="fixed top-0 inset-x-0 z-50 bg-white dark:bg-slate-950/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -512,19 +512,19 @@ export const EnhancedPricingPage: FC = () => {
           <div className="flex items-center gap-6">
             <Link
               to="/"
-              className="text-sm text-slate-600 dark:text-slate-400 hover:text-white transition-colors"
+              className="text-sm text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
             >
               Home
             </Link>
             <Link
               to="/demo"
-              className="text-sm text-slate-600 dark:text-slate-400 hover:text-white transition-colors"
+              className="text-sm text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
             >
               Demo
             </Link>
             <Link
               to="/sign-in"
-              className="text-sm text-slate-600 dark:text-slate-400 hover:text-white transition-colors"
+              className="text-sm text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
             >
               Sign In
             </Link>
@@ -539,7 +539,7 @@ export const EnhancedPricingPage: FC = () => {
             <div className="flex items-center gap-3 text-center sm:text-left">
               <Globe className="w-5 h-5 text-indigo-100 shrink-0 hidden sm:block" />
               <p className="text-sm text-indigo-50">
-                <strong className="font-semibold text-white">
+                <strong className="font-semibold text-zinc-900 dark:text-white">
                   {marketMode === "india"
                     ? "India pricing support is live."
                     : "Regional pricing support is available."}
@@ -550,7 +550,7 @@ export const EnhancedPricingPage: FC = () => {
               </p>
             </div>
             <div className="flex items-center gap-4 shrink-0">
-              <button className="text-sm font-bold text-white hover:text-indigo-200 transition-colors whitespace-nowrap underline decoration-indigo-400 underline-offset-2">
+              <button className="text-sm font-bold text-zinc-900 dark:text-white hover:text-indigo-200 transition-colors whitespace-nowrap underline decoration-indigo-400 underline-offset-2">
                 {marketMode === "india"
                   ? "Apply for India Plan"
                   : "Apply for PPP Pricing"}
@@ -620,7 +620,7 @@ export const EnhancedPricingPage: FC = () => {
               className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
                 billingPeriod === "monthly"
                   ? "bg-white text-slate-950"
-                  : "text-slate-600 dark:text-slate-400 hover:text-white"
+                  : "text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white"
               }`}
             >
               Monthly
@@ -630,7 +630,7 @@ export const EnhancedPricingPage: FC = () => {
               className={`px-6 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
                 billingPeriod === "yearly"
                   ? "bg-white text-slate-950"
-                  : "text-slate-600 dark:text-slate-400 hover:text-white"
+                  : "text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white"
               }`}
             >
               Yearly
@@ -673,11 +673,11 @@ export const EnhancedPricingPage: FC = () => {
                 {plan.icon}
               </div>
 
-              <h3 className="text-xl font-bold text-white mb-1">{plan.name}</h3>
+              <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-1">{plan.name}</h3>
               <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{plan.description}</p>
 
               <div className="mb-6">
-                <span className="text-4xl font-bold text-white">
+                <span className="text-4xl font-bold text-zinc-900 dark:text-white">
                   {formatPrice(plan)}
                 </span>
                 {plan.monthlyPrice !== null && plan.monthlyPrice > 0 && (
@@ -773,11 +773,11 @@ export const EnhancedPricingPage: FC = () => {
             <div className="grid sm:grid-cols-2 gap-4 text-sm">
               <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-4 bg-slate-50 dark:bg-slate-900">
                 <p className="text-slate-500 mb-1">PPP Discounts</p>
-                <p className="text-white font-semibold">Up to 60% off</p>
+                <p className="text-zinc-900 dark:text-white font-semibold">Up to 60% off</p>
               </div>
               <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-4 bg-slate-50 dark:bg-slate-900">
                 <p className="text-slate-500 mb-1">Billing</p>
-                <p className="text-white font-semibold">
+                <p className="text-zinc-900 dark:text-white font-semibold">
                   {marketMode === "india"
                     ? "Monthly / Quarterly / Annual PO"
                     : "Monthly / Quarterly / Yearly"}
@@ -785,7 +785,7 @@ export const EnhancedPricingPage: FC = () => {
               </div>
               <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-4 bg-slate-50 dark:bg-slate-900">
                 <p className="text-slate-500 mb-1">Payments</p>
-                <p className="text-white font-semibold">
+                <p className="text-zinc-900 dark:text-white font-semibold">
                   {marketMode === "india"
                     ? "UPI, IMPS/NEFT/RTGS, cards"
                     : "Cards, wire transfer, local rails"}
@@ -797,7 +797,7 @@ export const EnhancedPricingPage: FC = () => {
                     ? "Tax & Invoicing"
                     : "Implementation"}
                 </p>
-                <p className="text-white font-semibold">
+                <p className="text-zinc-900 dark:text-white font-semibold">
                   {marketMode === "india"
                     ? "GST-ready invoicing support"
                     : "Priority onboarding assistance"}
@@ -845,7 +845,7 @@ export const EnhancedPricingPage: FC = () => {
         <div className="max-w-7xl mx-auto">
           <button
             onClick={() => setShowMatrix(!showMatrix)}
-            className="w-full py-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:bg-slate-800 transition-all flex items-center justify-center gap-2"
+            className="w-full py-4 rounded-xl bg-slate-50 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:bg-slate-800 transition-all flex items-center justify-center gap-2"
           >
             {showMatrix ? "Hide" : "Show"} Full Feature Comparison
             {showMatrix ? (
@@ -867,16 +867,16 @@ export const EnhancedPricingPage: FC = () => {
                   <th className="text-left py-4 px-4 text-slate-600 dark:text-slate-400 font-medium">
                     Features
                   </th>
-                  <th className="text-center py-4 px-4 text-white font-medium">
+                  <th className="text-center py-4 px-4 text-zinc-900 dark:text-white font-medium">
                     Starter
                   </th>
                   <th className="text-center py-4 px-4 text-blue-400 font-medium">
                     Professional
                   </th>
-                  <th className="text-center py-4 px-4 text-white font-medium">
+                  <th className="text-center py-4 px-4 text-zinc-900 dark:text-white font-medium">
                     Team
                   </th>
-                  <th className="text-center py-4 px-4 text-white font-medium">
+                  <th className="text-center py-4 px-4 text-zinc-900 dark:text-white font-medium">
                     Enterprise
                   </th>
                 </tr>
@@ -1001,7 +1001,7 @@ export const EnhancedPricingPage: FC = () => {
                 </ul>
               </div>
               <div className="p-10 bg-blue-900/10">
-                <h4 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                <h4 className="text-xl font-bold text-zinc-900 dark:text-white mb-6 flex items-center gap-2">
                   <Check className="w-6 h-6 text-blue-400" /> BeamLab Ultimate
                 </h4>
                 <ul className="space-y-4">
@@ -1060,7 +1060,7 @@ export const EnhancedPricingPage: FC = () => {
                   aria-controls={`faq-answer-${i}`}
                   className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-100 dark:bg-slate-800/50 transition-colors"
                 >
-                  <span className="font-medium text-white">{faq.q}</span>
+                  <span className="font-medium text-zinc-900 dark:text-white">{faq.q}</span>
                   {expandedFaq === i ? (
                     <ChevronUp className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                   ) : (
@@ -1083,7 +1083,7 @@ export const EnhancedPricingPage: FC = () => {
       </section>
 
       {/* CTA */}
-      <section className="py-24 px-4 bg-gradient-to-b from-slate-950 to-blue-950/20 border-t border-slate-200 dark:border-slate-800">
+      <section className="py-24 px-4 bg-gradient-to-b from-white dark:from-slate-950 to-blue-50/20 dark:to-blue-950/20 border-t border-slate-200 dark:border-slate-800">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-extrabold mb-6">
             Ready to upgrade your engineering workflow?
@@ -1101,7 +1101,7 @@ export const EnhancedPricingPage: FC = () => {
             </button>
             <Link
               to="/contact"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-full border-2 border-slate-300 dark:border-slate-700 text-white font-medium hover:bg-slate-100 dark:bg-slate-800 transition-all"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-full border-2 border-slate-300 dark:border-slate-700 text-zinc-900 dark:text-white font-medium hover:bg-slate-100 dark:bg-slate-800 transition-all"
             >
               <MessageSquare className="w-5 h-5" /> Talk to Sales
             </Link>
@@ -1121,19 +1121,19 @@ export const EnhancedPricingPage: FC = () => {
           <div className="flex gap-6">
             <Link
               to="/privacy"
-              className="text-slate-600 dark:text-slate-400 text-sm hover:text-white"
+              className="text-slate-600 dark:text-slate-400 text-sm hover:text-zinc-900 dark:hover:text-white"
             >
               Privacy
             </Link>
             <Link
               to="/terms"
-              className="text-slate-600 dark:text-slate-400 text-sm hover:text-white"
+              className="text-slate-600 dark:text-slate-400 text-sm hover:text-zinc-900 dark:hover:text-white"
             >
               Terms
             </Link>
             <Link
               to="/contact"
-              className="text-slate-600 dark:text-slate-400 text-sm hover:text-white"
+              className="text-slate-600 dark:text-slate-400 text-sm hover:text-zinc-900 dark:hover:text-white"
             >
               Contact
             </Link>

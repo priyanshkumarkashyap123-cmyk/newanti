@@ -332,7 +332,7 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
               /* Empty state */
               <div className="flex-1 flex items-center justify-center text-center px-12">
                 <div>
-                  <Globe2 className="w-16 h-16 text-zinc-400 dark:text-zinc-600 mx-auto mb-4" />
+                  <Globe2 className="w-16 h-16 text-zinc-500 dark:text-zinc-600 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-zinc-500 dark:text-zinc-400 mb-2">
                     Select a Template
                   </h3>

@@ -12,6 +12,15 @@ echo ""
 
 echo "⚛️ Building Frontend (Production)..."
 cd ../web
+
+# Ensure required VITE_* env vars are set for the build
+: "${VITE_CLERK_PUBLISHABLE_KEY:?Missing VITE_CLERK_PUBLISHABLE_KEY}"
+export VITE_API_URL="${VITE_API_URL:-https://beamlab-api.azurewebsites.net}"
+export VITE_RUST_API_URL="${VITE_RUST_API_URL:-https://beamlab-rust-api.azurewebsites.net}"
+export VITE_PYTHON_API_URL="${VITE_PYTHON_API_URL:-https://beamlab-backend-python.azurewebsites.net}"
+export VITE_WEBSOCKET_URL="${VITE_WEBSOCKET_URL:-wss://beamlab-backend-python.azurewebsites.net/ws}"
+export VITE_SENTRY_DSN="${VITE_SENTRY_DSN:-}"
+
 pnpm install --frozen-lockfile
 pnpm build
 echo "✅ Frontend built successfully!"

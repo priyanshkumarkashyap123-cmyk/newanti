@@ -12,7 +12,6 @@
  * @version 1.0.0
  */
 
-'use client';
 
 import React, { useMemo } from 'react';
 import { cn } from '@/lib/utils';
@@ -353,7 +352,7 @@ export const StressStrainDiagram: React.FC<StressStrainDiagramProps> = ({
       
       <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full">
         {/* Grid */}
-        <g className="text-gray-200 dark:text-gray-700">
+        <g className="text-gray-700 dark:text-gray-700">
           {[0, 0.001, 0.002, 0.003, 0.004, 0.005].map(strain => (
             <line
               key={strain}
@@ -686,7 +685,7 @@ export const InteractionDiagram: React.FC<InteractionDiagramProps> = ({
       
       <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full">
         {/* Grid */}
-        <g className="text-gray-200 dark:text-gray-700">
+        <g className="text-gray-700 dark:text-gray-700">
           {[0, 0.25, 0.5, 0.75, 1].map(frac => (
             <React.Fragment key={frac}>
               <line

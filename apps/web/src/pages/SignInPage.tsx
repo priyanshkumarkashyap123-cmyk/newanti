@@ -18,7 +18,7 @@ export const SignInPage = () => {
             <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
                 {/* Animated Background */}
                 <div className="absolute inset-0">
-                    <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-500/10 via-slate-900 to-slate-950" />
+                    <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-500/10 via-slate-100 dark:via-slate-900 to-white dark:to-slate-950" />
                     <div className="absolute bottom-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-purple-500/10 via-transparent to-transparent" />
                 </div>
 
@@ -32,7 +32,7 @@ export const SignInPage = () => {
                 }} />
 
                 {/* Content */}
-                <div className="relative z-10 flex flex-col justify-between p-16 text-slate-50 w-full">
+                <div className="relative z-10 flex flex-col justify-between p-16 text-slate-900 dark:text-slate-50 w-full">
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-3 group w-fit">
                         <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-blue-500/25 transition-all">
@@ -78,15 +78,15 @@ export const SignInPage = () => {
                     {/* Stats */}
                     <div className="grid grid-cols-3 gap-8 py-8 border-t border-slate-200 dark:border-slate-800/50">
                         <div>
-                            <div className="text-3xl font-bold text-white">10K+</div>
+                            <div className="text-3xl font-bold text-zinc-900 dark:text-white">10K+</div>
                             <div className="text-xs text-slate-600 dark:text-slate-400 uppercase tracking-wider mt-1">Users</div>
                         </div>
                         <div>
-                            <div className="text-3xl font-bold text-white">99.9%</div>
+                            <div className="text-3xl font-bold text-zinc-900 dark:text-white">99.9%</div>
                             <div className="text-xs text-slate-600 dark:text-slate-400 uppercase tracking-wider mt-1">Uptime</div>
                         </div>
                         <div>
-                            <div className="text-3xl font-bold text-white">24/7</div>
+                            <div className="text-3xl font-bold text-zinc-900 dark:text-white">24/7</div>
                             <div className="text-xs text-slate-600 dark:text-slate-400 uppercase tracking-wider mt-1">Support</div>
                         </div>
                     </div>
@@ -106,7 +106,7 @@ export const SignInPage = () => {
 
                     {/* Header */}
                     <div className="text-center lg:text-left space-y-2">
-                        <h2 className="text-3xl font-bold text-white">Welcome Back</h2>
+                        <h2 className="text-3xl font-bold text-zinc-900 dark:text-white">Welcome Back</h2>
                         <p className="text-slate-600 dark:text-slate-400">
                             Enter your credentials to access your workspace
                         </p>
@@ -134,17 +134,17 @@ export const SignInPage = () => {
                                         headerTitle: 'hidden', // We have our own header
                                         headerSubtitle: 'hidden',
                                         formFieldLabel: 'text-slate-700 dark:text-slate-300 font-medium text-sm',
-                                        formFieldInput: 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-white placeholder:text-slate-600 dark:text-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all',
+                                        formFieldInput: 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-zinc-900 placeholder:text-slate-600 dark:text-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all',
                                         formButtonPrimary: 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-2.5 rounded-lg shadow-lg shadow-blue-500/20 transition-all',
                                         footerActionLink: 'text-blue-400 hover:text-blue-300 font-medium',
                                         identityPreviewText: 'text-slate-700 dark:text-slate-300',
                                         identityPreviewEditButton: 'text-blue-400 hover:text-blue-300',
-                                        socialButtonsBlockButton: 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 hover:border-slate-600 rounded-lg transition-all',
+                                        socialButtonsBlockButton: 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg transition-all',
                                         socialButtonsBlockButtonText: 'font-medium',
                                         dividerLine: 'bg-slate-100 dark:bg-slate-800',
                                         dividerText: 'text-slate-600 dark:text-slate-400 uppercase text-xs tracking-wider bg-slate-50 dark:bg-slate-900 px-2',
-                                        formFieldInputShowPasswordButton: 'text-slate-600 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300',
-                                        otpCodeFieldInput: 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-white text-center font-mono font-bold text-lg focus:ring-blue-500',
+                                        formFieldInputShowPasswordButton: 'text-slate-600 hover:text-slate-700 dark:text-slate-300',
+                                        otpCodeFieldInput: 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-zinc-900 dark:text-white text-center font-mono font-bold text-lg focus:ring-blue-500',
                                         footer: 'bg-slate-50 dark:bg-slate-900/50 p-6 border-t border-slate-200 dark:border-slate-800'
                                     },
                                     layout: {
@@ -169,7 +169,7 @@ export const SignInPage = () => {
 
                     {/* Additional Links */}
                     <div className="text-center pt-6">
-                        <Link to="/" className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300 transition-colors group">
+                        <Link to="/" className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-700 dark:text-slate-300 transition-colors group">
                             <span className="group-hover:-translate-x-1 transition-transform">←</span> Back to home
                         </Link>
                     </div>

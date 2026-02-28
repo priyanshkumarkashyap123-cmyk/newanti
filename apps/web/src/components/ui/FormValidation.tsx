@@ -103,7 +103,7 @@ export const ValidatedInput: FC<ValidatedInputProps> = ({
     const inputType = type === 'password' && showPassword ? 'text' : type;
 
     const borderColors = {
-        idle: 'border-slate-700 focus:border-blue-500',
+        idle: 'border-slate-200 dark:border-slate-700 focus:border-blue-500',
         validating: 'border-blue-500',
         valid: 'border-green-500',
         invalid: 'border-red-500',
@@ -113,13 +113,13 @@ export const ValidatedInput: FC<ValidatedInputProps> = ({
         <div className={`space-y-2 ${className}`}>
             {/* Label */}
             <div className="flex items-center justify-between">
-                <label htmlFor={`input-${label.toLowerCase().replace(/\s+/g, '-')}`} className="text-sm font-medium text-slate-300">
+                <label htmlFor={`input-${label.toLowerCase().replace(/\s+/g, '-')}`} className="text-sm font-medium text-slate-600 dark:text-slate-300">
                     {label}
                     {required && <span className="text-red-400 ml-1" aria-hidden="true">*</span>}
                     {required && <span className="sr-only">(required)</span>}
                 </label>
                 {hint && (
-                    <span className="text-xs text-slate-400 flex items-center gap-1">
+                    <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
                         <Info className="w-3 h-3" aria-hidden="true" />
                         {hint}
                     </span>
@@ -141,8 +141,8 @@ export const ValidatedInput: FC<ValidatedInputProps> = ({
                     aria-describedby={error && touched ? `error-${label.toLowerCase().replace(/\s+/g, '-')}` : undefined}
                     className={`
                         w-full px-4 py-3 pr-12
-                        bg-slate-800 rounded-lg
-                        text-white placeholder:text-slate-400
+                        bg-slate-100 dark:bg-slate-800 rounded-lg
+                        text-zinc-900 dark:text-white placeholder:text-slate-400
                         border-2 transition-colors duration-200
                         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-950 focus:ring-blue-500
                         disabled:opacity-50 disabled:cursor-not-allowed
@@ -156,7 +156,7 @@ export const ValidatedInput: FC<ValidatedInputProps> = ({
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="text-slate-400 hover:text-slate-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+                            className="text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
                             aria-label={showPassword ? 'Hide password' : 'Show password'}
                             aria-pressed={showPassword}
                         >
@@ -274,7 +274,7 @@ export const PasswordStrength: FC<PasswordStrengthProps> = ({ password }) => {
                         initial={{ scaleX: 0 }}
                         animate={{ scaleX: 1 }}
                         transition={{ delay: i * 0.05 }}
-                        className={`h-1.5 flex-1 rounded-full origin-left ${i < strength ? colors[strength - 1] : 'bg-slate-700'
+                        className={`h-1.5 flex-1 rounded-full origin-left ${i < strength ? colors[strength - 1] : 'bg-slate-200 dark:bg-slate-700'
                             }`}
                     />
                 ))}

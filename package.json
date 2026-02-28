@@ -3,10 +3,6 @@
   "version": "1.1.0",
   "private": true,
   "description": "BeamLab Ultimate - Professional Structural Analysis Platform",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
@@ -18,10 +14,10 @@
     "test:e2e": "pnpm --filter @beamlab/web test:e2e",
     "test:e2e:ui": "pnpm --filter @beamlab/web test:e2e:ui",
     "analyze": "pnpm --filter @beamlab/web analyze",
-    "check-budget": "node scripts/check-budget.js",
+    "check-budget": "npx tsx scripts/check-budget.ts",
     "storybook": "pnpm --filter @beamlab/web storybook",
     "build-storybook": "pnpm --filter @beamlab/web build-storybook",
-    "prepare": "husky install",
+    "prepare": "husky",
     "release": "semantic-release",
     "validate": "pnpm lint && pnpm type-check && pnpm test:run"
   },

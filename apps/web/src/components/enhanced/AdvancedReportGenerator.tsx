@@ -16,7 +16,6 @@
  * @version 4.0.0
  */
 
-'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -218,8 +217,8 @@ const SectionCard: React.FC<{
       exit={{ opacity: 0, y: -20 }}
       className={`rounded-xl border transition-all ${
         section.isEnabled
-          ? 'bg-zinc-800/50 border-zinc-700'
-          : 'bg-zinc-900/30 border-zinc-800 opacity-60'
+          ? 'bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700'
+          : 'bg-zinc-100/30 dark:bg-zinc-900/30 border-zinc-200 dark:border-zinc-800 opacity-60'
       }`}
     >
       <div className="flex items-center gap-3 p-4">
@@ -229,7 +228,7 @@ const SectionCard: React.FC<{
           className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
             section.isEnabled
               ? 'bg-blue-600 border-blue-600 text-white'
-              : 'border-zinc-600 hover:border-zinc-500'
+              : 'border-zinc-600 hover:border-zinc-400 dark:hover:border-zinc-500'
           }`}
         >
           {section.isEnabled && <Check className="w-3 h-3" />}
@@ -240,7 +239,7 @@ const SectionCard: React.FC<{
           <span className={section.isEnabled ? 'text-blue-400' : 'text-zinc-500'}>
             {sectionIcons[section.type]}
           </span>
-          <span className={`font-medium ${section.isEnabled ? 'text-white' : 'text-zinc-400'}`}>
+          <span className={`font-medium ${section.isEnabled ? 'text-zinc-900 dark:text-white' : 'text-zinc-500 dark:text-zinc-400'}`}>
             {section.title}
           </span>
         </div>
@@ -250,20 +249,20 @@ const SectionCard: React.FC<{
           <button
             onClick={() => onMove('up')}
             disabled={index === 0}
-            className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="p-1.5 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             <MoveUp className="w-4 h-4" />
           </button>
           <button
             onClick={() => onMove('down')}
             disabled={index === totalSections - 1}
-            className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="p-1.5 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             <MoveDown className="w-4 h-4" />
           </button>
           <button
             onClick={onExpand}
-            className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
+            className="p-1.5 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
           >
             {section.isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </button>
@@ -279,9 +278,9 @@ const SectionCard: React.FC<{
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4 pt-2 border-t border-zinc-700/50">
-              <div className="bg-zinc-900/50 rounded-lg p-4">
-                <p className="text-sm text-zinc-400 mb-3">Section content preview:</p>
+            <div className="px-4 pb-4 pt-2 border-t border-zinc-200/50 dark:border-zinc-700/50">
+              <div className="bg-white/50 dark:bg-zinc-900/50 rounded-lg p-4">
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-3">Section content preview:</p>
                 <SectionPreview type={section.type} />
               </div>
             </div>
@@ -301,21 +300,21 @@ const SectionPreview: React.FC<{ type: SectionType }> = ({ type }) => {
     case 'title':
       return (
         <div className="text-center py-6 space-y-2">
-          <div className="w-24 h-8 bg-zinc-700 rounded mx-auto" />
-          <div className="w-48 h-6 bg-zinc-700 rounded mx-auto" />
-          <div className="w-32 h-4 bg-zinc-800 rounded mx-auto mt-4" />
+          <div className="w-24 h-8 bg-zinc-200 dark:bg-zinc-700 rounded mx-auto" />
+          <div className="w-48 h-6 bg-zinc-200 dark:bg-zinc-700 rounded mx-auto" />
+          <div className="w-32 h-4 bg-zinc-100 dark:bg-zinc-800 rounded mx-auto mt-4" />
         </div>
       );
     case 'geometry':
       return (
         <div className="flex gap-4">
-          <div className="w-32 h-32 bg-zinc-800 rounded-lg flex items-center justify-center">
+          <div className="w-32 h-32 bg-zinc-100 dark:bg-zinc-800 rounded-lg flex items-center justify-center">
             <Layout className="w-8 h-8 text-zinc-500" />
           </div>
           <div className="flex-1 space-y-2">
-            <div className="h-4 bg-zinc-800 rounded w-3/4" />
-            <div className="h-4 bg-zinc-800 rounded w-1/2" />
-            <div className="h-4 bg-zinc-800 rounded w-2/3" />
+            <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-3/4" />
+            <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-1/2" />
+            <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-2/3" />
           </div>
         </div>
       );
@@ -323,7 +322,7 @@ const SectionPreview: React.FC<{ type: SectionType }> = ({ type }) => {
       return (
         <div className="space-y-3">
           <div className="h-4 bg-blue-500/20 rounded w-full" />
-          <div className="font-mono text-xs text-zinc-400 p-2 bg-zinc-800 rounded">
+          <div className="font-mono text-xs text-zinc-500 dark:text-zinc-400 p-2 bg-zinc-100 dark:bg-zinc-800 rounded">
             Mu = 0.138 × fck × b × d² = 251.5 kN·m
           </div>
           <div className="h-4 bg-emerald-500/20 rounded w-3/4" />
@@ -332,26 +331,26 @@ const SectionPreview: React.FC<{ type: SectionType }> = ({ type }) => {
     case 'reinforcement':
       return (
         <div className="grid grid-cols-3 gap-2 text-xs">
-          <div className="bg-zinc-800 p-2 rounded text-center">
-            <div className="text-zinc-400">Main Steel</div>
-            <div className="text-white font-mono">4T20</div>
+          <div className="bg-zinc-100 dark:bg-zinc-800 p-2 rounded text-center">
+            <div className="text-zinc-500 dark:text-zinc-400">Main Steel</div>
+            <div className="text-zinc-900 dark:text-white font-mono">4T20</div>
           </div>
-          <div className="bg-zinc-800 p-2 rounded text-center">
-            <div className="text-zinc-400">Stirrups</div>
-            <div className="text-white font-mono">T8@150</div>
+          <div className="bg-zinc-100 dark:bg-zinc-800 p-2 rounded text-center">
+            <div className="text-zinc-500 dark:text-zinc-400">Stirrups</div>
+            <div className="text-zinc-900 dark:text-white font-mono">T8@150</div>
           </div>
-          <div className="bg-zinc-800 p-2 rounded text-center">
-            <div className="text-zinc-400">Cover</div>
-            <div className="text-white font-mono">40mm</div>
+          <div className="bg-zinc-100 dark:bg-zinc-800 p-2 rounded text-center">
+            <div className="text-zinc-500 dark:text-zinc-400">Cover</div>
+            <div className="text-zinc-900 dark:text-white font-mono">40mm</div>
           </div>
         </div>
       );
     default:
       return (
         <div className="space-y-2">
-          <div className="h-4 bg-zinc-800 rounded w-full" />
-          <div className="h-4 bg-zinc-800 rounded w-5/6" />
-          <div className="h-4 bg-zinc-800 rounded w-4/6" />
+          <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-full" />
+          <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-5/6" />
+          <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-4/6" />
         </div>
       );
   }
@@ -368,7 +367,7 @@ const ReportPreview: React.FC<{
   const enabledSections = sections.filter(s => s.isEnabled);
   
   return (
-    <div className="bg-slate-900 rounded-lg shadow-2xl border border-slate-700 overflow-hidden h-full">
+    <div className="bg-slate-50 dark:bg-slate-900 rounded-lg shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden h-full">
       {/* Paper */}
       <div className="p-6 h-full overflow-y-auto" style={{ fontFamily: style.fontFamily }}>
         {/* Header */}
@@ -388,7 +387,7 @@ const ReportPreview: React.FC<{
             Structural Design Report
           </h1>
           <p className="text-gray-600">Reinforced Concrete Beam Design</p>
-          <p className="text-sm text-gray-400 mt-2">As per IS 456:2000</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">As per IS 456:2000</p>
         </div>
         
         {/* Sections */}
@@ -408,7 +407,7 @@ const ReportPreview: React.FC<{
         </div>
         
         {/* Footer */}
-        <div className="mt-8 pt-4 border-t border-gray-200 flex justify-between text-xs text-gray-400">
+        <div className="mt-8 pt-4 border-t border-gray-200 flex justify-between text-xs text-gray-500 dark:text-gray-400">
           <span>Page 1 of {enabledSections.length}</span>
           <span>Generated by StructFlow AI</span>
         </div>
@@ -487,20 +486,20 @@ export const AdvancedReportGenerator: React.FC<{
   }, [exportOptions, onExport]);
   
   return (
-    <div className={`bg-zinc-950 rounded-2xl overflow-hidden ${className}`}>
+    <div className={`bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden ${className}`}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-zinc-900 to-zinc-800 p-6 border-b border-zinc-800">
+      <div className="bg-gradient-to-r from-zinc-50 dark:from-zinc-900 to-zinc-800 p-6 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600">
               <FileText className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                 Report Generator
                 <Sparkles className="w-4 h-4 text-amber-400" />
               </h2>
-              <p className="text-zinc-400 text-sm">Create professional engineering reports</p>
+              <p className="text-zinc-500 dark:text-zinc-400 text-sm">Create professional engineering reports</p>
             </div>
           </div>
           
@@ -508,7 +507,7 @@ export const AdvancedReportGenerator: React.FC<{
             <button
               onClick={() => setShowPreview(!showPreview)}
               className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-colors ${
-                showPreview ? 'bg-blue-500/20 text-blue-400' : 'bg-zinc-800 text-zinc-400 hover:text-white'
+                showPreview ? 'bg-blue-500/20 text-blue-400' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-white'
               }`}
             >
               <Eye className="w-4 h-4" />
@@ -537,9 +536,9 @@ export const AdvancedReportGenerator: React.FC<{
       
       <div className="flex h-[600px]">
         {/* Left Panel - Editor */}
-        <div className="flex-1 flex flex-col border-r border-zinc-800">
+        <div className="flex-1 flex flex-col border-r border-zinc-200 dark:border-zinc-800">
           {/* Tabs */}
-          <div className="flex border-b border-zinc-800">
+          <div className="flex border-b border-zinc-200 dark:border-zinc-800">
             {(['content', 'style', 'export'] as const).map((tab) => (
               <button
                 key={tab}
@@ -547,7 +546,7 @@ export const AdvancedReportGenerator: React.FC<{
                 className={`flex-1 px-4 py-3 text-sm font-medium capitalize transition-colors ${
                   activeTab === tab
                     ? 'text-blue-400 border-b-2 border-blue-500 bg-blue-500/5'
-                    : 'text-zinc-400 hover:text-white'
+                    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >
                 {tab}
@@ -568,7 +567,7 @@ export const AdvancedReportGenerator: React.FC<{
                 >
                   {/* Template Selection */}
                   <div>
-                    <label className="block text-sm font-medium text-zinc-400 mb-2">Report Template</label>
+                    <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">Report Template</label>
                     <div className="grid grid-cols-3 gap-3">
                       {TEMPLATES.map((template) => (
                         <button
@@ -581,15 +580,15 @@ export const AdvancedReportGenerator: React.FC<{
                           className={`p-3 rounded-xl border text-left transition-all ${
                             selectedTemplate.id === template.id
                               ? 'bg-blue-500/10 border-blue-500'
-                              : 'bg-zinc-800/50 border-zinc-700 hover:border-zinc-600'
+                              : 'bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600'
                           }`}
                         >
                           <p className={`font-medium text-sm ${
-                            selectedTemplate.id === template.id ? 'text-blue-400' : 'text-white'
+                            selectedTemplate.id === template.id ? 'text-blue-400' : 'text-zinc-900 dark:text-white'
                           }`}>
                             {template.name}
                           </p>
-                          <p className="text-xs text-zinc-400 mt-1">{template.description}</p>
+                          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{template.description}</p>
                         </button>
                       ))}
                     </div>
@@ -598,7 +597,7 @@ export const AdvancedReportGenerator: React.FC<{
                   {/* Sections */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <label className="text-sm font-medium text-zinc-400">Report Sections</label>
+                      <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Report Sections</label>
                       <span className="text-xs text-zinc-500">
                         {sections.filter(s => s.isEnabled).length} of {sections.length} enabled
                       </span>
@@ -631,10 +630,10 @@ export const AdvancedReportGenerator: React.FC<{
                 >
                   {/* Colors */}
                   <div>
-                    <label className="block text-sm font-medium text-zinc-400 mb-3">Color Scheme</label>
+                    <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-3">Color Scheme</label>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs text-zinc-400 mb-1 block">Primary Color</label>
+                        <label className="text-xs text-zinc-500 dark:text-zinc-400 mb-1 block">Primary Color</label>
                         <div className="flex items-center gap-2">
                           <input
                             type="color"
@@ -646,12 +645,12 @@ export const AdvancedReportGenerator: React.FC<{
                             type="text"
                             value={style.primaryColor}
                             onChange={(e) => setStyle(s => ({ ...s, primaryColor: e.target.value }))}
-                            className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm font-mono"
+                            className="flex-1 px-3 py-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm font-mono"
                           />
                         </div>
                       </div>
                       <div>
-                        <label className="text-xs text-zinc-400 mb-1 block">Accent Color</label>
+                        <label className="text-xs text-zinc-500 dark:text-zinc-400 mb-1 block">Accent Color</label>
                         <div className="flex items-center gap-2">
                           <input
                             type="color"
@@ -663,7 +662,7 @@ export const AdvancedReportGenerator: React.FC<{
                             type="text"
                             value={style.accentColor}
                             onChange={(e) => setStyle(s => ({ ...s, accentColor: e.target.value }))}
-                            className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm font-mono"
+                            className="flex-1 px-3 py-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm font-mono"
                           />
                         </div>
                       </div>
@@ -672,11 +671,11 @@ export const AdvancedReportGenerator: React.FC<{
                   
                   {/* Font */}
                   <div>
-                    <label className="block text-sm font-medium text-zinc-400 mb-2">Font Family</label>
+                    <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">Font Family</label>
                     <select
                       value={style.fontFamily}
                       onChange={(e) => setStyle(s => ({ ...s, fontFamily: e.target.value }))}
-                      className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white"
+                      className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-white"
                     >
                       <option value="Inter">Inter (Modern)</option>
                       <option value="Times New Roman">Times New Roman (Classic)</option>
@@ -687,7 +686,7 @@ export const AdvancedReportGenerator: React.FC<{
                   
                   {/* Header Style */}
                   <div>
-                    <label className="block text-sm font-medium text-zinc-400 mb-2">Header Style</label>
+                    <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">Header Style</label>
                     <div className="grid grid-cols-3 gap-3">
                       {(['modern', 'classic', 'minimal'] as const).map((headerStyle) => (
                         <button
@@ -696,7 +695,7 @@ export const AdvancedReportGenerator: React.FC<{
                           className={`p-4 rounded-xl border text-center capitalize transition-all ${
                             style.headerStyle === headerStyle
                               ? 'bg-blue-500/10 border-blue-500 text-blue-400'
-                              : 'bg-zinc-800/50 border-zinc-700 text-zinc-400 hover:border-zinc-600'
+                              : 'bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-600'
                           }`}
                         >
                           {headerStyle}
@@ -708,7 +707,7 @@ export const AdvancedReportGenerator: React.FC<{
                   {/* Options */}
                   <div className="space-y-3">
                     <label
-                      className="flex items-center gap-3 p-3 rounded-xl bg-zinc-800/50 cursor-pointer"
+                      className="flex items-center gap-3 p-3 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 cursor-pointer"
                       onClick={() => setStyle(s => ({ ...s, includeCompanyLogo: !s.includeCompanyLogo }))}
                     >
                       <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
@@ -716,10 +715,10 @@ export const AdvancedReportGenerator: React.FC<{
                       }`}>
                         {style.includeCompanyLogo && <Check className="w-3 h-3 text-white" />}
                       </div>
-                      <span className="text-sm text-zinc-300">Include company logo</span>
+                      <span className="text-sm text-zinc-600 dark:text-zinc-300">Include company logo</span>
                     </label>
                     <label
-                      className="flex items-center gap-3 p-3 rounded-xl bg-zinc-800/50 cursor-pointer"
+                      className="flex items-center gap-3 p-3 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 cursor-pointer"
                       onClick={() => setStyle(s => ({ ...s, includeWatermark: !s.includeWatermark }))}
                     >
                       <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
@@ -727,7 +726,7 @@ export const AdvancedReportGenerator: React.FC<{
                       }`}>
                         {style.includeWatermark && <Check className="w-3 h-3 text-white" />}
                       </div>
-                      <span className="text-sm text-zinc-300">Add draft watermark</span>
+                      <span className="text-sm text-zinc-600 dark:text-zinc-300">Add draft watermark</span>
                     </label>
                   </div>
                 </motion.div>
@@ -743,7 +742,7 @@ export const AdvancedReportGenerator: React.FC<{
                 >
                   {/* Format */}
                   <div>
-                    <label className="block text-sm font-medium text-zinc-400 mb-3">Export Format</label>
+                    <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-3">Export Format</label>
                     <div className="grid grid-cols-4 gap-3">
                       {(['pdf', 'docx', 'html', 'dxf'] as const).map((format) => (
                         <button
@@ -752,7 +751,7 @@ export const AdvancedReportGenerator: React.FC<{
                           className={`p-4 rounded-xl border text-center uppercase transition-all ${
                             exportOptions.format === format
                               ? 'bg-blue-500/10 border-blue-500 text-blue-400'
-                              : 'bg-zinc-800/50 border-zinc-700 text-zinc-400 hover:border-zinc-600'
+                              : 'bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-600'
                           }`}
                         >
                           {format}
@@ -763,11 +762,11 @@ export const AdvancedReportGenerator: React.FC<{
                   
                   {/* Quality */}
                   <div>
-                    <label className="block text-sm font-medium text-zinc-400 mb-2">Quality</label>
+                    <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">Quality</label>
                     <select
                       value={exportOptions.quality}
                       onChange={(e) => setExportOptions(o => ({ ...o, quality: e.target.value as any }))}
-                      className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white"
+                      className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-white"
                     >
                       <option value="draft">Draft (Fast)</option>
                       <option value="standard">Standard</option>
@@ -778,7 +777,7 @@ export const AdvancedReportGenerator: React.FC<{
                   {/* Options */}
                   <div className="space-y-3">
                     <label
-                      className="flex items-center gap-3 p-3 rounded-xl bg-zinc-800/50 cursor-pointer"
+                      className="flex items-center gap-3 p-3 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 cursor-pointer"
                       onClick={() => setExportOptions(o => ({ ...o, includeCalculations: !o.includeCalculations }))}
                     >
                       <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
@@ -787,12 +786,12 @@ export const AdvancedReportGenerator: React.FC<{
                         {exportOptions.includeCalculations && <Check className="w-3 h-3 text-white" />}
                       </div>
                       <div className="flex-1">
-                        <span className="text-sm text-zinc-300">Include detailed calculations</span>
-                        <p className="text-xs text-zinc-400">Step-by-step design calculations</p>
+                        <span className="text-sm text-zinc-600 dark:text-zinc-300">Include detailed calculations</span>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400">Step-by-step design calculations</p>
                       </div>
                     </label>
                     <label
-                      className="flex items-center gap-3 p-3 rounded-xl bg-zinc-800/50 cursor-pointer"
+                      className="flex items-center gap-3 p-3 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 cursor-pointer"
                       onClick={() => setExportOptions(o => ({ ...o, includeDrawings: !o.includeDrawings }))}
                     >
                       <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
@@ -801,12 +800,12 @@ export const AdvancedReportGenerator: React.FC<{
                         {exportOptions.includeDrawings && <Check className="w-3 h-3 text-white" />}
                       </div>
                       <div className="flex-1">
-                        <span className="text-sm text-zinc-300">Include drawings</span>
-                        <p className="text-xs text-zinc-400">Section details and reinforcement layout</p>
+                        <span className="text-sm text-zinc-600 dark:text-zinc-300">Include drawings</span>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400">Section details and reinforcement layout</p>
                       </div>
                     </label>
                     <label
-                      className="flex items-center gap-3 p-3 rounded-xl bg-zinc-800/50 cursor-pointer"
+                      className="flex items-center gap-3 p-3 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 cursor-pointer"
                       onClick={() => setExportOptions(o => ({ ...o, digitalSignature: !o.digitalSignature }))}
                     >
                       <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
@@ -815,8 +814,8 @@ export const AdvancedReportGenerator: React.FC<{
                         {exportOptions.digitalSignature && <Check className="w-3 h-3 text-white" />}
                       </div>
                       <div className="flex-1">
-                        <span className="text-sm text-zinc-300">Add digital signature</span>
-                        <p className="text-xs text-zinc-400">Sign with your credentials</p>
+                        <span className="text-sm text-zinc-600 dark:text-zinc-300">Add digital signature</span>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400">Sign with your credentials</p>
                       </div>
                     </label>
                   </div>
@@ -832,7 +831,7 @@ export const AdvancedReportGenerator: React.FC<{
             initial={{ width: 0, opacity: 0 }}
             animate={{ width: '50%', opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
-            className="bg-zinc-900 p-6"
+            className="bg-white dark:bg-zinc-900 p-6"
           >
             <ReportPreview sections={sections} style={style} />
           </motion.div>

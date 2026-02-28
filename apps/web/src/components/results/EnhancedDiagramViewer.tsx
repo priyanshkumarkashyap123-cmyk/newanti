@@ -573,8 +573,8 @@ const TypeTab: FC<TypeTabProps> = ({ type, active, onClick }) => {
                 flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm
                 transition-all duration-200 border
                 ${active 
-                    ? 'border-transparent text-white shadow-lg'
-                    : 'border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-600'
+                    ? 'border-transparent text-zinc-900 dark:text-white shadow-lg'
+                    : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-300 dark:hover:border-zinc-600'
                 }
             `}
             style={{
@@ -633,17 +633,17 @@ const Legend: FC<LegendProps> = ({ type, units }) => {
                     className="w-4 h-4 rounded"
                     style={{ background: colors.positive }}
                 />
-                <span className="text-zinc-400">{labels.positive}</span>
+                <span className="text-zinc-500 dark:text-zinc-400">{labels.positive}</span>
             </div>
             <div className="flex items-center gap-2">
                 <div 
                     className="w-4 h-4 rounded"
                     style={{ background: colors.negative }}
                 />
-                <span className="text-zinc-400">{labels.negative}</span>
+                <span className="text-zinc-500 dark:text-zinc-400">{labels.negative}</span>
             </div>
-            <div className="text-zinc-400 border-l border-zinc-700 pl-4">
-                Units: <span className="text-zinc-300">{getUnit()}</span>
+            <div className="text-zinc-500 dark:text-zinc-400 border-l border-zinc-200 dark:border-zinc-700 pl-4">
+                Units: <span className="text-zinc-600 dark:text-zinc-300">{getUnit()}</span>
             </div>
         </div>
     );
@@ -686,9 +686,9 @@ const SectionValuesPanel: FC<SectionValuesPanelProps> = ({
     
     if (x === null || value === null) {
         return (
-            <div className="flex items-center gap-2 px-4 py-3 bg-zinc-800/50 rounded-lg border border-zinc-700">
-                <Crosshair className="w-4 h-4 text-zinc-400" />
-                <span className="text-zinc-400 text-sm">Hover over diagram to see section values</span>
+            <div className="flex items-center gap-2 px-4 py-3 bg-zinc-100/50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
+                <Crosshair className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                <span className="text-zinc-500 dark:text-zinc-400 text-sm">Hover over diagram to see section values</span>
             </div>
         );
     }
@@ -699,19 +699,19 @@ const SectionValuesPanel: FC<SectionValuesPanelProps> = ({
         <motion.div 
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-6 px-4 py-3 bg-zinc-800 rounded-lg border border-zinc-700"
+            className="flex items-center gap-6 px-4 py-3 bg-zinc-100 dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700"
         >
             <div className="flex items-center gap-2">
                 <Target className="w-4 h-4" style={{ color: colors.stroke }} />
-                <span className="text-zinc-400 text-sm">Section at</span>
-                <span className="font-mono font-bold text-white">x = {formatValue(x, 2)} m</span>
-                <span className="text-zinc-400 text-sm">({(ratio * 100).toFixed(1)}%)</span>
+                <span className="text-zinc-500 dark:text-zinc-400 text-sm">Section at</span>
+                <span className="font-mono font-bold text-zinc-900 dark:text-white">x = {formatValue(x, 2)} m</span>
+                <span className="text-zinc-500 dark:text-zinc-400 text-sm">({(ratio * 100).toFixed(1)}%)</span>
             </div>
             
-            <div className="h-6 w-px bg-zinc-700" />
+            <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-700" />
             
             <div className="flex items-center gap-2">
-                <span className="text-zinc-400 text-sm">{colors.label}:</span>
+                <span className="text-zinc-500 dark:text-zinc-400 text-sm">{colors.label}:</span>
                 <span 
                     className="font-mono font-bold text-lg"
                     style={{ color: value >= 0 ? colors.positive : colors.negative }}
@@ -778,38 +778,38 @@ export const EnhancedDiagramViewer: FC<EnhancedDiagramViewerProps> = ({
             ref={containerRef}
             layout
             className={`
-                bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden
+                bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden
                 ${isFullscreen ? 'fixed inset-4 z-50' : ''}
             `}
         >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-zinc-800/50 border-b border-zinc-800">
+            <div className="flex items-center justify-between px-4 py-3 bg-zinc-100/50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-800">
                 <div className="flex items-center gap-4">
-                    <h3 className="font-semibold text-white flex items-center gap-2">
+                    <h3 className="font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
                         <BarChart2 className="w-5 h-5" style={{ color: colors.stroke }} />
                         Force Diagram Analysis
                     </h3>
-                    <span className="text-zinc-400 text-sm">Member: {memberId}</span>
+                    <span className="text-zinc-500 dark:text-zinc-400 text-sm">Member: {memberId}</span>
                 </div>
                 
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => setIsFullscreen(!isFullscreen)}
-                        className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors"
+                        className="p-2 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
                     >
                         <Maximize2 className="w-4 h-4" />
                     </button>
-                    <button aria-label="Download" title="Download" className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors">
+                    <button aria-label="Download" title="Download" className="p-2 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors">
                         <Download className="w-4 h-4" />
                     </button>
-                    <button aria-label="Copy" title="Copy" className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors">
+                    <button aria-label="Copy" title="Copy" className="p-2 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors">
                         <Copy className="w-4 h-4" />
                     </button>
                 </div>
             </div>
             
             {/* Type Selector */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
                 <div className="flex items-center gap-2">
                     {(['SFD', 'BMD', 'AFD', 'DEFLECTION'] as DiagramType[]).map(type => (
                         <TypeTab
@@ -826,28 +826,28 @@ export const EnhancedDiagramViewer: FC<EnhancedDiagramViewerProps> = ({
             
             {/* Stats Bar */}
             {stats && (
-                <div className="flex items-center gap-6 px-4 py-2 bg-zinc-800/30 border-b border-zinc-800 text-sm">
+                <div className="flex items-center gap-6 px-4 py-2 bg-zinc-100/30 dark:bg-zinc-800/30 border-b border-zinc-200 dark:border-zinc-800 text-sm">
                     <div className="flex items-center gap-2">
-                        <span className="text-zinc-400">Max:</span>
+                        <span className="text-zinc-500 dark:text-zinc-400">Max:</span>
                         <span className="font-mono font-bold" style={{ color: colors.positive }}>
                             {formatValue(stats.max, 2)}
                         </span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-zinc-400">Min:</span>
+                        <span className="text-zinc-500 dark:text-zinc-400">Min:</span>
                         <span className="font-mono font-bold" style={{ color: colors.negative }}>
                             {formatValue(stats.min, 2)}
                         </span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-zinc-400">|Max|:</span>
-                        <span className="font-mono font-bold text-white">
+                        <span className="text-zinc-500 dark:text-zinc-400">|Max|:</span>
+                        <span className="font-mono font-bold text-zinc-900 dark:text-white">
                             {formatValue(stats.maxAbs, 2)}
                         </span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-zinc-400">Length:</span>
-                        <span className="font-mono text-white">
+                        <span className="text-zinc-500 dark:text-zinc-400">Length:</span>
+                        <span className="font-mono text-zinc-900 dark:text-white">
                             {formatValue(memberLength, 2)} {units.length}
                         </span>
                     </div>
@@ -856,7 +856,7 @@ export const EnhancedDiagramViewer: FC<EnhancedDiagramViewerProps> = ({
             
             {/* Diagram Canvas */}
             <div className="p-4">
-                <div className="bg-zinc-950 rounded-lg overflow-hidden border border-zinc-800">
+                <div className="bg-white dark:bg-zinc-950 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800">
                     <DiagramCanvas
                         data={data}
                         type={activeType}

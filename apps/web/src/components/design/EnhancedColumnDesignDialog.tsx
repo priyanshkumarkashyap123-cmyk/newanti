@@ -13,7 +13,6 @@
  * @version 3.0.0
  */
 
-'use client';
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
@@ -534,7 +533,7 @@ export function EnhancedColumnDesignDialog({
                 className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-colors ${
                   activeTab === tab.id
                     ? 'text-blue-400 border-b-2 border-blue-400 bg-blue-500/5'
-                    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-white hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50'
+                    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50'
                 }`}
               >
                 {tab.icon}
@@ -875,7 +874,7 @@ export function EnhancedColumnDesignDialog({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-white dark:bg-zinc-900/50">
+          <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
             <Button
               variant="outline"
               onClick={() => {

@@ -926,16 +926,16 @@ const CollaborationHub: React.FC = () => {
                   )}
 
                   <div className="flex gap-3 mt-4">
-                    <button className="text-sm text-gray-600 dark:text-gray-400 hover:text-zinc-900 dark:hover:text-zinc-900 dark:hover:text-white transition-colors">
+                    <button className="text-sm text-gray-600 dark:text-gray-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
                       ↩️ Reply
                     </button>
                     <button
                       onClick={() => handleResolveComment(comment.id)}
-                      className="text-sm text-gray-600 dark:text-gray-400 hover:text-zinc-900 dark:hover:text-zinc-900 dark:hover:text-white transition-colors"
+                      className="text-sm text-gray-600 dark:text-gray-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
                     >
                       ✅ Resolve
                     </button>
-                    <button className="text-sm text-gray-600 dark:text-gray-400 hover:text-zinc-900 dark:hover:text-zinc-900 dark:hover:text-white transition-colors">
+                    <button className="text-sm text-gray-600 dark:text-gray-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
                       📍 Show in Model
                     </button>
                   </div>

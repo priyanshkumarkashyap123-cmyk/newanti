@@ -29,7 +29,7 @@ class RealtimeService {
     private messageQueue: unknown[] = [];
 
     // Config - derive WS URL from Python API URL (http→ws, https→wss)
-    private WS_URL = import.meta.env['VITE_WS_URL'] || API_CONFIG.pythonUrl.replace(/^http/, 'ws') + '/ws';
+    private WS_URL = import.meta.env['VITE_WEBSOCKET_URL'] || API_CONFIG.pythonUrl.replace(/^http/, 'ws') + '/ws';
 
     constructor() {
         this.userId = uuidv4().substring(0, 8); // Random ID for this session

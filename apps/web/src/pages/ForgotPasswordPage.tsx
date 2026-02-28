@@ -42,7 +42,7 @@ export const ForgotPasswordPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-gradient-to-br from-white dark:from-zinc-950 via-zinc-100 dark:via-zinc-900 to-white dark:to-zinc-950 flex items-center justify-center p-4">
             <div className="w-full max-w-md">
                 {/* Logo */}
                 <div className="flex items-center justify-center gap-3 mb-8">
@@ -50,7 +50,7 @@ export const ForgotPasswordPage = () => {
                         ⬡
                     </div>
                     <div>
-                        <span className="text-2xl font-bold text-white">BeamLab</span>
+                        <span className="text-2xl font-bold text-zinc-900 dark:text-white">BeamLab</span>
                         <span className="ml-2 px-2 py-0.5 text-xs bg-blue-500/20 text-blue-400 rounded">ULTIMATE</span>
                     </div>
                 </div>
@@ -65,9 +65,9 @@ export const ForgotPasswordPage = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                 </svg>
                             </div>
-                            <h2 className="text-2xl font-bold text-white">Check Your Email</h2>
+                            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">Check Your Email</h2>
                             <p className="text-zinc-500 dark:text-zinc-400">
-                                We've sent a password reset link to <span className="text-white font-medium">{email}</span>
+                                We've sent a password reset link to <span className="text-zinc-900 dark:text-white font-medium">{email}</span>
                             </p>
                             <p className="text-zinc-500 dark:text-zinc-400 text-sm">
                                 Didn't receive the email? Check your spam folder or{' '}
@@ -80,7 +80,7 @@ export const ForgotPasswordPage = () => {
                             </p>
                             <Link 
                                 to="/sign-in" 
-                                className="block mt-6 py-3 bg-zinc-100 dark:bg-zinc-800 text-white font-medium rounded-lg hover:bg-zinc-700 transition-colors"
+                                className="block mt-6 py-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-medium rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
                             >
                                 Back to Sign In
                             </Link>
@@ -89,7 +89,7 @@ export const ForgotPasswordPage = () => {
                         // Form State
                         <>
                             <div className="text-center mb-6">
-                                <h2 className="text-2xl font-bold text-white mb-2">Forgot Password?</h2>
+                                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">Forgot Password?</h2>
                                 <p className="text-zinc-500 dark:text-zinc-400">
                                     No worries! Enter your email and we'll send you a reset link.
                                 </p>
@@ -110,7 +110,7 @@ export const ForgotPasswordPage = () => {
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg text-white placeholder:text-zinc-500 dark:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 placeholder:text-zinc-500 dark:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="you@example.com"
                                         required
                                     />
