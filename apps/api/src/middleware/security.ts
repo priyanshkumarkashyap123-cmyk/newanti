@@ -89,6 +89,7 @@ export const generalRateLimit: RequestHandler = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: false,
   skip: (req) => req.path === "/health" || req.method === "OPTIONS",
 }) as unknown as RequestHandler;
 
@@ -104,6 +105,7 @@ export const analysisRateLimit: RequestHandler = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: false,
 }) as unknown as RequestHandler;
 
 // Billing API rate limit: 5 requests per minute (prevent abuse)
@@ -117,6 +119,7 @@ export const billingRateLimit: RequestHandler = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: false,
 }) as unknown as RequestHandler;
 
 // CRUD/API data endpoints rate limit: 30 requests per minute
@@ -130,6 +133,7 @@ export const crudRateLimit: RequestHandler = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: false,
 }) as unknown as RequestHandler;
 
 // Auth endpoints rate limit: 5 requests per minute (prevent brute force)
@@ -143,6 +147,7 @@ export const authRateLimit: RequestHandler = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: false,
 }) as unknown as RequestHandler;
 
 // AI API rate limit: 20 requests per minute (prevent abuse)
@@ -156,6 +161,7 @@ export const aiRateLimit: RequestHandler = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: false,
   keyGenerator: (req) => {
     // Rate limit per user if authenticated, otherwise by IP
     // Use safe accessor: Clerk attaches auth as a function on the request

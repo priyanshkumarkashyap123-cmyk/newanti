@@ -1,43 +1,47 @@
 import { build } from 'esbuild';
-import { readdir, stat } from 'fs/promises';
-import { join } from 'path';
-
-// Find all TypeScript files in src directory
-async function findTsFiles(dir) {
-    const files = [];
-    const entries = await readdir(dir, { withFileTypes: true });
-    
-    for (const entry of entries) {
-        const fullPath = join(dir, entry.name);
-        if (entry.isDirectory()) {
-            files.push(...await findTsFiles(fullPath));
-        } else if (entry.name.endsWith('.ts') && !entry.name.endsWith('.d.ts')) {
-            files.push(fullPath);
-        }
-    }
-    
-    return files;
-}
 
 async function main() {
-    console.log('🔨 Building API with esbuild...');
+    console.log('🔨 Building API with esbuild (bundled)...');
     
     try {
-        const entryPoints = await findTsFiles('./src');
-        
-        await build({
-            entryPoints,
-            outdir: './dist',
+        const result = await build({
+            entryPoints: ['./src/index.ts'],
+            outfile: './dist/index.js',
             platform: 'node',
             target: 'node20',
             format: 'esm',
-            bundle: false,
+            bundle: true,
             sourcemap: true,
-            outExtension: { '.js': '.js' },
-            logLevel: 'info'
+            minify: false,
+            // Keep dynamic imports for mongoose (used in health check & shutdown)
+            // and @clerk/express verifyToken (dynamic import in swagger guard)
+            external: [
+                // Native addons — cannot be bundled
+                '@sentry/profiling-node',
+                // Serves static HTML/CSS/JS assets from its package directory at runtime
+                'swagger-ui-express',
+                'swagger-ui-dist',
+                // CommonJS module loaded via createRequire at runtime
+                'razorpay',
+            ],
+            // Banner to handle __dirname / __filename for ESM compatibility
+            banner: {
+                js: `
+import { createRequire as _createRequire } from 'module';
+import { fileURLToPath as _fileURLToPath } from 'url';
+import { dirname as _dirname } from 'path';
+const __filename = _fileURLToPath(import.meta.url);
+const __dirname = _dirname(__filename);
+const require = _createRequire(import.meta.url);
+`.trim(),
+            },
+            logLevel: 'info',
         });
         
         console.log('✅ Build completed successfully!');
+        if (result.warnings.length > 0) {
+            console.warn('⚠️  Warnings:', result.warnings);
+        }
     } catch (error) {
         console.error('❌ Build failed:', error);
         process.exit(1);
