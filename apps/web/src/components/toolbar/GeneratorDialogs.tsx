@@ -481,31 +481,27 @@ export const FrameGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
         onClose();
     };
 
-    if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-            <div className="bg-zinc-900 border border-zinc-700 rounded-xl w-[400px] shadow-2xl">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-700">
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-[400px]">
+                <DialogHeader>
                     <div className="flex items-center gap-2">
                         <Building className="w-5 h-5 text-blue-400" />
-                        <h2 className="text-lg font-semibold text-white">Frame Generator</h2>
+                        <DialogTitle>Frame Generator</DialogTitle>
                     </div>
-                    <button onClick={onClose} className="text-zinc-400 hover:text-white">
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+                    <DialogDescription>Generate portal or multi-story frame structures.</DialogDescription>
+                </DialogHeader>
 
-                <div className="p-4 space-y-4">
+                <div className="space-y-4">
                     <div>
-                        <label className="block text-sm text-zinc-400 mb-2">Frame Type</label>
+                        <Label className="mb-2">Frame Type</Label>
                         <div className="grid grid-cols-2 gap-2">
                             <button
                                 onClick={() => setFrameType('portal')}
                                 className={`px-3 py-2 rounded text-sm
                   ${frameType === 'portal'
                                         ? 'bg-blue-600 text-white'
-                                        : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                                     }`}
                             >
                                 Portal Frame
@@ -515,7 +511,7 @@ export const FrameGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                                 className={`px-3 py-2 rounded text-sm
                   ${frameType === 'multi-story'
                                         ? 'bg-blue-600 text-white'
-                                        : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                                     }`}
                             >
                                 Multi-Story
@@ -525,69 +521,60 @@ export const FrameGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-xs text-zinc-400 mb-1">Bay Width (m)</label>
-                            <input
+                            <Label className="text-xs mb-1">Bay Width (m)</Label>
+                            <Input
                                 type="number"
                                 value={bayWidth}
                                 onChange={(e) => setBayWidth(Number(e.target.value))}
-                                className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-white"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs text-zinc-400 mb-1">Story Height (m)</label>
-                            <input
+                            <Label className="text-xs mb-1">Story Height (m)</Label>
+                            <Input
                                 type="number"
                                 value={storyHeight}
                                 onChange={(e) => setStoryHeight(Number(e.target.value))}
-                                className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-white"
                             />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-xs text-zinc-400 mb-1">Number of Bays</label>
-                            <input
+                            <Label className="text-xs mb-1">Number of Bays</Label>
+                            <Input
                                 type="number"
                                 value={bays}
                                 onChange={(e) => setBays(Number(e.target.value))}
-                                className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-white"
                             />
                         </div>
                         {frameType === 'multi-story' && (
                             <div>
-                                <label className="block text-xs text-zinc-400 mb-1">Number of Stories</label>
-                                <input
+                                <Label className="text-xs mb-1">Number of Stories</Label>
+                                <Input
                                     type="number"
                                     value={stories}
                                     onChange={(e) => setStories(Number(e.target.value))}
-                                    className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-white"
                                 />
                             </div>
                         )}
                     </div>
 
-                    <div className="bg-zinc-800/50 rounded p-3 text-sm">
-                        <div className="text-zinc-400">
-                            Estimated: <span className="text-white">{(bays + 1) * (frameType === 'portal' ? 2 : stories + 1)}</span> nodes,
-                            <span className="text-white ml-1">{(bays + 1) * (frameType === 'portal' ? 1 : stories) + bays * (frameType === 'portal' ? 1 : stories)}</span> members
+                    <div className="bg-zinc-100 dark:bg-zinc-800/50 rounded p-3 text-sm">
+                        <div className="text-zinc-500 dark:text-zinc-400">
+                            Estimated: <span className="text-zinc-900 dark:text-white">{(bays + 1) * (frameType === 'portal' ? 2 : stories + 1)}</span> nodes,
+                            <span className="text-zinc-900 dark:text-white ml-1">{(bays + 1) * (frameType === 'portal' ? 1 : stories) + bays * (frameType === 'portal' ? 1 : stories)}</span> members
                         </div>
                     </div>
                 </div>
 
-                <div className="flex justify-end gap-2 px-4 py-3 border-t border-zinc-700">
-                    <button onClick={onClose} className="px-4 py-2 text-zinc-400 hover:text-white">
-                        Cancel
-                    </button>
-                    <button
-                        onClick={handleGenerate}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500"
-                    >
+                <DialogFooter>
+                    <Button variant="outline" onClick={onClose}>Cancel</Button>
+                    <Button onClick={handleGenerate} className="bg-blue-600 hover:bg-blue-500 text-white">
                         Generate
-                    </button>
-                </div>
-            </div>
-        </div>
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
 
@@ -689,24 +676,20 @@ export const CablePatternDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
         onClose();
     };
 
-    if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-            <div className="bg-zinc-900 border border-zinc-700 rounded-xl w-[400px] shadow-2xl">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-700">
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-[400px]">
+                <DialogHeader>
                     <div className="flex items-center gap-2">
                         <Cable className="w-5 h-5 text-blue-400" />
-                        <h2 className="text-lg font-semibold text-white">Cable Pattern Generator</h2>
+                        <DialogTitle>Cable Pattern Generator</DialogTitle>
                     </div>
-                    <button onClick={onClose} className="text-zinc-400 hover:text-white">
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+                    <DialogDescription>Generate cable-stayed bridge patterns.</DialogDescription>
+                </DialogHeader>
 
-                <div className="p-4 space-y-4">
+                <div className="space-y-4">
                     <div>
-                        <label className="block text-sm text-zinc-400 mb-2">Cable Arrangement</label>
+                        <Label className="mb-2">Cable Arrangement</Label>
                         <div className="grid grid-cols-3 gap-2">
                             {(['fan', 'harp', 'semi-harp'] as CableArrangement[]).map(type => (
                                 <button
@@ -715,7 +698,7 @@ export const CablePatternDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                                     className={`px-3 py-2 rounded text-sm capitalize
                     ${arrangement === type
                                             ? 'bg-blue-600 text-white'
-                                            : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                                            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                                         }`}
                                 >
                                     {type}
@@ -726,49 +709,41 @@ export const CablePatternDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-xs text-zinc-400 mb-1">Tower Height (m)</label>
-                            <input
+                            <Label className="text-xs mb-1">Tower Height (m)</Label>
+                            <Input
                                 type="number"
                                 value={towerHeight}
                                 onChange={(e) => setTowerHeight(Number(e.target.value))}
-                                className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-white"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs text-zinc-400 mb-1">Deck Length (m)</label>
-                            <input
+                            <Label className="text-xs mb-1">Deck Length (m)</Label>
+                            <Input
                                 type="number"
                                 value={deckLength}
                                 onChange={(e) => setDeckLength(Number(e.target.value))}
-                                className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-white"
                             />
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-xs text-zinc-400 mb-1">Cable Spacing (m)</label>
-                        <input
+                        <Label className="text-xs mb-1">Cable Spacing (m)</Label>
+                        <Input
                             type="number"
                             value={cableSpacing}
                             onChange={(e) => setCableSpacing(Number(e.target.value))}
-                            className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-white"
                         />
                     </div>
                 </div>
 
-                <div className="flex justify-end gap-2 px-4 py-3 border-t border-zinc-700">
-                    <button onClick={onClose} className="px-4 py-2 text-zinc-400 hover:text-white">
-                        Cancel
-                    </button>
-                    <button
-                        onClick={handleGenerate}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500"
-                    >
+                <DialogFooter>
+                    <Button variant="outline" onClick={onClose}>Cancel</Button>
+                    <Button onClick={handleGenerate} className="bg-blue-600 hover:bg-blue-500 text-white">
                         Generate
-                    </button>
-                </div>
-            </div>
-        </div>
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
 
