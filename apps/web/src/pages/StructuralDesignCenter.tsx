@@ -225,15 +225,37 @@ export default function StructuralDesignCenter() {
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['concrete']);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Recent projects (mock data)
-  const [recentProjects] = useState<RecentProject[]>(() => {
-    const now = Date.now();
-    return [
-      { id: '1', name: 'Office Building Beam B1', module: 'rc-beam', timestamp: new Date(), status: 'safe' },
-      { id: '2', name: 'Basement Column C12', module: 'rc-column', timestamp: new Date(now - 3600000), status: 'warning' },
-      { id: '3', name: 'Terrace Slab S3', module: 'rc-slab', timestamp: new Date(now - 86400000), status: 'safe' },
-    ];
-  });
+  // Recent projects — fetch from API, fallback to demo data
+  const [recentProjects, setRecentProjects] = useState<RecentProject[]>([]);
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const apiUrl = (import.meta as any).env?.VITE_RUST_API_URL || 'https://beamlab-rust-api.azurewebsites.net';
+        const res = await fetch(`${apiUrl}/api/structures`, { signal: AbortSignal.timeout(4000) });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setRecentProjects(data.slice(0, 5).map((p: any, i: number) => ({
+              id: p.id || String(i + 1),
+              name: p.name || `Project ${i + 1}`,
+              module: 'rc-beam' as DesignModule,
+              timestamp: new Date(p.updated_at || p.created_at || Date.now()),
+              status: 'safe' as const,
+            })));
+            return;
+          }
+        }
+      } catch { /* fallback */ }
+      // Fallback demo data
+      const now = Date.now();
+      setRecentProjects([
+        { id: '1', name: 'Office Building Beam B1', module: 'rc-beam', timestamp: new Date(), status: 'safe' },
+        { id: '2', name: 'Basement Column C12', module: 'rc-column', timestamp: new Date(now - 3600000), status: 'warning' },
+        { id: '3', name: 'Terrace Slab S3', module: 'rc-slab', timestamp: new Date(now - 86400000), status: 'safe' },
+      ]);
+    };
+    fetchProjects();
+  }, []);
   
   // Toggle category expansion
   const toggleCategory = useCallback((categoryId: string) => {

@@ -24,19 +24,9 @@ import init, {
   get_standard_combinations_is800,
   get_standard_combinations_eurocode,
   get_standard_combinations_aisc_lrfd,
+  solve_pushover as wasm_solve_pushover,
+  solve_sparse_system_json as wasm_solve_sparse,
 } from "backend-rust";
-
-// Pushover not yet available in WASM package — stub that returns error
-function wasm_solve_pushover(_input: any): any {
-  return {
-    success: false,
-    error: "Pushover analysis not yet available in WASM build",
-    points: [],
-    ductility: 0,
-    effective_period: 0,
-    hinge_summary: [],
-  };
-}
 
 // ============================================
 // UTILITY: Convert JS Map → plain object
@@ -1497,6 +1487,22 @@ export function getStandardCombinations(
   }
 }
 
+/**
+ * Solve a large sparse system (CG solver for 10k+ DOF problems)
+ */
+export async function solveSparseSystem(input: {
+  rows: number[];
+  cols: number[];
+  values: number[];
+  rhs: number[];
+  n: number;
+}): Promise<{ solution: number[]; iterations: number; residual: number }> {
+  await initSolver();
+  const inputJson = JSON.stringify(input);
+  const resultJson = wasm_solve_sparse(inputJson);
+  return JSON.parse(resultJson);
+}
+
 export const wasmSolver = {
   initialize: initSolver,
   analyze: analyzeStructure,
@@ -1507,6 +1513,8 @@ export const wasmSolver = {
   analyzeResponseSpectrum,
   analyzeUltraFast,
   benchmarkUltraFast,
+  runPushoverAnalysis,
+  solveSparseSystem,
   isSolverReady,
   getSolverInfo,
   createUniformLoad,

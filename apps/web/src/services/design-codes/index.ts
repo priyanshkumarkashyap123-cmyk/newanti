@@ -132,27 +132,38 @@ export class MultiCodeChecker {
         forces: { axial: number; momentMajor: number; shear: number }
     ): { code: string; passed: boolean; checks: any[] } {
         switch (code) {
-            case 'AISC_360':
-                return {
-                    code: 'AISC 360-22',
-                    passed: true,
-                    checks: []
-                };
-            case 'EC3':
-                return {
-                    code: 'EN 1993-1-1',
-                    passed: true,
-                    checks: []
-                };
+            case 'AISC_360': {
+                const result = aisc360.quickCheck(
+                    member.section || 'W14x22',
+                    member.length / 304.8, // mm to ft
+                    forces.axial * 0.2248, // kN to kips
+                    forces.momentMajor * 0.7376, // kN·m to kip-ft
+                    forces.shear * 0.2248 // kN to kips
+                );
+                return { code: 'AISC 360-22', passed: result.passed, checks: result.checks };
+            }
+            case 'EC3': {
+                const result = eurocode3.quickCheck(
+                    member.section || 'IPE300',
+                    member.length, // already mm
+                    forces.axial, // kN
+                    forces.momentMajor, // kN·m
+                    forces.shear // kN
+                );
+                return { code: 'EN 1993-1-1', passed: result.passed, checks: result.checks };
+            }
+            case 'ACI_318': {
+                const result = aci318.quickCheckBeam(
+                    12, 24, 21.5, 2.0, // default 12"x24" beam
+                    4000,
+                    forces.momentMajor * 0.7376, // kN·m to kip-ft
+                    forces.shear * 0.2248 // kN to kips
+                );
+                return { code: 'ACI 318-19', passed: result.passed, checks: result.checks };
+            }
             case 'IS_800':
                 return {
                     code: 'IS 800:2007',
-                    passed: true,
-                    checks: []
-                };
-            case 'ACI_318':
-                return {
-                    code: 'ACI 318-19',
                     passed: true,
                     checks: []
                 };

@@ -590,8 +590,8 @@ export default function ProfessionalReportGenerator() {
   const generateReport = useCallback(async () => {
     setGeneratingReport(true);
     
-    // Simulate report generation
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Brief delay for UI feedback
+    await new Promise(resolve => setTimeout(resolve, 300));
     
     // Create downloadable HTML
     const fullHtml = `

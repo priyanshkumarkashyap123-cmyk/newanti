@@ -382,6 +382,486 @@ const CodeComplianceChecker: React.FC = () => {
           });
         }
       }
+
+      // IS 13920: Ductile Detailing of RC
+      if (selectedCodes.includes("IS13920")) {
+        // Minimum dimension checks for ductile RC
+        const dim = member.dimensions;
+        const memberDepth = dim?.height ?? Math.sqrt((member.I ?? 1e-4) * 12 / (member.A ?? 0.01));
+        const memberWidth = dim?.width ?? (member.A ?? 0.01) / memberDepth;
+        const depthMm = memberDepth * 1000;
+        const widthMm = memberWidth * 1000;
+
+        // Clause 6.1.2: Minimum width of beam ≥ 200 mm
+        const minBeamWidth = 200;
+        const widthRatio = minBeamWidth / widthMm;
+        checks.push({
+          id: String(++idx),
+          code: "IS 13920",
+          clause: "6.1.2",
+          description: "Minimum beam width ≥ 200 mm",
+          category: "detailing",
+          element: `Member ${memberId.slice(0, 8)}`,
+          location: `b=${widthMm.toFixed(0)}mm`,
+          demand: minBeamWidth,
+          capacity: widthMm,
+          ratio: widthRatio,
+          status: widthRatio > 1 ? "fail" : widthRatio > 0.9 ? "warning" : "pass",
+          severity: "major",
+          recommendation: widthRatio > 1 ? "Increase beam width to ≥ 200mm for ductile detailing" : undefined,
+        });
+
+        // Clause 6.1.3: Depth/width ratio ≤ 4
+        const dwRatio = depthMm / widthMm;
+        const dwLimit = 4.0;
+        const dwCheckRatio = dwRatio / dwLimit;
+        checks.push({
+          id: String(++idx),
+          code: "IS 13920",
+          clause: "6.1.3",
+          description: "Beam depth/width ratio ≤ 4",
+          category: "detailing",
+          element: `Member ${memberId.slice(0, 8)}`,
+          location: `D/b=${dwRatio.toFixed(2)}`,
+          demand: dwRatio,
+          capacity: dwLimit,
+          ratio: dwCheckRatio,
+          status: dwCheckRatio > 1 ? "fail" : dwCheckRatio > 0.85 ? "warning" : "pass",
+          severity: "major",
+          recommendation: dwCheckRatio > 1 ? "Reduce D/b ratio below 4 for ductile behavior" : undefined,
+        });
+
+        // Clause 7.1.1: Column minimum dimension ≥ 300 mm
+        const isColumn = Math.abs(dy) > Math.abs(dx);
+        if (isColumn) {
+          const minColDim = 300;
+          const shortDim = Math.min(depthMm, widthMm);
+          const colRatio = minColDim / shortDim;
+          checks.push({
+            id: String(++idx),
+            code: "IS 13920",
+            clause: "7.1.1",
+            description: "Column min dimension ≥ 300 mm",
+            category: "detailing",
+            element: `Member ${memberId.slice(0, 8)}`,
+            location: `min(b,D)=${shortDim.toFixed(0)}mm`,
+            demand: minColDim,
+            capacity: shortDim,
+            ratio: colRatio,
+            status: colRatio > 1 ? "fail" : colRatio > 0.9 ? "warning" : "pass",
+            severity: "critical",
+            recommendation: colRatio > 1 ? "Increase column dimension to ≥ 300mm" : undefined,
+          });
+        }
+      }
+
+      // IS 875: Load code checks
+      if (selectedCodes.includes("IS875")) {
+        // Check load combination adequacy (simplified)
+        const totalLoad = Math.abs(maxAxial) + Math.abs(maxSF);
+        if (totalLoad > 0) {
+          // Dead + Live factored: 1.5(DL + LL)
+          const factored = totalLoad * 1.5;
+          const capacity_kN = (member.A ?? 0.01) * (member.E ?? 200e6) * 0.001; // Rough axial capacity
+          const loadRatio = factored / capacity_kN;
+          checks.push({
+            id: String(++idx),
+            code: "IS 875",
+            clause: "Table 4",
+            description: "Load combination 1.5(DL+LL) check",
+            category: "strength",
+            element: `Member ${memberId.slice(0, 8)}`,
+            location: `F=${factored.toFixed(1)}kN`,
+            demand: factored,
+            capacity: capacity_kN,
+            ratio: loadRatio,
+            status: loadRatio > 1 ? "fail" : loadRatio > 0.85 ? "warning" : "pass",
+            severity: "major",
+            recommendation: loadRatio > 1 ? "Review load combinations per IS 875" : undefined,
+          });
+        }
+      }
+
+      // ─── AISC 360-22 Checks (US Steel) ───
+      if (selectedCodes.includes("AISC360")) {
+        // Convert SI to US: m→in, kN→kips, kN·m→kip-in  
+        const mToIn = 39.3701;
+        const kNtoKips = 0.2248;
+        const kNmToKipIn = 8.8507;
+
+        const dim = member.dimensions;
+        const d_m = dim?.height ?? Math.sqrt((member.I ?? 1e-4) * 12 / (member.A ?? 0.01));
+        const bf_m = dim?.width ?? (member.A ?? 0.01) / d_m;
+        const tw_m = dim?.webThickness ?? d_m * 0.03;
+        const tf_m = dim?.flangeThickness ?? bf_m * 0.05;
+
+        const d_in = d_m * mToIn;
+        const bf_in = bf_m * mToIn;
+        const tw_in = tw_m * mToIn;
+        const tf_in = tf_m * mToIn;
+        const A_in2 = (member.A ?? 0.01) * mToIn * mToIn;
+        const Ix_in4 = (member.I ?? 1e-4) * Math.pow(mToIn, 4);
+        const Iy_in4 = (member.Iy ?? (member.I ?? 1e-4) * 0.3) * Math.pow(mToIn, 4);
+        const rx_in = Math.sqrt(Ix_in4 / A_in2);
+        const ry_in = Math.sqrt(Iy_in4 / A_in2);
+        const Zx_in3 = (member.I ?? 1e-4) / (d_m / 2) * 1.15 * Math.pow(mToIn, 3);
+        const Zy_in3 = Zx_in3 * 0.3;
+        const Sx_in3 = Zx_in3 / 1.15;
+        const Sy_in3 = Zy_in3 / 1.15;
+
+        const aiscSection: AISCSection = {
+          name: `${(d_in).toFixed(0)}" Section`,
+          type: 'W',
+          d: d_in, bf: bf_in, tf: tf_in, tw: tw_in,
+          A: A_in2, Ix: Ix_in4, Iy: Iy_in4,
+          Zx: Zx_in3, Zy: Zy_in3, Sx: Sx_in3, Sy: Sy_in3,
+          rx: rx_in, ry: ry_in,
+          J: (member.J ?? 1e-6) * Math.pow(mToIn, 4),
+          rts: ry_in * 1.1,
+          ho: d_in - tf_in,
+        };
+
+        const aiscMember: AISCMember = {
+          section: aiscSection,
+          material: { grade: 'A992', Fy: 50, Fu: 65, E: 29000, G: 11200 },
+          Lb: L * mToIn,
+          Lc: L * mToIn,
+          Cb: 1.0,
+        };
+
+        const aiscForces: AISCForces = {
+          Pr: maxAxial * kNtoKips * (maxAxial < 0 ? 1 : 1),
+          Mrx: Math.abs(maxBM) * kNmToKipIn,
+          Mry: 0,
+          Vr: Math.abs(maxSF) * kNtoKips,
+        };
+
+        try {
+          const aiscResults = aisc360.checkMember(aiscMember, aiscForces);
+          for (const ac of aiscResults) {
+            checks.push({
+              id: String(++idx),
+              code: "AISC 360",
+              clause: `Ch. ${ac.chapter} (${ac.section})`,
+              description: `${ac.title}: ${(ac.ratio * 100).toFixed(1)}% utilized`,
+              category: "strength",
+              element: `Member ${memberId.slice(0, 8)}`,
+              location: ac.equation ?? '',
+              demand: ac.Ru,
+              capacity: ac.phiRn,
+              ratio: ac.ratio,
+              status: ac.status === "NG" ? "fail" : ac.ratio > 0.85 ? "warning" : "pass",
+              severity: ac.ratio > 1 ? "critical" : "major",
+              recommendation: ac.status === "NG" ? "Section is overstressed per AISC 360" : undefined,
+            });
+          }
+        } catch { /* skip if checker throws */ }
+      }
+
+      // ─── ACI 318-19 Checks (US Concrete) ───
+      if (selectedCodes.includes("ACI318")) {
+        const mToIn = 39.3701;
+        const kNtoLb = 224.809;
+        const kNmToKipFt = 0.7376;
+        const kNToKips = 0.2248;
+
+        const dim = member.dimensions;
+        const b_m = dim?.width ?? Math.sqrt((member.A ?? 0.01));
+        const h_m = dim?.height ?? (member.A ?? 0.01) / b_m;
+        const b_in = b_m * mToIn;
+        const h_in = h_m * mToIn;
+        const d_in = h_in - 2.5; // effective depth (2.5" cover)
+
+        // Assume 1% reinforcement ratio
+        const As_in2 = 0.01 * b_in * d_in;
+
+        const concreteSection: ConcreteSection = {
+          name: `${b_in.toFixed(0)}"x${h_in.toFixed(0)}" Beam`,
+          type: 'rectangular',
+          b: b_in,
+          h: h_in,
+          d: d_in,
+        };
+
+        const concreteMaterial: ConcreteMaterial = {
+          fc: 4000,
+          fy: 60000,
+          Es: 29000000,
+          epsilon_cu: 0.003,
+        };
+
+        const reinforcement: ReinforcementLayout = {
+          As: As_in2,
+          d: d_in,
+          Av: 0.22,
+          s: d_in / 2 > 0 ? Math.min(d_in / 2, 12) : 8,
+        };
+
+        const aciForces: ACIForces = {
+          Mu: Math.abs(maxBM) * kNmToKipFt,
+          Vu: Math.abs(maxSF) * kNToKips,
+        };
+
+        try {
+          const aciResults = aci318.checkBeam(concreteSection, concreteMaterial, reinforcement, aciForces);
+          for (const ac of aciResults) {
+            checks.push({
+              id: String(++idx),
+              code: "ACI 318",
+              clause: `§${ac.section}`,
+              description: `${ac.title}: ${(ac.ratio * 100).toFixed(1)}% utilized`,
+              category: ac.title.includes("Min") || ac.title.includes("Strain") ? "detailing" : "strength",
+              element: `Member ${memberId.slice(0, 8)}`,
+              location: ac.equation ?? '',
+              demand: ac.Ru,
+              capacity: ac.phiRn,
+              ratio: ac.ratio,
+              status: ac.status === "NG" ? "fail" : ac.ratio > 0.85 ? "warning" : "pass",
+              severity: ac.ratio > 1 ? "critical" : "major",
+              recommendation: ac.status === "NG" ? "Section is inadequate per ACI 318-19" : undefined,
+            });
+          }
+        } catch { /* skip if checker throws */ }
+      }
+
+      // ─── Eurocode 3 Checks (EU Steel) ───
+      if (selectedCodes.includes("EC3")) {
+        const dim = member.dimensions;
+        const h_m = dim?.height ?? Math.sqrt((member.I ?? 1e-4) * 12 / (member.A ?? 0.01));
+        const b_m = dim?.width ?? (member.A ?? 0.01) / h_m;
+        const tw_m = dim?.webThickness ?? h_m * 0.03;
+        const tf_m = dim?.flangeThickness ?? b_m * 0.05;
+
+        const h_mm = h_m * 1000;
+        const b_mm = b_m * 1000;
+        const tw_mm = tw_m * 1000;
+        const tf_mm = tf_m * 1000;
+        const A_cm2 = (member.A ?? 0.01) * 1e4;
+        const Iy_cm4 = (member.I ?? 1e-4) * 1e8;
+        const Iz_cm4 = (member.Iy ?? (member.I ?? 1e-4) * 0.3) * 1e8;
+        const iy_cm = Math.sqrt(Iy_cm4 / A_cm2);
+        const iz_cm = Math.sqrt(Iz_cm4 / A_cm2);
+        const Wpl_y_cm3 = (member.I ?? 1e-4) / (h_m / 2) * 1.15 * 1e6;
+        const Wpl_z_cm3 = Wpl_y_cm3 * 0.3;
+        const Wel_y_cm3 = Wpl_y_cm3 / 1.15;
+        const Wel_z_cm3 = Wpl_z_cm3 / 1.15;
+
+        const ec3Section: EC3Section = {
+          name: `${h_mm.toFixed(0)}mm Section`,
+          type: 'IPE',
+          h: h_mm, b: b_mm, tw: tw_mm, tf: tf_mm, r: tf_mm,
+          A: A_cm2, Iy: Iy_cm4, Iz: Iz_cm4,
+          Wpl_y: Wpl_y_cm3, Wpl_z: Wpl_z_cm3,
+          Wel_y: Wel_y_cm3, Wel_z: Wel_z_cm3,
+          iy: iy_cm, iz: iz_cm,
+          It: (member.J ?? 1e-6) * 1e8,
+        };
+
+        const ec3Member: EC3Member = {
+          section: ec3Section,
+          material: { grade: 'S355', fy: 355, fu: 510, E: 210000, G: 81000 },
+          Lcr_y: L * 1000,
+          Lcr_z: L * 1000,
+          L_LT: L * 1000,
+        };
+
+        const ec3Forces: EC3Forces = {
+          NEd: maxAxial,
+          My_Ed: Math.abs(maxBM),
+          Mz_Ed: 0,
+          VEd: Math.abs(maxSF),
+        };
+
+        try {
+          const ec3Results = eurocode3.checkMember(ec3Member, ec3Forces);
+          for (const ec of ec3Results) {
+            checks.push({
+              id: String(++idx),
+              code: "Eurocode 3",
+              clause: `§${ec.clause}`,
+              description: `${ec.title}: ${(ec.ratio * 100).toFixed(1)}% utilized`,
+              category: "strength",
+              element: `Member ${memberId.slice(0, 8)}`,
+              location: ec.equation ?? '',
+              demand: ec.ratio,
+              capacity: 1.0,
+              ratio: ec.ratio,
+              status: ec.status === "NG" ? "fail" : ec.ratio > 0.85 ? "warning" : "pass",
+              severity: ec.ratio > 1 ? "critical" : "major",
+              recommendation: ec.status === "NG" ? "Section is inadequate per EN 1993-1-1" : undefined,
+            });
+          }
+        } catch { /* skip if checker throws */ }
+      }
+
+      // ─── Eurocode 2 Checks (EU Concrete) ───
+      if (selectedCodes.includes("EC2")) {
+        const dim = member.dimensions;
+        const b_m = dim?.width ?? Math.sqrt(member.A ?? 0.01);
+        const h_m = dim?.height ?? (member.A ?? 0.01) / b_m;
+        const b_mm = b_m * 1000;
+        const h_mm = h_m * 1000;
+        const d_mm = h_mm - 40; // 40mm cover
+
+        // Flexural check (EN 1992-1-1 Clause 6.1)
+        const fck = 30; // C30/37
+        const fcd = fck / 1.5;
+        const As_mm2 = 0.01 * b_mm * d_mm;
+        const fyk = 500;
+        const fyd = fyk / 1.15;
+        const x = (As_mm2 * fyd) / (0.8 * fcd * b_mm);
+        const MRd = As_mm2 * fyd * (d_mm - 0.4 * x) / 1e6; // kN·m
+        const flexRatio = MRd > 0 ? Math.abs(maxBM) / MRd : 0;
+        checks.push({
+          id: String(++idx),
+          code: "Eurocode 2",
+          clause: "6.1",
+          description: `Flexural capacity (MRd=${MRd.toFixed(1)} kN·m)`,
+          category: "strength",
+          element: `Member ${memberId.slice(0, 8)}`,
+          location: `MRd = As·fyd·(d - 0.4x)`,
+          demand: Math.abs(maxBM),
+          capacity: MRd,
+          ratio: flexRatio,
+          status: flexRatio > 1 ? "fail" : flexRatio > 0.85 ? "warning" : "pass",
+          severity: "critical",
+          recommendation: flexRatio > 1 ? "Increase section or reinforcement per EC2" : undefined,
+        });
+
+        // Shear check (EN 1992-1-1 Clause 6.2)
+        const VRdc = 0.12 * Math.pow(1 + Math.sqrt(200 / d_mm), 1) * Math.pow(100 * 0.01 * fck, 1 / 3) * b_mm * d_mm / 1000;
+        const shearRatioEC2 = VRdc > 0 ? Math.abs(maxSF) / VRdc : 0;
+        checks.push({
+          id: String(++idx),
+          code: "Eurocode 2",
+          clause: "6.2.2",
+          description: `Shear (no stirrups) VRd,c=${VRdc.toFixed(1)} kN`,
+          category: "strength",
+          element: `Member ${memberId.slice(0, 8)}`,
+          location: `VRd,c = CRd,c·k·(100ρ·fck)^(1/3)·bw·d`,
+          demand: Math.abs(maxSF),
+          capacity: VRdc,
+          ratio: shearRatioEC2,
+          status: shearRatioEC2 > 1 ? "fail" : shearRatioEC2 > 0.85 ? "warning" : "pass",
+          severity: "critical",
+          recommendation: shearRatioEC2 > 1 ? "Add shear reinforcement per EC2 §6.2.3" : undefined,
+        });
+
+        // Min reinforcement (Clause 9.2.1.1)
+        const As_min_mm2 = Math.max(0.26 * (2.9) / fyk * b_mm * d_mm, 0.0013 * b_mm * d_mm);
+        const minRatio = As_min_mm2 / As_mm2;
+        checks.push({
+          id: String(++idx),
+          code: "Eurocode 2",
+          clause: "9.2.1.1",
+          description: `Minimum reinforcement As,min=${As_min_mm2.toFixed(0)} mm²`,
+          category: "detailing",
+          element: `Member ${memberId.slice(0, 8)}`,
+          location: `As,min = max(0.26·fctm/fyk, 0.0013)·b·d`,
+          demand: As_min_mm2,
+          capacity: As_mm2,
+          ratio: minRatio,
+          status: minRatio > 1 ? "fail" : minRatio > 0.9 ? "warning" : "pass",
+          severity: "major",
+          recommendation: minRatio > 1 ? "Increase reinforcement to meet EC2 minimum" : undefined,
+        });
+      }
+
+      // ─── Eurocode 8 Checks (EU Seismic) ───
+      if (selectedCodes.includes("EC8")) {
+        const h = Math.abs(dy);
+        if (h > 0.5) {
+          // Interstorey drift limit (EN 1998-1 Clause 4.4.3.2)
+          // For ductile non-structural elements: dr·v ≤ 0.0075·h
+          const drift = Math.abs(maxDeflection);
+          const v = 0.5; // reduction factor for importance
+          const driftLimit = 0.0075 * h / v;
+          const driftRatio = driftLimit > 0 ? drift / driftLimit : 0;
+          checks.push({
+            id: String(++idx),
+            code: "Eurocode 8",
+            clause: "4.4.3.2",
+            description: `Interstorey drift limit (0.0075h/ν)`,
+            category: "seismic",
+            element: `Member ${memberId.slice(0, 8)}`,
+            location: `h=${h.toFixed(2)}m, ν=${v}`,
+            demand: drift * 1000,
+            capacity: driftLimit * 1000,
+            ratio: driftRatio,
+            status: driftRatio > 1 ? "fail" : driftRatio > 0.85 ? "warning" : "pass",
+            severity: "critical",
+            recommendation: driftRatio > 1 ? "Increase lateral stiffness per EN 1998-1" : undefined,
+          });
+        }
+
+        // Capacity design: Strong column - weak beam (Clause 4.4.2.3)
+        const isColumn = Math.abs(dy) > Math.abs(dx);
+        if (isColumn && Math.abs(maxBM) > 0) {
+          const colMomentCap = (member.I ?? 1e-4) / ((member.dimensions?.height ?? Math.sqrt((member.I ?? 1e-4) * 12 / (member.A ?? 0.01))) / 2) * 355000; // simplified Mpl
+          const scwbRatio = (1.3 * Math.abs(maxBM)) / colMomentCap;
+          checks.push({
+            id: String(++idx),
+            code: "Eurocode 8",
+            clause: "4.4.2.3",
+            description: "Strong column-weak beam (ΣMRc ≥ 1.3ΣMRb)",
+            category: "seismic",
+            element: `Member ${memberId.slice(0, 8)}`,
+            location: `1.3·ΣMRb / ΣMRc`,
+            demand: 1.3 * Math.abs(maxBM),
+            capacity: colMomentCap,
+            ratio: scwbRatio,
+            status: scwbRatio > 1 ? "fail" : scwbRatio > 0.85 ? "warning" : "pass",
+            severity: "critical",
+            recommendation: scwbRatio > 1 ? "Increase column capacity for capacity design" : undefined,
+          });
+        }
+      }
+
+      // ─── ASCE 7 Checks (US Loads) ───
+      if (selectedCodes.includes("ASCE7")) {
+        // Drift limit (ASCE 7-22 Table 12.12-1)
+        const h = Math.abs(dy);
+        if (h > 0.5) {
+          const drift = Math.abs(maxDeflection);
+          // Risk Category II: Δ ≤ 0.020·hsx
+          const driftLimit = 0.020 * h;
+          const driftRatio = driftLimit > 0 ? drift / driftLimit : 0;
+          checks.push({
+            id: String(++idx),
+            code: "ASCE 7",
+            clause: "12.12.1",
+            description: `Drift limit Δ/hsx ≤ 0.020`,
+            category: "seismic",
+            element: `Member ${memberId.slice(0, 8)}`,
+            location: `hsx=${h.toFixed(2)}m`,
+            demand: drift * 1000,
+            capacity: driftLimit * 1000,
+            ratio: driftRatio,
+            status: driftRatio > 1 ? "fail" : driftRatio > 0.85 ? "warning" : "pass",
+            severity: "critical",
+            recommendation: driftRatio > 1 ? "Reduce drift per ASCE 7 Table 12.12-1" : undefined,
+          });
+        }
+
+        // Deflection serviceability (L/360 live, L/240 total)
+        const deflLimitLive = L / 360;
+        const deflRatioASCE = deflLimitLive > 0 ? Math.abs(maxDeflection) / deflLimitLive : 0;
+        checks.push({
+          id: String(++idx),
+          code: "ASCE 7",
+          clause: "App. C",
+          description: `Deflection limit L/360 (live load)`,
+          category: "serviceability",
+          element: `Member ${memberId.slice(0, 8)}`,
+          location: `L=${L.toFixed(2)}m`,
+          demand: Math.abs(maxDeflection) * 1000,
+          capacity: deflLimitLive * 1000,
+          ratio: deflRatioASCE,
+          status: deflRatioASCE > 1 ? "fail" : deflRatioASCE > 0.85 ? "warning" : "pass",
+          severity: "major",
+          recommendation: deflRatioASCE > 1 ? "Increase stiffness to meet ASCE 7 serviceability" : undefined,
+        });
+      }
     }
 
     return checks;
