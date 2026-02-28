@@ -10,7 +10,8 @@ import { FC, useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
     Zap, Triangle, ArrowDown, Plus, Trash2, Play, RotateCcw,
-    ChevronDown, ArrowRight, Box, Settings, Download, Share2
+    ChevronDown, ArrowRight, Box, Settings, Download, Share2,
+    Loader2, AlertTriangle
 } from 'lucide-react';
 
 // ============================================
@@ -434,6 +435,7 @@ export const BeamCalculator: FC = () => {
     const [model, setModel] = useState<BeamModel>(DEFAULT_BEAM);
     const [results, setResults] = useState<AnalysisResults | null>(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     
     // Use ref to track if we're already analyzing to prevent loops
     const isAnalyzingRef = useRef(false);
@@ -442,11 +444,18 @@ export const BeamCalculator: FC = () => {
         if (isAnalyzingRef.current) return; // Prevent re-entry
         isAnalyzingRef.current = true;
         setIsAnalyzing(true);
+        setError(null);
         setTimeout(() => {
-            const res = solveBeam(model);
-            setResults(res);
-            setIsAnalyzing(false);
-            isAnalyzingRef.current = false;
+            try {
+                const res = solveBeam(model);
+                setResults(res);
+            } catch (e) {
+                setError(e instanceof Error ? e.message : 'Analysis failed. Please check your inputs.');
+                setResults(null);
+            } finally {
+                setIsAnalyzing(false);
+                isAnalyzingRef.current = false;
+            }
         }, 300);
     }, [model]);
 
@@ -550,10 +559,19 @@ export const BeamCalculator: FC = () => {
                             <button
                                 onClick={runAnalysis}
                                 disabled={isAnalyzing}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                                className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                <Play className="w-4 h-4" />
-                                {isAnalyzing ? 'Calculating...' : 'Calculate'}
+                                {isAnalyzing ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Calculating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Play className="w-4 h-4" />
+                                        Calculate
+                                    </>
+                                )}
                             </button>
                             <button
                                 onClick={resetModel}
@@ -610,6 +628,14 @@ export const BeamCalculator: FC = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Error Display */}
+                {error && (
+                    <div className="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-3 text-red-400">
+                        <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+                        <span className="text-sm">{error}</span>
+                    </div>
+                )}
 
                 {/* Result Charts */}
                 {results && (

@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { Loader2, Play, AlertTriangle } from 'lucide-react';
 import { useModelStore } from '../store/model';
 import { 
     performSteelDesignCheck, 
@@ -276,12 +277,27 @@ export function SteelDesignPage() {
                         color: '#fff',
                         border: 'none',
                         borderRadius: '4px',
-                        cursor: analyzing ? 'wait' : 'pointer',
+                        cursor: analyzing ? 'not-allowed' : 'pointer',
                         fontSize: '16px',
-                        fontWeight: 'bold'
+                        fontWeight: 'bold',
+                        opacity: (analyzing || members.length === 0) ? 0.6 : 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
                     }}
                 >
-                    {analyzing ? '🔄 Running Design Checks...' : '▶️ Run Steel Design'}
+                    {analyzing ? (
+                        <>
+                            <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
+                            Running Design Checks...
+                        </>
+                    ) : (
+                        <>
+                            <Play size={18} />
+                            Run Steel Design
+                        </>
+                    )}
                 </button>
             </div>
 
@@ -289,11 +305,17 @@ export function SteelDesignPage() {
             {error && (
                 <div style={{ 
                     padding: '15px', 
-                    background: '#d32f2f', 
+                    background: '#d32f2f22',
+                    border: '1px solid #d32f2f',
                     borderRadius: '8px', 
-                    marginBottom: '20px' 
+                    marginBottom: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    color: '#ff6b6b',
                 }}>
-                    <strong>Error:</strong> {error}
+                    <AlertTriangle size={18} />
+                    <span><strong>Error:</strong> {error}</span>
                 </div>
             )}
 
