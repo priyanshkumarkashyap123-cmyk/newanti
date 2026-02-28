@@ -37,6 +37,8 @@ try:
     HAS_PINN = True
 except ImportError:
     HAS_PINN = False
+    # Define a placeholder so type annotations don't crash
+    PINNPredictor = Any  # type: ignore
 
 router = APIRouter()
 
